@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          2.2,
+          48.2
+        ]
+      },
+      "properties": {
+        "id": "zz-test-alpha",
+        "name": "Alpha Test Campus",
+        "grade_site": "B",
+        "grade_project_process": "C",
+        "confidence": "high",
+        "power_mw": 120,
+        "project_status": "permitting"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          1.3,
+          47.1
+        ]
+      },
+      "properties": {
+        "id": "zz-test-beta",
+        "name": "Beta Test Hyperscale",
+        "grade_site": "D",
+        "grade_project_process": "insufficient_data",
+        "confidence": "medium",
+        "power_mw": 900,
+        "project_status": "announced"
+      }
+    }
+  ]
+}

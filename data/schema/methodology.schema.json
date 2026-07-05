@@ -67,7 +67,7 @@
     "parameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["declarative_score_cap", "min_coverage_project_process", "provisional"],
+      "required": ["declarative_score_cap", "min_coverage_project_process", "declarative_confidence_penalty", "confidence_thresholds", "borderline_margin", "provisional"],
       "properties": {
         "declarative_score_cap": {
           "type": "number",
@@ -80,6 +80,27 @@
           "minimum": 0,
           "maximum": 1,
           "description": "Below this weighted coverage, the project/process grade is 'insufficient_data' instead of a letter."
+        },
+        "declarative_confidence_penalty": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Weight of the unverifiable_declarative cause in the confidence score (missing_data weighs 1)."
+        },
+        "confidence_thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["high", "medium"],
+          "properties": {
+            "high": { "type": "number", "minimum": 0, "maximum": 1 },
+            "medium": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "borderline_margin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 20,
+          "description": "Distance (in points) to a grade boundary under which the public wording adds 'close to X'."
         },
         "provisional": { "type": "boolean" }
       }

@@ -1,0 +1,7 @@
+{
+  "_comment": "Retrospective validation harness (gate 6). Each entry pins the acceptable grade range for a known-outcome case; a re-scoring that leaves the range breaks the build. Phase 5 replaces the fictional zz cases with the ~5 real known-outcome cases (Marseille, cas du Nuage...) and their documented expected ranges.",
+  "cases": {
+    "zz-test-alpha": { "site": ["B"], "project_process": ["C"] },
+    "zz-test-beta": { "site": ["D", "E"], "project_process": ["insufficient_data"] }
+  }
+}

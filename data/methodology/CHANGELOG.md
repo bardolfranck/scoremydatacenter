@@ -2,6 +2,13 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0-draft (c) — 2026-07-05 — scoring parameters + engine semantics
+
+- New PROVISIONAL parameters (engine bring-up, phase 1b): `declarative_confidence_penalty` 0.5, `confidence_thresholds` {high 0.75, medium 0.45}, `borderline_margin` 3 points.
+- Missing-data semantics fixed by the transparency floor: a missing **base** datum (public fact — our collection gap) is excluded and renormalized, reported through confidence (cause `missing_data`); a missing **project/process** datum (operator disclosure) **counts as 0** — hiding can never beat disclosing. `insufficient_data` replaces the project/process letter below 40% weighted coverage; a pillar with zero known indicators is not graded.
+- Letters are graded on the **rounded published score** (one decimal): the public number and the public letter can never contradict each other.
+- Signatory: draft amendment prepared in working session (Claude Code); all values to be calibrated in phase 5.
+
 ## 0.1.0-draft (b) — 2026-07-05 — direction contract (blind-spot fix)
 
 - `direction` is now a mandatory, schema-enforced declaration of each indicator's scoring sense: `lower_is_better` / `higher_is_better` / `encoded_in_scoring` (ordering fully carried by category/rubric scores) / `non_monotonic` (sense unsettled — requires a `calibration_note` and cannot claim `calibrated`). The old `not_applicable` escape hatch is removed.

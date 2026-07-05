@@ -1,0 +1,440 @@
+{
+  "id": "zz-test-beta",
+  "name": "Beta Test Hyperscale",
+  "operator": "Beta Fictional Compute (test fixture)",
+  "municipality": "Betaburg",
+  "country": "ZZ",
+  "project_status": "announced",
+  "power_mw": 900,
+  "grades": {
+    "site": {
+      "grade": "D",
+      "score": 35.0
+    },
+    "project_process": {
+      "grade": "insufficient_data",
+      "coverage": 0.0
+    }
+  },
+  "confidence": {
+    "level": "medium",
+    "score": 0.711,
+    "causes": {
+      "missing_data": 0.289,
+      "unverifiable_declarative": 0.0
+    }
+  },
+  "pillars": {
+    "energy": {
+      "grade": "E",
+      "score": 26.4
+    },
+    "water": {
+      "grade": "E",
+      "score": 27.8
+    },
+    "land_biodiversity": {
+      "grade": "D",
+      "score": 39.2
+    },
+    "local_impact": {
+      "grade": "E",
+      "score": 16.2
+    },
+    "transparency_governance": {
+      "grade": "insufficient_data"
+    }
+  },
+  "summary": {
+    "fr": "Fixture de test (fictive) : hyperscale annoncé, faiblement documenté — étage 1 seul, cas « données insuffisantes » et confiance faible.",
+    "en": "Test fixture (fictional): announced hyperscale, poorly documented — tier 1 only, exercises the insufficient-data and low-confidence paths."
+  },
+  "vintage": {
+    "announced_year": 2026,
+    "expected_commissioning": 2031
+  },
+  "admin_area": "00",
+  "indicators": [
+    {
+      "id": "E1",
+      "label": {
+        "fr": "Intensité carbone du réseau local",
+        "en": "Local grid carbon intensity"
+      },
+      "pillar": "energy",
+      "block": "base",
+      "status": "measured",
+      "value": 310,
+      "proxies": null,
+      "score": 30.0,
+      "source": {
+        "title": "Fictional grid intensity dataset (test)",
+        "url": "https://example.org/zz/beta-e1",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "E2",
+      "label": {
+        "fr": "Capacité / proximité de raccordement",
+        "en": "Grid connection capacity / proximity"
+      },
+      "pillar": "energy",
+      "block": "base",
+      "status": "measured",
+      "value": "constrained",
+      "proxies": null,
+      "score": 35.0,
+      "source": {
+        "title": "Fictional connection capacity map (test)",
+        "url": "https://example.org/zz/beta-e2",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "E3",
+      "label": {
+        "fr": "Congestion / file d'attente réseau",
+        "en": "Grid congestion / connection queue"
+      },
+      "pillar": "energy",
+      "block": "base",
+      "status": "measured",
+      "value": "high",
+      "proxies": null,
+      "score": 30.0,
+      "source": {
+        "title": "Fictional connection queue registry (test)",
+        "url": "https://example.org/zz/beta-e3",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "E4",
+      "label": {
+        "fr": "PUE (efficacité énergétique annoncée)",
+        "en": "PUE (announced energy efficiency)"
+      },
+      "pillar": "energy",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "W1",
+      "label": {
+        "fr": "Stress hydrique de la zone",
+        "en": "Local water stress"
+      },
+      "pillar": "water",
+      "block": "base",
+      "status": "measured",
+      "value": "high",
+      "proxies": null,
+      "score": 30.0,
+      "source": {
+        "title": "Fictional water restriction registry (test)",
+        "url": "https://example.org/zz/beta-w1",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "W2",
+      "label": {
+        "fr": "État de la masse d'eau",
+        "en": "Water body status"
+      },
+      "pillar": "water",
+      "block": "base",
+      "status": "measured",
+      "value": "moderate",
+      "proxies": null,
+      "score": 50.0,
+      "source": {
+        "title": "Fictional water body status report (test)",
+        "url": "https://example.org/zz/beta-w2",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "W3",
+      "label": {
+        "fr": "Pression de prélèvement du bassin",
+        "en": "Basin withdrawal pressure"
+      },
+      "pillar": "water",
+      "block": "base",
+      "status": "measured",
+      "value": "high",
+      "proxies": null,
+      "score": 30.0,
+      "source": {
+        "title": "Fictional withdrawal database (test)",
+        "url": "https://example.org/zz/beta-w3",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "W4",
+      "label": {
+        "fr": "Refroidissement + volume d'eau annoncé",
+        "en": "Cooling technology + announced water volume"
+      },
+      "pillar": "water",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "F1",
+      "label": {
+        "fr": "Recouvrement / distance zones protégées",
+        "en": "Overlap / distance to protected areas"
+      },
+      "pillar": "land_biodiversity",
+      "block": "base",
+      "status": "measured",
+      "value": "near_1_to_5km",
+      "proxies": null,
+      "score": 70.0,
+      "source": {
+        "title": "Fictional protected areas layer (test)",
+        "url": "https://example.org/zz/beta-f1",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "F2",
+      "label": {
+        "fr": "Statut du sol (artificialisé / ENAF / agricole)",
+        "en": "Soil status (artificialized / natural / agricultural)"
+      },
+      "pillar": "land_biodiversity",
+      "block": "base",
+      "status": "measured",
+      "value": "agricultural",
+      "proxies": null,
+      "score": 25.0,
+      "source": {
+        "title": "Fictional soil status inventory (test)",
+        "url": "https://example.org/zz/beta-f2",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "F3",
+      "label": {
+        "fr": "Continuités écologiques (TVB)",
+        "en": "Ecological corridors (TVB)"
+      },
+      "pillar": "land_biodiversity",
+      "block": "base",
+      "status": "measured",
+      "value": "corridor_nearby",
+      "proxies": null,
+      "score": 40.0,
+      "source": {
+        "title": "Fictional ecological corridors layer (test)",
+        "url": "https://example.org/zz/beta-f3",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "F4",
+      "label": {
+        "fr": "Surface au sol du projet",
+        "en": "Project ground footprint"
+      },
+      "pillar": "land_biodiversity",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "L1",
+      "label": {
+        "fr": "Profil socio-économique de la commune",
+        "en": "Municipality socio-economic profile"
+      },
+      "pillar": "local_impact",
+      "block": "base",
+      "status": "measured",
+      "value": "sensitive",
+      "proxies": null,
+      "score": 30.0,
+      "source": {
+        "title": "Fictional census profile (test)",
+        "url": "https://example.org/zz/beta-l1",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "L2",
+      "label": {
+        "fr": "Capacité d'absorption (taille du projet vs commune)",
+        "en": "Absorption capacity (project size vs municipality)"
+      },
+      "pillar": "local_impact",
+      "block": "base",
+      "status": "measured",
+      "value": 1385,
+      "proxies": null,
+      "score": 0.0,
+      "source": {
+        "title": "Fictional census, municipality population 650 (test)",
+        "url": "https://example.org/zz/beta-l2",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "L3",
+      "label": {
+        "fr": "Aléa technologique / Seveso environnant",
+        "en": "Technological hazard / nearby Seveso sites"
+      },
+      "pillar": "local_impact",
+      "block": "base",
+      "status": "measured",
+      "value": "seveso_low_within_5km",
+      "proxies": null,
+      "score": 60.0,
+      "source": {
+        "title": "Fictional industrial hazard registry (test)",
+        "url": "https://example.org/zz/beta-l3",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "L4",
+      "label": {
+        "fr": "Emplois annoncés",
+        "en": "Announced jobs"
+      },
+      "pillar": "local_impact",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "L5",
+      "label": {
+        "fr": "Retombées fiscales annoncées",
+        "en": "Announced tax revenue"
+      },
+      "pillar": "local_impact",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "L6",
+      "label": {
+        "fr": "Niveau de contestation observé",
+        "en": "Observed level of opposition"
+      },
+      "pillar": "local_impact",
+      "block": "base",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "L7",
+      "label": {
+        "fr": "Position des élus (faits votés uniquement)",
+        "en": "Elected officials' position (voted facts only)"
+      },
+      "pillar": "local_impact",
+      "block": "base",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "T1",
+      "label": {
+        "fr": "Concertation / consentement / gouvernance (proxies procéduraux)",
+        "en": "Consultation / consent / governance (procedural proxies)"
+      },
+      "pillar": "transparency_governance",
+      "block": "process",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "T2",
+      "label": {
+        "fr": "Transparence documentaire / disponibilité du dossier",
+        "en": "Documentation transparency / file availability"
+      },
+      "pillar": "transparency_governance",
+      "block": "process",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    }
+  ],
+  "publication": {
+    "status": "published",
+    "operator_notified_at": "2026-06-10",
+    "operator_response": null
+  },
+  "score_history": [
+    {
+      "date": "2026-07-05",
+      "methodology_version": "0.1.0-draft",
+      "grades": {
+        "site": "D",
+        "project_process": "insufficient_data"
+      },
+      "confidence": "medium",
+      "event": "initial_scoring",
+      "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+[
+  {
+    "id": "zz-test-alpha",
+    "name": "Alpha Test Campus",
+    "operator": "Alpha Fictional Cloud (test fixture)",
+    "municipality": "Alphaville",
+    "country": "ZZ",
+    "project_status": "permitting",
+    "power_mw": 120,
+    "grades": {
+      "site": {
+        "grade": "B",
+        "score": 79.5,
+        "close_to": "A"
+      },
+      "project_process": {
+        "grade": "C",
+        "score": 62.3,
+        "close_to": "B",
+        "coverage": 1.0
+      }
+    },
+    "confidence": {
+      "level": "high",
+      "score": 0.951,
+      "causes": {
+        "missing_data": 0.0,
+        "unverifiable_declarative": 0.098
+      }
+    },
+    "pillars": {
+      "energy": {
+        "grade": "B",
+        "score": 77.2,
+        "close_to": "A"
+      },
+      "water": {
+        "grade": "B",
+        "score": 73.3
+      },
+      "land_biodiversity": {
+        "grade": "A",
+        "score": 87.5
+      },
+      "local_impact": {
+        "grade": "B",
+        "score": 65.0
+      },
+      "transparency_governance": {
+        "grade": "B",
+        "score": 74.0
+      }
+    }
+  },
+  {
+    "id": "zz-test-beta",
+    "name": "Beta Test Hyperscale",
+    "operator": "Beta Fictional Compute (test fixture)",
+    "municipality": "Betaburg",
+    "country": "ZZ",
+    "project_status": "announced",
+    "power_mw": 900,
+    "grades": {
+      "site": {
+        "grade": "D",
+        "score": 35.0
+      },
+      "project_process": {
+        "grade": "insufficient_data",
+        "coverage": 0.0
+      }
+    },
+    "confidence": {
+      "level": "medium",
+      "score": 0.711,
+      "causes": {
+        "missing_data": 0.289,
+        "unverifiable_declarative": 0.0
+      }
+    },
+    "pillars": {
+      "energy": {
+        "grade": "E",
+        "score": 26.4
+      },
+      "water": {
+        "grade": "E",
+        "score": 27.8
+      },
+      "land_biodiversity": {
+        "grade": "D",
+        "score": 39.2
+      },
+      "local_impact": {
+        "grade": "E",
+        "score": 16.2
+      },
+      "transparency_governance": {
+        "grade": "insufficient_data"
+      }
+    }
+  }
+]

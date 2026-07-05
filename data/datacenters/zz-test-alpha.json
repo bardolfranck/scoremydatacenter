@@ -7,9 +7,15 @@
     "municipality": "Alphaville",
     "admin_area": "00",
     "country": "ZZ",
-    "coordinates": { "lat": 48.2, "lon": 2.2 },
+    "coordinates": {
+      "lat": 48.2,
+      "lon": 2.2
+    },
     "project_status": "permitting",
-    "vintage": { "announced_year": 2025, "expected_commissioning": 2028 },
+    "vintage": {
+      "announced_year": 2025,
+      "expected_commissioning": 2028
+    },
     "power_mw": 120,
     "summary": {
       "fr": "Fixture de test (fictive) : campus moyen bien documenté — étages 1 et 2 renseignés, cas nominal du pipeline.",
@@ -21,118 +27,203 @@
       "id": "E1",
       "value": 42,
       "status": "measured",
-      "source": { "title": "Fictional grid intensity dataset (test)", "url": "https://example.org/zz/e1", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional grid intensity dataset (test)",
+        "url": "https://example.org/zz/e1",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "E2",
       "value": "adequate",
       "status": "measured",
-      "source": { "title": "Fictional connection capacity map (test)", "url": "https://example.org/zz/e2", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional connection capacity map (test)",
+        "url": "https://example.org/zz/e2",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "E3",
       "value": "moderate",
       "status": "measured",
-      "source": { "title": "Fictional connection queue registry (test)", "url": "https://example.org/zz/e3", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional connection queue registry (test)",
+        "url": "https://example.org/zz/e3",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "E4",
       "value": 1.18,
       "status": "announced",
-      "source": { "title": "Fictional permitting file, energy section (test)", "url": "https://example.org/zz/e4", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional permitting file, energy section (test)",
+        "url": "https://example.org/zz/e4",
+        "accessed": "2026-07-01"
+      }
     },
-    { "id": "E5", "status": "missing" },
+    {
+      "id": "E5",
+      "status": "missing"
+    },
     {
       "id": "W1",
       "value": "moderate",
       "status": "measured",
-      "source": { "title": "Fictional water restriction registry (test)", "url": "https://example.org/zz/w1", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional water restriction registry (test)",
+        "url": "https://example.org/zz/w1",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "W2",
       "value": "good",
       "status": "measured",
-      "source": { "title": "Fictional water body status report (test)", "url": "https://example.org/zz/w2", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional water body status report (test)",
+        "url": "https://example.org/zz/w2",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "W3",
       "value": "low",
       "status": "measured",
-      "source": { "title": "Fictional withdrawal database (test)", "url": "https://example.org/zz/w3", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional withdrawal database (test)",
+        "url": "https://example.org/zz/w3",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "W4",
       "value": "hybrid_adiabatic",
       "status": "announced",
-      "source": { "title": "Fictional permitting file, cooling section (test)", "url": "https://example.org/zz/w4", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional permitting file, cooling section (test)",
+        "url": "https://example.org/zz/w4",
+        "accessed": "2026-07-01"
+      }
     },
-    { "id": "W5", "status": "missing" },
+    {
+      "id": "W5",
+      "status": "missing"
+    },
     {
       "id": "F1",
       "value": "distant_over_5km",
       "status": "measured",
-      "source": { "title": "Fictional protected areas layer (test)", "url": "https://example.org/zz/f1", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional protected areas layer (test)",
+        "url": "https://example.org/zz/f1",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "F2",
       "value": "artificialized",
       "status": "measured",
-      "source": { "title": "Fictional soil status inventory (test)", "url": "https://example.org/zz/f2", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional soil status inventory (test)",
+        "url": "https://example.org/zz/f2",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "F3",
       "value": "marginal",
       "status": "measured",
-      "source": { "title": "Fictional ecological corridors layer (test)", "url": "https://example.org/zz/f3", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional ecological corridors layer (test)",
+        "url": "https://example.org/zz/f3",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "F4",
       "value": 12,
       "status": "measured",
-      "source": { "title": "Fictional building permit (test)", "url": "https://example.org/zz/f4", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional building permit (test)",
+        "url": "https://example.org/zz/f4",
+        "accessed": "2026-07-01"
+      }
     },
-    { "id": "F5", "status": "missing" },
+    {
+      "id": "F5",
+      "status": "missing"
+    },
     {
       "id": "L1",
       "value": "neutral",
       "status": "measured",
-      "source": { "title": "Fictional census profile (test)", "url": "https://example.org/zz/l1", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional census profile (test)",
+        "url": "https://example.org/zz/l1",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L2",
       "value": 14.1,
       "status": "measured",
-      "source": { "title": "Fictional census, municipality population 8500 (test)", "url": "https://example.org/zz/l2", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional census, municipality population 8500 (test)",
+        "url": "https://example.org/zz/l2",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L3",
       "value": "none_within_5km",
       "status": "measured",
-      "source": { "title": "Fictional industrial hazard registry (test)", "url": "https://example.org/zz/l3", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional industrial hazard registry (test)",
+        "url": "https://example.org/zz/l3",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L4",
       "value": 37.5,
       "status": "announced",
-      "source": { "title": "Fictional operator press release, 45 permanent jobs (test)", "url": "https://example.org/zz/l4", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional operator press release, 45 permanent jobs (test)",
+        "url": "https://example.org/zz/l4",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L5",
       "value": "announced_unquantified",
       "status": "announced",
-      "source": { "title": "Fictional council deliberation minutes (test)", "url": "https://example.org/zz/l5", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional council deliberation minutes (test)",
+        "url": "https://example.org/zz/l5",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L6",
       "value": "local_isolated",
       "status": "measured",
-      "source": { "title": "Fictional local press review (test)", "url": "https://example.org/zz/l6", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional local press review (test)",
+        "url": "https://example.org/zz/l6",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L7",
       "value": "favorable",
       "status": "measured",
-      "source": { "title": "Fictional council vote record (test)", "url": "https://example.org/zz/l7", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional council vote record (test)",
+        "url": "https://example.org/zz/l7",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "T1",
@@ -144,13 +235,21 @@
         "council_deliberations": "favorable"
       },
       "status": "measured",
-      "source": { "title": "Fictional public inquiry registry (test)", "url": "https://example.org/zz/t1", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional public inquiry registry (test)",
+        "url": "https://example.org/zz/t1",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "T2",
       "value": "partial",
       "status": "measured",
-      "source": { "title": "Fictional publication registry (test)", "url": "https://example.org/zz/t2", "accessed": "2026-07-01" }
+      "source": {
+        "title": "Fictional publication registry (test)",
+        "url": "https://example.org/zz/t2",
+        "accessed": "2026-07-01"
+      }
     }
   ],
   "publication": {
@@ -162,5 +261,17 @@
       "url": null
     }
   },
-  "score_history": []
+  "score_history": [
+    {
+      "date": "2026-07-05",
+      "methodology_version": "0.1.0-draft",
+      "grades": {
+        "site": "B",
+        "project_process": "C"
+      },
+      "confidence": "high",
+      "event": "initial_scoring",
+      "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+    }
+  ]
 }

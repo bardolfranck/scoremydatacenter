@@ -1,0 +1,28 @@
+[
+  {
+    "dc_id": "zz-test-alpha",
+    "dc_name": "Alpha Test Campus",
+    "date": "2026-07-05",
+    "methodology_version": "0.1.0-draft",
+    "grades": {
+      "site": "B",
+      "project_process": "C"
+    },
+    "confidence": "high",
+    "event": "initial_scoring",
+    "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+  },
+  {
+    "dc_id": "zz-test-beta",
+    "dc_name": "Beta Test Hyperscale",
+    "date": "2026-07-05",
+    "methodology_version": "0.1.0-draft",
+    "grades": {
+      "site": "D",
+      "project_process": "insufficient_data"
+    },
+    "confidence": "medium",
+    "event": "initial_scoring",
+    "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+  }
+]
