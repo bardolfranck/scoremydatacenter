@@ -7,19 +7,20 @@ import Landing from "../../components/Landing.astro";
 const t = {
   title: "ScoreMyDataCenter — la note publique d'acceptabilité des data centers",
   description:
-    "Observatoire indépendant de l'acceptabilité des projets de data centers : deux notes publiques A–E par projet, avec sources, confiance et méthode ouverte.",
+    "L'acceptabilité des data centers : notée, sourcée, publique. Deux notes A–E par projet, avec sources, confiance et méthode ouverte.",
   altHref: "/",
-  altLabel: "EN",
+  altLabel: "🇬🇧 EN",
+  tagline: "Observatoire indépendant",
   nav: [
     { href: "#scores", label: "Notes" },
     { href: "#method", label: "Méthode" },
     { href: "#open", label: "Modèle ouvert" },
     { href: "#contact", label: "Contact" },
+    { href: "#faq", label: "FAQ" },
   ],
-  heroEyebrow: "Observatoire indépendant · France d'abord",
-  heroTitle: "La note publique d'acceptabilité des data centers.",
+  heroTitle: "Un data center ne se pose plus n'importe où.",
   heroLede:
-    "Deux notes A–E par projet — le site qu'il occupe, et les choix de son opérateur — avec sources et confiance.",
+    "Chaque projet noté A–E — le site et l'opérateur — avec ses sources et son niveau de confiance.",
   ctaScores: "Voir les notes",
   ctaMethod: "Lire la méthode",
   panelAria: "Exemple de fiche de score",
@@ -29,6 +30,22 @@ const t = {
   confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
   fixtureNote:
     "Fixture de test fictive, montrée pour le format — les premières fiches réelles françaises sont en préparation.",
+  whyNowAria: "Pourquoi maintenant",
+  whyNowStats: [
+    { figure: "+57 % de CO₂ sous-estimé", attribution: "Allianz Trade, juin 2026 (vs AIE)", url: "https://www.allianz-trade.com/en_global/news-insights/economic-insights/Code-carbon-kilowatts.html" },
+    { figure: "130 Md$ de projets bloqués", attribution: "Data Center Watch, T1 2026", url: "https://www.datacenterwatch.org/q1-2026" },
+    { figure: "9,5 Md de litres d'eau prélevés", attribution: "AWS, données 2025", url: "https://www.aboutamazon.com/news/sustainability/amazon-data-center-water-usage" },
+  ],
+  whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
+  missionLine:
+    "Notre mission : mesurer, sourcer et rendre publique l'acceptabilité de chaque projet de data center — pour ancrer le débat dans les faits.",
+  whyTitle: "Pourquoi cet observatoire",
+  whyBody:
+    "Les data centers engagent l'avenir énergétique et territorial de régions entières, souvent sans repère fiable pour ceux qui y vivent. Les chiffres officiels sous-estiment la réalité, et le débat s'enflamme faute de faits partagés. ScoreMyDataCenter comble ce vide : une note publique, méthodique et citable, que chacun peut vérifier et refaire.",
+  independenceTitle: "Indépendance",
+  independenceBody:
+    "Les entités notées ne paient jamais leur note. La méthode est ouverte, les sources tracées, et toute note peut être contestée avant publication.",
+  founderLine: "Fondé par <strong>Franck Bardol</strong> — à l'intersection de l'infrastructure IA, de l'éthique et de la décision publique.",
   principlesAria: "Principes",
   principles: [
     { title: "Méthode publique", body: "Grille de notation ouverte, versionnée, citable. Quiconque peut refaire chaque note." },
@@ -58,8 +75,8 @@ const t = {
   weightsAria: "Poids des piliers",
   weightsCaption: "Poids du pilier dans la note globale",
   weightsNote: "Méthodologie v0.1.0-draft — provisoire jusqu'à la calibration rétrospective sur cas connus.",
-  openTitle: "On ouvre la vérité. On vend le temps.",
-  openLede: "La couche qui fabrique le jugement est ouverte ; seule la commodité sera un jour payante.",
+  openTitle: "On ouvre la vérité.",
+  openLede: "La couche qui fabrique le jugement est ouverte : méthode, données et moteur, vérifiables par quiconque.",
   openCols: [
     {
       title: "Méthode, données et moteur ouverts",
@@ -74,10 +91,42 @@ const t = {
       body: "Les corrections de données sont gratuites et relues ; les règles anti-triche sont publiques dans leur principe, privées dans leurs seuils exacts.",
     },
   ],
-  redline: "Une seule ligne rouge : <b>le paywall ne tombe jamais sur la vérité</b>. La note d'un projet et sa justification sont publiques et gratuites, pour toujours.",
-  founderTitle: "Un observatoire indépendant, fondé par Franck Bardol.",
-  founderBody:
-    "Construit à l'intersection de l'infrastructure IA, de l'éthique, de l'analyse de données et de la décision publique. Les entités notées ne paient jamais leur note publique.",
+  redline: "Une seule ligne rouge : la note d'un projet et sa justification sont <b>publiques et gratuites, pour toujours</b>.",
+  faqTitle: "Questions fréquentes",
+  faq: [
+    {
+      q: "Comment un data center est-il noté ?",
+      a: "Chaque projet reçoit deux notes A–E — une pour le site, une pour l'opérateur — à partir de 24 indicateurs répartis en 5 piliers (énergie, eau, foncier, impact local, transparence). Un score chiffré est calculé puis traduit en lettre ; à côté, un niveau de confiance indique si la note repose sur des données solides ou fragiles.",
+    },
+    {
+      q: "Que veulent dire les deux notes, « site » et « opérateur » ?",
+      a: "La note site évalue ce que le projet subit — territoire, eau, réseau, foncier — quel que soit celui qui le porte. La note opérateur évalue ce qu'il choisit — efficacité, concertation, transparence, engagements. On sépare le terrain des décisions.",
+    },
+    {
+      q: "Puis-je faire noter le projet près de chez moi ?",
+      a: "Oui. Suggérez-le via la <a href='#contact'>page Contact</a> : nous priorisons les dossiers les plus documentés et les plus discutés. Précision d'indépendance : nous ne notons jamais sur commande d'une partie, ni pour ni contre — la note suit la méthode, pas le demandeur.",
+    },
+    {
+      q: "D'où viennent les données ?",
+      a: "De sources publiques : réseau électrique, eau, foncier, INSEE, registres, presse locale. Chaque valeur affichée pointe vers sa source, et la méthode est ouverte : n'importe qui peut refaire le calcul.",
+    },
+    {
+      q: "Un opérateur peut-il payer pour améliorer sa note ?",
+      a: "Non, jamais. Les entités notées ne paient pas leur note. La note d'un projet et sa justification sont publiques et gratuites, pour toujours.",
+    },
+    {
+      q: "Et si une donnée est inexacte, ou si l'opérateur n'est pas d'accord ?",
+      a: "Toute donnée peut être corrigée sur preuve. Avant chaque publication nominative, l'opérateur est notifié au moins 15 jours à l'avance et sa réponse est publiée à côté de la note. Chaque révision est datée et justifiée.",
+    },
+    {
+      q: "La note est-elle un verdict définitif ?",
+      a: "Non : c'est une note de risque d'acceptabilité, toujours couplée à un niveau de confiance, et elle peut évoluer avec le projet. Une lettre et un score sur 100 — jamais présentés comme un oracle statistique.",
+    },
+    {
+      q: "Qui êtes-vous, et comment restez-vous indépendants ?",
+      a: "Un observatoire indépendant fondé par Franck Bardol. La méthode est ouverte, les entités notées ne paient pas, et notre fonctionnement est détaillé dans la section <a href='#open'>Modèle ouvert</a>.",
+    },
+  ],
   contactTitle: "Suggérer un projet, ou joindre l'observatoire.",
   contactCta: "Contact",
 };

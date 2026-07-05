@@ -25,13 +25,13 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
   lang={lang}
   title={t.title}
   description={t.description}
+  tagline={t.tagline}
   altHref={t.altHref}
   altLabel={t.altLabel}
   nav={t.nav}
 >
   <section class="hero">
     <div class="hero-copy">
-      <p class="eyebrow">{t.heroEyebrow}</p>
       <h1>{t.heroTitle}</h1>
       <p class="hero-lede">{t.heroLede}</p>
       <div class="hero-actions">
@@ -71,6 +71,39 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
         <p class="hero-panel-note">{t.fixtureNote}</p>
       </aside>
     )}
+  </section>
+
+  <section class="why-now" aria-label={t.whyNowAria}>
+    <div class="why-now-inner">
+      <div class="why-stats">
+        {t.whyNowStats.map((stat: any) => (
+          <div class="stat">
+            <b>{stat.figure}</b>
+            {stat.url
+              ? <a href={stat.url} target="_blank" rel="noopener">{stat.attribution}</a>
+              : <span>{stat.attribution}</span>}
+          </div>
+        ))}
+      </div>
+      <p class="why-punch" set:html={t.whyNowPunch}></p>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="mission" aria-labelledby="mission-title">
+    <div class="section-inner">
+      <p class="mission-line" id="mission-title">{t.missionLine}</p>
+      <div class="mission-grid">
+        <div class="prose">
+          <h3>{t.whyTitle}</h3>
+          <p>{t.whyBody}</p>
+        </div>
+        <div class="independence">
+          <h3>{t.independenceTitle}</h3>
+          <p>{t.independenceBody}</p>
+          <p class="founder-line" set:html={t.founderLine}></p>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section class="credibility-strip" aria-label={t.principlesAria}>
@@ -198,13 +231,32 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
     </div>
   </section>
 
-  <section class="section" aria-labelledby="founder-title">
-    <div class="section-inner founder">
-      <div>
-        <h2 id="founder-title" style="font-size: clamp(1.4rem, 2.6vw, 2rem);">{t.founderTitle}</h2>
-        <p class="prose" style="margin-top: 12px;">{t.founderBody}</p>
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="faq-title">{t.faqTitle}</h2>
+      </div>
+      <div class="faq-list">
+        {t.faq.map((item: any) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p set:html={item.a}></p>
+          </details>
+        ))}
       </div>
     </div>
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: t.faq.map((item: any) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a.replace(/<[^>]+>/g, "") },
+        })),
+      })}
+    />
   </section>
 
   <section class="contact-band" id="contact">

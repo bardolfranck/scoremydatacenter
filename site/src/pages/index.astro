@@ -7,19 +7,20 @@ import Landing from "../components/Landing.astro";
 const t = {
   title: "ScoreMyDataCenter — the public grade for data center acceptability",
   description:
-    "Independent observatory scoring the social acceptability of data center projects: two public A–E grades per project, with sources, confidence and an open method.",
+    "Data center acceptability: graded, sourced, public. Two A–E grades per project, with sources, confidence and an open method.",
   altHref: "/fr/",
-  altLabel: "FR",
+  altLabel: "🇫🇷 FR",
+  tagline: "Independent observatory",
   nav: [
     { href: "#scores", label: "Scores" },
     { href: "#method", label: "Method" },
     { href: "#open", label: "Open model" },
     { href: "#contact", label: "Contact" },
+    { href: "#faq", label: "FAQ" },
   ],
-  heroEyebrow: "Independent observatory · France first",
-  heroTitle: "The public grade for data center acceptability.",
+  heroTitle: "Data centers no longer get built just anywhere.",
   heroLede:
-    "Two A–E grades per project — the site it lands on, and the choices its operator makes — with sources and confidence.",
+    "Every project graded A–E — the site and the operator — with sources and a confidence level.",
   ctaScores: "See the scores",
   ctaMethod: "Read the method",
   panelAria: "Example scorecard",
@@ -29,6 +30,22 @@ const t = {
   confidence: { high: "confidence: high", medium: "confidence: medium", low: "confidence: low" },
   fixtureNote:
     "Fictional test fixture, shown for format only — the first real French scorecards are in preparation.",
+  whyNowAria: "Why now",
+  whyNowStats: [
+    { figure: "+57% more CO₂ than estimated", attribution: "Allianz Trade, June 2026 (vs IEA)", url: "https://www.allianz-trade.com/en_global/news-insights/economic-insights/Code-carbon-kilowatts.html" },
+    { figure: "$130bn in blocked projects", attribution: "Data Center Watch, Q1 2026", url: "https://www.datacenterwatch.org/q1-2026" },
+    { figure: "9.5bn liters of water withdrawn", attribution: "AWS, 2025 data", url: "https://www.aboutamazon.com/news/sustainability/amazon-data-center-water-usage" },
+  ],
+  whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",
+  missionLine:
+    "Our mission: measure, source and make public the acceptability of every data center project — grounding the debate in facts.",
+  whyTitle: "Why this observatory",
+  whyBody:
+    "Data centers shape the energy and territorial future of entire regions, often without a reliable reference for the people who live there. Official figures underestimate reality, and the debate ignites for lack of shared facts. ScoreMyDataCenter fills that gap: a public, methodical, citable grade that anyone can verify and recompute.",
+  independenceTitle: "Independence",
+  independenceBody:
+    "Scored entities never pay for their grade. The method is open, sources are traced, and every grade can be contested before publication.",
+  founderLine: "Founded by <strong>Franck Bardol</strong> — at the intersection of AI infrastructure, ethics and public decision-making.",
   principlesAria: "Core principles",
   principles: [
     { title: "Public method", body: "Open scoring grid, versioned and citable. Anyone can re-run every grade." },
@@ -58,8 +75,8 @@ const t = {
   weightsAria: "Pillar weights",
   weightsCaption: "Pillar weight in the global grade",
   weightsNote: "Methodology v0.1.0-draft — provisional until retrospective calibration on known-outcome cases.",
-  openTitle: "We open the truth. We sell the time.",
-  openLede: "The layer that produces the judgment is open; only convenience will ever be paid.",
+  openTitle: "We open the truth.",
+  openLede: "The layer that produces the judgment is open: method, data and engine, verifiable by anyone.",
   openCols: [
     {
       title: "Open method, data and engine",
@@ -74,10 +91,42 @@ const t = {
       body: "Data corrections are free and reviewed; anti-gaming rules are public in principle, private in their exact thresholds.",
     },
   ],
-  redline: "One red line: <b>the paywall never falls on the truth</b>. A project's grade and its justification are public and free, forever.",
-  founderTitle: "An independent observatory, founded by Franck Bardol.",
-  founderBody:
-    "Built at the intersection of AI infrastructure, ethics, data analysis and public decision-making. Scored entities never pay for their public grade.",
+  redline: "One red line: a project's grade and its justification are <b>public and free, forever</b>.",
+  faqTitle: "Frequently asked questions",
+  faq: [
+    {
+      q: "How is a data center graded?",
+      a: "Each project receives two A–E grades — one for the site, one for the operator — from 24 indicators across 5 pillars (energy, water, land, local impact, transparency). A numeric score is computed, then translated into a letter; next to it, a confidence level says whether the grade rests on solid or fragile data.",
+    },
+    {
+      q: "What do the two grades, “site” and “operator”, mean?",
+      a: "The site grade assesses what the project endures — territory, water, grid, land — whoever carries it. The operator grade assesses what the operator chooses — efficiency, consultation, transparency, commitments. We separate the terrain from the decisions.",
+    },
+    {
+      q: "Can I get the project near me graded?",
+      a: "Yes. Suggest it through the <a href='#contact'>Contact section</a>: we prioritize the best-documented and most-debated cases. One independence note: we never grade on behalf of a party, for or against — the grade follows the method, not the requester.",
+    },
+    {
+      q: "Where does the data come from?",
+      a: "Public sources: power grid, water, land registries, census data, official records, local press. Every displayed value links to its source, and the method is open: anyone can redo the computation.",
+    },
+    {
+      q: "Can an operator pay to improve its grade?",
+      a: "No, never. Scored entities do not pay for their grade. A project's grade and its justification are public and free, forever.",
+    },
+    {
+      q: "What if a data point is wrong, or the operator disagrees?",
+      a: "Any data point can be corrected on evidence. Before each named publication, the operator is notified at least 15 days in advance, and its response is published alongside the grade. Every revision is dated and justified.",
+    },
+    {
+      q: "Is the grade a final verdict?",
+      a: "No: it is an acceptability-risk grade, always coupled with a confidence level, and it can evolve with the project. A letter and a score out of 100 — never presented as a statistical oracle.",
+    },
+    {
+      q: "Who are you, and how do you stay independent?",
+      a: "An independent observatory founded by Franck Bardol. The method is open, scored entities do not pay, and how we operate is detailed in the <a href='#open'>Open model section</a>.",
+    },
+  ],
   contactTitle: "Suggest a project, or reach the observatory.",
   contactCta: "Contact",
 };
