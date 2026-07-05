@@ -1,0 +1,95 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The living map — fed by map.geojson (engine artifact). Markers are grade
+// chips; every popup shows both grades WITH the confidence level (the
+// ScoreBadge invariant holds in client-rendered HTML too).
+interface Props {
+  variant: "hero" | "full";
+  labels: {
+    site: string;
+    operator: string;
+    confidence: Record<string, string>;
+    insufficient: string;
+    fixture: string;
+    openMap?: string;
+  };
+}
+const { variant, labels } = Astro.props;
+---
+
+<div class={`map-island map-${variant}`} data-variant={variant} data-labels={JSON.stringify(labels)}>
+  <div class="map-canvas"></div>
+  {variant === "hero" && labels.openMap && (
+    <a class="button button-primary map-open-link" href="/fr/carte">{labels.openMap}</a>
+  )}
+</div>
+
+<script>
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+
+  const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+
+  function chip(grade: string, extra = ""): string {
+    const na = grade === "insufficient_data";
+    const cls = na ? "grade-na" : `grade-${grade.toLowerCase()}`;
+    return `<span class="gradechip sm ${cls} ${extra}">${na ? "–" : grade}</span>`;
+  }
+
+  document.querySelectorAll<HTMLElement>(".map-island").forEach(async (root) => {
+    const labels = JSON.parse(root.dataset.labels || "{}");
+    const isFull = root.dataset.variant === "full";
+    const canvas = root.querySelector<HTMLElement>(".map-canvas");
+    if (!canvas) return;
+
+    const geo = await (await fetch("/data/map.geojson")).json();
+
+    const map = new maplibregl.Map({
+      container: canvas,
+      style: STYLE_URL,
+      center: [2.4, 46.8],
+      zoom: isFull ? 5.3 : 4.7,
+      attributionControl: { compact: true },
+      scrollZoom: isFull,
+      cooperativeGestures: isFull,
+    });
+    if (isFull) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+    const bounds = new maplibregl.LngLatBounds();
+    for (const feature of geo.features) {
+      const p = feature.properties;
+      const [lon, lat] = feature.geometry.coordinates;
+      bounds.extend([lon, lat]);
+
+      const el = document.createElement("div");
+      el.className = "map-marker";
+      const size = Math.round(Math.min(52, Math.max(34, 24 + Math.sqrt(p.power_mw || 100))));
+      el.style.width = el.style.height = `${size}px`;
+      el.innerHTML = chip(p.grade_site, "map-chip");
+
+      const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
+      const popupHtml = `
+        <div class="map-popup">
+          <strong>${p.name}</strong>
+          <span class="map-popup-sub">${p.power_mw} MW</span>
+          <div class="map-popup-grades">
+            <span>${labels.site} ${chip(p.grade_site)}</span>
+            <span>${labels.operator} ${chip(p.grade_project_process)}</span>
+          </div>
+          <span class="confidence ${p.confidence}"><span class="dot"></span>${labels.confidence[p.confidence]}</span>
+          ${fixtureTag}
+        </div>`;
+
+      new maplibregl.Marker({ element: el })
+        .setLngLat([lon, lat])
+        .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "290px" }).setHTML(popupHtml))
+        .addTo(map);
+    }
+
+    if (geo.features.length > 1) {
+      map.fitBounds(bounds, { padding: isFull ? 120 : 90, maxZoom: 7, duration: 0 });
+    }
+  });
+</script>

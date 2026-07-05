@@ -1,0 +1,238 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The tweetable ranking: every sort/filter state has a shareable URL.
+// Rows are rendered at build time from the engine's artifacts; the client
+// script only reorders and filters the DOM.
+import Base from "../../layouts/Base.astro";
+import ScoreBadge from "../../components/ScoreBadge.astro";
+import scoresData from "../../../public/data/scores.json";
+import methodologyData from "../../../public/data/methodology.json";
+
+const scores = scoresData as any[];
+const methodology = methodologyData as any;
+const pillars = methodology.pillars as any[];
+
+const confidenceLabels: Record<string, string> = {
+  high: "confiance : haute",
+  medium: "confiance : moyenne",
+  low: "confiance : faible",
+};
+const statusLabels: Record<string, string> = {
+  announced: "Annoncé",
+  permitting: "En instruction",
+  under_construction: "En construction",
+  operational: "En service",
+};
+const pillarShort: Record<string, string> = {
+  energy: "Énergie",
+  water: "Eau",
+  land_biodiversity: "Foncier",
+  local_impact: "Local",
+  transparency_governance: "Transp.",
+};
+const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
+
+const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
+
+const nav = [
+  { href: "/fr/carte", label: "Carte" },
+  { href: "/fr/classement", label: "Classement" },
+  { href: "/fr/#method", label: "Méthode" },
+  { href: "/fr/#open", label: "Modèle ouvert" },
+  { href: "/fr/#contact", label: "Contact" },
+  { href: "/fr/#faq", label: "FAQ" },
+];
+---
+
+<Base
+  lang="fr"
+  title="Classement des projets — ScoreMyDataCenter"
+  description="Le classement des projets de data centers notés A–E : tri par note site, note opérateur, pilier ou confiance — chaque vue a son URL partageable."
+  tagline="Observatoire indépendant"
+  altHref="/"
+  altLabel="🇬🇧 EN"
+  nav={nav}
+>
+  <section class="section" aria-labelledby="rank-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="rank-title">Classement des projets notés</h2>
+        <p>
+          Triez par note, pilier ou confiance — chaque vue a une adresse partageable. Une note ne
+          s'affiche jamais sans son niveau de confiance.
+        </p>
+      </div>
+
+      <div class="rank-controls">
+        <label>
+          Trier par
+          <select id="rank-sort">
+            <option value="site">Note site</option>
+            <option value="operator">Note opérateur</option>
+            {pillars.map((p) => <option value={p.id}>Pilier : {pillarShort[p.id]}</option>)}
+            <option value="confidence">Confiance</option>
+            <option value="power">Puissance (MW)</option>
+          </select>
+        </label>
+        <label>
+          Ordre
+          <select id="rank-order">
+            <option value="desc">Meilleur d'abord</option>
+            <option value="asc">Pire d'abord</option>
+          </select>
+        </label>
+        <label>
+          Statut
+          <select id="rank-status">
+            <option value="all">Tous</option>
+            {Object.entries(statusLabels).map(([value, label]) => <option value={value}>{label}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div class="rank-wrap">
+        <table class="rank-table" id="rank-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Projet</th>
+              <th>Statut</th>
+              <th>Site</th>
+              <th>Opérateur</th>
+              {pillars.map((p) => <th>{pillarShort[p.id]}</th>)}
+              <th>Confiance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scores.map((dc) => (
+              <tr
+                data-status={dc.project_status}
+                data-k-site={sortValue(dc.grades.site)}
+                data-k-operator={sortValue(dc.grades.project_process)}
+                data-k-confidence={confidenceRank[dc.confidence.level]}
+                data-k-power={dc.power_mw ?? -1}
+                {...Object.fromEntries(pillars.map((p) => [`data-k-${p.id}`, sortValue(dc.pillars[p.id])]))}
+              >
+                <td class="rank-index"></td>
+                <td class="rank-project">
+                  <strong>{dc.name}</strong>
+                  <span>{dc.municipality} ({dc.country}) — {dc.operator}{dc.id.startsWith("zz-") ? " · fixture de test fictive" : ""}</span>
+                </td>
+                <td>{statusLabels[dc.project_status]} · {dc.power_mw} MW</td>
+                <td>
+                  <span class="rank-grade">
+                    <ScoreBadge
+                      label="Site"
+                      grade={dc.grades.site}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={confidenceLabels[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel="données insuffisantes"
+                    />
+                    {typeof dc.grades.site.score === "number" ? dc.grades.site.score.toFixed(1) : ""}
+                  </span>
+                </td>
+                <td>
+                  <span class="rank-grade">
+                    <ScoreBadge
+                      label="Opérateur"
+                      grade={dc.grades.project_process}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={confidenceLabels[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel="données insuffisantes"
+                    />
+                    {typeof dc.grades.project_process.score === "number" ? dc.grades.project_process.score.toFixed(1) : ""}
+                  </span>
+                </td>
+                {pillars.map((p) => (
+                  <td>
+                    <ScoreBadge
+                      label={pillarShort[p.id]}
+                      grade={dc.pillars[p.id]}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={confidenceLabels[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel="données insuffisantes"
+                    />
+                  </td>
+                ))}
+                <td>
+                  <span class={`confidence ${dc.confidence.level}`}>
+                    <span class="dot" aria-hidden="true"></span>
+                    {confidenceLabels[dc.confidence.level]}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="rank-note">
+        « – » = données insuffisantes : nous ne notons pas l'inconnu. Les fixtures fictives
+        disparaîtront à la publication des premières fiches réelles.
+      </p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Tweetable state: ?tri=<key>&ordre=<asc|desc>&statut=<status> reorders the
+  // build-rendered rows. insufficient_data sorts as -1 (always last on "best first").
+  const table = document.getElementById("rank-table") as HTMLTableElement;
+  const tbody = table.querySelector("tbody")!;
+  const sortSel = document.getElementById("rank-sort") as HTMLSelectElement;
+  const orderSel = document.getElementById("rank-order") as HTMLSelectElement;
+  const statusSel = document.getElementById("rank-status") as HTMLSelectElement;
+
+  function apply(updateUrl = true) {
+    const key = sortSel.value;
+    const asc = orderSel.value === "asc";
+    const status = statusSel.value;
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    rows.sort((a, b) => {
+      const va = parseFloat(a.getAttribute(`data-k-${key}`) ?? "-1");
+      const vb = parseFloat(b.getAttribute(`data-k-${key}`) ?? "-1");
+      return asc ? va - vb : vb - va;
+    });
+
+    let rank = 0;
+    for (const row of rows) {
+      const visible = status === "all" || row.dataset.status === status;
+      row.style.display = visible ? "" : "none";
+      if (visible) {
+        rank += 1;
+        row.querySelector(".rank-index")!.textContent = String(rank);
+      }
+      tbody.appendChild(row);
+    }
+
+    if (updateUrl) {
+      const params = new URLSearchParams();
+      if (key !== "site") params.set("tri", key);
+      if (asc) params.set("ordre", "asc");
+      if (status !== "all") params.set("statut", status);
+      const query = params.toString();
+      history.replaceState(null, "", query ? `?${query}` : location.pathname);
+    }
+  }
+
+  const params = new URLSearchParams(location.search);
+  if (params.get("tri")) sortSel.value = params.get("tri")!;
+  if (params.get("ordre") === "asc") orderSel.value = "asc";
+  if (params.get("statut")) statusSel.value = params.get("statut")!;
+  if (sortSel.selectedIndex < 0) sortSel.value = "site";
+  if (statusSel.selectedIndex < 0) statusSel.value = "all";
+
+  [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => apply()));
+  apply(false);
+</script>
