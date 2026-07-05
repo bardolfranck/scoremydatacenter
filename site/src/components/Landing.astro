@@ -231,6 +231,34 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
     </div>
   </section>
 
+  <section class="section" id="faq" aria-labelledby="faq-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="faq-title">{t.faqTitle}</h2>
+      </div>
+      <div class="faq-list">
+        {t.faq.map((item: any) => (
+          <details>
+            <summary>{item.q}</summary>
+            <p set:html={item.a}></p>
+          </details>
+        ))}
+      </div>
+    </div>
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: t.faq.map((item: any) => ({
+          "@type": "Question",
+          name: item.q,
+          acceptedAnswer: { "@type": "Answer", text: item.a.replace(/<[^>]+>/g, "") },
+        })),
+      })}
+    />
+  </section>
+
   <section class="contact-band" id="contact">
     <h2>{t.contactTitle}</h2>
     <a class="button button-primary" href="mailto:contact@scoremydatacenter.org">{t.contactCta}</a>
