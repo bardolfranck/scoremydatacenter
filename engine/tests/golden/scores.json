@@ -10,13 +10,11 @@
     "grades": {
       "site": {
         "grade": "B",
-        "score": 79.5,
-        "close_to": "A"
+        "score": 79.5
       },
       "project_process": {
         "grade": "C",
         "score": 62.3,
-        "close_to": "B",
         "coverage": 1.0
       }
     },
@@ -32,23 +30,27 @@
       "energy": {
         "grade": "B",
         "score": 77.2,
-        "close_to": "A"
+        "coverage": 1.0
       },
       "water": {
         "grade": "B",
-        "score": 73.3
+        "score": 73.3,
+        "coverage": 1.0
       },
       "land_biodiversity": {
         "grade": "A",
-        "score": 87.5
+        "score": 87.5,
+        "coverage": 1.0
       },
       "local_impact": {
         "grade": "B",
-        "score": 65.0
+        "score": 65.0,
+        "coverage": 1.0
       },
       "transparency_governance": {
         "grade": "B",
-        "score": 74.0
+        "score": 74.0,
+        "coverage": 1.0
       }
     }
   },
@@ -81,22 +83,27 @@
     "pillars": {
       "energy": {
         "grade": "E",
-        "score": 26.4
+        "score": 26.4,
+        "coverage": 0.833
       },
       "water": {
         "grade": "E",
-        "score": 27.8
+        "score": 27.8,
+        "coverage": 0.778
       },
       "land_biodiversity": {
         "grade": "D",
-        "score": 39.2
+        "score": 39.2,
+        "coverage": 0.833
       },
       "local_impact": {
         "grade": "E",
-        "score": 16.2
+        "score": 16.2,
+        "coverage": 0.4
       },
       "transparency_governance": {
-        "grade": "insufficient_data"
+        "grade": "insufficient_data",
+        "coverage": 0.0
       }
     }
   }

@@ -9,13 +9,11 @@
   "grades": {
     "site": {
       "grade": "B",
-      "score": 79.5,
-      "close_to": "A"
+      "score": 79.5
     },
     "project_process": {
       "grade": "C",
       "score": 62.3,
-      "close_to": "B",
       "coverage": 1.0
     }
   },
@@ -31,23 +29,27 @@
     "energy": {
       "grade": "B",
       "score": 77.2,
-      "close_to": "A"
+      "coverage": 1.0
     },
     "water": {
       "grade": "B",
-      "score": 73.3
+      "score": 73.3,
+      "coverage": 1.0
     },
     "land_biodiversity": {
       "grade": "A",
-      "score": 87.5
+      "score": 87.5,
+      "coverage": 1.0
     },
     "local_impact": {
       "grade": "B",
-      "score": 65.0
+      "score": 65.0,
+      "coverage": 1.0
     },
     "transparency_governance": {
       "grade": "B",
-      "score": 74.0
+      "score": 74.0,
+      "coverage": 1.0
     }
   },
   "summary": {

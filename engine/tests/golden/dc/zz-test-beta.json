@@ -27,22 +27,27 @@
   "pillars": {
     "energy": {
       "grade": "E",
-      "score": 26.4
+      "score": 26.4,
+      "coverage": 0.833
     },
     "water": {
       "grade": "E",
-      "score": 27.8
+      "score": 27.8,
+      "coverage": 0.778
     },
     "land_biodiversity": {
       "grade": "D",
-      "score": 39.2
+      "score": 39.2,
+      "coverage": 0.833
     },
     "local_impact": {
       "grade": "E",
-      "score": 16.2
+      "score": 16.2,
+      "coverage": 0.4
     },
     "transparency_governance": {
-      "grade": "insufficient_data"
+      "grade": "insufficient_data",
+      "coverage": 0.0
     }
   },
   "summary": {

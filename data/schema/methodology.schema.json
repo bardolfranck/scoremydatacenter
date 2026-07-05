@@ -67,19 +67,19 @@
     "parameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["declarative_score_cap", "min_coverage_project_process", "declarative_confidence_penalty", "confidence_thresholds", "borderline_margin", "provisional"],
+      "required": ["declarative_score_cap", "min_coverage", "declarative_confidence_penalty", "confidence_thresholds", "provisional"],
       "properties": {
         "declarative_score_cap": {
           "type": "number",
           "minimum": 0,
           "maximum": 100,
-          "description": "Prudent-scoring rule: an 'announced' (unverified) value cannot push its normalized contribution above this cap."
+          "description": "Prudent-scoring rule: an 'announced' (unverified) value cannot push its normalized contribution above this cap. Not a double count with the confidence penalty: the cap acts on the substantive score, the penalty on the confidence — the two axes of the dual display."
         },
-        "min_coverage_project_process": {
+        "min_coverage": {
           "type": "number",
           "minimum": 0,
           "maximum": 1,
-          "description": "Below this weighted coverage, the project/process grade is 'insufficient_data' instead of a letter."
+          "description": "Below this weighted coverage, a grade becomes 'insufficient_data' instead of a letter — applied to the global project/process grade AND cascaded to every per-pillar display sub-score (a pillar is never given a punitive letter drawn from unknowns)."
         },
         "declarative_confidence_penalty": {
           "type": "number",
@@ -95,12 +95,6 @@
             "high": { "type": "number", "minimum": 0, "maximum": 1 },
             "medium": { "type": "number", "minimum": 0, "maximum": 1 }
           }
-        },
-        "borderline_margin": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 20,
-          "description": "Distance (in points) to a grade boundary under which the public wording adds 'close to X'."
         },
         "provisional": { "type": "boolean" }
       }
@@ -132,6 +126,23 @@
         {
           "if": { "required": ["constraints"] },
           "then": { "required": ["calibration_note"] }
+        },
+        {
+          "if": { "properties": { "block": { "const": "base" } } },
+          "then": {
+            "properties": { "nature": { "const": "public_fact" } },
+            "$comment": "Invariant (methodology-lead review 2026-07-05): a base indicator is endured context and can NEVER rest on operator declarations — otherwise the renormalize-on-missing rule would become a loophole in the transparency floor."
+          }
+        },
+        {
+          "if": {
+            "properties": { "constraints": { "contains": { "const": "vulnerability_cannot_improve_score" } } },
+            "required": ["constraints"]
+          },
+          "then": {
+            "required": ["vulnerability_order"],
+            "$comment": "The ethical lock is executable, not declared: it needs the vulnerability ordering to enforce signed monotonicity."
+          }
         }
       ],
       "properties": {
@@ -170,6 +181,12 @@
             "enum": ["vulnerability_cannot_improve_score"],
             "$comment": "Closed list on purpose: an unknown constraint must fail validation, not silently no-op. Adding one = schema change = conscious act. vulnerability_cannot_improve_score = ethical lock (framing note section 9): retrospective calibration must never learn 'fragile municipality = better grade'."
           }
+        },
+        "vulnerability_order": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "type": "string" },
+          "description": "Category names ordered from least to most vulnerable. Gate 3 enforces non-increasing scores along this order; a corpus property test enforces d(site_score)/d(vulnerability) <= 0."
         },
         "sources": {
           "type": "array",

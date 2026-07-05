@@ -2,6 +2,16 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0-draft (d) — 2026-07-05 — methodology-lead review verdicts (COWORK)
+
+- **Points 1-3 validated as-is** (base/pp transparency-floor asymmetry, pillar-weight renormalization, provisional parameters). Noted: the declarative cap and the confidence penalty are NOT a double count — the cap acts on the substantive score, the penalty on the confidence: the two axes of the dual display.
+- **New invariant (schema-enforced)**: a `base` indicator can never be declarative (`block: base` ⇒ `nature: public_fact`) — otherwise the renormalize-on-missing rule would become a loophole in the transparency floor.
+- **`close_to` removed** (was: asymmetric "close to better grade" gloss). Systematically flattering the operator dents perceived independence; the one-decimal published score already shows boundary proximity. The letter and the number, no editorial gloss. Parameter `borderline_margin` dropped.
+- **`insufficient_data` cascades to pillar sub-scores**: a pillar below the coverage floor is never given a punitive letter drawn from unknowns (displaying "local impact: E" while saying "not enough data to grade the operator" was contradictory and attackable). Parameter renamed `min_coverage_project_process` → `min_coverage` (applies to the global project/process grade and to every pillar display sub-score; each graded pillar now publishes its coverage).
+- **Ethical lock made executable**: constrained indicators declare a `vulnerability_order` (least → most vulnerable); gate 3 rejects any grid where a more vulnerable category scores higher, and a corpus property test enforces d(site_score)/d(vulnerability) ≤ 0 (same pattern as the transparency floor). L1: `["strong_fit", "neutral", "sensitive"]`.
+- Confidence raw score clamped at 0 (defensive).
+- Signatory: methodology-lead review (COWORK) relayed by Franck Bardol, implemented in working session (Claude Code).
+
 ## 0.1.0-draft (c) — 2026-07-05 — scoring parameters + engine semantics
 
 - New PROVISIONAL parameters (engine bring-up, phase 1b): `declarative_confidence_penalty` 0.5, `confidence_thresholds` {high 0.75, medium 0.45}, `borderline_margin` 3 points.

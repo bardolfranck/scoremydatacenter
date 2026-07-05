@@ -69,12 +69,31 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     for ind in indicators:
         if ind["pillar"] not in pillar_ids:
             problems.append(f"GATE 3: indicator {ind['id']} references unknown pillar {ind['pillar']}")
-        if ind.get("constraints") and ind["calibration_status"] == "calibrated":
-            problems.append(
-                f"GATE 3: indicator {ind['id']} carries constraints {ind['constraints']} but claims "
-                "'calibrated' — constraints are enforced at calibration (plan phase 5); keep it provisional "
-                "until the enforcement check is implemented"
-            )
+        if "vulnerability_cannot_improve_score" in ind.get("constraints", []):
+            # Ethical lock, executable (methodology-lead rule 2026-07-05): scores must be
+            # non-increasing along the declared vulnerability order — vulnerability may
+            # lower a score or dent confidence, never raise it. A corpus property test
+            # (test_ethical_constraints.py) additionally checks d(site_score)/d(vulnerability) <= 0.
+            order = ind.get("vulnerability_order", [])
+            categories = ind.get("normalization", {}).get("categories")
+            if categories is None:
+                problems.append(
+                    f"GATE 3: indicator {ind['id']}: vulnerability_cannot_improve_score requires a "
+                    "categorical normalization"
+                )
+            elif sorted(order) != sorted(categories):
+                problems.append(
+                    f"GATE 3: indicator {ind['id']}: vulnerability_order {order} must cover exactly "
+                    f"the normalization categories {sorted(categories)}"
+                )
+            else:
+                scores = [categories[c] for c in order]
+                if any(a < b for a, b in zip(scores, scores[1:])):
+                    problems.append(
+                        f"GATE 3: indicator {ind['id']}: ethical lock violated — scores along the "
+                        f"vulnerability order {order} are {scores}, but a more vulnerable profile can "
+                        "never score higher (vulnerability_cannot_improve_score, framing note section 9)"
+                    )
     declarative_ids = {i["id"] for i in indicators if i["nature"] == "declarative"}
 
     for path in datacenter_paths(data_dir):

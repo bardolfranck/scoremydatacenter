@@ -54,16 +54,26 @@ def test_gate3_broken_weights(data_copy):
     assert any("GATE 3" in p and "sum" in p for p in run_gates(root, TODAY))
 
 
-def test_gate3_constrained_indicator_cannot_claim_calibrated(data_copy):
+def test_gate3_ethical_lock_rejects_vulnerability_scoring_higher(data_copy):
     root, edit = data_copy
 
-    def calibrate_l1(m):
+    def reward_vulnerability(m):
         l1 = next(i for i in m["indicators"] if i["id"] == "L1")
-        l1["calibration_status"] = "calibrated"
-        l1["direction"] = "encoded_in_scoring"  # bypass the schema's non_monotonic rule on purpose
+        l1["normalization"]["categories"]["sensitive"] = 95  # fragile municipality scores best
 
-    edit(METH, calibrate_l1)
-    assert any("GATE 3" in p and "constraints" in p for p in run_gates(root, TODAY))
+    edit(METH, reward_vulnerability)
+    assert any("GATE 3" in p and "ethical lock" in p for p in run_gates(root, TODAY))
+
+
+def test_gate3_vulnerability_order_must_cover_categories(data_copy):
+    root, edit = data_copy
+
+    def broken_order(m):
+        l1 = next(i for i in m["indicators"] if i["id"] == "L1")
+        l1["vulnerability_order"] = ["strong_fit", "sensitive"]
+
+    edit(METH, broken_order)
+    assert any("GATE 3" in p and "vulnerability_order" in p for p in run_gates(root, TODAY))
 
 
 def test_gate4_unpublished_dc_in_public_repo(data_copy):

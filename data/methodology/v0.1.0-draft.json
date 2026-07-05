@@ -617,7 +617,12 @@
       "constraints": [
         "vulnerability_cannot_improve_score"
       ],
-      "calibration_note": "Partly an ETHICAL choice, not an empirical one. If phase-5 retrospective calibration shows that fragile municipalities 'accept more easily', the model must NOT learn vulnerability = better grade — that is the path-of-least-resistance the ethical lock (framing note section 9) forbids. Retro-validation does not settle this alone: the vulnerability_cannot_improve_score constraint caps it. Category frame itself (strong_fit/neutral/sensitive) to be re-examined with the methodology lead."
+      "calibration_note": "Partly an ETHICAL choice, not an empirical one. If phase-5 retrospective calibration shows that fragile municipalities 'accept more easily', the model must NOT learn vulnerability = better grade — that is the path-of-least-resistance the ethical lock (framing note section 9) forbids. Retro-validation does not settle this alone: the vulnerability_cannot_improve_score constraint caps it. Category frame itself (strong_fit/neutral/sensitive) to be re-examined with the methodology lead.",
+      "vulnerability_order": [
+        "strong_fit",
+        "neutral",
+        "sensitive"
+      ]
     },
     {
       "id": "L2",
@@ -949,13 +954,12 @@
   ],
   "parameters": {
     "declarative_score_cap": 60,
-    "min_coverage_project_process": 0.4,
+    "min_coverage": 0.4,
     "declarative_confidence_penalty": 0.5,
     "confidence_thresholds": {
       "high": 0.75,
       "medium": 0.45
     },
-    "borderline_margin": 3,
     "provisional": true
   }
 }

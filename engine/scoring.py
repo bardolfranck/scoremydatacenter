@@ -36,15 +36,13 @@ def _grade(score: float, methodology: dict) -> dict:
     # Graded on the ROUNDED score: the published number and the published letter
     # must never contradict each other (a public "35.0" graded E while the grid
     # says D starts at 35 would be a free shot for any counter-expert).
+    # No editorial gloss ("close to X"): the one-decimal score already shows
+    # boundary proximity, and any asymmetric wording would dent independence
+    # (methodology-lead review 2026-07-05).
     rounded = round(score, 1)
     thresholds = sorted(methodology["grade_thresholds"], key=lambda t: t["min"], reverse=True)
-    margin = methodology["parameters"]["borderline_margin"]
     grade = next(t["grade"] for t in thresholds if rounded >= t["min"])
-    result = {"grade": grade, "score": rounded}
-    better = [t for t in thresholds if t["min"] > rounded]
-    if better and (better[-1]["min"] - rounded) <= margin:
-        result["close_to"] = better[-1]["grade"]
-    return result
+    return {"grade": grade, "score": rounded}
 
 
 def _aggregate(per_indicator: dict[str, float | None], definitions: list[dict],
@@ -87,7 +85,7 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
             declarative += importance
     missing_share = missing / total
     declarative_share = declarative / total
-    raw = 1.0 - missing_share - params["declarative_confidence_penalty"] * declarative_share
+    raw = max(0.0, 1.0 - missing_share - params["declarative_confidence_penalty"] * declarative_share)
     levels = params["confidence_thresholds"]
     level = "high" if raw >= levels["high"] else "medium" if raw >= levels["medium"] else "low"
     return {
@@ -121,7 +119,7 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
         for d in pp_defs if per_indicator[d["id"]] is not None
     )
     coverage = pp_filled_w / pp_total_w
-    if coverage < params["min_coverage_project_process"]:
+    if coverage < params["min_coverage"]:
         project_process = {"grade": INSUFFICIENT_DATA, "coverage": round(coverage, 3)}
     else:
         pp_score = _aggregate(per_indicator, pp_defs, pillar_weights, missing_counts_as_zero=True)
@@ -134,17 +132,22 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
                   else per_indicator[d["id"]])
         for d in definitions
     }
+    # The insufficient_data escape CASCADES to sub-scores (methodology-lead
+    # review 2026-07-05): a pillar below the coverage floor is never given a
+    # punitive letter drawn from unknowns — saying "not enough data to grade
+    # the operator" while displaying "local impact: E" would be contradictory
+    # and attackable.
     pillar_details = {}
     for pillar in pillar_weights:
         defs = [d for d in definitions if d["pillar"] == pillar]
-        if not any(per_indicator[d["id"]] is not None for d in defs):
-            # Nothing known at all about this pillar: we do not grade pure absence
-            # (the opacity-counts-as-zero rule needs at least one disclosed datum).
-            pillar_details[pillar] = {"grade": INSUFFICIENT_DATA}
+        total_w = sum(d["weight_in_pillar"] for d in defs)
+        filled_w = sum(d["weight_in_pillar"] for d in defs if per_indicator[d["id"]] is not None)
+        pillar_coverage = filled_w / total_w
+        if pillar_coverage < params["min_coverage"]:
+            pillar_details[pillar] = {"grade": INSUFFICIENT_DATA, "coverage": round(pillar_coverage, 3)}
             continue
         combined = _aggregate(with_pp_zeroed, defs, {pillar: 1.0}, missing_counts_as_zero=False)
-        if combined is not None:
-            pillar_details[pillar] = _grade(combined, methodology)
+        pillar_details[pillar] = _grade(combined, methodology) | {"coverage": round(pillar_coverage, 3)}
 
     return {
         "grades": {"site": site, "project_process": project_process},

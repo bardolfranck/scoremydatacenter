@@ -7,9 +7,11 @@ from engine.scoring import score_datacenter
 def test_alpha_dual_grades(methodology, alpha):
     r = score_datacenter(alpha, methodology)
     site = r["grades"]["site"]
-    assert (site["grade"], site["score"], site.get("close_to")) == ("B", 79.5, "A")
+    # no editorial gloss: the letter and the one-decimal score, nothing else
+    assert (site["grade"], site["score"]) == ("B", 79.5)
+    assert "close_to" not in site
     pp = r["grades"]["project_process"]
-    assert (pp["grade"], pp["score"], pp.get("close_to"), pp["coverage"]) == ("C", 62.3, "B", 1.0)
+    assert (pp["grade"], pp["score"], pp["coverage"]) == ("C", 62.3, 1.0)
 
 
 def test_alpha_confidence_two_causes(methodology, alpha):
@@ -38,10 +40,13 @@ def test_beta_confidence_missing_cause(methodology, beta):
     assert c["causes"]["unverifiable_declarative"] == 0.0
 
 
-def test_beta_unknown_pillar_is_not_graded(methodology, beta):
+def test_insufficient_data_cascades_to_pillar_subscores(methodology, beta):
     pillars = score_datacenter(beta, methodology)["pillars"]
-    assert pillars["transparency_governance"] == {"grade": "insufficient_data"}
-    assert pillars["energy"]["grade"] == "E"  # known and bad is still graded
+    # a pillar below the coverage floor is never given a punitive letter drawn from unknowns
+    assert pillars["transparency_governance"] == {"grade": "insufficient_data", "coverage": 0.0}
+    assert pillars["energy"]["grade"] == "E"  # known and bad is still graded (coverage 0.833)
+    assert pillars["energy"]["coverage"] == 0.833
+    assert pillars["local_impact"]["coverage"] == 0.4  # exactly at the floor: graded
 
 
 def test_alpha_pillar_subscores(methodology, alpha):
