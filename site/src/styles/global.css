@@ -68,7 +68,17 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 
 .brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; }
 .brand img { width: 38px; height: 38px; border-radius: 8px; }
-.brand span { font-size: 1rem; }
+.brand > span:not(.brand-tagline) { font-size: 1rem; }
+.brand-tagline {
+  margin-left: 10px;
+  padding-left: 14px;
+  border-left: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 
 .main-nav { display: flex; align-items: center; gap: clamp(14px, 2vw, 26px); color: var(--ink-soft); font-size: 0.93rem; font-weight: 650; }
 .main-nav a:hover { color: var(--accent); }
@@ -314,6 +324,7 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 
 @media (max-width: 640px) {
   body { font-size: 15px; }
+  .brand-tagline { display: none; }
   .pillar-row { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
   .pillar-cell { padding: 8px 2px; }
   .pillar-cell dt { font-size: 0.56rem; }

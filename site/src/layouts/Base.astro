@@ -8,11 +8,12 @@ interface Props {
   lang: "en" | "fr";
   title: string;
   description: string;
+  tagline: string;
   altHref: string; // path of the same page in the other language
   altLabel: string;
   nav: { href: string; label: string }[];
 }
-const { lang, title, description, altHref, altLabel, nav } = Astro.props;
+const { lang, title, description, tagline, altHref, altLabel, nav } = Astro.props;
 const altLang = lang === "en" ? "fr" : "en";
 const home = lang === "en" ? "/" : "/fr/";
 ---
@@ -33,6 +34,7 @@ const home = lang === "en" ? "/" : "/fr/";
       <a class="brand" href={home} aria-label="ScoreMyDataCenter home">
         <img src="/assets/smdc-icon.svg" alt="" width="38" height="38" />
         <span>ScoreMyDataCenter</span>
+        <span class="brand-tagline">{tagline}</span>
       </a>
       <nav class="main-nav" aria-label="Site sections">
         {nav.map((item) => <a href={item.href}>{item.label}</a>)}
