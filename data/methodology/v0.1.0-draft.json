@@ -3,32 +3,84 @@
   "status": "draft",
   "published_at": null,
   "pillars": [
-    { "id": "energy", "label": { "fr": "Énergie", "en": "Energy" }, "weight": 0.25 },
-    { "id": "water", "label": { "fr": "Eau", "en": "Water" }, "weight": 0.20 },
-    { "id": "land_biodiversity", "label": { "fr": "Foncier & biodiversité", "en": "Land & biodiversity" }, "weight": 0.20 },
-    { "id": "local_impact", "label": { "fr": "Impact local", "en": "Local impact" }, "weight": 0.20 },
-    { "id": "transparency_governance", "label": { "fr": "Transparence & gouvernance", "en": "Transparency & governance" }, "weight": 0.15 }
+    {
+      "id": "energy",
+      "label": {
+        "fr": "Énergie",
+        "en": "Energy"
+      },
+      "weight": 0.25
+    },
+    {
+      "id": "water",
+      "label": {
+        "fr": "Eau",
+        "en": "Water"
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "land_biodiversity",
+      "label": {
+        "fr": "Foncier & biodiversité",
+        "en": "Land & biodiversity"
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "local_impact",
+      "label": {
+        "fr": "Impact local",
+        "en": "Local impact"
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "transparency_governance",
+      "label": {
+        "fr": "Transparence & gouvernance",
+        "en": "Transparency & governance"
+      },
+      "weight": 0.15
+    }
   ],
   "indicators": [
     {
       "id": "E1",
-      "label": { "fr": "Intensité carbone du réseau local", "en": "Local grid carbon intensity" },
+      "label": {
+        "fr": "Intensité carbone du réseau local",
+        "en": "Local grid carbon intensity"
+      },
       "pillar": "energy",
-      "weight_in_pillar": 0.30,
+      "weight_in_pillar": 0.3,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": "gCO2e/kWh",
       "direction": "lower_is_better",
       "mvp": true,
-      "sources": ["RTE eCO2mix"],
+      "sources": [
+        "RTE eCO2mix"
+      ],
       "normalization": {
         "type": "thresholds",
         "thresholds": [
-          { "up_to": 50, "score": 100 },
-          { "up_to": 150, "score": 60 },
-          { "up_to": 400, "score": 30 },
-          { "above": true, "score": 0 }
+          {
+            "up_to": 50,
+            "score": 100
+          },
+          {
+            "up_to": 150,
+            "score": 60
+          },
+          {
+            "up_to": 400,
+            "score": 30
+          },
+          {
+            "above": true,
+            "score": 0
+          }
         ]
       },
       "threshold_basis": {
@@ -36,55 +88,79 @@
         "reference": "ADEME Base Empreinte — grid emission factors",
         "url": "https://base-empreinte.ademe.fr/"
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "E2",
-      "label": { "fr": "Capacité / proximité de raccordement", "en": "Grid connection capacity / proximity" },
+      "label": {
+        "fr": "Capacité / proximité de raccordement",
+        "en": "Grid connection capacity / proximity"
+      },
       "pillar": "energy",
       "weight_in_pillar": 0.25,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["RTE Caparéseau", "S3REnR"],
+      "sources": [
+        "RTE Caparéseau",
+        "S3REnR"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "ample": 100, "adequate": 70, "constrained": 35, "saturated": 0 }
+        "categories": {
+          "ample": 100,
+          "adequate": 70,
+          "constrained": 35,
+          "saturated": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "E3",
-      "label": { "fr": "Congestion / file d'attente réseau", "en": "Grid congestion / connection queue" },
+      "label": {
+        "fr": "Congestion / file d'attente réseau",
+        "en": "Grid congestion / connection queue"
+      },
       "pillar": "energy",
-      "weight_in_pillar": 0.20,
+      "weight_in_pillar": 0.2,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["RTE / ODRÉ"],
+      "sources": [
+        "RTE / ODRÉ"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "low": 100, "moderate": 65, "high": 30, "critical": 0 }
+        "categories": {
+          "low": 100,
+          "moderate": 65,
+          "high": 30,
+          "critical": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "E4",
-      "label": { "fr": "PUE (efficacité énergétique annoncée)", "en": "PUE (announced energy efficiency)" },
+      "label": {
+        "fr": "PUE (efficacité énergétique annoncée)",
+        "en": "PUE (announced energy efficiency)"
+      },
       "pillar": "energy",
       "weight_in_pillar": 0.15,
       "block": "project",
@@ -93,228 +169,350 @@
       "unit": "PUE",
       "direction": "lower_is_better",
       "mvp": true,
-      "sources": ["ICPE filing", "press"],
+      "sources": [
+        "ICPE filing",
+        "press"
+      ],
       "normalization": {
         "type": "thresholds",
         "thresholds": [
-          { "up_to": 1.2, "score": 100 },
-          { "up_to": 1.4, "score": 70 },
-          { "up_to": 1.6, "score": 40 },
-          { "above": true, "score": 10 }
+          {
+            "up_to": 1.2,
+            "score": 100
+          },
+          {
+            "up_to": 1.4,
+            "score": 70
+          },
+          {
+            "up_to": 1.6,
+            "score": 40
+          },
+          {
+            "above": true,
+            "score": 10
+          }
         ]
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — industry ranges (Uptime Institute surveys) pending a citable reference; to be calibrated in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "E5",
-      "label": { "fr": "Approvisionnement réel (PPA, % EnR)", "en": "Actual supply (PPA, % renewables)" },
+      "label": {
+        "fr": "Approvisionnement réel (PPA, % EnR)",
+        "en": "Actual supply (PPA, % renewables)"
+      },
       "pillar": "energy",
-      "weight_in_pillar": 0.10,
+      "weight_in_pillar": 0.1,
       "block": "project",
       "tier": 3,
       "nature": "declarative",
       "unit": "% renewable",
       "direction": "higher_is_better",
       "mvp": false,
-      "sources": ["operator"],
-      "normalization": { "type": "bounded_linear", "min": 0, "max": 100 },
+      "sources": [
+        "operator"
+      ],
+      "normalization": {
+        "type": "bounded_linear",
+        "min": 0,
+        "max": 100
+      },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — out of MVP scope (tier 3); linear 0-100% placeholder."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "W1",
-      "label": { "fr": "Stress hydrique de la zone", "en": "Local water stress" },
+      "label": {
+        "fr": "Stress hydrique de la zone",
+        "en": "Local water stress"
+      },
       "pillar": "water",
-      "weight_in_pillar": 0.30,
+      "weight_in_pillar": 0.3,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["ZRE", "Propluvia", "Hub'Eau"],
+      "sources": [
+        "ZRE",
+        "Propluvia",
+        "Hub'Eau"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "no_stress": 100, "moderate": 60, "high": 30, "zre_or_crisis": 0 }
+        "categories": {
+          "no_stress": 100,
+          "moderate": 60,
+          "high": 30,
+          "zre_or_crisis": 0
+        }
       },
       "threshold_basis": {
         "type": "reference",
         "reference": "ZRE zoning + Propluvia restriction levels (French regulatory framework)",
         "url": "https://www.eaufrance.fr/"
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "W2",
-      "label": { "fr": "État de la masse d'eau", "en": "Water body status" },
+      "label": {
+        "fr": "État de la masse d'eau",
+        "en": "Water body status"
+      },
       "pillar": "water",
-      "weight_in_pillar": 0.20,
+      "weight_in_pillar": 0.2,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["Hub'Eau"],
+      "sources": [
+        "Hub'Eau"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "very_good": 100, "good": 80, "moderate": 50, "poor": 25, "bad": 0 }
+        "categories": {
+          "very_good": 100,
+          "good": 80,
+          "moderate": 50,
+          "poor": 25,
+          "bad": 0
+        }
       },
       "threshold_basis": {
         "type": "reference",
         "reference": "EU Water Framework Directive ecological status classes",
         "url": "https://environment.ec.europa.eu/topics/water/water-framework-directive_en"
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "W3",
-      "label": { "fr": "Pression de prélèvement du bassin", "en": "Basin withdrawal pressure" },
+      "label": {
+        "fr": "Pression de prélèvement du bassin",
+        "en": "Basin withdrawal pressure"
+      },
       "pillar": "water",
-      "weight_in_pillar": 0.20,
+      "weight_in_pillar": 0.2,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["BNPE", "Hub'Eau"],
+      "sources": [
+        "BNPE",
+        "Hub'Eau"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "low": 100, "moderate": 65, "high": 30, "very_high": 0 }
+        "categories": {
+          "low": 100,
+          "moderate": 65,
+          "high": 30,
+          "very_high": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "W4",
-      "label": { "fr": "Refroidissement + volume d'eau annoncé", "en": "Cooling technology + announced water volume" },
+      "label": {
+        "fr": "Refroidissement + volume d'eau annoncé",
+        "en": "Cooling technology + announced water volume"
+      },
       "pillar": "water",
-      "weight_in_pillar": 0.20,
+      "weight_in_pillar": 0.2,
       "block": "project",
       "tier": 2,
       "nature": "declarative",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["ICPE filing"],
+      "sources": [
+        "ICPE filing"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "closed_loop_dry": 100, "hybrid_adiabatic": 60, "evaporative_open": 20, "unknown": 0 }
+        "categories": {
+          "closed_loop_dry": 100,
+          "hybrid_adiabatic": 60,
+          "evaporative_open": 20,
+          "unknown": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — cooling-technology ordering is robust, exact scores to be calibrated in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "W5",
-      "label": { "fr": "WUE mesuré / source d'eau réelle", "en": "Measured WUE / actual water source" },
+      "label": {
+        "fr": "WUE mesuré / source d'eau réelle",
+        "en": "Measured WUE / actual water source"
+      },
       "pillar": "water",
-      "weight_in_pillar": 0.10,
+      "weight_in_pillar": 0.1,
       "block": "project",
       "tier": 3,
       "nature": "declarative",
       "unit": "L/kWh",
       "direction": "lower_is_better",
       "mvp": false,
-      "sources": ["operator"],
+      "sources": [
+        "operator"
+      ],
       "normalization": {
         "type": "thresholds",
         "thresholds": [
-          { "up_to": 0.2, "score": 100 },
-          { "up_to": 0.5, "score": 70 },
-          { "up_to": 1.0, "score": 40 },
-          { "above": true, "score": 10 }
+          {
+            "up_to": 0.2,
+            "score": 100
+          },
+          {
+            "up_to": 0.5,
+            "score": 70
+          },
+          {
+            "up_to": 1.0,
+            "score": 40
+          },
+          {
+            "above": true,
+            "score": 10
+          }
         ]
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — out of MVP scope (tier 3)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "F1",
-      "label": { "fr": "Recouvrement / distance zones protégées", "en": "Overlap / distance to protected areas" },
+      "label": {
+        "fr": "Recouvrement / distance zones protégées",
+        "en": "Overlap / distance to protected areas"
+      },
       "pillar": "land_biodiversity",
-      "weight_in_pillar": 0.30,
+      "weight_in_pillar": 0.3,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["INPN", "Natura 2000", "ZNIEFF"],
+      "sources": [
+        "INPN",
+        "Natura 2000",
+        "ZNIEFF"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "overlap": 0, "adjacent_under_1km": 30, "near_1_to_5km": 70, "distant_over_5km": 100 }
+        "categories": {
+          "overlap": 0,
+          "adjacent_under_1km": 30,
+          "near_1_to_5km": 70,
+          "distant_over_5km": 100
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — distance bands to be anchored to a conservation-buffer reference in phase 5 (pre-mortem R1: threshold traceability)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "F2",
-      "label": { "fr": "Statut du sol (artificialisé / ENAF / agricole)", "en": "Soil status (artificialized / natural / agricultural)" },
+      "label": {
+        "fr": "Statut du sol (artificialisé / ENAF / agricole)",
+        "en": "Soil status (artificialized / natural / agricultural)"
+      },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.25,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["Cerema", "RPG"],
+      "sources": [
+        "Cerema",
+        "RPG"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "artificialized": 100, "transitional": 60, "agricultural": 25, "natural_or_enaf": 0 }
+        "categories": {
+          "artificialized": 100,
+          "transitional": 60,
+          "agricultural": 25,
+          "natural_or_enaf": 0
+        }
       },
       "threshold_basis": {
         "type": "reference",
         "reference": "Cerema artificialization inventory + ZAN framework categories",
         "url": "https://artificialisation.developpement-durable.gouv.fr/"
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "F3",
-      "label": { "fr": "Continuités écologiques (TVB)", "en": "Ecological corridors (TVB)" },
+      "label": {
+        "fr": "Continuités écologiques (TVB)",
+        "en": "Ecological corridors (TVB)"
+      },
       "pillar": "land_biodiversity",
-      "weight_in_pillar": 0.20,
+      "weight_in_pillar": 0.2,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["SRADDET", "INPN"],
+      "sources": [
+        "SRADDET",
+        "INPN"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "no_interference": 100, "marginal": 70, "corridor_nearby": 40, "corridor_crossed": 0 }
+        "categories": {
+          "no_interference": 100,
+          "marginal": 70,
+          "corridor_nearby": 40,
+          "corridor_crossed": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "F4",
-      "label": { "fr": "Surface au sol du projet", "en": "Project ground footprint" },
+      "label": {
+        "fr": "Surface au sol du projet",
+        "en": "Project ground footprint"
+      },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.15,
       "block": "project",
@@ -323,69 +521,110 @@
       "unit": "hectares",
       "direction": "lower_is_better",
       "mvp": true,
-      "sources": ["ICPE filing", "building permit"],
+      "sources": [
+        "ICPE filing",
+        "building permit"
+      ],
       "normalization": {
         "type": "thresholds",
         "thresholds": [
-          { "up_to": 5, "score": 100 },
-          { "up_to": 20, "score": 65 },
-          { "up_to": 50, "score": 30 },
-          { "above": true, "score": 10 }
+          {
+            "up_to": 5,
+            "score": 100
+          },
+          {
+            "up_to": 20,
+            "score": 65
+          },
+          {
+            "up_to": 50,
+            "score": 30
+          },
+          {
+            "above": true,
+            "score": 10
+          }
         ]
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "F5",
-      "label": { "fr": "Mesures ERC / récupération de chaleur", "en": "Avoid-reduce-offset measures / heat recovery" },
+      "label": {
+        "fr": "Mesures ERC / récupération de chaleur",
+        "en": "Avoid-reduce-offset measures / heat recovery"
+      },
       "pillar": "land_biodiversity",
-      "weight_in_pillar": 0.10,
+      "weight_in_pillar": 0.1,
       "block": "project",
       "tier": 3,
       "nature": "declarative",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": false,
-      "sources": ["operator", "permitting file"],
+      "sources": [
+        "operator",
+        "permitting file"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "heat_recovery_and_erc": 100, "partial": 50, "none": 0 }
+        "categories": {
+          "heat_recovery_and_erc": 100,
+          "partial": 50,
+          "none": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — out of MVP scope (tier 3)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "L1",
-      "label": { "fr": "Profil socio-économique de la commune", "en": "Municipality socio-economic profile" },
+      "label": {
+        "fr": "Profil socio-économique de la commune",
+        "en": "Municipality socio-economic profile"
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "non_monotonic",
       "mvp": true,
-      "sources": ["INSEE"],
+      "sources": [
+        "INSEE"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "strong_fit": 90, "neutral": 60, "sensitive": 30 }
+        "categories": {
+          "strong_fit": 90,
+          "neutral": 60,
+          "sensitive": 30
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — composite INSEE profile to be specified with the methodology lead in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional",
+      "constraints": [
+        "vulnerability_cannot_improve_score"
+      ],
+      "calibration_note": "Partly an ETHICAL choice, not an empirical one. If phase-5 retrospective calibration shows that fragile municipalities 'accept more easily', the model must NOT learn vulnerability = better grade — that is the path-of-least-resistance the ethical lock (framing note section 9) forbids. Retro-validation does not settle this alone: the vulnerability_cannot_improve_score constraint caps it. Category frame itself (strong_fit/neutral/sensitive) to be re-examined with the methodology lead."
     },
     {
       "id": "L2",
-      "label": { "fr": "Capacité d'absorption (taille du projet vs commune)", "en": "Absorption capacity (project size vs municipality)" },
+      "label": {
+        "fr": "Capacité d'absorption (taille du projet vs commune)",
+        "en": "Absorption capacity (project size vs municipality)"
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "base",
@@ -394,47 +633,73 @@
       "unit": "MW per 1000 inhabitants",
       "direction": "lower_is_better",
       "mvp": true,
-      "sources": ["INSEE"],
+      "sources": [
+        "INSEE"
+      ],
       "normalization": {
         "type": "thresholds",
         "thresholds": [
-          { "up_to": 1, "score": 100 },
-          { "up_to": 10, "score": 60 },
-          { "up_to": 100, "score": 30 },
-          { "above": true, "score": 0 }
+          {
+            "up_to": 1,
+            "score": 100
+          },
+          {
+            "up_to": 10,
+            "score": 60
+          },
+          {
+            "up_to": 100,
+            "score": 30
+          },
+          {
+            "above": true,
+            "score": 0
+          }
         ]
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "L3",
-      "label": { "fr": "Aléa technologique / Seveso environnant", "en": "Technological hazard / nearby Seveso sites" },
+      "label": {
+        "fr": "Aléa technologique / Seveso environnant",
+        "en": "Technological hazard / nearby Seveso sites"
+      },
       "pillar": "local_impact",
-      "weight_in_pillar": 0.10,
+      "weight_in_pillar": 0.1,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["Géorisques"],
+      "sources": [
+        "Géorisques"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "none_within_5km": 100, "seveso_low_within_5km": 60, "seveso_high_within_2km": 20 }
+        "categories": {
+          "none_within_5km": 100,
+          "seveso_low_within_5km": 60,
+          "seveso_high_within_2km": 20
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — distance bands to be anchored to Seveso safety-perimeter practice in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "L4",
-      "label": { "fr": "Emplois annoncés", "en": "Announced jobs" },
+      "label": {
+        "fr": "Emplois annoncés",
+        "en": "Announced jobs"
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "project",
@@ -443,141 +708,244 @@
       "unit": "permanent jobs per 100 MW",
       "direction": "higher_is_better",
       "mvp": true,
-      "sources": ["press releases", "press"],
-      "normalization": { "type": "bounded_linear", "min": 0, "max": 50 },
+      "sources": [
+        "press releases",
+        "press"
+      ],
+      "normalization": {
+        "type": "bounded_linear",
+        "min": 0,
+        "max": 50
+      },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "L5",
-      "label": { "fr": "Retombées fiscales annoncées", "en": "Announced tax revenue" },
+      "label": {
+        "fr": "Retombées fiscales annoncées",
+        "en": "Announced tax revenue"
+      },
       "pillar": "local_impact",
-      "weight_in_pillar": 0.10,
+      "weight_in_pillar": 0.1,
       "block": "project",
       "tier": 2,
       "nature": "declarative",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["council deliberations", "press"],
+      "sources": [
+        "council deliberations",
+        "press"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "documented_significant": 90, "announced_unquantified": 50, "none": 20 }
+        "categories": {
+          "documented_significant": 90,
+          "announced_unquantified": 50,
+          "none": 20
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "L6",
-      "label": { "fr": "Niveau de contestation observé", "en": "Observed level of opposition" },
+      "label": {
+        "fr": "Niveau de contestation observé",
+        "en": "Observed level of opposition"
+      },
       "pillar": "local_impact",
-      "weight_in_pillar": 0.20,
+      "weight_in_pillar": 0.2,
       "block": "base",
       "tier": 2,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["press", "petitions", "local groups"],
+      "sources": [
+        "press",
+        "petitions",
+        "local groups"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "none": 100, "local_isolated": 70, "organized": 35, "national": 0 }
+        "categories": {
+          "none": 100,
+          "local_isolated": 70,
+          "organized": 35,
+          "national": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — observed fact (fait accompli), scored directly; bands to be calibrated in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "L7",
-      "label": { "fr": "Position des élus (faits votés uniquement)", "en": "Elected officials' position (voted facts only)" },
+      "label": {
+        "fr": "Position des élus (faits votés uniquement)",
+        "en": "Elected officials' position (voted facts only)"
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "base",
       "tier": 2,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["council deliberations", "recorded votes"],
+      "sources": [
+        "council deliberations",
+        "recorded votes"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "favorable": 90, "none_recorded": 60, "mixed": 45, "unfavorable": 15 }
+        "categories": {
+          "favorable": 90,
+          "none_recorded": 60,
+          "mixed": 45,
+          "unfavorable": 15
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — facts only, no intent, no named individuals (GDPR, pre-mortem R2); scores to be calibrated in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     },
     {
       "id": "T1",
-      "label": { "fr": "Concertation / consentement / gouvernance (proxies procéduraux)", "en": "Consultation / consent / governance (procedural proxies)" },
+      "label": {
+        "fr": "Concertation / consentement / gouvernance (proxies procéduraux)",
+        "en": "Consultation / consent / governance (procedural proxies)"
+      },
       "pillar": "transparency_governance",
-      "weight_in_pillar": 0.60,
+      "weight_in_pillar": 0.6,
       "block": "process",
       "tier": 2,
       "nature": "factualized_judgment",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["public inquiry", "environmental authority opinion", "CNDP", "legal appeals", "council deliberations"],
+      "sources": [
+        "public inquiry",
+        "environmental authority opinion",
+        "CNDP",
+        "legal appeals",
+        "council deliberations"
+      ],
       "normalization": {
         "type": "proxy_rubric",
         "rubric": {
-          "public_inquiry_held": { "true": 25, "false": 0 },
-          "environmental_authority_opinion": { "favorable": 25, "favorable_with_reservations": 15, "none": 10, "unfavorable": 0 },
-          "cndp_referral": { "true": 15, "false": 5 },
-          "legal_appeals_count": { "0": 20, "1": 10, "2_or_more": 0 },
-          "council_deliberations": { "favorable": 15, "none_recorded": 8, "mixed": 5, "unfavorable": 0 }
+          "public_inquiry_held": {
+            "true": 25,
+            "false": 0
+          },
+          "environmental_authority_opinion": {
+            "favorable": 25,
+            "favorable_with_reservations": 15,
+            "none": 10,
+            "unfavorable": 0
+          },
+          "cndp_referral": {
+            "true": 15,
+            "false": 5
+          },
+          "legal_appeals_count": {
+            "0": 20,
+            "1": 10,
+            "2_or_more": 0
+          },
+          "council_deliberations": {
+            "favorable": 15,
+            "none_recorded": 8,
+            "mixed": 5,
+            "unfavorable": 0
+          }
         }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — never a verdict: opposable procedural proxies only (pre-mortem R3, relocated tier 3 -> 2). Point allocation to be calibrated in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional",
+      "calibration_note": "cndp_referral is a PROCESS signal, not a controversy flag: a real public debate = a governance lever properly used, scored neutral-to-positive, never a red flag. Rationale: CNDP referrals correlate with project size/controversy, and controversy is already captured by L6 — scoring CNDP negatively would double-count it. Phase-5 calibration must include a collinearity check between T1 proxies and L6. This is settled by definition and placement (transparency/process), not by tuning a number."
     },
     {
       "id": "T2",
-      "label": { "fr": "Transparence documentaire / disponibilité du dossier", "en": "Documentation transparency / file availability" },
+      "label": {
+        "fr": "Transparence documentaire / disponibilité du dossier",
+        "en": "Documentation transparency / file availability"
+      },
       "pillar": "transparency_governance",
-      "weight_in_pillar": 0.40,
+      "weight_in_pillar": 0.4,
       "block": "process",
       "tier": 2,
       "nature": "public_fact",
       "unit": null,
-      "direction": "not_applicable",
+      "direction": "encoded_in_scoring",
       "mvp": true,
-      "sources": ["registries", "official publication"],
+      "sources": [
+        "registries",
+        "official publication"
+      ],
       "normalization": {
         "type": "categorical",
-        "categories": { "full_dossier_online": 100, "partial": 65, "minimal": 30, "unavailable": 0 }
+        "categories": {
+          "full_dossier_online": 100,
+          "partial": 65,
+          "minimal": 30,
+          "unavailable": 0
+        }
       },
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — phrased as 'available documentation: weak/strong', never 'opaque operator' (pre-mortem R2); bands to be calibrated in phase 5."
       },
-      "provisional": true
+      "calibration_status": "provisional"
     }
   ],
   "confidence": {
-    "tier_weights": { "1": 1.0, "2": 0.6, "3": 0.3 },
-    "causes": ["unverifiable_declarative", "missing_data"]
+    "tier_weights": {
+      "1": 1.0,
+      "2": 0.6,
+      "3": 0.3
+    },
+    "causes": [
+      "unverifiable_declarative",
+      "missing_data"
+    ]
   },
   "grade_thresholds": [
-    { "min": 80, "grade": "A" },
-    { "min": 65, "grade": "B" },
-    { "min": 50, "grade": "C" },
-    { "min": 35, "grade": "D" },
-    { "min": 0, "grade": "E" }
+    {
+      "min": 80,
+      "grade": "A"
+    },
+    {
+      "min": 65,
+      "grade": "B"
+    },
+    {
+      "min": 50,
+      "grade": "C"
+    },
+    {
+      "min": 35,
+      "grade": "D"
+    },
+    {
+      "min": 0,
+      "grade": "E"
+    }
   ],
   "parameters": {
     "declarative_score_cap": 60,
