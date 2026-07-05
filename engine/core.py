@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Shared paths, loading and deterministic serialization.
 
 Everything the engine writes must be byte-for-byte reproducible from the

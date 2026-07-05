@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Transparency floor (pre-mortem R3, gate 6): disclosing a datum can NEVER
 beat hiding it. Property-tested by hiding every disclosed project/process
 indicator of every DC in the corpus and asserting nothing improves."""

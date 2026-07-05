@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Numbers asserted here were computed BY HAND from the draft methodology —
 they are an independent check of the engine, not a copy of its output."""
 

@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Build gates (ARCHITECTURE section 6.3) — every failure names its gate and its fix.
 
 Gate 1  JSON Schema validation of all data files.

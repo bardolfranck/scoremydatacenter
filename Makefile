@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install
+.PHONY: validate score rescore build test install headers headers-check
 
 install:
 	uv sync
@@ -18,5 +18,11 @@ rescore:
 build: score
 	npm run build --prefix site
 
-test:
+test: headers-check
 	uv run pytest -q
+
+headers:
+	uv run python scripts/check_headers.py --fix
+
+headers-check:
+	uv run python scripts/check_headers.py

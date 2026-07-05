@@ -50,5 +50,13 @@ Pre-launch scaffold (iter-0, phase 0). No real data center is scored yet; develo
 - Published data (`data/datacenters/`): [ODbL 1.0](data/LICENSE)
 - Methodology and editorial content (`data/methodology/`, site content): [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
-Founded by Franck Bardol · [scoremydatacenter.org](https://scoremydatacenter.org)
+## Author
+
+ScoreMyDataCenter is founded and maintained by **Franck Bardol**, working at the
+intersection of AI infrastructure, ethics, data analysis and public
+decision-making. The observatory is independent: scored entities never pay for
+their public grade. See [AUTHORS](AUTHORS), and cite the project via
+[CITATION.cff](CITATION.cff) (GitHub's "Cite this repository" button).
+
+[scoremydatacenter.org](https://scoremydatacenter.org)
 

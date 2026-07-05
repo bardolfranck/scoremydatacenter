@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Golden files: the artifacts generated from the committed data must be
 byte-identical to the committed snapshot. This is both the non-regression net
 (any scoring drift shows up as a reviewable diff) and the external

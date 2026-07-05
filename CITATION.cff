@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use ScoreMyDataCenter data, methodology or code, please cite it as below."
+title: "ScoreMyDataCenter"
+type: software
+authors:
+  - family-names: "Bardol"
+    given-names: "Franck"
+repository-code: "https://github.com/bardolfranck/scoremydatacenter"
+url: "https://scoremydatacenter.org"
+license: AGPL-3.0-or-later
+keywords:
+  - data centers
+  - social acceptability
+  - environmental scoring
+  - open data
+abstract: >-
+  Independent observatory scoring the social acceptability of data center
+  projects (public A-E grades, France first). Open methodology, open published
+  data, auditable scoring engine, public audit log — the paywall never falls
+  on the truth.

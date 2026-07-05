@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Indicator normalization: raw sourced value -> 0-100 sub-score.
 
 Implements the prudent-declarative rule: an 'announced' (unverified) value can
