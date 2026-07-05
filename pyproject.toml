@@ -1,0 +1,18 @@
+[project]
+name = "smdc-engine"
+version = "0.0.1"
+description = "ScoreMyDataCenter scoring engine — validation, normalization, dual grading, confidence, audit artifacts"
+requires-python = ">=3.12"
+license = "AGPL-3.0-or-later"
+dependencies = [
+    "jsonschema>=4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["engine/tests"]
+pythonpath = ["."]
