@@ -51,3 +51,4 @@ Pre-launch scaffold (iter-0, phase 0). No real data center is scored yet; develo
 - Methodology and editorial content (`data/methodology/`, site content): [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 
 Founded by Franck Bardol · [scoremydatacenter.org](https://scoremydatacenter.org)
+
