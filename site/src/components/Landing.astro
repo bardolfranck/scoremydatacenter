@@ -1,0 +1,214 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The landing is fed by the engine's artifacts (scores.json, methodology.json)
+// generated at build time — no hand-written grade ever appears here.
+import Base from "../layouts/Base.astro";
+import ScoreBadge from "./ScoreBadge.astro";
+import scoresData from "../../public/data/scores.json";
+import methodologyData from "../../public/data/methodology.json";
+
+interface Props {
+  lang: "en" | "fr";
+  t: Record<string, any>;
+}
+const { lang, t } = Astro.props;
+
+const scores = scoresData as any[];
+const methodology = methodologyData as any;
+const featured = scores[0];
+const pillarOrder = methodology.pillars.map((p: any) => p.id);
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.description}
+  altHref={t.altHref}
+  altLabel={t.altLabel}
+  nav={t.nav}
+>
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">{t.heroEyebrow}</p>
+      <h1>{t.heroTitle}</h1>
+      <p class="hero-lede">{t.heroLede}</p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#scores">{t.ctaScores}</a>
+        <a class="button button-secondary" href="#method">{t.ctaMethod}</a>
+      </div>
+    </div>
+    {featured && (
+      <aside class="hero-panel" aria-label={t.panelAria}>
+        <div class="scorebadge-row" style="margin-bottom: 12px;">
+          <span class="scorebadge-label">{featured.name}</span>
+          <span class={`confidence ${featured.confidence.level}`}>
+            <span class="dot" aria-hidden="true"></span>
+            {t.confidence[featured.confidence.level]}
+          </span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <ScoreBadge
+            label={t.siteScore}
+            grade={featured.grades.site}
+            confidence={featured.confidence.level}
+            confidenceLabel={t.confidence[featured.confidence.level]}
+            renderConfidence={false}
+            showScore={true}
+            naLabel={t.insufficient}
+          />
+          <ScoreBadge
+            label={t.operatorScore}
+            grade={featured.grades.project_process}
+            confidence={featured.confidence.level}
+            confidenceLabel={t.confidence[featured.confidence.level]}
+            renderConfidence={false}
+            showScore={true}
+            naLabel={t.insufficient}
+          />
+        </div>
+        <p class="hero-panel-note">{t.fixtureNote}</p>
+      </aside>
+    )}
+  </section>
+
+  <section class="credibility-strip" aria-label={t.principlesAria}>
+    {t.principles.map((p: any) => (
+      <div>
+        <strong>{p.title}</strong>
+        <span>{p.body}</span>
+      </div>
+    ))}
+  </section>
+
+  <section class="section" id="scores" aria-labelledby="scores-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="scores-title">{t.scoresTitle}</h2>
+        <p>{t.scoresLede}</p>
+      </div>
+      <div class="scorecard-grid">
+        {scores.map((dc) => (
+          <article class="scorecard">
+            <div class="scorecard-head">
+              <div>
+                <p class="scorecard-status">{t.status[dc.project_status]} · {dc.power_mw} MW</p>
+                <h3>{dc.name}</h3>
+                <p class="scorecard-place">{dc.municipality} ({dc.country}) — {dc.operator}</p>
+              </div>
+              <span class={`confidence ${dc.confidence.level}`}>
+                <span class="dot" aria-hidden="true"></span>
+                {t.confidence[dc.confidence.level]}
+              </span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <ScoreBadge
+                label={t.siteScore}
+                grade={dc.grades.site}
+                confidence={dc.confidence.level}
+                confidenceLabel={t.confidence[dc.confidence.level]}
+                renderConfidence={false}
+                showScore={true}
+                naLabel={t.insufficient}
+              />
+              <ScoreBadge
+                label={t.operatorScore}
+                grade={dc.grades.project_process}
+                confidence={dc.confidence.level}
+                confidenceLabel={t.confidence[dc.confidence.level]}
+                renderConfidence={false}
+                naLabel={t.insufficient}
+              />
+            </div>
+            <dl class="pillar-row">
+              {pillarOrder.map((pid: string) => (
+                <div class="pillar-cell">
+                  <dt>{t.pillarShort[pid]}</dt>
+                  <dd>
+                    <ScoreBadge
+                      label={t.pillarShort[pid]}
+                      grade={dc.pillars[pid]}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={t.confidence[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel={t.insufficient}
+                    />
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            {dc.id.startsWith("zz-") && <span class="fixture-tag">{t.fixtureTag}</span>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="method" aria-labelledby="method-title">
+    <div class="section-inner method-layout">
+      <div class="method-copy">
+        <h2 id="method-title">{t.methodTitle}</h2>
+        <p class="prose">{t.methodLede}</p>
+        <ul class="dual-explain">
+          <li>
+            <strong>{t.siteScore}</strong>
+            <span>{t.siteScoreExplain}</span>
+          </li>
+          <li>
+            <strong>{t.operatorScore}</strong>
+            <span>{t.operatorScoreExplain}</span>
+          </li>
+          <li>
+            <strong>{t.confidenceTitle}</strong>
+            <span>{t.confidenceExplain}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="weighting" aria-label={t.weightsAria}>
+        <p class="weighting-caption">{t.weightsCaption}</p>
+        {methodology.pillars.map((p: any) => (
+          <div class="weighting-row">
+            <span>{p.label[lang]} <b>{Math.round(p.weight * 100)}%</b></span>
+            <div class="bar"><i style={`width: ${p.weight * 100 * 3.2}%`}></i></div>
+          </div>
+        ))}
+        <p class="weighting-caption" style="text-transform: none; letter-spacing: 0;">{t.weightsNote}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-dark" id="open" aria-labelledby="open-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="open-title">{t.openTitle}</h2>
+        <p>{t.openLede}</p>
+      </div>
+      <div class="open-grid">
+        {t.openCols.map((c: any) => (
+          <article>
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+          </article>
+        ))}
+      </div>
+      <p class="redline" set:html={t.redline}></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="founder-title">
+    <div class="section-inner founder">
+      <div>
+        <h2 id="founder-title" style="font-size: clamp(1.4rem, 2.6vw, 2rem);">{t.founderTitle}</h2>
+        <p class="prose" style="margin-top: 12px;">{t.founderBody}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact-band" id="contact">
+    <h2>{t.contactTitle}</h2>
+    <a class="button button-primary" href="mailto:contact@scoremydatacenter.org">{t.contactCta}</a>
+  </section>
+</Base>

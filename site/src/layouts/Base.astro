@@ -1,0 +1,50 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import "../styles/global.css";
+
+interface Props {
+  lang: "en" | "fr";
+  title: string;
+  description: string;
+  altHref: string; // path of the same page in the other language
+  altLabel: string;
+  nav: { href: string; label: string }[];
+}
+const { lang, title, description, altHref, altLabel, nav } = Astro.props;
+const altLang = lang === "en" ? "fr" : "en";
+const home = lang === "en" ? "/" : "/fr/";
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/assets/smdc-icon.svg" />
+    <link rel="alternate" hreflang={altLang} href={altHref} />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href={home} aria-label="ScoreMyDataCenter home">
+        <img src="/assets/smdc-icon.svg" alt="" width="38" height="38" />
+        <span>ScoreMyDataCenter</span>
+      </a>
+      <nav class="main-nav" aria-label="Site sections">
+        {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+        <a class="lang-switch" href={altHref}>{altLabel}</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <span>© 2026 Franck Bardol and contributors — ScoreMyDataCenter</span>
+      <span>Engine AGPL-3.0 · Data ODbL · Methodology CC BY-SA 4.0</span>
+    </footer>
+  </body>
+</html>
