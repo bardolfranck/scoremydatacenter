@@ -14,3 +14,6 @@ site/public/data/
 
 # OS
 .DS_Store
+
+# Local agent tooling (installed via: npx skills add Leonxlnx/taste-skill)
+.agents/

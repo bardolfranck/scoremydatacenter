@@ -2,21 +2,85 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// Phase 0 placeholder — l'observatoire FR (carte, classement, fiches)
-// arrive en phase 2.
+import Landing from "../../components/Landing.astro";
+
+const t = {
+  title: "ScoreMyDataCenter — la note publique d'acceptabilité des data centers",
+  description:
+    "Observatoire indépendant de l'acceptabilité des projets de data centers : deux notes publiques A–E par projet, avec sources, confiance et méthode ouverte.",
+  altHref: "/",
+  altLabel: "EN",
+  nav: [
+    { href: "#scores", label: "Notes" },
+    { href: "#method", label: "Méthode" },
+    { href: "#open", label: "Modèle ouvert" },
+    { href: "#contact", label: "Contact" },
+  ],
+  heroEyebrow: "Observatoire indépendant · France d'abord",
+  heroTitle: "La note publique d'acceptabilité des data centers.",
+  heroLede:
+    "Deux notes A–E par projet — le site qu'il occupe, et les choix de son opérateur — avec sources et confiance.",
+  ctaScores: "Voir les notes",
+  ctaMethod: "Lire la méthode",
+  panelAria: "Exemple de fiche de score",
+  siteScore: "Site",
+  operatorScore: "Opérateur",
+  insufficient: "données insuffisantes",
+  confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
+  fixtureNote:
+    "Fixture de test fictive, montrée pour le format — les premières fiches réelles françaises sont en préparation.",
+  principlesAria: "Principes",
+  principles: [
+    { title: "Méthode publique", body: "Grille de notation ouverte, versionnée, citable. Quiconque peut refaire chaque note." },
+    { title: "Données traçables", body: "Chaque valeur pointe vers sa source. L'annoncé n'est jamais fusionné avec le mesuré." },
+    { title: "Contradictoire", body: "L'opérateur est notifié 15 jours avant publication ; sa réponse est publiée à côté de la note." },
+  ],
+  scoresTitle: "Derniers projets notés",
+  scoresLede:
+    "Une page citable par projet : deux notes, cinq sous-scores par pilier, confiance documentaire, sources et historique complet.",
+  status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service" },
+  fixtureTag: "Fixture de test fictive",
+  pillarShort: {
+    energy: "Énergie",
+    water: "Eau",
+    land_biodiversity: "Foncier",
+    local_impact: "Local",
+    transparency_governance: "Transp.",
+  },
+  methodTitle: "Une méthode, deux notes, toujours avec la confiance.",
+  methodLede:
+    "24 indicateurs en cinq piliers, séparés entre ce que le projet subit et ce que l'opérateur choisit. La grille, ses poids et ses seuils sont publics.",
+  siteScoreExplain: "Le contexte que le projet subit : carbone du réseau, stress hydrique, foncier, tissu local.",
+  operatorScoreExplain: "Les leviers de l'opérateur : efficacité, refroidissement, emplois, concertation, transparence.",
+  confidenceTitle: "Confiance documentaire",
+  confidenceExplain:
+    "Une note ne s'affiche jamais sans elle. Sous 40 % de couverture, on écrit « données insuffisantes » — on ne note pas l'inconnu.",
+  weightsAria: "Poids des piliers",
+  weightsCaption: "Poids du pilier dans la note globale",
+  weightsNote: "Méthodologie v0.1.0-draft — provisoire jusqu'à la calibration rétrospective sur cas connus.",
+  openTitle: "On ouvre la vérité. On vend le temps.",
+  openLede: "La couche qui fabrique le jugement est ouverte ; seule la commodité sera un jour payante.",
+  openCols: [
+    {
+      title: "Méthode, données et moteur ouverts",
+      body: "Moteur AGPL, données publiées ODbL, méthodologie CC BY-SA. Clonez le dépôt : chaque note se recalcule à l'octet près.",
+    },
+    {
+      title: "Journal d'audit public",
+      body: "Chaque notation, révision et correction est datée, versionnée et justifiée — une note ne bouge jamais en silence.",
+    },
+    {
+      title: "Contributions gouvernées",
+      body: "Les corrections de données sont gratuites et relues ; les règles anti-triche sont publiques dans leur principe, privées dans leurs seuils exacts.",
+    },
+  ],
+  redline: "Une seule ligne rouge : <b>le paywall ne tombe jamais sur la vérité</b>. La note d'un projet et sa justification sont publiques et gratuites, pour toujours.",
+  founderTitle: "Un observatoire indépendant, fondé par Franck Bardol.",
+  founderBody:
+    "Construit à l'intersection de l'infrastructure IA, de l'éthique, de l'analyse de données et de la décision publique. Les entités notées ne paient jamais leur note publique.",
+  contactTitle: "Suggérer un projet, ou joindre l'observatoire.",
+  contactCta: "Contact",
+};
 ---
 
-<!doctype html>
-<html lang="fr">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <title>ScoreMyDataCenter — Observatoire</title>
-  </head>
-  <body>
-    <h1>ScoreMyDataCenter</h1>
-    <p>Observatoire indépendant de l'acceptabilité des projets de data centers. Bientôt en ligne.</p>
-    <p><a href="/">English version</a></p>
-  </body>
-</html>
+<Landing lang="fr" t={t} />

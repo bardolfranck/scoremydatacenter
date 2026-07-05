@@ -2,21 +2,85 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// Phase 0 placeholder — the real landing (adapted from the design mockup)
-// arrives in phase 2.
+import Landing from "../components/Landing.astro";
+
+const t = {
+  title: "ScoreMyDataCenter — the public grade for data center acceptability",
+  description:
+    "Independent observatory scoring the social acceptability of data center projects: two public A–E grades per project, with sources, confidence and an open method.",
+  altHref: "/fr/",
+  altLabel: "FR",
+  nav: [
+    { href: "#scores", label: "Scores" },
+    { href: "#method", label: "Method" },
+    { href: "#open", label: "Open model" },
+    { href: "#contact", label: "Contact" },
+  ],
+  heroEyebrow: "Independent observatory · France first",
+  heroTitle: "The public grade for data center acceptability.",
+  heroLede:
+    "Two A–E grades per project — the site it lands on, and the choices its operator makes — with sources and confidence.",
+  ctaScores: "See the scores",
+  ctaMethod: "Read the method",
+  panelAria: "Example scorecard",
+  siteScore: "Site",
+  operatorScore: "Operator",
+  insufficient: "insufficient data",
+  confidence: { high: "confidence: high", medium: "confidence: medium", low: "confidence: low" },
+  fixtureNote:
+    "Fictional test fixture, shown for format only — the first real French scorecards are in preparation.",
+  principlesAria: "Core principles",
+  principles: [
+    { title: "Public method", body: "Open scoring grid, versioned and citable. Anyone can re-run every grade." },
+    { title: "Traceable data", body: "Every value links to its source. Announced claims are never merged with measured facts." },
+    { title: "Right of reply", body: "Operators are notified 15 days before publication; their response is published alongside." },
+  ],
+  scoresTitle: "Latest scored projects",
+  scoresLede:
+    "A citable page per project: two grades, five pillar sub-scores, documentation confidence, sources and full history.",
+  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+  fixtureTag: "Fictional test fixture",
+  pillarShort: {
+    energy: "Energy",
+    water: "Water",
+    land_biodiversity: "Land",
+    local_impact: "Local",
+    transparency_governance: "Transp.",
+  },
+  methodTitle: "One method, two grades, always with confidence.",
+  methodLede:
+    "24 indicators across five pillars, split between what a project endures and what its operator chooses. The grid, its weights and its thresholds are public.",
+  siteScoreExplain: "The context the project endures: grid carbon, water stress, land, local fabric.",
+  operatorScoreExplain: "The levers the operator controls: efficiency, cooling, jobs, consultation, transparency.",
+  confidenceTitle: "Documentation confidence",
+  confidenceExplain:
+    "A grade never appears without it. Below 40% coverage we say “insufficient data” — we do not grade the unknown.",
+  weightsAria: "Pillar weights",
+  weightsCaption: "Pillar weight in the global grade",
+  weightsNote: "Methodology v0.1.0-draft — provisional until retrospective calibration on known-outcome cases.",
+  openTitle: "We open the truth. We sell the time.",
+  openLede: "The layer that produces the judgment is open; only convenience will ever be paid.",
+  openCols: [
+    {
+      title: "Open method, data and engine",
+      body: "AGPL engine, ODbL published data, CC BY-SA methodology. Clone the repository and every grade recomputes to the byte.",
+    },
+    {
+      title: "Public audit log",
+      body: "Every scoring, revision and correction is dated, versioned and justified — grades cannot move silently.",
+    },
+    {
+      title: "Governed contributions",
+      body: "Data corrections are free and reviewed; anti-gaming rules are public in principle, private in their exact thresholds.",
+    },
+  ],
+  redline: "One red line: <b>the paywall never falls on the truth</b>. A project's grade and its justification are public and free, forever.",
+  founderTitle: "An independent observatory, founded by Franck Bardol.",
+  founderBody:
+    "Built at the intersection of AI infrastructure, ethics, data analysis and public decision-making. Scored entities never pay for their public grade.",
+  contactTitle: "Suggest a project, or reach the observatory.",
+  contactCta: "Contact",
+};
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="robots" content="noindex" />
-    <title>ScoreMyDataCenter</title>
-  </head>
-  <body>
-    <h1>ScoreMyDataCenter</h1>
-    <p>Independent observatory scoring the social acceptability of data center projects. Coming soon.</p>
-    <p><a href="/fr/">Version française</a></p>
-  </body>
-</html>
+<Landing lang="en" t={t} />
