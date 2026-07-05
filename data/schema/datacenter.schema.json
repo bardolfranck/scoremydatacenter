@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scoremydatacenter.org/schema/datacenter.schema.json",
+  "title": "Data center record",
+  "description": "One file per data center. Raw sourced indicator values only — computed scores never live here (the engine produces them at build time). Pre-mortem rules are encoded structurally: no value field on the judgment indicator (T1), mandatory sources, announced-vs-measured separation, publication workflow states.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "id", "identity", "indicators", "publication", "score_history"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "id": {
+      "type": "string",
+      "description": "{iso2-lowercase}-{slug}. Fictional dev fixtures use the zz- prefix.",
+      "pattern": "^[a-z]{2}-[a-z0-9]+(-[a-z0-9]+)*$"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "operator", "municipality", "country", "coordinates", "project_status", "summary"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "operator": { "type": "string", "minLength": 1 },
+        "municipality": { "type": "string", "minLength": 1 },
+        "admin_area": {
+          "type": "string",
+          "description": "Local administrative code: département (FR), county (IE), Kreis (DE)…"
+        },
+        "country": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "coordinates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lat", "lon"],
+          "properties": {
+            "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+            "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+          }
+        },
+        "project_status": {
+          "enum": ["announced", "permitting", "under_construction", "operational"]
+        },
+        "vintage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "announced_year": { "type": "integer", "minimum": 1990, "maximum": 2100 },
+            "expected_commissioning": { "type": "integer", "minimum": 1990, "maximum": 2100 }
+          }
+        },
+        "power_mw": { "type": "number", "exclusiveMinimum": 0 },
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fr", "en"],
+          "properties": {
+            "fr": { "type": "string", "minLength": 1 },
+            "en": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "indicators": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/indicator" }
+    },
+    "publication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "operator_notified_at", "operator_response"],
+      "properties": {
+        "status": { "enum": ["draft", "right_of_reply", "published"] },
+        "operator_notified_at": {
+          "type": ["string", "null"],
+          "format": "date",
+          "description": "Required (non-null, >= 15 days in the past — engine gate) before status can be published."
+        },
+        "operator_response": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text", "date"],
+              "properties": {
+                "text": { "type": "string", "minLength": 1 },
+                "date": { "type": "string", "format": "date" },
+                "url": { "type": ["string", "null"], "format": "uri" }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "enum": ["right_of_reply", "published"] } } },
+          "then": { "properties": { "operator_notified_at": { "type": "string" } } }
+        }
+      ]
+    },
+    "score_history": {
+      "type": "array",
+      "description": "Written by the engine only — the raw material of the public audit log. Rationale is mandatory from the second entry onward (engine gate).",
+      "items": { "$ref": "#/$defs/score_event" }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "url", "accessed"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "accessed": { "type": "string", "format": "date" }
+      }
+    },
+    "indicator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[EWFLT][0-9]{1,2}$" },
+        "status": {
+          "enum": ["measured", "announced", "missing"],
+          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); missing = not available (confidence penalty, cause: missing_data)."
+        },
+        "value": { "type": ["number", "string", "boolean"] },
+        "proxies": { "$ref": "#/$defs/t1_proxies" },
+        "source": { "$ref": "#/$defs/source" },
+        "verification_source": {
+          "$ref": "#/$defs/source",
+          "description": "Required to mark a declarative indicator as measured (ex-post re-score evidence)."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "not": { "const": "missing" } } } },
+          "then": { "required": ["source"] },
+          "else": {
+            "not": {
+              "anyOf": [
+                { "required": ["value"] },
+                { "required": ["proxies"] },
+                { "required": ["source"] }
+              ]
+            }
+          }
+        },
+        {
+          "if": { "properties": { "id": { "const": "T1" } } },
+          "then": { "not": { "required": ["value"] } }
+        },
+        {
+          "if": {
+            "allOf": [
+              { "properties": { "id": { "const": "T1" } } },
+              { "properties": { "status": { "not": { "const": "missing" } } } }
+            ]
+          },
+          "then": { "required": ["proxies"] }
+        },
+        {
+          "if": {
+            "allOf": [
+              { "properties": { "id": { "not": { "const": "T1" } } } },
+              { "properties": { "status": { "not": { "const": "missing" } } } }
+            ]
+          },
+          "then": {
+            "required": ["value"],
+            "not": { "required": ["proxies"] }
+          }
+        },
+        {
+          "if": {
+            "allOf": [
+              { "properties": { "id": { "enum": ["E4", "E5", "W4", "W5", "F5", "L4", "L5"] } } },
+              { "properties": { "status": { "const": "measured" } } }
+            ]
+          },
+          "then": {
+            "required": ["verification_source"],
+            "$comment": "Declarative indicators (kept in sync with nature=declarative in the methodology) can only be 'measured' with explicit verification evidence."
+          }
+        }
+      ]
+    },
+    "t1_proxies": {
+      "type": "object",
+      "description": "T1 (consent/governance) is a factualized judgment: ONLY closed procedural proxies, no free text, no verdict field. It is structurally impossible to record an opinion.",
+      "additionalProperties": false,
+      "required": [
+        "public_inquiry_held",
+        "environmental_authority_opinion",
+        "cndp_referral",
+        "legal_appeals_count",
+        "council_deliberations"
+      ],
+      "properties": {
+        "public_inquiry_held": { "type": "boolean" },
+        "environmental_authority_opinion": {
+          "enum": ["favorable", "favorable_with_reservations", "unfavorable", "none"]
+        },
+        "cndp_referral": { "type": "boolean" },
+        "legal_appeals_count": { "type": "integer", "minimum": 0 },
+        "council_deliberations": {
+          "enum": ["favorable", "mixed", "unfavorable", "none_recorded"]
+        }
+      }
+    },
+    "score_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "methodology_version", "grades", "confidence", "event"],
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "methodology_version": { "type": "string" },
+        "grades": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["site", "project_process"],
+          "properties": {
+            "site": { "enum": ["A", "B", "C", "D", "E"] },
+            "project_process": { "enum": ["A", "B", "C", "D", "E", "insufficient_data"] }
+          }
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "event": {
+          "enum": [
+            "initial_scoring",
+            "ex_post_rescore",
+            "right_of_reply_revision",
+            "data_correction",
+            "methodology_change"
+          ]
+        },
+        "rationale": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

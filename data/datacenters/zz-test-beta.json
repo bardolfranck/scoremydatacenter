@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "id": "zz-test-beta",
+  "identity": {
+    "name": "Beta Test Hyperscale",
+    "operator": "Beta Fictional Compute (test fixture)",
+    "municipality": "Betaburg",
+    "admin_area": "00",
+    "country": "ZZ",
+    "coordinates": { "lat": 47.1, "lon": 1.3 },
+    "project_status": "announced",
+    "vintage": { "announced_year": 2026, "expected_commissioning": 2031 },
+    "power_mw": 900,
+    "summary": {
+      "fr": "Fixture de test (fictive) : hyperscale annoncé, faiblement documenté — étage 1 seul, cas « données insuffisantes » et confiance faible.",
+      "en": "Test fixture (fictional): announced hyperscale, poorly documented — tier 1 only, exercises the insufficient-data and low-confidence paths."
+    }
+  },
+  "indicators": [
+    {
+      "id": "E1",
+      "value": 310,
+      "status": "measured",
+      "source": { "title": "Fictional grid intensity dataset (test)", "url": "https://example.org/zz/beta-e1", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "E2",
+      "value": "constrained",
+      "status": "measured",
+      "source": { "title": "Fictional connection capacity map (test)", "url": "https://example.org/zz/beta-e2", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "E3",
+      "value": "high",
+      "status": "measured",
+      "source": { "title": "Fictional connection queue registry (test)", "url": "https://example.org/zz/beta-e3", "accessed": "2026-07-01" }
+    },
+    { "id": "E4", "status": "missing" },
+    { "id": "E5", "status": "missing" },
+    {
+      "id": "W1",
+      "value": "high",
+      "status": "measured",
+      "source": { "title": "Fictional water restriction registry (test)", "url": "https://example.org/zz/beta-w1", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "W2",
+      "value": "moderate",
+      "status": "measured",
+      "source": { "title": "Fictional water body status report (test)", "url": "https://example.org/zz/beta-w2", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "W3",
+      "value": "high",
+      "status": "measured",
+      "source": { "title": "Fictional withdrawal database (test)", "url": "https://example.org/zz/beta-w3", "accessed": "2026-07-01" }
+    },
+    { "id": "W4", "status": "missing" },
+    { "id": "W5", "status": "missing" },
+    {
+      "id": "F1",
+      "value": "near_1_to_5km",
+      "status": "measured",
+      "source": { "title": "Fictional protected areas layer (test)", "url": "https://example.org/zz/beta-f1", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "F2",
+      "value": "agricultural",
+      "status": "measured",
+      "source": { "title": "Fictional soil status inventory (test)", "url": "https://example.org/zz/beta-f2", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "F3",
+      "value": "corridor_nearby",
+      "status": "measured",
+      "source": { "title": "Fictional ecological corridors layer (test)", "url": "https://example.org/zz/beta-f3", "accessed": "2026-07-01" }
+    },
+    { "id": "F4", "status": "missing" },
+    { "id": "F5", "status": "missing" },
+    {
+      "id": "L1",
+      "value": "sensitive",
+      "status": "measured",
+      "source": { "title": "Fictional census profile (test)", "url": "https://example.org/zz/beta-l1", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "L2",
+      "value": 1385,
+      "status": "measured",
+      "source": { "title": "Fictional census, municipality population 650 (test)", "url": "https://example.org/zz/beta-l2", "accessed": "2026-07-01" }
+    },
+    {
+      "id": "L3",
+      "value": "seveso_low_within_5km",
+      "status": "measured",
+      "source": { "title": "Fictional industrial hazard registry (test)", "url": "https://example.org/zz/beta-l3", "accessed": "2026-07-01" }
+    },
+    { "id": "L4", "status": "missing" },
+    { "id": "L5", "status": "missing" },
+    { "id": "L6", "status": "missing" },
+    { "id": "L7", "status": "missing" },
+    { "id": "T1", "status": "missing" },
+    { "id": "T2", "status": "missing" }
+  ],
+  "publication": {
+    "status": "published",
+    "operator_notified_at": "2026-06-10",
+    "operator_response": null
+  },
+  "score_history": []
+}
