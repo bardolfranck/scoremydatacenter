@@ -5,6 +5,7 @@
 // Printable one-pager for the block-3 checklist: no site chrome, A4-tuned
 // print CSS, browser print = the PDF. Same data source as the web block.
 import type { Checklist } from "../content/questions";
+import PillarIcon from "./PillarIcon.astro";
 
 interface Props {
   lang: "en" | "fr";
@@ -42,7 +43,7 @@ const { lang, checklist, printButton, backLabel, backHref } = Astro.props;
     <main class="op-groups">
       {checklist.groups.map((group) => (
         <section>
-          <h2>{group.pillar}</h2>
+          <h2><PillarIcon name={group.icon} size={15} /> {group.pillar}</h2>
           {group.items.map((item) => (
             <div class="op-item">
               <p class="op-q">« {item.q} »</p>
@@ -81,7 +82,7 @@ const { lang, checklist, printButton, backLabel, backHref } = Astro.props;
       .op-head p { margin-top: 4px; color: #55677c; font-size: 0.78rem; max-width: 90ch; }
       .op-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; margin-top: 14px; }
       .op-groups section { break-inside: avoid; }
-      .op-groups h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0f5fb8; border-bottom: 1px solid #d9e1ea; padding-bottom: 3px; margin-bottom: 7px; }
+      .op-groups h2 { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0f5fb8; border-bottom: 1px solid #d9e1ea; padding-bottom: 3px; margin-bottom: 7px; }
       .op-item { margin-bottom: 7px; break-inside: avoid; }
       .op-q { font-weight: 700; }
       .op-why { color: #55677c; font-size: 0.72rem; }

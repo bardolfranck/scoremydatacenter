@@ -1,0 +1,37 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// One icon per pillar (Phosphor Icons, MIT — https://phosphoricons.com),
+// inlined at build so they render crisp on screen AND in print.
+import lightning from "@phosphor-icons/core/assets/regular/lightning.svg?raw";
+import drop from "@phosphor-icons/core/assets/regular/drop.svg?raw";
+import tree from "@phosphor-icons/core/assets/regular/tree.svg?raw";
+import usersThree from "@phosphor-icons/core/assets/regular/users-three.svg?raw";
+import magnifyingGlass from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
+
+export type PillarIconName = "energy" | "water" | "land" | "local" | "transparency";
+
+const ICONS: Record<PillarIconName, string> = {
+  energy: lightning,
+  water: drop,
+  land: tree,
+  local: usersThree,
+  transparency: magnifyingGlass,
+};
+
+interface Props {
+  name: PillarIconName;
+  size?: number;
+}
+const { name, size = 18 } = Astro.props;
+const svg = ICONS[name]
+  .replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
+---
+
+<span class="pillar-icon" set:html={svg}></span>
+
+<style>
+  .pillar-icon { display: inline-flex; align-items: center; color: var(--accent, #0f5fb8); }
+  .pillar-icon :global(svg) { display: block; }
+</style>

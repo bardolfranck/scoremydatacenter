@@ -12,6 +12,7 @@ export interface ChecklistItem {
 }
 export interface ChecklistGroup {
   pillar: string;
+  icon: "energy" | "water" | "land" | "local" | "transparency";
   items: ChecklistItem[];
 }
 export interface Checklist {
@@ -30,6 +31,7 @@ export const CHECKLIST_FR: Checklist = {
   groups: [
     {
       pillar: "Énergie",
+      icon: "energy",
       items: [
         {
           q: "Quelle puissance électrique demandez-vous au réseau, en mégawatts, et où en est la demande de raccordement ?",
@@ -47,6 +49,7 @@ export const CHECKLIST_FR: Checklist = {
     },
     {
       pillar: "Eau",
+      icon: "water",
       items: [
         {
           q: "Comment le site sera-t-il refroidi, et combien d'eau consommera-t-il par an, prélevée où — réseau potable, forage, rivière ?",
@@ -64,6 +67,7 @@ export const CHECKLIST_FR: Checklist = {
     },
     {
       pillar: "Foncier & biodiversité",
+      icon: "land",
       items: [
         {
           q: "Quelle surface sera artificialisée, et sur quel type de terrain — friche, terres agricoles, espace naturel ?",
@@ -85,6 +89,7 @@ export const CHECKLIST_FR: Checklist = {
     },
     {
       pillar: "Impact local",
+      icon: "local",
       items: [
         {
           q: "Combien d'emplois permanents sur le site une fois construit — sans compter les emplois du chantier ?",
@@ -106,6 +111,7 @@ export const CHECKLIST_FR: Checklist = {
     },
     {
       pillar: "Transparence & gouvernance",
+      icon: "transparency",
       items: [
         {
           q: "Qui porte le projet : la société locale créée pour l'occasion, ou le groupe derrière elle — et qui répondra dans dix ans ?",
@@ -140,6 +146,7 @@ export const CHECKLIST_EN: Checklist = {
   groups: [
     {
       pillar: "Energy",
+      icon: "energy",
       items: [
         {
           q: "How much grid power are you requesting, in megawatts, and where does the connection request stand?",
@@ -157,6 +164,7 @@ export const CHECKLIST_EN: Checklist = {
     },
     {
       pillar: "Water",
+      icon: "water",
       items: [
         {
           q: "How will the site be cooled, and how much water will it use per year, drawn from where — drinking network, borehole, river?",
@@ -174,6 +182,7 @@ export const CHECKLIST_EN: Checklist = {
     },
     {
       pillar: "Land & biodiversity",
+      icon: "land",
       items: [
         {
           q: "How much land will be artificialized, and on what kind of ground — brownfield, farmland, natural area?",
@@ -195,6 +204,7 @@ export const CHECKLIST_EN: Checklist = {
     },
     {
       pillar: "Local impact",
+      icon: "local",
       items: [
         {
           q: "How many permanent on-site jobs once built — not counting construction jobs?",
@@ -216,6 +226,7 @@ export const CHECKLIST_EN: Checklist = {
     },
     {
       pillar: "Transparency & governance",
+      icon: "transparency",
       items: [
         {
           q: "Who carries the project: the local company created for the occasion, or the group behind it — and who will answer in ten years?",

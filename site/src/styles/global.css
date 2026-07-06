@@ -342,7 +342,7 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .checklist-intro { font-weight: 700; color: var(--ink-soft); max-width: 75ch; }
 .checklist-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 34px; }
 .checklist-group { display: grid; gap: 14px; align-content: start; }
-.checklist-group h4 { margin: 0; padding-bottom: 6px; border-bottom: 2px solid var(--accent); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.checklist-group h4 { display: flex; align-items: center; gap: 8px; margin: 0; padding-bottom: 6px; border-bottom: 2px solid var(--accent); font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .checklist-item { display: grid; gap: 3px; }
 .checklist-q { font-weight: 700; font-size: 0.96rem; }
 .checklist-why { color: var(--muted); font-size: 0.88rem; }

@@ -8,6 +8,7 @@
 // (block 3, the five-pillar checklist one-pager, ships first).
 import Base from "../layouts/Base.astro";
 import type { Checklist } from "../content/questions";
+import PillarIcon from "./PillarIcon.astro";
 
 interface Props {
   lang: "en" | "fr";
@@ -46,7 +47,7 @@ const { lang, t, checklist } = Astro.props;
                 <div class="checklist-groups">
                   {checklist.groups.map((group) => (
                     <section class="checklist-group">
-                      <h4>{group.pillar}</h4>
+                      <h4><PillarIcon name={group.icon} /> {group.pillar}</h4>
                       {group.items.map((item) => (
                         <div class="checklist-item">
                           <p class="checklist-q">« {item.q} »</p>
