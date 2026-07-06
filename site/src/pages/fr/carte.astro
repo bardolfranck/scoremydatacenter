@@ -1,0 +1,38 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Full-screen living map — target of the whereismydatacenter.org redirect.
+import Base from "../../layouts/Base.astro";
+import MapIsland from "../../components/MapIsland.astro";
+
+const nav = [
+  { href: "/fr/carte", label: "Carte" },
+  { href: "/fr/classement", label: "Classement" },
+  { href: "/fr/#method", label: "Méthode" },
+  { href: "/fr/#open", label: "Modèle ouvert" },
+  { href: "/fr/#contact", label: "Contact" },
+  { href: "/fr/#faq", label: "FAQ" },
+];
+---
+
+<Base
+  lang="fr"
+  title="Carte des projets notés — ScoreMyDataCenter"
+  description="La carte des projets de data centers notés A–E : deux notes par projet, sources et niveau de confiance."
+  tagline="Observatoire indépendant"
+  altHref="/"
+  altLabel="🇬🇧 EN"
+  nav={nav}
+>
+  <MapIsland
+    variant="full"
+    labels={{
+      site: "Site",
+      operator: "Opérateur",
+      confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
+      insufficient: "données insuffisantes",
+      fixture: "Fixture de test fictive",
+    }}
+  />
+</Base>

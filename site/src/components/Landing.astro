@@ -6,6 +6,7 @@
 // generated at build time — no hand-written grade ever appears here.
 import Base from "../layouts/Base.astro";
 import ScoreBadge from "./ScoreBadge.astro";
+import MapIsland from "./MapIsland.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
 
@@ -17,7 +18,6 @@ const { lang, t } = Astro.props;
 
 const scores = scoresData as any[];
 const methodology = methodologyData as any;
-const featured = scores[0];
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
 ---
 
@@ -39,38 +39,17 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
         <a class="button button-secondary" href="#method">{t.ctaMethod}</a>
       </div>
     </div>
-    {featured && (
-      <aside class="hero-panel" aria-label={t.panelAria}>
-        <div class="scorebadge-row" style="margin-bottom: 12px;">
-          <span class="scorebadge-label">{featured.name}</span>
-          <span class={`confidence ${featured.confidence.level}`}>
-            <span class="dot" aria-hidden="true"></span>
-            {t.confidence[featured.confidence.level]}
-          </span>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-          <ScoreBadge
-            label={t.siteScore}
-            grade={featured.grades.site}
-            confidence={featured.confidence.level}
-            confidenceLabel={t.confidence[featured.confidence.level]}
-            renderConfidence={false}
-            showScore={true}
-            naLabel={t.insufficient}
-          />
-          <ScoreBadge
-            label={t.operatorScore}
-            grade={featured.grades.project_process}
-            confidence={featured.confidence.level}
-            confidenceLabel={t.confidence[featured.confidence.level]}
-            renderConfidence={false}
-            showScore={true}
-            naLabel={t.insufficient}
-          />
-        </div>
-        <p class="hero-panel-note">{t.fixtureNote}</p>
-      </aside>
-    )}
+    <MapIsland
+      variant="hero"
+      labels={{
+        site: t.siteScore,
+        operator: t.operatorScore,
+        confidence: t.confidence,
+        insufficient: t.insufficient,
+        fixture: t.fixtureTag,
+        openMap: t.mapOpen,
+      }}
+    />
   </section>
 
   <section class="why-now" aria-label={t.whyNowAria}>
