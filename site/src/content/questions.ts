@@ -179,8 +179,8 @@ export const CHECKLIST_EN: Checklist = {
           why: "Better to know the answer before the crisis than during it.",
         },
         {
-          q: "Is the water commitment in the permit filing, or only in the project's communications?",
-          why: "Only what is written in the official filing is enforceable.",
+          q: "Is the water commitment in the permitting documents, or only in the project's communications?",
+          why: "Only what is written in the official permitting documents is enforceable.",
         },
       ],
     },
@@ -193,11 +193,11 @@ export const CHECKLIST_EN: Checklist = {
           why: "An industrial brownfield and farmland do not carry the same cost for the municipality.",
         },
         {
-          q: "How does the project fit the municipality's land-sobriety objective (France's “zero net artificialization” target, 2021 Climate and Resilience Act)?",
+          q: "How does the project fit the local land-sobriety or no-net-land-take objectives (in France: the “zero net artificialization” target, 2021 Climate and Resilience Act)?",
           why: "Hectares consumed here will be missing elsewhere — housing, facilities, activity.",
         },
         {
-          q: "Are protected or inventoried areas (Natura 2000, ZNIEFF — inventories of remarkable natural habitats) nearby, and what does the impact study say?",
+          q: "Are protected or inventoried natural areas nearby (in France: Natura 2000, ZNIEFF), and what does the impact study say?",
           why: "The answer can be checked online; hesitation is a signal.",
         },
         {
@@ -219,7 +219,7 @@ export const CHECKLIST_EN: Checklist = {
           why: "Cooling noise is permanent, testing noise is recurring — both can be measured and written into the filing.",
         },
         {
-          q: "What tax revenue, and for whom exactly — the municipality, the inter-municipal body, the department?",
+          q: "What tax revenue, and for whom exactly — your municipality, or a wider authority?",
           why: "Revenue announced “for the territory” does not necessarily reach your municipality.",
         },
         {
@@ -245,8 +245,8 @@ export const CHECKLIST_EN: Checklist = {
           why: "Dialogue after commissioning is the first lever for commitments to be kept.",
         },
         {
-          q: "Where can the full filing be consulted, and when is the public inquiry?",
-          why: "Those dates open your rights — missing them closes remedies (see <a href='#rights'>Rights and timeline</a>).",
+          q: "Where can the full permitting documents be consulted, and when does the public get to weigh in?",
+          why: "Those dates open your rights — missing them closes remedies (see <a href='#rights'>Rights and timeline — France</a>).",
         },
       ],
     },

@@ -95,6 +95,9 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
                     ))}
                   </div>
                 )}
+                {rich[block.anchor].inFrance && (
+                  <p class="in-france"><strong>{t.inFranceLabel}</strong> <span set:html={rich[block.anchor].inFrance}></span></p>
+                )}
                 {rich[block.anchor].closing && <p class="whatis-p" set:html={rich[block.anchor].closing}></p>}
                 {rich[block.anchor].takeaway && (
                   <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> <span set:html={rich[block.anchor].takeaway}></span></p>

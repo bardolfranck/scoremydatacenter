@@ -26,6 +26,7 @@ export interface RichLink {
 }
 export interface RichBlock {
   intro?: string;
+  inFrance?: string;
   points?: RichPoint[];
   qas?: RichQA[];
   linkGroups?: { title: string; links: RichLink[] }[];
@@ -254,11 +255,11 @@ export const RICH_EN: Record<string, RichBlock> = {
       },
       {
         lead: "Put water commitments in writing.",
-        body: "The cooling technique and annual consumption are in the permit filing, not only in the brochure. Where to check: the filing, available at the prefecture or town hall.",
+        body: "The cooling technique and annual consumption are in the permitting documents, not only in the brochure. Where to check: the permitting file, available from the local authority.",
       },
       {
         lead: "Put heat recovery under contract.",
-        body: "French law requires studying the reuse of the heat produced (energy code, art. L.236-2, from the law of April 30, 2025)<sup><a href='#src-good-project-1'>1</a></sup>. The difference lies between a paper study and a signed contract with a heat network, a swimming pool, greenhouses. Where to check: ask whether a contract exists, and with whom.",
+        body: "The difference lies between a paper study and a signed contract with a heat network, a swimming pool, greenhouses. Where to check: ask whether a contract exists, and with whom.",
       },
       {
         lead: "Pick the land that costs the territory least.",
@@ -266,13 +267,15 @@ export const RICH_EN: Record<string, RichBlock> = {
       },
       {
         lead: "Commit to publishing operating data.",
-        body: "Electricity and water consumption, measured efficiency — the law in fact provides for a performance declaration for data centers (energy code, art. L.236-1)<sup><a href='#src-good-project-1'>1</a></sup>. Where to check: what the filing promises to make public, and how often.",
+        body: "Electricity and water consumption, measured efficiency. Where to check: what the permitting documents promise to make public, and how often.",
       },
       {
         lead: "Negotiate written local benefits.",
         body: "Agreements, funds, facilities: what is signed binds; what is mentioned in a meeting does not.",
       },
     ],
+    inFrance:
+      "The law backs two of these levers: operators must study reusing the heat produced (energy code, art. L.236-2, from the law of April 30, 2025) and file a performance declaration for data centers (energy code, art. L.236-1)<sup><a href='#src-good-project-1'>1</a></sup>.",
     takeaway:
       "A “good” project is not a project without impacts: it is a project whose impacts are written, quantified and verifiable. Our grid scores exactly that: what the project chooses, not only what it endures.",
     sources: [
