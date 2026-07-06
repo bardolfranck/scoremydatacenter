@@ -5,6 +5,7 @@
 import Understand from "../../components/Understand.astro";
 import { FR_NAV } from "../../config/nav";
 import { CHECKLIST_FR } from "../../content/questions";
+import { WHATIS_FR } from "../../content/what-is-a-dc";
 
 const t = {
   title: "Comprendre les data centers — ScoreMyDataCenter",
@@ -24,8 +25,7 @@ const t = {
     {
       anchor: "quoi",
       title: "C'est quoi, un data center ?",
-      body: "Les ordres de grandeur qui comptent : tailles, puissances, consommations — et ce qui sépare un data center « moyen » d'un méga-projet.",
-      pending: true,
+      slot: "whatis",
     },
     {
       anchor: "commune",
@@ -67,4 +67,4 @@ const t = {
 };
 ---
 
-<Understand lang="fr" t={t} checklist={CHECKLIST_FR} />
+<Understand lang="fr" t={t} checklist={CHECKLIST_FR} whatIs={WHATIS_FR} />

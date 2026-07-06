@@ -1,0 +1,54 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The power-scale visual (block 1): circle AREAS proportional to MW, as
+// specified by the methodology lead — a linear scale would make the first
+// point invisible; proportional areas make the point.
+import type { PowerScaleItem } from "../content/what-is-a-dc";
+
+interface Props {
+  items: PowerScaleItem[];
+  caption: string;
+}
+const { items, caption } = Astro.props;
+
+const MAX_R = 84;
+const maxMw = Math.max(...items.map((i) => i.mw));
+const radius = (mw: number) => Math.max(2.5, MAX_R * Math.sqrt(mw / maxMw));
+const baseline = 30 + MAX_R * 2;
+const centers = [110, 330, 560];
+---
+
+<figure class="power-scale">
+  <svg viewBox="0 0 680 260" role="img" aria-label={caption}>
+    <line x1="20" y1={baseline} x2="660" y2={baseline} stroke="var(--line)" stroke-width="1.5" />
+    {items.map((item, i) => {
+      const r = radius(item.mw);
+      return (
+        <>
+          <circle
+            cx={centers[i]}
+            cy={baseline - r}
+            r={r}
+            fill="var(--accent)"
+            fill-opacity="0.14"
+            stroke="var(--accent)"
+            stroke-width="2"
+          />
+          <text x={centers[i]} y={baseline + 22} text-anchor="middle" class="ps-mw">{item.mwLabel}</text>
+          <text x={centers[i]} y={baseline + 42} text-anchor="middle" class="ps-label">{item.label}</text>
+        </>
+      );
+    })}
+  </svg>
+  <figcaption>{caption}</figcaption>
+</figure>
+
+<style>
+  .power-scale { margin: 6px 0 0; }
+  .power-scale svg { width: 100%; max-width: 680px; height: auto; display: block; }
+  .ps-mw { font-size: 15px; font-weight: 800; fill: var(--ink); }
+  .ps-label { font-size: 12.5px; font-weight: 600; fill: var(--muted); }
+  figcaption { color: var(--muted); font-size: 0.78rem; margin-top: 4px; }
+</style>

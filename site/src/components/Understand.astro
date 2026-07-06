@@ -8,14 +8,17 @@
 // (block 3, the five-pillar checklist one-pager, ships first).
 import Base from "../layouts/Base.astro";
 import type { Checklist } from "../content/questions";
+import type { WhatIsDC } from "../content/what-is-a-dc";
 import PillarIcon from "./PillarIcon.astro";
+import PowerScale from "./PowerScale.astro";
 
 interface Props {
   lang: "en" | "fr";
   t: Record<string, any>;
   checklist?: Checklist;
+  whatIs?: WhatIsDC;
 }
-const { lang, t, checklist } = Astro.props;
+const { lang, t, checklist, whatIs } = Astro.props;
 ---
 
 <Base
@@ -36,11 +39,39 @@ const { lang, t, checklist } = Astro.props;
 
       <div class="learn-grid">
         {t.blocks.map((block: any, i: number) => (
-          <article class={`learn-block ${block.featured ? "featured" : ""}`} id={block.anchor}>
+          <article class={`learn-block ${block.featured ? "featured" : ""} ${block.slot ? "filled" : ""}`} id={block.anchor}>
             <span class="learn-number" aria-hidden="true">{i + 1}</span>
             <h3>{block.title}</h3>
-            <p>{block.body}</p>
+            {block.body && <p>{block.body}</p>}
             {block.pending && <span class="fixture-tag">{t.pendingLabel}</span>}
+            {block.slot === "whatis" && whatIs && (
+              <div class="whatis">
+                {whatIs.paragraphs.map((para) => <p class="whatis-p" set:html={para}></p>)}
+                <p class="whatis-sizes-title"><strong>{whatIs.sizesTitle}</strong></p>
+                <div class="learn-table-wrap">
+                  <table class="learn-table">
+                    <tbody>
+                      {whatIs.sizes.map((row) => (
+                        <tr>
+                          <th scope="row">{row.label}</th>
+                          <td class="learn-table-power">{row.power}</td>
+                          <td>{row.note}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <PowerScale items={whatIs.scale.items} caption={whatIs.scale.caption} />
+                <p class="whatis-p">{whatIs.statsParagraph}</p>
+                <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> {whatIs.takeaway}</p>
+                <p class="block-sources">
+                  {whatIs.sourcesLabel}
+                  {whatIs.sources.map((src, n) => (
+                    <> <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " · " : ""}</>
+                  ))}
+                </p>
+              </div>
+            )}
             {block.featured && checklist && (
               <div class="checklist">
                 <p class="checklist-intro">{checklist.intro}</p>
