@@ -1,7 +1,22 @@
 {
-  "_comment": "Retrospective validation harness (gate 6). Each entry pins the acceptable grade range for a known-outcome case; a re-scoring that leaves the range breaks the build. Phase 5 replaces the fictional zz cases with the ~5 real known-outcome cases (Marseille, cas du Nuage...) and their documented expected ranges.",
+  "_comment": "Retrospective validation harness (gate 6). Each entry pins the acceptable grade range for a known-outcome case; a re-scoring that leaves the range breaks the build. CORPUS COMPOSITION RULE (methodology lead, 2026-07-06): per data-rich country, ~6-10 cases = the media 'stars' (extremes, they anchor the A/E bounds) PLUS a 'portfolio floor' of 2-3 average, no-buzz DCs with mundane outcomes (they anchor the center) PLUS pillar stratification (water-stressed/not, dense/rural). An outlier-only corpus makes the grid learn the tail and mis-grade the center. A case enters only if sourceable. Phase 5 replaces the fictional zz cases accordingly.",
   "cases": {
-    "zz-test-alpha": { "site": ["B"], "project_process": ["C"] },
-    "zz-test-beta": { "site": ["D", "E"], "project_process": ["insufficient_data"] }
+    "zz-test-alpha": {
+      "site": [
+        "B"
+      ],
+      "project_process": [
+        "C"
+      ]
+    },
+    "zz-test-beta": {
+      "site": [
+        "D",
+        "E"
+      ],
+      "project_process": [
+        "insufficient_data"
+      ]
+    }
   }
 }
