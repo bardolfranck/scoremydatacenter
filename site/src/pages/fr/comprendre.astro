@@ -6,6 +6,7 @@ import Understand from "../../components/Understand.astro";
 import { FR_NAV } from "../../config/nav";
 import { CHECKLIST_FR } from "../../content/questions";
 import { WHATIS_FR } from "../../content/what-is-a-dc";
+import { RICH_FR } from "../../content/understand-blocks";
 
 const t = {
   title: "Comprendre les data centers — ScoreMyDataCenter",
@@ -21,6 +22,7 @@ const t = {
   pendingLabel: "Texte en préparation",
   whyLabel: "Pourquoi :",
   takeawayLabel: "À retenir —",
+  sourcesLabel: "Sources :",
   blocks: [
     {
       anchor: "quoi",
@@ -30,8 +32,7 @@ const t = {
     {
       anchor: "commune",
       title: "Pourquoi ça concerne ma commune",
-      body: "Eau, énergie, bruit, foncier, fiscalité : les implications locales concrètes, derrière les chiffres des dossiers.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "questions",
@@ -42,29 +43,25 @@ const t = {
     {
       anchor: "bon-projet",
       title: "C'est quoi, un « bon » projet ?",
-      body: "Ce que font les projets bien menés : les leviers qu'un opérateur peut actionner, et comment les reconnaître dans un dossier.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "droits",
       title: "Droits et calendrier",
-      body: "Enquête publique, CNDP, ICPE : qui peut agir, à quel moment, et ce que le calendrier d'un projet permet encore de changer.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "faq",
       title: "Questions pratiques",
-      body: "Les situations concrètes : que faire si, qui contacter, dans quels délais — les notions, elles, sont au bloc 1.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "aller-plus-loin",
       title: "Aller plus loin",
-      body: "Sources ouvertes, rapports, cartes et acteurs à suivre pour creuser le sujet.",
-      pending: true,
+      slot: "rich",
     },
   ],
 };
 ---
 
-<Understand lang="fr" t={t} checklist={CHECKLIST_FR} whatIs={WHATIS_FR} />
+<Understand lang="fr" t={t} checklist={CHECKLIST_FR} whatIs={WHATIS_FR} rich={RICH_FR} />

@@ -6,6 +6,7 @@ import Understand from "../components/Understand.astro";
 import { EN_NAV } from "../config/nav";
 import { CHECKLIST_EN } from "../content/questions";
 import { WHATIS_EN } from "../content/what-is-a-dc";
+import { RICH_EN } from "../content/understand-blocks";
 
 const t = {
   title: "Understanding data centers — ScoreMyDataCenter",
@@ -21,6 +22,7 @@ const t = {
   pendingLabel: "Text in preparation",
   whyLabel: "Why:",
   takeawayLabel: "Takeaway —",
+  sourcesLabel: "Sources:",
   blocks: [
     {
       anchor: "what",
@@ -30,8 +32,7 @@ const t = {
     {
       anchor: "municipality",
       title: "Why it concerns my municipality",
-      body: "Water, energy, noise, land, tax revenue: the concrete local implications behind the filing numbers.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "questions",
@@ -42,29 +43,25 @@ const t = {
     {
       anchor: "good-project",
       title: "What makes a “good” project?",
-      body: "What well-run projects do: the levers an operator can pull, and how to spot them in a filing.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "rights",
       title: "Rights and timeline",
-      body: "Public inquiry, permitting, environmental review: who can act, when, and what a project's calendar still allows to change.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "faq",
       title: "Practical questions",
-      body: "Concrete situations: what to do if, whom to contact, within what deadlines — the concepts live in block 1.",
-      pending: true,
+      slot: "rich",
     },
     {
       anchor: "further",
       title: "Going further",
-      body: "Open sources, reports, maps and organizations to follow.",
-      pending: true,
+      slot: "rich",
     },
   ],
 };
 ---
 
-<Understand lang="en" t={t} checklist={CHECKLIST_EN} whatIs={WHATIS_EN} />
+<Understand lang="en" t={t} checklist={CHECKLIST_EN} whatIs={WHATIS_EN} rich={RICH_EN} />

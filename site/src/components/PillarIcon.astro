@@ -9,8 +9,10 @@ import drop from "@phosphor-icons/core/assets/regular/drop.svg?raw";
 import tree from "@phosphor-icons/core/assets/regular/tree.svg?raw";
 import usersThree from "@phosphor-icons/core/assets/regular/users-three.svg?raw";
 import magnifyingGlass from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
+import speakerHigh from "@phosphor-icons/core/assets/regular/speaker-high.svg?raw";
+import coins from "@phosphor-icons/core/assets/regular/coins.svg?raw";
 
-export type PillarIconName = "energy" | "water" | "land" | "local" | "transparency";
+export type PillarIconName = "energy" | "water" | "land" | "local" | "transparency" | "noise" | "tax";
 
 const ICONS: Record<PillarIconName, string> = {
   energy: lightning,
@@ -18,6 +20,8 @@ const ICONS: Record<PillarIconName, string> = {
   land: tree,
   local: usersThree,
   transparency: magnifyingGlass,
+  noise: speakerHigh,
+  tax: coins,
 };
 
 interface Props {

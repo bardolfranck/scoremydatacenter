@@ -9,6 +9,7 @@
 import Base from "../layouts/Base.astro";
 import type { Checklist } from "../content/questions";
 import type { WhatIsDC } from "../content/what-is-a-dc";
+import type { RichBlock } from "../content/understand-blocks";
 import PillarIcon from "./PillarIcon.astro";
 import PowerScale from "./PowerScale.astro";
 
@@ -17,8 +18,9 @@ interface Props {
   t: Record<string, any>;
   checklist?: Checklist;
   whatIs?: WhatIsDC;
+  rich?: Record<string, RichBlock>;
 }
-const { lang, t, checklist, whatIs } = Astro.props;
+const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
 ---
 
 <Base
@@ -44,6 +46,62 @@ const { lang, t, checklist, whatIs } = Astro.props;
             <h3>{block.title}</h3>
             {block.body && <p>{block.body}</p>}
             {block.pending && <span class="fixture-tag">{t.pendingLabel}</span>}
+            {block.slot === "rich" && rich[block.anchor] && (
+              <div class="richblock">
+                {rich[block.anchor].intro && <p class="whatis-p" set:html={rich[block.anchor].intro}></p>}
+                {rich[block.anchor].points && (
+                  <div class="rich-points">
+                    {rich[block.anchor].points.map((point: any) => (
+                      <p class="whatis-p rich-point">
+                        {point.icon && <PillarIcon name={point.icon} size={17} />}
+                        <span><strong>{point.lead}</strong> <span set:html={point.body}></span></span>
+                      </p>
+                    ))}
+                  </div>
+                )}
+                {rich[block.anchor].qas && (
+                  <div class="rich-qas">
+                    {rich[block.anchor].qas.map((qa: any) => (
+                      <div class="rich-qa">
+                        <p class="checklist-q">« {qa.q} »</p>
+                        <p class="checklist-why" set:html={qa.a}></p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {rich[block.anchor].linkGroups && (
+                  <div class="rich-linkgroups">
+                    {rich[block.anchor].linkGroups.map((group: any) => (
+                      <section class="checklist-group">
+                        <h4>{group.title}</h4>
+                        <ul class="rich-links">
+                          {group.links.map((link: any) => (
+                            <li>
+                              {link.url
+                                ? <a href={link.url} target="_blank" rel="noopener"><strong>{link.name}</strong></a>
+                                : <strong>{link.name}</strong>}
+                              {" — "}{link.desc}
+                            </li>
+                          ))}
+                        </ul>
+                      </section>
+                    ))}
+                  </div>
+                )}
+                {rich[block.anchor].closing && <p class="whatis-p" set:html={rich[block.anchor].closing}></p>}
+                {rich[block.anchor].takeaway && (
+                  <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> <span set:html={rich[block.anchor].takeaway}></span></p>
+                )}
+                {rich[block.anchor].sources && (
+                  <p class="block-sources">
+                    {t.sourcesLabel}
+                    {rich[block.anchor].sources.map((src: any, n: number) => (
+                      <> <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.anchor].sources.length - 1 ? " · " : ""}</>
+                    ))}
+                  </p>
+                )}
+              </div>
+            )}
             {block.slot === "whatis" && whatIs && (
               <div class="whatis">
                 {whatIs.paragraphs.map((para) => <p class="whatis-p" set:html={para}></p>)}
