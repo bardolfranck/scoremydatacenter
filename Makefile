@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check
+.PHONY: validate score rescore build test install headers headers-check onepager
 
 install:
 	uv sync
@@ -26,3 +26,12 @@ headers:
 
 headers-check:
 	uv run python scripts/check_headers.py
+
+# Regenerate the downloadable one-pager PDFs from the built pages.
+# Run after ANY change to site/src/content/questions.ts, then commit the PDFs.
+onepager:
+	npm run build --prefix site
+	(cd site && npx astro preview --port 4399 & echo $$! > /tmp/smdc-preview.pid) && sleep 2
+	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-fr.pdf" "http://localhost:4399/fr/comprendre/one-pager"
+	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-en.pdf" "http://localhost:4399/understand/one-pager"
+	kill $$(cat /tmp/smdc-preview.pid) 2>/dev/null || true

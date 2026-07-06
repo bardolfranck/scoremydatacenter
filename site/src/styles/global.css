@@ -350,7 +350,7 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .checklist-why { color: var(--muted); font-size: 0.88rem; }
 .checklist-why a { color: var(--accent); font-weight: 700; }
 .checklist-takeaway { padding: 14px 16px; border-left: 3px solid var(--accent); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; color: var(--ink-soft); font-size: 0.95rem; max-width: 80ch; }
-.checklist-print { width: fit-content; }
+.checklist-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
 /* Block-1 "what is a DC" */
 .whatis { display: grid; gap: 16px; margin-top: 8px; }

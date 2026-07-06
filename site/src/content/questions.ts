@@ -21,6 +21,8 @@ export interface Checklist {
   takeaway: string;
   printLabel: string;
   printHref: string;
+  pdfLabel: string;
+  pdfHref: string;
   printTitle: string;
   printFooter: string;
 }
@@ -134,8 +136,10 @@ export const CHECKLIST_FR: Checklist = {
   ],
   takeaway:
     "Une question sans réponse n'est pas un échec : notez-la, datez-la, redemandez par écrit. C'est exactement ce que fait notre grille : ce qui n'est pas documenté publiquement se lit dans la confiance (haute, moyenne ou faible) qui accompagne chaque note.",
-  printLabel: "Version imprimable (une page)",
+  printLabel: "Version imprimable",
   printHref: "/fr/comprendre/one-pager",
+  pdfLabel: "Télécharger le PDF (une page)",
+  pdfHref: "/downloads/questions-data-center-fr.pdf",
   printTitle: "Les bonnes questions à poser sur un projet de data center",
   printFooter: "ScoreMyDataCenter — observatoire indépendant · scoremydatacenter.org · CC BY-SA 4.0",
 };
@@ -249,8 +253,10 @@ export const CHECKLIST_EN: Checklist = {
   ],
   takeaway:
     "An unanswered question is not a failure: note it, date it, ask again in writing. That is exactly what our grid does: what is not publicly documented shows up in the confidence level (high, medium or low) attached to every grade.",
-  printLabel: "Printable version (one page)",
+  printLabel: "Printable version",
   printHref: "/understand/one-pager",
+  pdfLabel: "Download the PDF (one page)",
+  pdfHref: "/downloads/questions-data-center-en.pdf",
   printTitle: "The right questions to ask about a data center project",
   printFooter: "ScoreMyDataCenter — independent observatory · scoremydatacenter.org · CC BY-SA 4.0",
 };

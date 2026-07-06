@@ -147,7 +147,10 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
                   ))}
                 </div>
                 <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> {checklist.takeaway}</p>
-                <a class="button button-secondary checklist-print" href={checklist.printHref}>{checklist.printLabel}</a>
+                <div class="checklist-actions">
+                  <a class="button button-primary" href={checklist.pdfHref} download>{checklist.pdfLabel}</a>
+                  <a class="button button-secondary" href={checklist.printHref}>{checklist.printLabel}</a>
+                </div>
               </div>
             )}
           </article>
