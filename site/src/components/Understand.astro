@@ -1,0 +1,47 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// "Understanding data centers" — the second acquisition layer (framing note
+// §4): light, didactic, for the local official and the resident. Seven-block
+// structure; editorial texts land block by block from the methodology lead
+// (block 3, the five-pillar checklist one-pager, ships first).
+import Base from "../layouts/Base.astro";
+
+interface Props {
+  lang: "en" | "fr";
+  t: Record<string, any>;
+}
+const { lang, t } = Astro.props;
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.description}
+  tagline={t.tagline}
+  altHref={t.altHref}
+  altLabel={t.altLabel}
+  nav={t.nav}
+>
+  <section class="section" aria-labelledby="learn-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="learn-title">{t.pageTitle}</h2>
+        <p>{t.lede}</p>
+      </div>
+
+      <div class="learn-grid">
+        {t.blocks.map((block: any, i: number) => (
+          <article class={`learn-block ${block.featured ? "featured" : ""}`} id={block.anchor}>
+            <span class="learn-number" aria-hidden="true">{i + 1}</span>
+            <h3>{block.title}</h3>
+            <p>{block.body}</p>
+            {block.pending && <span class="fixture-tag">{t.pendingLabel}</span>}
+            {block.featured && <span class="learn-featured-note">{t.onePagerNote}</span>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

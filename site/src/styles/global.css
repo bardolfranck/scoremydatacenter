@@ -312,6 +312,30 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rank-grade { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 .rank-note { margin-top: 14px; color: var(--muted); font-size: 0.84rem; }
 
+/* Understanding data centers — 7-block pedagogy grid */
+.learn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.learn-block {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+.learn-block.featured { border-color: var(--accent); box-shadow: 0 12px 34px rgba(15, 95, 184, 0.12); grid-column: 1 / -1; }
+.learn-number {
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  background: var(--wash);
+  color: var(--accent);
+  font-weight: 850;
+}
+.learn-block p { color: var(--muted); font-size: 0.98rem; max-width: 70ch; }
+.learn-featured-note { color: var(--accent); font-size: 0.86rem; font-weight: 750; }
+
 /* FAQ — native accordion, no JS */
 .faq-list { display: grid; max-width: 860px; }
 .faq-list details { border-top: 1px solid var(--line); }
@@ -345,6 +369,10 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 }
 .contact-band h2 { max-width: 22ch; font-size: clamp(1.7rem, 3.4vw, 2.7rem); }
 .site-footer { display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between; padding: 22px max(clamp(20px, 5vw, 72px), calc((100vw - 1620px) / 2)); border-top: 1px solid var(--line); color: var(--muted); font-size: 0.84rem; }
+
+@media (max-width: 1240px) {
+  .brand-tagline { display: none; }
+}
 
 @media (max-width: 960px) {
   .site-header { flex-direction: column; align-items: flex-start; gap: 10px; }

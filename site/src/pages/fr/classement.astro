@@ -36,14 +36,9 @@ const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
 
-const nav = [
-  { href: "/fr/carte", label: "Carte" },
-  { href: "/fr/classement", label: "Classement" },
-  { href: "/fr/#method", label: "Méthode" },
-  { href: "/fr/#open", label: "Modèle ouvert" },
-  { href: "/fr/#contact", label: "Contact" },
-  { href: "/fr/#faq", label: "FAQ" },
-];
+import { FR_NAV } from "../../config/nav";
+
+const nav = FR_NAV;
 ---
 
 <Base
