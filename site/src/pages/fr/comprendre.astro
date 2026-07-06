@@ -4,6 +4,7 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import Understand from "../../components/Understand.astro";
 import { FR_NAV } from "../../config/nav";
+import { CHECKLIST_FR } from "../../content/questions";
 
 const t = {
   title: "Comprendre les data centers — ScoreMyDataCenter",
@@ -17,7 +18,8 @@ const t = {
   lede:
     "Pour l'élu qui reçoit l'appel d'un cabinet, le riverain qui découvre un panneau d'enquête publique, le journaliste qui débute sur le sujet : l'essentiel, sans jargon. Ce qui se cache derrière les chiffres.",
   pendingLabel: "Texte en préparation",
-  onePagerNote: "Publié en premier — avec un one-pager téléchargeable.",
+  whyLabel: "Pourquoi :",
+  takeawayLabel: "À retenir —",
   blocks: [
     {
       anchor: "quoi",
@@ -65,4 +67,4 @@ const t = {
 };
 ---
 
-<Understand lang="fr" t={t} />
+<Understand lang="fr" t={t} checklist={CHECKLIST_FR} />

@@ -1,0 +1,101 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Printable one-pager for the block-3 checklist: no site chrome, A4-tuned
+// print CSS, browser print = the PDF. Same data source as the web block.
+import type { Checklist } from "../content/questions";
+
+interface Props {
+  lang: "en" | "fr";
+  checklist: Checklist;
+  printButton: string;
+  backLabel: string;
+  backHref: string;
+}
+const { lang, checklist, printButton, backLabel, backHref } = Astro.props;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>{checklist.printTitle}</title>
+    <link rel="icon" type="image/svg+xml" href="/assets/smdc-icon.svg" />
+  </head>
+  <body class="onepager">
+    <div class="op-toolbar">
+      <a href={backHref}>← {backLabel}</a>
+      <button onclick="window.print()">{printButton}</button>
+    </div>
+
+    <header class="op-head">
+      <img src="/assets/smdc-icon.svg" alt="" width="30" height="30" />
+      <div>
+        <h1>{checklist.printTitle}</h1>
+        <p>{checklist.intro}</p>
+      </div>
+    </header>
+
+    <main class="op-groups">
+      {checklist.groups.map((group) => (
+        <section>
+          <h2>{group.pillar}</h2>
+          {group.items.map((item) => (
+            <div class="op-item">
+              <p class="op-q">« {item.q} »</p>
+              <p class="op-why" set:html={item.why.replace(/<a[^>]*>|<\/a>/g, "")}></p>
+            </div>
+          ))}
+        </section>
+      ))}
+    </main>
+
+    <p class="op-takeaway">{checklist.takeaway}</p>
+    <footer class="op-foot">{checklist.printFooter}</footer>
+
+    <style>
+      * { box-sizing: border-box; margin: 0; }
+      body.onepager {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 20px 24px 32px;
+        color: #07182f;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+        font-size: 12.5px;
+        line-height: 1.4;
+      }
+      .op-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+      .op-toolbar a { color: #0f5fb8; font-weight: 700; text-decoration: none; }
+      .op-toolbar button {
+        min-height: 40px; padding: 8px 18px;
+        border: 0; border-radius: 8px;
+        background: #07182f; color: #fff;
+        font: inherit; font-weight: 800; cursor: pointer;
+      }
+      .op-head { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 10px; border-bottom: 2px solid #07182f; }
+      .op-head img { border-radius: 6px; }
+      .op-head h1 { font-size: 1.15rem; line-height: 1.2; }
+      .op-head p { margin-top: 4px; color: #55677c; font-size: 0.78rem; max-width: 90ch; }
+      .op-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; margin-top: 14px; }
+      .op-groups section { break-inside: avoid; }
+      .op-groups h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0f5fb8; border-bottom: 1px solid #d9e1ea; padding-bottom: 3px; margin-bottom: 7px; }
+      .op-item { margin-bottom: 7px; break-inside: avoid; }
+      .op-q { font-weight: 700; }
+      .op-why { color: #55677c; font-size: 0.72rem; }
+      .op-takeaway { margin-top: 12px; padding: 8px 12px; border-left: 3px solid #0f5fb8; background: #f3f7f8; color: #243851; font-size: 0.78rem; }
+      .op-foot { margin-top: 10px; color: #8fa0b3; font-size: 0.7rem; text-align: center; }
+      @media print {
+        .op-toolbar { display: none; }
+        body.onepager { max-width: none; padding: 0; font-size: 9.6px; }
+        .op-head h1 { font-size: 1rem; }
+        @page { size: A4; margin: 11mm; }
+      }
+      @media (max-width: 700px) {
+        .op-groups { grid-template-columns: 1fr; }
+      }
+    </style>
+  </body>
+</html>

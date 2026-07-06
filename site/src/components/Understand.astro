@@ -7,12 +7,14 @@
 // structure; editorial texts land block by block from the methodology lead
 // (block 3, the five-pillar checklist one-pager, ships first).
 import Base from "../layouts/Base.astro";
+import type { Checklist } from "../content/questions";
 
 interface Props {
   lang: "en" | "fr";
   t: Record<string, any>;
+  checklist?: Checklist;
 }
-const { lang, t } = Astro.props;
+const { lang, t, checklist } = Astro.props;
 ---
 
 <Base
@@ -38,7 +40,26 @@ const { lang, t } = Astro.props;
             <h3>{block.title}</h3>
             <p>{block.body}</p>
             {block.pending && <span class="fixture-tag">{t.pendingLabel}</span>}
-            {block.featured && <span class="learn-featured-note">{t.onePagerNote}</span>}
+            {block.featured && checklist && (
+              <div class="checklist">
+                <p class="checklist-intro">{checklist.intro}</p>
+                <div class="checklist-groups">
+                  {checklist.groups.map((group) => (
+                    <section class="checklist-group">
+                      <h4>{group.pillar}</h4>
+                      {group.items.map((item) => (
+                        <div class="checklist-item">
+                          <p class="checklist-q">« {item.q} »</p>
+                          <p class="checklist-why" set:html={`${t.whyLabel} ${item.why}`}></p>
+                        </div>
+                      ))}
+                    </section>
+                  ))}
+                </div>
+                <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> {checklist.takeaway}</p>
+                <a class="button button-secondary checklist-print" href={checklist.printHref}>{checklist.printLabel}</a>
+              </div>
+            )}
           </article>
         ))}
       </div>

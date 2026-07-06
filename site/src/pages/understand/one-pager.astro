@@ -1,0 +1,15 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import OnePager from "../../components/OnePager.astro";
+import { CHECKLIST_EN } from "../../content/questions";
+---
+
+<OnePager
+  lang="en"
+  checklist={CHECKLIST_EN}
+  printButton="Print / PDF"
+  backLabel="Understanding data centers"
+  backHref="/understand#questions"
+/>

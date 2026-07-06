@@ -4,6 +4,7 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import Understand from "../components/Understand.astro";
 import { EN_NAV } from "../config/nav";
+import { CHECKLIST_EN } from "../content/questions";
 
 const t = {
   title: "Understanding data centers — ScoreMyDataCenter",
@@ -17,7 +18,8 @@ const t = {
   lede:
     "For the local official getting the developer's call, the resident discovering a public-inquiry notice, the journalist new to the beat: the essentials, without jargon. What hides behind the numbers.",
   pendingLabel: "Text in preparation",
-  onePagerNote: "Published first — with a downloadable one-pager.",
+  whyLabel: "Why:",
+  takeawayLabel: "Takeaway —",
   blocks: [
     {
       anchor: "what",
@@ -65,4 +67,4 @@ const t = {
 };
 ---
 
-<Understand lang="en" t={t} />
+<Understand lang="en" t={t} checklist={CHECKLIST_EN} />
