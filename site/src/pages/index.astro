@@ -3,6 +3,7 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import Landing from "../components/Landing.astro";
+import { EN_NAV } from "../config/nav";
 
 const t = {
   title: "ScoreMyDataCenter — the public score for data center acceptability",
@@ -11,13 +12,7 @@ const t = {
   altHref: "/fr/",
   altLabel: "🇫🇷 FR",
   tagline: "Independent observatory",
-  nav: [
-    { href: "#scores", label: "Scores" },
-    { href: "#method", label: "Method" },
-    { href: "#open", label: "Open model" },
-    { href: "#contact", label: "Contact" },
-    { href: "#faq", label: "FAQ" },
-  ],
+  nav: EN_NAV,
   heroTitle: "Data centers no longer get built just anywhere.",
   heroLede:
     "Every project graded A–E — the site and the operator — with sources and a confidence level.",

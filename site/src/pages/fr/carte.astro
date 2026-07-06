@@ -6,14 +6,9 @@
 import Base from "../../layouts/Base.astro";
 import MapIsland from "../../components/MapIsland.astro";
 
-const nav = [
-  { href: "/fr/carte", label: "Carte" },
-  { href: "/fr/classement", label: "Classement" },
-  { href: "/fr/#method", label: "Méthode" },
-  { href: "/fr/#open", label: "Modèle ouvert" },
-  { href: "/fr/#contact", label: "Contact" },
-  { href: "/fr/#faq", label: "FAQ" },
-];
+import { FR_NAV } from "../../config/nav";
+
+const nav = FR_NAV;
 ---
 
 <Base

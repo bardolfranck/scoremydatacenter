@@ -1,0 +1,68 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import Understand from "../components/Understand.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  title: "Understanding data centers — ScoreMyDataCenter",
+  description:
+    "The essentials on data centers, without jargon: orders of magnitude, local implications, the right questions to ask, rights and timelines.",
+  tagline: "Independent observatory",
+  altHref: "/fr/comprendre",
+  altLabel: "🇫🇷 FR",
+  nav: EN_NAV,
+  pageTitle: "Understanding data centers",
+  lede:
+    "For the local official getting the developer's call, the resident discovering a public-inquiry notice, the journalist new to the beat: the essentials, without jargon. What hides behind the numbers.",
+  pendingLabel: "Text in preparation",
+  onePagerNote: "Published first — with a downloadable one-pager.",
+  blocks: [
+    {
+      anchor: "what",
+      title: "What is a data center?",
+      body: "The orders of magnitude that matter: sizes, power, consumption — and what separates an average data center from a mega-project.",
+      pending: true,
+    },
+    {
+      anchor: "municipality",
+      title: "Why it concerns my municipality",
+      body: "Water, energy, noise, land, tax revenue: the concrete local implications behind the filing numbers.",
+      pending: true,
+    },
+    {
+      anchor: "questions",
+      title: "The right questions to ask",
+      body: "The checklist that mirrors our scoring pillars: energy, water, land, local impact, transparency.",
+      featured: true,
+    },
+    {
+      anchor: "good-project",
+      title: "What makes a “good” project?",
+      body: "What well-run projects do: the levers an operator can pull, and how to spot them in a filing.",
+      pending: true,
+    },
+    {
+      anchor: "rights",
+      title: "Rights and timeline",
+      body: "Public inquiry, permitting, environmental review: who can act, when, and what a project's calendar still allows to change.",
+      pending: true,
+    },
+    {
+      anchor: "faq",
+      title: "Practical questions",
+      body: "Concrete situations: what to do if, whom to contact, within what deadlines — the concepts live in block 1.",
+      pending: true,
+    },
+    {
+      anchor: "further",
+      title: "Going further",
+      body: "Open sources, reports, maps and organizations to follow.",
+      pending: true,
+    },
+  ],
+};
+---
+
+<Understand lang="en" t={t} />
