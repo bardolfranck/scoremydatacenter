@@ -38,14 +38,21 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
         <h2 id="learn-title">{t.pageTitle}</h2>
         <p>{t.lede}</p>
       </div>
+      {t.contextNotice && <p class="context-notice" set:html={t.contextNotice}></p>}
+      <nav class="learn-toc" aria-label={t.tocAria}>
+        {t.blocks.map((block: any, i: number) => (
+          <a href={`#${block.anchor}`}>{i + 1} · {block.title}</a>
+        ))}
+      </nav>
 
       <div class="learn-grid">
         {t.blocks.map((block: any, i: number) => (
-          <article class={`learn-block ${block.featured ? "featured" : ""} ${block.slot ? "filled" : ""}`} id={block.anchor}>
+          <article class={`learn-block ${block.featured ? "featured" : ""} ${block.slot ? "filled foldable folded" : ""}`} id={block.anchor}>
             <span class="learn-number" aria-hidden="true">{i + 1}</span>
-            <h3>{block.title}</h3>
+            <h3>{block.title} {block.tag && <span class="france-tag">{block.tag}</span>}</h3>
             {block.body && <p>{block.body}</p>}
             {block.pending && <span class="fixture-tag">{t.pendingLabel}</span>}
+            <div class="block-content">
             {block.slot === "rich" && rich[block.anchor] && (
               <div class="richblock">
                 {rich[block.anchor].intro && <p class="whatis-p" set:html={rich[block.anchor].intro}></p>}
@@ -96,7 +103,7 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
                   <p class="block-sources">
                     {t.sourcesLabel}
                     {rich[block.anchor].sources.map((src: any, n: number) => (
-                      <> <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.anchor].sources.length - 1 ? " · " : ""}</>
+                      <span class="src-item" id={`src-${block.anchor}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.anchor].sources.length - 1 ? " ·" : ""}</span>
                     ))}
                   </p>
                 )}
@@ -125,12 +132,12 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
                 <p class="block-sources">
                   {whatIs.sourcesLabel}
                   {whatIs.sources.map((src, n) => (
-                    <> <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " · " : ""}</>
+                    <span class="src-item" id={`src-${block.anchor}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " ·" : ""}</span>
                   ))}
                 </p>
               </div>
             )}
-            {block.featured && checklist && (
+            {block.slot === "checklist" && checklist && (
               <div class="checklist">
                 <p class="checklist-intro">{checklist.intro}</p>
                 <div class="checklist-groups">
@@ -153,9 +160,44 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
                 </div>
               </div>
             )}
+            </div>
+            {block.slot && (
+              <button class="fold-toggle" type="button" data-more={t.seeMore} data-less={t.seeLess}>{t.seeMore}</button>
+            )}
           </article>
         ))}
       </div>
     </div>
   </section>
 </Base>
+
+<script>
+  // Fold/expand: filled blocks start folded (a few visible lines + fade).
+  // Arriving via an anchor (internal links, TOC, footnote refs) auto-expands
+  // the target block so no reference ever lands on hidden text.
+  function setLabel(btn: HTMLElement, folded: boolean) {
+    btn.textContent = folded ? btn.dataset.more || "" : btn.dataset.less || "";
+  }
+  document.querySelectorAll<HTMLElement>(".fold-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const block = btn.closest(".learn-block");
+      if (!block) return;
+      const folded = block.classList.toggle("folded");
+      setLabel(btn, folded);
+      if (folded) block.scrollIntoView({ block: "start" });
+    });
+  });
+  function expandTarget() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    if (!id) return;
+    const el = document.getElementById(id);
+    const block = el?.closest ? (el.closest(".learn-block") as HTMLElement | null) : null;
+    if (block?.classList.contains("folded")) {
+      block.classList.remove("folded");
+      const btn = block.querySelector<HTMLElement>(".fold-toggle");
+      if (btn) setLabel(btn, false);
+    }
+  }
+  window.addEventListener("hashchange", expandTarget);
+  expandTarget();
+</script>

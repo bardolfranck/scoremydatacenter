@@ -32,17 +32,17 @@ export const WHATIS_FR: WhatIsDC = {
     {
       label: "Data center « classique »",
       power: "quelques MW",
-      note: "La grande majorité des ~300 sites français, raccordés au réseau de distribution comme une grosse usine (RTE, 2026)",
+      note: "La grande majorité des ~300 sites français, raccordés au réseau de distribution comme une grosse usine<sup><a href='#src-quoi-1'>1</a></sup>",
     },
     {
       label: "Grand projet",
       power: "100 à 200 MW",
-      note: "La consommation électrique de villes comme Le Mans ou Saint-Étienne (RTE, 2026)",
+      note: "La consommation électrique de villes comme Le Mans ou Saint-Étienne<sup><a href='#src-quoi-1'>1</a></sup>",
     },
     {
       label: "Méga-projet",
       power: "plus de 400 MW",
-      note: "Une dizaine de projets « hors normes » en France ; le Campus IA de Fouju vise 1 400 MW sur environ 90 hectares (RTE, 2026 ; concertation publique Campus IA)",
+      note: "Une dizaine de projets « hors normes » en France ; le Campus IA de Fouju vise 1 400 MW sur environ 90 hectares<sup><a href='#src-quoi-1'>1</a></sup><sup><a href='#src-quoi-3'>3</a></sup>",
     },
   ],
   scale: {
@@ -54,7 +54,7 @@ export const WHATIS_FR: WhatIsDC = {
     ],
   },
   statsParagraph:
-    "Aujourd'hui, l'ensemble des data centers représente environ 2 % de l'électricité consommée en France ; RTE anticipe environ 4 % en 2035 (RTE, 2026). À l'échelle mondiale, ils pèsent environ 1,5 % de la consommation d'électricité en 2024 (AIE, 2025).",
+    "Aujourd'hui, l'ensemble des data centers représente environ 2 % de l'électricité consommée en France ; RTE anticipe environ 4 % en 2035<sup><a href='#src-quoi-1'>1</a></sup>. À l'échelle mondiale, ils pèsent environ 1,5 % de la consommation d'électricité en 2024<sup><a href='#src-quoi-4'>4</a></sup>.",
   takeaway:
     "Le même mot désigne une salle de quelques mégawatts et un campus mille fois plus puissant. Face à un projet, la première question est toujours : combien de mégawatts ?",
   sourcesLabel: "Sources :",
@@ -76,17 +76,17 @@ export const WHATIS_EN: WhatIsDC = {
     {
       label: "“Classic” data center",
       power: "a few MW",
-      note: "The vast majority of France's ~300 sites, connected to the distribution grid like a large factory (RTE, 2026)",
+      note: "The vast majority of France's ~300 sites, connected to the distribution grid like a large factory<sup><a href='#src-what-1'>1</a></sup>",
     },
     {
       label: "Large project",
       power: "100 to 200 MW",
-      note: "The electricity consumption of cities like Le Mans or Saint-Étienne (RTE, 2026)",
+      note: "The electricity consumption of cities like Le Mans or Saint-Étienne<sup><a href='#src-what-1'>1</a></sup>",
     },
     {
       label: "Mega-project",
       power: "above 400 MW",
-      note: "About a dozen “out of the ordinary” projects in France; the Fouju AI Campus targets 1,400 MW on about 90 hectares (RTE, 2026; Campus IA public consultation)",
+      note: "About a dozen “out of the ordinary” projects in France; the Fouju AI Campus targets 1,400 MW on about 90 hectares<sup><a href='#src-what-1'>1</a></sup><sup><a href='#src-what-3'>3</a></sup>",
     },
   ],
   scale: {
@@ -98,7 +98,7 @@ export const WHATIS_EN: WhatIsDC = {
     ],
   },
   statsParagraph:
-    "Today, data centers account for about 2% of the electricity consumed in France; RTE expects about 4% by 2035 (RTE, 2026). Worldwide, they used about 1.5% of electricity in 2024 (IEA, 2025).",
+    "Today, data centers account for about 2% of the electricity consumed in France; RTE expects about 4% by 2035<sup><a href='#src-what-1'>1</a></sup>. Worldwide, they used about 1.5% of electricity in 2024<sup><a href='#src-what-4'>4</a></sup>.",
   takeaway:
     "The same word covers a room of a few megawatts and a campus a thousand times more powerful. Facing a project, the first question is always: how many megawatts?",
   sourcesLabel: "Sources:",

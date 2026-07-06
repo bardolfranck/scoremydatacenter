@@ -31,7 +31,7 @@ headers-check:
 # Run after ANY change to site/src/content/questions.ts, then commit the PDFs.
 onepager:
 	npm run build --prefix site
-	(cd site && npx astro preview --port 4399 & echo $$! > /tmp/smdc-preview.pid) && sleep 2
+	(cd site && npx astro preview --port 4399 > /dev/null 2>&1 & echo $$! > /tmp/smdc-preview.pid) && sleep 3
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-fr.pdf" "http://localhost:4399/fr/comprendre/one-pager"
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-en.pdf" "http://localhost:4399/understand/one-pager"
-	kill $$(cat /tmp/smdc-preview.pid) 2>/dev/null || true
+	lsof -ti :4399 | xargs kill 2>/dev/null || true

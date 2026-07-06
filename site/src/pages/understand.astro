@@ -23,22 +23,30 @@ const t = {
   whyLabel: "Why:",
   takeawayLabel: "Takeaway —",
   sourcesLabel: "Sources:",
+  seeMore: "See more…",
+  seeLess: "Collapse",
+  tocAria: "Contents",
+  contextNotice:
+    "This guide is written from the <strong>French</strong> regulatory and market context — the observatory's first scored country. The questions in block 3 travel anywhere; figures, rights and timelines are France-specific. Country-specific versions will follow the observatory's expansion.",
   blocks: [
     {
       anchor: "what",
       title: "What is a data center?",
       slot: "whatis",
+      tag: "France",
     },
     {
       anchor: "municipality",
       title: "Why it concerns my municipality",
       slot: "rich",
+      tag: "France",
     },
     {
       anchor: "questions",
       title: "The right questions to ask",
       body: "The checklist that mirrors our scoring pillars: energy, water, land, local impact, transparency.",
       featured: true,
+      slot: "checklist",
     },
     {
       anchor: "good-project",
@@ -49,6 +57,7 @@ const t = {
       anchor: "rights",
       title: "Rights and timeline",
       slot: "rich",
+      tag: "France",
     },
     {
       anchor: "faq",

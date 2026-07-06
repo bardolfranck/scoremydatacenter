@@ -83,26 +83,26 @@ const { lang, checklist, printButton, backLabel, backHref } = Astro.props;
       }
       .op-head { display: flex; gap: 12px; align-items: flex-start; padding-bottom: 10px; border-bottom: 2px solid #07182f; }
       .op-head img { border-radius: 6px; }
-      .op-head h1 { font-size: 1.15rem; line-height: 1.2; }
-      .op-head p { margin-top: 4px; color: #55677c; font-size: 0.78rem; max-width: 90ch; }
+      .op-head h1 { font-size: 1.15em; line-height: 1.2; }
+      .op-head p { margin-top: 4px; color: #55677c; font-size: 0.82em; max-width: 90ch; }
       .op-groups { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; margin-top: 14px; }
       .op-groups section { break-inside: avoid; }
-      .op-groups h2 { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0f5fb8; border-bottom: 1px solid #d9e1ea; padding-bottom: 3px; margin-bottom: 7px; }
+      .op-groups h2 { display: flex; align-items: center; gap: 6px; font-size: 0.84em; text-transform: uppercase; letter-spacing: 0.05em; color: #0f5fb8; border-bottom: 1px solid #d9e1ea; padding-bottom: 3px; margin-bottom: 7px; }
       .op-item { margin-bottom: 7px; break-inside: avoid; }
-      .op-q { font-weight: 700; }
-      .op-why { color: #55677c; font-size: 0.72rem; }
-      .op-takeaway { margin-top: 12px; padding: 8px 12px; border-left: 3px solid #0f5fb8; background: #f3f7f8; color: #243851; font-size: 0.78rem; }
-      .op-foot { margin-top: 10px; color: #8fa0b3; font-size: 0.7rem; text-align: center; }
+      .op-q { font-weight: 700; font-size: 1em; }
+      .op-why { color: #55677c; font-size: 0.88em; }
+      .op-takeaway { margin-top: 12px; padding: 8px 12px; border-left: 3px solid #0f5fb8; background: #f3f7f8; color: #243851; font-size: 0.9em; }
+      .op-foot { margin-top: 10px; color: #8fa0b3; font-size: 0.8em; text-align: center; }
       @media print {
         .op-toolbar { display: none; }
         body.onepager { max-width: none; padding: 0; font-size: 8.9px; line-height: 1.32; }
-        .op-head h1 { font-size: 0.95rem; }
-        .op-head p { font-size: 0.74rem; margin-top: 2px; }
+        .op-head h1 { font-size: 1.05em; }
+        .op-head p { font-size: 0.8em; margin-top: 2px; }
         .op-groups { gap: 8px 20px; margin-top: 9px; }
         .op-groups h2 { margin-bottom: 5px; padding-bottom: 2px; }
         .op-item { margin-bottom: 5px; }
-        .op-why { font-size: 0.7rem; }
-        .op-takeaway { margin-top: 8px; padding: 6px 10px; font-size: 0.74rem; }
+        .op-why { font-size: 0.86em; }
+        .op-takeaway { margin-top: 8px; padding: 6px 10px; font-size: 0.86em; }
         .op-foot { margin-top: 6px; }
         @page { size: A4; margin: 8mm; }
       }
