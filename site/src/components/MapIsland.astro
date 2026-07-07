@@ -80,6 +80,7 @@ const { variant, labels } = Astro.props;
           </div>
           <span class="confidence ${p.confidence}"><span class="dot"></span>${labels.confidence[p.confidence]}</span>
           ${fixtureTag}
+          <a class="map-popup-link" href="/fr/dc/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
         </div>`;
 
       new maplibregl.Marker({ element: el })

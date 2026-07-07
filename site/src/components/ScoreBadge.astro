@@ -4,7 +4,7 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 // THE invariant component (pre-mortem fatal #1): the ONLY place a grade letter
 // may be rendered, and a letter is never rendered without its documentation
-// confidence. `confidence` is a required prop even for compact chips — compact
+// coupling. `confidence` is a required prop even for compact chips — compact
 // usage is only legal inside a card whose header already displays it
 // (renderConfidence=false acknowledges, never removes, the coupling).
 interface Grade {
@@ -19,7 +19,9 @@ interface Props {
   renderConfidence?: boolean;
   renderLabel?: boolean; // false = label stays for screen readers only (compact chips whose label is drawn by the parent cell)
   showScore?: boolean;
-  size?: "md" | "sm";
+  size?: "md" | "sm" | "lg";
+  layout?: "row" | "lead"; // lead = big chip first, label + documentation stacked to its right (fiche badge)
+  documentationLabel?: string; // the coupled documentation wording ("documentation moyenne") — replaces the confidence dot line when set
   naLabel?: string; // localized "insufficient data"
 }
 const {
@@ -31,32 +33,45 @@ const {
   renderLabel = true,
   showScore = false,
   size = "md",
+  layout = "row",
+  documentationLabel,
   naLabel = "insufficient data",
 } = Astro.props;
 const isNa = grade.grade === "insufficient_data";
 const chipClass = isNa ? "grade-na" : `grade-${grade.grade.toLowerCase()}`;
+const sizeClass = size === "sm" ? "sm" : size === "lg" ? "lg" : "";
+const chipText = isNa ? "–" : grade.grade;
+const chipAria = isNa ? naLabel : `${label}: ${grade.grade}`;
 ---
 
-<div class="scorebadge">
-  <div class="scorebadge-row">
-    <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
-    <span class="scorebadge-value">
-      {showScore && !isNa && grade.score !== undefined && (
-        <span class="scorebadge-score">{grade.score.toFixed(1)}/100</span>
-      )}
-      <span
-        class={`gradechip ${size === "sm" ? "sm" : ""} ${chipClass}`}
-        title={isNa ? naLabel : undefined}
-        aria-label={isNa ? naLabel : `${label}: ${grade.grade}`}
-      >
-        {isNa ? "–" : grade.grade}
-      </span>
+{layout === "lead" ? (
+  <div class="scorebadge scorebadge-lead">
+    <span class={`gradechip ${sizeClass} ${chipClass}`} title={isNa ? naLabel : undefined} aria-label={chipAria}>{chipText}</span>
+    <span class="scorebadge-lead-text">
+      <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
+      {documentationLabel && <span class="scorebadge-doc">{documentationLabel}</span>}
     </span>
   </div>
-  {renderConfidence && (
-    <span class={`confidence ${confidence}`}>
-      <span class="dot" aria-hidden="true"></span>
-      {confidenceLabel}
-    </span>
-  )}
-</div>
+) : (
+  <div class="scorebadge">
+    <div class="scorebadge-row">
+      <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
+      <span class="scorebadge-value">
+        {showScore && !isNa && grade.score !== undefined && (
+          <span class="scorebadge-score">{grade.score.toFixed(1)}/100</span>
+        )}
+        <span class={`gradechip ${sizeClass} ${chipClass}`} title={isNa ? naLabel : undefined} aria-label={chipAria}>{chipText}</span>
+      </span>
+    </div>
+    {documentationLabel ? (
+      <span class="scorebadge-doc">{documentationLabel}</span>
+    ) : (
+      renderConfidence && (
+        <span class={`confidence ${confidence}`}>
+          <span class="dot" aria-hidden="true"></span>
+          {confidenceLabel}
+        </span>
+      )
+    )}
+  </div>
+)}

@@ -2,26 +2,49 @@
    Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
    https://scoremydatacenter.org · independent data center acceptability-risk score */
 
-/* Design tokens — derived from the design mockup, adjusted for WCAG contrast
-   (grade C/yellow and B/lime carry dark ink text, never white). One accent
-   (blue), one neutral family, one radius scale (8px). */
+/* Self-hosted variable fonts (Chivo + Chivo Mono, SIL OFL, vendored in
+   /public/fonts) — no third-party request, the neutrality the observatory sells
+   (A-09: no call home, no cookie banner). */
+@font-face {
+  font-family: "Chivo";
+  src: url("/fonts/chivo-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Chivo Mono";
+  src: url("/fonts/chivo-mono-var.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Design tokens — ScoreMyDataCenter identity R4 (design session 2026-07-07):
+   Chivo signage type, calibrated A–E palette (dark ink on B/C/D, white on A/E
+   for WCAG AA), deep-navy ink/sidebar (#102A43). One accent (blue), one radius (8px). */
 
 :root {
-  --ink: #07182f;
-  --ink-soft: #243851;
-  --muted: #55677c;
-  --line: #d9e1ea;
+  --ink: #102a43;
+  --ink-soft: #2a3b50;
+  --muted: #5b6b7d;
+  --line: #dbe2ea;
   --paper: #ffffff;
-  --wash: #f3f7f8;
+  --wash: #f7f9fb;
+  --sidebar: #102a43;
+  --sidebar-muted: #8fa6c2;
+  --brand-my: #5b6b7d;
   --accent: #0f5fb8;
-  --grade-a: #038141;
-  --grade-b: #85bb2f;
-  --grade-c: #fecb02;
-  --grade-d: #ef8200;
-  --grade-e: #e63e11;
+  --grade-a: #0b7a4b;
+  --grade-b: #6fa032;
+  --grade-c: #dfa918;
+  --grade-d: #cf6a1c;
+  --grade-e: #bf3b21;
   --grade-na: #8fa0b3;
   --radius: 8px;
-  --shadow: 0 18px 50px rgba(7, 24, 47, 0.14);
+  --font-sans: "Chivo", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Chivo Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --shadow: 0 18px 50px rgba(16, 42, 67, 0.14);
 }
 
 * { box-sizing: border-box; }
@@ -43,7 +66,7 @@ body {
   margin: 0;
   color: var(--ink);
   background: var(--paper);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.55;
 }
@@ -66,9 +89,11 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
   backdrop-filter: blur(12px);
 }
 
-.brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; }
+.brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -0.01em; }
 .brand img { width: 38px; height: 38px; border-radius: 8px; }
 .brand > span:not(.brand-tagline) { font-size: 1rem; }
+/* The "My" carries the civic hook (MY data center) — grey to detach it without shouting. */
+.brand-my { color: var(--brand-my); }
 .brand-tagline {
   margin-left: 10px;
   padding-left: 14px;
@@ -149,6 +174,8 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-popup-sub { color: var(--muted); font-size: 0.8rem; }
 .map-popup-grades { display: flex; gap: 16px; font-weight: 750; font-size: 0.78rem; text-transform: uppercase; }
 .map-popup-grades span { display: inline-flex; align-items: center; gap: 7px; }
+.map-popup-link { color: var(--accent); font-size: 0.84rem; font-weight: 750; }
+.map-popup-link:hover { text-decoration: underline; }
 
 /* ScoreBadge — the only component allowed to render a grade letter.
    A letter never appears without its confidence context. */
@@ -157,6 +184,11 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .scorebadge-label { color: var(--ink-soft); font-size: 0.82rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0.04em; }
 .scorebadge-value { display: inline-flex; align-items: baseline; gap: 10px; }
 .scorebadge-score { color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+.scorebadge-doc { color: var(--ink-soft); font-size: 0.9rem; font-weight: 700; }
+/* Lead layout — big chip first, label + documentation stacked (fiche dual badge) */
+.scorebadge-lead { display: flex; align-items: center; gap: 14px; }
+.scorebadge-lead-text { display: grid; gap: 3px; }
+.scorebadge-lead .scorebadge-label { font-family: var(--font-mono); font-size: 0.62rem; }
 
 .gradechip {
   display: grid;
@@ -170,10 +202,11 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
   line-height: 1;
 }
 .gradechip.sm { width: 30px; height: 30px; font-size: 1.05rem; border-radius: 6px; }
+.gradechip.lg { width: 72px; height: 72px; font-size: 2.6rem; border-radius: 12px; }
 .gradechip.grade-a { background: var(--grade-a); }
 .gradechip.grade-b { background: var(--grade-b); color: var(--ink); }
 .gradechip.grade-c { background: var(--grade-c); color: var(--ink); }
-.gradechip.grade-d { background: var(--grade-d); }
+.gradechip.grade-d { background: var(--grade-d); color: var(--ink); }
 .gradechip.grade-e { background: var(--grade-e); }
 .gradechip.grade-na { background: var(--wash); color: var(--muted); border: 1px dashed var(--grade-na); font-size: 0.95rem; font-weight: 800; }
 
@@ -309,6 +342,7 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rank-table td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 .rank-table tbody tr:last-child td { border-bottom: none; }
 .rank-project strong { display: block; font-size: 0.98rem; }
+.rank-project strong a:hover { color: var(--accent); text-decoration: underline; }
 .rank-project span { color: var(--muted); font-size: 0.82rem; }
 .rank-grade { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 .rank-note { margin-top: 14px; color: var(--muted); font-size: 0.84rem; }
@@ -433,6 +467,96 @@ sup a { color: var(--accent); font-weight: 750; }
 }
 .contact-band h2 { max-width: 22ch; font-size: clamp(1.7rem, 3.4vw, 2.7rem); }
 .site-footer { display: flex; flex-wrap: wrap; gap: 10px 26px; justify-content: space-between; padding: 22px max(clamp(20px, 5vw, 72px), calc((100vw - 1620px) / 2)); border-top: 1px solid var(--line); color: var(--muted); font-size: 0.84rem; }
+
+/* DC fiche — the proof page. Dark sidebar carries the screenshot-able score
+   block (dual badge + confidence + attribution); the right column is the detail. */
+.fiche { display: grid; grid-template-columns: 340px minmax(0, 1fr); border-top: 1px solid var(--line); }
+.fiche-side { display: flex; flex-direction: column; gap: 22px; padding: 30px 28px; background: var(--sidebar); color: #fff; }
+.fiche-side .brand { color: #fff; font-size: 0.94rem; }
+.fiche-side .brand img { width: 30px; height: 30px; }
+.fiche-side .brand-my { color: var(--sidebar-muted); }
+.fiche-kicker { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sidebar-muted); }
+.fiche-name { font-size: 1.7rem; font-weight: 900; line-height: 1.04; letter-spacing: -0.015em; }
+.fiche-place { color: #c6d3e2; font-size: 0.86rem; }
+.fiche-meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--sidebar-muted); }
+.fiche-badges { display: grid; gap: 12px; padding: 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; }
+.fiche-badges .scorebadge-label { color: var(--sidebar-muted); }
+.fiche-badges .scorebadge-doc { color: #fff; font-size: 0.86rem; }
+.fiche-badges hr { width: 100%; height: 1px; border: 0; background: rgba(255, 255, 255, 0.1); margin: 0; }
+.fiche-conf { display: grid; gap: 7px; }
+.fiche-conf-label { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sidebar-muted); }
+.fiche-conf-track { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
+.fiche-conf-track i { display: block; height: 100%; border-radius: 99px; background: #fff; }
+.fiche-conf-note { font-family: var(--font-mono); font-size: 0.72rem; color: #c6d3e2; }
+.fiche-side-foot { margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.12); font-family: var(--font-mono); font-size: 0.6rem; color: rgba(255, 255, 255, 0.5); }
+.fiche-main { display: flex; flex-direction: column; min-width: 0; }
+
+/* Sub-scores band */
+.fiche-subscores { padding: 24px 32px; background: var(--wash); border-bottom: 1px solid var(--line); }
+.fiche-subscores-head { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+.fiche-subscores-head h2 { font-size: 1rem; }
+.fiche-legend { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); }
+.fiche-pillars { display: grid; gap: 9px; }
+.pillar-line { display: grid; grid-template-columns: minmax(140px, 220px) auto 1fr; align-items: center; gap: 14px; }
+.pillar-name { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; color: var(--ink-soft); }
+.pillar-name .pillar-icon { color: var(--muted); }
+.pillar-dots { justify-self: end; font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px; white-space: nowrap; }
+.pillar-dots .on { color: var(--ink-soft); }
+.pillar-dots .off { color: #c2ccd6; }
+
+/* Citable exergue — the journalist's line */
+.fiche-quote { margin: 22px 32px 0; padding: 16px 20px; border-left: 3px solid var(--ink); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; }
+.fiche-quote p { font-size: 1.05rem; font-weight: 700; line-height: 1.45; }
+
+/* Share row */
+.fiche-share { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 20px 32px 0; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.fiche-share-label { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.fiche-share a, .fiche-share button { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); color: var(--ink-soft); cursor: pointer; }
+.fiche-share a:hover, .fiche-share button:hover { border-color: var(--accent); color: var(--accent); }
+.fiche-share a svg, .fiche-share button svg { width: 18px; height: 18px; }
+.fiche-share .fiche-download { width: auto; padding: 0 16px; gap: 8px; grid-auto-flow: column; font-size: 0.88rem; font-weight: 750; }
+.fiche-share-native { display: none; }
+
+/* Indicators table */
+.fiche-section { padding: 22px 32px; }
+.fiche-section > h2 { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.fiche-ind-wrap { overflow-x: auto; }
+.fiche-ind { width: 100%; border-collapse: collapse; min-width: 620px; }
+.fiche-ind th { text-align: left; padding: 0 12px 8px; font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
+.fiche-ind td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 0.9rem; }
+.fiche-ind tbody tr:last-child td { border-bottom: none; }
+.fiche-ind .ind-name { font-weight: 700; }
+.fiche-ind .ind-missing { color: var(--muted); }
+.status-tag { display: inline-block; padding: 3px 9px; border-radius: 999px; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.status-measured { background: rgba(11, 122, 75, 0.12); color: #0b6a42; }
+.status-announced { background: rgba(223, 169, 24, 0.16); color: #8a6708; }
+.status-missing { background: var(--wash); color: var(--muted); border: 1px solid var(--line); }
+.ind-source a { color: var(--accent); font-weight: 650; }
+.ind-source span { color: var(--muted); }
+
+/* Operator response + data-state cards, history */
+.fiche-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 6px 32px 22px; }
+.fiche-card { padding: 16px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
+.fiche-card h3 { font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.fiche-card p { font-size: 0.9rem; color: var(--ink-soft); }
+.fiche-card .empty { font-style: italic; color: var(--muted); }
+.fiche-history { padding: 4px 32px 26px; }
+.fiche-history h2 { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.fiche-history li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 8px 0; list-style: none; font-size: 0.9rem; }
+.fiche-history ul { margin: 0; padding: 0; }
+.fiche-history time { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+.fiche-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding: 14px 32px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); }
+
+@media (max-width: 860px) {
+  .fiche { grid-template-columns: minmax(0, 1fr); }
+  .fiche-side-foot { margin-top: 8px; }
+  .fiche-quote, .fiche-share, .fiche-section, .fiche-cards, .fiche-history, .fiche-subscores, .fiche-foot { padding-left: 20px; padding-right: 20px; margin-left: 0; margin-right: 0; }
+  .fiche-cards { grid-template-columns: 1fr; }
+  .pillar-line { grid-template-columns: 1fr auto; }
+  .pillar-dots { grid-column: 1 / -1; justify-self: start; }
+  .fiche-share a:not(.fiche-download), .fiche-share button:not(.fiche-share-native) { display: none; }
+  .fiche-share-native { display: inline-grid; }
+}
 
 @media (max-width: 1420px) {
   .brand-tagline { display: none; }

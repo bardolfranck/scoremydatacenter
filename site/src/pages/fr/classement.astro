@@ -112,7 +112,7 @@ const nav = FR_NAV;
               >
                 <td class="rank-index"></td>
                 <td class="rank-project">
-                  <strong>{dc.name}</strong>
+                  <strong><a href={`/fr/dc/${dc.id}`}>{dc.name}</a></strong>
                   <span>{dc.municipality} ({dc.country}) — {dc.operator}{dc.id.startsWith("zz-") ? " · fixture de test fictive" : ""}</span>
                 </td>
                 <td>{statusLabels[dc.project_status]} · {dc.power_mw} MW</td>
