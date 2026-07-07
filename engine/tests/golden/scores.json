@@ -10,12 +10,30 @@
     "grades": {
       "site": {
         "grade": "B",
-        "score": 79.5
+        "score": 79.5,
+        "documentation": {
+          "level": "high",
+          "score": 1.0,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "project_process": {
         "grade": "C",
         "score": 62.3,
-        "coverage": 1.0
+        "coverage": 1.0,
+        "documentation": {
+          "level": "high",
+          "score": 0.793,
+          "dots": 3,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       }
     },
     "confidence": {
@@ -30,28 +48,77 @@
       "energy": {
         "grade": "B",
         "score": 77.2,
-        "coverage": 1.0
+        "coverage": 1.0,
+        "documentation": {
+          "level": "high",
+          "score": 0.946,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "water": {
         "grade": "B",
         "score": 73.3,
-        "coverage": 1.0
+        "coverage": 1.0,
+        "documentation": {
+          "level": "high",
+          "score": 0.927,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "land_biodiversity": {
         "grade": "A",
         "score": 87.5,
-        "coverage": 1.0
+        "coverage": 1.0,
+        "documentation": {
+          "level": "high",
+          "score": 1.0,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "local_impact": {
         "grade": "B",
         "score": 65.0,
-        "coverage": 1.0
+        "coverage": 1.0,
+        "documentation": {
+          "level": "high",
+          "score": 0.901,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "transparency_governance": {
         "grade": "B",
         "score": 74.0,
-        "coverage": 1.0
+        "coverage": 1.0,
+        "documentation": {
+          "level": "high",
+          "score": 1.0,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       }
+    },
+    "citable_quote": {
+      "fr": "Noté B sur le site, C en projet & processus.",
+      "en": "Rated B on site, C on project & process."
     }
   },
   {
@@ -65,7 +132,16 @@
     "grades": {
       "site": {
         "grade": "D",
-        "score": 35.0
+        "score": 35.0,
+        "documentation": {
+          "level": "high",
+          "score": 0.93,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "project_process": {
         "grade": "insufficient_data",
@@ -84,27 +160,67 @@
       "energy": {
         "grade": "E",
         "score": 26.4,
-        "coverage": 0.833
+        "coverage": 0.833,
+        "documentation": {
+          "level": "high",
+          "score": 0.893,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "water": {
         "grade": "E",
         "score": 27.8,
-        "coverage": 0.778
+        "coverage": 0.778,
+        "documentation": {
+          "level": "high",
+          "score": 0.854,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "land_biodiversity": {
         "grade": "D",
         "score": 39.2,
-        "coverage": 0.833
+        "coverage": 0.833,
+        "documentation": {
+          "level": "high",
+          "score": 0.893,
+          "dots": 4,
+          "label": {
+            "fr": "documentation solide",
+            "en": "well documented"
+          }
+        }
       },
       "local_impact": {
         "grade": "E",
         "score": 16.2,
-        "coverage": 0.4
+        "coverage": 0.4,
+        "documentation": {
+          "level": "medium",
+          "score": 0.526,
+          "dots": 2,
+          "label": {
+            "fr": "documentation moyenne",
+            "en": "moderately documented"
+          }
+        }
       },
       "transparency_governance": {
         "grade": "insufficient_data",
         "coverage": 0.0
       }
+    },
+    "citable_quote": {
+      "fr": "Noté D sur le site, mais E sur « Impact local ».",
+      "en": "Rated D on site, but E on “Local impact”."
     }
   }
 ]

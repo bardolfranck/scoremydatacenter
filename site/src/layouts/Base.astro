@@ -33,7 +33,7 @@ const home = lang === "en" ? "/" : "/fr/";
     <header class="site-header">
       <a class="brand" href={home} aria-label="ScoreMyDataCenter home">
         <img src="/assets/smdc-icon.svg" alt="" width="38" height="38" />
-        <span>ScoreMyDataCenter</span>
+        <span>Score<span class="brand-my">My</span>DataCenter</span>
         <span class="brand-tagline">{tagline}</span>
       </a>
       <nav class="main-nav" aria-label="Site sections">
@@ -45,7 +45,7 @@ const home = lang === "en" ? "/" : "/fr/";
       <slot />
     </main>
     <footer class="site-footer">
-      <span>© 2026 Franck Bardol and contributors — ScoreMyDataCenter</span>
+      <span>© 2026 Franck Bardol and contributors — Score<span class="brand-my">My</span>DataCenter</span>
       <span>Engine AGPL-3.0 · Data ODbL · Methodology CC BY-SA 4.0</span>
     </footer>
   </body>

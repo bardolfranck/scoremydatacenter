@@ -59,6 +59,42 @@ def test_alpha_pillar_subscores(methodology, alpha):
     assert set(pillars) == {"energy", "water", "land_biodiversity", "local_impact", "transparency_governance"}
 
 
+def test_documentation_accompanies_every_grade(methodology, alpha):
+    # Product rule n°1: a letter is never shown without its documentation chip.
+    r = score_datacenter(alpha, methodology)
+    for badge in ("site", "project_process"):
+        doc = r["grades"][badge]["documentation"]
+        assert doc["level"] in {"high", "medium", "low"}
+        assert 1 <= doc["dots"] <= 4
+        assert set(doc["label"]) == {"fr", "en"}
+    for pillar, detail in r["pillars"].items():
+        assert 1 <= detail["documentation"]["dots"] <= 4, pillar
+        assert set(detail["documentation"]["label"]) == {"fr", "en"}
+
+
+def test_no_documentation_without_a_grade(methodology, beta):
+    # insufficient_data means no letter — and therefore no documentation chip either.
+    r = score_datacenter(beta, methodology)
+    assert r["grades"]["project_process"] == {"grade": "insufficient_data", "coverage": 0.0}
+    assert "documentation" not in r["pillars"]["transparency_governance"]
+
+
+def test_citable_quote_contrasts_when_a_pillar_is_worse(methodology, beta):
+    # beta: site D; worst graded pillar is local_impact E (score 16.2, below energy/water E)
+    # -> the generated headline names that contrast, tie-broken by the lowest score.
+    q = score_datacenter(beta, methodology)["citable_quote"]
+    # French guillemets carry non-breaking spaces (correct typography) -> normalize to compare.
+    assert q["fr"].replace(chr(0xa0), " ") == "Noté D sur le site, mais E sur « Impact local »."
+    assert q["en"] == "Rated D on site, but E on “Local impact”."
+
+
+def test_citable_quote_is_factual_without_a_worse_pillar(methodology, alpha):
+    # alpha: no graded pillar worse than site B -> no invented contrast, both notes stated.
+    q = score_datacenter(alpha, methodology)["citable_quote"]
+    assert q["fr"] == "Noté B sur le site, C en projet & processus."
+    assert q["en"] == "Rated B on site, C on project & process."
+
+
 def test_grade_boundary_is_inclusive(methodology, alpha):
     thresholds = {t["grade"]: t["min"] for t in methodology["grade_thresholds"]}
     assert thresholds["B"] == 65  # sanity: draft grid

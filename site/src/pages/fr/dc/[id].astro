@@ -1,0 +1,296 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The proof page: one static page per published DC, rendered from the engine's
+// dc/{id}.json artifact (never hand-written). A grade letter only ever appears
+// through <ScoreBadge>.
+import Base from "../../../layouts/Base.astro";
+import ScoreBadge from "../../../components/ScoreBadge.astro";
+import PillarIcon from "../../../components/PillarIcon.astro";
+import type { PillarIconName } from "../../../components/PillarIcon.astro";
+import methodologyData from "../../../../public/data/methodology.json";
+import { FR_NAV } from "../../../config/nav";
+
+import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
+import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
+import linkedinLogo from "@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw";
+import envelope from "@phosphor-icons/core/assets/regular/envelope-simple.svg?raw";
+import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw";
+import downloadSimple from "@phosphor-icons/core/assets/regular/download-simple.svg?raw";
+import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?raw";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
+  return Object.values(modules).map((m: any) => {
+    const dc = m.default;
+    return { params: { id: dc.id }, props: { dc } };
+  });
+}
+
+const { dc } = Astro.props as { dc: any };
+const methodology = methodologyData as any;
+
+const SITE_ORIGIN = "https://scoremydatacenter.org";
+const pageUrl = `${SITE_ORIGIN}/fr/dc/${dc.id}`;
+
+const pillarIconName: Record<string, PillarIconName> = {
+  energy: "energy",
+  water: "water",
+  land_biodiversity: "land",
+  local_impact: "local",
+  transparency_governance: "transparency",
+};
+const statusLabels: Record<string, string> = {
+  announced: "Annoncé",
+  permitting: "En instruction (permitting)",
+  under_construction: "En construction",
+  operational: "En service",
+};
+const indStatusLabels: Record<string, string> = {
+  measured: "Mesuré",
+  announced: "Annoncé",
+  missing: "Manquant",
+};
+const confidenceLabels: Record<string, string> = {
+  high: "confiance : haute",
+  medium: "confiance : moyenne",
+  low: "confiance : faible",
+};
+const confidenceNote: Record<string, string> = {
+  high: "dossier largement sourcé",
+  medium: "dossier partiellement sourcé",
+  low: "dossier peu sourcé",
+};
+
+const shareIcon: Record<string, string> = {
+  x: xLogo, whatsapp: whatsappLogo, linkedin: linkedinLogo,
+  mail: envelope, copy: linkSimple, download: downloadSimple, native: shareNetwork,
+};
+const icon = (name: string, size = 18) =>
+  shareIcon[name].replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
+
+const isNa = (g: any) => !g || g.grade === "insufficient_data";
+const siteDocLabel = dc.grades.site.documentation?.label?.fr;
+const ppDocLabel = isNa(dc.grades.project_process)
+  ? "données insuffisantes"
+  : dc.grades.project_process.documentation?.label?.fr;
+
+const confPct = Math.round((dc.confidence.score ?? 0) * 100);
+
+const commissioning = dc.vintage?.expected_commissioning;
+const metaLine = [statusLabels[dc.project_status] ?? dc.project_status,
+  dc.power_mw ? `${dc.power_mw} MW` : null,
+  commissioning ? `mise en service ${commissioning}` : null].filter(Boolean).join(" · ");
+
+const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
+  + (dc.country ? ` · ${dc.country}` : "");
+
+const counts = { measured: 0, announced: 0, missing: 0 } as Record<string, number>;
+for (const ind of dc.indicators) counts[ind.status] = (counts[ind.status] ?? 0) + 1;
+const dataState = `${dc.indicators.length} indicateurs suivis · ${counts.measured} mesurés · `
+  + `${counts.announced} annoncés (non vérifiés) · ${counts.missing} manquants.`;
+
+const op = dc.publication.operator_response;
+const notifiedAt = dc.publication.operator_notified_at;
+const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.length - 1].date : null;
+
+const indicatorValue = (ind: any) => {
+  if (ind.status === "missing") return "Non communiqué";
+  if (ind.value !== null && ind.value !== undefined) return String(ind.value);
+  if (ind.proxies) return "Procédure (voir source)";
+  return "—";
+};
+
+const shareText = `${dc.name} — Note du site : ${isNa(dc.grades.site) ? "données insuffisantes" : dc.grades.site.grade}`
+  + (siteDocLabel ? ` · ${siteDocLabel}` : "") + ", selon ScoreMyDataCenter";
+const enc = encodeURIComponent;
+const shareLinks = {
+  x: `https://twitter.com/intent/tweet?text=${enc(shareText)}&url=${enc(pageUrl)}`,
+  whatsapp: `https://wa.me/?text=${enc(shareText + " " + pageUrl)}`,
+  linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`,
+  mail: `mailto:?subject=${enc(dc.name + " — ScoreMyDataCenter")}&body=${enc(shareText + "\n\n" + pageUrl)}`,
+};
+
+const nav = FR_NAV;
+const pillars = methodology.pillars as any[];
+---
+
+<Base
+  lang="fr"
+  title={`${dc.name} — ScoreMyDataCenter`}
+  description={`Fiche ${dc.name} (${dc.municipality}) : note du site et note projet & processus A–E, sous-scores par pilier, indicateurs sourcés — observatoire indépendant.`}
+  tagline="Observatoire indépendant"
+  altHref="/"
+  altLabel="🇬🇧 EN"
+  nav={nav}
+>
+  <article class="fiche">
+    <aside class="fiche-side">
+      <a class="brand" href="/fr/" aria-label="ScoreMyDataCenter home">
+        <img src="/assets/smdc-icon.svg" alt="" width="30" height="30" />
+        <span>Score<span class="brand-my">My</span>DataCenter</span>
+      </a>
+      <div>
+        <p class="fiche-kicker">Fiche projet · Observatoire indépendant</p>
+        <h1 class="fiche-name">{dc.name}</h1>
+        <p class="fiche-place">{place}</p>
+        <p class="fiche-meta">{metaLine}</p>
+      </div>
+
+      <div class="fiche-badges">
+        <ScoreBadge
+          label="Note du site"
+          grade={dc.grades.site}
+          confidence={dc.confidence.level}
+          confidenceLabel={confidenceLabels[dc.confidence.level]}
+          documentationLabel={siteDocLabel}
+          size="lg"
+          layout="lead"
+          naLabel="données insuffisantes"
+        />
+        <hr />
+        <ScoreBadge
+          label="Note projet & processus"
+          grade={dc.grades.project_process}
+          confidence={dc.confidence.level}
+          confidenceLabel={confidenceLabels[dc.confidence.level]}
+          documentationLabel={ppDocLabel}
+          size="lg"
+          layout="lead"
+          naLabel="données insuffisantes"
+        />
+      </div>
+
+      <div class="fiche-conf">
+        <span class="fiche-conf-label">Confiance documentaire globale</span>
+        <div class="fiche-conf-track"><i style={`width:${confPct}%`}></i></div>
+        <span class="fiche-conf-note">{confPct} % — {confidenceNote[dc.confidence.level]}</span>
+      </div>
+
+      <p class="fiche-side-foot">Méthodologie {methodology.version} · scoremydatacenter.org</p>
+    </aside>
+
+    <div class="fiche-main">
+      <div class="fiche-subscores">
+        <div class="fiche-subscores-head">
+          <h2>Sous-scores par pilier</h2>
+          <span class="fiche-legend"><span class="pillar-dots"><span class="on">●●●</span><span class="off">○</span></span> = documentation disponible</span>
+        </div>
+        <div class="fiche-pillars">
+          {pillars.map((p) => {
+            const detail = dc.pillars[p.id];
+            const dots = detail?.documentation?.dots;
+            return (
+              <div class="pillar-line">
+                <span class="pillar-name"><PillarIcon name={pillarIconName[p.id]} size={16} />{p.label.fr}</span>
+                <ScoreBadge
+                  label={p.label.fr}
+                  grade={detail}
+                  confidence={dc.confidence.level}
+                  confidenceLabel={confidenceLabels[dc.confidence.level]}
+                  renderConfidence={false}
+                  renderLabel={false}
+                  size="sm"
+                  naLabel="données insuffisantes"
+                />
+                {dots ? (
+                  <span class="pillar-dots">
+                    <span class="on">{"●".repeat(dots)}</span><span class="off">{"○".repeat(4 - dots)}</span>
+                  </span>
+                ) : <span class="pillar-dots"></span>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      <blockquote class="fiche-quote"><p>« {dc.citable_quote.fr} »</p></blockquote>
+
+      <div class="fiche-share">
+        <span class="fiche-share-label">Partager</span>
+        <a href={shareLinks.x} target="_blank" rel="noopener" aria-label="Partager sur X" set:html={icon("x")}></a>
+        <a href={shareLinks.whatsapp} target="_blank" rel="noopener" aria-label="Partager sur WhatsApp" set:html={icon("whatsapp")}></a>
+        <a href={shareLinks.linkedin} target="_blank" rel="noopener" aria-label="Partager sur LinkedIn" set:html={icon("linkedin")}></a>
+        <a href={shareLinks.mail} aria-label="Partager par e-mail" set:html={icon("mail")}></a>
+        <button type="button" class="fiche-copy" data-url={pageUrl} aria-label="Copier le lien" set:html={icon("copy")}></button>
+        <button type="button" class="fiche-share-native" data-url={pageUrl} data-text={shareText} aria-label="Partager" set:html={icon("native")}></button>
+        <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label="Télécharger l'image du score">
+          <span set:html={icon("download", 16)}></span>Télécharger l'image du score
+        </a>
+      </div>
+
+      <section class="fiche-section" aria-label="Indicateurs suivis">
+        <h2>Indicateurs suivis</h2>
+        <div class="fiche-ind-wrap">
+          <table class="fiche-ind">
+            <thead>
+              <tr><th>Indicateur</th><th>Valeur</th><th>État</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+              {dc.indicators.map((ind: any) => (
+                <tr>
+                  <td class="ind-name">{ind.label.fr}</td>
+                  <td class={ind.status === "missing" ? "ind-missing" : ""}>{indicatorValue(ind)}</td>
+                  <td><span class={`status-tag status-${ind.status}`}>{indStatusLabels[ind.status]}</span></td>
+                  <td class="ind-source">
+                    {ind.source?.url
+                      ? <a href={ind.source.url} target="_blank" rel="noopener">{ind.source.title}{ind.source.accessed ? ` — consulté le ${ind.source.accessed}` : ""}</a>
+                      : <span>—</span>}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="fiche-cards">
+        <div class="fiche-card">
+          <h3>Réponse de l'opérateur</h3>
+          {op
+            ? <p>{op.text}{op.date ? ` (${op.date})` : ""}</p>
+            : <p class="empty">Sollicité{notifiedAt ? ` le ${notifiedAt}` : ""} — pas de réponse à ce jour.</p>}
+        </div>
+        <div class="fiche-card">
+          <h3>État de la donnée disponible</h3>
+          <p>{dataState}</p>
+        </div>
+      </div>
+
+      <section class="fiche-history" aria-label="Historique de la note">
+        <h2>Historique de la note</h2>
+        <ul>
+          {dc.score_history.map((h: any) => (
+            <li>
+              <time>{h.date}</time>
+              <span>{h.rationale ?? h.event}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="fiche-foot">
+        <span>Méthodologie {methodology.version}{lastScored ? ` · Scoré le ${lastScored}` : ""}</span>
+        <span>scoremydatacenter.org</span>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<script>
+  // Copy-link and native share — the only client JS the fiche needs.
+  document.querySelectorAll(".fiche-copy").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const url = (btn as HTMLElement).dataset.url!;
+      try { await navigator.clipboard.writeText(url); (btn as HTMLElement).setAttribute("aria-label", "Lien copié"); }
+      catch { /* clipboard blocked — no-op */ }
+    });
+  });
+  const native = document.querySelector(".fiche-share-native") as HTMLElement | null;
+  if (native && "share" in navigator) {
+    native.addEventListener("click", () => {
+      navigator.share({ title: document.title, text: native.dataset.text, url: native.dataset.url }).catch(() => {});
+    });
+  }
+</script>

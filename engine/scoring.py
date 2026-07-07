@@ -101,6 +101,68 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
     }
 
 
+_DOC_LABELS = {
+    "high": {"fr": "documentation solide", "en": "well documented"},
+    "medium": {"fr": "documentation moyenne", "en": "moderately documented"},
+    "low": {"fr": "documentation faible", "en": "sparsely documented"},
+}
+
+_GRADE_ORDER = "ABCDE"  # index rises with severity (A best, E worst)
+
+
+def _dots(score: float) -> int:
+    """Documentation availability on the 0-4 scorecard scale (the ●●●○ dots).
+    A graded thing always shows at least one dot — it was documented enough to grade."""
+    if score >= 0.80:
+        return 4
+    if score >= 0.60:
+        return 3
+    if score >= 0.40:
+        return 2
+    return 1
+
+
+def _documentation(conf: dict) -> dict:
+    """Turn a (possibly scoped) confidence result into the public documentation chip:
+    the label the badge shows and the dots the scorecard shows. A grade never appears
+    without it (product rule n°1: a letter is always coupled with its documentation)."""
+    return {
+        "level": conf["level"],
+        "score": conf["score"],
+        "dots": _dots(conf["score"]),
+        "label": _DOC_LABELS[conf["level"]],
+    }
+
+
+def _citable_quote(site: dict, project_process: dict, pillar_details: dict, methodology: dict) -> dict:
+    """The headline the journalist screenshots — GENERATED, never editorial, so it stays
+    opposable: it only makes the contrast claim ('B overall, but E on water') when a graded
+    pillar is strictly worse than the site letter; otherwise it states both notes factually.
+    No adjectives, same discipline as the grade (no 'close to X')."""
+    labels = {p["id"]: p["label"] for p in methodology["pillars"]}
+    site_grade = site["grade"]
+    graded = {pid: d for pid, d in pillar_details.items() if d["grade"] != INSUFFICIENT_DATA}
+    if graded:
+        worst_id = max(graded, key=lambda pid: (_GRADE_ORDER.index(graded[pid]["grade"]), -graded[pid]["score"]))
+        worst = graded[worst_id]
+        if _GRADE_ORDER.index(worst["grade"]) > _GRADE_ORDER.index(site_grade):
+            lab = labels[worst_id]
+            return {
+                "fr": f"Noté {site_grade} sur le site, mais {worst['grade']} sur « {lab['fr']} ».",
+                "en": f"Rated {site_grade} on site, but {worst['grade']} on “{lab['en']}”.",
+            }
+    pp = project_process["grade"]
+    if pp == INSUFFICIENT_DATA:
+        return {
+            "fr": f"Noté {site_grade} sur le site ; données de projet insuffisantes pour une note projet & processus.",
+            "en": f"Rated {site_grade} on site; project data insufficient to grade project & process.",
+        }
+    return {
+        "fr": f"Noté {site_grade} sur le site, {pp} en projet & processus.",
+        "en": f"Rated {site_grade} on site, {pp} on project & process.",
+    }
+
+
 def score_datacenter(dc: dict, methodology: dict) -> dict:
     """Compute the full scoring result for one data center (pure function, no I/O)."""
     params = methodology["parameters"]
@@ -115,6 +177,9 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
 
     site_score = _aggregate(per_indicator, base_defs, pillar_weights, missing_counts_as_zero=False)
     site = _grade(site_score, methodology)
+    # Per-badge documentation (block-scoped confidence): the site badge is documented
+    # by its BASE indicators only, the project badge by its project/process indicators.
+    site["documentation"] = _documentation(_confidence(entries, base_defs, pillar_weights, methodology))
 
     pp_total_w = sum(pillar_weights[d["pillar"]] * d["weight_in_pillar"] for d in pp_defs)
     pp_filled_w = sum(
@@ -127,6 +192,7 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
     else:
         pp_score = _aggregate(per_indicator, pp_defs, pillar_weights, missing_counts_as_zero=True)
         project_process = _grade(pp_score, methodology) | {"coverage": round(coverage, 3)}
+        project_process["documentation"] = _documentation(_confidence(entries, pp_defs, pillar_weights, methodology))
 
     # Display sub-score per pillar (public scorecard): same per-block semantics —
     # missing base data is dropped, missing project/process data counts as 0.
@@ -151,11 +217,17 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
             continue
         combined = _aggregate(with_pp_zeroed, defs, {pillar: 1.0}, missing_counts_as_zero=False)
         pillar_details[pillar] = _grade(combined, methodology) | {"coverage": round(pillar_coverage, 3)}
+        # Per-pillar documentation dots (●●●○): a graded pillar always carries its own
+        # documentation availability, scoped to that pillar's indicators.
+        pillar_details[pillar]["documentation"] = _documentation(
+            _confidence(entries, defs, pillar_weights, methodology)
+        )
 
     return {
         "grades": {"site": site, "project_process": project_process},
         "confidence": _confidence(entries, definitions, pillar_weights, methodology),
         "pillars": pillar_details,
+        "citable_quote": _citable_quote(site, project_process, pillar_details, methodology),
         "indicators": {
             d["id"]: None if per_indicator[d["id"]] is None else round(per_indicator[d["id"]], 1)
             for d in definitions
