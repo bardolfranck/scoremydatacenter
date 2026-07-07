@@ -147,7 +147,7 @@ def test_sidecar_never_emits_a_scored_or_complete_t1(monkeypatch):
                                          "source": {"title": "t", "url": "u", "accessed": "d"}})
     monkeypatch.setattr(sources, "gather_leads", lambda *a, **k: {"mrae_search": "u"})
 
-    sc = collect(48.5, 2.5, name="X", accessed="2026-07-07")
+    sc = collect(48.5, 2.5, name="X", accessed="2026-07-07", archive=False)
     proxies = sc["proposed_t1_proxies"]
     # Deterministic proxies present…
     assert proxies["cndp_referral"] is True
@@ -158,3 +158,63 @@ def test_sidecar_never_emits_a_scored_or_complete_t1(monkeypatch):
     assert "proposed_t1_proxies" in sc and "score" not in sc  # a proposal, not a score
     # No grade/letter anywhere in the sidecar.
     assert "grade" not in __import__("json").dumps(sc).lower()
+
+
+# --- archived_url (A-20): durable snapshot of the CNDP fiche ----------------------------------
+
+def test_archive_url_prefers_fresh_capture_then_falls_back(monkeypatch):
+    from pipelines.press import archive
+    # Fresh capture available → used directly.
+    monkeypatch.setattr(archive, "_save_now", lambda url, timeout: "https://web.archive.org/web/1/" + url)
+    monkeypatch.setattr(archive, "_closest_snapshot", lambda url, timeout: "https://web.archive.org/web/OLD/" + url)
+    assert archive.archive_url("https://x.test/fiche") == "https://web.archive.org/web/1/https://x.test/fiche"
+    # No fresh capture → fall back to the closest existing snapshot.
+    monkeypatch.setattr(archive, "_save_now", lambda url, timeout: None)
+    assert archive.archive_url("https://x.test/fiche") == "https://web.archive.org/web/OLD/https://x.test/fiche"
+    # Neither → None, and never raises.
+    monkeypatch.setattr(archive, "_closest_snapshot", lambda url, timeout: None)
+    assert archive.archive_url("https://x.test/fiche") is None
+    assert archive.archive_url(None) is None
+
+
+def test_archive_helpers_swallow_network_errors(monkeypatch):
+    from pipelines.press import archive
+    def boom(url, timeout):
+        raise OSError("network down")
+    monkeypatch.setattr(archive, "_open", boom)
+    # Both helpers must degrade to None rather than propagate — an archive failure never blocks.
+    assert archive._save_now("https://x.test", 5) is None
+    assert archive._closest_snapshot("https://x.test", 5) is None
+
+
+def test_collect_writes_archived_url_on_cndp_fiche_when_referral(monkeypatch):
+    monkeypatch.setattr("pipelines.press.collect.spatial.fetch_commune",
+                        lambda lat, lon: {"nom": "Villetest", "code": "77000", "codeDepartement": "77"})
+    monkeypatch.setattr(sources, "collect_cndp",
+                        lambda *a, **k: {"cndp_referral": True, "decision_type": "débat public",
+                                         "source": {"title": "t", "url": "https://debatpublic.fr/f",
+                                                    "accessed": "d"}})
+    monkeypatch.setattr(sources, "collect_appeals_judged", lambda *a, **k: None)
+    monkeypatch.setattr(sources, "gather_leads", lambda *a, **k: {})
+    monkeypatch.setattr("pipelines.press.collect.archive_url",
+                        lambda url: "https://web.archive.org/web/20260707/" + url)
+
+    sc = collect(48.5, 2.5, name="X", accessed="2026-07-07", archive=True)
+    src = sc["deterministic_sources"]["cndp_referral"]["source"]
+    assert src["archived_url"] == "https://web.archive.org/web/20260707/https://debatpublic.fr/f"
+
+
+def test_collect_skips_archive_when_disabled_or_no_referral(monkeypatch):
+    monkeypatch.setattr("pipelines.press.collect.spatial.fetch_commune",
+                        lambda lat, lon: {"nom": "Villetest", "code": "77000", "codeDepartement": "77"})
+    monkeypatch.setattr(sources, "collect_cndp",
+                        lambda *a, **k: {"cndp_referral": False, "decision_type": None,
+                                         "source": {"title": "t", "url": "https://data.gouv.fr/x",
+                                                    "accessed": "d"}})
+    monkeypatch.setattr(sources, "collect_appeals_judged", lambda *a, **k: None)
+    monkeypatch.setattr(sources, "gather_leads", lambda *a, **k: {})
+    # archive_url must not even be called when there is no referral; make it explode if it is.
+    monkeypatch.setattr("pipelines.press.collect.archive_url",
+                        lambda url: (_ for _ in ()).throw(AssertionError("should not archive")))
+    sc = collect(48.5, 2.5, name="X", accessed="2026-07-07", archive=True)
+    assert "archived_url" not in sc["deterministic_sources"]["cndp_referral"]["source"]

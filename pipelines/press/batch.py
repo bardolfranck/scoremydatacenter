@@ -38,12 +38,12 @@ def _read_sites(path: Path) -> list[dict]:
     return sites
 
 
-def run(sites: list[dict], out_dir: Path, accessed: str) -> list[dict]:
+def run(sites: list[dict], out_dir: Path, accessed: str, archive: bool = True) -> list[dict]:
     out_dir.mkdir(parents=True, exist_ok=True)
     results = []
     for s in sites:
         try:
-            sidecar = collect(s["lat"], s["lon"], name=s["name"], accessed=accessed)
+            sidecar = collect(s["lat"], s["lon"], name=s["name"], accessed=accessed, archive=archive)
         except SourceUnavailable as exc:
             print(f"  {s.get('name') or s['lat']},{s['lon']}: skipped ({exc})", file=sys.stderr)
             continue
@@ -74,6 +74,8 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Batch voie-A governance sidecars from coordinates.")
     p.add_argument("sites", help="CSV (name,operator,lat,lon,...) or JSON array of sites.")
     p.add_argument("--out", default="../smdc-newsroom/drafts/datacenters")
+    p.add_argument("--no-archive", action="store_true",
+                   help="Skip web-archive snapshots (faster over a large corpus).")
     args = p.parse_args(argv)
 
     sites = _read_sites(Path(args.sites))
@@ -81,7 +83,7 @@ def main(argv: list[str] | None = None) -> int:
         print("No valid sites to process.", file=sys.stderr)
         return 1
     out_dir = Path(args.out)
-    results = run(sites, out_dir, date.today().isoformat())
+    results = run(sites, out_dir, date.today().isoformat(), archive=not args.no_archive)
     report = _coverage_report(results)
     (out_dir / "_governance_coverage.md").write_text(report + "\n")
     print(report, file=sys.stderr)

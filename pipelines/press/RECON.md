@@ -122,6 +122,15 @@ dates, the three judgment proxies handed over as leads. A point that reverse-geo
 commune yields no fabricated referral — the real project surfaces only as a `other_dept_candidates`
 lead, exactly the anti-fabrication contract.
 
+**Evidence pinning (A-20).** At collection time the pipeline triggers a durable Internet Archive
+"Save Page Now" snapshot of the CNDP debate fiche — a specific, rot-prone public page — and records
+it as `source.archived_url` (`archive.py`). Best-effort: an archive failure never blocks the draft,
+and the engine still scores from the value alone, so the public repo stays reproducible. The
+open-data court query is *not* archived (re-fetchable, time-varying — link, don't copy). The iter-1
+LLM stage will archive the avis / inquiry-conclusion PDFs the same way once it resolves their URLs.
+Disable with `--no-archive` for offline/fast runs. Verified live: a fresh capture of the CNDP fiche
+was created and its snapshot URL written to the sidecar.
+
 **Known v1 limitations (documented, not silently capped):** the TA code is guessed as `TA{dept}`
 (right when the competent court sits in the department — the common case; the search URL is always
 emitted as a lead for the exceptions); the judged-appeals count is a provisional upper bound;
