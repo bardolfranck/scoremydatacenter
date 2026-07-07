@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance
 
 install:
 	uv sync
@@ -6,6 +6,20 @@ install:
 
 validate:
 	uv run python -m engine.validate
+
+# Batch spatial collection from coordinates → sourced DRAFTS in the private newsroom.
+# Proposes only; every draft is human-reviewed before it enters the circuit.
+#   make collect-drafts SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
+SITES ?= pipelines/spatial/sample_sites.csv
+OUT ?= ../smdc-newsroom/drafts/datacenters
+collect-drafts:
+	uv run python -m pipelines.spatial.batch $(SITES) --out $(OUT)
+
+# Voie A — enrich drafts with governance sidecars (CNDP referral + judged appeals + review leads).
+# Proposes only; deterministic proxies are pre-filled, the judgment ones stay review leads.
+#   make collect-governance SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
+collect-governance:
+	uv run python -m pipelines.press.batch $(SITES) --out $(OUT)
 
 score: validate
 	uv run python -m engine.score

@@ -1,0 +1,4 @@
+name,operator,lat,lon,power_mw,project_status
+ZZ Test Alpha,Fictional Op,48.5990,2.8060,30,announced
+ZZ Test Beta,Fictional Op,43.6100,3.8800,120,permitting
+ZZ Test Gamma,Fictional Op,48.8566,2.3522,,operational
