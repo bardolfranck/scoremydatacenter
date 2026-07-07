@@ -26,6 +26,7 @@ def _summary(dc: dict, result: dict) -> dict:
         "grades": result["grades"],
         "confidence": result["confidence"],
         "pillars": result["pillars"],
+        "citable_quote": result["citable_quote"],
     }
 
 

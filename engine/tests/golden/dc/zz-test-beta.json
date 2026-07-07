@@ -9,7 +9,16 @@
   "grades": {
     "site": {
       "grade": "D",
-      "score": 35.0
+      "score": 35.0,
+      "documentation": {
+        "level": "high",
+        "score": 0.93,
+        "dots": 4,
+        "label": {
+          "fr": "documentation solide",
+          "en": "well documented"
+        }
+      }
     },
     "project_process": {
       "grade": "insufficient_data",
@@ -28,27 +37,67 @@
     "energy": {
       "grade": "E",
       "score": 26.4,
-      "coverage": 0.833
+      "coverage": 0.833,
+      "documentation": {
+        "level": "high",
+        "score": 0.893,
+        "dots": 4,
+        "label": {
+          "fr": "documentation solide",
+          "en": "well documented"
+        }
+      }
     },
     "water": {
       "grade": "E",
       "score": 27.8,
-      "coverage": 0.778
+      "coverage": 0.778,
+      "documentation": {
+        "level": "high",
+        "score": 0.854,
+        "dots": 4,
+        "label": {
+          "fr": "documentation solide",
+          "en": "well documented"
+        }
+      }
     },
     "land_biodiversity": {
       "grade": "D",
       "score": 39.2,
-      "coverage": 0.833
+      "coverage": 0.833,
+      "documentation": {
+        "level": "high",
+        "score": 0.893,
+        "dots": 4,
+        "label": {
+          "fr": "documentation solide",
+          "en": "well documented"
+        }
+      }
     },
     "local_impact": {
       "grade": "E",
       "score": 16.2,
-      "coverage": 0.4
+      "coverage": 0.4,
+      "documentation": {
+        "level": "medium",
+        "score": 0.526,
+        "dots": 2,
+        "label": {
+          "fr": "documentation moyenne",
+          "en": "moderately documented"
+        }
+      }
     },
     "transparency_governance": {
       "grade": "insufficient_data",
       "coverage": 0.0
     }
+  },
+  "citable_quote": {
+    "fr": "Noté D sur le site, mais E sur « Impact local ».",
+    "en": "Rated D on site, but E on “Local impact”."
   },
   "summary": {
     "fr": "Fixture de test (fictive) : hyperscale annoncé, faiblement documenté — étage 1 seul, cas « données insuffisantes » et confiance faible.",
