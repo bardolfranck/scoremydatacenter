@@ -111,7 +111,12 @@
       "properties": {
         "title": { "type": "string", "minLength": 1 },
         "url": { "type": "string", "format": "uri" },
-        "accessed": { "type": "string", "format": "date" }
+        "accessed": { "type": "string", "format": "date" },
+        "archived_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Durable snapshot of the source (e.g. a web-archive capture), against link rot (A-20). Evidence for a human reader; the engine scores from the value only, so scoring stays reproducible from the public repo alone. Copyrighted press is linked here, never reproduced."
+        }
       }
     },
     "indicator": {

@@ -166,6 +166,10 @@ export const RICH_FR: Record<string, RichBlock> = {
         q: "Comment savoir ce qui existe déjà autour de chez moi ?",
         a: "Les cartes publiques recensent les sites existants et les projets — voir <a href='#aller-plus-loin'>Aller plus loin</a>.",
       },
+      {
+        q: "Où consulter les données d'un projet ?",
+        a: "Chaque fiche de data center affiche la note, et chaque indicateur renvoie à sa source publique par un lien cliquable (données ouvertes RTE, INSEE, avis d'autorité environnementale, décisions de justice…) : tout est revérifiable. Les documents officiels sont doublés d'une copie archivée pour rester consultables dans le temps ; les articles de presse sont liés, jamais recopiés. Ni la note ni sa justification ne sont jamais payantes.",
+      },
     ],
   },
 
@@ -334,6 +338,10 @@ export const RICH_EN: Record<string, RichBlock> = {
       {
         q: "How do I know what already exists around me?",
         a: "Public maps list existing sites and projects — see <a href='#further'>Going further</a>.",
+      },
+      {
+        q: "Where can I consult a project's data?",
+        a: "Every data-center page shows the score, and each indicator links to its public source (open data from RTE, INSEE, environmental-authority opinions, court decisions…): all of it is re-checkable. Official documents are mirrored by an archived copy so they stay reachable over time; press articles are linked, never reproduced. Neither the score nor its justification is ever behind a paywall.",
       },
     ],
   },
