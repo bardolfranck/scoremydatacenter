@@ -62,6 +62,36 @@ official inquiry-register observation counts (the least-gameable mobilization nu
 **partnership outreach** for the boutique US research and the FR map's editor (which also resolves the
 map's non-commercial licence at the source).
 
+## v1 build (Time 2) — what ships
+
+`pipelines/press/signal.py` + `collect_signal.py` harvest the four open feeds into a **draft
+watchlist** (facts only, never a grade — A-19/A-21), stdlib only, each collector degrading to `[]`:
+
+- `fetch_umap_layers` — the community FR map's opposition + announced-project layers, classified by
+  **content** (robust to rotating layer UUIDs); the raw-inventory layer (OSM-tagged existing DCs) is
+  skipped as an Overpass duplicate.
+- `fetch_fights` — US contested projects, kept where a named opposition group exists; the
+  self-reported `petition_signatures` is carried but flagged `_self_reported` and never scored.
+- `fetch_moratoria` — US moratoria filtered to the data-center sector, geocoded + sourced.
+- `fetch_gdelt` — press-detection articles for a query (DETECTION only); degrades to `[]` on the
+  rate-limit notice (429 returns plain text, not JSON).
+
+```
+make collect-signal SIGNAL_OUT=../smdc-newsroom/drafts/watchlist            # 3 structured feeds
+make collect-signal GDELT_QUERY='datacenter (opposition OR moratorium)'     # + press detection
+```
+
+Output = `watchlist.draft.geojson` (deduped across feeds by rounded coords/name) + optional
+`press_detections.draft.json` + `_signal_coverage.md`, written to the **private newsroom** for human
+review — the nominative records never touch the public repo pre-review, and the engine never reads
+them. Verified live end-to-end: **965 draft entries** (uMap FR 129 · US fights 771 · US moratoria 201,
+deduped), **zero grade/letter/score/confidence** in the artifact (asserted in tests), the FR layer
+carrying the expected opposition entries with named collectives + source links.
+
+**Guardrail in code:** every record is facts-only; `_to_geojson` marks each `watchlist_status:
+en_veille`; a test fails the build if any `grade`/`letter`/`score`/`confidence` key appears in the
+output. The letter still moves only on the voie-A procedural facts (T1).
+
 ## Operational notes (learned in recon)
 
 - **GDELT**: throttled ("one request / 5 s"); a shared egress IP earns a sustained 429. Production needs
