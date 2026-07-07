@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal
 
 install:
 	uv sync
@@ -20,6 +20,13 @@ collect-drafts:
 #   make collect-governance SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
 collect-governance:
 	uv run python -m pipelines.press.batch $(SITES) --out $(OUT)
+
+# Voie B — harvest the open contestation-signal feeds → DRAFT watchlist (facts only, no grade).
+# uMap FR + US fights + US moratoria; add GDELT press detection with GDELT_QUERY=.
+#   make collect-signal SIGNAL_OUT=../smdc-newsroom/drafts/watchlist
+SIGNAL_OUT ?= ../smdc-newsroom/drafts/watchlist
+collect-signal:
+	uv run python -m pipelines.press.collect_signal --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",)
 
 score: validate
 	uv run python -m engine.score
