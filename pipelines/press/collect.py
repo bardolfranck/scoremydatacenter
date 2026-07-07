@@ -24,6 +24,7 @@ from pipelines.spatial.http import SourceUnavailable
 from pipelines.spatial import sources as spatial
 from pipelines.spatial.collect import _slugify
 from . import sources
+from .archive import archive_url
 
 
 # The two proxies this pipeline can establish deterministically today; the other three need the
@@ -46,8 +47,13 @@ _CAVEATS = [
 ]
 
 
-def collect(lat: float, lon: float, *, name: str | None, accessed: str) -> dict:
-    """Return the governance sidecar dict for the point (raises if the geocoder is unreachable)."""
+def collect(lat: float, lon: float, *, name: str | None, accessed: str, archive: bool = True) -> dict:
+    """Return the governance sidecar dict for the point (raises if the geocoder is unreachable).
+
+    archive=True triggers a durable web-archive snapshot of rot-prone public *pages* (the CNDP
+    debate fiche) and records it as `source.archived_url` (A-20). Best-effort: an archive failure
+    never blocks the draft. Pass archive=False for offline/fast runs.
+    """
     commune = spatial.fetch_commune(lat, lon)  # shared backbone
     commune_name = commune["nom"]
     insee = commune["code"]
@@ -58,6 +64,14 @@ def collect(lat: float, lon: float, *, name: str | None, accessed: str) -> dict:
     cndp = sources.collect_cndp(commune_name, dept, accessed)
     appeals = sources.collect_appeals_judged(commune_name, dept, accessed)
     leads = sources.gather_leads(commune_name, insee, dept, cndp)
+
+    # Pin the evidence (A-20). Only the CNDP fiche — a specific, rot-prone public page — is worth a
+    # snapshot; the open-data court query stays re-fetchable (link, don't copy). The iter-1 LLM stage
+    # will archive the avis / inquiry-conclusion PDFs the same way once it has resolved their URLs.
+    if archive and cndp and cndp.get("cndp_referral"):
+        snapshot = archive_url((cndp.get("source") or {}).get("url"))
+        if snapshot:
+            cndp["source"]["archived_url"] = snapshot
 
     proposed = {
         "cndp_referral": cndp["cndp_referral"] if cndp else None,
@@ -104,11 +118,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--name", default=None, help="Project name (for the draft id / CNDP matching aid).")
     p.add_argument("--out", default=None,
                    help="Directory to write <id>.governance.json into (default: stdout).")
+    p.add_argument("--no-archive", action="store_true",
+                   help="Skip the web-archive snapshot of the CNDP fiche (offline/fast runs).")
     args = p.parse_args(argv)
 
     accessed = date.today().isoformat()
     try:
-        sidecar = collect(args.lat, args.lon, name=args.name, accessed=accessed)
+        sidecar = collect(args.lat, args.lon, name=args.name, accessed=accessed,
+                          archive=not args.no_archive)
     except SourceUnavailable as exc:
         print(f"ERROR: backbone geocoder unavailable — cannot place the point. {exc}", file=sys.stderr)
         return 2
