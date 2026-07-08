@@ -133,7 +133,7 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 
 .hero-copy { position: relative; z-index: 1; width: min(720px, 100%); }
 .eyebrow { margin-bottom: 12px; color: var(--accent); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
-.hero-kicker { margin-bottom: 16px; max-width: 44ch; color: var(--accent); font-size: 1rem; font-weight: 750; letter-spacing: 0.01em; }
+.hero-kicker { margin-top: 22px; max-width: 44ch; color: var(--accent); font-size: 1rem; font-weight: 750; letter-spacing: 0.01em; }
 h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; letter-spacing: -0.01em; }
 .hero-accent { color: var(--grade-e); }
 .hero-lede { max-width: 600px; margin-top: 22px; color: var(--ink-soft); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
