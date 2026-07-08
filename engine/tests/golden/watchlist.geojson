@@ -16,6 +16,14 @@
         "operator": null,
         "municipality": "Testville",
         "country": "ZZ",
+        "project_status": "permitting",
+        "watchlist_status": "en_veille",
+        "source": {
+          "title": "Annonce du projet (test)",
+          "url": "https://example.org/w/alpha-annonce",
+          "accessed": "2026-07-08",
+          "archived_url": "https://web.archive.org/web/20260708/https://example.org/w/alpha-annonce"
+        },
         "facts": [
           {
             "kind": "opposition",
@@ -61,6 +69,14 @@
         "operator": null,
         "municipality": null,
         "country": "ZZ",
+        "project_status": "announced",
+        "watchlist_status": "en_veille",
+        "source": {
+          "title": "Communiqué du comté (test)",
+          "url": "https://example.org/w/beta-annonce",
+          "accessed": "2026-07-03",
+          "archived_url": "https://web.archive.org/web/20260703/https://example.org/w/beta-annonce"
+        },
         "facts": [
           {
             "kind": "moratorium",
@@ -93,6 +109,13 @@
         "operator": null,
         "municipality": "Gammaville",
         "country": "ZZ",
+        "project_status": "under_construction",
+        "watchlist_status": "en_veille",
+        "source": {
+          "title": "Dossier de presse (test)",
+          "url": "https://example.org/w/gamma-annonce",
+          "accessed": "2026-07-04"
+        },
         "facts": [
           {
             "kind": "petition",
@@ -108,6 +131,32 @@
             }
           }
         ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          12.5,
+          41.9
+        ]
+      },
+      "properties": {
+        "id": "zz-watch-delta-flagship",
+        "name": "ZZ Delta Flagship (test)",
+        "operator": null,
+        "municipality": null,
+        "country": "ZZ",
+        "project_status": "announced",
+        "watchlist_status": "en_veille",
+        "source": {
+          "title": "Annonce officielle (test)",
+          "url": "https://example.org/w/delta-annonce",
+          "accessed": "2026-07-08",
+          "archived_url": "https://web.archive.org/web/20260708/https://example.org/w/delta-annonce"
+        },
+        "facts": []
       }
     }
   ]

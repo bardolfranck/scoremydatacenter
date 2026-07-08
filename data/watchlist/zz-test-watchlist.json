@@ -4,10 +4,17 @@
     "name": "ZZ Alpha Plains (test)",
     "municipality": "Testville",
     "country": "ZZ",
+    "project_status": "permitting",
     "coordinates": { "lat": 45.5, "lon": 3.1 },
     "summary": {
       "fr": "Projet fictif suivi pour le format de la watchlist — faits sourcés, aucune note.",
       "en": "Fictional tracked project, for the watchlist format — sourced facts, no grade."
+    },
+    "source": {
+      "title": "Annonce du projet (test)",
+      "url": "https://example.org/w/alpha-annonce",
+      "accessed": "2026-07-08",
+      "archived_url": "https://web.archive.org/web/20260708/https://example.org/w/alpha-annonce"
     },
     "facts": [
       {
@@ -36,7 +43,14 @@
     "id": "zz-watch-beta-county",
     "name": "ZZ Beta County (test)",
     "country": "ZZ",
+    "project_status": "announced",
     "coordinates": { "lat": 39.2, "lon": -1.4 },
+    "source": {
+      "title": "Communiqué du comté (test)",
+      "url": "https://example.org/w/beta-annonce",
+      "accessed": "2026-07-03",
+      "archived_url": "https://web.archive.org/web/20260703/https://example.org/w/beta-annonce"
+    },
     "facts": [
       {
         "kind": "moratorium",
@@ -55,7 +69,13 @@
     "name": "ZZ Gamma Port (test)",
     "municipality": "Gammaville",
     "country": "ZZ",
+    "project_status": "under_construction",
     "coordinates": { "lat": 43.3, "lon": 5.4 },
+    "source": {
+      "title": "Dossier de presse (test)",
+      "url": "https://example.org/w/gamma-annonce",
+      "accessed": "2026-07-04"
+    },
     "facts": [
       {
         "kind": "petition",
@@ -68,5 +88,23 @@
         }
       }
     ]
+  },
+  {
+    "id": "zz-watch-delta-flagship",
+    "name": "ZZ Delta Flagship (test)",
+    "country": "ZZ",
+    "project_status": "announced",
+    "coordinates": { "lat": 41.9, "lon": 12.5 },
+    "summary": {
+      "fr": "Grand projet annoncé, suivi sans contestation à ce jour — faits vides, justifié par la source d'entrée.",
+      "en": "Large announced project, tracked with no contestation yet — empty facts, justified by the entry-level source."
+    },
+    "source": {
+      "title": "Annonce officielle (test)",
+      "url": "https://example.org/w/delta-annonce",
+      "accessed": "2026-07-08",
+      "archived_url": "https://web.archive.org/web/20260708/https://example.org/w/delta-annonce"
+    },
+    "facts": []
   }
 ]

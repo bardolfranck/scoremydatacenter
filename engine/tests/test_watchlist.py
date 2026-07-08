@@ -35,7 +35,15 @@ def test_grade_leak_detector_catches_a_letter():
 
 
 def test_fixture_watchlist_is_sourced():
+    # Every entry is justified by an entry-level source; facts MAY be empty
+    # (a tracked flagship with no contestation yet — no fake fact is fabricated).
     for entry in load_watchlist():
-        assert entry["facts"], f"{entry['id']} must carry at least one fact"
-        for fact in entry["facts"]:
+        assert entry["source"]["url"], f"{entry['id']} must carry an entry-level source"
+        for fact in entry.get("facts", []):
             assert fact["source"]["url"]
+
+
+def test_watchlist_allows_empty_facts():
+    ids = {e["id"]: e for e in load_watchlist()}
+    flagship = ids.get("zz-watch-delta-flagship")
+    assert flagship is not None and flagship["facts"] == [], "the empty-facts flagship case must validate"

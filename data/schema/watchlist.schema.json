@@ -9,13 +9,14 @@
     "entry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "name", "country", "coordinates", "facts"],
+      "required": ["id", "name", "country", "coordinates", "source"],
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
         "name": { "type": "string", "minLength": 1 },
         "operator": { "type": "string" },
         "municipality": { "type": "string" },
         "country": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "project_status": { "enum": ["announced", "permitting", "under_construction", "operational"] },
         "coordinates": {
           "type": "object",
           "additionalProperties": false,
@@ -26,10 +27,13 @@
           }
         },
         "summary": { "$ref": "#/$defs/bilingual" },
+        "source": {
+          "$ref": "#/$defs/source",
+          "description": "Entry-level source that justifies listing the project (press release, article). A tracked project always has one, even with an empty facts[]."
+        },
         "facts": {
           "type": "array",
-          "minItems": 1,
-          "description": "At least one sourced fact justifies the watch status.",
+          "description": "Sourced contestation facts (opposition, press, petition, moratorium…). MAY be empty: a tracked flagship with no contestation yet is justified by the entry-level source, no fake fact is fabricated.",
           "items": { "$ref": "#/$defs/fact" }
         }
       }

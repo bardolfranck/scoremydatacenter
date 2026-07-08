@@ -111,7 +111,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "operator": e.get("operator"),
             "municipality": e.get("municipality"),
             "country": e["country"],
-            "facts": e["facts"],
+            "project_status": e.get("project_status"),
+            "watchlist_status": "en_veille",
+            "source": e["source"],
+            "facts": e.get("facts") or [],
         },
     } for e in watchlist]
 

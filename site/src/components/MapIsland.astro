@@ -125,6 +125,10 @@ const { variant, labels } = Astro.props;
     // grade. Full map only (the graded DCs stay the hero focus). FR labels: this
     // layer is shown on /fr/carte. No letter is ever rendered here.
     if (isFull) {
+      const WATCH_STATUS: Record<string, string> = {
+        announced: "Annoncé", permitting: "En instruction",
+        under_construction: "En construction", operational: "En service",
+      };
       try {
         const watch = await (await fetch("/data/watchlist.geojson")).json();
         for (const feature of watch.features) {
@@ -133,8 +137,9 @@ const { variant, labels } = Astro.props;
           const el = document.createElement("div");
           el.className = "watch-marker";
           el.title = "Projet suivi ; pas encore noté";
-          const place = [p.municipality, p.country].filter(Boolean).join(" · ");
-          const facts = (p.facts || []).map((f: any) =>
+          const sub = [[p.municipality, p.country].filter(Boolean).join(" · "),
+            p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
+          const factItems = (p.facts || []).map((f: any) =>
             `<li>${f.kind === "press" ? "Presse : " : ""}${f.label.fr}` +
             `${f.self_reported ? ` <span class="contestation-tag">auto-déclaré</span>` : ""} — ${srcLink(f.source)}</li>`
           ).join("");
@@ -142,9 +147,10 @@ const { variant, labels } = Astro.props;
             <div class="map-popup watch-popup">
               <span class="watch-badge">En veille</span>
               <strong>${p.name}</strong>
-              ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
+              ${sub ? `<span class="map-popup-sub">${sub}</span>` : ""}
               <p class="watch-note">Projet suivi ; pas encore noté.</p>
-              <ul class="watch-facts">${facts}</ul>
+              <p class="watch-src">Source : ${srcLink(p.source)}</p>
+              ${factItems ? `<ul class="watch-facts">${factItems}</ul>` : ""}
             </div>`;
           new maplibregl.Marker({ element: el })
             .setLngLat([lon, lat])
