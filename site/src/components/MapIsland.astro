@@ -83,6 +83,10 @@ const { variant, labels } = Astro.props;
     });
     if (isFull) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
+    // Deep-link from the ranking: /fr/carte?dc=<id> flies to that project and opens its popup.
+    const focusId = new URLSearchParams(location.search).get("dc");
+    const markerById: Record<string, { marker: any; center: [number, number] }> = {};
+
     const bounds = new maplibregl.LngLatBounds();
     for (const feature of geo.features) {
       const p = feature.properties;
@@ -111,13 +115,18 @@ const { variant, labels } = Astro.props;
           <a class="map-popup-link" href="/fr/dc/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
         </div>`;
 
-      new maplibregl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: el })
         .setLngLat([lon, lat])
         .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "320px" }).setHTML(popupHtml))
         .addTo(map);
+      markerById[p.id] = { marker, center: [lon, lat] };
     }
 
-    if (geo.features.length > 1) {
+    if (focusId && markerById[focusId]) {
+      const { marker, center } = markerById[focusId];
+      map.flyTo({ center, zoom: 9, duration: 800 });
+      marker.togglePopup();
+    } else if (geo.features.length > 1) {
       map.fitBounds(bounds, { padding: isFull ? 120 : 90, maxZoom: 7, duration: 0 });
     }
 

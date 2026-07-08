@@ -421,6 +421,11 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rank-project span { color: var(--muted); font-size: 0.82rem; }
 .rank-grade { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 .rank-note { margin-top: 14px; color: var(--muted); font-size: 0.84rem; }
+/* Ranking ↔ map coupling */
+.rank-map-cta { display: inline-flex; align-items: center; margin-top: 8px; color: var(--accent); font-weight: 750; font-size: 0.95rem; }
+.rank-map-cta:hover { text-decoration: underline; }
+.rank-map-link { display: inline-block; margin-top: 4px; color: var(--accent); font-size: 0.8rem; font-weight: 650; }
+.rank-map-link:hover { text-decoration: underline; }
 
 /* Understanding data centers — 7-block pedagogy grid */
 .learn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
