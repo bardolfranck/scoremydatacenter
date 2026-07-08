@@ -1,65 +1,100 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// Per-DC Open Graph card (1200×630) rendered at build: the score card a
-// journalist shares. Hand-built SVG → PNG via resvg (no headless browser). A
-// grade only ever appears here as the dual badge + the pillar strip; the card is
-// the offline twin of the fiche's screenshot zone.
+// Per-DC Open Graph card (1200×630) — a faithful build-time render of the
+// validated R4 design (draft-4 screen 3d): dark navy, Chivo, "My" grey, pillar
+// strip with icons, dual 118px badge, citable quote. Hand-built SVG → resvg (no
+// headless browser); Chivo TTF vendored for text.
 import type { APIRoute } from "astro";
 import { Resvg } from "@resvg/resvg-js";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-// Build-time only (astro build cwd = the site root); fonts are not served.
 const font = (f: string) => readFileSync(join(process.cwd(), "src/og/fonts", f));
 const FONTS = [font("chivo-900.ttf"), font("chivo-700.ttf"), font("chivo-mono-400.ttf"), font("chivo-mono-600.ttf")];
 
-const GRADE = {
+const GRADE: Record<string, { bg: string; fg: string }> = {
   a: { bg: "#0B7A4B", fg: "#ffffff" }, b: { bg: "#6FA032", fg: "#102A43" },
   c: { bg: "#DFA918", fg: "#102A43" }, d: { bg: "#CF6A1C", fg: "#102A43" },
   e: { bg: "#BF3B21", fg: "#ffffff" }, na: { bg: "#20344c", fg: "#8fa6c2" },
-} as const;
-const g = (grade: string) => GRADE[(grade === "insufficient_data" ? "na" : grade.toLowerCase()) as keyof typeof GRADE] ?? GRADE.na;
-const letter = (grade: string) => (grade === "insufficient_data" ? "–" : grade);
-const PILLARS = [["energy", "Énergie"], ["water", "Eau"], ["land_biodiversity", "Foncier"], ["local_impact", "Local"], ["transparency_governance", "Transp."]];
-const STATUS: Record<string, string> = { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service" };
-const esc = (s: string) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
+};
+const gr = (g: string) => GRADE[g === "insufficient_data" ? "na" : g.toLowerCase()] ?? GRADE.na;
+const lt = (g: string) => (g === "insufficient_data" ? "–" : g);
+const esc = (s: any) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]!));
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
+const twoLines = (s: string) => { const i = s.indexOf(" "); return i < 0 ? [s, ""] : [s.slice(0, i), s.slice(i + 1)]; };
 
-function chip(x: number, y: number, s: number, grade: string, fs: number, r = 12) {
-  const c = g(grade);
-  return `<rect x="${x}" y="${y}" width="${s}" height="${s}" rx="${r}" fill="${c.bg}"/>` +
-    `<text x="${x + s / 2}" y="${y + s / 2}" font-family="Chivo" font-weight="900" font-size="${fs}" fill="${c.fg}" text-anchor="middle" dominant-baseline="central">${letter(grade)}</text>`;
+const ICON: Record<string, string> = {
+  energy: '<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>',
+  water: '<path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/>',
+  land: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/>',
+  local: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  transparency: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+};
+const pIcon = (k: string, x: number, y: number) =>
+  `<g transform="translate(${x},${y}) scale(0.75)" fill="none" stroke="#8fa6c2" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</g>`;
+const PILLARS: [string, string, string][] = [
+  ["energy", "Énergie", "energy"], ["water", "Eau", "water"], ["land_biodiversity", "Foncier", "land"],
+  ["local_impact", "Impact", "local"], ["transparency_governance", "Transp.", "transparency"],
+];
+const STATUS: Record<string, string> = { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service" };
+
+// Brand icon (smdc-icon.svg inlined), scaled to 46px on the navy card.
+const BRAND_ICON = `<g transform="translate(64,56) scale(0.71875)">
+  <rect width="64" height="64" rx="14" fill="#102A43"/>
+  <rect x="10" y="20" width="10" height="26" rx="2.5" fill="#fff" opacity="0.85"/>
+  <rect x="44" y="20" width="10" height="26" rx="2.5" fill="#fff" opacity="0.85"/>
+  <rect x="23" y="12" width="18" height="34" rx="3" fill="#fff"/>
+  <rect x="27" y="18" width="10" height="2.5" rx="1.25" fill="#102A43"/><rect x="27" y="25" width="10" height="2.5" rx="1.25" fill="#102A43"/>
+  <rect x="27" y="32" width="10" height="2.5" rx="1.25" fill="#102A43"/><rect x="27" y="39" width="10" height="2.5" rx="1.25" fill="#102A43"/>
+  <rect x="11" y="50" width="7.2" height="5" rx="1.8" fill="#0B7A4B"/><rect x="19.7" y="50" width="7.2" height="5" rx="1.8" fill="#6FA032"/>
+  <rect x="28.4" y="50" width="7.2" height="5" rx="1.8" fill="#DFA918"/><rect x="37.1" y="50" width="7.2" height="5" rx="1.8" fill="#CF6A1C"/>
+  <rect x="45.8" y="50" width="7.2" height="5" rx="1.8" fill="#BF3B21"/>
+</g>`;
+
+function dualBadge(x: number, y: number, grade: string, label: string, doc: string): string {
+  const c = gr(grade);
+  const [l1, l2] = twoLines(doc);
+  return `<rect x="${x}" y="${y}" width="118" height="118" rx="18" fill="${c.bg}"/>` +
+    `<text x="${x + 59}" y="${y + 59}" font-family="Chivo" font-weight="900" font-size="72" fill="${c.fg}" text-anchor="middle" dominant-baseline="central">${lt(grade)}</text>` +
+    `<text x="${x + 134}" y="${y + 42}" font-family="Chivo Mono" font-weight="600" font-size="13" letter-spacing="1" fill="#8fa6c2">${esc(label)}</text>` +
+    `<text x="${x + 134}" y="${y + 70}" font-family="Chivo" font-weight="700" font-size="19" fill="#fff">${esc(l1)}</text>` +
+    (l2 ? `<text x="${x + 134}" y="${y + 92}" font-family="Chivo" font-weight="700" font-size="19" fill="#fff">${esc(l2)}</text>` : "");
 }
 
 function card(dc: any): string {
+  const d = dc.score_history?.[dc.score_history.length - 1]?.date;
+  const dateFr = d ? d.split("-").reverse().join("/") : "";
   const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : "", dc.country].filter(Boolean).join(" ");
-  const meta = [STATUS[dc.project_status] ?? dc.project_status, dc.power_mw ? `${dc.power_mw} MW` : ""].filter(Boolean).join(" · ");
-  const pill = PILLARS.map(([id, label], i) => {
-    const x = 64 + i * 120, gr = dc.pillars?.[id]?.grade ?? "insufficient_data";
-    return `<text x="${x + 28}" y="466" font-family="Chivo Mono" font-size="16" fill="#8fa6c2" text-anchor="middle">${esc(label)}</text>` + chip(x, 476, 56, gr, 30, 8);
+  const kicker = ["Fiche projet", place, dc.power_mw ? `${dc.power_mw} MW` : ""].filter(Boolean).join(" · ");
+  const strip = PILLARS.map(([id, label, ic], i) => {
+    const x = 64 + i * 60, g = dc.pillars?.[id]?.grade ?? "insufficient_data", c = gr(g);
+    return pIcon(ic, x + 17, 300) +
+      `<text x="${x + 26}" y="333" font-family="Chivo Mono" font-weight="600" font-size="11" fill="#8fa6c2" text-anchor="middle" letter-spacing="0.5">${esc(label).toUpperCase()}</text>` +
+      `<rect x="${x}" y="340" width="52" height="46" rx="8" fill="${c.bg}"/>` +
+      `<text x="${x + 26}" y="363" font-family="Chivo" font-weight="900" font-size="26" fill="${c.fg}" text-anchor="middle" dominant-baseline="central">${lt(g)}</text>`;
   }).join("");
   const site = dc.grades.site, pp = dc.grades.project_process;
   const siteDoc = site.documentation?.label?.fr ?? "";
   const ppDoc = pp.grade === "insufficient_data" ? "données insuffisantes" : (pp.documentation?.label?.fr ?? "");
   return `<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
   <rect width="1200" height="630" fill="#102A43"/>
-  <text x="64" y="92" font-family="Chivo" font-weight="900" font-size="30" fill="#ffffff">Score<tspan fill="#8FA6C2">My</tspan>DataCenter</text>
-  <text x="1136" y="90" font-family="Chivo Mono" font-size="20" fill="#8fa6c2" text-anchor="end">scoremydatacenter.org</text>
-  <text x="64" y="188" font-family="Chivo Mono" font-weight="600" font-size="20" fill="#8fa6c2" letter-spacing="2">FICHE PROJET · ${esc(clip(place, 40)).toUpperCase()}</text>
-  <text x="62" y="252" font-family="Chivo" font-weight="900" font-size="58" fill="#ffffff">${esc(clip(dc.name, 26))}</text>
-  <text x="64" y="300" font-family="Chivo Mono" font-size="22" fill="#c6d3e2">${esc(meta)}</text>
-  ${pill}
-  <rect x="64" y="556" width="1072" height="1" fill="#20344c"/>
-  <text x="64" y="590" font-family="Chivo" font-weight="700" font-size="26" fill="#ffffff">« ${esc(clip(dc.citable_quote?.fr ?? "", 78))} »</text>
-  <g transform="translate(772,150)">
-    ${chip(0, 0, 112, site.grade, 64)}
-    <text x="130" y="40" font-family="Chivo Mono" font-weight="600" font-size="17" fill="#8fa6c2">NOTE DU SITE</text>
-    <text x="130" y="72" font-family="Chivo" font-weight="700" font-size="23" fill="#ffffff">${esc(clip(siteDoc, 24))}</text>
-    ${chip(0, 152, 112, pp.grade, 64)}
-    <text x="130" y="192" font-family="Chivo Mono" font-weight="600" font-size="17" fill="#8fa6c2">NOTE PROJET &amp; PROCESSUS</text>
-    <text x="130" y="224" font-family="Chivo" font-weight="700" font-size="23" fill="#ffffff">${esc(clip(ppDoc, 24))}</text>
-  </g>
+  ${BRAND_ICON}
+  <text x="124" y="78" font-family="Chivo" font-weight="700" font-size="24" fill="#fff">Score<tspan fill="#8FA6C2">My</tspan>DataCenter</text>
+  <text x="124" y="98" font-family="Chivo Mono" font-size="13" fill="#8fa6c2">observatoire indépendant</text>
+  ${dateFr ? `<text x="1136" y="86" font-family="Chivo Mono" font-size="15" fill="#c6d3e2" text-anchor="end">Scoré le ${esc(dateFr)}</text>` : ""}
+
+  <text x="64" y="182" font-family="Chivo Mono" font-weight="600" font-size="15" letter-spacing="1.8" fill="#8fa6c2">${esc(clip(kicker, 48)).toUpperCase()}</text>
+  <text x="62" y="242" font-family="Chivo" font-weight="900" font-size="58" letter-spacing="-1" fill="#fff">${esc(clip(dc.name, 26))}</text>
+  ${strip}
+  <text x="64" y="410" font-family="Chivo Mono" font-size="11" fill="#8fa6c2"><tspan fill="#c6d3e2">●●●○</tspan> = documentation disponible par pilier</text>
+
+  ${dualBadge(800, 180, site.grade, "NOTE DU SITE", siteDoc)}
+  ${dualBadge(800, 314, pp.grade, "NOTE PROJET & PROCESSUS", ppDoc)}
+
+  <line x1="64" y1="536" x2="1136" y2="536" stroke="#ffffff" stroke-opacity="0.14"/>
+  <text x="64" y="572" font-family="Chivo" font-weight="500" font-size="18" fill="#c6d3e2">« ${esc(clip(dc.citable_quote?.fr ?? "", 62))} »</text>
+  <text x="1136" y="572" font-family="Chivo Mono" font-size="14" fill="#8fa6c2" text-anchor="end">scoremydatacenter.org</text>
 </svg>`;
 }
 
@@ -69,9 +104,7 @@ export function getStaticPaths() {
 }
 
 export const GET: APIRoute = ({ props }) => {
-  const dc = (props as any).dc;
-  dc._scored = dc.score_history?.[dc.score_history.length - 1]?.date ?? "";
-  const png = new Resvg(card(dc), {
+  const png = new Resvg(card((props as any).dc), {
     fitTo: { mode: "width", value: 1200 },
     font: { fontBuffers: FONTS, loadSystemFonts: false, defaultFontFamily: "Chivo" },
   }).render().asPng();
