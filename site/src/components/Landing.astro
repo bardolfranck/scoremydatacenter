@@ -53,15 +53,15 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
 >
   <section class="hero">
     <div class="hero-copy">
+      {t.heroKicker && <p class="hero-kicker">{t.heroKicker}</p>}
       <h1 set:html={t.heroTitle}></h1>
       <p class="hero-lede">{t.heroLede}</p>
-      <div class="hero-scale" role="img" aria-label={`${t.heroScaleLabel} A à E`}>
+      <div class="hero-scale" role="img" aria-label={t.heroScaleLabel}>
         <span class="hs-cell hs-a">A</span>
         <span class="hs-cell hs-b">B</span>
         <span class="hs-cell hs-c">C</span>
         <span class="hs-cell hs-d">D</span>
         <span class="hs-cell hs-e">E</span>
-        <span class="hero-scale-label">{t.heroScaleLabel}</span>
       </div>
       <div class="hero-actions">
         <a class="button button-primary" href="#scores">{t.ctaScores}</a>
@@ -104,7 +104,6 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <h3>{t.whyTitle}</h3>
         <p class="why-lede">{t.whyLede}</p>
         <p class="why-body">{t.whyBody}</p>
-        {t.whyPunch && <p class="why-punchline">{t.whyPunch}</p>}
       </div>
     </div>
   </section>
