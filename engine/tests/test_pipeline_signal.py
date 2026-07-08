@@ -42,7 +42,20 @@ def test_umap_fetch_normalizes_and_skips_inventory(monkeypatch):
     r = recs[0]
     assert r["kind"] == "opposition" and r["country"] == "FR"
     assert r["coordinates"] == {"lat": 48.58, "lon": 2.78}
-    assert "https://example.org/info" in r["sources"]  # source link pulled from description
+    # The CITABLE source is the human press/collectif link from the description — the FIRST source,
+    # never the raw datalayer GeoJSON feed (a local-official reader must land on a page, not JSON).
+    assert r["sources"][0] == "https://example.org/info"
+    assert not any("datalayer" in s for s in r["sources"])
+
+
+def test_umap_source_falls_back_to_map_page_not_the_json_feed(monkeypatch):
+    # A feature with no link in its description → the human map page, never the datalayer endpoint.
+    monkeypatch.setattr(signal, "_umap_layer_uuids", lambda accessed: ["opp"])
+    monkeypatch.setattr(signal, "get_json", lambda url: {"features": [
+        {"geometry": {"type": "Point", "coordinates": [2.0, 48.0]},
+         "properties": {"name": "Opposition sans lien", "description": "pas d'url ici"}}]})
+    r = signal.fetch_umap_layers("2026-07-07")[0]
+    assert r["sources"] == [signal._UMAP_MAP]          # human map page, not the raw feed
 
 
 def test_fights_keeps_only_opposition_rows_by_default(monkeypatch):

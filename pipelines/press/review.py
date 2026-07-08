@@ -33,7 +33,7 @@ _BBOX = {
 # harvester kind → contestation fact kind (announced_project carries no fact)
 _KIND_MAP = {"opposition": "opposition", "moratorium": "moratorium", "article": "press"}
 _FEED_TITLE = {
-    "umap-fr": "Carte communautaire des projets et contestations (uMap)",
+    "umap-fr": "Presse / collectif — opposition recensée (carte communautaire)",
     "us-fights": "Data Center Tracker (fights dataset)",
     "us-moratorium": "US data-center moratorium inventory",
     "gdelt": "Press (GDELT index)",
