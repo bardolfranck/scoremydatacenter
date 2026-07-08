@@ -129,6 +129,31 @@ def approved_contestation_facts(review_items: list[dict], *, archive: bool = Tru
     return facts
 
 
+def promote_watchlist(review_items: list[dict], *, archive: bool = True) -> list[dict]:
+    """APPROVED review entries → standalone "En veille" watchlist entries (A-19 light shape).
+
+    The review item's `proposed` object is already the published watchlist shape (id/name/country/
+    coordinates/project_status/source/facts). Keep only the approved ones, add archived_url (A-20),
+    drop internal flags. This feeds `data/watchlist/*.json` → the engine builds watchlist.geojson →
+    the map's "En veille" layer. Facts only, never a grade.
+    """
+    out = []
+    for item in review_items:
+        if item.get("decision") != "approve":
+            continue
+        entry = dict(item["proposed"])
+        for fact in entry.get("facts", []):
+            fact.pop("_label_status", None)
+            src = fact.get("source", {})
+            if archive and src.get("url") and "archived_url" not in src:
+                snap = archive_url(src["url"])
+                if snap:
+                    src["archived_url"] = snap
+        entry.pop("_label_status", None)
+        out.append(entry)
+    return out
+
+
 def promote_into_dc(dc: dict, review_items: list[dict], *, archive: bool = True) -> dict:
     """THE LAST MILE — write the human-approved contestation facts into the DC file's `contestation[]`.
 
@@ -205,6 +230,9 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--into", default=None,
                     help="DC draft json to WRITE the approved contestation[] into (the last mile). "
                          "Without it, the approved facts are printed only.")
+    pr.add_argument("--watchlist", default=None,
+                    help="Write the approved entries as a standalone data/watchlist/*.json array "
+                         "(the 'En veille' map layer). Facts only, no grade.")
     pr.add_argument("--no-archive", action="store_true")
 
     args = p.parse_args(argv)
@@ -236,7 +264,15 @@ def main(argv: list[str] | None = None) -> int:
     if args.cmd == "promote":
         items = [json.loads(l) for l in Path(args.review_jsonl).read_text().splitlines() if l.strip()]
         approved = sum(1 for i in items if i.get("decision") == "approve")
-        if args.into:                                    # the last mile: write into the DC file
+        if args.watchlist:                               # standalone "En veille" map layer (A-19)
+            entries = promote_watchlist(items, archive=not args.no_archive)
+            wl_path = Path(args.watchlist)
+            wl_path.parent.mkdir(parents=True, exist_ok=True)
+            wl_path.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n")
+            print(f"Wrote {len(entries)} watchlist entry(ies) → {wl_path} "
+                  f"({approved} approved of {len(items)}). `make build` → the 'En veille' map layer.",
+                  file=sys.stderr)
+        elif args.into:                                  # the last mile: write into the DC file
             dc_path = Path(args.into)
             dc = json.loads(dc_path.read_text())
             dc = promote_into_dc(dc, items, archive=not args.no_archive)

@@ -89,6 +89,22 @@ def test_promote_into_dc_writes_the_last_mile(monkeypatch):
     assert "_label_status" not in item
 
 
+def test_promote_watchlist_keeps_approved_light_entries(monkeypatch):
+    monkeypatch.setattr(orchestrate, "archive_url", lambda url: None)
+    items = [
+        {"decision": "approve", "proposed": {"id": "fr-x", "name": "X", "country": "FR",
+            "coordinates": {"lat": 43.3, "lon": 5.3}, "project_status": None,
+            "source": {"title": "t", "url": "https://a", "accessed": "d"}, "facts": [
+                {"kind": "opposition", "label": {"fr": "o", "en": "o"}, "_label_status": "proposed_raw",
+                 "source": {"title": "t", "url": "https://b", "accessed": "d"}, "self_reported": False}]}},
+        {"decision": "reject", "proposed": {"id": "fr-y", "name": "Y", "facts": []}},
+    ]
+    out = orchestrate.promote_watchlist(items)
+    assert [e["id"] for e in out] == ["fr-x"]                    # only approved
+    assert "coordinates" in out[0] and "grade" not in json.dumps(out).lower()  # light shape, no grade
+    assert "_label_status" not in out[0]["facts"][0]            # internal flag stripped
+
+
 def test_render_html_has_no_grade_and_marks_facts_only():
     html = orchestrate.render_review_html([
         {"proposed": {"name": "X", "country": "FR", "facts": [
