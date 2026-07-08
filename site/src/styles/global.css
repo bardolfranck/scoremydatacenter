@@ -173,7 +173,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-legend { position: absolute; left: 14px; bottom: 14px; z-index: 2; display: grid; gap: 6px; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px); box-shadow: var(--shadow); font-size: 0.82rem; font-weight: 650; color: var(--ink-soft); }
 .map-legend span { display: inline-flex; align-items: center; gap: 8px; }
 .map-legend-graded { width: 16px; height: 16px; border-radius: 4px; background: var(--grade-b); border: 2px solid #fff; box-shadow: 0 1px 3px rgba(7, 24, 47, 0.3); }
-.map-legend-watch { width: 14px; height: 14px; border-radius: 50%; background: var(--grade-na); border: 2px solid #fff; box-shadow: 0 1px 3px rgba(7, 24, 47, 0.3); }
+.map-legend-watch { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 11px; line-height: 1; border-radius: 50%; background: var(--wash); border: 2px solid #fff; box-shadow: 0 1px 3px rgba(7, 24, 47, 0.3); }
 .map-marker { display: grid; place-items: center; cursor: pointer; }
 .map-marker .map-chip {
   width: 100%; height: 100%;
@@ -196,7 +196,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-popup-link { color: var(--accent); font-size: 0.84rem; font-weight: 750; }
 .map-popup-link:hover { text-decoration: underline; }
 /* Watchlist « En veille » — distinct neutral marker, never a grade chip (A-19) */
-.watch-marker { width: 18px; height: 18px; border-radius: 50%; background: var(--grade-na); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(7, 24, 47, 0.3); cursor: pointer; }
+.watch-marker { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; border-radius: 50%; background: var(--wash); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(7, 24, 47, 0.3); cursor: pointer; }
 .watch-badge { display: inline-block; width: fit-content; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--wash); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .watch-note { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; font-style: italic; }
 .watch-src { margin: 6px 0 0; font-size: 0.84rem; color: var(--ink-soft); }

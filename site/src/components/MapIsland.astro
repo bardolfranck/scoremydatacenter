@@ -27,7 +27,7 @@ const { variant, labels } = Astro.props;
   {variant === "full" && (
     <div class="map-legend" aria-hidden="true">
       <span><span class="map-legend-graded"></span>Projet noté A–E</span>
-      <span><span class="map-legend-watch"></span>En veille — suivi, pas encore noté</span>
+      <span><span class="map-legend-watch">🗣️</span>En veille — suivi, pas encore noté</span>
     </div>
   )}
 </div>
@@ -145,6 +145,9 @@ const { variant, labels } = Astro.props;
           const [lon, lat] = feature.geometry.coordinates;
           const el = document.createElement("div");
           el.className = "watch-marker";
+          el.textContent = "🗣️";
+          el.setAttribute("role", "img");
+          el.setAttribute("aria-label", "Projet suivi — contestation");
           el.title = "Projet suivi ; pas encore noté";
           const sub = [[p.municipality, p.country].filter(Boolean).join(" · "),
             p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
