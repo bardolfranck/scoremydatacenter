@@ -132,13 +132,18 @@ def fetch_umap_layers(accessed: str) -> list[dict]:
                 continue
             desc = (props.get("description") or "").strip()
             src_links = re.findall(r"https?://[^\s)>\]]+", desc)
+            # Human-citable source = the press/collectif link in the description, NOT the machine
+            # datalayer feed. Fall back to the human map page — never the raw GeoJSON endpoint
+            # (a local-official reader must land on an article, not on JSON). The datalayer stays
+            # only as internal provenance (source_url).
+            human_sources = src_links or [_UMAP_MAP]
             out.append(_record(
                 "umap-fr", url, _UMAP_LICENSE, kind,
                 name=name, country="FR",
                 lat=(coords[1] if coords else None), lon=(coords[0] if coords else None),
                 status=None,
                 facts={"note": desc[:500]} if desc else {},
-                sources=[url] + src_links, retrieved=accessed))
+                sources=human_sources, retrieved=accessed))
     return out
 
 
