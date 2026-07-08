@@ -1,0 +1,49 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Legal notices. Structure is in place; the exact wording is pending the phase-6
+// lawyer review (cadrage §11 ter / ARCHITECTURE §12.4) — flagged as such.
+import Base from "../../layouts/Base.astro";
+import { FR_NAV } from "../../config/nav";
+---
+
+<Base
+  lang="fr"
+  title="Mentions légales — ScoreMyDataCenter"
+  description="Mentions légales de ScoreMyDataCenter : éditeur, hébergement, licences, données personnelles."
+  tagline="Observatoire indépendant"
+  altHref="/"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <section class="section" aria-labelledby="legal-title">
+    <div class="section-inner prose legal">
+      <h1 id="legal-title">Mentions légales</h1>
+      <p class="legal-draft">Version de travail — les formulations juridiques précises seront validées par une relecture avocat avant la mise en ligne publique.</p>
+
+      <h2>Éditeur</h2>
+      <p>ScoreMyDataCenter, observatoire indépendant fondé par <strong>Franck Bardol</strong>. Contact : <a href="mailto:contact@scoremydatacenter.org">contact@scoremydatacenter.org</a>. Le statut juridique de l'éditeur et son adresse seront précisés à la publication.</p>
+
+      <h2>Hébergement</h2>
+      <p>Site statique hébergé par Cloudflare, Inc. (Cloudflare Pages), 101 Townsend Street, San Francisco, CA 94107, États-Unis.</p>
+
+      <h2>Propriété intellectuelle et licences</h2>
+      <p>Le projet est ouvert par conception (« on ouvre la vérité ») :</p>
+      <ul>
+        <li>Moteur de calcul et parsers : <strong>AGPL-3.0</strong>.</li>
+        <li>Données publiées : <strong>ODbL</strong>.</li>
+        <li>Méthodologie et contenus éditoriaux : <strong>CC BY-SA 4.0</strong>.</li>
+      </ul>
+      <p>Le code et les données sont publics sur <a href="https://github.com/bardolfranck/scoremydatacenter" target="_blank" rel="noopener">GitHub</a>. Les articles de presse cités ne sont jamais reproduits : seuls le lien, une copie archivée et le fait extrait sont publiés.</p>
+
+      <h2>Données personnelles</h2>
+      <p>Le site ne dépose aucun cookie et n'utilise pas de traceur publicitaire. La mesure d'audience (Cloudflare Web Analytics) est sans cookie et sans donnée personnelle. Les notes ne contiennent aucune donnée personnelle : la position des élus n'est enregistrée que sous forme de faits votés (délibérations), jamais de nom de personne.</p>
+
+      <h2>Indépendance et contradictoire</h2>
+      <p>Les entités notées ne paient jamais leur note. Avant toute publication nominative, l'opérateur est notifié au moins 15 jours à l'avance et sa réponse est publiée à côté de la note. Toute donnée peut être corrigée sur preuve — voir la page <a href="/fr/contact">Contact</a>.</p>
+
+      <p class="legal-back"><a href="/fr/">← Retour à l'accueil</a></p>
+    </div>
+  </section>
+</Base>

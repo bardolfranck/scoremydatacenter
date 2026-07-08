@@ -1,0 +1,102 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Public methodology page, rendered from the versioned methodology.json (the
+// grid IS data, not prose). Prose captures the doctrine; the grid is the source.
+import Base from "../../layouts/Base.astro";
+import PillarIcon from "../../components/PillarIcon.astro";
+import type { PillarIconName } from "../../components/PillarIcon.astro";
+import methodologyData from "../../../public/data/methodology.json";
+import { FR_NAV } from "../../config/nav";
+
+const m = methodologyData as any;
+const repo = "https://github.com/bardolfranck/scoremydatacenter";
+const pillarIcon: Record<string, PillarIconName> = {
+  energy: "energy", water: "water", land_biodiversity: "land",
+  local_impact: "local", transparency_governance: "transparency",
+};
+const blockLabel: Record<string, string> = {
+  base: "Site (subi)", project: "Projet (choisi)", process: "Processus",
+};
+const dirLabel: Record<string, string> = {
+  lower_is_better: "plus bas = mieux", higher_is_better: "plus haut = mieux",
+  encoded_in_scoring: "qualitatif", non_monotonic: "nuancé",
+};
+const grades = [...m.grade_thresholds].sort((a: any, b: any) => b.min - a.min);
+const byPillar = m.pillars.map((p: any) => ({
+  pillar: p,
+  items: m.indicators.filter((i: any) => i.pillar === p.id && i.mvp),
+}));
+---
+
+<Base
+  lang="fr"
+  title="Méthodologie — ScoreMyDataCenter"
+  description="La méthode de notation : deux notes A–E (site et opérateur), confiance documentaire, 24 indicateurs en 5 piliers. Grille, poids et seuils publics et versionnés."
+  tagline="Observatoire indépendant"
+  altHref="/"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <section class="section" aria-labelledby="meth-title">
+    <div class="section-inner prose legal">
+      <h1 id="meth-title">Méthodologie</h1>
+      <p class="legal-draft">Version <strong>{m.version}</strong>. Grille en cours de calibration : poids et seuils sont provisoires jusqu'à la validation rétrospective sur des cas au dénouement connu. La méthode est publique, versionnée et datée (antériorité vérifiable) ; le code et la grille sont sur <a href={repo} target="_blank" rel="noopener">GitHub</a>.</p>
+
+      <h2>La note en une phrase</h2>
+      <p>Chaque projet reçoit <strong>deux notes de A à E</strong> — une pour le <strong>site</strong> (le contexte que le projet subit) et une pour le <strong>projet &amp; processus</strong> (ce que l'opérateur choisit) — assorties d'un <strong>niveau de confiance documentaire</strong>. Une note ne s'affiche jamais sans lui ; sous 40 % de couverture, on écrit « données insuffisantes ». On ne note pas l'inconnu.</p>
+      <p>Le score est calculé en Python au moment du build, à partir des seules valeurs sourcées du fichier de chaque projet : quiconque clone le dépôt et lance <code>make score</code> retombe exactement sur les lettres affichées.</p>
+
+      <h2>L'échelle</h2>
+      <div class="meth-scale">
+        {grades.map((t: any) => (
+          <span class={`meth-grade grade-${t.grade.toLowerCase()}`}>{t.grade}<small>≥ {t.min}</small></span>
+        ))}
+      </div>
+
+      <h2>Les 5 piliers</h2>
+      <ul class="meth-pillars">
+        {m.pillars.map((p: any) => (
+          <li><span class="meth-pillar-name"><PillarIcon name={pillarIcon[p.id]} size={18} />{p.label.fr}</span><b>{Math.round(p.weight * 100)}%</b></li>
+        ))}
+      </ul>
+
+      <h2>Les 24 indicateurs</h2>
+      <p>Chaque indicateur porte son <strong>sens de notation</strong> et la <strong>base de ses seuils</strong> (un référentiel existant ou un choix éditorial justifié) — c'est une contrainte de schéma, pas une bonne pratique.</p>
+      {byPillar.map((g: any) => (
+        <div class="meth-block">
+          <h3 class="meth-block-title"><PillarIcon name={pillarIcon[g.pillar.id]} size={18} />{g.pillar.label.fr}</h3>
+          <div class="fiche-ind-wrap">
+            <table class="meth-table">
+              <thead><tr><th>Indicateur</th><th>Bloc</th><th>Étage</th><th>Sens</th><th>Base des seuils</th></tr></thead>
+              <tbody>
+                {g.items.map((i: any) => (
+                  <tr>
+                    <td><strong>{i.label.fr}</strong>{i.description?.fr ? <span class="meth-desc">{i.description.fr}</span> : null}</td>
+                    <td>{blockLabel[i.block] ?? i.block}</td>
+                    <td>{i.tier}</td>
+                    <td>{dirLabel[i.direction] ?? i.direction}</td>
+                    <td>{i.threshold_basis?.url
+                      ? <a href={i.threshold_basis.url} target="_blank" rel="noopener">{i.threshold_basis.reference ?? "référence"}</a>
+                      : (i.threshold_basis?.reference ?? i.threshold_basis?.justification ?? "—")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+
+      <h2>Ce qui est verrouillé par construction</h2>
+      <ul>
+        <li><strong>Annoncé ≠ mesuré</strong> : un chiffre déclaré par l'opérateur est tagué « annoncé », noté avec prudence, re-vérifiable ex-post.</li>
+        <li><strong>Plancher de transparence</strong> : divulguer une donnée ne peut jamais dégrader la note par rapport à l'avoir cachée.</li>
+        <li><strong>Verrou éthique</strong> : la vulnérabilité d'une commune ne peut jamais améliorer la note d'un projet.</li>
+        <li><strong>Gouvernance</strong> : toute évolution de la grille passe par une version taguée et une entrée de changelog justifiée et signée.</li>
+      </ul>
+
+      <p class="legal-back"><a href="/fr/">← Retour à l'accueil</a></p>
+    </div>
+  </section>
+</Base>

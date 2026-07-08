@@ -13,7 +13,7 @@ export const FR_NAV: NavItem[] = [
   { href: "/fr/carte", label: "Carte" },
   { href: "/fr/classement", label: "Classement" },
   { href: "/fr/comprendre", label: "Comprendre les data centers" },
-  { href: "/fr/#method", label: "Méthode" },
+  { href: "/fr/methodologie", label: "Méthode" },
   { href: "/fr/#open", label: "Modèle ouvert" },
   { href: "/fr/#about", label: "Qui sommes-nous ?" },
   { href: "/fr/#contact", label: "Contact" },

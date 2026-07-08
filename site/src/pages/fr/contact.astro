@@ -1,0 +1,35 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import Base from "../../layouts/Base.astro";
+import { FR_NAV } from "../../config/nav";
+---
+
+<Base
+  lang="fr"
+  title="Contact — ScoreMyDataCenter"
+  description="Contacter l'observatoire : suggérer un projet à noter, signaler une correction de donnée, joindre l'équipe."
+  tagline="Observatoire indépendant"
+  altHref="/"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <section class="section" aria-labelledby="contact-title">
+    <div class="section-inner prose legal">
+      <h1 id="contact-title">Contact</h1>
+      <p>Une question, un projet à suivre, une donnée à corriger ? Écrivez-nous.</p>
+
+      <h2>Nous écrire</h2>
+      <p><a href="mailto:contact@scoremydatacenter.org">contact@scoremydatacenter.org</a></p>
+
+      <h2>Suggérer un projet à noter</h2>
+      <p>Indiquez le projet et, si possible, ses sources. Nous priorisons les dossiers les mieux documentés et les plus discutés. Précision d'indépendance : nous ne notons jamais sur commande d'une partie, ni pour ni contre — la note suit la méthode, pas le demandeur.</p>
+
+      <h2>Signaler une correction</h2>
+      <p>Toute donnée peut être corrigée sur preuve. Le plus efficace est d'ouvrir une <a href="https://github.com/bardolfranck/scoremydatacenter/issues" target="_blank" rel="noopener">issue GitHub</a> (source obligatoire, déclaration d'intérêt demandée) ; la validation est relue par un mainteneur. Sinon, écrivez-nous par e-mail.</p>
+
+      <p class="legal-back"><a href="/fr/">← Retour à l'accueil</a></p>
+    </div>
+  </section>
+</Base>
