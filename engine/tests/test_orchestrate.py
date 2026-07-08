@@ -68,6 +68,27 @@ def test_promote_applies_only_approved(monkeypatch):
     assert fact["source"]["archived_url"].endswith("https://a")  # archived_url added at promote (A-20)
 
 
+def test_promote_into_dc_writes_the_last_mile(monkeypatch):
+    monkeypatch.setattr(orchestrate, "archive_url", lambda url: None)   # keep it offline
+    items = [
+        {"decision": "approve", "proposed": {"name": "A", "facts": [
+            {"kind": "opposition", "label": {"fr": "Opposition", "en": "Opposition"},
+             "_label_status": "proposed_raw",
+             "source": {"title": "t", "url": "https://a", "accessed": "d"}, "self_reported": False}]}},
+        {"decision": "reject", "proposed": {"name": "B", "facts": [
+            {"kind": "press", "label": {"fr": "x", "en": "x"},
+             "source": {"title": "t", "url": "https://b", "accessed": "d"}}]}},
+    ]
+    dc = {"id": "zz-test", "indicators": []}
+    out = orchestrate.promote_into_dc(dc, items)
+    # only the approved entry's facts land in contestation[]; the rejected one does not
+    assert len(out["contestation"]) == 1
+    item = out["contestation"][0]
+    assert item["kind"] == "opposition" and item["label"]["fr"] == "Opposition"
+    assert set(item) == {"kind", "label", "source", "self_reported"}   # flattened to the DC shape
+    assert "_label_status" not in item
+
+
 def test_render_html_has_no_grade_and_marks_facts_only():
     html = orchestrate.render_review_html([
         {"proposed": {"name": "X", "country": "FR", "facts": [
