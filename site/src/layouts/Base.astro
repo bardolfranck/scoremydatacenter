@@ -12,8 +12,9 @@ interface Props {
   altHref: string; // path of the same page in the other language
   altLabel: string;
   nav: { href: string; label: string }[];
+  ogImage?: string; // absolute URL of the social card
 }
-const { lang, title, description, tagline, altHref, altLabel, nav } = Astro.props;
+const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = Astro.props;
 const altLang = lang === "en" ? "fr" : "en";
 const home = lang === "en" ? "/" : "/fr/";
 ---
@@ -26,6 +27,12 @@ const home = lang === "en" ? "/" : "/fr/";
     <meta name="robots" content="noindex" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta name="twitter:card" content="summary_large_image" />}
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
     <link rel="icon" type="image/svg+xml" href="/assets/smdc-icon.svg" />
     <link rel="alternate" hreflang={altLang} href={altHref} />
   </head>
