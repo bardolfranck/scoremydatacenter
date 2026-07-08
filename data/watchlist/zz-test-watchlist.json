@@ -1,0 +1,72 @@
+[
+  {
+    "id": "zz-watch-alpha-plains",
+    "name": "ZZ Alpha Plains (test)",
+    "municipality": "Testville",
+    "country": "ZZ",
+    "coordinates": { "lat": 45.5, "lon": 3.1 },
+    "summary": {
+      "fr": "Projet fictif suivi pour le format de la watchlist — faits sourcés, aucune note.",
+      "en": "Fictional tracked project, for the watchlist format — sourced facts, no grade."
+    },
+    "facts": [
+      {
+        "kind": "opposition",
+        "label": { "fr": "Collectif d'habitants constitué contre le projet", "en": "Residents' collective formed against the project" },
+        "source": {
+          "title": "Registre associatif (test)",
+          "url": "https://example.org/w/alpha-collectif",
+          "accessed": "2026-07-01",
+          "archived_url": "https://web.archive.org/web/20260701/https://example.org/w/alpha-collectif"
+        }
+      },
+      {
+        "kind": "press",
+        "label": { "fr": "Réunion publique houleuse rapportée localement", "en": "Heated public meeting reported locally" },
+        "source": {
+          "title": "Média local (test)",
+          "url": "https://example.org/w/alpha-presse",
+          "accessed": "2026-07-02",
+          "archived_url": "https://web.archive.org/web/20260702/https://example.org/w/alpha-presse"
+        }
+      }
+    ]
+  },
+  {
+    "id": "zz-watch-beta-county",
+    "name": "ZZ Beta County (test)",
+    "country": "ZZ",
+    "coordinates": { "lat": 39.2, "lon": -1.4 },
+    "facts": [
+      {
+        "kind": "moratorium",
+        "label": { "fr": "Moratoire local sur les nouveaux data centers", "en": "Local moratorium on new data centers" },
+        "source": {
+          "title": "Délibération du comté (test)",
+          "url": "https://example.org/w/beta-moratorium",
+          "accessed": "2026-07-03",
+          "archived_url": "https://web.archive.org/web/20260703/https://example.org/w/beta-moratorium"
+        }
+      }
+    ]
+  },
+  {
+    "id": "zz-watch-gamma-port",
+    "name": "ZZ Gamma Port (test)",
+    "municipality": "Gammaville",
+    "country": "ZZ",
+    "coordinates": { "lat": 43.3, "lon": 5.4 },
+    "facts": [
+      {
+        "kind": "petition",
+        "self_reported": true,
+        "label": { "fr": "Pétition en ligne contre le projet", "en": "Online petition against the project" },
+        "source": {
+          "title": "Plateforme de pétition (test)",
+          "url": "https://example.org/w/gamma-petition",
+          "accessed": "2026-07-04"
+        }
+      }
+    ]
+  }
+]

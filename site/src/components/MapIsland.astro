@@ -24,6 +24,12 @@ const { variant, labels } = Astro.props;
   {variant === "hero" && labels.openMap && (
     <a class="button button-primary map-open-link" href="/fr/carte">{labels.openMap}</a>
   )}
+  {variant === "full" && (
+    <div class="map-legend" aria-hidden="true">
+      <span><span class="map-legend-graded"></span>Projet noté A–E</span>
+      <span><span class="map-legend-watch"></span>En veille — suivi, pas encore noté</span>
+    </div>
+  )}
 </div>
 
 <script>
@@ -48,6 +54,14 @@ const { variant, labels } = Astro.props;
     return `<div class="map-popup-pillars">${pillars
       .map((p) => `<span class="map-popup-pillar"><span>${PILLAR_SHORT[p.id] ?? p.id}</span>${chip(p.grade)}</span>`)
       .join("")}</div>`;
+  }
+
+  // Client-side mirror of the SourceLink component (A-20): live link + archived snapshot.
+  function srcLink(s: any): string {
+    if (!s?.url) return "—";
+    const live = `<a href="${s.url}" target="_blank" rel="noopener">${s.title}${s.accessed ? ` — consulté le ${s.accessed}` : ""}</a>`;
+    const archived = s.archived_url ? ` · <a href="${s.archived_url}" target="_blank" rel="noopener" class="src-archived">archivé</a>` : "";
+    return live + archived;
   }
 
   document.querySelectorAll<HTMLElement>(".map-island").forEach(async (root) => {
@@ -105,6 +119,41 @@ const { variant, labels } = Astro.props;
 
     if (geo.features.length > 1) {
       map.fitBounds(bounds, { padding: isFull ? 120 : 90, maxZoom: 7, duration: 0 });
+    }
+
+    // Watchlist layer (A-19) — world "En veille" projects: sourced facts, NEVER a
+    // grade. Full map only (the graded DCs stay the hero focus). FR labels: this
+    // layer is shown on /fr/carte. No letter is ever rendered here.
+    if (isFull) {
+      try {
+        const watch = await (await fetch("/data/watchlist.geojson")).json();
+        for (const feature of watch.features) {
+          const p = feature.properties;
+          const [lon, lat] = feature.geometry.coordinates;
+          const el = document.createElement("div");
+          el.className = "watch-marker";
+          el.title = "Projet suivi ; pas encore noté";
+          const place = [p.municipality, p.country].filter(Boolean).join(" · ");
+          const facts = (p.facts || []).map((f: any) =>
+            `<li>${f.kind === "press" ? "Presse : " : ""}${f.label.fr}` +
+            `${f.self_reported ? ` <span class="contestation-tag">auto-déclaré</span>` : ""} — ${srcLink(f.source)}</li>`
+          ).join("");
+          const popupHtml = `
+            <div class="map-popup watch-popup">
+              <span class="watch-badge">En veille</span>
+              <strong>${p.name}</strong>
+              ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
+              <p class="watch-note">Projet suivi ; pas encore noté.</p>
+              <ul class="watch-facts">${facts}</ul>
+            </div>`;
+          new maplibregl.Marker({ element: el })
+            .setLngLat([lon, lat])
+            .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(popupHtml))
+            .addTo(map);
+        }
+      } catch {
+        /* no watchlist artifact yet — the layer is optional */
+      }
     }
   });
 </script>

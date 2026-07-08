@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://scoremydatacenter.org/schema/watchlist.schema.json",
+  "title": "ScoreMyDataCenter watchlist file",
+  "description": "A watchlist file is an ARRAY of 'En veille' entries (A-19): world projects tracked as sourced FACTS, never graded. No letter, no score, no confidence anywhere — additionalProperties:false makes a grade structurally impossible. Publishable without the contradictory review (facts, not a notation).",
+  "type": "array",
+  "items": { "$ref": "#/$defs/entry" },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "country", "coordinates", "facts"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "name": { "type": "string", "minLength": 1 },
+        "operator": { "type": "string" },
+        "municipality": { "type": "string" },
+        "country": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "coordinates": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lat", "lon"],
+          "properties": {
+            "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+            "lon": { "type": "number", "minimum": -180, "maximum": 180 }
+          }
+        },
+        "summary": { "$ref": "#/$defs/bilingual" },
+        "facts": {
+          "type": "array",
+          "minItems": 1,
+          "description": "At least one sourced fact justifies the watch status.",
+          "items": { "$ref": "#/$defs/fact" }
+        }
+      }
+    },
+    "fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "label", "source"],
+      "properties": {
+        "kind": { "enum": ["opposition", "petition", "press", "moratorium", "appeal", "other"] },
+        "label": { "$ref": "#/$defs/bilingual" },
+        "source": { "$ref": "#/$defs/source" },
+        "self_reported": { "type": "boolean" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "url", "accessed"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "accessed": { "type": "string", "format": "date" },
+        "archived_url": { "type": "string", "format": "uri" }
+      }
+    },
+    "bilingual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fr", "en"],
+      "properties": {
+        "fr": { "type": "string", "minLength": 1 },
+        "en": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

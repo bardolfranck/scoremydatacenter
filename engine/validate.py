@@ -27,9 +27,34 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
 
-from .core import DATA_DIR, FICTIONAL_PREFIX, GateError, load_json, load_methodology, datacenter_paths
+from .core import (
+    DATA_DIR, FICTIONAL_PREFIX, GateError, load_json, load_methodology,
+    datacenter_paths, watchlist_paths,
+)
 
 NOTICE_DAYS = 15
+
+# A watchlist entry is FACTS ONLY (A-19/A-21): a grade must be structurally
+# impossible. additionalProperties:false already blocks these keys; this explicit
+# scan turns any leak into a named gate failure instead of a generic schema error.
+GRADE_LIKE_KEYS = {"grade", "grades", "score", "confidence", "letter", "note", "documentation"}
+
+
+def _grade_leak(node) -> str | None:
+    """Return the first grade-like key found anywhere in a watchlist entry, or None."""
+    if isinstance(node, dict):
+        for k, v in node.items():
+            if k in GRADE_LIKE_KEYS:
+                return k
+            leak = _grade_leak(v)
+            if leak:
+                return leak
+    elif isinstance(node, list):
+        for v in node:
+            leak = _grade_leak(v)
+            if leak:
+                return leak
+    return None
 
 
 def _schema_errors(instance, schema, label: str) -> list[str]:
@@ -160,6 +185,27 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                     f"JOURNAL GATE: {label}: score_history[{n}] has no rationale — every revision "
                     "after the initial scoring must say why the grade moved"
                 )
+
+    # Watchlist (A-19) — sourced facts, never a grade
+    watchlist_schema = load_json(data_dir / "schema" / "watchlist.schema.json")
+    seen_watch_ids: set[str] = set()
+    for path in watchlist_paths(data_dir):
+        entries = load_json(path)
+        label = f"watchlist/{path.name}"
+        errs = _schema_errors(entries, watchlist_schema, label)
+        problems += errs
+        if errs:
+            continue
+        for entry in entries:
+            leak = _grade_leak(entry)
+            if leak:
+                problems.append(
+                    f"GATE (A-19): {label}: entry {entry.get('id')!r} carries a grade-like key "
+                    f"{leak!r} — the watchlist publishes facts only, never a note"
+                )
+            if entry["id"] in seen_watch_ids:
+                problems.append(f"GATE 1: {label}: duplicate watchlist id {entry['id']!r}")
+            seen_watch_ids.add(entry["id"])
 
     return problems
 

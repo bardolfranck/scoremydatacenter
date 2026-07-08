@@ -55,3 +55,15 @@ def datacenter_paths(data_dir: Path = DATA_DIR) -> list[Path]:
 
 def load_datacenters(data_dir: Path = DATA_DIR) -> dict[str, dict]:
     return {p.stem: load_json(p) for p in datacenter_paths(data_dir)}
+
+
+def watchlist_paths(data_dir: Path = DATA_DIR) -> list[Path]:
+    return sorted((data_dir / "watchlist").glob("*.json"))
+
+
+def load_watchlist(data_dir: Path = DATA_DIR) -> list[dict]:
+    """Flatten every watchlist file (each file is an array of 'En veille' entries, A-19)."""
+    entries: list[dict] = []
+    for p in watchlist_paths(data_dir):
+        entries.extend(load_json(p))
+    return entries

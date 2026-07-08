@@ -1,0 +1,114 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          3.1,
+          45.5
+        ]
+      },
+      "properties": {
+        "id": "zz-watch-alpha-plains",
+        "name": "ZZ Alpha Plains (test)",
+        "operator": null,
+        "municipality": "Testville",
+        "country": "ZZ",
+        "facts": [
+          {
+            "kind": "opposition",
+            "label": {
+              "fr": "Collectif d'habitants constitué contre le projet",
+              "en": "Residents' collective formed against the project"
+            },
+            "source": {
+              "title": "Registre associatif (test)",
+              "url": "https://example.org/w/alpha-collectif",
+              "accessed": "2026-07-01",
+              "archived_url": "https://web.archive.org/web/20260701/https://example.org/w/alpha-collectif"
+            }
+          },
+          {
+            "kind": "press",
+            "label": {
+              "fr": "Réunion publique houleuse rapportée localement",
+              "en": "Heated public meeting reported locally"
+            },
+            "source": {
+              "title": "Média local (test)",
+              "url": "https://example.org/w/alpha-presse",
+              "accessed": "2026-07-02",
+              "archived_url": "https://web.archive.org/web/20260702/https://example.org/w/alpha-presse"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -1.4,
+          39.2
+        ]
+      },
+      "properties": {
+        "id": "zz-watch-beta-county",
+        "name": "ZZ Beta County (test)",
+        "operator": null,
+        "municipality": null,
+        "country": "ZZ",
+        "facts": [
+          {
+            "kind": "moratorium",
+            "label": {
+              "fr": "Moratoire local sur les nouveaux data centers",
+              "en": "Local moratorium on new data centers"
+            },
+            "source": {
+              "title": "Délibération du comté (test)",
+              "url": "https://example.org/w/beta-moratorium",
+              "accessed": "2026-07-03",
+              "archived_url": "https://web.archive.org/web/20260703/https://example.org/w/beta-moratorium"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.4,
+          43.3
+        ]
+      },
+      "properties": {
+        "id": "zz-watch-gamma-port",
+        "name": "ZZ Gamma Port (test)",
+        "operator": null,
+        "municipality": "Gammaville",
+        "country": "ZZ",
+        "facts": [
+          {
+            "kind": "petition",
+            "self_reported": true,
+            "label": {
+              "fr": "Pétition en ligne contre le projet",
+              "en": "Online petition against the project"
+            },
+            "source": {
+              "title": "Plateforme de pétition (test)",
+              "url": "https://example.org/w/gamma-petition",
+              "accessed": "2026-07-04"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -9,7 +9,7 @@ repository content always produces byte-identical artifacts (this is tested).
 
 from pathlib import Path
 
-from .core import ARTIFACTS_DIR, write_json
+from .core import ARTIFACTS_DIR, load_watchlist, write_json
 from .scoring import score_datacenter
 
 
@@ -31,8 +31,10 @@ def _summary(dc: dict, result: dict) -> dict:
 
 
 def build_artifacts(datacenters: dict[str, dict], methodology: dict,
-                    out_dir: Path = ARTIFACTS_DIR) -> dict[str, dict]:
+                    out_dir: Path = ARTIFACTS_DIR, watchlist: list[dict] | None = None) -> dict[str, dict]:
     """Score every DC and write all artifacts. Returns the per-DC results."""
+    if watchlist is None:
+        watchlist = load_watchlist()
     results = {dc_id: score_datacenter(dc, methodology) for dc_id, dc in sorted(datacenters.items())}
 
     labels = {i["id"]: i["label"] for i in methodology["indicators"]}
@@ -98,8 +100,24 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
 
         audit += [{"dc_id": dc_id, "dc_name": dc["identity"]["name"], **event} for event in dc["score_history"]]
 
+    # Watchlist (A-19): world "En veille" projects — sourced facts, NO grade.
+    # The engine never scores these; it only passes the facts through to the map.
+    watch_features = [{
+        "type": "Feature",
+        "geometry": {"type": "Point", "coordinates": [e["coordinates"]["lon"], e["coordinates"]["lat"]]},
+        "properties": {
+            "id": e["id"],
+            "name": e["name"],
+            "operator": e.get("operator"),
+            "municipality": e.get("municipality"),
+            "country": e["country"],
+            "facts": e["facts"],
+        },
+    } for e in watchlist]
+
     write_json(out_dir / "scores.json", scores)
     write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "features": features})
+    write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "features": watch_features})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))
     write_json(out_dir / "methodology.json", methodology)
     return results
