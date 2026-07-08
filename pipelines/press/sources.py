@@ -86,9 +86,11 @@ def _load_cndp_rows() -> list[dict]:
 def collect_cndp(commune_name: str, dept: str | None, accessed: str) -> dict | None:
     """Deterministic `cndp_referral` from the saisines register.
 
-    Match is by commune name as a whole word in the project label (the register embeds the
-    commune in the free-text name). Returns the proxy value, the decision type/year, the CNDP
-    fiche URL, plus any dept-level data-center candidates for the reviewer to disambiguate.
+    Match requires BOTH the commune name (whole word) AND a data-center keyword in the project
+    label — commune alone is not enough: a big/active commune appears in the register for tram,
+    rail or road projects, so matching on commune only yields false positives (verified on real
+    data: Roubaix→tramway, Bordeaux→autoroute, Paris→liaison ferroviaire). Returns the proxy value,
+    decision type/year, CNDP fiche URL, plus dept-level data-center candidates for the reviewer.
     None only if the register itself could not be loaded.
     """
     try:
@@ -103,14 +105,14 @@ def collect_cndp(commune_name: str, dept: str | None, accessed: str) -> dict | N
         label = row.get(_CNDP_NAME_COL) or ""
         norm_label = _norm(label)
         is_dc = any(k in norm_label for k in _DATACENTER_KEYWORDS)
-        if _word_in(target, norm_label):
+        if _word_in(target, norm_label) and is_dc:      # commune AND a data-center project
             matches.append(row)
         elif dept_tag and dept_tag in norm_label and is_dc:
             # Same département + a data-center project, but no commune-name hit → a lead, not proof.
             dept_candidates.append(label.strip())
 
     if matches:
-        # A commune-name hit in the saisines register = the project was referred to the CNDP.
+        # Commune + data-center keyword in the register = this project was referred to the CNDP.
         row = matches[0]
         decision = (row.get(_CNDP_DECISION_COL) or "").strip()
         year = (row.get(_CNDP_YEAR_COL) or "").strip()
@@ -136,7 +138,7 @@ def collect_cndp(commune_name: str, dept: str | None, accessed: str) -> dict | N
         "decision_year": None,
         "seized_no_procedure": False,
         "source": _source(
-            f"CNDP — Saisines register: no entry naming commune '{commune_name}' "
+            f"CNDP — Saisines register: no data-center referral naming commune '{commune_name}' "
             f"(punctual dataset; confirm recent projects via the debatpublic.fr overlay)",
             "https://www.data.gouv.fr/datasets/saisines-de-la-cndp/",
             accessed),
@@ -147,6 +149,7 @@ def collect_cndp(commune_name: str, dept: str | None, accessed: str) -> dict | N
 # --- Judged administrative appeals (administrative-court open data, hidden search API) --------
 
 _JA_API = "https://opendata.justice-administrative.fr/recherche/api/model_search_juri/openData"
+_JA_CAP = 200  # the API page size; hitting it means the commune term is too common to count from here
 
 
 def _ta_code(dept: str | None) -> str | None:
@@ -192,7 +195,7 @@ def collect_appeals_judged(commune_name: str, dept: str | None, accessed: str) -
     if not ta:
         return None
     term = _search_term(commune_name)
-    url = f"{_JA_API}/{ta}/{term}/200"
+    url = f"{_JA_API}/{ta}/{term}/{_JA_CAP}"
     try:
         data = get_json(url)
     except SourceUnavailable:
@@ -210,9 +213,28 @@ def collect_appeals_judged(commune_name: str, dept: str | None, accessed: str) -
         num = src.get("Numero_Dossier")
         if num and num not in dossiers:  # server already text-matched the term; just dedup
             dossiers[num] = src.get("Date_Lecture")
+
+    # Cap hit → the commune term is too common (a big city names thousands of unrelated decisions).
+    # The count is then meaningless: don't report a number, flag it for project-level review.
+    if len(hits) >= _JA_CAP:
+        return {
+            "legal_appeals_count": None,
+            "basis": "unusable_commune_too_common",
+            "capped_at": _JA_CAP,
+            "dossiers": [],
+            "court": court,
+            "scope": "judged_only",
+            "source": _source(
+                f"Administrative-court open data — {court}: search for '{term}' hit the {_JA_CAP}-result "
+                f"cap (commune too common). Count unusable here — needs project-level binding "
+                f"(operator + project name) at the review gate.",
+                f"https://opendata.justice-administrative.fr/#/recherche/{ta}/{term}",
+                accessed),
+        }
     return {
         "legal_appeals_count": len(dossiers),
         "basis": "provisional_upper_bound",
+        "capped_at": None,
         "dossiers": [{"number": n, "date": d} for n, d in dossiers.items()],
         "court": court,
         "scope": "judged_only",

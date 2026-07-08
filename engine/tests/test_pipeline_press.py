@@ -43,6 +43,8 @@ _CNDP_FIXTURE = (
     'Projet "X" centre de données sur la commune de Villetest (77);'
     "concertation préalable (saisine L.121-17);2025;projet;https://debatpublic.fr/fiche-villetest;terminée\n"
     "Projet DATA CENTERS (91);concertation préalable (saisine L.121-17);2021;projet;non disponible;arrêtée\n"
+    # Tramville names a commune but the project is a TRAMWAY, not a data center → must NOT match.
+    "Projet de nouvelle ligne de tramway a Tramville (59);débat public;2018;projet;non disponible;terminée\n"
     "Projet routier ailleurs (12);pas de procédure;2019;projet;non disponible;terminée\n"
 )
 
@@ -68,6 +70,13 @@ def test_cndp_referral_false_without_commune_hit_but_surfaces_dept_candidate(cnd
     r = sources.collect_cndp("Bourgville", "91", "2026-07-07")
     assert r["cndp_referral"] is False                      # not proven → not fabricated
     assert "Projet DATA CENTERS (91)" in r["other_dept_candidates"]  # but handed to the reviewer
+
+
+def test_cndp_false_when_commune_matches_a_non_datacenter_project(cndp_rows):
+    # The real-data bug: Tramville has a CNDP tramway referral, but it is NOT a data center.
+    # Commune-name match alone must not fire — the label needs a data-center keyword too.
+    r = sources.collect_cndp("Tramville", "59", "2026-07-07")
+    assert r["cndp_referral"] is False
 
 
 def test_cndp_no_procedure_flag(monkeypatch):
@@ -111,6 +120,21 @@ def test_appeals_counts_distinct_dossiers_as_provisional_bound(monkeypatch):
     assert {d["number"] for d in r["dossiers"]} == {"2400001", "2400002"}
     assert r["basis"] == "provisional_upper_bound"
     assert r["scope"] == "judged_only"
+
+
+def test_appeals_flags_unusable_when_search_hits_the_api_cap(monkeypatch):
+    # A big city names thousands of unrelated decisions → the search hits the API cap → the count
+    # is meaningless. Must return None + the 'too common' flag, not a garbage number (real-data bug).
+    monkeypatch.setattr(sources, "_JA_CAP", 2)
+    capped = {"decisions": {"body": {"hits": {"hits": [
+        {"_source": {"Numero_Dossier": "1", "Nom_Juridiction": "Tribunal Administratif de Paris"}},
+        {"_source": {"Numero_Dossier": "2", "Nom_Juridiction": "Tribunal Administratif de Paris"}},
+    ]}}}}
+    monkeypatch.setattr(sources, "get_json", lambda url, params=None: capped)
+    r = sources.collect_appeals_judged("Paris", "75", "2026-07-07")
+    assert r["legal_appeals_count"] is None
+    assert r["basis"] == "unusable_commune_too_common"
+    assert r["capped_at"] == 2
 
 
 def test_search_term_picks_distinctive_token():
