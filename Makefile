@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote
 
 install:
 	uv sync
@@ -27,6 +27,24 @@ collect-governance:
 SIGNAL_OUT ?= ../smdc-newsroom/drafts/watchlist
 collect-signal:
 	uv run python -m pipelines.press.collect_signal --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",)
+
+# ── The orchestrated workflow (A-22) — everything auto-chains up to ONE human gate ──
+# Onboard a DC: coords → spatial + governance + contestation match → bundle for review (no publish).
+#   make onboard-dc LAT=48.59 LON=2.80 NAME="…" OPERATOR="…" POWER_MW=30 SIGNAL=<watchlist.draft.geojson>
+onboard-dc:
+	uv run python -m pipelines.orchestrate onboard --lat $(LAT) --lon $(LON) \
+	  $(if $(NAME),--name "$(NAME)",) $(if $(OPERATOR),--operator "$(OPERATOR)",) \
+	  $(if $(POWER_MW),--power-mw $(POWER_MW),) $(if $(PROJECT_STATUS),--project-status $(PROJECT_STATUS),) \
+	  $(if $(SIGNAL),--signal $(SIGNAL),) --out $(OUT)
+
+# Refresh the contestation signal → review queue (facts only). Add GDELT_QUERY= for press detection.
+refresh-signal:
+	uv run python -m pipelines.orchestrate refresh --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",)
+
+# Apply a human-approved contestation review queue (only decision:approve; adds archived_url).
+#   make promote REVIEW=../smdc-newsroom/drafts/datacenters/<id>/contestation.review.jsonl
+promote:
+	uv run python -m pipelines.orchestrate promote $(REVIEW)
 
 score: validate
 	uv run python -m engine.score
