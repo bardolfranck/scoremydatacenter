@@ -17,7 +17,30 @@
         "grade_project_process": "C",
         "confidence": "high",
         "power_mw": 120,
-        "project_status": "permitting"
+        "project_status": "permitting",
+        "pillars": [
+          {
+            "id": "energy",
+            "grade": "B"
+          },
+          {
+            "id": "water",
+            "grade": "B"
+          },
+          {
+            "id": "land_biodiversity",
+            "grade": "A"
+          },
+          {
+            "id": "local_impact",
+            "grade": "B"
+          },
+          {
+            "id": "transparency_governance",
+            "grade": "B"
+          }
+        ],
+        "quote_fr": "Noté B sur le site, C en projet & processus."
       }
     },
     {
@@ -36,7 +59,30 @@
         "grade_project_process": "insufficient_data",
         "confidence": "medium",
         "power_mw": 900,
-        "project_status": "announced"
+        "project_status": "announced",
+        "pillars": [
+          {
+            "id": "energy",
+            "grade": "E"
+          },
+          {
+            "id": "water",
+            "grade": "E"
+          },
+          {
+            "id": "land_biodiversity",
+            "grade": "D"
+          },
+          {
+            "id": "local_impact",
+            "grade": "E"
+          },
+          {
+            "id": "transparency_governance",
+            "grade": "insufficient_data"
+          }
+        ],
+        "quote_fr": "Noté D sur le site, mais E sur « Impact local »."
       }
     }
   ]

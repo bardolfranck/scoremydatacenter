@@ -19,6 +19,7 @@ import envelope from "@phosphor-icons/core/assets/regular/envelope-simple.svg?ra
 import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw";
 import downloadSimple from "@phosphor-icons/core/assets/regular/download-simple.svg?raw";
 import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?raw";
+import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
@@ -66,6 +67,7 @@ const confidenceNote: Record<string, string> = {
 const shareIcon: Record<string, string> = {
   x: xLogo, whatsapp: whatsappLogo, linkedin: linkedinLogo,
   mail: envelope, copy: linkSimple, download: downloadSimple, native: shareNetwork,
+  info: infoIcon,
 };
 const icon = (name: string, size = 18) =>
   shareIcon[name].replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
@@ -101,6 +103,39 @@ const indicatorValue = (ind: any) => {
   if (ind.proxies) return "Procédure (voir source)";
   return "—";
 };
+
+// Methodology meta per indicator — units, scoring direction, threshold basis:
+// the raw value alone ("42") is unreadable to a layperson, so each row also
+// carries its unit, a direction-aware sense gauge (from the engine's normalized
+// score) and an (i) tooltip explaining what "good" means.
+const indMeta: Record<string, any> = {};
+for (const i of methodology.indicators) indMeta[i.id] = i;
+const directionSentence: Record<string, string> = {
+  lower_is_better: "Plus la valeur est basse, mieux c'est.",
+  higher_is_better: "Plus la valeur est haute, mieux c'est.",
+  encoded_in_scoring: "Lecture qualitative selon la méthodologie.",
+  non_monotonic: "Interprétation nuancée (voir méthodologie).",
+};
+const indUnit = (id: string) => indMeta[id]?.unit ?? "";
+const indTooltip = (id: string) => {
+  const m = indMeta[id];
+  if (!m) return "";
+  const dir = directionSentence[m.direction] ?? "";
+  const tb = m.threshold_basis;
+  const basis = tb?.type === "reference" ? `Référence : ${tb.reference}.`
+    : (tb?.justification ?? tb?.note) ? `Choix éditorial : ${tb.justification ?? tb.note}.` : "";
+  return [dir, basis].filter(Boolean).join(" ");
+};
+const senseBand = (score: number | null | undefined) => {
+  if (score === null || score === undefined) return null;
+  if (score >= 66) return { cls: "good", label: "favorable" };
+  if (score >= 40) return { cls: "mid", label: "moyen" };
+  return { cls: "bad", label: "défavorable" };
+};
+// Grouped by pillar (methodology order) — 5 labelled blocks instead of 21 flat rows.
+const indByPillar = (methodology.pillars as any[])
+  .map((p: any) => ({ pillar: p, items: dc.indicators.filter((ind: any) => ind.pillar === p.id) }))
+  .filter((g: any) => g.items.length);
 
 const shareText = `${dc.name} — Note du site : ${isNa(dc.grades.site) ? "données insuffisantes" : dc.grades.site.grade}`
   + (siteDocLabel ? ` · ${siteDocLabel}` : "") + ", selon ScoreMyDataCenter";
@@ -168,13 +203,31 @@ const pillars = methodology.pillars as any[];
         <span class="fiche-conf-note">{confPct} % — {confidenceNote[dc.confidence.level]}</span>
       </div>
 
+      <div class="fiche-share">
+        <span class="fiche-share-label">Partager</span>
+        <div class="fiche-share-icons">
+          <a href={shareLinks.x} target="_blank" rel="noopener" aria-label="Partager sur X" set:html={icon("x")}></a>
+          <a href={shareLinks.whatsapp} target="_blank" rel="noopener" aria-label="Partager sur WhatsApp" set:html={icon("whatsapp")}></a>
+          <a href={shareLinks.linkedin} target="_blank" rel="noopener" aria-label="Partager sur LinkedIn" set:html={icon("linkedin")}></a>
+          <a href={shareLinks.mail} aria-label="Partager par e-mail" set:html={icon("mail")}></a>
+          <button type="button" class="fiche-copy" data-url={pageUrl} aria-label="Copier le lien" set:html={icon("copy")}></button>
+          <button type="button" class="fiche-share-native" data-url={pageUrl} data-text={shareText} aria-label="Partager" set:html={icon("native")}></button>
+        </div>
+        <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label="Télécharger l'image du score">
+          <span set:html={icon("download", 16)}></span>Télécharger l'image du score
+        </a>
+      </div>
+
       <p class="fiche-side-foot">Méthodologie {methodology.version} · scoremydatacenter.org</p>
     </aside>
 
     <div class="fiche-main">
       <div class="fiche-subscores">
         <div class="fiche-subscores-head">
-          <h2>Sous-scores par pilier</h2>
+          <div>
+            <h2>Sous-scores par pilier</h2>
+            <span class="fiche-subscores-sub">tous indicateurs du pilier · distinct des deux notes ci-contre</span>
+          </div>
           <span class="fiche-legend"><span class="pillar-dots"><span class="on">●●●</span><span class="off">○</span></span> = documentation disponible</span>
         </div>
         <div class="fiche-pillars">
@@ -207,38 +260,47 @@ const pillars = methodology.pillars as any[];
 
       <blockquote class="fiche-quote"><p>« {dc.citable_quote.fr} »</p></blockquote>
 
-      <div class="fiche-share">
-        <span class="fiche-share-label">Partager</span>
-        <a href={shareLinks.x} target="_blank" rel="noopener" aria-label="Partager sur X" set:html={icon("x")}></a>
-        <a href={shareLinks.whatsapp} target="_blank" rel="noopener" aria-label="Partager sur WhatsApp" set:html={icon("whatsapp")}></a>
-        <a href={shareLinks.linkedin} target="_blank" rel="noopener" aria-label="Partager sur LinkedIn" set:html={icon("linkedin")}></a>
-        <a href={shareLinks.mail} aria-label="Partager par e-mail" set:html={icon("mail")}></a>
-        <button type="button" class="fiche-copy" data-url={pageUrl} aria-label="Copier le lien" set:html={icon("copy")}></button>
-        <button type="button" class="fiche-share-native" data-url={pageUrl} data-text={shareText} aria-label="Partager" set:html={icon("native")}></button>
-        <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label="Télécharger l'image du score">
-          <span set:html={icon("download", 16)}></span>Télécharger l'image du score
-        </a>
-      </div>
-
       <section class="fiche-section" aria-label="Indicateurs suivis">
         <h2>Indicateurs suivis</h2>
         <div class="fiche-ind-wrap">
           <table class="fiche-ind">
             <thead>
-              <tr><th>Indicateur</th><th>Valeur</th><th>État</th><th>Source</th></tr>
+              <tr><th>Indicateur</th><th>Valeur</th><th>Lecture</th><th>État</th><th>Source</th></tr>
             </thead>
             <tbody>
-              {dc.indicators.map((ind: any) => (
-                <tr>
-                  <td class="ind-name">{ind.label.fr}</td>
-                  <td class={ind.status === "missing" ? "ind-missing" : ""}>{indicatorValue(ind)}</td>
-                  <td><span class={`status-tag status-${ind.status}`}>{indStatusLabels[ind.status]}</span></td>
-                  <td class="ind-source">
-                    {ind.source?.url
-                      ? <a href={ind.source.url} target="_blank" rel="noopener">{ind.source.title}{ind.source.accessed ? ` — consulté le ${ind.source.accessed}` : ""}</a>
-                      : <span>—</span>}
-                  </td>
-                </tr>
+              {indByPillar.map((g: any) => (
+                <Fragment>
+                  <tr class="ind-group">
+                    <td colspan="5"><span class="pillar-name"><PillarIcon name={pillarIconName[g.pillar.id]} size={15} />{g.pillar.label.fr}</span></td>
+                  </tr>
+                  {g.items.map((ind: any) => {
+                    const band = senseBand(ind.score);
+                    const unit = indUnit(ind.id);
+                    const tip = indTooltip(ind.id);
+                    return (
+                      <tr>
+                        <td class="ind-name">
+                          {ind.label.fr}
+                          {tip && <span class="info" title={tip} tabindex="0" role="img" aria-label={`Explication : ${tip}`} set:html={icon("info", 14)}></span>}
+                        </td>
+                        <td class={ind.status === "missing" ? "ind-missing" : ""}>
+                          {ind.status === "missing" ? "Non communiqué" : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}
+                        </td>
+                        <td>
+                          {band
+                            ? <span class={`sense sense-${band.cls}`} title={band.label} role="img" aria-label={band.label}><i style={`width:${Math.round(ind.score)}%`}></i></span>
+                            : <span class="sense-na" aria-label="non applicable">—</span>}
+                        </td>
+                        <td><span class={`status-tag status-${ind.status}`}>{indStatusLabels[ind.status]}</span></td>
+                        <td class="ind-source">
+                          {ind.source?.url
+                            ? <a href={ind.source.url} target="_blank" rel="noopener">{ind.source.title}{ind.source.accessed ? ` — consulté le ${ind.source.accessed}` : ""}</a>
+                            : <span>—</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </Fragment>
               ))}
             </tbody>
           </table>
@@ -264,6 +326,10 @@ const pillars = methodology.pillars as any[];
           {dc.score_history.map((h: any) => (
             <li>
               <time>{h.date}</time>
+              <span class="hist-grades">
+                <ScoreBadge label="Note du site à cette date" grade={{ grade: h.grades.site }} confidence={h.confidence} confidenceLabel={confidenceLabels[h.confidence]} renderConfidence={false} renderLabel={false} size="sm" naLabel="données insuffisantes" />
+                <ScoreBadge label="Note projet & processus à cette date" grade={{ grade: h.grades.project_process }} confidence={h.confidence} confidenceLabel={confidenceLabels[h.confidence]} renderConfidence={false} renderLabel={false} size="sm" naLabel="données insuffisantes" />
+              </span>
               <span>{h.rationale ?? h.event}</span>
             </li>
           ))}

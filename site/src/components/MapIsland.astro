@@ -38,6 +38,18 @@ const { variant, labels } = Astro.props;
     return `<span class="gradechip sm ${cls} ${extra}">${na ? "–" : grade}</span>`;
   }
 
+  // Compact per-pillar scorecard for the popup (the fiche's score block in miniature).
+  const PILLAR_SHORT: Record<string, string> = {
+    energy: "Énergie", water: "Eau", land_biodiversity: "Foncier",
+    local_impact: "Local", transparency_governance: "Transp.",
+  };
+  function pillarStrip(pillars: { id: string; grade: string }[]): string {
+    if (!pillars?.length) return "";
+    return `<div class="map-popup-pillars">${pillars
+      .map((p) => `<span class="map-popup-pillar"><span>${PILLAR_SHORT[p.id] ?? p.id}</span>${chip(p.grade)}</span>`)
+      .join("")}</div>`;
+  }
+
   document.querySelectorAll<HTMLElement>(".map-island").forEach(async (root) => {
     const labels = JSON.parse(root.dataset.labels || "{}");
     const isFull = root.dataset.variant === "full";
@@ -78,6 +90,8 @@ const { variant, labels } = Astro.props;
             <span>${labels.site} ${chip(p.grade_site)}</span>
             <span>${labels.operator} ${chip(p.grade_project_process)}</span>
           </div>
+          ${pillarStrip(p.pillars)}
+          ${p.quote_fr ? `<p class="map-popup-quote">« ${p.quote_fr} »</p>` : ""}
           <span class="confidence ${p.confidence}"><span class="dot"></span>${labels.confidence[p.confidence]}</span>
           ${fixtureTag}
           <a class="map-popup-link" href="/fr/dc/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
@@ -85,7 +99,7 @@ const { variant, labels } = Astro.props;
 
       new maplibregl.Marker({ element: el })
         .setLngLat([lon, lat])
-        .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "290px" }).setHTML(popupHtml))
+        .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "320px" }).setHTML(popupHtml))
         .addTo(map);
     }
 

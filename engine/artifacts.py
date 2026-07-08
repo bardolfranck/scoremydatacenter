@@ -56,6 +56,11 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
                 "confidence": result["confidence"]["level"],
                 "power_mw": dc["identity"].get("power_mw"),
                 "project_status": dc["identity"]["project_status"],
+                # A richer popup than two letters: per-pillar grades + the generated
+                # citable line (the map teaser that makes people click through).
+                "pillars": [{"id": p["id"], "grade": result["pillars"][p["id"]]["grade"]}
+                            for p in methodology["pillars"]],
+                "quote_fr": result["citable_quote"]["fr"],
             },
         })
 
