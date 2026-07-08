@@ -48,6 +48,17 @@ def test_umap_fetch_normalizes_and_skips_inventory(monkeypatch):
     assert not any("datalayer" in s for s in r["sources"])
 
 
+def test_source_ranking_prefers_specific_press_article():
+    # The default source must be the SPECIFIC press article, not a bare collectif homepage or an
+    # aggregator — so the fiche never points a reader at a generic page.
+    links = ["https://www.fne13.fr/",                                   # collectif homepage
+             "https://linktr.ee/stopcampusia",                          # aggregator
+             "https://www.laprovence.com/article/societe/12345/data-center-opposition"]  # press article
+    ranked = signal._rank_source_links(links)
+    assert ranked[0] == "https://www.laprovence.com/article/societe/12345/data-center-opposition"
+    assert ranked[-1] in ("https://www.fne13.fr/", "https://linktr.ee/stopcampusia")
+
+
 def test_umap_source_falls_back_to_map_page_not_the_json_feed(monkeypatch):
     # A feature with no link in its description → the human map page, never the datalayer endpoint.
     monkeypatch.setattr(signal, "_umap_layer_uuids", lambda accessed: ["opp"])

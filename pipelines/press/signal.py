@@ -25,6 +25,33 @@ from pipelines.spatial.http import SourceUnavailable, get_json, get_text
 
 # --- shared -----------------------------------------------------------------------------------
 
+# A description bundles several links; rank the citable ones so a SPECIFIC press article beats a
+# generic collectif homepage or a link-aggregator. The reviewer still gets the full ordered list and
+# picks THE source — this only sets a sensible default so the fiche never shows a bare homepage.
+_AGGREGATOR_HINTS = ("linktr.ee", "confederationciq", "greenvoice", "helloasso", "annuaire",
+                     "facebook.com", "instagram.com", "twitter.com", "proton.me")
+_PRESS_HINTS = ("laprovence", "marsactu", "francetvinfo", "france3-regions", "ici.fr", "ledauphine",
+                "lalsace", "alterpresse", "liberation", "francebleu", "lavoixdunord", "ouest-france",
+                "lemonde", "mediapart", "reporterre", "bastamag", "actu.fr", "sudouest")
+
+
+def _rank_source_links(links: list[str]) -> list[str]:
+    """Order candidate links best-first: specific press article > other page > homepage/aggregator."""
+    from urllib.parse import urlparse
+
+    def score(u: str) -> int:
+        p = urlparse(u)
+        path = (p.path or "").strip("/")
+        s = -5 if not path else min(len(path) // 10, 4)   # bare homepage penalised; long slug rewarded
+        if any(h in u for h in _AGGREGATOR_HINTS):
+            s -= 4
+        if any(d in (p.netloc or "") for d in _PRESS_HINTS):
+            s += 3
+        return s
+
+    return sorted(dict.fromkeys(links), key=score, reverse=True)
+
+
 def _as_urls(sources) -> list[str]:
     """Coerce a feed's `sources` (strings, or {url,title} objects) into a deduped list of URL strings."""
     out = []
@@ -136,7 +163,7 @@ def fetch_umap_layers(accessed: str) -> list[dict]:
             # datalayer feed. Fall back to the human map page — never the raw GeoJSON endpoint
             # (a local-official reader must land on an article, not on JSON). The datalayer stays
             # only as internal provenance (source_url).
-            human_sources = src_links or [_UMAP_MAP]
+            human_sources = _rank_source_links(src_links) or [_UMAP_MAP]
             out.append(_record(
                 "umap-fr", url, _UMAP_LICENSE, kind,
                 name=name, country="FR",
