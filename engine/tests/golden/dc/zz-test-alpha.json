@@ -560,6 +560,19 @@
   ],
   "contestation": [
     {
+      "kind": "opposition",
+      "label": {
+        "fr": "Opposition menée par des collectifs locaux",
+        "en": "Opposition led by local groups"
+      },
+      "source": {
+        "title": "Carte communautaire (test)",
+        "url": "https://example.org/opp",
+        "accessed": "2026-07-08",
+        "archived_url": "https://web.archive.org/web/20260708/https://example.org/opp"
+      }
+    },
+    {
       "kind": "press",
       "label": {
         "fr": "Manifestation locale contre le projet",
@@ -567,9 +580,9 @@
       },
       "source": {
         "title": "Média local (test)",
-        "url": "https://example.org/a",
-        "accessed": "2026-07-01",
-        "archived_url": "https://web.archive.org/web/20260701/https://example.org/a"
+        "url": "https://example.org/art",
+        "accessed": "2026-07-08",
+        "archived_url": "https://web.archive.org/web/20260708/https://example.org/art"
       }
     },
     {
@@ -581,8 +594,21 @@
       },
       "source": {
         "title": "Plateforme de pétition (test)",
-        "url": "https://example.org/p",
-        "accessed": "2026-07-01"
+        "url": "https://example.org/pet",
+        "accessed": "2026-07-08"
+      }
+    },
+    {
+      "kind": "moratorium",
+      "label": {
+        "fr": "Moratoire municipal temporaire",
+        "en": "Temporary municipal moratorium"
+      },
+      "source": {
+        "title": "Délibération (test)",
+        "url": "https://example.org/mor",
+        "accessed": "2026-07-08",
+        "archived_url": "https://web.archive.org/web/20260708/https://example.org/mor"
       }
     }
   ]
