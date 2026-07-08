@@ -32,9 +32,12 @@ const home = lang === "en" ? "/" : "/fr/";
   <body>
     <header class="site-header">
       <a class="brand" href={home} aria-label="ScoreMyDataCenter home">
-        <img src="/assets/smdc-icon.svg" alt="" width="38" height="38" />
-        <span>Score<span class="brand-my">My</span>DataCenter</span>
-        <span class="brand-tagline">{tagline}</span>
+        <img src="/assets/smdc-icon.svg" alt="" width="40" height="40" />
+        <span class="brand-text">
+          <span class="brand-name">Score<span class="brand-my">My</span>DataCenter</span>
+          <span class="brand-bars" aria-hidden="true"><i class="b-a"></i><i class="b-b"></i><i class="b-c"></i><i class="b-d"></i><i class="b-e"></i></span>
+          <span class="brand-tagline">{tagline}</span>
+        </span>
       </a>
       <nav class="main-nav" aria-label="Site sections">
         {nav.map((item) => <a href={item.href}>{item.label}</a>)}

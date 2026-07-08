@@ -162,12 +162,8 @@ const pillars = methodology.pillars as any[];
 >
   <article class="fiche">
     <aside class="fiche-side">
-      <a class="brand" href="/fr/" aria-label="ScoreMyDataCenter home">
-        <img src="/assets/smdc-icon.svg" alt="" width="30" height="30" />
-        <span>Score<span class="brand-my">My</span>DataCenter</span>
-      </a>
       <div>
-        <p class="fiche-kicker">Fiche projet · Observatoire indépendant</p>
+        <p class="fiche-kicker">Fiche projet</p>
         <h1 class="fiche-name">{dc.name}</h1>
         <p class="fiche-place">{place}</p>
         <p class="fiche-meta">{metaLine}</p>
@@ -281,7 +277,12 @@ const pillars = methodology.pillars as any[];
                       <tr>
                         <td class="ind-name">
                           {ind.label.fr}
-                          {tip && <span class="info" title={tip} tabindex="0" role="img" aria-label={`Explication : ${tip}`} set:html={icon("info", 14)}></span>}
+                          {tip && (
+                            <span class="info" tabindex="0" role="note" aria-label={`Explication : ${tip}`}>
+                              <span class="info-ico" set:html={icon("info", 14)}></span>
+                              <span class="info-tip">{tip}</span>
+                            </span>
+                          )}
                         </td>
                         <td class={ind.status === "missing" ? "ind-missing" : ""}>
                           {ind.status === "missing" ? "Non communiqué" : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}

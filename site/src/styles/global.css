@@ -90,16 +90,25 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 }
 
 .brand { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; letter-spacing: -0.01em; }
-.brand img { width: 38px; height: 38px; border-radius: 8px; }
-.brand > span:not(.brand-tagline) { font-size: 1rem; }
+.brand img { width: 40px; height: 40px; border-radius: 9px; }
+.brand-text { display: flex; flex-direction: column; gap: 3px; line-height: 1.02; }
+.brand-name { font-size: 1rem; }
 /* The "My" carries the civic hook (MY data center) — grey to detach it without shouting. */
 .brand-my { color: var(--brand-my); }
+/* Signature lock-up (design 3e): the 5 A–E bars underline the wordmark at its exact width. */
+.brand-bars { display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px; width: 100%; height: 4px; }
+.brand-bars i { display: block; border-radius: 1px; }
+.brand-bars .b-a { background: var(--grade-a); }
+.brand-bars .b-b { background: var(--grade-b); }
+.brand-bars .b-c { background: var(--grade-c); }
+.brand-bars .b-d { background: var(--grade-d); }
+.brand-bars .b-e { background: var(--grade-e); }
 .brand-tagline {
-  margin-left: 10px;
-  padding-left: 14px;
-  border-left: 1px solid var(--line);
+  margin: 0;
+  padding: 0;
+  border: 0;
   color: var(--muted);
-  font-size: 0.78rem;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -125,6 +134,7 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 .hero-copy { position: relative; z-index: 1; width: min(720px, 100%); }
 .eyebrow { margin-bottom: 12px; color: var(--accent); font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
 h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; letter-spacing: -0.01em; }
+.hero-accent { color: var(--grade-e); }
 .hero-lede { max-width: 600px; margin-top: 22px; color: var(--ink-soft); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
 
@@ -211,7 +221,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .gradechip.grade-b { background: var(--grade-b); color: var(--ink); }
 .gradechip.grade-c { background: var(--grade-c); color: var(--ink); }
 .gradechip.grade-d { background: var(--grade-d); color: var(--ink); }
-.gradechip.grade-e { background: var(--grade-e); }
+.gradechip.grade-e { background: var(--grade-e); color: #fff; }
 .gradechip.grade-na { background: var(--wash); color: var(--muted); border: 1px dashed var(--grade-na); font-size: 0.95rem; font-weight: 800; }
 
 .confidence { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 0.84rem; font-weight: 700; }
@@ -548,9 +558,34 @@ sup a { color: var(--accent); font-weight: 750; }
 .sense-mid i { background: var(--grade-c); }
 .sense-bad i { background: var(--grade-e); }
 .sense-na { color: var(--muted); }
-/* (i) tooltip — native title, zero-JS, explains what "good" means for the row */
-.info { display: inline-flex; margin-left: 6px; color: var(--muted); cursor: help; vertical-align: -2px; }
+/* (i) tooltip — instant CSS bubble (no native-title delay), explains what "good"
+   means for the row (scoring direction + reference). Opens downward so it never
+   clips against the table's horizontal scroll container. */
+.info { position: relative; display: inline-flex; margin-left: 6px; color: var(--muted); vertical-align: -2px; cursor: pointer; }
 .info:hover, .info:focus { color: var(--accent); }
+.info-ico { display: inline-flex; }
+.info-tip {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 8px);
+  z-index: 30;
+  width: max-content;
+  max-width: 240px;
+  padding: 9px 12px;
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  font-weight: 400;
+  line-height: 1.4;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-3px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  pointer-events: none;
+}
+.info:hover .info-tip, .info:focus-visible .info-tip, .info:focus .info-tip { opacity: 1; visibility: visible; transform: translateY(0); }
 .status-tag { display: inline-block; padding: 3px 9px; border-radius: 999px; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 .status-measured { background: rgba(11, 122, 75, 0.12); color: #0b6a42; }
 .status-announced { background: rgba(223, 169, 24, 0.16); color: #8a6708; }

@@ -32,7 +32,7 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
 >
   <section class="hero">
     <div class="hero-copy">
-      <h1>{t.heroTitle}</h1>
+      <h1 set:html={t.heroTitle}></h1>
       <p class="hero-lede">{t.heroLede}</p>
       <div class="hero-actions">
         <a class="button button-primary" href="#scores">{t.ctaScores}</a>
