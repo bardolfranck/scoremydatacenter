@@ -144,7 +144,8 @@
       "source": {
         "title": "Fictional grid intensity dataset (test)",
         "url": "https://example.org/zz/e1",
-        "accessed": "2026-07-01"
+        "accessed": "2026-07-01",
+        "archived_url": "https://web.archive.org/web/20260101/https://example.org/zz/e1"
       },
       "verification_source": null
     },
@@ -555,6 +556,34 @@
       "confidence": "high",
       "event": "initial_scoring",
       "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+    }
+  ],
+  "contestation": [
+    {
+      "kind": "press",
+      "label": {
+        "fr": "Manifestation locale contre le projet",
+        "en": "Local protest against the project"
+      },
+      "source": {
+        "title": "Média local (test)",
+        "url": "https://example.org/a",
+        "accessed": "2026-07-01",
+        "archived_url": "https://web.archive.org/web/20260701/https://example.org/a"
+      }
+    },
+    {
+      "kind": "petition",
+      "self_reported": true,
+      "label": {
+        "fr": "Pétition en ligne",
+        "en": "Online petition"
+      },
+      "source": {
+        "title": "Plateforme de pétition (test)",
+        "url": "https://example.org/p",
+        "accessed": "2026-07-01"
+      }
     }
   ]
 }

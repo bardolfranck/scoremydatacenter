@@ -101,6 +101,26 @@
       "type": "array",
       "description": "Written by the engine only — the raw material of the public audit log. Rationale is mandatory from the second entry onward (engine gate).",
       "items": { "$ref": "#/$defs/score_event" }
+    },
+    "contestation": {
+      "type": "array",
+      "description": "Contestation SIGNAL (A-21): sourced facts published next to the note, never an input to the grade. Facts only, no letter or score. Press is linked, never reproduced (A-20).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "label", "source"],
+        "properties": {
+          "kind": { "enum": ["opposition", "petition", "press", "moratorium", "appeal", "other"] },
+          "label": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["fr", "en"],
+            "properties": { "fr": { "type": "string", "minLength": 1 }, "en": { "type": "string", "minLength": 1 } }
+          },
+          "source": { "$ref": "#/$defs/source" },
+          "self_reported": { "type": "boolean" }
+        }
+      }
     }
   },
   "$defs": {

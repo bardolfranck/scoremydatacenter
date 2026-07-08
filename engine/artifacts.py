@@ -91,6 +91,9 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "indicators": indicator_detail,
             "publication": dc["publication"],
             "score_history": dc["score_history"],
+            # Contestation signal (A-21): sourced facts published next to the note,
+            # never an input to the grade. Passed through untouched.
+            "contestation": dc.get("contestation"),
         })
 
         audit += [{"dc_id": dc_id, "dc_name": dc["identity"]["name"], **event} for event in dc["score_history"]]

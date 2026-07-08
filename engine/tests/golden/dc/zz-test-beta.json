@@ -490,5 +490,6 @@
       "event": "initial_scoring",
       "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
     }
-  ]
+  ],
+  "contestation": null
 }

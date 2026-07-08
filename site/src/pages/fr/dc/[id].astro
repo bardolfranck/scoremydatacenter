@@ -9,6 +9,7 @@ import Base from "../../../layouts/Base.astro";
 import ScoreBadge from "../../../components/ScoreBadge.astro";
 import PillarIcon from "../../../components/PillarIcon.astro";
 import type { PillarIconName } from "../../../components/PillarIcon.astro";
+import SourceLink from "../../../components/SourceLink.astro";
 import methodologyData from "../../../../public/data/methodology.json";
 import { FR_NAV } from "../../../config/nav";
 
@@ -103,6 +104,25 @@ const indicatorValue = (ind: any) => {
   if (ind.proxies) return "Procédure (voir source)";
   return "—";
 };
+
+// T1 procedural facts (A-21 voie A): neutral facts, never a judgment (G6).
+const proxyFacts = (p: any): string[] => [
+  p.public_inquiry_held ? "Enquête publique tenue" : "Pas d'enquête publique",
+  ({
+    favorable: "Avis de l'autorité environnementale : favorable",
+    favorable_with_reservations: "Avis de l'autorité environnementale : favorable avec réserves",
+    unfavorable: "Avis de l'autorité environnementale : défavorable",
+    none: "Avis de l'autorité environnementale : aucun requis/rendu",
+  } as Record<string, string>)[p.environmental_authority_opinion],
+  p.cndp_referral ? "Saisine de la CNDP" : "Pas de saisine de la CNDP",
+  `Recours contentieux : ${p.legal_appeals_count}`,
+  ({
+    favorable: "Délibérations du conseil : favorables",
+    mixed: "Délibérations du conseil : mitigées",
+    unfavorable: "Délibérations du conseil : défavorables",
+    none_recorded: "Délibérations du conseil : aucune enregistrée",
+  } as Record<string, string>)[p.council_deliberations],
+].filter(Boolean) as string[];
 
 // Methodology meta per indicator — units, scoring direction, threshold basis:
 // the raw value alone ("42") is unreadable to a layperson, so each row also
@@ -284,7 +304,9 @@ const pillars = methodology.pillars as any[];
                           )}
                         </td>
                         <td class={ind.status === "missing" ? "ind-missing" : ""}>
-                          {ind.status === "missing" ? "Non communiqué" : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}
+                          {ind.proxies
+                            ? <ul class="proxy-facts">{proxyFacts(ind.proxies).map((f) => <li>{f}</li>)}</ul>
+                            : ind.status === "missing" ? "Non communiqué" : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}
                         </td>
                         <td>
                           {band
@@ -292,11 +314,7 @@ const pillars = methodology.pillars as any[];
                             : <span class="sense-na" aria-label="non applicable">—</span>}
                         </td>
                         <td><span class={`status-tag status-${ind.status}`}>{indStatusLabels[ind.status]}</span></td>
-                        <td class="ind-source">
-                          {ind.source?.url
-                            ? <a href={ind.source.url} target="_blank" rel="noopener">{ind.source.title}{ind.source.accessed ? ` — consulté le ${ind.source.accessed}` : ""}</a>
-                            : <span>—</span>}
-                        </td>
+                        <td class="ind-source"><SourceLink source={ind.source} /></td>
                       </tr>
                     );
                   })}
@@ -319,6 +337,24 @@ const pillars = methodology.pillars as any[];
           <p>{dataState}</p>
         </div>
       </div>
+
+      {dc.contestation && dc.contestation.length > 0 && (
+        <section class="fiche-contestation" aria-labelledby="contestation-title">
+          <h2 id="contestation-title">Contestation &amp; signal</h2>
+          <p class="contestation-sub">Faits sourcés — n'entrent pas dans la note.</p>
+          <ul class="contestation-list">
+            {dc.contestation.map((item: any) => (
+              <li>
+                <span class="contestation-fact">
+                  {item.kind === "press" ? "Presse : " : ""}{item.label.fr}
+                  {item.self_reported && <span class="contestation-tag">auto-déclaré</span>}
+                </span>
+                <span class="contestation-src"><SourceLink source={item.source} /></span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section class="fiche-history" aria-label="Historique de la note">
         <h2>Historique de la note</h2>

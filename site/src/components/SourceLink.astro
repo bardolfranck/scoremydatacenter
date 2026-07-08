@@ -1,0 +1,26 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The single "live link + archived snapshot" primitive (A-20): the public repo
+// carries the value + a pointer, never the document. Press/official docs show a
+// live link and an archive.org snapshot, never the full text.
+interface Source {
+  title?: string;
+  url?: string;
+  accessed?: string;
+  archived_url?: string;
+}
+const { source } = Astro.props as { source?: Source };
+---
+
+{source?.url ? (
+  <Fragment>
+    <a href={source.url} target="_blank" rel="noopener">{source.title}{source.accessed ? ` — consulté le ${source.accessed}` : ""}</a>
+    {source.archived_url && (
+      <Fragment> · <a href={source.archived_url} target="_blank" rel="noopener" class="src-archived">archivé</a></Fragment>
+    )}
+  </Fragment>
+) : (
+  <span>—</span>
+)}
