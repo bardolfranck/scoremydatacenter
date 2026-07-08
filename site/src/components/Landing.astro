@@ -100,19 +100,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   <section class="section section-tinted" id="mission" aria-labelledby="mission-title">
     <div class="section-inner">
       <p class="mission-line" id="mission-title">{t.missionLine}</p>
-      <div class="mission-grid">
-        <div class="prose">
-          <h3>{t.whyTitle}</h3>
-          <p>{t.whyBody}</p>
-        </div>
-        <div class="independence about-card" id="about">
-          <h3>{t.aboutTitle}</h3>
-          <div class="about-founder">
-            <span class="about-photo" aria-hidden="true">FB</span>
-            <p class="founder-line" set:html={t.founderLine}></p>
-          </div>
-          <p class="about-todo">{t.aboutTodo}</p>
-        </div>
+      <div class="why-block">
+        <h3>{t.whyTitle}</h3>
+        <p class="why-lede">{t.whyLede}</p>
+        <p class="why-body">{t.whyBody}</p>
       </div>
     </div>
   </section>
@@ -251,6 +242,21 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <a class="button button-secondary open-cta" href={t.repoUrl} target="_blank" rel="noopener">{t.openCta} ↗</a>
       )}
       <p class="redline" set:html={t.redline}></p>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="about" aria-labelledby="about-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="about-title">{t.aboutTitle}</h2>
+      </div>
+      <div class="about-block">
+        <span class="about-photo-lg" aria-hidden="true">FB</span>
+        <div class="about-text">
+          <p class="founder-line" set:html={t.founderLine}></p>
+          <p class="about-todo">{t.aboutTodo}</p>
+        </div>
+      </div>
     </div>
   </section>
 

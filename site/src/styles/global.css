@@ -269,9 +269,17 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .independence p { color: var(--ink-soft); font-size: 0.98rem; }
 .founder-line { color: var(--ink-soft); font-size: 0.96rem; margin: 0; }
 .founder-line strong { color: var(--ink); }
-.about-founder { display: flex; align-items: center; gap: 14px; }
-.about-photo { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--sidebar); color: #fff; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; }
-.about-todo { padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.86rem; font-style: italic; }
+/* Why — the project's reason to exist, first-class (its own prominent block) */
+.why-block { margin-top: 32px; }
+.why-block h3 { margin-bottom: 12px; }
+.why-lede { max-width: 40ch; font-size: clamp(1.3rem, 2.2vw, 1.7rem); font-weight: 800; line-height: 1.28; letter-spacing: -0.01em; color: var(--ink); }
+.why-body { margin-top: 18px; max-width: 66ch; color: var(--ink-soft); font-size: 1.1rem; line-height: 1.7; }
+
+/* Who — Franck Bardol, separate from the why (a different question) */
+.about-block { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.about-photo-lg { flex: none; display: grid; place-items: center; width: 88px; height: 88px; border-radius: 50%; background: var(--sidebar); color: #fff; font-weight: 800; font-size: 1.8rem; letter-spacing: 0.02em; }
+.about-text { display: grid; gap: 8px; max-width: 62ch; }
+.about-todo { color: var(--muted); font-size: 0.9rem; font-style: italic; }
 
 /* Principles strip */
 .credibility-strip {
