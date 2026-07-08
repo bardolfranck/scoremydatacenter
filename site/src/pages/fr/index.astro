@@ -15,7 +15,8 @@ const t = {
   nav: FR_NAV,
   heroTitle: "Un data center ne se pose plus <span class='hero-accent'>n'importe où.</span>",
   heroLede:
-    "Chaque projet noté A–E — le site et l'opérateur — avec ses sources et son niveau de confiance.",
+    "Chaque projet noté, avec ses sources et son niveau de confiance.",
+  heroScaleLabel: "L'échelle d'acceptabilité",
   ctaScores: "Voir les notes",
   mapOpen: "Ouvrir la carte",
   ctaMethod: "Lire la méthode",
@@ -60,34 +61,37 @@ const t = {
     local_impact: "Local",
     transparency_governance: "Transp.",
   },
+  repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
   methodTitle: "Une méthode, deux notes, toujours avec la confiance.",
   methodLede:
-    "24 indicateurs en cinq piliers, séparés entre ce que le projet subit et ce que l'opérateur choisit. La grille, ses poids et ses seuils sont publics.",
-  siteScoreExplain: "Le contexte que le projet subit : carbone du réseau, stress hydrique, foncier, tissu local.",
-  operatorScoreExplain: "Les leviers de l'opérateur : efficacité, refroidissement, emplois, concertation, transparence.",
+    "24 indicateurs en 5 piliers, séparés entre ce que le projet <span class='term'>subit</span> et ce que l'opérateur <span class='term'>choisit</span>. La grille, ses poids et ses seuils sont <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>publics et téléchargeables</a>.",
+  methodPedago: "Comprendre la note, pas à pas",
+  siteScoreExplain: "Le contexte que le projet <span class='term'>subit</span> : intensité carbone du réseau électrique, stress hydrique, foncier, tissu local et économie de la commune.",
+  operatorScoreExplain: "Les leviers que l'opérateur <span class='term'>choisit</span> : efficacité énergétique, refroidissement, emplois, concertation, transparence.",
   confidenceTitle: "Confiance documentaire",
   confidenceExplain:
-    "Une note ne s'affiche jamais sans elle. Sous 40 % de couverture, on écrit « données insuffisantes » — on ne note pas l'inconnu.",
+    "Une note ne s'affiche jamais sans elle. Sous 40 % de couverture, on écrit « données insuffisantes ». On ne note pas l'inconnu.",
   weightsAria: "Poids des piliers",
   weightsCaption: "Poids du pilier dans la note globale",
   weightsNote: "Méthodologie v0.1.0-draft — provisoire jusqu'à la calibration rétrospective sur cas connus.",
   openTitle: "On ouvre la vérité.",
   openLede: "La couche qui fabrique le jugement est ouverte : méthode, données et moteur, vérifiables par quiconque.",
+  openCta: "Voir le code sur GitHub",
   openCols: [
     {
       title: "Méthode, données et moteur ouverts",
-      body: "Moteur AGPL, données publiées ODbL, méthodologie CC BY-SA. Clonez le dépôt : chaque note se recalcule à l'octet près.",
+      body: "Moteur <span class='lic' tabindex='0'>AGPL<span class='info-tip'>Le code du moteur est libre : quiconque l'améliore doit repartager ses améliorations.</span></span>, données publiées <span class='lic' tabindex='0'>ODbL<span class='info-tip'>Base de données ouverte : réutilisable librement, à condition de citer la source et de partager à l'identique.</span></span>, méthodologie <span class='lic' tabindex='0'>CC BY-SA<span class='info-tip'>Contenu libre : réutilisable en citant l'auteur et en partageant aux mêmes conditions.</span></span>. Le code est <a href='https://github.com/bardolfranck/scoremydatacenter'>public sur GitHub</a> : n'importe qui peut refaire chaque note, en toute rigueur.",
     },
     {
       title: "Journal d'audit public",
-      body: "Chaque notation, révision et correction est datée, versionnée et justifiée — une note ne bouge jamais en silence.",
+      body: "Chaque notation, révision et correction est datée, versionnée et justifiée. Une note ne bouge jamais en silence.",
     },
     {
       title: "Contributions gouvernées",
-      body: "Les corrections de données sont gratuites et relues ; les règles anti-triche sont publiques dans leur principe, privées dans leurs seuils exacts.",
+      body: "Les corrections de données sont gratuites et relues. Pour empêcher qu'on manipule une note, nos règles de détection sont publiques dans leur principe ; leurs seuils chiffrés, eux, restent confidentiels — les afficher reviendrait à donner le mode d'emploi pour passer entre les mailles.",
     },
   ],
-  redline: "Une seule ligne rouge : la note d'un projet et sa justification sont <b>publiques et gratuites, pour toujours</b>.",
+  redline: "Notre engagement : la note d'un projet et sa justification sont <b>publiques et gratuites, pour toujours</b>.",
   faqTitle: "Questions fréquentes",
   faq: [
     {

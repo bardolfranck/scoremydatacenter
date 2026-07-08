@@ -13,9 +13,10 @@ const t = {
   altLabel: "🇫🇷 FR",
   tagline: "Independent observatory",
   nav: EN_NAV,
-  heroTitle: "Data centers no longer get built just anywhere.",
+  heroTitle: "Data centers no longer get built <span class='hero-accent'>just anywhere.</span>",
   heroLede:
-    "Every project graded A–E — the site and the operator — with sources and a confidence level.",
+    "Every project graded, with sources and a confidence level.",
+  heroScaleLabel: "The acceptability scale",
   ctaScores: "See the scores",
   mapOpen: "Open the map (FR)",
   ctaMethod: "Read the method",
@@ -60,34 +61,37 @@ const t = {
     local_impact: "Local",
     transparency_governance: "Transp.",
   },
+  repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
   methodTitle: "One method, two grades, always with confidence.",
   methodLede:
-    "24 indicators across five pillars, split between what a project endures and what its operator chooses. The grid, its weights and its thresholds are public.",
-  siteScoreExplain: "The context the project endures: grid carbon, water stress, land, local fabric.",
-  operatorScoreExplain: "The levers the operator controls: efficiency, cooling, jobs, consultation, transparency.",
+    "24 indicators across 5 pillars, split between what a project <span class='term'>endures</span> and what its operator <span class='term'>chooses</span>. The grid, its weights and its thresholds are <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>public and downloadable</a>.",
+  methodPedago: "Understand the grade, step by step",
+  siteScoreExplain: "The context the project <span class='term'>endures</span>: the electricity grid's carbon intensity, water stress, land, local fabric and the town's economy.",
+  operatorScoreExplain: "The levers the operator <span class='term'>chooses</span>: energy efficiency, cooling, jobs, consultation, transparency.",
   confidenceTitle: "Documentation confidence",
   confidenceExplain:
-    "A grade never appears without it. Below 40% coverage we say “insufficient data” — we do not grade the unknown.",
+    "A grade never appears without it. Below 40% coverage we say “insufficient data”. We do not grade the unknown.",
   weightsAria: "Pillar weights",
   weightsCaption: "Pillar weight in the global grade",
   weightsNote: "Methodology v0.1.0-draft — provisional until retrospective calibration on known-outcome cases.",
   openTitle: "We open the truth.",
   openLede: "The layer that produces the judgment is open: method, data and engine, verifiable by anyone.",
+  openCta: "See the code on GitHub",
   openCols: [
     {
       title: "Open method, data and engine",
-      body: "AGPL engine, ODbL published data, CC BY-SA methodology. Clone the repository and every grade recomputes to the byte.",
+      body: "<span class='lic' tabindex='0'>AGPL<span class='info-tip'>The engine code is free: anyone who improves it must share those improvements back.</span></span> engine, <span class='lic' tabindex='0'>ODbL<span class='info-tip'>Open database: freely reusable, provided you credit the source and share alike.</span></span> published data, <span class='lic' tabindex='0'>CC BY-SA<span class='info-tip'>Free content: reusable if you credit the author and share under the same terms.</span></span> methodology. The code is <a href='https://github.com/bardolfranck/scoremydatacenter'>public on GitHub</a>: anyone can recompute every grade, with full rigor.",
     },
     {
       title: "Public audit log",
-      body: "Every scoring, revision and correction is dated, versioned and justified — grades cannot move silently.",
+      body: "Every scoring, revision and correction is dated, versioned and justified. Grades cannot move silently.",
     },
     {
       title: "Governed contributions",
-      body: "Data corrections are free and reviewed; anti-gaming rules are public in principle, private in their exact thresholds.",
+      body: "Data corrections are free and reviewed. To stop anyone from gaming a grade, our detection rules are public in principle; their numeric thresholds stay confidential — publishing them would hand out the manual for slipping through.",
     },
   ],
-  redline: "One red line: a project's grade and its justification are <b>public and free, forever</b>.",
+  redline: "Our commitment: a project's grade and its justification are <b>public and free, forever</b>.",
   faqTitle: "Frequently asked questions",
   faq: [
     {

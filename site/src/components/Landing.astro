@@ -7,6 +7,8 @@
 import Base from "../layouts/Base.astro";
 import ScoreBadge from "./ScoreBadge.astro";
 import MapIsland from "./MapIsland.astro";
+import PillarIcon from "./PillarIcon.astro";
+import type { PillarIconName } from "./PillarIcon.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
 
@@ -19,6 +21,25 @@ const { lang, t } = Astro.props;
 const scores = scoresData as any[];
 const methodology = methodologyData as any;
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
+
+const pillarIconName: Record<string, PillarIconName> = {
+  energy: "energy", water: "water", land_biodiversity: "land",
+  local_impact: "local", transparency_governance: "transparency",
+};
+// Distinct category colours for the weight donut (not the A–E grade palette).
+const pillarColor: Record<string, string> = {
+  energy: "#d98c1f", water: "#2a78d6", land_biodiversity: "#3b8a4f",
+  local_impact: "#7a5bb0", transparency_governance: "#55677c",
+};
+// Weight donut as a conic-gradient — slices sum to exactly 100% (an honest
+// part-of-whole, unlike a bar whose full track means nothing).
+let _acc = 0;
+const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
+  const start = Math.round(_acc * 100 * 10) / 10;
+  _acc += p.weight;
+  const end = Math.round(_acc * 100 * 10) / 10;
+  return `${pillarColor[p.id]} ${start}% ${end}%`;
+}).join(", ") + ")";
 ---
 
 <Base
@@ -34,6 +55,14 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
     <div class="hero-copy">
       <h1 set:html={t.heroTitle}></h1>
       <p class="hero-lede">{t.heroLede}</p>
+      <div class="hero-scale" role="img" aria-label={`${t.heroScaleLabel} A à E`}>
+        <span class="hs-cell hs-a">A</span>
+        <span class="hs-cell hs-b">B</span>
+        <span class="hs-cell hs-c">C</span>
+        <span class="hs-cell hs-d">D</span>
+        <span class="hs-cell hs-e">E</span>
+        <span class="hero-scale-label">{t.heroScaleLabel}</span>
+      </div>
       <div class="hero-actions">
         <a class="button button-primary" href="#scores">{t.ctaScores}</a>
         <a class="button button-secondary" href="#method">{t.ctaMethod}</a>
@@ -163,30 +192,39 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
     <div class="section-inner method-layout">
       <div class="method-copy">
         <h2 id="method-title">{t.methodTitle}</h2>
-        <p class="prose">{t.methodLede}</p>
+        <p class="prose" set:html={t.methodLede}></p>
         <ul class="dual-explain">
           <li>
             <strong>{t.siteScore}</strong>
-            <span>{t.siteScoreExplain}</span>
+            <span set:html={t.siteScoreExplain}></span>
           </li>
           <li>
             <strong>{t.operatorScore}</strong>
-            <span>{t.operatorScoreExplain}</span>
+            <span set:html={t.operatorScoreExplain}></span>
           </li>
           <li>
             <strong>{t.confidenceTitle}</strong>
             <span>{t.confidenceExplain}</span>
           </li>
         </ul>
+        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/comprendre" : "/understand"}>{t.methodPedago} →</a>}
       </div>
       <div class="weighting" aria-label={t.weightsAria}>
         <p class="weighting-caption">{t.weightsCaption}</p>
-        {methodology.pillars.map((p: any) => (
-          <div class="weighting-row">
-            <span>{p.label[lang]} <b>{Math.round(p.weight * 100)}%</b></span>
-            <div class="bar"><i style={`width: ${p.weight * 100 * 3.2}%`}></i></div>
+        <div class="donut-wrap">
+          <div class="donut" style={`background: ${donutGradient}`} role="img" aria-label={t.weightsCaption}>
+            <span class="donut-hole"></span>
           </div>
-        ))}
+          <ul class="donut-legend">
+            {methodology.pillars.map((p: any) => (
+              <li>
+                <span class="donut-ico" style={`color: ${pillarColor[p.id]}`}><PillarIcon name={pillarIconName[p.id]} size={16} /></span>
+                <span class="donut-name">{p.label[lang]}</span>
+                <b>{Math.round(p.weight * 100)}%</b>
+              </li>
+            ))}
+          </ul>
+        </div>
         <p class="weighting-caption" style="text-transform: none; letter-spacing: 0;">{t.weightsNote}</p>
       </div>
     </div>
@@ -202,10 +240,13 @@ const pillarOrder = methodology.pillars.map((p: any) => p.id);
         {t.openCols.map((c: any) => (
           <article>
             <h3>{c.title}</h3>
-            <p>{c.body}</p>
+            <p set:html={c.body}></p>
           </article>
         ))}
       </div>
+      {t.openCta && (
+        <a class="button button-secondary open-cta" href={t.repoUrl} target="_blank" rel="noopener">{t.openCta} ↗</a>
+      )}
       <p class="redline" set:html={t.redline}></p>
     </div>
   </section>

@@ -20,6 +20,7 @@ export const FR_NAV: NavItem[] = [
 ];
 
 export const EN_NAV: NavItem[] = [
+  { href: "/fr/carte", label: "Map" },
   { href: "/#scores", label: "Scores" },
   { href: "/understand", label: "Understanding data centers" },
   { href: "/#method", label: "Method" },
