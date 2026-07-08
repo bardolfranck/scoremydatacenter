@@ -47,6 +47,12 @@ refresh-signal:
 promote:
 	uv run python -m pipelines.orchestrate promote $(REVIEW) $(if $(INTO),--into $(INTO),)
 
+# Promote an approved review queue into the standalone "En veille" watchlist layer (A-19).
+# Then `make build` regenerates watchlist.geojson → the map's distinct markers.
+#   make promote-watchlist REVIEW=<queue>.jsonl WATCHLIST=../smdc-newsroom/drafts/watchlist/fr.json
+promote-watchlist:
+	uv run python -m pipelines.orchestrate promote $(REVIEW) --watchlist $(WATCHLIST)
+
 score: validate
 	uv run python -m engine.score
 
