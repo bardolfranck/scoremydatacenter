@@ -110,21 +110,20 @@ const indicatorValue = (ind: any) => {
 // score) and an (i) tooltip explaining what "good" means.
 const indMeta: Record<string, any> = {};
 for (const i of methodology.indicators) indMeta[i.id] = i;
-const directionSentence: Record<string, string> = {
+// Only the two monotonic directions add a plain "lower/higher is better" hint;
+// the qualitative ones say nothing generic — the description carries the meaning.
+const directionHint: Record<string, string> = {
   lower_is_better: "Plus la valeur est basse, mieux c'est.",
   higher_is_better: "Plus la valeur est haute, mieux c'est.",
-  encoded_in_scoring: "Lecture qualitative selon la méthodologie.",
-  non_monotonic: "Interprétation nuancée (voir méthodologie).",
 };
 const indUnit = (id: string) => indMeta[id]?.unit ?? "";
 const indTooltip = (id: string) => {
   const m = indMeta[id];
   if (!m) return "";
-  const dir = directionSentence[m.direction] ?? "";
-  const tb = m.threshold_basis;
-  const basis = tb?.type === "reference" ? `Référence : ${tb.reference}.`
-    : (tb?.justification ?? tb?.note) ? `Choix éditorial : ${tb.justification ?? tb.note}.` : "";
-  return [dir, basis].filter(Boolean).join(" ");
+  const desc = m.description?.fr ?? "";
+  const hint = directionHint[m.direction] ?? "";
+  // avoid repeating the hint when the description already ends with it
+  return [desc, desc.includes("mieux c'est") ? "" : hint].filter(Boolean).join(" ");
 };
 const senseBand = (score: number | null | undefined) => {
   if (score === null || score === undefined) return null;

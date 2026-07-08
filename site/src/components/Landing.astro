@@ -105,10 +105,13 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <h3>{t.whyTitle}</h3>
           <p>{t.whyBody}</p>
         </div>
-        <div class="independence">
-          <h3>{t.independenceTitle}</h3>
-          <p>{t.independenceBody}</p>
-          <p class="founder-line" set:html={t.founderLine}></p>
+        <div class="independence about-card" id="about">
+          <h3>{t.aboutTitle}</h3>
+          <div class="about-founder">
+            <span class="about-photo" aria-hidden="true">FB</span>
+            <p class="founder-line" set:html={t.founderLine}></p>
+          </div>
+          <p class="about-todo">{t.aboutTodo}</p>
         </div>
       </div>
     </div>

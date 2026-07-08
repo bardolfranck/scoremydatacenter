@@ -148,6 +148,7 @@
       "properties": {
         "id": { "type": "string", "pattern": "^[EWFLT][0-9]{1,2}$" },
         "label": { "$ref": "#/$defs/bilingual_label" },
+        "description": { "$ref": "#/$defs/bilingual_label" },
         "pillar": { "type": "string", "pattern": "^[a-z][a-z_]*$" },
         "weight_in_pillar": { "type": "number", "minimum": 0, "maximum": 1 },
         "block": {

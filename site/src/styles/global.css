@@ -267,13 +267,16 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
   box-shadow: 0 12px 34px rgba(7, 24, 47, 0.06);
 }
 .independence p { color: var(--ink-soft); font-size: 0.98rem; }
-.founder-line { padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.94rem; }
+.founder-line { color: var(--ink-soft); font-size: 0.96rem; margin: 0; }
 .founder-line strong { color: var(--ink); }
+.about-founder { display: flex; align-items: center; gap: 14px; }
+.about-photo { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--sidebar); color: #fff; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.02em; }
+.about-todo { padding-top: 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.86rem; font-style: italic; }
 
 /* Principles strip */
 .credibility-strip {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   background: var(--line);
   border-bottom: 1px solid var(--line);
@@ -619,10 +622,10 @@ sup a { color: var(--accent); font-weight: 750; }
   pointer-events: none;
 }
 .info:hover .info-tip, .info:focus-visible .info-tip, .info:focus .info-tip { opacity: 1; visibility: visible; transform: translateY(0); }
-.status-tag { display: inline-block; padding: 3px 9px; border-radius: 999px; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
-.status-measured { background: rgba(11, 122, 75, 0.12); color: #0b6a42; }
-.status-announced { background: rgba(223, 169, 24, 0.16); color: #8a6708; }
-.status-missing { background: var(--wash); color: var(--muted); border: 1px solid var(--line); }
+.status-tag { display: inline-block; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: transparent; }
+.status-measured { color: #0b6a42; }
+.status-announced { color: #8a6708; }
+.status-missing { color: var(--muted); }
 .ind-source a { color: var(--accent); font-weight: 650; }
 .ind-source span { color: var(--muted); }
 

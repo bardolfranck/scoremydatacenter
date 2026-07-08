@@ -51,6 +51,10 @@
         "fr": "Intensité carbone du réseau local",
         "en": "Local grid carbon intensity"
       },
+      "description": {
+        "fr": "La quantité de CO₂ émise pour produire l'électricité que consommera le site, selon le réseau régional.",
+        "en": "How much CO₂ is emitted to produce the electricity the site will consume, based on the regional grid."
+      },
       "pillar": "energy",
       "weight_in_pillar": 0.3,
       "block": "base",
@@ -96,6 +100,10 @@
         "fr": "Capacité / proximité de raccordement",
         "en": "Grid connection capacity / proximity"
       },
+      "description": {
+        "fr": "La facilité à raccorder le site au réseau électrique : capacité disponible et distance au poste le plus proche.",
+        "en": "How easily the site can be connected to the power grid: available capacity and distance to the nearest substation."
+      },
       "pillar": "energy",
       "weight_in_pillar": 0.25,
       "block": "base",
@@ -129,6 +137,10 @@
         "fr": "Congestion / file d'attente réseau",
         "en": "Grid congestion / connection queue"
       },
+      "description": {
+        "fr": "L'encombrement du réseau électrique local : plus il est saturé, plus le raccordement pèse sur les autres usages.",
+        "en": "How congested the local grid is: the more saturated, the more the connection competes with other users."
+      },
       "pillar": "energy",
       "weight_in_pillar": 0.2,
       "block": "base",
@@ -160,6 +172,10 @@
       "label": {
         "fr": "PUE (efficacité énergétique annoncée)",
         "en": "PUE (announced energy efficiency)"
+      },
+      "description": {
+        "fr": "L'efficacité énergétique annoncée : l'électricité totale consommée rapportée à celle qui sert vraiment aux calculs. Plus c'est proche de 1, mieux c'est.",
+        "en": "The announced energy efficiency: total electricity used versus what actually powers computing. Closer to 1 is better."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.15,
@@ -206,6 +222,10 @@
         "fr": "Approvisionnement réel (PPA, % EnR)",
         "en": "Actual supply (PPA, % renewables)"
       },
+      "description": {
+        "fr": "La part d'électricité réellement d'origine renouvelable, via des contrats d'achat vérifiables (et non de simples déclarations).",
+        "en": "The share of electricity genuinely from renewables, through verifiable purchase contracts (not mere claims)."
+      },
       "pillar": "energy",
       "weight_in_pillar": 0.1,
       "block": "project",
@@ -233,6 +253,10 @@
       "label": {
         "fr": "Stress hydrique de la zone",
         "en": "Local water stress"
+      },
+      "description": {
+        "fr": "La tension sur l'eau dans la zone : dans une région déjà en manque, prélever pèse plus lourd.",
+        "en": "Water tension in the area: in an already water-scarce region, withdrawals weigh more heavily."
       },
       "pillar": "water",
       "weight_in_pillar": 0.3,
@@ -269,6 +293,10 @@
         "fr": "État de la masse d'eau",
         "en": "Water body status"
       },
+      "description": {
+        "fr": "La santé écologique de la rivière ou de la nappe concernée, selon la classification européenne (de « très bon » à « mauvais »).",
+        "en": "The ecological health of the affected river or aquifer, per the EU classification (from 'high' to 'bad')."
+      },
       "pillar": "water",
       "weight_in_pillar": 0.2,
       "block": "base",
@@ -303,6 +331,10 @@
         "fr": "Pression de prélèvement du bassin",
         "en": "Basin withdrawal pressure"
       },
+      "description": {
+        "fr": "L'intensité des prélèvements d'eau déjà en cours sur le bassin : un bassin très sollicité supporte mal un nouvel usage.",
+        "en": "How intensively water is already withdrawn from the basin: a heavily-tapped basin ill affords a new user."
+      },
       "pillar": "water",
       "weight_in_pillar": 0.2,
       "block": "base",
@@ -336,6 +368,10 @@
         "fr": "Refroidissement + volume d'eau annoncé",
         "en": "Cooling technology + announced water volume"
       },
+      "description": {
+        "fr": "La technologie de refroidissement choisie et le volume d'eau qu'elle consommera, tels qu'annoncés par l'opérateur.",
+        "en": "The cooling technology chosen and the water volume it will consume, as announced by the operator."
+      },
       "pillar": "water",
       "weight_in_pillar": 0.2,
       "block": "project",
@@ -367,6 +403,10 @@
       "label": {
         "fr": "WUE mesuré / source d'eau réelle",
         "en": "Measured WUE / actual water source"
+      },
+      "description": {
+        "fr": "L'eau réellement consommée par unité de calcul, et d'où elle vient (potable, recyclée…). Plus c'est bas, mieux c'est.",
+        "en": "The water actually used per unit of computing, and where it comes from (drinking, recycled…). Lower is better."
       },
       "pillar": "water",
       "weight_in_pillar": 0.1,
@@ -412,6 +452,10 @@
         "fr": "Recouvrement / distance zones protégées",
         "en": "Overlap / distance to protected areas"
       },
+      "description": {
+        "fr": "La proximité du projet avec des espaces naturels protégés (Natura 2000, ZNIEFF…).",
+        "en": "How close the project is to protected natural areas (Natura 2000, nature reserves…)."
+      },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.3,
       "block": "base",
@@ -445,6 +489,10 @@
       "label": {
         "fr": "Statut du sol (artificialisé / ENAF / agricole)",
         "en": "Soil status (artificialized / natural / agricultural)"
+      },
+      "description": {
+        "fr": "Ce qu'était le terrain avant : déjà bétonné (friche), naturel, ou agricole — bétonner de la terre agricole ou naturelle pèse le plus.",
+        "en": "What the land was before: already built (brownfield), natural, or farmland — sealing farmland or nature weighs most."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.25,
@@ -480,6 +528,10 @@
         "fr": "Continuités écologiques (TVB)",
         "en": "Ecological corridors (TVB)"
       },
+      "description": {
+        "fr": "Si le projet coupe un corridor que la faune emprunte pour se déplacer (trame verte et bleue).",
+        "en": "Whether the project severs a wildlife corridor (green-and-blue network)."
+      },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.2,
       "block": "base",
@@ -512,6 +564,10 @@
       "label": {
         "fr": "Surface au sol du projet",
         "en": "Project ground footprint"
+      },
+      "description": {
+        "fr": "L'emprise au sol du projet en hectares : plus elle est étendue, plus l'impact foncier est fort.",
+        "en": "The project's ground footprint in hectares: the larger, the greater the land impact."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.15,
@@ -558,6 +614,10 @@
         "fr": "Mesures ERC / récupération de chaleur",
         "en": "Avoid-reduce-offset measures / heat recovery"
       },
+      "description": {
+        "fr": "Les mesures prises pour éviter, réduire ou compenser les dégâts, et pour réutiliser la chaleur produite.",
+        "en": "Measures to avoid, reduce or offset harm, and to reuse the heat produced."
+      },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.1,
       "block": "project",
@@ -589,6 +649,10 @@
       "label": {
         "fr": "Profil socio-économique de la commune",
         "en": "Municipality socio-economic profile"
+      },
+      "description": {
+        "fr": "Le profil social de la commune d'accueil. Garde-fou : un projet ne doit jamais améliorer sa note en s'installant dans une commune vulnérable.",
+        "en": "The host town's social profile. A safeguard: a project must never improve its grade by locating in a vulnerable town."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
@@ -629,6 +693,10 @@
       "label": {
         "fr": "Capacité d'absorption (taille du projet vs commune)",
         "en": "Absorption capacity (project size vs municipality)"
+      },
+      "description": {
+        "fr": "La taille du projet rapportée à celle de la commune : un très gros projet dans une petite commune bouleverse davantage.",
+        "en": "The project's size relative to the town: a very large project in a small town disrupts more."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
@@ -674,6 +742,10 @@
         "fr": "Aléa technologique / Seveso environnant",
         "en": "Technological hazard / nearby Seveso sites"
       },
+      "description": {
+        "fr": "La présence de sites industriels dangereux (Seveso) à proximité, qui ajoutent un risque au voisinage.",
+        "en": "The presence of hazardous industrial sites (Seveso) nearby, adding risk to the surroundings."
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.1,
       "block": "base",
@@ -705,6 +777,10 @@
         "fr": "Emplois annoncés",
         "en": "Announced jobs"
       },
+      "description": {
+        "fr": "Le nombre d'emplois permanents annoncés, rapporté à la taille du projet. Plus il y en a, mieux c'est.",
+        "en": "The number of permanent jobs announced, relative to project size. More is better."
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "project",
@@ -733,6 +809,10 @@
       "label": {
         "fr": "Retombées fiscales annoncées",
         "en": "Announced tax revenue"
+      },
+      "description": {
+        "fr": "Les recettes fiscales que le projet apporterait à la commune, telles qu'annoncées.",
+        "en": "The tax revenue the project would bring to the town, as announced."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.1,
@@ -765,6 +845,10 @@
       "label": {
         "fr": "Niveau de contestation observé",
         "en": "Observed level of opposition"
+      },
+      "description": {
+        "fr": "L'ampleur de l'opposition constatée : recours, pétitions, mobilisations relayées par la presse.",
+        "en": "The scale of observed opposition: appeals, petitions, mobilizations reported by the press."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.2,
@@ -800,6 +884,10 @@
         "fr": "Position des élus (faits votés uniquement)",
         "en": "Elected officials' position (voted facts only)"
       },
+      "description": {
+        "fr": "La position des élus telle qu'exprimée par des votes officiels uniquement (délibérations), sans aucun jugement de personne.",
+        "en": "Elected officials' position as expressed by official votes only (council decisions), with no personal judgment."
+      },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "base",
@@ -832,6 +920,10 @@
       "label": {
         "fr": "Concertation / consentement / gouvernance (proxies procéduraux)",
         "en": "Consultation / consent / governance (procedural proxies)"
+      },
+      "description": {
+        "fr": "La qualité du processus démocratique : enquête publique tenue, avis de l'autorité environnementale, recours, saisine de la CNDP.",
+        "en": "The quality of the democratic process: public inquiry held, environmental authority opinion, appeals, CNDP referral."
       },
       "pillar": "transparency_governance",
       "weight_in_pillar": 0.6,
@@ -890,6 +982,10 @@
       "label": {
         "fr": "Transparence documentaire / disponibilité du dossier",
         "en": "Documentation transparency / file availability"
+      },
+      "description": {
+        "fr": "À quel point le dossier du projet est réellement accessible au public : études, chiffres et engagements publiés.",
+        "en": "How genuinely accessible the project's file is to the public: published studies, figures and commitments."
       },
       "pillar": "transparency_governance",
       "weight_in_pillar": 0.4,
