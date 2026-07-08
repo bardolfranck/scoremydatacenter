@@ -58,6 +58,7 @@ const nav = FR_NAV;
           Triez par note, pilier ou confiance — chaque vue a une adresse partageable. Une note ne
           s'affiche jamais sans son niveau de confiance.
         </p>
+        <a class="rank-map-cta" href="/fr/carte">Voir tous les projets sur la carte ↗</a>
       </div>
 
       <div class="rank-controls">
@@ -114,6 +115,7 @@ const nav = FR_NAV;
                 <td class="rank-project">
                   <strong><a href={`/fr/dc/${dc.id}`}>{dc.name}</a></strong>
                   <span>{dc.municipality} ({dc.country}) — {dc.operator}{dc.id.startsWith("zz-") ? " · fixture de test fictive" : ""}</span>
+                  <a class="rank-map-link" href={`/fr/carte?dc=${dc.id}`}>Voir sur la carte ↗</a>
                 </td>
                 <td>{statusLabels[dc.project_status]} · {dc.power_mw} MW</td>
                 <td>
