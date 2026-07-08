@@ -120,6 +120,30 @@ def promote_contestation(review_items: list[dict], *, archive: bool = True) -> l
     return out
 
 
+def approved_contestation_facts(review_items: list[dict], *, archive: bool = True) -> list[dict]:
+    """Flatten APPROVED review entries into DC `contestation[]` items {kind,label,source,self_reported}."""
+    facts = []
+    for entry in promote_contestation(review_items, archive=archive):
+        for f in entry.get("facts", []):
+            facts.append({k: f[k] for k in ("kind", "label", "source", "self_reported") if k in f})
+    return facts
+
+
+def promote_into_dc(dc: dict, review_items: list[dict], *, archive: bool = True) -> dict:
+    """THE LAST MILE — write the human-approved contestation facts into the DC file's `contestation[]`.
+
+    This is what closes the loop to the site: the confirmed facts land in the scored record so the
+    engine renders them. Governance T1/T2 are completed by the human directly on the DC at the gate
+    (deterministic CNDP/appeals + the 3 judgment proxies read from the leads) — never auto-scored.
+    Returns the updated DC dict; the caller writes it and re-scores.
+    """
+    dc = dict(dc)
+    facts = approved_contestation_facts(review_items, archive=archive)
+    if facts:
+        dc["contestation"] = (dc.get("contestation") or []) + facts
+    return dc
+
+
 # --- best-effort static HTML review sheet (P3: no server) ------------------------------------
 
 def render_review_html(queue: list[dict], title: str) -> str:
@@ -178,6 +202,9 @@ def main(argv: list[str] | None = None) -> int:
 
     pr = sub.add_parser("promote", help="Apply a human-approved contestation review queue.")
     pr.add_argument("review_jsonl", help="Path to the reviewed contestation.review.jsonl (decision set).")
+    pr.add_argument("--into", default=None,
+                    help="DC draft json to WRITE the approved contestation[] into (the last mile). "
+                         "Without it, the approved facts are printed only.")
     pr.add_argument("--no-archive", action="store_true")
 
     args = p.parse_args(argv)
@@ -208,11 +235,21 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.cmd == "promote":
         items = [json.loads(l) for l in Path(args.review_jsonl).read_text().splitlines() if l.strip()]
-        promoted = promote_contestation(items, archive=not args.no_archive)
-        sys.stdout.write(json.dumps(promoted, indent=2, ensure_ascii=False) + "\n")
         approved = sum(1 for i in items if i.get("decision") == "approve")
-        print(f"Promoted {len(promoted)} approved of {len(items)} reviewed (rest held: silence ≠ consent).",
-              file=sys.stderr)
+        if args.into:                                    # the last mile: write into the DC file
+            dc_path = Path(args.into)
+            dc = json.loads(dc_path.read_text())
+            dc = promote_into_dc(dc, items, archive=not args.no_archive)
+            dc_path.write_text(json.dumps(dc, indent=2, ensure_ascii=False) + "\n")
+            print(f"Wrote {len(dc.get('contestation', []))} contestation fact(s) into {dc_path} "
+                  f"({approved} approved of {len(items)}). Re-score to render on the site.",
+                  file=sys.stderr)
+        else:
+            promoted = promote_contestation(items, archive=not args.no_archive)
+            sys.stdout.write(json.dumps(promoted, indent=2, ensure_ascii=False) + "\n")
+            print(f"Promoted {len(promoted)} approved of {len(items)} reviewed "
+                  f"(rest held: silence ≠ consent). Pass --into <dc.json> to write them in.",
+                  file=sys.stderr)
         return 0
     return 1
 

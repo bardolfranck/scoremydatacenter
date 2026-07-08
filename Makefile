@@ -42,9 +42,10 @@ refresh-signal:
 	uv run python -m pipelines.orchestrate refresh --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",)
 
 # Apply a human-approved contestation review queue (only decision:approve; adds archived_url).
-#   make promote REVIEW=../smdc-newsroom/drafts/datacenters/<id>/contestation.review.jsonl
+# Pass INTO=<dc.json> to WRITE the approved facts into the DC file (the last mile → re-score to render).
+#   make promote REVIEW=<id>/contestation.review.jsonl INTO=<id>/<id>.draft.json
 promote:
-	uv run python -m pipelines.orchestrate promote $(REVIEW)
+	uv run python -m pipelines.orchestrate promote $(REVIEW) $(if $(INTO),--into $(INTO),)
 
 score: validate
 	uv run python -m engine.score
