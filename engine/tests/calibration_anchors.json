@@ -1,0 +1,258 @@
+{
+  "note": "Anonymized structural calibration anchors (indicator vectors only — no operator identity, no sources; A-11). Live nominative sources are pinned in the private newsroom calibration corpus; re-score via scripts/score_corpus.py.",
+  "anchors": {
+    "e_anchor_farmland_hyperscaler": {
+      "id": "e_anchor_farmland_hyperscaler",
+      "archetype": "~1400 MW hyperscaler on agricultural land, water-stressed area, saturated grid; environmental-authority opinion hors-normes. Procedure exemplary (inquiry held, referral, favorable councils) but zero substantive project disclosure.",
+      "indicators": [
+        {
+          "id": "E1",
+          "status": "measured",
+          "value": 11.0
+        },
+        {
+          "id": "W1",
+          "status": "measured",
+          "value": "high"
+        },
+        {
+          "id": "F1",
+          "status": "measured",
+          "value": "distant_over_5km"
+        },
+        {
+          "id": "L3",
+          "status": "measured",
+          "value": "seveso_low_within_5km"
+        },
+        {
+          "id": "W3",
+          "status": "measured",
+          "value": "low"
+        },
+        {
+          "id": "L1",
+          "status": "measured",
+          "value": "strong_fit"
+        },
+        {
+          "id": "W2",
+          "status": "measured",
+          "value": "bad"
+        },
+        {
+          "id": "F2",
+          "status": "measured",
+          "value": "agricultural"
+        },
+        {
+          "id": "E2",
+          "status": "measured",
+          "value": "saturated"
+        },
+        {
+          "id": "E3",
+          "status": "measured",
+          "value": "critical"
+        },
+        {
+          "id": "E4",
+          "status": "missing"
+        },
+        {
+          "id": "E5",
+          "status": "missing"
+        },
+        {
+          "id": "W4",
+          "status": "missing"
+        },
+        {
+          "id": "W5",
+          "status": "missing"
+        },
+        {
+          "id": "F3",
+          "status": "missing"
+        },
+        {
+          "id": "F4",
+          "status": "missing"
+        },
+        {
+          "id": "F5",
+          "status": "missing"
+        },
+        {
+          "id": "L2",
+          "status": "missing"
+        },
+        {
+          "id": "L4",
+          "status": "missing"
+        },
+        {
+          "id": "L5",
+          "status": "missing"
+        },
+        {
+          "id": "L6",
+          "status": "missing"
+        },
+        {
+          "id": "L7",
+          "status": "missing"
+        },
+        {
+          "id": "T1",
+          "status": "measured",
+          "proxies": {
+            "public_inquiry_held": true,
+            "environmental_authority_opinion": "unfavorable",
+            "cndp_referral": true,
+            "legal_appeals_count": 0,
+            "council_deliberations": "favorable"
+          }
+        },
+        {
+          "id": "T2",
+          "status": "measured",
+          "value": "full_dossier_online"
+        }
+      ],
+      "target": {
+        "site": [
+          "E"
+        ],
+        "project_process": [
+          "E",
+          "D"
+        ]
+      }
+    },
+    "a_anchor_heat_recovery": {
+      "id": "a_anchor_heat_recovery",
+      "archetype": "Operational colocation DC recovering waste heat into a district-heating network (F5); council/region favorable; but retrospective governance dossier not sourceable online.",
+      "indicators": [
+        {
+          "id": "E1",
+          "status": "measured",
+          "value": 10.0
+        },
+        {
+          "id": "W1",
+          "status": "measured",
+          "value": "moderate"
+        },
+        {
+          "id": "F1",
+          "status": "measured",
+          "value": "near_1_to_5km"
+        },
+        {
+          "id": "L3",
+          "status": "measured",
+          "value": "seveso_low_within_5km"
+        },
+        {
+          "id": "W3",
+          "status": "measured",
+          "value": "low"
+        },
+        {
+          "id": "L1",
+          "status": "measured",
+          "value": "sensitive"
+        },
+        {
+          "id": "W2",
+          "status": "measured",
+          "value": "good"
+        },
+        {
+          "id": "F2",
+          "status": "measured",
+          "value": "artificialized"
+        },
+        {
+          "id": "E2",
+          "status": "measured",
+          "value": "saturated"
+        },
+        {
+          "id": "E3",
+          "status": "measured",
+          "value": "critical"
+        },
+        {
+          "id": "E4",
+          "status": "missing"
+        },
+        {
+          "id": "E5",
+          "status": "missing"
+        },
+        {
+          "id": "W4",
+          "status": "missing"
+        },
+        {
+          "id": "W5",
+          "status": "missing"
+        },
+        {
+          "id": "F3",
+          "status": "missing"
+        },
+        {
+          "id": "F4",
+          "status": "missing"
+        },
+        {
+          "id": "L2",
+          "status": "missing"
+        },
+        {
+          "id": "L4",
+          "status": "missing"
+        },
+        {
+          "id": "L5",
+          "status": "missing"
+        },
+        {
+          "id": "L6",
+          "status": "missing"
+        },
+        {
+          "id": "L7",
+          "status": "missing"
+        },
+        {
+          "id": "T1",
+          "status": "missing"
+        },
+        {
+          "id": "T2",
+          "status": "measured",
+          "value": "minimal"
+        },
+        {
+          "id": "F5",
+          "status": "announced",
+          "value": "heat_recovery_and_erc"
+        }
+      ],
+      "target": {
+        "site": [
+          "A",
+          "B"
+        ],
+        "project_process": [
+          "A",
+          "B"
+        ]
+      }
+    }
+  }
+}

@@ -22,11 +22,11 @@
     },
     "project_process": {
       "grade": "C",
-      "score": 62.3,
-      "coverage": 1.0,
+      "score": 57.1,
+      "coverage": 0.939,
       "documentation": {
         "level": "high",
-        "score": 0.793,
+        "score": 0.768,
         "dots": 3,
         "label": {
           "fr": "documentation solide",
@@ -37,10 +37,10 @@
   },
   "confidence": {
     "level": "high",
-    "score": 0.951,
+    "score": 0.944,
     "causes": {
-      "missing_data": 0.0,
-      "unverifiable_declarative": 0.098
+      "missing_data": 0.008,
+      "unverifiable_declarative": 0.097
     }
   },
   "pillars": {
@@ -73,12 +73,12 @@
       }
     },
     "land_biodiversity": {
-      "grade": "A",
-      "score": 87.5,
-      "coverage": 1.0,
+      "grade": "B",
+      "score": 78.8,
+      "coverage": 0.9,
       "documentation": {
         "level": "high",
-        "score": 1.0,
+        "score": 0.966,
         "dots": 4,
         "label": {
           "fr": "documentation solide",
@@ -356,6 +356,21 @@
         "url": "https://example.org/zz/f4",
         "accessed": "2026-07-01"
       },
+      "verification_source": null
+    },
+    {
+      "id": "F5",
+      "label": {
+        "fr": "Mesures ERC / récupération de chaleur",
+        "en": "Avoid-reduce-offset measures / heat recovery"
+      },
+      "pillar": "land_biodiversity",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
       "verification_source": null
     },
     {

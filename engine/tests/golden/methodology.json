@@ -401,12 +401,12 @@
     {
       "id": "W5",
       "label": {
-        "fr": "WUE mesuré / source d'eau réelle",
-        "en": "Measured WUE / actual water source"
+        "fr": "WUE constaté / source d'eau (auto-déclarés)",
+        "en": "Observed WUE / water source (self-reported)"
       },
       "description": {
-        "fr": "L'eau réellement consommée par unité de calcul, et d'où elle vient (potable, recyclée…). Plus c'est bas, mieux c'est.",
-        "en": "The water actually used per unit of computing, and where it comes from (drinking, recycled…). Lower is better."
+        "fr": "L'eau réellement consommée par unité de calcul, et d'où elle vient (potable, recyclée…) — chiffres constatés mais produits par l'opérateur, donc invérifiables sans source tierce. Plus c'est bas, mieux c'est.",
+        "en": "The water actually used per unit of computing, and where it comes from (drinking, recycled…) — observed figures, but operator-produced and unverifiable without a third-party source. Lower is better."
       },
       "pillar": "water",
       "weight_in_pillar": 0.1,
@@ -625,7 +625,7 @@
       "nature": "declarative",
       "unit": null,
       "direction": "encoded_in_scoring",
-      "mvp": false,
+      "mvp": true,
       "sources": [
         "operator",
         "permitting file"
@@ -639,8 +639,9 @@
         }
       },
       "threshold_basis": {
-        "type": "editorial_choice",
-        "rationale": "PROVISIONAL — out of MVP scope (tier 3)."
+        "type": "reference",
+        "reference": "ISO/IEC 30134-6 — Energy Reuse Factor (ERF), le référentiel international de la réutilisation de la chaleur fatale des data centers",
+        "url": "https://www.iso.org/standard/79095.html"
       },
       "calibration_status": "provisional"
     },

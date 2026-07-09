@@ -2,6 +2,21 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0-draft (f) — 2026-07-09 — F5 (heat recovery / ERC) enters the MVP (calibration iter-1)
+
+- **F5 `mvp: false → true`.** Heat recovery / avoid-reduce-offset measures now score inside the `land_biodiversity` pillar (project block). Trigger: the calibration sprint needs a high anchor, and heat recovery is the single most decisive positive an operator can disclose — keeping it out of MVP made an "A" structurally unreachable. Direction (`encoded_in_scoring`) and normalization (categorical: `heat_recovery_and_erc` 100 / `partial` 50 / `none` 0) are unchanged; the pillar's MVP weights still sum to 1.0 (F1 .30 / F2 .25 / F3 .20 / F4 .15 / F5 .10), so the engine's renormalize-on-present rule needs no edit.
+- **`threshold_basis` promoted from `editorial_choice` (PROVISIONAL) to `reference`: ISO/IEC 30134-6 — Energy Reuse Factor (ERF)**, the international standard for data-center waste-heat reuse. The category cut-offs stay `calibration_status: provisional` (to be tuned in phase 5), but the *sense* of the axis is now anchored to a real referential, not to an editorial choice.
+- **E5 and W5 unchanged** (still `mvp: false`, tier 3) — this reconciles one of the three out-of-MVP rows flagged at the initial draft (F5 in, E5/W5 deferred), not all three.
+- Retrospective calibration anchors posed in CI (`engine/tests/test_calibration_anchors.py`, `xfail(strict=True)`): E-anchor site=E and A-anchor project_process∈{A,B} — both UNMET today (site grid collapses onto B/C; retrospective governance unsourceable), tracked as targets that flip CI red the day calibration reaches them. Live nominative sources pinned in the private newsroom corpus (A-11).
+- Version string stays `0.1.0-draft` (draft revisions are tracked as lettered entries here, per this changelog's convention); no weight was silently edited.
+- Signatory: calibration sprint iter-1, prepared in working session (Claude Code) for Franck Bardol; category thresholds to be signed at the v0.1.0 freeze.
+
+## 0.1.0-draft (e) — 2026-07-09 — W5 label disambiguation (no scoring change)
+
+- **W5 label renamed**: « WUE mesuré / source d'eau réelle » → « WUE constaté / source d'eau (auto-déclarés) » (en: "Observed WUE / water source (self-reported)"). The old label conflated two independent axes of the schema: `status` (measured vs announced — is the figure actual or promised?) and `nature` (public_fact vs declarative — who produces it?). An operator's observed WUE is *actual* yet *self-reported*: real, but unverifiable without a third party. The new label carries both. Description updated accordingly.
+- No weight, threshold, direction or MVP change — labels only.
+- Signatory: decision Franck Bardol (working session 2026-07-09, calibration sprint prep), implemented by Claude.
+
 ## 0.1.0-draft (d) — 2026-07-05 — methodology-lead review verdicts (COWORK)
 
 - **Points 1-3 validated as-is** (base/pp transparency-floor asymmetry, pillar-weight renormalization, provisional parameters). Noted: the declarative cap and the confidence penalty are NOT a double count — the cap acts on the substantive score, the penalty on the confidence: the two axes of the dual display.

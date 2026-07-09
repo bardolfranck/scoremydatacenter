@@ -23,11 +23,11 @@
       },
       "project_process": {
         "grade": "C",
-        "score": 62.3,
-        "coverage": 1.0,
+        "score": 57.1,
+        "coverage": 0.939,
         "documentation": {
           "level": "high",
-          "score": 0.793,
+          "score": 0.768,
           "dots": 3,
           "label": {
             "fr": "documentation solide",
@@ -38,10 +38,10 @@
     },
     "confidence": {
       "level": "high",
-      "score": 0.951,
+      "score": 0.944,
       "causes": {
-        "missing_data": 0.0,
-        "unverifiable_declarative": 0.098
+        "missing_data": 0.008,
+        "unverifiable_declarative": 0.097
       }
     },
     "pillars": {
@@ -74,12 +74,12 @@
         }
       },
       "land_biodiversity": {
-        "grade": "A",
-        "score": 87.5,
-        "coverage": 1.0,
+        "grade": "B",
+        "score": 78.8,
+        "coverage": 0.9,
         "documentation": {
           "level": "high",
-          "score": 1.0,
+          "score": 0.966,
           "dots": 4,
           "label": {
             "fr": "documentation solide",
@@ -150,9 +150,9 @@
     },
     "confidence": {
       "level": "medium",
-      "score": 0.711,
+      "score": 0.706,
       "causes": {
-        "missing_data": 0.289,
+        "missing_data": 0.294,
         "unverifiable_declarative": 0.0
       }
     },
@@ -187,11 +187,11 @@
       },
       "land_biodiversity": {
         "grade": "D",
-        "score": 39.2,
-        "coverage": 0.833,
+        "score": 35.2,
+        "coverage": 0.75,
         "documentation": {
           "level": "high",
-          "score": 0.893,
+          "score": 0.862,
           "dots": 4,
           "label": {
             "fr": "documentation solide",
