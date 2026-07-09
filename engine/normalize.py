@@ -61,8 +61,15 @@ def _proxy_rubric(norm: dict, proxies: dict, indicator_id: str) -> float:
 
 
 def normalized_score(definition: dict, entry: dict, parameters: dict) -> float | None:
-    """Return the 0-100 sub-score for one indicator entry, or None if missing."""
-    if entry["status"] == "missing":
+    """Return the 0-100 sub-score for one indicator entry, or None if it has no value.
+
+    `missing` (verified absent from the public dossier) and `not_collected` (nobody
+    has looked yet) both yield None here — the *block-aware* meaning of that None is
+    resolved by the scorer: on project/process a `missing` becomes a scored 0 (opacity),
+    whereas a `not_collected` is dropped and instead lowers coverage (toward
+    insufficient_data). A 0 for something we never looked at would be as false as an
+    A of complacency (decision Franck Bardol, 2026-07-09)."""
+    if entry["status"] in ("missing", "not_collected"):
         return None
     norm = definition["normalization"]
     kind = norm["type"]
