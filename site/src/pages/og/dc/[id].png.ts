@@ -54,6 +54,28 @@ const BRAND_ICON = `<g transform="translate(64,56) scale(0.71875)">
   <rect x="45.8" y="50" width="7.2" height="5" rx="1.8" fill="#BF3B21"/>
 </g>`;
 
+// The project name never gets truncated: it fits on one line if it can, else
+// shrinks, else wraps to two balanced lines. cap ≈ 26 chars × 58px, the widest
+// that fits the left column before the badges (x=800).
+function nameBlock(raw: string): string {
+  const cap = 1508;
+  const T = (y: number, size: number, s: string) =>
+    `<text x="62" y="${y}" font-family="Chivo" font-weight="900" font-size="${size}" letter-spacing="-1" fill="#fff">${esc(s)}</text>`;
+  const len = raw.length;
+  let size = Math.min(58, Math.floor(cap / Math.max(len, 1)));
+  if (size >= 38) return T(242, size, raw);
+  const mid = Math.floor(len / 2);
+  const before = raw.lastIndexOf(" ", mid);
+  const after = raw.indexOf(" ", mid);
+  let split = before;
+  if (after > 0 && (before < 0 || after - mid < mid - before)) split = after;
+  if (split < 0) return T(242, Math.max(size, 30), raw); // no break point
+  const l1 = raw.slice(0, split), l2 = raw.slice(split + 1);
+  size = Math.min(48, Math.floor(cap / Math.max(l1.length, l2.length, 1)));
+  const lh = Math.round(size * 1.02);
+  return T(226, size, l1) + T(226 + lh, size, l2);
+}
+
 function dualBadge(x: number, y: number, grade: string, label: string, doc: string): string {
   const c = gr(grade);
   const [l1, l2] = twoLines(doc);
@@ -87,7 +109,7 @@ function card(dc: any): string {
   ${dateFr ? `<text x="1136" y="86" font-family="Chivo Mono" font-size="15" fill="#c6d3e2" text-anchor="end">Scoré le ${esc(dateFr)}</text>` : ""}
 
   <text x="64" y="182" font-family="Chivo Mono" font-weight="600" font-size="15" letter-spacing="1.8" fill="#8fa6c2">${esc(clip(kicker, 48)).toUpperCase()}</text>
-  <text x="62" y="242" font-family="Chivo" font-weight="900" font-size="58" letter-spacing="-1" fill="#fff">${esc(clip(dc.name, 26))}</text>
+  ${nameBlock(dc.name)}
   ${strip}
   <text x="64" y="410" font-family="Chivo Mono" font-size="11" fill="#8fa6c2"><tspan fill="#c6d3e2">●●●○</tspan> = documentation disponible par pilier</text>
 
