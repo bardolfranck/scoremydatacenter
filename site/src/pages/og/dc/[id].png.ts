@@ -7,11 +7,13 @@
 // headless browser); Chivo TTF vendored for text.
 import type { APIRoute } from "astro";
 import { Resvg } from "@resvg/resvg-js";
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-const font = (f: string) => readFileSync(join(process.cwd(), "src/og/fonts", f));
-const FONTS = [font("chivo-900.ttf"), font("chivo-700.ttf"), font("chivo-mono-400.ttf"), font("chivo-mono-600.ttf")];
+// resvg-js 2.x honours `fontFiles` (paths), NOT `fontBuffers` — passing buffers
+// silently falls back to a system sans, which renders every weight at ~regular
+// (the "pas la même police / pas assez gras" bug). Paths load the real Chivo.
+const fontDir = join(process.cwd(), "src/og/fonts");
+const FONT_FILES = ["chivo-900.ttf", "chivo-700.ttf", "chivo-mono-400.ttf", "chivo-mono-600.ttf"].map((f) => join(fontDir, f));
 
 const GRADE: Record<string, { bg: string; fg: string }> = {
   a: { bg: "#0B7A4B", fg: "#ffffff" }, b: { bg: "#6FA032", fg: "#102A43" },
@@ -106,7 +108,7 @@ export function getStaticPaths() {
 export const GET: APIRoute = ({ props }) => {
   const png = new Resvg(card((props as any).dc), {
     fitTo: { mode: "width", value: 1200 },
-    font: { fontBuffers: FONTS, loadSystemFonts: false, defaultFontFamily: "Chivo" },
+    font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "Chivo" },
   }).render().asPng();
   return new Response(png, { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=3600" } });
 };
