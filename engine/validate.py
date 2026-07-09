@@ -18,6 +18,9 @@ Gate 6  Retrospective fixtures + transparency floor: enforced by the test
         suite (make test), which CI runs before make build.
 Gate 7  No grade rendered outside <ScoreBadge>: template lint, arrives with
         the site components (plan phase 2).
+Gate 8  Extraction coherence: a project indicator may only be 'missing' (an
+        opacity claim) with a read-trace source once T2 attests a public dossier;
+        'not_collected' (nobody looked) is a draft-only state and blocks publication.
 Journal gate: every score_history entry after the first carries a rationale.
 """
 
@@ -123,6 +126,10 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                         "never score higher (vulnerability_cannot_improve_score, framing note section 9)"
                     )
     declarative_ids = {i["id"] for i in indicators if i["nature"] == "declarative"}
+    # Gate 8 protects the SCORE, so it is scoped to MVP indicators (out-of-MVP tier-3 rows
+    # like E5/W5 are unscored and exempt).
+    project_ids = {i["id"] for i in indicators if i["block"] == "project" and i["mvp"]}
+    scored_pp_ids = {i["id"] for i in indicators if i["block"] in ("project", "process") and i["mvp"]}
 
     for path in datacenter_paths(data_dir):
         dc = load_json(path)
@@ -151,6 +158,28 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                 problems.append(
                     f"GATE 2: {label}: {e['id']} is declarative but marked 'measured' without "
                     "verification_source — announced and measured are never merged"
+                )
+
+        # Gate 8 — extraction coherence (RED FLAG fix 2026-07-09): "dossier available +
+        # substance unexamined" is an impossible state by construction (philosophy A-18).
+        entries_by_id = {e["id"]: e for e in dc["indicators"]}
+        t2 = entries_by_id.get("T2", {})
+        dossier_available = t2.get("status") == "measured" and t2.get("value") in ("full_dossier_online", "partial")
+        for e in dc["indicators"]:
+            # (a) `missing` is an opacity accusation — it may only be levelled at a project
+            #     indicator once a read-trace (source) proves we actually opened the dossier.
+            if dossier_available and e["id"] in project_ids and e["status"] == "missing" and "source" not in e:
+                problems.append(
+                    f"GATE 8: {label}: {e['id']} is 'missing' (verified-absent) while T2 attests a public "
+                    "dossier, but carries no source proving it was read — attach the read-trace, or mark it "
+                    "'not_collected' until harvested. An E of non-extraction is as false as an A of complacency."
+                )
+            # (b) `not_collected` is a transitory draft state — it can never reach the published repo.
+            if e["id"] in scored_pp_ids and e["status"] == "not_collected" and dc["publication"]["status"] == "published":
+                problems.append(
+                    f"GATE 8: {label}: {e['id']} is 'not_collected' but the DC is published — every project/"
+                    "process indicator must be harvested (announced/measured) or verified-absent (missing) "
+                    "before publication"
                 )
 
         # Gate 4 — contradictory review
