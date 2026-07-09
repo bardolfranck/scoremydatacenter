@@ -2,6 +2,18 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0-draft (h) — 2026-07-09 — calibration iter-2: base thresholds learn to say E
+
+Applied against the pinned 32-DC French corpus (`score_corpus.py`); every move justified, all still `calibration_status: provisional` pending the freeze. Corpus site distribution moves from **6 B / 26 C** (compressed, unable to express A/D/E) to **7 B / 17 C / 7 D / 1 E**; the E-anchor (farmland hyperscaler) reaches its retrospective target and its CI anchor is promoted from `xfail` to a hard assertion.
+
+- **F2 `agricultural` 25 → 0 — a category fix, not tuning**: agricultural land IS part of ENAF (Espaces Naturels, Agricoles et Forestiers); scoring it above `natural_or_enaf` (0) contradicted the ZAN referential this basis cites.
+- **F1 .30 → .20 / F2 .25 → .35** — REX 2026-07-07 lesson 5: F1 only sees *designated* zones (Natura 2000/ZNIEFF) and is blind to ordinary plain biodiversity; F2 carries ordinary-habitat destruction. Land pillar still sums to 1.0.
+- **E1 .30 → .15 / E2 .25 → .35 / E3 .20 → .25** — E1 (grid carbon) has zero intra-FR variance (one national RTE figure): at .30 it granted every French DC 7.5 free points and masked local grid saturation, the actual siting constraint (Caparéseau S3REnR). E1 regains prominence with per-country bases at internationalization.
+- **W1 `high` 30 → 20** — WRI Aqueduct "high" (40–80% baseline withdrawal) is a severe class; 30/100 was generous for siting new load there.
+- **Data, not methodology**: L2 (MW per 1000 inhabitants — the cadrage's "monster ratio", base tier-1) computed for the two known-power corpus DCs from INSEE population; it was `missing` corpus-wide despite being deterministic. The corpus fill lives in the private newsroom.
+- Sanity held: transparency-floor property test, ethical lock (gate 3) and all gates green; fictional fixtures re-pinned (alpha B 77.7; beta E 30.0 — the rounding-boundary case to be re-pinned at freeze) and golden snapshot regenerated.
+- Signatory: calibration iter-2, prepared in working session (Claude, for review by Franck Bardol); to be confirmed or amended by the corpus-order review before the v0.1.0 freeze.
+
 ## 0.1.0-draft (g) — 2026-07-09 — `not_collected` vs `missing`: an E of non-extraction is as false as an A of complacency (RED FLAG fix)
 
 - **New indicator status `not_collected`** (schema + engine), distinct from `missing`. `missing` = we READ the public dossier and the commitment is absent → on project/process it scores a hard **0** (verified opacity; hiding never beats disclosing). `not_collected` = **nobody has looked yet** → it is **excluded** from the substantive score (never a 0) and instead **lowers coverage**, pushing project/process toward `insufficient_data`. Root cause fixed: the old single `missing` conflated "not looked" with "verified absent", so an un-harvested project block was branded operator opacity (Fouju came out `E` on project/process with its ICPE dossier fully online but unread by us).

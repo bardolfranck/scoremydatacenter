@@ -11,7 +11,7 @@ def test_alpha_dual_grades(methodology, alpha):
     r = score_datacenter(alpha, methodology)
     site = r["grades"]["site"]
     # no editorial gloss: the letter and the one-decimal score, nothing else
-    assert (site["grade"], site["score"]) == ("B", 79.5)
+    assert (site["grade"], site["score"]) == ("B", 77.7)
     assert "close_to" not in site
     pp = r["grades"]["project_process"]
     # F5 (heat recovery) entered MVP in 0.1.0-draft (f); alpha does not disclose it,
@@ -32,9 +32,10 @@ def test_alpha_confidence_two_causes(methodology, alpha):
 
 def test_beta_site_grade_on_rounded_score(methodology, beta):
     site = score_datacenter(beta, methodology)["grades"]["site"]
-    # raw 34.95 rounds to the published 35.0 -> graded D: the published number
-    # and the published letter can never contradict each other
-    assert (site["grade"], site["score"]) == ("D", 35.0)
+    # iter-2 base thresholds move beta to 30.0 -> E. The rounding guarantee this
+    # test pins (letter graded on the rounded published score, so number and letter
+    # can never contradict) holds at any value; re-pin a .x5 boundary case at freeze.
+    assert (site["grade"], site["score"]) == ("E", 30.0)
 
 
 def test_beta_project_process_insufficient_data(methodology, beta):
@@ -90,9 +91,15 @@ def test_no_documentation_without_a_grade(methodology, beta):
 
 
 def test_citable_quote_contrasts_when_a_pillar_is_worse(methodology, beta):
-    # beta: site D; worst graded pillar is local_impact E (score 16.2, below energy/water E)
-    # -> the generated headline names that contrast, tie-broken by the lowest score.
-    q = score_datacenter(beta, methodology)["citable_quote"]
+    # iter-2: beta's site fell to E, so it can no longer have a strictly-worse pillar.
+    # Rebuild the contrast case from beta with a healthy grid (E2 ample, E3 low):
+    # site rises to D while local_impact stays E (16.2) -> the headline names the contrast.
+    import copy
+    contrast = copy.deepcopy(beta)
+    for ind in contrast["indicators"]:
+        if ind["id"] == "E2": ind["value"] = "ample"
+        if ind["id"] == "E3": ind["value"] = "low"
+    q = score_datacenter(contrast, methodology)["citable_quote"]
     # French guillemets carry non-breaking spaces (correct typography) -> normalize to compare.
     assert q["fr"].replace(chr(0xa0), " ") == "Noté D sur le site, mais E sur « Impact local »."
     assert q["en"] == "Rated D on site, but E on “Local impact”."

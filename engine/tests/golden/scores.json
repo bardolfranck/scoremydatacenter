@@ -10,7 +10,7 @@
     "grades": {
       "site": {
         "grade": "B",
-        "score": 79.5,
+        "score": 77.7,
         "documentation": {
           "level": "high",
           "score": 1.0,
@@ -47,7 +47,7 @@
     "pillars": {
       "energy": {
         "grade": "B",
-        "score": 77.2,
+        "score": 71.9,
         "coverage": 1.0,
         "documentation": {
           "level": "high",
@@ -131,8 +131,8 @@
     "power_mw": 900,
     "grades": {
       "site": {
-        "grade": "D",
-        "score": 35.0,
+        "grade": "E",
+        "score": 30.0,
         "documentation": {
           "level": "high",
           "score": 0.93,
@@ -159,7 +159,7 @@
     "pillars": {
       "energy": {
         "grade": "E",
-        "score": 26.4,
+        "score": 26.9,
         "coverage": 0.833,
         "documentation": {
           "level": "high",
@@ -173,7 +173,7 @@
       },
       "water": {
         "grade": "E",
-        "score": 27.8,
+        "score": 24.4,
         "coverage": 0.778,
         "documentation": {
           "level": "high",
@@ -186,8 +186,8 @@
         }
       },
       "land_biodiversity": {
-        "grade": "D",
-        "score": 35.2,
+        "grade": "E",
+        "score": 22.0,
         "coverage": 0.75,
         "documentation": {
           "level": "high",
@@ -219,8 +219,8 @@
       }
     },
     "citable_quote": {
-      "fr": "Noté D sur le site, mais E sur « Impact local ».",
-      "en": "Rated D on site, but E on “Local impact”."
+      "fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
+      "en": "Rated E on site; project data insufficient to grade project & process."
     }
   }
 ]

@@ -41,7 +41,9 @@ def _dc(anchor: dict) -> dict:
     return {"id": anchor["id"], "indicators": anchor["indicators"]}
 
 
-@pytest.mark.xfail(strict=True, reason="site thresholds collapse the corpus onto B/C — E not yet expressible")
+# MET at iter-2 (2026-07-09): base thresholds recalibrated (F2 agricultural→0 & weight
+# swap with F1, E1 de-weighted intra-FR, W1 high tightened, L2 computed) — the anchor is
+# now a hard assertion: any regression that makes E inexpressible again fails CI.
 def test_e_anchor_site_is_E(methodology):
     a = ANCHORS["e_anchor_farmland_hyperscaler"]
     result = score_datacenter(_dc(a), methodology)
