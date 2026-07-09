@@ -50,6 +50,25 @@ def test_e_anchor_site_is_E(methodology):
     assert result["grades"]["site"]["grade"] in a["target"]["site"]
 
 
+# MET at iter-3 (2026-07-10): natural D from the 52-DC sweep — a constrained urban colo
+# must stay D (regression guard on both sides of the C/D and D/E boundaries).
+def test_d_anchor_site_is_D(methodology):
+    a = ANCHORS["d_anchor_regional_colo"]
+    result = score_datacenter(_dc(a), methodology)
+    assert result["grades"]["site"]["grade"] in a["target"]["site"]
+
+
+# MET at iter-3 (2026-07-10): best-in-class ANNOUNCED project (brownfield, PUE 1.22,
+# dry cooling, ~60% heat valorized, exemplary procedure, full dossier online).
+# The declarative cap makes 66.0 the mathematical ceiling of a fully-announced
+# project: promises — however good — land in B/C, never A. A is reserved for
+# ex-post verified operation. This anchor pins that ladder from both sides.
+def test_b_anchor_announced_exemplar_pp_is_BC(methodology):
+    a = ANCHORS["b_anchor_announced_exemplar"]
+    result = score_datacenter(_dc(a), methodology)
+    assert result["grades"]["project_process"]["grade"] in a["target"]["project_process"]
+
+
 @pytest.mark.xfail(strict=True, reason="retrospective governance unsourceable — project_process stays insufficient_data")
 def test_a_anchor_project_process_is_AB(methodology):
     a = ANCHORS["a_anchor_heat_recovery"]
