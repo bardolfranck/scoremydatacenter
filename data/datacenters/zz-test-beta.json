@@ -220,5 +220,17 @@
       "event": "methodology_change",
       "rationale": "Calibration iter-2 (methodology 0.1.0-draft (h)): base thresholds recalibrated so the site scale can express E — F2 agricultural 25->0 (ENAF category fix), F1/F2 and E1/E2/E3 weight rebalance, W1 high 30->20. Beta (the sparse tier-1-only fixture) moves D 35.0 -> E 30.0."
     }
-  ]
+  ],
+  "synthesis": {
+    "project_process": {
+      "lead": "En attente de documentation",
+      "fr": "Les éléments propres au projet et à son processus — efficacité annoncée, engagements sur l'eau et l'énergie, concertation, transparence du dossier — ne sont pas encore documentés au seuil requis. La note projet & processus n'est donc pas attribuée : sous le seuil de couverture, l'observatoire écrit « données insuffisantes » plutôt que de noter l'inconnu.",
+      "en": "The project- and process-specific elements — announced efficiency, water and energy commitments, public consultation, dossier transparency — are not yet documented to the required threshold. The project & process grade is therefore withheld: below the coverage threshold, the observatory writes “insufficient data” rather than grading the unknown."
+    },
+    "site": {
+      "lead": "Site fortement contraint sur tous les axes",
+      "fr": "Le contexte du site accumule les contraintes mesurées : électricité locale nettement carbonée (environ 310 gCO₂/kWh), raccordement contraint et file d'attente réseau tendue, zone en forte tension hydrique avec une pression de prélèvement élevée, et implantation sur des terres agricoles à proximité d'un corridor écologique. Le profil socio-économique de la commune et sa faible capacité d'absorption au regard d'un projet de grande taille complètent ce tableau, sans que le premier ne puisse jouer en faveur du site. La convergence de ces signaux défavorables place le site en note E, la plus contrainte de l'échelle.",
+      "en": "The site's context accumulates measured constraints: markedly carbon-intensive local electricity (around 310 gCO₂/kWh), constrained grid connection and a tight connection queue, an area under high water stress with elevated withdrawal pressure, and siting on agricultural land near an ecological corridor. The municipality's socio-economic profile and its limited absorption capacity relative to a large-scale project complete the picture, though the former can never count in the site's favor. The convergence of these unfavorable signals places the site at an E grade, the most constrained on the scale."
+    }
+  }
 }

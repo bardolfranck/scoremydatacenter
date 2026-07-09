@@ -96,6 +96,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             # Contestation signal (A-21): sourced facts published next to the note,
             # never an input to the grade. Passed through untouched.
             "contestation": dc.get("contestation"),
+            # Narrative synthesis: written by the WORKFLOW's LLM redaction phase
+            # AFTER scoring, then stored on the source DC. The engine only passes
+            # it through — never computed at render, never re-derived here.
+            "synthesis": dc.get("synthesis"),
         })
 
         audit += [{"dc_id": dc_id, "dc_name": dc["identity"]["name"], **event} for event in dc["score_history"]]
