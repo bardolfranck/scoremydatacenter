@@ -14,14 +14,20 @@ def test_alpha_dual_grades(methodology, alpha):
     assert (site["grade"], site["score"]) == ("B", 79.5)
     assert "close_to" not in site
     pp = r["grades"]["project_process"]
-    assert (pp["grade"], pp["score"], pp["coverage"]) == ("C", 62.3, 1.0)
+    # F5 (heat recovery) entered MVP in 0.1.0-draft (f); alpha does not disclose it,
+    # so one project indicator is now missing → coverage 0.939 (was 1.0) and F5=0
+    # drags the project/process score 62.3 → 57.1.
+    assert (pp["grade"], pp["score"], pp["coverage"]) == ("C", 57.1, 0.939)
 
 
 def test_alpha_confidence_two_causes(methodology, alpha):
     c = score_datacenter(alpha, methodology)["confidence"]
     assert c["level"] == "high"
-    assert c["causes"]["missing_data"] == 0.0
-    assert c["causes"]["unverifiable_declarative"] == 0.098  # E4+W4+L4+L5 importance share
+    # F5 now MVP but undisclosed by alpha → a sliver of missing_data (was 0.0); the
+    # unverifiable_declarative share (E4+W4+L4+L5) renormalizes over the larger
+    # importance pool: 0.098 → 0.097.
+    assert c["causes"]["missing_data"] == 0.008
+    assert c["causes"]["unverifiable_declarative"] == 0.097
 
 
 def test_beta_site_grade_on_rounded_score(methodology, beta):
@@ -39,7 +45,9 @@ def test_beta_project_process_insufficient_data(methodology, beta):
 def test_beta_confidence_missing_cause(methodology, beta):
     c = score_datacenter(beta, methodology)["confidence"]
     assert c["level"] == "medium"
-    assert c["causes"]["missing_data"] == 0.289
+    # F5 entered MVP (0.1.0-draft (f)); beta discloses no project data, so the extra
+    # missing indicator nudges missing_data 0.289 → 0.294.
+    assert c["causes"]["missing_data"] == 0.294
     assert c["causes"]["unverifiable_declarative"] == 0.0
 
 
@@ -54,8 +62,10 @@ def test_insufficient_data_cascades_to_pillar_subscores(methodology, beta):
 
 def test_alpha_pillar_subscores(methodology, alpha):
     pillars = score_datacenter(alpha, methodology)["pillars"]
-    assert pillars["land_biodiversity"]["grade"] == "A"
-    assert pillars["land_biodiversity"]["score"] == 87.5
+    # F5 (heat recovery) entered MVP (0.1.0-draft (f)) and alpha does not disclose it;
+    # F5=0 pulls the land pillar from 87.5 (over F1–F4) to 78.8 (78.75 rounded), dropping A→B.
+    assert pillars["land_biodiversity"]["grade"] == "B"
+    assert pillars["land_biodiversity"]["score"] == 78.8
     assert set(pillars) == {"energy", "water", "land_biodiversity", "local_impact", "transparency_governance"}
 
 

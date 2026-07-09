@@ -27,9 +27,9 @@
   },
   "confidence": {
     "level": "medium",
-    "score": 0.711,
+    "score": 0.706,
     "causes": {
-      "missing_data": 0.289,
+      "missing_data": 0.294,
       "unverifiable_declarative": 0.0
     }
   },
@@ -64,11 +64,11 @@
     },
     "land_biodiversity": {
       "grade": "D",
-      "score": 39.2,
-      "coverage": 0.833,
+      "score": 35.2,
+      "coverage": 0.75,
       "documentation": {
         "level": "high",
-        "score": 0.893,
+        "score": 0.862,
         "dots": 4,
         "label": {
           "fr": "documentation solide",
@@ -315,6 +315,21 @@
       "label": {
         "fr": "Surface au sol du projet",
         "en": "Project ground footprint"
+      },
+      "pillar": "land_biodiversity",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "F5",
+      "label": {
+        "fr": "Mesures ERC / récupération de chaleur",
+        "en": "Avoid-reduce-offset measures / heat recovery"
       },
       "pillar": "land_biodiversity",
       "block": "project",
