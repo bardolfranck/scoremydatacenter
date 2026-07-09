@@ -8,8 +8,8 @@
   "power_mw": 900,
   "grades": {
     "site": {
-      "grade": "D",
-      "score": 35.0,
+      "grade": "E",
+      "score": 30.0,
       "documentation": {
         "level": "high",
         "score": 0.93,
@@ -36,7 +36,7 @@
   "pillars": {
     "energy": {
       "grade": "E",
-      "score": 26.4,
+      "score": 26.9,
       "coverage": 0.833,
       "documentation": {
         "level": "high",
@@ -50,7 +50,7 @@
     },
     "water": {
       "grade": "E",
-      "score": 27.8,
+      "score": 24.4,
       "coverage": 0.778,
       "documentation": {
         "level": "high",
@@ -63,8 +63,8 @@
       }
     },
     "land_biodiversity": {
-      "grade": "D",
-      "score": 35.2,
+      "grade": "E",
+      "score": 22.0,
       "coverage": 0.75,
       "documentation": {
         "level": "high",
@@ -96,8 +96,8 @@
     }
   },
   "citable_quote": {
-    "fr": "Noté D sur le site, mais E sur « Impact local ».",
-    "en": "Rated D on site, but E on “Local impact”."
+    "fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
+    "en": "Rated E on site; project data insufficient to grade project & process."
   },
   "summary": {
     "fr": "Fixture de test (fictive) : hyperscale annoncé, faiblement documenté — étage 1 seul, cas « données insuffisantes » et confiance faible.",
@@ -192,7 +192,7 @@
       "status": "measured",
       "value": "high",
       "proxies": null,
-      "score": 30.0,
+      "score": 20.0,
       "source": {
         "title": "Fictional water restriction registry (test)",
         "url": "https://example.org/zz/beta-w1",
@@ -283,7 +283,7 @@
       "status": "measured",
       "value": "agricultural",
       "proxies": null,
-      "score": 25.0,
+      "score": 0.0,
       "source": {
         "title": "Fictional soil status inventory (test)",
         "url": "https://example.org/zz/beta-f2",
@@ -504,6 +504,17 @@
       "confidence": "medium",
       "event": "initial_scoring",
       "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+    },
+    {
+      "date": "2026-07-09",
+      "methodology_version": "0.1.0-draft",
+      "grades": {
+        "site": "E",
+        "project_process": "insufficient_data"
+      },
+      "confidence": "medium",
+      "event": "methodology_change",
+      "rationale": "Calibration iter-2 (methodology 0.1.0-draft (h)): base thresholds recalibrated so the site scale can express E — F2 agricultural 25->0 (ENAF category fix), F1/F2 and E1/E2/E3 weight rebalance, W1 high 30->20. Beta (the sparse tier-1-only fixture) moves D 35.0 -> E 30.0."
     }
   ],
   "contestation": null

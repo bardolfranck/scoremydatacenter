@@ -55,7 +55,7 @@
       "properties": {
         "id": "zz-test-beta",
         "name": "Beta Test Hyperscale",
-        "grade_site": "D",
+        "grade_site": "E",
         "grade_project_process": "insufficient_data",
         "confidence": "medium",
         "power_mw": 900,
@@ -71,7 +71,7 @@
           },
           {
             "id": "land_biodiversity",
-            "grade": "D"
+            "grade": "E"
           },
           {
             "id": "local_impact",
@@ -82,7 +82,7 @@
             "grade": "insufficient_data"
           }
         ],
-        "quote_fr": "Noté D sur le site, mais E sur « Impact local »."
+        "quote_fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus."
       }
     }
   ]

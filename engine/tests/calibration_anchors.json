@@ -8,68 +8,130 @@
         {
           "id": "E1",
           "status": "measured",
-          "value": 11.0
+          "value": 11.0,
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "W1",
           "status": "measured",
-          "value": "high"
+          "value": "high",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "F1",
           "status": "measured",
-          "value": "distant_over_5km"
+          "value": "distant_over_5km",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "L3",
           "status": "measured",
-          "value": "seveso_low_within_5km"
+          "value": "seveso_low_within_5km",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "W3",
           "status": "measured",
-          "value": "low"
+          "value": "low",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "L1",
           "status": "measured",
-          "value": "strong_fit"
+          "value": "strong_fit",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "W2",
           "status": "measured",
-          "value": "bad"
+          "value": "bad",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "F2",
           "status": "measured",
-          "value": "agricultural"
+          "value": "agricultural",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "E2",
           "status": "measured",
-          "value": "saturated"
+          "value": "saturated",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "E3",
           "status": "measured",
-          "value": "critical"
+          "value": "critical",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "E4",
-          "status": "missing"
+          "status": "announced",
+          "value": 1.24,
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "E5",
-          "status": "missing"
+          "status": "not_collected"
         },
         {
           "id": "W4",
-          "status": "missing"
+          "status": "announced",
+          "value": "closed_loop_dry",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "W5",
-          "status": "missing"
+          "status": "not_collected"
         },
         {
           "id": "F3",
@@ -77,23 +139,47 @@
         },
         {
           "id": "F4",
-          "status": "missing"
+          "status": "not_collected"
         },
         {
           "id": "F5",
-          "status": "missing"
+          "status": "announced",
+          "value": "heat_recovery_and_erc",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "L2",
-          "status": "missing"
+          "status": "measured",
+          "value": 2153.8,
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "L4",
-          "status": "missing"
+          "status": "announced",
+          "value": 500,
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "L5",
-          "status": "missing"
+          "status": "announced",
+          "value": "announced_unquantified",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         },
         {
           "id": "L6",
@@ -112,12 +198,22 @@
             "cndp_referral": true,
             "legal_appeals_count": 0,
             "council_deliberations": "favorable"
+          },
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
           }
         },
         {
           "id": "T2",
           "status": "measured",
-          "value": "full_dossier_online"
+          "value": "full_dossier_online",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11)",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
         }
       ],
       "target": {

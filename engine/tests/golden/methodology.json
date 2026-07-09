@@ -56,7 +56,7 @@
         "en": "How much CO₂ is emitted to produce the electricity the site will consume, based on the regional grid."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.3,
+      "weight_in_pillar": 0.15,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -92,7 +92,8 @@
         "reference": "ADEME Base Empreinte — grid emission factors",
         "url": "https://base-empreinte.ademe.fr/"
       },
-      "calibration_status": "provisional"
+      "calibration_status": "provisional",
+      "calibration_note": "Iter-2: weight .30→.15 within pillar — zero intra-FR variance (national grid, one RTE figure for every French DC): at .30 it granted every DC 7.5 free points and masked local saturation. Weight returns to prominence with per-country carbon at internationalization (E1 stays the flagship internationally)."
     },
     {
       "id": "E2",
@@ -105,7 +106,7 @@
         "en": "How easily the site can be connected to the power grid: available capacity and distance to the nearest substation."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.25,
+      "weight_in_pillar": 0.35,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -142,7 +143,7 @@
         "en": "How congested the local grid is: the more saturated, the more the connection competes with other users."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.2,
+      "weight_in_pillar": 0.25,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -276,7 +277,7 @@
         "categories": {
           "no_stress": 100,
           "moderate": 60,
-          "high": 30,
+          "high": 20,
           "zre_or_crisis": 0
         }
       },
@@ -285,7 +286,8 @@
         "reference": "ZRE zoning + Propluvia restriction levels (French regulatory framework)",
         "url": "https://www.eaufrance.fr/"
       },
-      "calibration_status": "provisional"
+      "calibration_status": "provisional",
+      "calibration_note": "Iter-2: 'high' 30→20 — WRI Aqueduct 'high' = 40-80% baseline withdrawal ratio, a severe class; 30/100 was generous for siting new load in it. PROVISIONAL, to survive counter-expert review at freeze."
     },
     {
       "id": "W2",
@@ -457,7 +459,7 @@
         "en": "How close the project is to protected natural areas (Natura 2000, nature reserves…)."
       },
       "pillar": "land_biodiversity",
-      "weight_in_pillar": 0.3,
+      "weight_in_pillar": 0.2,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -495,7 +497,7 @@
         "en": "What the land was before: already built (brownfield), natural, or farmland — sealing farmland or nature weighs most."
       },
       "pillar": "land_biodiversity",
-      "weight_in_pillar": 0.25,
+      "weight_in_pillar": 0.35,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -511,7 +513,7 @@
         "categories": {
           "artificialized": 100,
           "transitional": 60,
-          "agricultural": 25,
+          "agricultural": 0,
           "natural_or_enaf": 0
         }
       },
@@ -520,7 +522,8 @@
         "reference": "Cerema artificialization inventory + ZAN framework categories",
         "url": "https://artificialisation.developpement-durable.gouv.fr/"
       },
-      "calibration_status": "provisional"
+      "calibration_status": "provisional",
+      "calibration_note": "Iter-2: 'agricultural' 25→0 — category fix, not tuning: agricultural land IS part of ENAF (Espaces Naturels, Agricoles et Forestiers), scoring it above 'natural_or_enaf' contradicted the ZAN referential this basis cites. Weight .25→.35 (with F1 .30→.20): REX 2026-07-07 lesson 5 — F1 only sees DESIGNATED zones (Natura/ZNIEFF) and is blind to ordinary plain biodiversity; F2 carries ordinary-habitat destruction."
     },
     {
       "id": "F3",

@@ -9,7 +9,7 @@
   "grades": {
     "site": {
       "grade": "B",
-      "score": 79.5,
+      "score": 77.7,
       "documentation": {
         "level": "high",
         "score": 1.0,
@@ -46,7 +46,7 @@
   "pillars": {
     "energy": {
       "grade": "B",
-      "score": 77.2,
+      "score": 71.9,
       "coverage": 1.0,
       "documentation": {
         "level": "high",
