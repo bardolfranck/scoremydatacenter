@@ -238,6 +238,7 @@ const pillars = methodology.pillars as any[];
     </aside>
 
     <div class="fiche-main">
+      <div class="fiche-top">
       <div class="fiche-subscores">
         <div class="fiche-subscores-head">
           <div>
@@ -272,6 +273,25 @@ const pillars = methodology.pillars as any[];
             );
           })}
         </div>
+      </div>
+        {dc.synthesis && (
+          <aside class="fiche-synthesis" aria-labelledby="synth-title">
+            <div class="synth-head">
+              <h2 id="synth-title">Synthèse du projet</h2>
+              <span class="synth-sub">la lecture d'ensemble, derrière les lettres</span>
+            </div>
+            <div class="synth-block synth-project">
+              <span class="synth-tag">Projet &amp; processus</span>
+              <span class="synth-lead">{dc.synthesis.project_process.lead}</span>
+              <p>{dc.synthesis.project_process.fr}</p>
+            </div>
+            <div class="synth-block synth-site">
+              <span class="synth-tag">Site</span>
+              <span class="synth-lead">{dc.synthesis.site.lead}</span>
+              <p>{dc.synthesis.site.fr}</p>
+            </div>
+          </aside>
+        )}
       </div>
 
       <blockquote class="fiche-quote"><p>« {dc.citable_quote.fr} »</p></blockquote>

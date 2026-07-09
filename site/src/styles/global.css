@@ -618,6 +618,22 @@ sup a { color: var(--accent); font-weight: 750; }
 .pillar-dots .on { color: var(--ink-soft); }
 .pillar-dots .off { color: #c2ccd6; }
 
+/* Top row: pillar sub-scores (the numbers) beside the narrative synthesis (the
+   reading). Present only when the artifact carries a `synthesis`. */
+.fiche-top { display: grid; grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); border-bottom: 1px solid var(--line); }
+.fiche-top > .fiche-subscores { border-bottom: none; }
+.fiche-top:has(.fiche-synthesis) > .fiche-subscores { border-right: 1px solid var(--line); }
+
+.fiche-synthesis { padding: 24px 32px; background: var(--paper); }
+.synth-head { margin-bottom: 4px; }
+.synth-head h2 { font-size: 1rem; }
+.synth-sub { display: block; margin-top: 2px; font-size: 0.78rem; color: var(--muted); }
+.synth-block { padding: 16px 0; border-top: 1px solid var(--line); }
+.synth-block:first-of-type { border-top: none; padding-top: 12px; }
+.synth-tag { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.synth-lead { display: block; margin-top: 5px; font-size: 1.05rem; font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; color: var(--ink); }
+.synth-block p { margin-top: 7px; font-size: 0.93rem; line-height: 1.62; color: var(--ink-soft); }
+
 /* Citable exergue — the journalist's line */
 .fiche-quote { margin: 22px 32px 0; padding: 16px 20px; border-left: 3px solid var(--ink); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; }
 .fiche-quote p { font-size: 1.05rem; font-weight: 700; line-height: 1.45; }
@@ -727,7 +743,9 @@ sup a { color: var(--accent); font-weight: 750; }
 @media (max-width: 860px) {
   .fiche { grid-template-columns: minmax(0, 1fr); }
   .fiche-side-foot { margin-top: 8px; }
-  .fiche-quote, .fiche-section, .fiche-cards, .fiche-history, .fiche-subscores, .fiche-foot, .fiche-contestation { padding-left: 20px; padding-right: 20px; margin-left: 0; margin-right: 0; }
+  .fiche-top { grid-template-columns: minmax(0, 1fr); }
+  .fiche-top:has(.fiche-synthesis) > .fiche-subscores { border-right: none; border-bottom: 1px solid var(--line); }
+  .fiche-quote, .fiche-section, .fiche-cards, .fiche-history, .fiche-subscores, .fiche-synthesis, .fiche-foot, .fiche-contestation { padding-left: 20px; padding-right: 20px; margin-left: 0; margin-right: 0; }
   .contestation-list li { grid-template-columns: 1fr; }
   .fiche-cards { grid-template-columns: 1fr; }
   .pillar-name { flex: 1 1 140px; }
