@@ -154,7 +154,12 @@
     },
     {
       "id": "F5",
-      "status": "missing"
+      "status": "missing",
+      "source": {
+        "title": "Fictional ICPE dossier read — no heat-recovery/ERC commitment found (test read-trace)",
+        "url": "https://example.org/zz/f5-dossier",
+        "accessed": "2026-07-01"
+      }
     },
     {
       "id": "L1",

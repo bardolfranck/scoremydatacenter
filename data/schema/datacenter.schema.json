@@ -146,8 +146,8 @@
       "properties": {
         "id": { "type": "string", "pattern": "^[EWFLT][0-9]{1,2}$" },
         "status": {
-          "enum": ["measured", "announced", "missing"],
-          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); missing = not available (confidence penalty, cause: missing_data)."
+          "enum": ["measured", "announced", "missing", "not_collected"],
+          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); missing = we READ the public dossier and the datum is absent (verified opacity — on project/process it scores 0, may carry a read-trace source); not_collected = nobody has looked yet (transitory; excluded from the substantive score, lowers coverage; the pipelines emit this by default for uncovered project/process indicators). A 0 for something never read would be as false as an A of complacency (2026-07-09)."
         },
         "value": { "type": ["number", "string", "boolean"] },
         "proxies": { "$ref": "#/$defs/t1_proxies" },
@@ -159,14 +159,26 @@
       },
       "allOf": [
         {
-          "if": { "properties": { "status": { "not": { "const": "missing" } } } },
+          "$comment": "Value-bearing states (measured/announced) require a source; empty states (missing/not_collected) carry no value or proxies. A `missing` MAY carry a read-trace source (proof we looked); `not_collected` may not (see next).",
+          "if": { "properties": { "status": { "enum": ["measured", "announced"] } } },
           "then": { "required": ["source"] },
           "else": {
             "not": {
               "anyOf": [
                 { "required": ["value"] },
-                { "required": ["proxies"] },
-                { "required": ["source"] }
+                { "required": ["proxies"] }
+              ]
+            }
+          }
+        },
+        {
+          "$comment": "not_collected = nobody looked → no source, no verification evidence either.",
+          "if": { "properties": { "status": { "const": "not_collected" } } },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["source"] },
+                { "required": ["verification_source"] }
               ]
             }
           }
@@ -179,7 +191,7 @@
           "if": {
             "allOf": [
               { "properties": { "id": { "const": "T1" } } },
-              { "properties": { "status": { "not": { "const": "missing" } } } }
+              { "properties": { "status": { "enum": ["measured", "announced"] } } }
             ]
           },
           "then": { "required": ["proxies"] }
@@ -188,7 +200,7 @@
           "if": {
             "allOf": [
               { "properties": { "id": { "not": { "const": "T1" } } } },
-              { "properties": { "status": { "not": { "const": "missing" } } } }
+              { "properties": { "status": { "enum": ["measured", "announced"] } } }
             ]
           },
           "then": {

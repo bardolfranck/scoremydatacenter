@@ -33,6 +33,15 @@ def _all_indicator_ids() -> list[str]:
         return []
 
 
+def _indicator_blocks() -> dict[str, str]:
+    """id -> block ('base' | 'project' | 'process') from the active methodology."""
+    try:
+        from engine.core import load_methodology
+        return {i["id"]: i["block"] for i in load_methodology()["indicators"]}
+    except Exception:
+        return {}
+
+
 def _slugify(text: str) -> str:
     text = text.lower().strip()
     text = re.sub(r"[àâä]", "a", text)
@@ -87,13 +96,18 @@ def collect(lat: float, lon: float, *, name: str, operator: str, power_mw: float
         else:
             skipped.append(ind_id)
 
-    # Pad every not-yet-collected indicator as an explicit "missing" placeholder so the draft is
-    # immediately engine-scoreable and the reviewer sees exactly which slots still need hand work.
-    # "missing" is honest for now (not yet collected) — the human upgrades each to measured/announced.
+    # Pad every not-yet-collected indicator so the draft is immediately engine-scoreable and the
+    # reviewer sees exactly which slots still need hand work. The default status is block-aware
+    # (RED FLAG fix 2026-07-09): a BASE datum we haven't fetched is our collection gap → "missing"
+    # (excluded, renormalized); a PROJECT/PROCESS datum nobody has read yet is "not_collected" — NOT
+    # a scored 0, because a 0 for something never read would be as false as an A of complacency. The
+    # human upgrades each to measured/announced/missing after reading the dossier.
     filled_ids = {i["id"] for i in indicators}
+    blocks = _indicator_blocks()
     for ind_id in _all_indicator_ids():
         if ind_id not in filled_ids:
-            indicators.append({"id": ind_id, "status": "missing"})
+            default = "not_collected" if blocks.get(ind_id) in ("project", "process") else "missing"
+            indicators.append({"id": ind_id, "status": default})
 
     fragment = {
         "schema_version": "1.0",

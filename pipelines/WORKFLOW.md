@@ -77,6 +77,21 @@ the judged appeals count; you fill the three judgment proxies (public inquiry, e
 council deliberations) from the sidecar's `review_leads` (open the PDF, record the enum fact — no
 verdict, pre-mortem R2).
 
+**In the same gesture, harvest the 5 project-block indicators from that dossier** (RED FLAG fix,
+2026-07-09). The pipeline emits them as `not_collected` — the honest "nobody looked yet" state, which
+keeps project/process at `insufficient_data` and **blocks publication** (Gate 8b). While the dossier
+is open under your eyes, resolve each one:
+
+| Indicator | Read from the dossier | Encode as |
+|---|---|---|
+| **E4** PUE target · **W4** cooling / water strategy · **F5** heat recovery / ERC · **L4**, **L5** local commitments | the operator's stated commitment | `announced` + value + full source (title, URL, accessed, **`archived_url`** — official doc, régime A-20) |
+| any of the above genuinely **absent** from the dossier | you searched, no commitment | `missing` + a **read-trace source** (proves you looked — Gate 8a; the 0 is now earned) |
+
+Never leave a project indicator `not_collected` on a DC you intend to publish, and never mark one
+`missing` (an opacity accusation) without the read-trace: **an E of non-extraction is as false as an A
+of complacency.** (A stage-2 LLM extractor will pre-fill this table from the dossier later; for now it
+is the gate's checklist.)
+
 Then:
 ```
 make promote REVIEW=<newsroom>/drafts/datacenters/<id>/contestation.review.jsonl
