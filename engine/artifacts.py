@@ -7,10 +7,36 @@ Deterministic by construction: no timestamps, no environment values. The same
 repository content always produces byte-identical artifacts (this is tested).
 """
 
+import re
 from pathlib import Path
 
-from .core import ARTIFACTS_DIR, load_watchlist, write_json
+from .core import ARTIFACTS_DIR, GateError, load_watchlist, write_json
 from .scoring import score_datacenter
+
+# Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
+# outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
+# letter duplicates computed state and is guaranteed to drift at the next methodology
+# revision (seen live: an accroche pinned at "site C, piliers D" rendered next to
+# recomputed badges saying D and E). The letter belongs to the badge; the prose
+# carries the *why*, never the letter.
+_GRADE_IN_PROSE = re.compile(
+    r"(?:\bnote\b[^.!?]{0,80}?|\bnoté[e]?s?\s+|\bpilier[s]?\b[^.!?]{0,80}?|\bgrade[sd]?\b[^.!?]{0,40}?"
+    r"|\brated\s+|\bpillar[s]?\b[^.!?]{0,80}?|\bscored?\s+)(?<![A-Za-zÀ-ÿ])([A-E])(?![A-Za-zÀ-ÿ0-9+])"
+)
+
+
+def synthesis_grade_citations(dc: dict) -> list[str]:
+    """Return every grade-letter citation found in the DC's synthesis prose."""
+    hits = []
+    for badge, texts in (dc.get("synthesis") or {}).items():
+        if not isinstance(texts, dict):
+            continue
+        for lang, text in texts.items():
+            if not isinstance(text, str):
+                continue
+            for m in _GRADE_IN_PROSE.finditer(text):
+                hits.append(f"{dc['id']}: synthesis.{badge}.{lang} cites grade {m.group(1)!r} in prose ({m.group(0)!r})")
+    return hits
 
 
 def _summary(dc: dict, result: dict) -> dict:
@@ -35,6 +61,15 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     """Score every DC and write all artifacts. Returns the per-DC results."""
     if watchlist is None:
         watchlist = load_watchlist()
+    # Gate 7 (prose): refuse to emit an artifact whose synthesis cites grade letters —
+    # the incoherent "stale letter next to a recomputed badge" state is impossible.
+    prose_violations = [v for dc in datacenters.values() for v in synthesis_grade_citations(dc)]
+    if prose_violations:
+        raise GateError(
+            "GATE 7 (prose): a grade letter is never rendered outside <ScoreBadge> — strip it "
+            "from the synthesis (the badge carries the letter, the prose carries the why):\n  - "
+            + "\n  - ".join(prose_violations)
+        )
     results = {dc_id: score_datacenter(dc, methodology) for dc_id, dc in sorted(datacenters.items())}
 
     labels = {i["id"]: i["label"] for i in methodology["indicators"]}

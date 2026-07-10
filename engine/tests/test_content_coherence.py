@@ -86,3 +86,47 @@ def test_pillar_weight_claims_match_methodology(methodology):
         hardcoded = re.findall(r"(\d+)\s?%[^)]{0,30}(?:pilier|pillar)", text)
         assert not hardcoded, f"{lang} copy hardcodes pillar weights {hardcoded} — render them from methodology.json"
     assert sum(weights.values()) == 100
+
+
+# --- Gate 7 (prose): a grade letter is never rendered outside <ScoreBadge> --------
+# Seen live (2026-07-10): an LLM-written accroche pinned at "site C, piliers D"
+# rendered next to recomputed badges saying D and E after a recalibration. Prose
+# citing a letter duplicates computed state and WILL drift; the badge carries the
+# letter, the prose carries the why.
+
+from engine.artifacts import build_artifacts, synthesis_grade_citations
+from engine.core import GateError, load_datacenters
+
+
+def _stale_dc():
+    return {
+        "id": "zz-stale",
+        "synthesis": {"site": {
+            "fr": "La note de site C reflète cet équilibre (piliers Énergie D et Foncier D).",
+            "en": "These signals place the site at grade C.",
+        }},
+    }
+
+
+def test_synthesis_prose_citing_letters_is_detected():
+    hits = synthesis_grade_citations(_stale_dc())
+    assert len(hits) >= 3  # note de site C, piliers ... D, at grade C
+
+
+def test_letter_free_prose_passes():
+    clean = {"id": "zz-clean", "synthesis": {"site": {
+        "fr": "La note de site reflète cet équilibre : mesures ERC engagées, PUE 1,2 annoncé. À noter.",
+        "en": "The site grade reflects the constraint; the Energy pillar stays low. E-fuels and ERC measures.",
+    }}}
+    assert synthesis_grade_citations(clean) == []
+
+
+def test_build_refuses_grade_letters_in_prose(methodology, tmp_path, alpha):
+    stale = dict(alpha, **{"synthesis": _stale_dc()["synthesis"]})
+    with pytest.raises(GateError, match="GATE 7 \\(prose\\)"):
+        build_artifacts({stale["id"]: stale}, methodology, out_dir=tmp_path, watchlist=[])
+
+
+def test_committed_corpus_prose_is_letter_free():
+    for dc in load_datacenters().values():
+        assert synthesis_grade_citations(dc) == []

@@ -21,6 +21,7 @@ import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw"
 import downloadSimple from "@phosphor-icons/core/assets/regular/download-simple.svg?raw";
 import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?raw";
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
+import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
@@ -68,7 +69,7 @@ const confidenceNote: Record<string, string> = {
 const shareIcon: Record<string, string> = {
   x: xLogo, whatsapp: whatsappLogo, linkedin: linkedinLogo,
   mail: envelope, copy: linkSimple, download: downloadSimple, native: shareNetwork,
-  info: infoIcon,
+  info: infoIcon, map: mapPin,
 };
 const icon = (name: string, size = 18) =>
   shareIcon[name].replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
@@ -219,6 +220,10 @@ const pillars = methodology.pillars as any[];
         <span class="fiche-conf-note">{confPct} % — {confidenceNote[dc.confidence.level]}</span>
       </div>
 
+      <a class="fiche-map-link" href={`/fr/carte?dc=${dc.id}`}>
+        <span set:html={icon("map", 16)}></span>Voir sur la carte
+      </a>
+
       <div class="fiche-share">
         <span class="fiche-share-label">Partager</span>
         <div class="fiche-share-icons">
@@ -243,7 +248,11 @@ const pillars = methodology.pillars as any[];
         <div class="fiche-subscores-head">
           <div>
             <h2>Sous-scores par pilier</h2>
-            <span class="fiche-subscores-sub">tous indicateurs du pilier · distinct des deux notes ci-contre</span>
+            <span class="fiche-subscores-sub">Un pilier mêle le subi et le choisi ; une note n'est pas la moyenne des piliers.<span
+              class="fiche-why" tabindex="0" role="note"
+              aria-label="Pourquoi la note ne se déduit pas des piliers"
+              title="Les deux notes (site, projet) séparent les indicateurs selon qu'ils sont subis ou choisis — toutes thématiques confondues et pondérés. Les piliers, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages ne se recouvrent pas : la note du site ne se lit pas comme la moyenne des piliers affichés."
+              set:html={icon("info", 13)}></span></span>
           </div>
           <span class="fiche-legend"><span class="pillar-dots"><span class="on">●●●</span><span class="off">○</span></span> = documentation disponible</span>
         </div>
