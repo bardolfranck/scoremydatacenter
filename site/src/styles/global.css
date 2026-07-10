@@ -234,9 +234,9 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .gradechip.sm { width: 30px; height: 30px; font-size: 1.05rem; border-radius: 6px; }
 .gradechip.lg { width: 72px; height: 72px; font-size: 2.6rem; border-radius: 12px; }
 .gradechip.grade-a { background: var(--grade-a); color: #fff; }
-.gradechip.grade-b { background: var(--grade-b); color: var(--ink); }
-.gradechip.grade-c { background: var(--grade-c); color: var(--ink); }
-.gradechip.grade-d { background: var(--grade-d); color: var(--ink); }
+.gradechip.grade-b { background: var(--grade-b); color: #fff; }
+.gradechip.grade-c { background: var(--grade-c); color: #fff; }
+.gradechip.grade-d { background: var(--grade-d); color: #fff; }
 .gradechip.grade-e { background: var(--grade-e); color: #fff; }
 .gradechip.grade-na { background: var(--wash); color: var(--muted); border: 1px dashed var(--grade-na); font-size: 0.95rem; font-weight: 800; }
 
@@ -376,9 +376,9 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .hero-scale { display: flex; align-items: center; gap: 6px; margin-top: 22px; flex-wrap: wrap; }
 .hs-cell { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: #fff; }
 .hs-a { background: var(--grade-a); }
-.hs-b { background: var(--grade-b); color: var(--ink); }
-.hs-c { background: var(--grade-c); color: var(--ink); }
-.hs-d { background: var(--grade-d); color: var(--ink); }
+.hs-b { background: var(--grade-b); }
+.hs-c { background: var(--grade-c); }
+.hs-d { background: var(--grade-d); }
 .hs-e { background: var(--grade-e); }
 .hero-scale-label { margin-left: 8px; color: var(--muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 
@@ -563,9 +563,9 @@ sup a { color: var(--accent); font-weight: 750; }
 .meth-grade { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 62px; height: 62px; border-radius: var(--radius); color: #fff; font-weight: 900; font-size: 1.5rem; }
 .meth-grade small { font-family: var(--font-mono); font-size: 0.56rem; font-weight: 600; opacity: 0.9; }
 .meth-grade.grade-a { background: var(--grade-a); }
-.meth-grade.grade-b { background: var(--grade-b); color: var(--ink); }
-.meth-grade.grade-c { background: var(--grade-c); color: var(--ink); }
-.meth-grade.grade-d { background: var(--grade-d); color: var(--ink); }
+.meth-grade.grade-b { background: var(--grade-b); }
+.meth-grade.grade-c { background: var(--grade-c); }
+.meth-grade.grade-d { background: var(--grade-d); }
 .meth-grade.grade-e { background: var(--grade-e); }
 .meth-pillars { list-style: none; padding: 0; display: grid; gap: 2px; max-width: 440px; }
 .meth-pillars li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
