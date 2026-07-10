@@ -103,6 +103,32 @@ publish** — the public repo only receives a DC by the contradictoire PR at `st
 
 ---
 
+## Stage 3 — synthesis redaction (post-scoring, automated, orthogonal to country)
+
+The one narrative on each fiche (`synthesis`: two sides, `site` and `project_process`) is **not written
+by hand** — it is a batch phase that runs **after the engine scores**, reads each DC's own measured
+indicators + normalised scores, and delegates only the prose to the model. Built to scale to 10k DCs.
+
+```
+make score                                            # engine produces grades + normalised scores
+python -m pipelines.synthesize --source <newsroom>/calibration/datacenters --artifacts site/public/data
+# repeat --source per country panel (datacenters-be, …) — nothing here is country-specific
+```
+
+| In → Out | Guardrail at this edge |
+|----------|------------------------|
+| scored artifact `dc/<id>.json` + source DC → `synthesis` written back onto the **source** | model call is a **seam** (`llm=`); never hard-wires a vendor |
+| deterministic prompt from measured `base`/`process` signals only | describes the **real value/score**, never a per-country assumption (grid at 9 vs 147 gCO₂/kWh) |
+| every draft validated **before** it lands | **Gate 7** (no A–E letter in prose, reuses `engine.artifacts.synthesis_grade_citations`) + editorial bans; invalid → retried, then refused |
+| `project_process == insufficient_data` → fixed honest block | no model call; "données insuffisantes", coherent with the withheld grade |
+| already-synthesised DC skipped unless `--force` | idempotent — safe to re-run over the whole corpus |
+
+The rules (grounding, two-axis, Gate 7, bans, fixed insufficient block) are one document:
+`<newsroom>/calibration/SYNTHESIS-GENERATION.md`. `pipelines/synthesize.py` is its executable form.
+The letter stays in the badge; the prose carries the *why*, for every country panel opened next.
+
+---
+
 ## Guardrails carried end to end
 
 - **No score anywhere in the pipeline.** Only the engine, at build, from the reviewed DC file.
