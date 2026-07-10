@@ -749,6 +749,7 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding: 6px 32px 22px; }
 .fiche-card { padding: 16px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
 .fiche-card h3 { font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.fiche-card-note { margin-top: 8px; font-size: 0.78rem; color: var(--muted); }
 .fiche-card p { font-size: 0.9rem; color: var(--ink-soft); }
 .fiche-card .empty { font-style: italic; color: var(--muted); }
 .fiche-history { padding: 4px 32px 26px; }

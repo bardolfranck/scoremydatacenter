@@ -70,6 +70,36 @@ def test_notice_period_claims_match_gate():
         )
 
 
+# --- Firewall + grade-triggered contradictoire (brief 2026-07-06 §1/§3) ---------
+# The "we help the project, never the grade" firewall and the grade-triggered
+# right of reply must stay stated where they do legal/positioning work.
+_SITE = REPO_ROOT / "site" / "src" / "pages"
+FIREWALL_SOURCES = {
+    "landing-fr": PAGES["fr"],
+    "mentions-legales": (_SITE / "fr" / "mentions-legales.astro").read_text(),
+    "methodologie": (_SITE / "fr" / "methodologie.astro").read_text(),
+    "readme": (REPO_ROOT / "README.md").read_text(),
+}
+
+
+def test_firewall_line_present_where_required():
+    for name, text in FIREWALL_SOURCES.items():
+        low = text.lower()
+        assert "jamais la note" in low or "never the grade" in low, (
+            f"{name} no longer carries the firewall ('on aide le projet, jamais la note')"
+        )
+
+
+def test_contradictoire_is_grade_triggered_not_all_nominative():
+    fr = PAGES["fr"]
+    assert re.search(r"notes?\s+A[–\-]C|D\s+ou\s+E", fr), (
+        "landing no longer states the grade-triggered contradictoire (A–C direct, D/E right of reply)"
+    )
+    assert "publication nominative" not in fr.lower(), (
+        "landing still promises the OLD all-nominative 15-day hold — the contradictoire is grade-triggered now"
+    )
+
+
 def test_no_copy_claims_removed_display_features():
     # close_to ranges were removed from the engine output; the copy must not resurrect them
     for lang, text in PAGES.items():

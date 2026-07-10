@@ -14,6 +14,7 @@ from engine.validate import run_gates
 TODAY = date(2026, 7, 5)
 
 ALPHA = "datacenters/zz-test-alpha.json"
+BETA = "datacenters/zz-test-beta.json"
 METH = "methodology/v0.1.0-draft.json"
 
 
@@ -85,10 +86,18 @@ def test_gate4_unpublished_dc_in_public_repo(data_copy):
     assert any("GATE 4" in p and "smdc-newsroom" in p for p in run_gates(root, TODAY))
 
 
-def test_gate4_notice_period_not_over(data_copy):
+def test_gate4_de_right_of_reply_not_over(data_copy):
+    # zz-test-beta is site E — a D/E grade needs the 15-day right of reply before publishing.
     root, edit = data_copy
-    edit(ALPHA, lambda d: d["publication"].update(operator_notified_at="2026-07-01"))
-    assert any("GATE 4" in p and "contradictory" in p for p in run_gates(root, TODAY))
+    edit(BETA, lambda d: d["publication"].update(operator_notified_at="2026-07-01"))
+    assert any("GATE 4" in p and "right of reply" in p for p in run_gates(root, TODAY))
+
+
+def test_gate4_ac_publishes_directly(data_copy):
+    # zz-test-alpha is A–C — publication directe: no notification hold, even with none recorded.
+    root, edit = data_copy
+    edit(ALPHA, lambda d: d["publication"].update(operator_notified_at=None))
+    assert not any("GATE 4" in p and "right of reply" in p for p in run_gates(root, TODAY))
 
 
 def test_gate5_real_dc_against_draft_methodology(data_copy):

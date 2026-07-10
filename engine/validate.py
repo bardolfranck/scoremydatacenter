@@ -34,6 +34,7 @@ from .core import (
     DATA_DIR, FICTIONAL_PREFIX, GateError, load_json, load_methodology,
     datacenter_paths, watchlist_paths,
 )
+from .scoring import score_datacenter
 
 NOTICE_DAYS = 15
 
@@ -182,18 +183,33 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                     "before publication"
                 )
 
-        # Gate 4 — contradictory review
+        # Gate 4 — contradictory review, GRADE-TRIGGERED (brief 2026-07-06 §1, framing §9).
+        # A–C publish directly. A published D or E — the only truly exposed grades, on EITHER
+        # the site or the project note — needs a pre-publication right of reply of at least
+        # NOTICE_DAYS (a weapon: opposability, good faith, anti-dénigrement — not a favour).
         pub = dc["publication"]
         if pub["status"] != "published":
             problems.append(
                 f"GATE 4: {label}: publication.status is {pub['status']!r} — the public repo only holds "
                 "published DCs; drafts live in smdc-newsroom"
             )
-        elif date.fromisoformat(pub["operator_notified_at"]) + timedelta(days=NOTICE_DAYS) > today:
-            problems.append(
-                f"GATE 4: {label}: operator notified on {pub['operator_notified_at']} — "
-                f"{NOTICE_DAYS} days of contradictory review are not over yet"
-            )
+        else:
+            grades = score_datacenter(dc, methodology)["grades"]
+            exposed = {grades["site"]["grade"], grades["project_process"]["grade"]} & {"D", "E"}
+            if exposed:  # right of reply required before a D/E goes public
+                notified = pub["operator_notified_at"]
+                if not notified:
+                    problems.append(
+                        f"GATE 4: {label}: {sorted(exposed)} is exposed but no operator notification is "
+                        f"recorded — a D/E needs a right of reply of at least {NOTICE_DAYS} days before "
+                        "publication (status right_of_reply first)"
+                    )
+                elif date.fromisoformat(notified) + timedelta(days=NOTICE_DAYS) > today:
+                    problems.append(
+                        f"GATE 4: {label}: operator notified on {notified} — the {NOTICE_DAYS}-day right of "
+                        "reply is not over yet"
+                    )
+            # A/B/C (or insufficient_data): publication directe — no notification hold.
 
         # Gate 5 — anteriority
         if not dc["id"].startswith(FICTIONAL_PREFIX) and methodology["status"] != "published":

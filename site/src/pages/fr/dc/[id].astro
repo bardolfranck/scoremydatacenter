@@ -357,10 +357,16 @@ const pillars = methodology.pillars as any[];
 
       <div class="fiche-cards">
         <div class="fiche-card">
+          <h3>Signaler une erreur</h3>
+          <p>Une donnée vous semble inexacte ? <a href={`mailto:contact@scoremydatacenter.org?subject=${enc(`Correction — ${dc.name}`)}`}>Signalez-la avec sa source</a> — vérification, puis correction datée.</p>
+          <p class="fiche-card-note">Corrige un <strong>fait</strong>.</p>
+        </div>
+        <div class="fiche-card">
           <h3>Réponse de l'opérateur</h3>
           {op
             ? <p>{op.text}{op.date ? ` (${op.date})` : ""}</p>
             : <p class="empty">Sollicité{notifiedAt ? ` le ${notifiedAt}` : ""} — pas de réponse à ce jour.</p>}
+          <p class="fiche-card-note">Droit de réponse : donne la <strong>parole</strong> à l'opérateur.</p>
         </div>
         <div class="fiche-card">
           <h3>État de la donnée disponible</h3>

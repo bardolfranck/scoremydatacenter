@@ -2,6 +2,8 @@
 
 **Independent observatory scoring the social acceptability of data center projects — public A–E grades, Nutri-Score style, France first.**
 
+Factual, sourced, methodical ratings of data-center projects, published **as a contribution to the public-interest debate**.
+
 Every published score is reproducible from this repository:
 
 ```
@@ -9,7 +11,9 @@ git clone <this repo>
 make score
 ```
 
-The engine, the methodology, the published data and the audit log are open. What we sell is convenience (simulation, monitoring, API at scale) — **the paywall never falls on the truth**: a project's grade and its justification are always public and free.
+The engine, the methodology, the published data and the audit log are open. **The paywall never falls on the truth**: a project's grade and its justification are always public and free. **We help the project, never the grade** — an operator can have its project analysed, but the public grade moves only when the real project changes (new sourced facts, audit-logged re-scoring), never because someone paid.
+
+Contradictory review is **grade-triggered**: A–C publish directly; a D or E (the only truly exposed grades) opens a pre-publication right of reply of **at least 15 days**, then the page ships with the operator's answer or a "solicited, no reply" note.
 
 ## Repository layout
 
