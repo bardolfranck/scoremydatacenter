@@ -17,3 +17,7 @@ site/public/data/
 
 # Local agent tooling (installed via: npx skills add Leonxlnx/taste-skill)
 .agents/
+
+# local Claude Code dev configs (launch.json etc.)
+.claude/
+**/.claude/
