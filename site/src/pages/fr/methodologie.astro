@@ -72,7 +72,7 @@ const references = [
       <h2>La note en une phrase</h2>
       <p>Chaque projet reçoit <strong>deux notes de A à E</strong> — une pour le <strong>site</strong> (le contexte que le projet subit) et une pour le <strong>projet &amp; processus</strong> (ce que l'opérateur choisit) — assorties d'un <strong>niveau de confiance documentaire</strong>. Une note ne s'affiche jamais sans lui ; sous 40 % de couverture, on écrit « données insuffisantes ». On ne note pas l'inconnu.</p>
       <p>Le score est calculé à partir des seules valeurs sourcées du fichier de chaque projet.</p>
-      <p class="meth-nerd">🤓 Quiconque clone le dépôt et lance <code>make score</code> retombe exactement sur les lettres affichées.</p>
+      <p class="meth-nerd">🤓 <strong>Méthode reproductible</strong> : quiconque clone le dépôt et lance <code>make score</code> retombe exactement sur les lettres affichées.</p>
 
       <h2>L'échelle</h2>
       <div class="meth-scale">
@@ -88,8 +88,10 @@ const references = [
         ))}
       </ul>
 
-      <h2>Comment se calcule la note — une double moyenne</h2>
-      <p>La note est un <strong>bulletin scolaire</strong>. <strong>Étage 1</strong> : dans chaque pilier, les indicateurs sont moyennés selon leur coefficient interne (un contrôle compte plus qu'un autre). <strong>Étage 2</strong> : les scores de piliers sont moyennés selon les poids ci-dessus. Un principe : <strong>pas de croisement</strong> — un indicateur ne compte que dans son pilier, jamais ailleurs.</p>
+      <h2>La note, comme un bulletin scolaire</h2>
+      <p>Un data center reçoit un bulletin. Les cinq grands thèmes — les <strong>piliers</strong> — sont les matières : Énergie, Eau, Foncier &amp; biodiversité, Impact local, Transparence &amp; gouvernance. Dans chaque matière, plusieurs « contrôles » — les <strong>indicateurs</strong> — donnent des notes.</p>
+      <p><strong>Étage 1</strong> : dans chaque pilier, les indicateurs sont moyennés selon leur coefficient interne (un contrôle compte plus qu'un autre).</p>
+      <p><strong>Étage 2</strong> : les scores de piliers sont moyennés selon les poids ci-dessus. Un principe : <strong>pas de croisement</strong> — un indicateur ne compte que dans son pilier, jamais ailleurs.</p>
       <div class="meth-example">
         <p class="meth-example-title">Exemple (2 piliers, scores déjà normalisés sur 100)</p>
         <ul>
@@ -119,10 +121,9 @@ const references = [
       </ul>
 
       <h2>Statut, limites &amp; calibration</h2>
-      <p>Cette version est un <strong>brouillon de travail ({m.version})</strong>, assumé comme tel. Ce que la note <strong>n'est pas</strong> : un modèle prédictif validé statistiquement, ni un oracle. Ce qu'elle <strong>est</strong> : une <strong>grille experte, sourcée, versionnée et reproductible</strong>, qui applique des seuils ancrés sur des référentiels publics et déclare ses choix éditoriaux.</p>
+      <p>Cette version est <strong>préliminaire et pourra évoluer</strong>. Ce que la note <strong>n'est pas</strong> : un modèle prédictif validé statistiquement, ni un oracle. Ce qu'elle <strong>est</strong> : une <strong>grille experte, sourcée, versionnée et reproductible</strong>, qui applique des seuils ancrés sur des référentiels publics et déclare ses choix éditoriaux.</p>
       <ul>
-        <li><strong>Poids et seuils provisoires</strong> : ils seront calibrés par <strong>validation rétrospective</strong> sur des cas au dénouement connu (projets acceptés / abandonnés), pas affirmés a priori.</li>
-        <li><strong>Pas de fausse rigueur</strong> : tant que le corpus est petit, on ne revendique aucune validation statistique — l'honnêteté prime sur l'appareil.</li>
+        <li><strong>Poids et seuils provisoires</strong> : ils sont calibrés par <strong>validation rétrospective</strong> sur des cas au dénouement connu (projets acceptés / abandonnés), pas affirmés a priori.</li>
         <li><strong>Traçabilité</strong> : chaque note est datée et rattachée à une version de méthode ; un « A » signifie « le meilleur atteignable aujourd'hui », pas « le meilleur pour toujours ».</li>
       </ul>
 
