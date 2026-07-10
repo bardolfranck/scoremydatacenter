@@ -634,12 +634,12 @@
   "synthesis": {
     "project_process": {
       "lead": "Engagements documentés, encore déclaratifs",
-      "fr": "Le projet documente des choix concrets — efficacité annoncée, refroidissement et mesures associées, dossier accessible — ce qui porte la note projet & processus à C. La lettre reste plafonnée parce que ces engagements sont déclarés en amont et restent à confirmer en exploitation.",
-      "en": "The project documents concrete choices — announced efficiency, cooling and associated measures, an accessible dossier — which sets the project & process grade at C. The letter stays capped because these commitments are declared upstream and remain to be confirmed in operation."
+      "fr": "Le projet documente des choix concrets — efficacité annoncée, refroidissement et mesures associées, dossier accessible — ce qui porte la note projet & processus. La lettre reste plafonnée parce que ces engagements sont déclarés en amont et restent à confirmer en exploitation.",
+      "en": "The project documents concrete choices — announced efficiency, cooling and associated measures, an accessible dossier — which sets the project & process grade. The letter stays capped because these commitments are declared upstream and remain to be confirmed in operation."
     },
     "site": {
       "lead": "Site favorable, contraintes limitées",
-      "fr": "Le site cumule plusieurs signaux favorables : électricité locale peu carbonée, bon état écologique de la masse d'eau, faible pression de prélèvement, implantation sur terrain déjà artificialisé à plus de 5 km des zones naturelles protégées et absence d'aléa Seveso à proximité. La principale contrainte mesurée tient à la capacité d'absorption de la commune au regard de la taille du projet. L'ensemble situe le site en note B.",
+      "fr": "Le site cumule plusieurs signaux favorables : électricité locale peu carbonée, bon état écologique de la masse d'eau, faible pression de prélèvement, implantation sur terrain déjà artificialisé à plus de 5 km des zones naturelles protégées et absence d'aléa Seveso à proximité. La principale contrainte mesurée tient à la capacité d'absorption de la commune au regard de la taille du projet. L'ensemble situe le site en note.",
       "en": "The site combines several favorable signals: low-carbon local electricity, good ecological status of the water body, low withdrawal pressure, siting on already-artificialized land more than 5 km from protected natural areas, and no nearby Seveso hazard. The main measured constraint is the municipality's absorption capacity relative to the project's size. Overall this places the site at a B grade."
     }
   }
