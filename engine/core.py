@@ -49,8 +49,22 @@ def load_methodology(data_dir: Path = DATA_DIR) -> dict:
     return load_json(methodology_path(data_dir))
 
 
+# Every country panel is scored, not just the default one: source DCs live in
+# `datacenters/` plus any per-country sibling (`datacenters-be/`, …). Reading a
+# single dir silently dropped whole countries from map.geojson/scores.json on
+# every rebuild. Auxiliary drafting files (.provenance/.draft/.governance) sit
+# next to the DCs in some panels and are not scored.
+_AUX_SUFFIXES = (".provenance.json", ".draft.json", ".governance.json")
+
+
 def datacenter_paths(data_dir: Path = DATA_DIR) -> list[Path]:
-    return sorted((data_dir / "datacenters").glob("*.json"))
+    paths = [
+        p
+        for d in sorted(data_dir.glob("datacenters*")) if d.is_dir()
+        for p in d.glob("*.json")
+        if not p.name.endswith(_AUX_SUFFIXES)
+    ]
+    return sorted(paths, key=lambda p: p.stem)
 
 
 def load_datacenters(data_dir: Path = DATA_DIR) -> dict[str, dict]:
