@@ -349,6 +349,252 @@
           "B"
         ]
       }
+    },
+    "d_anchor_regional_colo": {
+      "id": "d_anchor_regional_colo",
+      "archetype": "Regional colocation DC on a constrained urban site: high water stress, saturated grid, dense-population fit issues — bad site substance without being an outlier.",
+      "indicators": [
+        {
+          "id": "E1",
+          "status": "measured",
+          "value": 43.0
+        },
+        {
+          "id": "W1",
+          "status": "measured",
+          "value": "high"
+        },
+        {
+          "id": "F1",
+          "status": "measured",
+          "value": "near_1_to_5km"
+        },
+        {
+          "id": "L3",
+          "status": "measured",
+          "value": "seveso_low_within_5km"
+        },
+        {
+          "id": "L1",
+          "status": "measured",
+          "value": "sensitive"
+        },
+        {
+          "id": "W2",
+          "status": "measured",
+          "value": "bad"
+        },
+        {
+          "id": "F2",
+          "status": "measured",
+          "value": "artificialized"
+        },
+        {
+          "id": "E2",
+          "status": "measured",
+          "value": "saturated"
+        },
+        {
+          "id": "E3",
+          "status": "measured",
+          "value": "high"
+        },
+        {
+          "id": "E4",
+          "status": "not_collected"
+        },
+        {
+          "id": "E5",
+          "status": "not_collected"
+        },
+        {
+          "id": "W3",
+          "status": "missing"
+        },
+        {
+          "id": "W4",
+          "status": "not_collected"
+        },
+        {
+          "id": "W5",
+          "status": "not_collected"
+        },
+        {
+          "id": "F3",
+          "status": "missing"
+        },
+        {
+          "id": "F4",
+          "status": "not_collected"
+        },
+        {
+          "id": "F5",
+          "status": "not_collected"
+        },
+        {
+          "id": "L2",
+          "status": "missing"
+        },
+        {
+          "id": "L4",
+          "status": "not_collected"
+        },
+        {
+          "id": "L5",
+          "status": "not_collected"
+        },
+        {
+          "id": "L6",
+          "status": "missing"
+        },
+        {
+          "id": "L7",
+          "status": "missing"
+        },
+        {
+          "id": "T1",
+          "status": "not_collected"
+        },
+        {
+          "id": "T2",
+          "status": "not_collected"
+        }
+      ],
+      "target": {
+        "site": [
+          "D"
+        ]
+      }
+    },
+    "b_anchor_announced_exemplar": {
+      "id": "b_anchor_announced_exemplar",
+      "archetype": "Best-in-class ANNOUNCED project on a brownfield: PUE 1.22, closed-loop dry cooling, ~60% waste-heat valorized to a district network, exemplary procedure (inquiry, favorable-with-reservations env. authority, favorable councils, 0 appeals), full dossier online — but everything is promised, nothing yet verified in operation.",
+      "indicators": [
+        {
+          "id": "E1",
+          "status": "measured",
+          "value": 43.0
+        },
+        {
+          "id": "W1",
+          "status": "measured",
+          "value": "moderate"
+        },
+        {
+          "id": "F1",
+          "status": "measured",
+          "value": "adjacent_under_1km"
+        },
+        {
+          "id": "L3",
+          "status": "measured",
+          "value": "seveso_low_within_5km"
+        },
+        {
+          "id": "L1",
+          "status": "measured",
+          "value": "strong_fit"
+        },
+        {
+          "id": "W2",
+          "status": "measured",
+          "value": "moderate"
+        },
+        {
+          "id": "F2",
+          "status": "measured",
+          "value": "artificialized"
+        },
+        {
+          "id": "E2",
+          "status": "measured",
+          "value": "saturated"
+        },
+        {
+          "id": "E3",
+          "status": "measured",
+          "value": "critical"
+        },
+        {
+          "id": "E4",
+          "status": "announced",
+          "value": 1.22
+        },
+        {
+          "id": "E5",
+          "status": "not_collected"
+        },
+        {
+          "id": "W3",
+          "status": "missing"
+        },
+        {
+          "id": "W4",
+          "status": "announced",
+          "value": "closed_loop_dry"
+        },
+        {
+          "id": "W5",
+          "status": "not_collected"
+        },
+        {
+          "id": "F3",
+          "status": "missing"
+        },
+        {
+          "id": "F4",
+          "status": "not_collected"
+        },
+        {
+          "id": "F5",
+          "status": "announced",
+          "value": "heat_recovery_and_erc"
+        },
+        {
+          "id": "L2",
+          "status": "missing"
+        },
+        {
+          "id": "L4",
+          "status": "missing"
+        },
+        {
+          "id": "L5",
+          "status": "announced",
+          "value": "announced_unquantified"
+        },
+        {
+          "id": "L6",
+          "status": "missing"
+        },
+        {
+          "id": "L7",
+          "status": "missing"
+        },
+        {
+          "id": "T1",
+          "status": "measured",
+          "proxies": {
+            "public_inquiry_held": true,
+            "environmental_authority_opinion": "favorable_with_reservations",
+            "cndp_referral": false,
+            "legal_appeals_count": 0,
+            "council_deliberations": "favorable"
+          }
+        },
+        {
+          "id": "T2",
+          "status": "measured",
+          "value": "full_dossier_online"
+        }
+      ],
+      "target": {
+        "project_process": [
+          "B",
+          "C"
+        ]
+      },
+      "target_rationale": "The declarative cap makes 66.0 the mathematical ceiling of a fully-announced project: best-in-class promises must land in B/C — above the opaque, below the verified. A is reserved for ex-post verified operation."
     }
   }
 }
