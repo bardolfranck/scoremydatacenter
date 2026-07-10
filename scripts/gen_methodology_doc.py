@@ -122,6 +122,7 @@ et la distinction est **déclarée** :
 - **Annoncé ≠ mesuré** : un chiffre déclaré par l'opérateur est tagué « annoncé », noté avec prudence, re-vérifiable ex-post.
 - **Plancher de transparence** : divulguer une donnée ne peut jamais dégrader la note par rapport à l'avoir cachée.
 - **Verrou éthique** : la vulnérabilité d'une commune ne peut jamais améliorer la note d'un projet.
+- **Firewall « projet ≠ note »** : on aide le projet, jamais la note. La note publique ne bouge que si le **projet réel** change (faits sourcés, re-scoring tracé au journal d'audit) — jamais parce qu'un opérateur a payé.
 - **Gouvernance** : toute évolution de la grille passe par une version taguée et un changelog justifié et signé.
 
 ## 7. Statut, limites & calibration

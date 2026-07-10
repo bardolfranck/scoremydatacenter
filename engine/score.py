@@ -73,6 +73,13 @@ def build() -> int:
         print(f"score: {dc_id}: site={g['site']['grade']} project_process={pp} "
               f"confidence={results[dc_id]['confidence']['level']}")
     print(f"score: artifacts written for {len(results)} datacenter(s)")
+    # Notification load (brief 2026-07-06 §1, phase 5): only D/E grades — on either the site or
+    # the project note — trigger the ≥15-day right of reply before publication. Count them so the
+    # contradictory workload is dimensioned automatically.
+    de = [dc_id for dc_id, r in results.items()
+          if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"}]
+    print(f"score: right-of-reply load — {len(de)} DC(s) exposed at D/E (need ≥15-day notice): "
+          + (", ".join(sorted(de)) if de else "none"))
     return 0
 
 

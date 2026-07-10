@@ -40,7 +40,7 @@ const t = {
   whyTitle: "Pourquoi cet observatoire",
   whyLede: "Un data center de 900 MW s'annonce près de chez vous. Où lire, clairement, ce qu'il vaut ? Son impact local ?",
   whyBody:
-    "Les cartes existantes alignent des caractéristiques techniques ; les observatoires de contestation comptent les conflits. Personne ne met à plat, projet par projet, la réalité de chaque dossier : une note, des sources, une méthode que chacun peut vérifier et refaire. C'est ce vide que ScoreMyDataCenter comble : la première note d'acceptabilité indépendante, publique et opposable.",
+    "Les cartes existantes alignent des caractéristiques techniques ; les observatoires de contestation comptent les conflits. Personne ne met à plat, projet par projet, la réalité de chaque dossier : une note, des sources, une méthode que chacun peut vérifier et refaire. C'est ce vide que ScoreMyDataCenter comble : la première note d'acceptabilité indépendante, publique et opposable — une notation factuelle, sourcée et méthodique, publiée au titre de la contribution au débat d'intérêt général.",
   aboutTitle: "Qui sommes-nous ?",
   aboutTodo: "Photo et biographie détaillée à venir.",
   founderLine: "Fondé par <strong>Franck Bardol</strong> — à l'intersection de l'infrastructure IA, de l'éthique et de la décision publique.",
@@ -48,7 +48,7 @@ const t = {
   principles: [
     { title: "Méthode publique", body: "Grille de notation ouverte, versionnée, citable. Quiconque peut refaire chaque note." },
     { title: "Données traçables", body: "Chaque valeur pointe vers sa source. L'annoncé n'est jamais fusionné avec le mesuré." },
-    { title: "Contradictoire", body: "L'opérateur est notifié 15 jours avant publication ; sa réponse est publiée à côté de la note." },
+    { title: "Contradictoire", body: "Les notes A–C sont publiées directement ; une note défavorable (D ou E) ouvre un droit de réponse d'au moins 15 jours, publié à côté de la note." },
     { title: "Indépendance", body: "Les entités notées ne paient jamais leur note. Aucune influence, ni pour ni contre : la note suit la méthode." },
   ],
   scoresTitle: "Derniers projets notés",
@@ -85,6 +85,10 @@ const t = {
       body: "Moteur <span class='lic' tabindex='0'>AGPL<span class='info-tip'>Le code du moteur est libre : quiconque l'améliore doit repartager ses améliorations.</span></span>, données publiées <span class='lic' tabindex='0'>ODbL<span class='info-tip'>Base de données ouverte : réutilisable librement, à condition de citer la source et de partager à l'identique.</span></span>, méthodologie <span class='lic' tabindex='0'>CC BY-SA<span class='info-tip'>Contenu libre : réutilisable en citant l'auteur et en partageant aux mêmes conditions.</span></span>. Le code est <a href='https://github.com/bardolfranck/scoremydatacenter'>public sur GitHub</a> : n'importe qui peut refaire chaque note, en toute rigueur.",
     },
     {
+      title: "On aide le projet, jamais la note",
+      body: "Les entités notées ne paient jamais leur note publique. Un opérateur peut faire analyser son projet ; mais la note ne bouge que si le projet réel change — jamais parce qu'il a payé. « Il paie, la note monte » est structurellement exclu.",
+    },
+    {
       title: "Journal d'audit public",
       body: "Chaque notation, révision et correction est datée, versionnée et justifiée. Une note ne bouge jamais en silence.",
     },
@@ -118,7 +122,11 @@ const t = {
     },
     {
       q: "Et si une donnée est inexacte, ou si l'opérateur n'est pas d'accord ?",
-      a: "Toute donnée peut être corrigée sur preuve. Avant chaque publication nominative, l'opérateur est notifié au moins 15 jours à l'avance et sa réponse est publiée à côté de la note. Chaque révision est datée et justifiée.",
+      a: "Deux outils distincts sur chaque fiche : une correction factuelle (toute donnée est corrigée sur preuve) et un droit de réponse (la voix de l'opérateur, à côté de la note). Les notes A–C sont publiées directement ; une note défavorable (D ou E, sur le site ou le projet) ouvre un droit de réponse d'au moins 15 jours avant publication — la fiche paraît alors avec la réponse, ou la mention « sollicité, sans réponse ». Chaque révision est datée et justifiée.",
+    },
+    {
+      q: "Un opérateur peut-il demander le retrait de sa fiche ?",
+      a: "Une donnée fausse est corrigée sur preuve, et l'opérateur dispose d'un droit de réponse publié à côté de la note. Mais une note sourcée et méthodique ne se retire pas sur demande : la retirer parce qu'elle déplaît reviendrait à la vendre en creux. La note reste ; la contradiction s'ajoute.",
     },
     {
       q: "La note est-elle un verdict définitif ?",
