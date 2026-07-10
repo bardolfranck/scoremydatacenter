@@ -233,7 +233,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 }
 .gradechip.sm { width: 30px; height: 30px; font-size: 1.05rem; border-radius: 6px; }
 .gradechip.lg { width: 72px; height: 72px; font-size: 2.6rem; border-radius: 12px; }
-.gradechip.grade-a { background: var(--grade-a); }
+.gradechip.grade-a { background: var(--grade-a); color: #fff; }
 .gradechip.grade-b { background: var(--grade-b); color: var(--ink); }
 .gradechip.grade-c { background: var(--grade-c); color: var(--ink); }
 .gradechip.grade-d { background: var(--grade-d); color: var(--ink); }
