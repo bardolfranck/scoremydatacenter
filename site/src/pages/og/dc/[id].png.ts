@@ -16,8 +16,8 @@ const fontDir = join(process.cwd(), "src/og/fonts");
 const FONT_FILES = ["chivo-900.ttf", "chivo-700.ttf", "chivo-mono-400.ttf", "chivo-mono-600.ttf"].map((f) => join(fontDir, f));
 
 const GRADE: Record<string, { bg: string; fg: string }> = {
-  a: { bg: "#0B7A4B", fg: "#ffffff" }, b: { bg: "#6FA032", fg: "#102A43" },
-  c: { bg: "#DFA918", fg: "#102A43" }, d: { bg: "#CF6A1C", fg: "#102A43" },
+  a: { bg: "#0B7A4B", fg: "#ffffff" }, b: { bg: "#6FA032", fg: "#ffffff" },
+  c: { bg: "#DFA918", fg: "#ffffff" }, d: { bg: "#CF6A1C", fg: "#ffffff" },
   e: { bg: "#BF3B21", fg: "#ffffff" }, na: { bg: "#20344c", fg: "#8fa6c2" },
 };
 const gr = (g: string) => GRADE[g === "insufficient_data" ? "na" : g.toLowerCase()] ?? GRADE.na;
