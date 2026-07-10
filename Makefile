@@ -77,6 +77,12 @@ headers-check:
 methodology-doc:
 	uv run python scripts/gen_methodology_doc.py
 
+# Rebuild the SERVED artifacts from the private newsroom (real DCs + watchlist),
+# NOT the public zz- fixtures. Use this — never `make score` — to refresh the site
+# data; `make score` reads the public repo and would wipe the corpus to 2 test DCs.
+prod-artifacts:
+	uv run python scripts/build_prod_artifacts.py
+
 # Regenerate the downloadable one-pager PDFs from the built pages.
 # Run after ANY change to site/src/content/questions.ts, then commit the PDFs.
 onepager:
