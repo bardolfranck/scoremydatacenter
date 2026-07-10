@@ -73,6 +73,10 @@ headers:
 headers-check:
 	uv run python scripts/check_headers.py
 
+# Regenerate the citable methodology doc from methodology.json (no divergence).
+methodology-doc:
+	uv run python scripts/gen_methodology_doc.py
+
 # Regenerate the downloadable one-pager PDFs from the built pages.
 # Run after ANY change to site/src/content/questions.ts, then commit the PDFs.
 onepager:

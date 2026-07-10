@@ -559,6 +559,8 @@ sup a { color: var(--accent); font-weight: 750; }
 .legal-draft { padding: 12px 16px; border-left: 3px solid var(--grade-c); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; font-size: 0.95rem; }
 .legal-back { margin-top: 34px; }
 /* Methodology page */
+.meth-nerd { margin-top: 8px; font-size: 0.9rem; color: var(--muted); }
+.meth-nerd code { font-size: 0.85em; }
 .meth-scale { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
 .meth-grade { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 62px; height: 62px; border-radius: var(--radius); color: #fff; font-weight: 900; font-size: 1.5rem; }
 .meth-grade small { font-family: var(--font-mono); font-size: 0.56rem; font-weight: 600; opacity: 0.9; }
@@ -580,6 +582,36 @@ sup a { color: var(--accent); font-weight: 750; }
 .meth-table strong { display: block; color: var(--ink); font-weight: 700; }
 .meth-desc { display: block; margin-top: 3px; color: var(--muted); font-size: 0.85rem; font-weight: 400; }
 .meth-table a { color: var(--accent); }
+.meth-actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 8px; }
+.meth-actions .button { min-height: 40px; font-size: 0.92rem; }
+.meth-example { margin: 12px 0; padding: 14px 18px; border-left: 3px solid var(--accent); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; }
+.meth-example-title { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.meth-example ul { margin: 0; padding-left: 18px; }
+.meth-example li { margin: 5px 0; font-variant-numeric: tabular-nums; }
+.meth-rule { padding: 10px 16px; border-left: 3px solid var(--grade-c); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; }
+.meth-refs { list-style: none; padding: 0; display: grid; gap: 8px; }
+.meth-refs li { padding-left: 18px; position: relative; }
+.meth-refs li::before { content: "↗"; position: absolute; left: 0; color: var(--accent); }
+.meth-refs a { color: var(--ink-soft); }
+.meth-refs a:hover { color: var(--accent); }
+.meth-details { margin: 26px 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+.meth-details > summary { padding: 14px 18px; font-weight: 800; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; }
+.meth-details > summary::before { content: "▸"; color: var(--accent); font-size: 0.9em; }
+.meth-details[open] > summary::before { content: "▾"; }
+.meth-details[open] > summary { border-bottom: 1px solid var(--line); }
+.meth-details > *:not(summary) { padding-left: 18px; padding-right: 18px; }
+.meth-details > .meth-block:last-of-type { padding-bottom: 18px; }
+.meth-block-weight { margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+
+@media print {
+  .site-header, .site-footer, .meth-actions, .legal-back, .main-nav { display: none !important; }
+  .meth-details, .meth-details > summary { border: none; }
+  .meth-details > summary::before { display: none; }
+  .meth-details[open] > summary { border-bottom: 1px solid var(--line); }
+  .meth-table { min-width: 0; font-size: 0.8rem; }
+  a { color: var(--ink) !important; text-decoration: none; }
+  .section { padding: 0; }
+}
 
 /* DC fiche — the proof page. Dark sidebar carries the screenshot-able score
    block (dual badge + confidence + attribution); the right column is the detail. */
