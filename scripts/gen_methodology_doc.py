@@ -126,12 +126,11 @@ et la distinction est **déclarée** :
 
 ## 7. Statut, limites & calibration
 
-Cette version est un **brouillon de travail ({M['version']})**, assumé.
+Cette version est **préliminaire et pourra évoluer**.
 Ce que la note **n'est pas** : un modèle prédictif validé statistiquement, ni un oracle.
 Ce qu'elle **est** : une grille experte, sourcée, versionnée et reproductible.
 
-- **Poids et seuils provisoires** — calibrés par **validation rétrospective** sur des cas au dénouement connu, pas affirmés a priori.
-- **Pas de fausse rigueur** — tant que le corpus est petit, aucune validation statistique n'est revendiquée. L'honnêteté prime sur l'appareil.
+- **Poids et seuils provisoires** — ils sont calibrés par **validation rétrospective** sur des cas au dénouement connu (projets acceptés / abandonnés), pas affirmés a priori.
 - **Traçabilité** — chaque note est datée et rattachée à une version de méthode ; un « A » signifie « le meilleur atteignable aujourd'hui ».
 
 ## 8. Références & standards
