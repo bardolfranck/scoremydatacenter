@@ -40,7 +40,7 @@ const t = {
   whyTitle: "Why this observatory",
   whyLede: "A 900 MW data center is announced near you. Where do you read, clearly, what it's worth? Its local impact?",
   whyBody:
-    "Existing maps list technical specifications; conflict trackers count disputes. No one lays out, project by project, the reality of each case: a grade, sources, a method anyone can verify and recompute. That is the gap ScoreMyDataCenter fills: <span class='hl-red'>the first independent acceptability grade, public and contestable</span> — factual, sourced and methodical ratings, published as a contribution to the public-interest debate. And a scale with teeth: <b>an A is proven in operation, never promised</b> — even excellent promises cap at B; only verified proof earns the A.",
+    "Existing maps list technical specifications; conflict trackers count disputes. No one lays out, project by project, the reality of each case: a grade, sources, a method anyone can verify and recompute. That is the gap ScoreMyDataCenter fills: <span class='hl-red'>the first independent acceptability grade, public and contestable</span> — factual, sourced and methodical ratings, published as a contribution to the public-interest debate. And a scale with teeth: <b>an <i class='gl gl-a'>A</i> is proven in operation, never promised</b> — even excellent promises cap at <i class='gl gl-b'>B</i>; only verified proof earns the <i class='gl gl-a'>A</i>.",
   aboutTitle: "Who we are",
   aboutTodo: "Photo and full biography coming soon.",
   founderLine: "Founded by <strong>Franck Bardol</strong> — at the intersection of AI infrastructure, ethics and public decision-making.",
@@ -102,7 +102,7 @@ const t = {
   faq: [
     {
       q: "How is a data center graded?",
-      a: "Each project receives two A–E grades — one for the site, one for the operator — from 24 indicators across 5 pillars (energy, water, land, local impact, transparency). A numeric score is computed, then translated into a letter; next to it, a confidence level says whether the grade rests on solid or fragile data.",
+      a: "Each project receives two <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> grades — one for the site, one for the operator — from 24 indicators across 5 pillars (energy, water, land, local impact, transparency). A numeric score is computed, then translated into a letter; next to it, a confidence level says whether the grade rests on solid or fragile data.",
     },
     {
       q: "What do the two grades, “site” and “operator”, mean?",
@@ -122,7 +122,7 @@ const t = {
     },
     {
       q: "Why does no data center have an A (yet)?",
-      a: "Because an A is proven, never promised: it is reserved for values verified in operation. A fully declarative file, however excellent, caps at B — “announced ≠ measured”. An operator earns its A by bringing third-party proof (its EED filing to the regulator, an ISO/IEC 30134 audit by an accredited body — never a marketing page) through our public correction channel: the data flips from “announced” to “measured”, the cap lifts, and the re-score is traced in the public audit log. An A cannot be bought or declared: it is demonstrated. And proof lifts the project & process grade — never the site grade: the territory is endured, it cannot be proven away.",
+      a: "Because an <i class='gl gl-a'>A</i> is proven, never promised: it is reserved for values verified in operation. A fully declarative file, however excellent, caps at <i class='gl gl-b'>B</i> — “announced ≠ measured”. An operator earns its <i class='gl gl-a'>A</i> by bringing third-party proof (its EED filing to the regulator, an ISO/IEC 30134 audit by an accredited body — never a marketing page) through our public correction channel: the data flips from “announced” to “measured”, the cap lifts, and the re-score is traced in the public audit log. An <i class='gl gl-a'>A</i> cannot be bought or declared: it is demonstrated. And proof lifts the project & process grade — never the site grade: the territory is endured, it cannot be proven away.",
     },
     {
       q: "Is a D or E grade hidden during the right of reply?",
@@ -130,7 +130,7 @@ const t = {
     },
     {
       q: "Why this delay only for D and E?",
-      a: "Because those are the only truly exposed grades. A–C grades publish directly; an unfavorable grade (D or E, on the site or the project) opens a prior right of reply of at least 15 days — a guarantee of opposability and good faith, not a permission to beg for. An improvement never opens a new window.",
+      a: "Because those are the only truly exposed grades. <i class='gl gl-a'>A</i>–<i class='gl gl-c'>C</i> grades publish directly; an unfavorable grade (<i class='gl gl-d'>D</i> or <i class='gl gl-e'>E</i>, on the site or the project) opens a prior right of reply of at least 15 days — a guarantee of opposability and good faith, not a permission to beg for. An improvement never opens a new window.",
     },
     {
       q: "What if the operator does not reply?",
@@ -138,7 +138,7 @@ const t = {
     },
     {
       q: "What if a data point is wrong, or the operator disagrees?",
-      a: "Two distinct tools on every fiche: a factual correction (any data point is corrected on evidence) and a right of reply (the operator's voice, alongside the grade). A–C grades publish directly; an unfavorable grade (D or E, on the site or the project) opens a right of reply of at least 15 days before publication — the page then ships with the response, or a “solicited, no reply” note. Every revision is dated and justified.",
+      a: "Two distinct tools on every fiche: a factual correction (any data point is corrected on evidence) and a right of reply (the operator's voice, alongside the grade). <i class='gl gl-a'>A</i>–<i class='gl gl-c'>C</i> grades publish directly; an unfavorable grade (<i class='gl gl-d'>D</i> or <i class='gl gl-e'>E</i>, on the site or the project) opens a right of reply of at least 15 days before publication — the page then ships with the response, or a “solicited, no reply” note. Every revision is dated and justified.",
     },
     {
       q: "Can an operator request removal of its fiche?",
@@ -146,7 +146,11 @@ const t = {
     },
     {
       q: "Is the grade a final verdict?",
-      a: "No: it is an acceptability-risk grade, coupled with a confidence level, and it can evolve with the project. The numeric score is published to make the computation transparent, but the A–E letter is what counts — the grade applies an expert, sourced, versioned grid; it does not claim the precision of an oracle.",
+      a: "No: it is an acceptability-risk grade, coupled with a confidence level, and it can evolve with the project. The numeric score is published to make the computation transparent, but the <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> letter is what counts — the grade applies an expert, sourced, versioned grid; it does not claim the precision of an oracle.",
+    },
+    {
+      q: "Does the grade evolve with technical progress? Will a well-graded data center still be well-graded in ten years?",
+      a: "Yes, by design. A grade changes for two reasons: the project evolves (new data), or the yardstick evolves with the state of the art. Our thresholds anchor on standards that tighten over time (ISO, European regulation): an <i class='gl gl-a'>A</i> always means “the best achievable today”, not “the best of 2026”. Without that, everyone would end up <i class='gl gl-a'>A</i> as technology progresses — which is exactly why the EU energy label was reset in 2021, when nearly every appliance had become A+++. Each grade is therefore dated and tied to a methodology version: a data center excellent in 2026 may be “average” by 2036 standards — and that is precisely the score's job: reward progress, and flag what ages.",
     },
     {
       q: "Who are you, and how do you stay independent?",

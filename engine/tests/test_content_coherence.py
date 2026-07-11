@@ -91,8 +91,10 @@ def test_firewall_line_present_where_required():
 
 
 def test_contradictoire_is_grade_triggered_not_all_nominative():
-    fr = PAGES["fr"]
-    assert re.search(r"notes?\s+A[–\-]C|D\s+ou\s+E", fr), (
+    # Grade letters in copy wear the note's typography (inline .gl chips) — strip markup
+    # before matching so the invariant checks the words, not the styling.
+    fr = re.sub(r"<[^>]+>", "", PAGES["fr"])
+    assert re.search(r"notes?\s+A(\s+à\s+|[–\-])C|D\s+ou\s+E", fr), (
         "landing no longer states the grade-triggered contradictoire (A–C direct, D/E right of reply)"
     )
     assert "publication nominative" not in fr.lower(), (
