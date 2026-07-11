@@ -56,6 +56,26 @@ def _grade(score: float, methodology: dict) -> dict:
     return {"grade": grade, "score": rounded}
 
 
+def _reserve_top_grade(graded: dict, verified: bool, methodology: dict) -> dict:
+    """A is reserved — it is PROVEN in operation, never granted by favorable data alone (A-25,
+    « le A se prouve, jamais sur promesses »). Without third-party operational verification, an
+    A-scoring grade is published one rung down at B, carrying `reserved_from: "A"` so the badge
+    reads "B · A réservé — se prouve en exploitation" (a stated published rule, not a hidden
+    number/letter contradiction). The real score is kept intact; the day an operator proves its
+    operations (an indicator gains `verification_source`), the A unlocks by itself.
+    """
+    if not methodology["parameters"].get("reserve_A_for_verified"):
+        return graded
+    if graded.get("grade") == "A" and not verified:
+        return {**graded, "grade": "B", "reserved_from": "A"}
+    return graded
+
+
+def _operationally_verified(entries: dict) -> bool:
+    """True iff any indicator carries third-party operational proof (A-25 unlock signal)."""
+    return any(e.get("verification_source") for e in entries.values())
+
+
 def _aggregate(scored: dict[str, float | None], definitions: list[dict],
                pillar_weights: dict[str, float]) -> float | None:
     """Two-level weighted mean over the entries that carry a substantive value.
@@ -191,8 +211,9 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
         return None
     scored = {d["id"]: _substantive(d) for d in definitions}
 
+    verified = _operationally_verified(entries)
     site_score = _aggregate(scored, base_defs, pillar_weights)
-    site = _grade(site_score, methodology)
+    site = _reserve_top_grade(_grade(site_score, methodology), verified, methodology)
     # Per-badge documentation (block-scoped confidence): the site badge is documented
     # by its BASE indicators only, the project badge by its project/process indicators.
     site["documentation"] = _documentation(_confidence(entries, base_defs, pillar_weights, methodology))
@@ -217,7 +238,8 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
         project_process = {"grade": INSUFFICIENT_DATA, "coverage": round(coverage, 3)}
     else:
         pp_score = _aggregate(scored, pp_defs, pillar_weights)
-        project_process = _grade(pp_score, methodology) | {"coverage": round(coverage, 3)}
+        project_process = _reserve_top_grade(_grade(pp_score, methodology), verified, methodology) \
+            | {"coverage": round(coverage, 3)}
         project_process["documentation"] = _documentation(_confidence(entries, pp_defs, pillar_weights, methodology))
 
     # Display sub-score per pillar (public scorecard): same per-block semantics as the

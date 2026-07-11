@@ -1060,6 +1060,7 @@
       "high": 0.75,
       "medium": 0.45
     },
-    "provisional": true
+    "provisional": true,
+    "reserve_A_for_verified": true
   }
 }

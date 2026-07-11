@@ -2,6 +2,16 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0-draft (i) — 2026-07-11 — the A is reserved: it is proven, never granted by data (A-25)
+
+Surfaced by the EU expansion: very favorable foreign sites (clean-ish grid, no water stress, artificialized land, no Seveso, far from Natura) crossed the site A threshold (≥80) — the FR corpus had only ever reached B, so the "no A" property held by accident, not by construction. An A on the badge that a journalist screenshots reads as "proven excellent", which A-25 forbids: **A = exploitation vérifiée seulement**.
+
+- **New parameter `reserve_A_for_verified: true`** + engine rule (`_reserve_top_grade`): a grade (site OR project/process) that scores A is published one rung down at **B** with `reserved_from: "A"`, UNLESS the DC carries third-party operational verification (any indicator with `verification_source` — the same A-25 unlock signal that flips `announced → measured`). The real score is kept intact; the badge is meant to read "B · A réservé — se prouve en exploitation" (a stated published rule, not a hidden number/letter contradiction). The day an operator proves its operations, the A unlocks by itself.
+- **Effect**: no DC in the current corpus (all spatial base facts, zero operator verification) can show A. The one residual site A (nl-northc-rotterdam-zestienhoven, 89.2) becomes B·réservé.
+- Sanity: FR corpus unchanged (never reached A), calibration anchors (E/D) untouched, golden zz fixtures unchanged (alpha B, beta E), all gates green.
+- ⚠️ **Front-end follow-up (Franck to sign off the wording)**: the badge/fiche must render the `reserved_from` reason ("A réservé, se prouve en exploitation") next to the B so the kept score and the letter never read as a contradiction.
+- Signatory: prepared in working session (Claude, for review by Franck Bardol), applying the already-validated A-25 doctrine.
+
 ## 0.1.0-draft (h) — 2026-07-09 — calibration iter-2: base thresholds learn to say E
 
 Applied against the pinned 32-DC French corpus (`score_corpus.py`); every move justified, all still `calibration_status: provisional` pending the freeze. Corpus site distribution moves from **6 B / 26 C** (compressed, unable to express A/D/E) to **7 B / 17 C / 7 D / 1 E**; the E-anchor (farmland hyperscaler) reaches its retrospective target and its CI anchor is promoted from `xfail` to a hard assertion.
