@@ -62,7 +62,7 @@ const references = [
   <section class="section" aria-labelledby="meth-title">
     <div class="section-inner prose legal">
       <h1 id="meth-title">Méthodologie</h1>
-      <p class="legal-draft">Version <strong>{m.version}</strong>. Grille en cours de calibration : poids et seuils sont provisoires jusqu'à la validation rétrospective sur des cas au dénouement connu. La méthode est <strong>publique, versionnée et datée</strong> (antériorité vérifiable) ; le code et la grille sont sur <a href={repo} target="_blank" rel="noopener">GitHub</a>.</p>
+      <p class="legal-draft">Version <strong>{m.version}</strong>. La méthode est <strong>publique, versionnée et datée</strong> (antériorité vérifiable) ; le code et la grille sont sur <a href={repo} target="_blank" rel="noopener">GitHub</a>.</p>
 
       <div class="meth-actions">
         <a class="button button-primary" href={docUrl} target="_blank" rel="noopener">📄 Télécharger la méthodologie</a>
@@ -79,6 +79,13 @@ const references = [
         {grades.map((t: any) => (
           <span class={`meth-grade grade-${t.grade.toLowerCase()}`}>{t.grade}<small>≥ {t.min}</small></span>
         ))}
+      </div>
+
+      <h2>Le A se prouve, il ne se promet pas</h2>
+      <p>L'échelle a un sens précis, verrouillé par construction : <strong>E</strong> — opaque, ou vérifié défavorable · <strong>D / C</strong> — promesses partielles ou bonnes · <strong>B</strong> — promesses complètes, chiffrées, processus exemplaire · <strong>A</strong> — <strong>réservé à l'exploitation vérifiée</strong>. Un dossier entièrement déclaratif, aussi excellent soit-il, <strong>plafonne mathématiquement sous le A</strong> : les valeurs annoncées sont notées avec prudence (« annoncé ≠ mesuré »), et seule la preuve lève ce plafond. Personne ne « reçoit » un A — on le démontre.</p>
+      <div class="meth-example">
+        <p class="meth-example-title">Opérateurs — comment obtenir votre A</p>
+        <p>Apportez une preuve <strong>tierce</strong> de vos valeurs en exploitation : copie de votre <strong>déclaration EED</strong> transmise au régulateur, certificat d'<strong>audit ISO/IEC 30134</strong> par un organisme accrédité, ou attestation d'un bureau de contrôle — jamais une page marketing. Déposez-la via le canal public de correction (source obligatoire, déclaration d'intérêt). La donnée passe alors d'« annoncée » à « mesurée », le plafond déclaratif saute, et le re-score est <strong>tracé au journal d'audit public</strong>. Aucun courrier à attendre de notre part, aucun paiement — la preuve fait tout.</p>
       </div>
 
       <h2>Les 5 piliers</h2>
