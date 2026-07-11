@@ -59,10 +59,16 @@ def clc_to_category(code: str | None) -> str | None:
     return None
 
 
-# L3 · Seveso proximity — sites = [{upper_tier: bool, dist_km: float}] within 5 km → category.
-def l3_value(sites: list[dict]) -> str:
+# L3 · Seveso proximity — sites = [{upper_tier: bool|None, dist_km: float}] within 5 km.
+# upper_tier=None means the source publishes the site but not its tier (INSPIRE-thin exports):
+# beyond 2 km the tier cannot change the band, so unknown is harmless; an unknown-tier site
+# INSIDE 2 km makes the band undecidable → None (the caller degrades to not_collected — we
+# never guess a hazard class).
+def l3_value(sites: list[dict]) -> str | None:
     if any(s["upper_tier"] and s["dist_km"] <= 2.0 for s in sites):
         return "seveso_high_within_2km"
+    if any(s["upper_tier"] is None and s["dist_km"] <= 2.0 for s in sites):
+        return None
     if sites:
         return "seveso_low_within_5km"
     return "none_within_5km"
