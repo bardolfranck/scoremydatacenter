@@ -109,6 +109,7 @@ const { variant, labels } = Astro.props;
             <span>${labels.operator} ${chip(p.grade_project_process)}</span>
           </div>
           ${pillarStrip(p.pillars)}
+          ${p.publication_status === "right_of_reply" ? `<p class="map-popup-reply">Droit de réponse en cours</p>` : ""}
           ${p.quote_fr ? `<p class="map-popup-quote">« ${p.quote_fr} »</p>` : ""}
           <span class="confidence ${p.confidence}"><span class="dot"></span>${labels.confidence[p.confidence]}</span>
           ${fixtureTag}

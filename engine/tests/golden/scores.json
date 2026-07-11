@@ -119,7 +119,9 @@
     "citable_quote": {
       "fr": "Noté B sur le site, C en projet & processus.",
       "en": "Rated B on site, C on project & process."
-    }
+    },
+    "publication_status": "published",
+    "reply_deadline": "2026-06-25"
   },
   {
     "id": "zz-test-beta",
@@ -221,6 +223,8 @@
     "citable_quote": {
       "fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
       "en": "Rated E on site; project data insufficient to grade project & process."
-    }
+    },
+    "publication_status": "right_of_reply",
+    "reply_deadline": "2026-07-24"
   }
 ]
