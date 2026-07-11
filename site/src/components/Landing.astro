@@ -103,7 +103,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       <div class="why-block">
         <h3>{t.whyTitle}</h3>
         <p class="why-lede">{t.whyLede}</p>
-        <p class="why-body">{t.whyBody}</p>
+        <p class="why-body" set:html={t.whyBody}></p>
       </div>
     </div>
   </section>
@@ -129,7 +129,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <div class="scorecard-head">
               <div>
                 <p class="scorecard-status">{t.status[dc.project_status]} · {dc.power_mw} MW</p>
-                <h3>{dc.name}</h3>
+                <h3><a class="scorecard-name" href={`/fr/dc/${dc.id}`}>{dc.name}</a></h3>
                 <p class="scorecard-place">{dc.municipality} ({dc.country}) — {dc.operator}</p>
               </div>
               <span class={`confidence ${dc.confidence.level}`}>

@@ -237,6 +237,10 @@ const pillars = methodology.pillars as any[];
         <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label="Télécharger l'image du score">
           <span set:html={icon("download", 16)}></span>Télécharger l'image du score
         </a>
+        <a class="fiche-signal" href={`mailto:contact@scoremydatacenter.org?subject=${enc(`Correction — ${dc.name}`)}&body=${enc("Indicateur concerné :\nValeur à corriger :\nSource / preuve (obligatoire) :\n")}`}>
+          <span set:html={icon("info", 16)}></span>Signaler une erreur
+        </a>
+        <p class="fiche-signal-note">Corrige un fait, avec sa source — <strong>une preuve est requise</strong>.</p>
       </div>
 
       <p class="fiche-side-foot">Méthodologie {methodology.version} · scoremydatacenter.org</p>
@@ -357,16 +361,13 @@ const pillars = methodology.pillars as any[];
 
       <div class="fiche-cards">
         <div class="fiche-card">
-          <h3>Signaler une erreur</h3>
-          <p>Une donnée vous semble inexacte ? <a href={`mailto:contact@scoremydatacenter.org?subject=${enc(`Correction — ${dc.name}`)}`}>Signalez-la avec sa source</a> — vérification, puis correction datée.</p>
-          <p class="fiche-card-note">Corrige un <strong>fait</strong>.</p>
-        </div>
-        <div class="fiche-card">
           <h3>Réponse de l'opérateur</h3>
           {op
             ? <p>{op.text}{op.date ? ` (${op.date})` : ""}</p>
-            : <p class="empty">Sollicité{notifiedAt ? ` le ${notifiedAt}` : ""} — pas de réponse à ce jour.</p>}
-          <p class="fiche-card-note">Droit de réponse : donne la <strong>parole</strong> à l'opérateur.</p>
+            : notifiedAt
+              ? <p class="empty">Sollicité le {notifiedAt} — pas de réponse à ce jour.</p>
+              : <p class="empty">L'opérateur dispose d'un droit de réponse ; il sera publié ici.</p>}
+          <p class="fiche-card-note">Droit de réponse : donne la <strong>parole</strong> à l'opérateur, à côté de la note.</p>
         </div>
         <div class="fiche-card">
           <h3>État de la donnée disponible</h3>
