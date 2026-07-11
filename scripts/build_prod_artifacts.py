@@ -30,6 +30,7 @@ def main() -> int:
     if not (CAL / "datacenters").is_dir():
         raise SystemExit(f"newsroom calibration not found at {CAL} — clone smdc-newsroom or set NEWSROOM_CAL")
     dcs = load_datacenters(CAL)          # every datacenters* panel (FR, BE, …)
+    dcs.update(load_datacenters())       # + the public zz- fixtures (tagged on site; carry the demo states)
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
     results = build_artifacts(dcs, load_methodology(), out_dir=ARTIFACTS_DIR, watchlist=watchlist)
     de = sorted(i for i, r in results.items()

@@ -61,7 +61,12 @@ score: validate
 rescore:
 	uv run python -m engine.score --record --event $(EVENT) --rationale "$(RATIONALE)"
 
-build: score
+# With the private newsroom checked out next door (Franck's machine, local agents),
+# `make build` rebuilds the served data from the REAL corpus — running the public-only
+# `score` here wiped the map down to the 2 zz fixtures three times. Without the
+# newsroom (CI, external cloners), it falls back to `score` as before.
+build:
+	@if [ -d ../smdc-newsroom/calibration ]; then $(MAKE) prod-artifacts; else $(MAKE) score; fi
 	npm run build --prefix site
 
 test: headers-check
