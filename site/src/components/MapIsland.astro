@@ -105,8 +105,8 @@ const { variant, labels } = Astro.props;
           <strong>${p.name}</strong>
           <span class="map-popup-sub">${p.power_mw} MW</span>
           <div class="map-popup-grades">
-            <span>${labels.site} ${chip(p.grade_site)}</span>
-            <span>${labels.operator} ${chip(p.grade_project_process)}</span>
+            <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
+            <span>${labels.operator} ${chip(p.grade_project_process)}${p.reserved_pp ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
           </div>
           ${pillarStrip(p.pillars)}
           ${p.publication_status === "right_of_reply" ? `<p class="map-popup-reply">Droit de réponse en cours</p>` : ""}

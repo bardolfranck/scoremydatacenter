@@ -260,7 +260,9 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
             pillar_details[pillar] = {"grade": INSUFFICIENT_DATA, "coverage": round(pillar_coverage, 3)}
             continue
         combined = _aggregate(with_pp_zeroed, defs, {pillar: 1.0})
-        pillar_details[pillar] = _grade(combined, methodology) | {"coverage": round(pillar_coverage, 3)}
+        # A-25 reaches the sub-scores too: no A anywhere on a DC without operational proof.
+        pillar_details[pillar] = _reserve_top_grade(_grade(combined, methodology), verified, methodology) \
+            | {"coverage": round(pillar_coverage, 3)}
         # Per-pillar documentation dots (●●●○): a graded pillar always carries its own
         # documentation availability, scoped to that pillar's indicators.
         pillar_details[pillar]["documentation"] = _documentation(
