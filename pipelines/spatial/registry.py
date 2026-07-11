@@ -13,6 +13,7 @@ from .be.collect import BE_SPEC
 from .nl import NL_SPEC
 from .lu import LU_SPEC
 from .de import DE_SPEC
+from .pl import PL_SPEC
 
 SPECS = {
     "FR": FR_SPEC,
@@ -20,6 +21,7 @@ SPECS = {
     "NL": NL_SPEC,
     "LU": LU_SPEC,
     "DE": DE_SPEC,
+    "PL": PL_SPEC,
 }
 
 
