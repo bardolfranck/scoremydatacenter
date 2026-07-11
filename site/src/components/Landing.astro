@@ -268,7 +268,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       <div class="faq-list">
         {t.faq.map((item: any) => (
           <details>
-            <summary>{item.q}</summary>
+            <summary set:html={item.q}></summary>
             <p set:html={item.a}></p>
           </details>
         ))}
@@ -281,7 +281,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         "@type": "FAQPage",
         mainEntity: t.faq.map((item: any) => ({
           "@type": "Question",
-          name: item.q,
+          name: item.q.replace(/<[^>]+>/g, ""),
           acceptedAnswer: { "@type": "Answer", text: item.a.replace(/<[^>]+>/g, "") },
         })),
       })}
