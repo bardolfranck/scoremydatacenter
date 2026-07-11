@@ -40,7 +40,7 @@ const t = {
   whyTitle: "Why this observatory",
   whyLede: "A 900 MW data center is announced near you. Where do you read, clearly, what it's worth? Its local impact?",
   whyBody:
-    "Existing maps list technical specifications; conflict trackers count disputes. No one lays out, project by project, the reality of each case: a grade, sources, a method anyone can verify and recompute. That is the gap ScoreMyDataCenter fills: the first independent acceptability grade, public and contestable.",
+    "Existing maps list technical specifications; conflict trackers count disputes. No one lays out, project by project, the reality of each case: a grade, sources, a method anyone can verify and recompute. That is the gap ScoreMyDataCenter fills: <span class='hl-red'>the first independent acceptability grade, public and contestable</span> — factual, sourced and methodical ratings, published as a contribution to the public-interest debate.",
   aboutTitle: "Who we are",
   aboutTodo: "Photo and full biography coming soon.",
   founderLine: "Founded by <strong>Franck Bardol</strong> — at the intersection of AI infrastructure, ethics and public decision-making.",
@@ -48,7 +48,7 @@ const t = {
   principles: [
     { title: "Public method", body: "Open scoring grid, versioned and citable. Anyone can re-run every grade." },
     { title: "Traceable data", body: "Every value links to its source. Announced claims are never merged with measured facts." },
-    { title: "Right of reply", body: "Operators are notified 15 days before publication; their response is published alongside." },
+    { title: "Correction & reply", body: "Two rights on every fiche: correct a wrong fact on evidence, and the operator's right of reply, published alongside the grade." },
     { title: "Independence", body: "Scored entities never pay for their grade. No influence, for or against: the grade follows the method." },
   ],
   scoresTitle: "Latest scored projects",
@@ -85,6 +85,10 @@ const t = {
       body: "<span class='lic' tabindex='0'>AGPL<span class='info-tip'>The engine code is free: anyone who improves it must share those improvements back.</span></span> engine, <span class='lic' tabindex='0'>ODbL<span class='info-tip'>Open database: freely reusable, provided you credit the source and share alike.</span></span> published data, <span class='lic' tabindex='0'>CC BY-SA<span class='info-tip'>Free content: reusable if you credit the author and share under the same terms.</span></span> methodology. The code is <a href='https://github.com/bardolfranck/scoremydatacenter'>public on GitHub</a>: anyone can recompute every grade, with full rigor.",
     },
     {
+      title: "We help the project, never the grade",
+      body: "Scored entities never pay for their public grade. An operator may have its project analysed; but the grade moves only when the real project changes — never because it paid. \"Pay to raise the grade\" is structurally impossible.",
+    },
+    {
       title: "Public audit log",
       body: "Every scoring, revision and correction is dated, versioned and justified. Grades cannot move silently.",
     },
@@ -118,7 +122,11 @@ const t = {
     },
     {
       q: "What if a data point is wrong, or the operator disagrees?",
-      a: "Any data point can be corrected on evidence. Before each named publication, the operator is notified at least 15 days in advance, and its response is published alongside the grade. Every revision is dated and justified.",
+      a: "Two distinct tools on every fiche: a factual correction (any data point is corrected on evidence) and a right of reply (the operator's voice, alongside the grade). A–C grades publish directly; an unfavorable grade (D or E, on the site or the project) opens a right of reply of at least 15 days before publication — the page then ships with the response, or a “solicited, no reply” note. Every revision is dated and justified.",
+    },
+    {
+      q: "Can an operator request removal of its fiche?",
+      a: "A wrong data point is corrected on evidence, and the operator has a right of reply published alongside the grade. But a sourced, methodical grade is not removed on request: pulling it because it displeases would be selling it in reverse. The grade stays; the counter-argument is added.",
     },
     {
       q: "Is the grade a final verdict?",
