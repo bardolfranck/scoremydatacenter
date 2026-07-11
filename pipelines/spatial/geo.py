@@ -60,6 +60,49 @@ def wfs_bbox_geojson(wfs_url: str, typename: str, lat: float, lon: float,
     return data.get("features", [])
 
 
+def ogcapi_items(base_url: str, collection: str, lat: float, lon: float,
+                 radius_m: float, *, limit: int = 20) -> list[dict]:
+    """GeoJSON features of an OGC API Features collection within a radius_m box (pygeoapi…).
+
+    Collection ids may contain a slash (geoportail.lu) — percent-encoded here.
+    """
+    import urllib.parse
+    dlat = radius_m / 111320.0
+    dlon = radius_m / (111320.0 * math.cos(math.radians(lat)))
+    coll = urllib.parse.quote(collection, safe="")
+    data = get_json(f"{base_url}/collections/{coll}/items", {
+        "bbox": f"{lon-dlon},{lat-dlat},{lon+dlon},{lat+dlat}",
+        "f": "json", "limit": str(limit),
+    })
+    return data.get("features", [])
+
+
+def laea3035(lat: float, lon: float) -> tuple[float, float]:
+    """WGS84/ETRS89 → EPSG:3035 (ETRS89-LAEA), the pan-EU INSPIRE grid. Metres out.
+
+    Lets any collector measure distances against an INSPIRE download (GML in 3035) by
+    projecting the query point forward — no inverse transform, no dependency.
+    """
+    a = 6378137.0
+    e2 = 0.00669438002290
+    e = math.sqrt(e2)
+    lat0, lon0 = math.radians(52.0), math.radians(10.0)
+    x0, y0 = 4321000.0, 3210000.0
+
+    def q(phi):
+        s = math.sin(phi)
+        return (1 - e2) * (s / (1 - e2 * s * s) - (1 / (2 * e)) * math.log((1 - e * s) / (1 + e * s)))
+
+    qp, q0, q1 = q(math.pi / 2), q(lat0), q(math.radians(lat))
+    b0, b = math.asin(q0 / qp), math.asin(q1 / qp)
+    rq = a * math.sqrt(qp / 2)
+    lam = math.radians(lon) - lon0
+    big_b = rq * math.sqrt(2 / (1 + math.sin(b0) * math.sin(b) + math.cos(b0) * math.cos(b) * math.cos(lam)))
+    x = x0 + big_b * math.cos(b) * math.sin(lam)
+    y = y0 + big_b * (math.cos(b0) * math.sin(b) - math.sin(b0) * math.cos(b) * math.cos(lam))
+    return x, y
+
+
 def min_vertex_km(lat: float, lon: float, coords,
                   lat_range: tuple = (35.0, 72.0), lon_range: tuple = (-25.0, 45.0)) -> float | None:
     """Min great-circle distance to any geometry vertex, tolerant of either axis order.
