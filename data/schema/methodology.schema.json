@@ -5,47 +5,107 @@
   "description": "The versioned scoring grid. Every threshold must carry its basis (external reference or justified editorial choice) — threshold traceability is a schema constraint, not a good practice. Cross-field invariants (pillar weights sum to 1, per-pillar indicator weights sum to 1) are engine gates.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "status", "published_at", "pillars", "indicators", "confidence", "grade_thresholds", "parameters"],
+  "required": [
+    "version",
+    "status",
+    "published_at",
+    "pillars",
+    "indicators",
+    "confidence",
+    "grade_thresholds",
+    "parameters"
+  ],
   "properties": {
-    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-draft)?$" },
-    "status": { "enum": ["draft", "published"] },
-    "published_at": { "type": ["string", "null"], "format": "date" },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(-draft)?$"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "published"
+      ]
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
     "pillars": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "label", "weight"],
+        "required": [
+          "id",
+          "label",
+          "weight"
+        ],
         "properties": {
-          "id": { "type": "string", "pattern": "^[a-z][a-z_]*$" },
-          "label": { "$ref": "#/$defs/bilingual_label" },
-          "weight": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z_]*$"
+          },
+          "label": {
+            "$ref": "#/$defs/bilingual_label"
+          },
+          "weight": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1
+          }
         }
       }
     },
     "indicators": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/indicator_definition" }
+      "items": {
+        "$ref": "#/$defs/indicator_definition"
+      }
     },
     "confidence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["tier_weights", "causes"],
+      "required": [
+        "tier_weights",
+        "causes"
+      ],
       "properties": {
         "tier_weights": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["1", "2", "3"],
+          "required": [
+            "1",
+            "2",
+            "3"
+          ],
           "properties": {
-            "1": { "type": "number", "minimum": 0, "maximum": 1 },
-            "2": { "type": "number", "minimum": 0, "maximum": 1 },
-            "3": { "type": "number", "minimum": 0, "maximum": 1 }
+            "1": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "2": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "3": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
         "causes": {
-          "const": ["unverifiable_declarative", "missing_data"],
+          "const": [
+            "unverifiable_declarative",
+            "missing_data"
+          ],
           "description": "Always reported separately — a declarative claim is not the same failure as an absent datum."
         }
       }
@@ -57,17 +117,38 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["min", "grade"],
+        "required": [
+          "min",
+          "grade"
+        ],
         "properties": {
-          "min": { "type": "number", "minimum": 0, "maximum": 100 },
-          "grade": { "enum": ["A", "B", "C", "D", "E"] }
+          "min": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "grade": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "E"
+            ]
+          }
         }
       }
     },
     "parameters": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["declarative_score_cap", "min_coverage", "declarative_confidence_penalty", "confidence_thresholds", "provisional"],
+      "required": [
+        "declarative_score_cap",
+        "min_coverage",
+        "declarative_confidence_penalty",
+        "confidence_thresholds",
+        "provisional"
+      ],
       "properties": {
         "declarative_score_cap": {
           "type": "number",
@@ -90,13 +171,30 @@
         "confidence_thresholds": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["high", "medium"],
+          "required": [
+            "high",
+            "medium"
+          ],
           "properties": {
-            "high": { "type": "number", "minimum": 0, "maximum": 1 },
-            "medium": { "type": "number", "minimum": 0, "maximum": 1 }
+            "high": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "medium": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
           }
         },
-        "provisional": { "type": "boolean" }
+        "provisional": {
+          "type": "boolean"
+        },
+        "reserve_A_for_verified": {
+          "type": "boolean",
+          "description": "A-25: reserve the A grade for third-party operationally-verified DCs; an A-scoring grade without verification publishes at B with reserved_from:'A'."
+        }
       }
     }
   },
@@ -104,72 +202,179 @@
     "bilingual_label": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["fr", "en"],
+      "required": [
+        "fr",
+        "en"
+      ],
       "properties": {
-        "fr": { "type": "string", "minLength": 1 },
-        "en": { "type": "string", "minLength": 1 }
+        "fr": {
+          "type": "string",
+          "minLength": 1
+        },
+        "en": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     },
     "indicator_definition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "label", "pillar", "weight_in_pillar", "block", "tier", "nature", "unit", "direction", "mvp", "calibration_status", "sources", "normalization", "threshold_basis"],
+      "required": [
+        "id",
+        "label",
+        "pillar",
+        "weight_in_pillar",
+        "block",
+        "tier",
+        "nature",
+        "unit",
+        "direction",
+        "mvp",
+        "calibration_status",
+        "sources",
+        "normalization",
+        "threshold_basis"
+      ],
       "allOf": [
         {
-          "if": { "properties": { "direction": { "const": "non_monotonic" } } },
+          "if": {
+            "properties": {
+              "direction": {
+                "const": "non_monotonic"
+              }
+            }
+          },
           "then": {
-            "required": ["calibration_note"],
-            "properties": { "calibration_status": { "const": "provisional" } },
+            "required": [
+              "calibration_note"
+            ],
+            "properties": {
+              "calibration_status": {
+                "const": "provisional"
+              }
+            },
             "$comment": "An ambiguous indicator is not a question — it is non_monotonic + a note, and it cannot claim to be calibrated."
           }
         },
         {
-          "if": { "required": ["constraints"] },
-          "then": { "required": ["calibration_note"] }
+          "if": {
+            "required": [
+              "constraints"
+            ]
+          },
+          "then": {
+            "required": [
+              "calibration_note"
+            ]
+          }
         },
         {
-          "if": { "properties": { "block": { "const": "base" } } },
+          "if": {
+            "properties": {
+              "block": {
+                "const": "base"
+              }
+            }
+          },
           "then": {
-            "properties": { "nature": { "const": "public_fact" } },
+            "properties": {
+              "nature": {
+                "const": "public_fact"
+              }
+            },
             "$comment": "Invariant (methodology-lead review 2026-07-05): a base indicator is endured context and can NEVER rest on operator declarations — otherwise the renormalize-on-missing rule would become a loophole in the transparency floor."
           }
         },
         {
           "if": {
-            "properties": { "constraints": { "contains": { "const": "vulnerability_cannot_improve_score" } } },
-            "required": ["constraints"]
+            "properties": {
+              "constraints": {
+                "contains": {
+                  "const": "vulnerability_cannot_improve_score"
+                }
+              }
+            },
+            "required": [
+              "constraints"
+            ]
           },
           "then": {
-            "required": ["vulnerability_order"],
+            "required": [
+              "vulnerability_order"
+            ],
             "$comment": "The ethical lock is executable, not declared: it needs the vulnerability ordering to enforce signed monotonicity."
           }
         }
       ],
       "properties": {
-        "id": { "type": "string", "pattern": "^[EWFLT][0-9]{1,2}$" },
-        "label": { "$ref": "#/$defs/bilingual_label" },
-        "description": { "$ref": "#/$defs/bilingual_label" },
-        "pillar": { "type": "string", "pattern": "^[a-z][a-z_]*$" },
-        "weight_in_pillar": { "type": "number", "minimum": 0, "maximum": 1 },
+        "id": {
+          "type": "string",
+          "pattern": "^[EWFLT][0-9]{1,2}$"
+        },
+        "label": {
+          "$ref": "#/$defs/bilingual_label"
+        },
+        "description": {
+          "$ref": "#/$defs/bilingual_label"
+        },
+        "pillar": {
+          "type": "string",
+          "pattern": "^[a-z][a-z_]*$"
+        },
+        "weight_in_pillar": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
         "block": {
-          "enum": ["base", "project", "process"],
+          "enum": [
+            "base",
+            "project",
+            "process"
+          ],
           "description": "base = endured by the project (site score); project/process = operator choices (project/process score, the levers)."
         },
         "tier": {
-          "enum": [1, 2, 3],
+          "enum": [
+            1,
+            2,
+            3
+          ],
           "description": "Data availability tier: 1 = public APIs/layers, 2 = extractable documents (press, permitting, deliberations), 3 = operator-only."
         },
         "nature": {
-          "enum": ["public_fact", "declarative", "factualized_judgment"],
+          "enum": [
+            "public_fact",
+            "declarative",
+            "factualized_judgment"
+          ],
           "description": "Decides the treatment: fact -> scored directly; declarative -> tagged 'announced', prudent score, ex-post re-score; judgment -> never a verdict, only closed procedural proxies."
         },
-        "unit": { "type": ["string", "null"] },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "direction": {
-          "enum": ["lower_is_better", "higher_is_better", "encoded_in_scoring", "non_monotonic"],
+          "enum": [
+            "lower_is_better",
+            "higher_is_better",
+            "encoded_in_scoring",
+            "non_monotonic"
+          ],
           "description": "Mandatory declared scoring sense — the blind-spot killer. lower/higher_is_better = monotone numeric; encoded_in_scoring = ordering fully and unambiguously carried by category/rubric scores; non_monotonic = the sense itself is unsettled (requires calibration_note, resolved in phase-5 calibration or by an explicit constraint, never by asking)."
         },
-        "mvp": { "type": "boolean" },
-        "calibration_status": { "enum": ["provisional", "calibrated"] },
+        "mvp": {
+          "type": "boolean"
+        },
+        "calibration_status": {
+          "enum": [
+            "provisional",
+            "calibrated"
+          ]
+        },
         "calibration_note": {
           "type": "string",
           "minLength": 1,
@@ -179,29 +384,41 @@
           "type": "array",
           "minItems": 1,
           "items": {
-            "enum": ["vulnerability_cannot_improve_score"],
+            "enum": [
+              "vulnerability_cannot_improve_score"
+            ],
             "$comment": "Closed list on purpose: an unknown constraint must fail validation, not silently no-op. Adding one = schema change = conscious act. vulnerability_cannot_improve_score = ethical lock (framing note section 9): retrospective calibration must never learn 'fragile municipality = better grade'."
           }
         },
         "vulnerability_order": {
           "type": "array",
           "minItems": 2,
-          "items": { "type": "string" },
+          "items": {
+            "type": "string"
+          },
           "description": "Category names ordered from least to most vulnerable. Gate 3 enforces non-increasing scores along this order; a corpus property test enforces d(site_score)/d(vulnerability) <= 0."
         },
         "sources": {
           "type": "array",
           "minItems": 1,
-          "items": { "type": "string", "minLength": 1 }
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
         },
         "normalization": {
           "oneOf": [
             {
               "type": "object",
               "additionalProperties": false,
-              "required": ["type", "thresholds"],
+              "required": [
+                "type",
+                "thresholds"
+              ],
               "properties": {
-                "type": { "const": "thresholds" },
+                "type": {
+                  "const": "thresholds"
+                },
                 "thresholds": {
                   "type": "array",
                   "minItems": 2,
@@ -210,19 +427,37 @@
                       {
                         "type": "object",
                         "additionalProperties": false,
-                        "required": ["up_to", "score"],
+                        "required": [
+                          "up_to",
+                          "score"
+                        ],
                         "properties": {
-                          "up_to": { "type": "number" },
-                          "score": { "type": "number", "minimum": 0, "maximum": 100 }
+                          "up_to": {
+                            "type": "number"
+                          },
+                          "score": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          }
                         }
                       },
                       {
                         "type": "object",
                         "additionalProperties": false,
-                        "required": ["above", "score"],
+                        "required": [
+                          "above",
+                          "score"
+                        ],
                         "properties": {
-                          "above": { "const": true },
-                          "score": { "type": "number", "minimum": 0, "maximum": 100 }
+                          "above": {
+                            "const": true
+                          },
+                          "score": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 100
+                          }
                         }
                       }
                     ]
@@ -233,32 +468,56 @@
             {
               "type": "object",
               "additionalProperties": false,
-              "required": ["type", "min", "max"],
+              "required": [
+                "type",
+                "min",
+                "max"
+              ],
               "properties": {
-                "type": { "const": "bounded_linear" },
-                "min": { "type": "number" },
-                "max": { "type": "number" }
-              }
-            },
-            {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["type", "categories"],
-              "properties": {
-                "type": { "const": "categorical" },
-                "categories": {
-                  "type": "object",
-                  "minProperties": 2,
-                  "additionalProperties": { "type": "number", "minimum": 0, "maximum": 100 }
+                "type": {
+                  "const": "bounded_linear"
+                },
+                "min": {
+                  "type": "number"
+                },
+                "max": {
+                  "type": "number"
                 }
               }
             },
             {
               "type": "object",
               "additionalProperties": false,
-              "required": ["type", "rubric"],
+              "required": [
+                "type",
+                "categories"
+              ],
               "properties": {
-                "type": { "const": "proxy_rubric" },
+                "type": {
+                  "const": "categorical"
+                },
+                "categories": {
+                  "type": "object",
+                  "minProperties": 2,
+                  "additionalProperties": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "rubric"
+              ],
+              "properties": {
+                "type": {
+                  "const": "proxy_rubric"
+                },
                 "rubric": {
                   "type": "object",
                   "description": "Points per procedural proxy (T1). Structure finalized with the engine; draft values are PROVISIONAL.",
@@ -271,21 +530,57 @@
         "threshold_basis": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
-            "type": { "enum": ["reference", "editorial_choice"] },
-            "reference": { "type": "string", "minLength": 1 },
-            "url": { "type": "string", "format": "uri" },
-            "rationale": { "type": "string", "minLength": 1 }
+            "type": {
+              "enum": [
+                "reference",
+                "editorial_choice"
+              ]
+            },
+            "reference": {
+              "type": "string",
+              "minLength": 1
+            },
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "rationale": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           "allOf": [
             {
-              "if": { "properties": { "type": { "const": "reference" } } },
-              "then": { "required": ["reference"] }
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "reference"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reference"
+                ]
+              }
             },
             {
-              "if": { "properties": { "type": { "const": "editorial_choice" } } },
-              "then": { "required": ["rationale"] }
+              "if": {
+                "properties": {
+                  "type": {
+                    "const": "editorial_choice"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "rationale"
+                ]
+              }
             }
           ]
         }

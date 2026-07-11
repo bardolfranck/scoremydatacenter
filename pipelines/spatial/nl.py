@@ -213,8 +213,6 @@ def collect_l1_raw(gemeente_code: str | None) -> dict | None:
 # --- the spec ----------------------------------------------------------------------------------
 
 _GAPS = {
-    "E1": "not_collected — NED.nl and ENTSO-E both key-gated (v1: register a key or use the "
-          "EEA annual reference)",
     "W1": "not_collected — LCW/droogtemonitor status is prose (v1: KNMI neerslagtekort proxy, "
           "keyed)",
     "W3": "not_collected — abstraction volumes fragmented per province/waterschap, no open feed",
@@ -232,13 +230,16 @@ NL_SPEC = {
     "fetch_commune": fetch_commune,
     "identity_fields": lambda c: {"municipality": c.get("name") or "UNKNOWN — to fill"},
     "collectors": [
-        (("W2",), lambda ctx, prov: [x] if (x := collect_w2(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
+        (("E1",), lambda ctx, prov: [x] if (x := eu.collect_e1_energy_charts("NL", ctx["accessed"])) else []),
+        # National KRW WMS first; EEA WISE universal resolver as fallback (polder plots often miss).
+        (("W2",), lambda ctx, prov: [x] if (x := (collect_w2(ctx["lat"], ctx["lon"], ctx["accessed"])
+                  or eu.collect_w2_universal(ctx["lat"], ctx["lon"], ctx["accessed"]))) else []),
         (("F1",), lambda ctx, prov: [x] if (x := eu.natura_rings(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
         (("L3",), lambda ctx, prov: [x] if (x := collect_l3(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E2", "E3"), lambda ctx, prov: collect_grid(ctx["lat"], ctx["lon"], ctx["accessed"])),
     ],
-    "collectable_gaps": frozenset({"E1", "W1", "W3", "L1"}),
+    "collectable_gaps": frozenset({"W1", "W3", "L1"}),
     "provenance_commune": lambda c: {
         "gemeente_code": c.get("gemeente_code"),
         "province": c.get("province"),

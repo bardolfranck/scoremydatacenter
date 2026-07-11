@@ -1,15 +1,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 # https://scoremydatacenter.org · independent data center acceptability-risk score
-"""Run the spatial collector over a whole list of sites in one command.
+"""Run a country's spatial collector over a whole list of sites in one command.
 
-    python -m pipelines.spatial.batch sites.csv --out ../smdc-newsroom/drafts/datacenters
+    python -m pipelines.spatial.batch sites.csv --country NL --out ../smdc-newsroom/drafts/datacenters
 
-Input is a CSV (header: name,operator,lat,lon[,power_mw,project_status]) or a JSON array of the
-same fields. One draft + provenance pair is written per row, filenames keyed by id so re-runs
-refresh in place (idempotent). A row that fails (bad coords, source down) is reported and skipped —
-it never aborts the batch. At the end a coverage matrix shows, per indicator, how many sites the
-pipeline could fill — the at-a-glance "how complete is my corpus" view for the calibration sprint.
+--country selects the adapter from the registry (FR default for back-compat); every country runs
+through the SAME batch code — one way to run, no per-country batch script. Input is a CSV (header:
+name,operator,lat,lon[,power_mw,project_status]) or a JSON array of the same fields. One draft +
+provenance pair is written per row, filenames keyed by id so re-runs refresh in place (idempotent).
+A row that fails (bad coords, source down) is reported and skipped — it never aborts the batch. At
+the end a coverage matrix shows, per indicator, how many sites the pipeline could fill.
 
 Still a proposal, not a publication: everything lands as drafts for human review (see collect.py).
 """
@@ -22,7 +23,8 @@ from datetime import date
 from pathlib import Path
 
 from .http import SourceUnavailable
-from .collect import collect
+from .country import build_draft
+from .registry import get_spec
 
 # Indicators the spatial pipeline targets today (order = report columns).
 _TRACKED = ["E1", "E2", "E3", "W1", "W2", "W3", "F1", "F2", "L1", "L3"]
@@ -50,13 +52,13 @@ def _read_sites(path: Path) -> list[dict]:
     return sites
 
 
-def run(sites: list[dict], out_dir: Path, accessed: str) -> dict:
+def run(sites: list[dict], out_dir: Path, accessed: str, spec: dict) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     results, coverage = [], {ind: 0 for ind in _TRACKED}
     for s in sites:
         try:
-            fragment, provenance, _ = collect(
-                s["lat"], s["lon"], name=s["name"], operator=s["operator"],
+            fragment, provenance, _ = build_draft(
+                spec, s["lat"], s["lon"], name=s["name"], operator=s["operator"],
                 power_mw=s["power_mw"], project_status=s["project_status"], accessed=accessed)
         except SourceUnavailable as exc:
             print(f"  {s['name']}: FAILED ({exc})", file=sys.stderr)
@@ -118,15 +120,21 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description="Batch spatial collection over a list of sites.")
     p.add_argument("input", help="CSV (name,operator,lat,lon[,power_mw,project_status]) or JSON array")
     p.add_argument("--out", required=True, help="Output directory (smdc-newsroom/drafts/datacenters)")
+    p.add_argument("--country", default="FR", help="ISO 3166-1 alpha-2 adapter (default FR)")
     args = p.parse_args(argv)
 
+    try:
+        spec = get_spec(args.country)
+    except KeyError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
     sites = _read_sites(Path(args.input))
     if not sites:
         print("No valid sites in input.", file=sys.stderr)
         return 1
     accessed = date.today().isoformat()
     out_dir = Path(args.out)
-    report = run(sites, out_dir, accessed)
+    report = run(sites, out_dir, accessed, spec)
     _print_report(report)
     path = _write_report(report, out_dir, accessed)
     print(f"Coverage report written to {path}", file=sys.stderr)
