@@ -40,7 +40,9 @@
             "grade": "B"
           }
         ],
-        "quote_fr": "Noté B sur le site, C en projet & processus."
+        "quote_fr": "Noté B sur le site, C en projet & processus.",
+        "publication_status": "published",
+        "reply_deadline": "2026-06-25"
       }
     },
     {
@@ -82,7 +84,9 @@
             "grade": "insufficient_data"
           }
         ],
-        "quote_fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus."
+        "quote_fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
+        "publication_status": "right_of_reply",
+        "reply_deadline": "2026-07-24"
       }
     }
   ]

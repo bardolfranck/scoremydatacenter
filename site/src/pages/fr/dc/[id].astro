@@ -97,6 +97,12 @@ const dataState = `${dc.indicators.length} indicateurs suivis · ${counts.measur
 
 const op = dc.publication.operator_response;
 const notifiedAt = dc.publication.operator_notified_at;
+// Publication doctrine A-26: letter + score are public in every state; only the FINAL fiche
+// (the narrative synthesis) waits out the right-of-reply window. The clock lives in the view.
+const pubStatus = dc.publication_status;              // "draft" | "right_of_reply" | "published"
+const replyDeadline: string | null = dc.reply_deadline;
+const inReplyWindow = pubStatus === "right_of_reply";
+const frDate = (iso: string | null) => (iso ? iso.split("-").reverse().join("/") : "");
 const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.length - 1].date : null;
 
 const indicatorValue = (ind: any) => {
@@ -247,6 +253,12 @@ const pillars = methodology.pillars as any[];
     </aside>
 
     <div class="fiche-main">
+      {inReplyWindow && (
+        <div class="fiche-reply-banner" role="status" data-deadline={replyDeadline}>
+          <strong>Droit de réponse en cours</strong> <span class="reply-until">jusqu'au {frDate(replyDeadline)}</span>.
+          La note (lettre et chiffre) et tous les faits sourcés sont publics ; seule la synthèse narrative est publiée à l'issue du délai.
+        </div>
+      )}
       <div class="fiche-top">
       <div class="fiche-subscores">
         <div class="fiche-subscores-head">
@@ -287,7 +299,16 @@ const pillars = methodology.pillars as any[];
           })}
         </div>
       </div>
-        {dc.synthesis && (
+        {inReplyWindow && (
+          <aside class="fiche-synthesis fiche-synthesis-held">
+            <div class="synth-head">
+              <h2>Synthèse du projet</h2>
+              <span class="synth-sub">publiée à l'issue du droit de réponse</span>
+            </div>
+            <p class="synth-held-note">La lecture d'ensemble est retenue le temps du droit de réponse (jusqu'au {frDate(replyDeadline)}). Les badges, les piliers et les indicateurs sourcés ci-contre restent publics.</p>
+          </aside>
+        )}
+        {dc.synthesis && !inReplyWindow && (
           <aside class="fiche-synthesis" aria-labelledby="synth-title">
             <div class="synth-head">
               <h2 id="synth-title">Synthèse du projet</h2>
@@ -363,10 +384,12 @@ const pillars = methodology.pillars as any[];
         <div class="fiche-card">
           <h3>Réponse de l'opérateur</h3>
           {op
-            ? <p>{op.text}{op.date ? ` (${op.date})` : ""}</p>
-            : notifiedAt
-              ? <p class="empty">Sollicité le {notifiedAt} — pas de réponse à ce jour.</p>
-              : <p class="empty">L'opérateur dispose d'un droit de réponse ; il sera publié ici.</p>}
+            ? <p>{op.text}{op.date ? ` (${frDate(op.date)})` : ""}</p>
+            : pubStatus === "published" && notifiedAt
+              ? <p class="empty">Opérateur sollicité le {frDate(notifiedAt)} — sans réponse à l'échéance.</p>
+              : inReplyWindow && notifiedAt
+                ? <p class="empty">Sollicité le {frDate(notifiedAt)} — droit de réponse en cours jusqu'au {frDate(replyDeadline)}.</p>
+                : <p class="empty">L'opérateur dispose d'un droit de réponse ; il sera publié ici.</p>}
           <p class="fiche-card-note">Droit de réponse : donne la <strong>parole</strong> à l'opérateur, à côté de la note.</p>
         </div>
         <div class="fiche-card">
@@ -431,5 +454,14 @@ const pillars = methodology.pillars as any[];
     native.addEventListener("click", () => {
       navigator.share({ title: document.title, text: native.dataset.text, url: native.dataset.url }).catch(() => {});
     });
+  }
+
+  // Right-of-reply clock lives in the view: once the deadline has passed, the fiche awaits its final
+  // publication (a real data edit flips the status). The banner reflects that, without touching data.
+  const banner = document.querySelector(".fiche-reply-banner") as HTMLElement | null;
+  const deadline = banner?.dataset.deadline;
+  if (banner && deadline && new Date().toISOString().slice(0, 10) >= deadline) {
+    banner.innerHTML = "<strong>Délai de droit de réponse échu</strong> — fiche finale en cours de publication.";
+    banner.classList.add("elapsed");
   }
 </script>

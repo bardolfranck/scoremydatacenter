@@ -193,8 +193,8 @@
     }
   ],
   "publication": {
-    "status": "published",
-    "operator_notified_at": "2026-06-10",
+    "status": "right_of_reply",
+    "operator_notified_at": "2026-07-09",
     "operator_response": null
   },
   "score_history": [
