@@ -18,15 +18,42 @@ every entry after a DC's first (journal gate).
 """
 
 import argparse
+import os
 import sys
 from datetime import date
+from pathlib import Path
 
-from .core import DATA_DIR, GateError, load_json, load_methodology, datacenter_paths, write_json
+from .core import DATA_DIR, REPO_ROOT, GateError, load_json, load_methodology, datacenter_paths, write_json
 from .scoring import history_entry_fields, score_datacenter
 from .validate import run_gates
 
 VALID_EVENTS = ["initial_scoring", "ex_post_rescore", "right_of_reply_revision",
                 "data_correction", "methodology_change"]
+
+
+def _newsroom_calibration() -> Path:
+    """Same resolution as scripts/build_prod_artifacts.py — one source of truth for 'next door'."""
+    return Path(os.environ.get("NEWSROOM_CAL", REPO_ROOT.parent / "smdc-newsroom" / "calibration"))
+
+
+def _refuse_if_newsroom_present() -> bool:
+    """There is ONE way to rebuild the served data (rule 2026-07-11): make prod-artifacts.
+
+    A public-fixtures build on a machine where the newsroom is checked out next door would
+    silently wipe the served corpus and watchlist down to the zz- fixtures (it happened three
+    times before #40, then once more through a hand-rolled driver). The wrong way must fail
+    loudly, not succeed silently.
+    """
+    if _newsroom_calibration().is_dir() and not os.environ.get("SMDC_PUBLIC_FIXTURES"):
+        print(
+            "score: REFUSED — the private newsroom is checked out next door; building the\n"
+            "public zz- fixtures here would wipe the served corpus and watchlist.\n"
+            "There is ONE way to rebuild the served data:  make prod-artifacts\n"
+            "(Set SMDC_PUBLIC_FIXTURES=1 only to intentionally build the public fixtures.)",
+            file=sys.stderr,
+        )
+        return True
+    return False
 
 
 def _changed(dc: dict, methodology: dict) -> dict | None:
@@ -42,6 +69,8 @@ def _changed(dc: dict, methodology: dict) -> dict | None:
 
 
 def build() -> int:
+    if _refuse_if_newsroom_present():
+        return 1
     problems = run_gates()
     if problems:
         print("score: gates failed — run `make validate` for details", file=sys.stderr)
