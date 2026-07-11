@@ -1,45 +1,26 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 # https://scoremydatacenter.org · independent data center acceptability-risk score
-"""Belgian tier-1 collectors — regional sources behind the national backbone.
+"""Belgian national quirks — only what the shared skeleton cannot know.
 
-Belgium's permitting and most geodata are REGIONAL (Wallonia / Flanders / Brussels). The good
-news from the 2026-07-09 recon: Wallonia's geoservices.wallonie.be is a one-stop ArcGIS REST
-serving five indicators with one query pattern; Flanders splits across Mercator/DOV; EU-level
-services (EEA Natura 2000, Corine, WISE) fill most Flanders/Brussels gaps. Every collector
-returns None rather than guessing — a gap is a provenance line, never a fabricated value.
+Belgium's permitting and most geodata are REGIONAL (Wallonia / Flanders / Brussels): the
+backbone resolves the region (Nominatim ISO 3166-2) and each collector routes to the regional
+source, falling back to the EU-level collectors (eu.py) where the region has no probed layer
+yet. Access plumbing lives in geo.py, band semantics in bands.py — nothing here duplicates
+them. Every collector returns None rather than guessing.
 """
 
-import json
-
+from .. import eu
+from ..bands import l3_value as _l3_value  # canonical home: bands.py (kept for tests)
+from ..geo import arcgis_point_query, min_vertex_km as _min_vertex_km, wfs_bbox_geojson
 from ..http import SourceUnavailable, get_json, haversine_m
 
-_WALLONIA_ARCGIS = "https://geoservices.wallonie.be/arcgis/rest/services"
-_EEA_NATURA = ("https://bio.discomap.eea.europa.eu/arcgis/rest/services/"
-               "ProtectedSites/Natura2000Sites/MapServer")
-_EEA_CORINE = ("https://image.discomap.eea.europa.eu/arcgis/rest/services/"
-               "Corine/CLC2018_WM/MapServer")
-_MERCATOR_WFS = "https://www.mercator.vlaanderen.be/raadpleegdienstenmercatorpubliek/wfs"
+WALLONIA_ARCGIS = "https://geoservices.wallonie.be/arcgis/rest/services"
+MERCATOR_WFS = "https://www.mercator.vlaanderen.be/raadpleegdienstenmercatorpubliek/wfs"
 
 
 def _source(title: str, url: str, accessed: str) -> dict:
     return {"title": title, "url": url, "accessed": accessed}
-
-
-def _arcgis_point_query(service_path: str, layer: int, lat: float, lon: float,
-                        distance_m: int, *, geometry: bool = False) -> list[dict]:
-    """Features of an ArcGIS layer within distance_m of the point (WGS84 in and out)."""
-    params = {
-        "f": "json", "geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint",
-        "inSR": "4326", "spatialRel": "esriSpatialRelIntersects",
-        "distance": distance_m, "units": "esriSRUnit_Meter",
-        "outFields": "*", "returnGeometry": "true" if geometry else "false",
-        "outSR": "4326", "resultRecordCount": 100,
-    }
-    data = get_json(f"{service_path}/{layer}/query", params)
-    if "error" in data:
-        raise SourceUnavailable(f"{service_path}/{layer}: {data['error']}")
-    return data.get("features", [])
 
 
 # --- identity backbone — commune + region routing ---------------------------------------------
@@ -79,10 +60,8 @@ def collect_w2(lat: float, lon: float, region: str, accessed: str) -> dict | Non
     """Wallonia only in v0: the Flanders surface-water-body code layer is still unlocated."""
     if region != "wallonia":
         return None
-    from ..sources import _WISE_STATUS_TO_CATEGORY
-    from ..wise import load_wise_status
     try:
-        feats = _arcgis_point_query(f"{_WALLONIA_ARCGIS}/EAU/MESU/MapServer", 2, lat, lon, 1)
+        feats = arcgis_point_query(f"{WALLONIA_ARCGIS}/EAU/MESU/MapServer", 2, lat, lon, 1)
     except SourceUnavailable:
         return None
     if not feats:
@@ -91,11 +70,7 @@ def collect_w2(lat: float, lon: float, region: str, accessed: str) -> dict | Non
     code, name = a.get("EU_SWB_COD"), a.get("SWB_NAME")
     if not code:
         return None
-    try:
-        status = load_wise_status("BE").get(code)
-    except SourceUnavailable:
-        return None
-    category = _WISE_STATUS_TO_CATEGORY.get(status)
+    status, category = eu.wise_status_category(code, "BE")
     if category is None:
         return None
     return {
@@ -114,32 +89,12 @@ def collect_w2(lat: float, lon: float, region: str, accessed: str) -> dict | Non
 
 def collect_f1(lat: float, lon: float, region: str, accessed: str) -> dict | None:
     if region == "wallonia":
-        base, layer = f"{_WALLONIA_ARCGIS}/FAUNE_FLORE/NATURA2000/MapServer", 10
-        title = "SPW geoservices FAUNE_FLORE/NATURA2000 — Natura 2000 overlap by distance ring"
-        url = f"{base}"
-    else:
-        base, layer = _EEA_NATURA, 2  # combined Habitats + Birds layer
-        title = "EEA Natura2000Sites (Habitats+Birds combined) — overlap by distance ring"
-        url = _EEA_NATURA
-    reachable = False
-    for radius, category in ((1, "overlap"), (1000, "adjacent_under_1km"), (5000, "near_1_to_5km")):
-        try:
-            feats = _arcgis_point_query(base, layer, lat, lon, radius)
-        except SourceUnavailable:
-            continue
-        reachable = True
-        if feats:
-            codes = sorted({f["attributes"].get("CODE_SITE") or f["attributes"].get("SITECODE")
-                            for f in feats if f.get("attributes")})
-            codes = [c for c in codes if c]
-            return {
-                "id": "F1", "status": "measured", "value": category,
-                "source": _source(f"{title} ({', '.join(codes[:4])})", url, accessed),
-            }
-    if not reachable:
-        return None  # services unreachable — do not assert "distant"
-    return {"id": "F1", "status": "measured", "value": "distant_over_5km",
-            "source": _source(title, url, accessed)}
+        return eu.natura_rings(
+            lat, lon, accessed,
+            service_url=f"{WALLONIA_ARCGIS}/FAUNE_FLORE/NATURA2000/MapServer", layer=10,
+            title="SPW geoservices FAUNE_FLORE/NATURA2000 — Natura 2000 overlap by distance ring",
+            url=f"{WALLONIA_ARCGIS}/FAUNE_FLORE/NATURA2000/MapServer")
+    return eu.natura_rings(lat, lon, accessed)  # EEA EU-wide combined layer
 
 
 # --- F2 · soil status (SPW plan de secteur; Corine fallback elsewhere) ------------------------
@@ -161,12 +116,11 @@ def _pds_to_category(description: str) -> str | None:
 
 def collect_f2(lat: float, lon: float, region: str, accessed: str) -> tuple[dict | None, dict]:
     """Legal zoning first (Wallonia PDS), Corine Land Cover as fallback/cross-check."""
-    from ..sources import _clc_to_category
-    primary, primary_src, clc_cat, clc_code = None, None, None, None
+    primary, primary_src = None, None
     if region == "wallonia":
         try:
-            feats = _arcgis_point_query(
-                f"{_WALLONIA_ARCGIS}/AMENAGEMENT_TERRITOIRE/PDS/MapServer", 22, lat, lon, 1)
+            feats = arcgis_point_query(
+                f"{WALLONIA_ARCGIS}/AMENAGEMENT_TERRITOIRE/PDS/MapServer", 22, lat, lon, 1)
             if feats:
                 desc = feats[0]["attributes"].get("DESCRIPTION")
                 art = feats[0]["attributes"].get("ART_CODT")
@@ -174,20 +128,7 @@ def collect_f2(lat: float, lon: float, region: str, accessed: str) -> tuple[dict
                 primary_src = f"plan de secteur '{desc}' ({art})"
         except SourceUnavailable:
             pass
-    # Corine at point — fallback where zoning is silent, cross-check where it isn't
-    try:
-        identify = get_json(f"{_EEA_CORINE}/identify", {
-            "f": "json",
-            "geometry": json.dumps({"x": lon, "y": lat, "spatialReference": {"wkid": 4326}}),
-            "geometryType": "esriGeometryPoint", "sr": "4326", "tolerance": 1,
-            "mapExtent": f"{lon-0.01},{lat-0.01},{lon+0.01},{lat+0.01}",
-            "imageDisplay": "400,400,96", "returnGeometry": "false",
-        })
-        results = identify.get("results") or []
-        clc_code = results[0]["attributes"].get("Code_18") if results else None
-        clc_cat = _clc_to_category(clc_code)
-    except SourceUnavailable:
-        pass
+    clc_code, clc_cat = eu.corine_at_point(lat, lon)
     crosscheck = {
         "primary": primary, "primary_source": primary_src,
         "land_cover": clc_cat, "clc_code": clc_code,
@@ -199,32 +140,23 @@ def collect_f2(lat: float, lon: float, region: str, accessed: str) -> tuple[dict
     if primary:
         title = (f"SPW plan de secteur (AMENAGEMENT_TERRITOIRE/PDS) — {primary_src}; "
                  f"Corine cross-check: {clc_cat or 'unavailable'}")
-        url = f"{_WALLONIA_ARCGIS}/AMENAGEMENT_TERRITOIRE/PDS/MapServer"
+        url = f"{WALLONIA_ARCGIS}/AMENAGEMENT_TERRITOIRE/PDS/MapServer"
     else:
         title = (f"Corine Land Cover 2018 (EEA) — CLC code {clc_code} at point "
                  f"(EU-wide fallback; regional legal zoning not available, no cross-check)")
-        url = _EEA_CORINE
+        url = eu.EEA_CORINE
     return {"id": "F2", "status": "measured", "value": value,
             "source": _source(title, url, accessed)}, crosscheck
 
 
 # --- L3 · technological hazard / Seveso (SPW points; Mercator Flanders polygons) --------------
 
-def _l3_value(sites: list[dict]) -> str:
-    """sites = [{upper_tier: bool, dist_km: float}] within 5 km → methodology band."""
-    if any(s["upper_tier"] and s["dist_km"] <= 2.0 for s in sites):
-        return "seveso_high_within_2km"
-    if sites:
-        return "seveso_low_within_5km"
-    return "none_within_5km"
-
-
 def collect_l3(lat: float, lon: float, region: str, accessed: str) -> dict | None:
-    sites, detail, url = [], [], None
+    sites, detail = [], []
     if region == "wallonia":
-        url = f"{_WALLONIA_ARCGIS}/INDUSTRIES_SERVICES/SEVESO/MapServer"
+        url = f"{WALLONIA_ARCGIS}/INDUSTRIES_SERVICES/SEVESO/MapServer"
         try:
-            feats = _arcgis_point_query(url, 0, lat, lon, 5000, geometry=True)
+            feats = arcgis_point_query(url, 0, lat, lon, 5000, geometry=True)
         except SourceUnavailable:
             return None
         for f in feats:
@@ -237,21 +169,12 @@ def collect_l3(lat: float, lon: float, region: str, accessed: str) -> dict | Non
             detail.append(f"{a.get('SOC_NOM')} ({a.get('SEUIL_DESC')}) at {round(d, 2)} km")
         title_src = "SPW geoservices INDUSTRIES_SERVICES/SEVESO"
     elif region == "flanders":
-        url = _MERCATOR_WFS
-        import math
-        import urllib.parse
-        import urllib.request
-        dlat = 5000 / 111320.0
-        dlon = 5000 / (111320.0 * math.cos(math.radians(lat)))
-        bbox = f"{lat-dlat},{lon-dlon},{lat+dlat},{lon+dlon},urn:ogc:def:crs:EPSG::4326"
-        params = {"service": "WFS", "version": "2.0.0", "request": "GetFeature",
-                  "typenames": "pf:pf_seveso_con", "outputFormat": "application/json",
-                  "srsName": "EPSG:4326", "bbox": bbox, "count": "100"}
+        url = MERCATOR_WFS
         try:
-            data = get_json(f"{_MERCATOR_WFS}", params)
+            feats = wfs_bbox_geojson(MERCATOR_WFS, "pf:pf_seveso_con", lat, lon, 5000)
         except SourceUnavailable:
             return None
-        for f in data.get("features", []):
+        for f in feats:
             p, geom = f.get("properties", {}), f.get("geometry")
             if not geom:
                 continue
@@ -268,27 +191,6 @@ def collect_l3(lat: float, lon: float, region: str, accessed: str) -> dict | Non
     detail_sorted = ", ".join(sorted(detail)[:4]) if detail else "no Seveso site within 5 km"
     return {"id": "L3", "status": "measured", "value": value,
             "source": _source(f"{title_src} — {detail_sorted}", url, accessed)}
-
-
-def _min_vertex_km(lat: float, lon: float, coords) -> float | None:
-    """Min great-circle distance to any polygon vertex, tolerant of either axis order."""
-    best = None
-
-    def walk(c):
-        nonlocal best
-        if isinstance(c[0], (int, float)):
-            for y, x in ((c[1], c[0]), (c[0], c[1])):  # try [lon,lat] and [lat,lon]
-                if 49 < y < 52 and 2 < x < 7:
-                    d = haversine_m(lat, lon, y, x) / 1000
-                    if best is None or d < best:
-                        best = d
-        else:
-            for sub in c:
-                walk(sub)
-
-    if coords:
-        walk(coords)
-    return best
 
 
 # --- L1 · commune income — RAW ONLY (provenance), FR bands are not transposable ---------------

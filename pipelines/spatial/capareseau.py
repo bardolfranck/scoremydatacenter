@@ -78,24 +78,10 @@ def _nearest(lat: float, lon: float, postes: list[dict],
     return (fallback, fallback_d) if fallback else None
 
 
-def _e2_category(available_mw: float) -> str:
-    if available_mw >= 100:
-        return "ample"
-    if available_mw >= 20:
-        return "adequate"
-    if available_mw >= 5:
-        return "constrained"
-    return "saturated"
+from .bands import e2_category as _e2_category  # canonical home: bands.py
 
 
-def _e3_category(fill_pct: float) -> str:
-    if fill_pct < 30:
-        return "low"
-    if fill_pct < 70:
-        return "moderate"
-    if fill_pct < 95:
-        return "high"
-    return "critical"
+from .bands import e3_category as _e3_category  # canonical home: bands.py
 
 
 def collect_grid_capacity(lat: float, lon: float, region_code: str | None, accessed: str) -> list[dict]:

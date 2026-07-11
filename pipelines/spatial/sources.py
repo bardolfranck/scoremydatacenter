@@ -214,20 +214,7 @@ def _clc_at_point(lat: float, lon: float) -> str | None:
     return feats[0]["properties"].get("code_18") if feats else None
 
 
-def _clc_to_category(code: str | None) -> str | None:
-    """Corine Land Cover code → methodology soil category."""
-    if not code:
-        return None
-    if code in ("133", "324"):   # construction sites / transitional woodland-shrub
-        return "transitional"
-    first = code[0]
-    if first == "1":
-        return "artificialized"
-    if first == "2":
-        return "agricultural"
-    if first in ("3", "4", "5"):
-        return "natural_or_enaf"
-    return None
+from .bands import clc_to_category as _clc_to_category  # canonical home: bands.py
 
 
 # --- L1 · municipality socio-economic profile (INSEE Filosofi, cached) ----------------------
@@ -360,9 +347,7 @@ def resolve_water_body(lat: float, lon: float) -> dict | None:
 
 # --- W2 · water body ecological status (Sandre WFS + EEA WISE, cached) -----------------------
 
-_WISE_STATUS_TO_CATEGORY = {  # WFD ecological status class → methodology category
-    "1": "very_good", "2": "good", "3": "moderate", "4": "poor", "5": "bad",
-}
+from .bands import WFD_STATUS_TO_CATEGORY as _WISE_STATUS_TO_CATEGORY  # canonical home: bands.py
 
 
 def collect_w2(lat: float, lon: float, accessed: str) -> dict | None:
