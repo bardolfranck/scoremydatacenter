@@ -119,6 +119,8 @@
     "fr": "Noté B sur le site, C en projet & processus.",
     "en": "Rated B on site, C on project & process."
   },
+  "publication_status": "published",
+  "reply_deadline": "2026-06-25",
   "summary": {
     "fr": "Fixture de test (fictive) : campus moyen bien documenté — étages 1 et 2 renseignés, cas nominal du pipeline.",
     "en": "Test fixture (fictional): well-documented mid-size campus — tiers 1 and 2 filled, nominal pipeline case."

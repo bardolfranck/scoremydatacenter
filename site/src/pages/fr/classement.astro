@@ -113,7 +113,7 @@ const nav = FR_NAV;
               >
                 <td class="rank-index"></td>
                 <td class="rank-project">
-                  <strong><a href={`/fr/dc/${dc.id}`}>{dc.name}</a></strong>
+                  <strong><a href={`/fr/dc/${dc.id}`}>{dc.name}</a>{dc.publication_status === "right_of_reply" && <span class="rank-reply">droit de réponse en cours</span>}</strong>
                   <span>{dc.municipality} ({dc.country}) — {dc.operator}{dc.id.startsWith("zz-") ? " · fixture de test fictive" : ""}</span>
                   <a class="rank-map-link" href={`/fr/carte?dc=${dc.id}`}>Voir sur la carte ↗</a>
                 </td>

@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 
 from .core import ARTIFACTS_DIR, GateError, load_watchlist, write_json
-from .scoring import score_datacenter
+from .scoring import reply_deadline, score_datacenter
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -41,6 +41,7 @@ def synthesis_grade_citations(dc: dict) -> list[str]:
 
 def _summary(dc: dict, result: dict) -> dict:
     identity = dc["identity"]
+    pub = dc.get("publication") or {}
     return {
         "id": dc["id"],
         "name": identity["name"],
@@ -53,6 +54,11 @@ def _summary(dc: dict, result: dict) -> dict:
         "confidence": result["confidence"],
         "pillars": result["pillars"],
         "citable_quote": result["citable_quote"],
+        # Publication doctrine A-26: letter + score are public in every state; the deadline
+        # (notification + NOTICE_DAYS, deterministic) drives the "right of reply in progress"
+        # display. The clock lives in the view, never in the data.
+        "publication_status": pub.get("status"),
+        "reply_deadline": reply_deadline(pub.get("operator_notified_at")),
     }
 
 
@@ -98,6 +104,8 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
                 "pillars": [{"id": p["id"], "grade": result["pillars"][p["id"]]["grade"]}
                             for p in methodology["pillars"]],
                 "quote_fr": result["citable_quote"]["fr"],
+                "publication_status": dc["publication"]["status"],
+                "reply_deadline": reply_deadline(dc["publication"]["operator_notified_at"]),
             },
         })
 
