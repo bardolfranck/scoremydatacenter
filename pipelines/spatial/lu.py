@@ -172,8 +172,6 @@ def collect_l3(lat: float, lon: float, accessed: str) -> dict | None:
 # --- the spec ----------------------------------------------------------------------------------
 
 _GAPS = {
-    "E1": "not_collected — LU sits in the DE-LU bidding zone; ENTSO-E is token-gated and Creos/"
-          "ILR publish no carbon dataset (v1: keyed ENTSO-E or EEA annual reference)",
     "E2": "missing — Creos publishes no hosting-capacity map (no Caparéseau/Elia equivalent)",
     "E3": "missing — no public connection-queue data",
     "W1": "not_collected — drought status is press-release prose on eau.gouvernement.lu "
@@ -193,12 +191,15 @@ LU_SPEC = {
     "fetch_commune": fetch_commune,
     "identity_fields": lambda c: {"municipality": c.get("name") or "UNKNOWN — to fill"},
     "collectors": [
-        (("W2",), lambda ctx, prov: [x] if (x := collect_w2(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
+        (("E1",), lambda ctx, prov: [x] if (x := eu.collect_e1_energy_charts("LU", ctx["accessed"])) else []),
+        # National masses d'eau layer first; EEA WISE universal resolver as fallback.
+        (("W2",), lambda ctx, prov: [x] if (x := (collect_w2(ctx["lat"], ctx["lon"], ctx["accessed"])
+                  or eu.collect_w2_universal(ctx["lat"], ctx["lon"], ctx["accessed"]))) else []),
         (("F1",), lambda ctx, prov: [x] if (x := eu.natura_rings(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
         (("L3",), lambda ctx, prov: [x] if (x := collect_l3(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
     ],
-    "collectable_gaps": frozenset({"E1", "W1", "W3", "L1"}),
+    "collectable_gaps": frozenset({"W1", "W3", "L1"}),
     "provenance_commune": lambda c: {
         "commune_name": c.get("name"),
         "postal_code": c.get("postal_code"),

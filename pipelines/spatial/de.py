@@ -7,17 +7,18 @@
         --name "..." --operator "..." --out <newsroom>/drafts/datacenters
 
 Germany is the real ×16: permitting, zoning, water and Seveso are all Länder-level (16 distinct
-platforms). This v0 deliberately wires NO Land-specific source — it rides only the EU-level
-collectors that already work for every country (eu.py: Natura 2000 rings, Corine land cover),
-with identity via Nominatim. It exists to (a) put German DCs on the map now and (b) prove the
-shared skeleton runs a brand-new country with essentially zero national code.
+platforms). This v0 wires NO Land-specific source — it rides only EU-level collectors that work for every
+country (eu.py): grid carbon from Fraunhofer energy-charts, WFD water-body status via the EEA
+WISE spatial resolver + status join, Natura 2000 rings, Corine land cover, identity via
+Nominatim. It puts German DCs on the map now AND proves the shared skeleton runs a brand-new
+country with zero national code — the EU layer alone reaches E1+W2+F1+F2. Crucially E1 (~380
+gCO2/kWh, coal-heavy grid) and the water-body status break the false-A that a land-cover-only
+draft produced.
 
-Everything else is an honest, documented gap — a Land adapter (Bayern, Hessen, NRW…) fills them
-later, exactly like Wallonia/Flanders did for BE:
-  E1  national grid CO2 — SMARD/ENTSO-E, token or scrape (v1)
+The rest are honest, documented gaps a Land adapter (Bayern, Hessen, NRW…) fills later, exactly
+like Wallonia/Flanders did for BE:
   E2/E3 grid capacity/queue — no single national feed; per-TSO (50Hertz/Amprion/TenneT/TransnetBW)
   W1  drought — no national machine feed
-  W2  WFD water body — per-Land WFS (or a reliable EEA spatial service, when one is found)
   W3  withdrawals — per-Land
   L1  income — DESTATIS/Regionalatlas per Kreis (v1; bands are a methodology decision anyway)
   L3  Seveso — per-Land registers (no single national INSPIRE download located in recon)
@@ -47,12 +48,10 @@ def fetch_commune(lat: float, lon: float) -> dict:
 
 
 _GAPS = {
-    "E1": "not_collected — national grid CO2 via SMARD/ENTSO-E is token-gated (v1)",
     "E2": "not_collected — no single national capacity feed; per-TSO (50Hertz/Amprion/"
           "TenneT DE/TransnetBW), a per-Land/TSO adapter (v1)",
     "E3": "not_collected — no public national connection-queue feed",
     "W1": "not_collected — no national drought machine feed",
-    "W2": "not_collected — WFD water-body code is a per-Land WFS in DE (v1 Land adapter)",
     "W3": "not_collected — abstraction volumes are per-Land",
     "L1": "not_collected — DESTATIS/Regionalatlas income per Kreis (v1; bands pending methodology)",
     "L3": "not_collected — Seveso registers are per-Land; no national INSPIRE download located",
@@ -71,11 +70,14 @@ DE_SPEC = {
         **({"admin_area": c["land_iso"].removeprefix("DE-")} if c.get("land_iso") else {}),
     },
     "collectors": [
+        # E1 + W2 come from EU-level sources — no Land wiring (energy-charts, EEA WISE spatial).
+        (("E1",), lambda ctx, prov: [x] if (x := eu.collect_e1_energy_charts("DE", ctx["accessed"])) else []),
+        (("W2",), lambda ctx, prov: [x] if (x := eu.collect_w2_universal(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F1",), lambda ctx, prov: [x] if (x := eu.natura_rings(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
     ],
     # Everything unfetched here is collectable by a later Land adapter — never "verified absent".
-    "collectable_gaps": frozenset({"E1", "E2", "E3", "W1", "W2", "W3", "L1", "L3"}),
+    "collectable_gaps": frozenset({"E2", "E3", "W1", "W3", "L1", "L3"}),
     "provenance_commune": lambda c: {
         "kreis": c.get("kreis"),
         "land": c.get("land"),
@@ -84,7 +86,7 @@ DE_SPEC = {
         "known_gaps": _GAPS,
         "f2_crosscheck": prov.get("f2_crosscheck"),
     },
-    "manual_still_required": ["F3", "L2", "T1", "T2", "E1", "E2", "E3", "W1", "W2", "W3", "L1", "L3"],
+    "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W1", "W3", "L1", "L3"],
 }
 
 

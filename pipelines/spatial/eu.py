@@ -11,13 +11,16 @@ Wallonia's own Natura layer carries site names the EEA layer lacks).
 
 from .bands import F1_BEYOND_RINGS, F1_DISTANCE_RINGS, WFD_STATUS_TO_CATEGORY, clc_to_category
 from .geo import arcgis_identify, arcgis_point_query
-from .http import SourceUnavailable
+from .http import SourceUnavailable, get_json
 
 EEA_NATURA = ("https://bio.discomap.eea.europa.eu/arcgis/rest/services/"
               "ProtectedSites/Natura2000Sites/MapServer")
 EEA_NATURA_COMBINED_LAYER = 2  # Habitats + Birds directives combined
 EEA_CORINE = ("https://image.discomap.eea.europa.eu/arcgis/rest/services/"
               "Corine/CLC2018_WM/MapServer")
+EEA_WISE_SWB = ("https://water.discomap.eea.europa.eu/arcgis/rest/services/"
+                "WISE_WFD/WFD2022_SurfaceWaterBody_WM/MapServer")
+ENERGY_CHARTS_CO2 = "https://api.energy-charts.info/co2eq"
 
 
 def _source(title: str, url: str, accessed: str) -> dict:
@@ -68,3 +71,88 @@ def wise_status_category(water_body_code: str, country: str) -> tuple[str | None
     except SourceUnavailable:
         return None, None
     return status, WFD_STATUS_TO_CATEGORY.get(status)
+
+
+# --- W2 · UNIVERSAL water-body resolver (EEA WISE spatial) — any EU point, no national WFS -----
+
+_WISE_SWB_LAYERS = ((2, 1500), (4, 300), (3, 300), (5, 1500), (6, 3000))  # (layer, buffer m): river line first
+
+
+def collect_w2_universal(lat: float, lon: float, accessed: str) -> dict | None:
+    """W2 for ANY EU country: resolve the water-body code at the point off the EEA WISE spatial
+    service, then join its ecological status from the cached WISE extract. Zero national wiring.
+
+    This is a *nearest-within-buffer* resolver (rivers are lines), so a national point-in-polygon
+    source, where one exists, stays preferable and takes precedence; this is the universal
+    fallback that lifts every country lacking one. Returns None off any EU water body (e.g. a
+    Dutch polder plot) — never fabricates.
+    """
+    code = name = country = None
+    for layer, buf in _WISE_SWB_LAYERS:
+        try:
+            feats = arcgis_point_query(
+                EEA_WISE_SWB, layer, lat, lon, buf,
+                # outSR/outFields kept minimal; we only need the code + country to join WISE.
+            )
+        except SourceUnavailable:
+            continue
+        if feats:
+            a = feats[0].get("attributes", {})
+            code = a.get("euSurfaceWaterBodyCode")
+            name = a.get("surfaceWaterBodyName")
+            country = a.get("countryCode")
+            if code and country:
+                break
+    if not code or not country:
+        return None
+    status, category = wise_status_category(code, country)
+    if category is None:
+        return None
+    return {
+        "id": "W2", "status": "measured", "value": category,
+        "source": _source(
+            f"EEA WISE spatial (WFD 2022) — nearest water body {code} '{name}' at point "
+            f"+ WISE ecological status class {status}/5",
+            "https://water.discomap.eea.europa.eu/", accessed),
+    }
+
+
+# --- E1 · UNIVERSAL grid carbon intensity (Fraunhofer energy-charts) — national, keyless -------
+
+_e1_cache: dict[tuple[str, str], dict | None] = {}
+
+
+def collect_e1_energy_charts(country: str, accessed: str) -> dict | None:
+    """E1 for any EU country: 12-month mean CO2-equivalent grid intensity from energy-charts.info
+    (Fraunhofer ISE, ENTSO-E-derived, keyless). Mean rather than snapshot — grids swing intraday.
+
+    National grid intensity is identical for every DC in a country, so the year-long fetch (~35k
+    quarter-hour points) is memoized per (country, window): one call per country per run, not one
+    per site — which also stops the batch from rate-limiting itself.
+
+    The national fallback for countries without a wired TSO source (DE, NL, LU…). FR (RTE) and BE
+    (Elia) keep their authoritative national feeds. Note: LU has no own bidding zone (DE-LU) — its
+    value carries the import caveat in the source title.
+    """
+    since = f"{int(accessed[:4]) - 1}{accessed[4:]}"
+    key = (country.upper(), since)
+    if key in _e1_cache:
+        return _e1_cache[key]
+    try:
+        data = get_json(ENERGY_CHARTS_CO2, {"country": country.lower(), "start": since, "end": accessed})
+    except SourceUnavailable:
+        return None  # transient — not cached, so a later site retries
+    vals = [v for v in (data.get("co2eq") or []) if v is not None]
+    if not vals:
+        return None
+    mean = round(sum(vals) / len(vals), 1)
+    zone = "DE-LU bidding zone; LU imports most of its electricity" if country.upper() == "LU" else country.upper()
+    result = {
+        "id": "E1", "status": "measured", "value": mean,
+        "source": _source(
+            f"Fraunhofer energy-charts.info — {country.upper()} grid CO2-equivalent intensity, "
+            f"12-month mean {since}..{accessed} ({mean} gCO2/kWh, n={len(vals)}; zone {zone})",
+            "https://api.energy-charts.info/", accessed),
+    }
+    _e1_cache[key] = result
+    return result
