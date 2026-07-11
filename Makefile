@@ -15,6 +15,11 @@ OUT ?= ../smdc-newsroom/drafts/datacenters
 collect-drafts:
 	uv run python -m pipelines.spatial.batch $(SITES) --out $(OUT)
 
+# Same batch, any country — the ONE way to collect a country's sites (registry-dispatched).
+#   make collect-country COUNTRY=NL SITES=sites-nl.csv OUT=../smdc-newsroom/calibration/datacenters-nl
+collect-country:
+	uv run python -m pipelines.spatial.batch $(SITES) --country $(COUNTRY) --out $(OUT)
+
 # Voie A — enrich drafts with governance sidecars (CNDP referral + judged appeals + review leads).
 # Proposes only; deterministic proxies are pre-filled, the judgment ones stay review leads.
 #   make collect-governance SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
