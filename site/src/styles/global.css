@@ -215,6 +215,17 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .scorebadge-value { display: inline-flex; align-items: baseline; gap: 10px; }
 .scorebadge-score { color: var(--muted); font-size: 0.85rem; font-variant-numeric: tabular-nums; }
 .scorebadge-doc { color: var(--ink-soft); font-size: 0.9rem; font-weight: 700; }
+/* A-25 · the letter was capped from A absent third-party operational proof */
+.scorebadge-reserved {
+  display: inline-block;
+  margin-top: 0.15rem;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-style: italic;
+}
+.fiche-badges .scorebadge-reserved { color: rgba(255, 255, 255, 0.82); }
+.map-popup-reserved { margin-left: 0.3rem; color: var(--ink-soft); font-size: 0.78rem; font-style: italic; }
 /* Lead layout — big chip first, label + documentation stacked (fiche dual badge) */
 .scorebadge-lead { display: flex; align-items: center; gap: 14px; }
 .scorebadge-lead-text { display: grid; gap: 3px; }

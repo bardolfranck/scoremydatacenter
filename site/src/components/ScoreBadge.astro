@@ -10,6 +10,7 @@
 interface Grade {
   grade: string; // "A".."E" | "insufficient_data"
   score?: number;
+  reserved_from?: string; // A-25: set to "A" when the letter was capped down (proven, never granted)
 }
 interface Props {
   label: string;
@@ -23,6 +24,7 @@ interface Props {
   layout?: "row" | "lead"; // lead = big chip first, label + documentation stacked to its right (fiche badge)
   documentationLabel?: string; // the coupled documentation wording ("documentation moyenne") — replaces the confidence dot line when set
   naLabel?: string; // localized "insufficient data"
+  reservedLabel?: string; // A-25: localized "A réservé — se prouve en exploitation", shown when grade.reserved_from is set
 }
 const {
   label,
@@ -36,12 +38,15 @@ const {
   layout = "row",
   documentationLabel,
   naLabel = "insufficient data",
+  reservedLabel,
 } = Astro.props;
 const isNa = grade.grade === "insufficient_data";
 const chipClass = isNa ? "grade-na" : `grade-${grade.grade.toLowerCase()}`;
 const sizeClass = size === "sm" ? "sm" : size === "lg" ? "lg" : "";
 const chipText = isNa ? "–" : grade.grade;
 const chipAria = isNa ? naLabel : `${label}: ${grade.grade}`;
+// A-25: the letter was capped from A for want of third-party operational proof.
+const reserved = !isNa && grade.reserved_from === "A" && reservedLabel;
 ---
 
 {layout === "lead" ? (
@@ -50,6 +55,7 @@ const chipAria = isNa ? naLabel : `${label}: ${grade.grade}`;
     <span class="scorebadge-lead-text">
       <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
       {documentationLabel && <span class="scorebadge-doc">{documentationLabel}</span>}
+      {reserved && <span class="scorebadge-reserved">{reservedLabel}</span>}
     </span>
   </div>
 ) : (
@@ -73,5 +79,6 @@ const chipAria = isNa ? naLabel : `${label}: ${grade.grade}`;
         </span>
       )
     )}
+    {reserved && <span class="scorebadge-reserved">{reservedLabel}</span>}
   </div>
 )}
