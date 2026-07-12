@@ -14,6 +14,8 @@ from .nl import NL_SPEC
 from .lu import LU_SPEC
 from .de import DE_SPEC
 from .pl import PL_SPEC
+from .ie import IE_SPEC
+from .gb import GB_SPEC
 
 SPECS = {
     "FR": FR_SPEC,
@@ -22,6 +24,8 @@ SPECS = {
     "LU": LU_SPEC,
     "DE": DE_SPEC,
     "PL": PL_SPEC,
+    "IE": IE_SPEC,
+    "GB": GB_SPEC,
 }
 
 
