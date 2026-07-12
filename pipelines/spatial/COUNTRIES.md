@@ -18,7 +18,7 @@ ways fail loudly (see [`../WORKFLOW.md`](../WORKFLOW.md)).
 | `country.py` | **THE skeleton** — `build_draft(spec, …)`: collector loop, block-aware padding, fragment + provenance assembly, the CLI (`run_cli`). One copy, no drift. |
 | `bands.py` | **Canonical value→category mappings** — E2/E3 MW & fill bands, WFD status classes, F1 distance rings, Corine→soil, Seveso `l3_value`. Cross-country comparability *by construction*; national modules import these, never redefine them. |
 | `geo.py` | **Generic access** — ArcGIS REST (point query / identify), OGC WFS + OGC API Features (pygeoapi), `laea3035` (pan-EU INSPIRE grid projection, stdlib), `min_vertex_km` (axis-order-tolerant). |
-| `eu.py` | **EU-level collectors any country gets free** — `collect_e1_energy_charts` (Fraunhofer energy-charts, all ENTSO-E), `collect_w2_universal` (EEA WISE spatial resolver + status join), `natura_rings` (EEA Natura 2000), `corine_at_point` (Corine CLC2018). |
+| `eu.py` | **EU-level collectors any country gets free** — `collect_e1_energy_charts` (Fraunhofer energy-charts, all ENTSO-E), `collect_w1_aqueduct` (**WRI Aqueduct baseline water stress — GLOBAL, the methodology's cited W1 referential, keyless, no dependency**), `collect_w2_universal` (EEA WISE spatial resolver + status join), `natura_rings` (EEA Natura 2000), `corine_at_point` (Corine CLC2018). |
 | `eu_member.py` | **The anti-clone factory** — `make_eu_member_spec(iso, e1=, natura=)`. A full EU/EEA member with no national quirk IS this spec + its ISO code. |
 | `registry.py` | **ONE ISO→spec map.** `batch.py` and the orchestrator resolve a country here. Adding a country = add one line here (+ its spec file). |
 
@@ -75,6 +75,11 @@ picked up with **zero code change** to the build path.
 
 Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/process is
 `insufficient_data`; no grade shows A without operational proof (A-25 reservation).
+
+> **W1 update (2026-07-12):** every country below now also fills **W1** (baseline water stress) via
+> WRI Aqueduct — a global keyless brick, the methodology's own W1 referential. It is a SCORED
+> indicator (unlike L1/F2-precision), so it moved grades (e.g. Frankfurt C→D on 'high' stress). Add
+> +1 to each country's coverage number in the table below; FR keeps its VigiEau reading.
 
 | ISO | Kind | Cov. | E1 (carbon) | W2 (water) | F1 (nature) | F2 (land) | Other national | Notes |
 |-----|------|------|-------------|-----------|-------------|-----------|----------------|-------|
