@@ -23,7 +23,7 @@ either dependency-blocked (W1), gated (W3, L1) or precision-only over already-fi
 | **L3** Seveso | per-Land | **No national register.** Only **Sachsen** (`luis.sachsen.de/…/betriebsbereiche_wfs`, attr `PFLICHTEN` = untere/obere Klasse, 165 sites) is clean; Hamburg partial (no tier). Hessen = anonymized **zones only** (no name/tier); RLP/BASF = nothing. EU eSPIRS register is **access-restricted**. | ❌ **dead for our states** (none in Sachsen) |
 | **W1** drought | national | **UFZ Dürremonitor** — daily national netCDF SMI grid (`files.ufz.de/~drought/SM_Lall_daily_n14.nc`). Real values: Frankfurt SMI 0.17 (moderate), München 0.0096 (exceptional). | ⚠️ **works but needs `h5py`** → breaks the stdlib-pure rule for one marginal indicator (drought isn't the siting driver). Deferred. |
 | **W3** withdrawals | national/Kreis | DESTATIS/regionalstatistik.de EVAS 32211 — per-Kreis exists but **login-gated**, triennial (2022), public-supply only | ❌ gated + stale → skip |
-| **L1** income | national | DESTATIS Regionalatlas ArcGIS hosts don't resolve; GENESIS REST API needs a **free registration key**; BBSR INKAR = downloadable CSV (cache-brick candidate, if the export URL is pinned) | ⚠️ gated/keyed; INKAR is the open path if wanted |
+| **L1** income | national | ✅ **CLEAN keyless endpoint found**: DESTATIS Regionalatlas indicator AI1601 (disposable household income per capita per Kreis, EUR) via IT.NRW's ArcGIS `www.gis-idmz.nrw.de/arcgis/rest/services/stba/regionalatlas/MapServer/identify` + a dynamic join. Point-query, no key. Frankfurt **25 394 €**, München **35 467 €** (2022). | ✅ wireable as **raw-to-provenance** (per doctrine, German income bands are a methodology decision — same as BE/NL) → **+0 grade change** but real German income in provenance |
 
 ## Endpoints worth keeping (for a future keyed/dependency build)
 
@@ -41,13 +41,23 @@ either dependency-blocked (W1), gated (W3, L1) or precision-only over already-fi
 
 ## Recommendation
 
-1. **Keep DE at the EU-level 4/12.** No open source moves a grade in our corpus; the grid data (the
-   value) simply isn't public.
-2. **The per-Land router is proven buildable** (F2 ALKIS keyless in all 6 states) — build it only if
-   finer land use is wanted later; it won't change urban-DC grades.
-3. **W1 is available if the project accepts an `h5py` dependency** (a deliberate break of the
-   stdlib-pure rule) — worth it only when drought becomes a scored pillar input.
-4. **L1 via INKAR CSV** (cache-brick) is the one clean-ish coverage gain, pending the pinned export URL.
+**What is genuinely wireable from open data, keyless, today:**
+1. **L1 income** — the Regionalatlas AI1601 endpoint above (national, keyless, point-query). Wire as
+   raw-to-provenance like BE/NL (German bands are a methodology decision). Real German income in the
+   sidecar; no grade change until bands exist.
+2. **F2 per-Land ALKIS** router (all 6 DC states keyless, verified). Finer land use than Corine, but
+   returns the same "artificialized" for urban DC sites → no grade change. Build only if finer land
+   use is wanted; needs a per-state field-map (declarative spec per Bundesland).
 
-The honest headline: **Germany's open geodata caps deep scoring; its decisional indicator (grid
-capacity) is closed.** A deep DE build is a keyed/dependency/self-host project, not an open-data ride.
+**What is NOT open:**
+3. **E2/E3 grid capacity — LOCKED** (4 TSOs, no unified feed). This is the decisional indicator, and
+   it has no open data. Deep DE cannot be decisional without it.
+4. **L3 Seveso** — no national register; only Sachsen (none of our DC states).
+5. **W1 drought** — works but needs `h5py` (breaks stdlib-pure); drought isn't a siting driver.
+6. **W3 withdrawals** — login-gated, triennial.
+
+The honest headline: **no open source changes a single grade in our corpus.** The one decisional
+indicator (grid capacity) is closed; the reachable ones (L1, F2-ALKIS) are provenance/precision only.
+A deep DE build wires real sources but is grade-neutral today — worth doing for the provenance depth
+and to prove the 16-Länder router, not for the leaderboard. Keep DE at 4/12 for scoring; enrich the
+provenance (L1) if desired.
