@@ -428,9 +428,10 @@ const pillars = methodology.pillars as any[];
           style: "https://tiles.openfreemap.org/styles/positron",
           center: [lon, lat],
           zoom: 8, // regional context — close enough to read the territory, not a rooftop
-          interactive: false,
+          cooperativeGestures: true, // pan/zoom without trapping the page scroll
           attributionControl: { compact: true },
         });
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
         const g = mini.dataset.grade || "insufficient_data";
         const na = g === "insufficient_data";
         const el = document.createElement("div");
