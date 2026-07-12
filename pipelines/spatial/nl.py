@@ -12,11 +12,16 @@ Netbeheer Nederland capaciteitskaart merges every DSO plus TenneT, giving E2 (of
 class) and E3 (queue MW + congestion-resolution year) from a single source. This is the
 Caparéseau slot, richer.
 
-Documented gaps (recon 2026-07-11): E1 needs a key (NED.nl / ENTSO-E) → not_collected; W1
-drought status (LCW) is prose → not_collected; W3 abstraction volumes are fragmented per
-province/waterschap → not_collected; F2 legal zoning (ruimtelijke plannen API) is keyed → Corine
-fallback; L1 exists cleanly at CBS StatLine (median disposable income per gemeente) but per
-HOUSEHOLD, not per consumption unit → raw to provenance, NL bands pending (same refusal as BE).
+E1 comes from Fraunhofer energy-charts (NL zone). F2 legal zoning IS reachable keyless via the
+PDOK ruimtelijke-plannen WMS (GetFeatureInfo on `enkelbestemming`) — the authoritative
+bestemmingsplan designation, with Corine as cross-check (the ruimtelijkeplannen.nl afnemers-API
+was decommissioned 2024-07; PDOK is its published replacement).
+
+Documented gaps (recon 2026-07-12): W3 abstraction volumes are fragmented per province/waterschap
+→ not_collected; L1 exists cleanly at CBS StatLine (median disposable income per gemeente) but per
+HOUSEHOLD, not per consumption unit → raw to provenance, NL bands pending (same refusal as BE). A
+keyless temporal drought signal exists (RWS Waterinfo `waterafvoer` "Verlaagde afvoer") but it is
+a NEW indicator dimension, not W1/W2/W3 — deferred to a methodology decision, not wired here.
 """
 
 from . import eu
@@ -29,6 +34,7 @@ LOCATIESERVER = "https://api.pdok.nl/bzk/locatieserver/search/v3_1/reverse"
 CAPACITEIT_DSO = ("https://services.arcgis.com/nSZVuSZjHpEZZbRo/arcgis/rest/services/"
                   "Capaciteitskaart_elektriciteitsnet_v2_afname/FeatureServer")
 KRW_WMS = "https://service.pdok.nl/ihw/krw-oppervlaktewaterlichamen-geharmoniseerd/wms/v1_0"
+PLANNEN_WMS = "https://service.pdok.nl/kadaster/ruimtelijke-plannen/wms/v1_0"
 SEVESO_WFS = ("https://service.pdok.nl/rws/faciliteiten-voor-productie-en-industrie/"
               "productie-installaties/wfs/v1_0")
 CBS_ODATA = "https://opendata.cbs.nl/ODataApi/odata/86161NED/TypedDataSet"
@@ -60,10 +66,23 @@ def fetch_commune(lat: float, lon: float) -> dict:
 
 # --- E2 + E3 · grid capacity and congestion (Netbeheer Nederland capaciteitskaart) -------------
 
-# The feed publishes an offtake-availability CLASS, not MW (afname 1..3 observed; legend:
-# beschikbaar / beperkt / congestie-onderzoek-of-tekort). PROVISIONAL mapping onto the shared
-# E2 bands; the raw class + queue figures ride in the source title for the reviewer.
-_E2_AFNAME = {1: "adequate", 2: "constrained", 3: "saturated"}
+# The feed publishes an offtake-availability CLASS in the integer `afname`, decoded straight from
+# the layer's own Arcade legend (drawingInfo.valueExpression, read live 2026-07-12):
+#   afname 0 + real voedingsgebied     → "beschikbaar zonder wachtrij"    (capacity available)
+#   afname 0 (or -1) + area == "0"     → "kleur wordt later toegevoegd"   (no feed area — skip)
+#   afname 1                            → "beperkt beschikbaar zonder wachtrij" (limited, no queue)
+#   afname 2                            → "gebied is in onderzoek met wachtrij" (under study, queue)
+#   afname 3                            → "tekort aan transportcapaciteit met wachtrij" (shortage)
+# Mapped onto the shared E2 (capacity) and E3 (congestion) bands — class 0 was previously DROPPED,
+# losing every "capacity available" area; the raw class + queue MW ride in the source for review.
+_AFNAME_E2 = {0: "adequate", 1: "constrained", 2: "constrained", 3: "saturated"}
+_AFNAME_E3 = {0: "low", 1: "moderate", 2: "high", 3: "critical"}
+_AFNAME_LABEL = {
+    0: "transport capacity available, no queue",
+    1: "limited transport capacity, no queue",
+    2: "area under congestion study, with queue",
+    3: "transport-capacity shortage, with queue",
+}
 
 
 def collect_grid(lat: float, lon: float, accessed: str) -> list[dict]:
@@ -77,30 +96,21 @@ def collect_grid(lat: float, lon: float, accessed: str) -> list[dict]:
     afname = a.get("afname")
     area, dso = a.get("voedingsgebied_naam"), a.get("RNB")
     queue = a.get("wachtrij_afname")
-    out = []
-    e2 = _E2_AFNAME.get(int(afname)) if afname is not None else None
-    if e2:
-        out.append({
-            "id": "E2", "status": "measured", "value": e2,
-            "source": _source(
-                f"Netbeheer Nederland capaciteitskaart (offtake) — {dso} area '{area}': "
-                f"availability class {afname}/3 (1=available, 3=congested/shortage), "
-                f"queue {queue}. Provisional class mapping",
-                "https://capaciteitskaart.netbeheernederland.nl/", accessed),
-        })
-        # E3 from the same reading: congested class with a live queue = the congestion signal.
-        e3 = {1: "low", 2: "moderate", 3: "high"}[int(afname)]
-        if int(afname) == 3 and queue:
-            e3 = "critical"
-        out.append({
-            "id": "E3", "status": "measured", "value": e3,
-            "source": _source(
-                f"Netbeheer Nederland capaciteitskaart (offtake) — {dso} area '{area}': "
-                f"availability class {afname}/3, offtake queue {queue}. Provisional mapping "
-                f"from class+queue (NL publishes congestion state, not a fill-rate %)",
-                "https://capaciteitskaart.netbeheernederland.nl/", accessed),
-        })
-    return out
+    # area "0" (or null afname) is the legend's "kleur later" background: no feed area here.
+    if afname is None or str(area) == "0" or int(afname) not in _AFNAME_E2:
+        return []
+    afname = int(afname)
+    label = _AFNAME_LABEL[afname]
+    src_title = (f"Netbeheer Nederland capaciteitskaart (offtake) — {dso} area '{area}', "
+                 f"class {afname}/3: {label}; offtake queue {queue} MW. Class read from the "
+                 f"layer's published legend; provisional map to E2/E3 bands")
+    src_url = "https://capaciteitskaart.netbeheernederland.nl/"
+    return [
+        {"id": "E2", "status": "measured", "value": _AFNAME_E2[afname],
+         "source": _source(src_title, src_url, accessed)},
+        {"id": "E3", "status": "measured", "value": _AFNAME_E3[afname],
+         "source": _source(src_title, src_url, accessed)},
+    ]
 
 
 # --- W2 · water body (PDOK KRW WMS GetFeatureInfo → EEA WISE) ----------------------------------
@@ -137,20 +147,74 @@ def collect_w2(lat: float, lon: float, accessed: str) -> dict | None:
     }
 
 
-# --- F2 · soil status (Corine only in v0 — ruimtelijke plannen API is keyed) -------------------
+# --- F2 · soil status (legal zoning first — PDOK ruimtelijke plannen; Corine cross-check) ------
+
+# Dutch legal zoning main-group (IMRO/SVBP `bestemmingshoofdgroep`) → methodology soil category.
+# The land-take question for a DC is: legally built/industrial land (low conflict) vs
+# agricultural or (semi-)natural land (high conflict). Provisional; methodology owns calibration.
+def _nl_bestemming_to_category(hoofdgroep: str | None) -> str | None:
+    h = (hoofdgroep or "").lower()
+    if not h:
+        return None
+    if "agrarisch" in h:
+        return "agricultural"
+    if any(k in h for k in ("natuur", "bos", "groen", "water", "tuin", "recreatie")):
+        return "natural_or_enaf"
+    if any(k in h for k in ("bedrijf", "bedrijventerrein", "centrum", "detailhandel",
+                            "dienstverlening", "gemengd", "horeca", "kantoor", "leiding",
+                            "maatschappelijk", "sport", "verkeer", "wonen", "woon",
+                            "verblijf", "cultuur", "infrastructuur")):
+        return "artificialized"
+    return None  # unknown main-group → let Corine decide
+
+
+def collect_zoning(lat: float, lon: float, accessed: str) -> tuple[str | None, str | None]:
+    """Legal zoning at point via PDOK ruimtelijke-plannen WMS GetFeatureInfo (layer
+    `enkelbestemming`). Returns (F2 category, human source detail) or (None, None). The service
+    has no WFS twin, so a tiny-bbox GetFeatureInfo centred on the point is the point probe."""
+    bbox = f"{lon-0.001},{lat-0.001},{lon+0.001},{lat+0.001}"  # CRS:84 → lon,lat order
+    try:
+        data = get_json(PLANNEN_WMS, {
+            "SERVICE": "WMS", "VERSION": "1.3.0", "REQUEST": "GetFeatureInfo",
+            "LAYERS": "enkelbestemming", "QUERY_LAYERS": "enkelbestemming", "CRS": "CRS:84",
+            "BBOX": bbox, "WIDTH": 101, "HEIGHT": 101, "I": 50, "J": 50,
+            "INFO_FORMAT": "application/json", "FEATURE_COUNT": 5,
+        })
+    except SourceUnavailable:
+        return None, None
+    feats = data.get("features") or []
+    if not feats:
+        return None, None
+    p = feats[0].get("properties", {})
+    hoofdgroep, naam = p.get("bestemmingshoofdgroep"), p.get("naam")
+    cat = _nl_bestemming_to_category(hoofdgroep)
+    if cat is None:
+        return None, None
+    plan = p.get("typeplan") or "bestemmingsplan"
+    detail = f"{plan} '{naam or hoofdgroep}' (hoofdgroep {hoofdgroep}, {p.get('dossierid')})"
+    return cat, detail
+
 
 def collect_f2(lat: float, lon: float, accessed: str) -> tuple[dict | None, dict]:
+    """Legal zoning first (PDOK ruimtelijke plannen), Corine Land Cover as fallback/cross-check."""
+    primary, primary_src = collect_zoning(lat, lon, accessed)
     clc_code, clc_cat = eu.corine_at_point(lat, lon)
-    crosscheck = {"primary": None, "primary_source": None,
-                  "land_cover": clc_cat, "clc_code": clc_code, "agree": None,
-                  "note": "legal zoning (ruimtelijke plannen API) is key-gated — v1 backlog"}
-    if clc_cat is None:
+    crosscheck = {"primary": primary, "primary_source": primary_src,
+                  "land_cover": clc_cat, "clc_code": clc_code,
+                  "agree": (primary == clc_cat) if primary and clc_cat else None}
+    value = primary or clc_cat
+    if value is None:
         return None, crosscheck
-    return {"id": "F2", "status": "measured", "value": clc_cat,
-            "source": _source(
-                f"Corine Land Cover 2018 (EEA) — CLC code {clc_code} at point (EU-wide "
-                f"fallback; NL legal zoning API is key-gated, no cross-check)",
-                eu.EEA_CORINE, accessed)}, crosscheck
+    if primary:
+        title = (f"PDOK ruimtelijke plannen (enkelbestemming) — {primary_src}; "
+                 f"Corine cross-check: {clc_cat or 'unavailable'}")
+        url = PLANNEN_WMS
+    else:
+        title = (f"Corine Land Cover 2018 (EEA) — CLC code {clc_code} at point (EU-wide "
+                 f"fallback; no legal zoning returned at point, no cross-check)")
+        url = eu.EEA_CORINE
+    return {"id": "F2", "status": "measured", "value": value,
+            "source": _source(title, url, accessed)}, crosscheck
 
 
 # --- L3 · Seveso (PDOK INSPIRE production installations — tier not published) ------------------
