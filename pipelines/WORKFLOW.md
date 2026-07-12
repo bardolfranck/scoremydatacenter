@@ -161,3 +161,35 @@ the rest. Offline tests: `engine/tests/test_orchestrate.py`.
 The same orchestrator serves the initial backfill, the recurring signal delta, and each new scored
 DC's `contestation[]`. Adding a DC is one command to the gate, then one `promote` — never a manual
 step-by-step.
+
+---
+
+## Multi-country collection (11 countries + US watchlist)
+
+The spatial pipeline is country-generic: one skeleton, a declarative spec per country resolved
+through `pipelines/spatial/registry.py`. Full details, decision tree, status matrix and per-country
+gotchas/TODO are in **[`spatial/COUNTRIES.md`](spatial/COUNTRIES.md)**. The operating flow — **one
+way to run**, same three steps for every country:
+
+```bash
+# 1. COLLECT — registry-dispatched batch (the ONE path; --country selects the adapter)
+make collect-country COUNTRY=BE SITES=sites-be.csv OUT=../smdc-newsroom/calibration/datacenters-be
+#    Belgium routes by region (Wallonia/Flanders/Brussels) automatically; PL/SE/FI/NO/IE ride the
+#    EU-member factory; DE/GB/NL/LU have national specs. US is NOT scored → watchlist (A-19).
+
+# 2. PROMOTE — reviewed drafts become scored records (the loader ignores *.draft.json)
+for f in ../smdc-newsroom/calibration/datacenters-be/*.draft.json; do cp "$f" "${f%.draft.json}.json"; done
+rm ../smdc-newsroom/calibration/datacenters-be/*.draft.json
+
+# 3. REBUILD the served artifacts — NEVER `make score` next to the newsroom (it refuses, would wipe
+#    the corpus + watchlist to the zz fixtures). This is the single rebuild path.
+make prod-artifacts
+```
+
+`load_datacenters` globs every `datacenters*` panel, so a new `datacenters-xx/` folder is scored
+with zero build-path change. The A-25 reservation caps any A without operational proof to B, so a
+thin foreign corpus never shows a false A.
+
+**US and any non-EU-commons country → the watchlist, not a score** (cadrage A-19). Sourced facts,
+no letter, no contradictoire: drop a `calibration/watchlist/<country>.json` array (same shape as
+`fr-oppositions.json`); `make prod-artifacts` renders the "En veille" markers.

@@ -4,6 +4,11 @@ Coordinates in → a **sourced draft** datacenter fragment out. The pipeline **p
 not publish**: output goes to `smdc-newsroom` (private) as a draft, every value carries its
 source, and no score or note is ever written. A human reviews before anything enters the circuit.
 
+> **Multi-country (11 countries + US watchlist).** This file documents the original FR pipeline.
+> For the country architecture (shared skeleton + `eu_member` factory + national specs), the
+> **how-to-add-a-country decision tree**, the status matrix and the gotchas/TODO per country, see
+> **[`COUNTRIES.md`](./COUNTRIES.md)** — read it before adding a country.
+
 See [`RECON.md`](./RECON.md) for the source-by-source feasibility study behind the v1 perimeter.
 
 ## What it fills (v1)

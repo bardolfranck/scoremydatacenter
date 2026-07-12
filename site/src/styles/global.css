@@ -226,7 +226,9 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .demo-score { font-weight: 850; font-size: 1.35rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 .demo-bar { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
 .demo-bar i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; transform: scaleX(var(--demo-score, 1)); }
-.demo-caption { margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
+.demo-caption { margin-top: 12px; font-size: 0.85rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; justify-content: space-between; }
+.demo-replay { border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; padding: 3px 12px; cursor: pointer; }
+.demo-replay:hover { border-color: var(--accent); color: var(--accent); }
 .score-demo.play .demo-pop { animation: demo-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: var(--pop-delay, 0ms); }
 @keyframes demo-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
 .score-demo.play .demo-bar i { animation: demo-fill 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) 1.6s both; }
@@ -239,6 +241,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
   .map-scan { display: none; }
   .watch-marker::after { display: none; }
   .score-demo .demo-pop, .score-demo .demo-bar i, .score-demo .demo-badge { animation: none !important; }
+  .demo-replay { display: none; }
 }
 .watch-badge { display: inline-block; width: fit-content; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--wash); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .watch-note { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; font-style: italic; }

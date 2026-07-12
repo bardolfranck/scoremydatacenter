@@ -180,7 +180,8 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               </div>
             </div>
           </div>
-          <p class="demo-caption">{t.demo.caption.replace("{name}", demo.name)}</p>
+          <p class="demo-caption">{t.demo.caption.replace("{name}", demo.name)}
+            <button class="demo-replay" type="button">↻ {t.demo.replay}</button></p>
         </div>
       )}
 
@@ -396,32 +397,45 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     io.observe(band);
   }
 
-  // The self-grading fiche (brief #3): one pass on scroll-in — pillar chips pop,
-  // the SITE bar fills while the score counts, the letter stamps in. All CSS-driven
-  // via .play; JS only adds the class and replays the (already final) score number.
+  // The self-grading fiche (brief #3): pillar chips pop, the SITE bar fills while
+  // the score counts, the letter stamps in. All CSS-driven via .play; JS adds the
+  // class and replays the (already final) score number. Plays once on scroll-in —
+  // and the discreet "replay" button reruns it on demand (the browser restores the
+  // scroll on reload, so the one automatic pass can fire before anyone watches).
   const demoEl = document.querySelector<HTMLElement>(".score-demo");
-  if (demoEl && !reduced && "IntersectionObserver" in window) {
-    const io2 = new IntersectionObserver((entries) => {
-      if (!entries.some((e) => e.isIntersecting)) return;
-      io2.disconnect();
+  if (demoEl && !reduced) {
+    const scoreEl = demoEl.querySelector<HTMLElement>(".demo-score");
+    const finalText = scoreEl?.textContent || "";
+    const m = finalText.match(/(\d+(?:[.,]\d+)?)/);
+    let run = 0; // replay cancels the previous count loop
+    const playDemo = () => {
+      demoEl.classList.remove("play");
+      void demoEl.offsetWidth; // reflow so the CSS animations restart
       demoEl.classList.add("play");
-      const scoreEl = demoEl.querySelector<HTMLElement>(".demo-score");
-      const final = scoreEl?.textContent || "";
-      const m = final.match(/(\d+(?:[.,]\d+)?)/);
       if (!scoreEl || !m) return;
+      const mine = ++run;
       const target = parseFloat(m[1].replace(",", "."));
       const sep = m[1].includes(",") ? "," : ".";
       const start = performance.now() + 1600; // after the five pops
       const DUR = 1200;                        // in step with the bar fill
       const frame = (now: number) => {
+        if (mine !== run) return;
         const k = Math.min(Math.max((now - start) / DUR, 0), 1);
         const eased = 1 - Math.pow(1 - k, 3);
-        scoreEl.textContent = final.replace(m[1], (target * eased).toFixed(1).replace(".", sep));
+        scoreEl.textContent = finalText.replace(m[1], (target * eased).toFixed(1).replace(".", sep));
         if (k < 1) requestAnimationFrame(frame);
-        else scoreEl.textContent = final; // land exactly on the published score
+        else scoreEl.textContent = finalText; // land exactly on the published score
       };
       requestAnimationFrame(frame);
-    }, { threshold: 0.4 });
-    io2.observe(demoEl);
+    };
+    demoEl.querySelector(".demo-replay")?.addEventListener("click", playDemo);
+    if ("IntersectionObserver" in window) {
+      const io2 = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        io2.disconnect();
+        playDemo();
+      }, { threshold: 0.4 });
+      io2.observe(demoEl);
+    }
   }
 </script>
