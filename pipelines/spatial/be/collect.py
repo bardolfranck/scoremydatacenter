@@ -55,8 +55,11 @@ BE_SPEC = {
     "collectors": [
         (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E1",), _wrap(lambda ctx: collect_e1(ctx["accessed"]))),
-        (("W2",), _wrap(lambda ctx: sources.collect_w2(
-            ctx["lat"], ctx["lon"], ctx["commune"]["region"], ctx["accessed"]))),
+        # Wallonia's authoritative SPW MESU first; the universal EEA WISE resolver as fallback so
+        # Flanders and Brussels (no probed regional code layer) still get W2.
+        (("W2",), lambda ctx, prov: [x] if (x := (
+            sources.collect_w2(ctx["lat"], ctx["lon"], ctx["commune"]["region"], ctx["accessed"])
+            or eu.collect_w2_universal(ctx["lat"], ctx["lon"], ctx["accessed"]))) else []),
         (("F1",), _wrap(lambda ctx: sources.collect_f1(
             ctx["lat"], ctx["lon"], ctx["commune"]["region"], ctx["accessed"]))),
         (("L3",), _wrap(lambda ctx: sources.collect_l3(
@@ -64,7 +67,7 @@ BE_SPEC = {
         (("F2",), _collect_f2),
         (("E2",), lambda ctx, prov: collect_grid_capacity(ctx["lat"], ctx["lon"], ctx["accessed"])),
     ],
-    "collectable_gaps": frozenset({"W3", "L1", "W2"}),
+    "collectable_gaps": frozenset({"W3", "L1"}),
     "provenance_commune": lambda c: {
         "region": c.get("region"),
         "commune_nis": c.get("nis"),
