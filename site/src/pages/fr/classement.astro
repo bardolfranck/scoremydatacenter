@@ -35,6 +35,9 @@ const pillarShort: Record<string, string> = {
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
+// Accent-insensitive haystack for the basic search engine (client mirrors this).
+const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.country].filter(Boolean).join(" "));
 
 import { FR_NAV } from "../../config/nav";
 
@@ -62,6 +65,11 @@ const nav = FR_NAV;
       </div>
 
       <div class="rank-controls">
+        <label class="rank-search">
+          <span class="sr-only">Chercher un projet</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="rank-q" placeholder="Chercher un projet…" autocomplete="off" />
+        </label>
         <label>
           Trier par
           <select id="rank-sort">
@@ -70,6 +78,7 @@ const nav = FR_NAV;
             {pillars.map((p) => <option value={p.id}>Pilier : {pillarShort[p.id]}</option>)}
             <option value="confidence">Confiance</option>
             <option value="power">Puissance (MW)</option>
+            <option value="country">Pays</option>
           </select>
         </label>
         <label>
@@ -105,6 +114,8 @@ const nav = FR_NAV;
             {scores.map((dc) => (
               <tr
                 data-status={dc.project_status}
+                data-country={dc.country}
+                data-search={haystack(dc)}
                 data-k-site={sortValue(dc.grades.site)}
                 data-k-operator={sortValue(dc.grades.project_process)}
                 data-k-confidence={confidenceRank[dc.confidence.level]}
@@ -191,14 +202,24 @@ const nav = FR_NAV;
   const sortSel = document.getElementById("rank-sort") as HTMLSelectElement;
   const orderSel = document.getElementById("rank-order") as HTMLSelectElement;
   const statusSel = document.getElementById("rank-status") as HTMLSelectElement;
+  const searchInput = document.getElementById("rank-q") as HTMLInputElement;
+
+  // Same normalisation as the build-time haystack: accent-insensitive matching.
+  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
   function apply(updateUrl = true) {
     const key = sortSel.value;
     const asc = orderSel.value === "asc";
     const status = statusSel.value;
+    const q = norm(searchInput.value.trim());
     const rows = Array.from(tbody.querySelectorAll("tr"));
 
     rows.sort((a, b) => {
+      if (key === "country") {
+        // Alphabetical: "best first" reads A→Z (FR before the ZZ fixtures).
+        const diff = (a.dataset.country ?? "").localeCompare(b.dataset.country ?? "");
+        return asc ? -diff : diff;
+      }
       const va = parseFloat(a.getAttribute(`data-k-${key}`) ?? "-1");
       const vb = parseFloat(b.getAttribute(`data-k-${key}`) ?? "-1");
       return asc ? va - vb : vb - va;
@@ -206,7 +227,8 @@ const nav = FR_NAV;
 
     let rank = 0;
     for (const row of rows) {
-      const visible = status === "all" || row.dataset.status === status;
+      const visible = (status === "all" || row.dataset.status === status)
+        && (!q || (row.dataset.search ?? "").includes(q));
       row.style.display = visible ? "" : "none";
       if (visible) {
         rank += 1;
@@ -220,6 +242,7 @@ const nav = FR_NAV;
       if (key !== "site") params.set("tri", key);
       if (asc) params.set("ordre", "asc");
       if (status !== "all") params.set("statut", status);
+      if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
       const query = params.toString();
       history.replaceState(null, "", query ? `?${query}` : location.pathname);
     }
@@ -229,9 +252,11 @@ const nav = FR_NAV;
   if (params.get("tri")) sortSel.value = params.get("tri")!;
   if (params.get("ordre") === "asc") orderSel.value = "asc";
   if (params.get("statut")) statusSel.value = params.get("statut")!;
+  if (params.get("q")) searchInput.value = params.get("q")!;
   if (sortSel.selectedIndex < 0) sortSel.value = "site";
   if (statusSel.selectedIndex < 0) statusSel.value = "all";
 
   [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => apply()));
+  searchInput.addEventListener("input", () => apply());
   apply(false);
 </script>
