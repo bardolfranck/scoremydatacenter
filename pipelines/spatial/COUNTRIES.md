@@ -94,7 +94,7 @@ Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/p
 | **SE** | factory | 4/12 | energy-charts (**~23**) | WISE universal | EEA | Corine | — | clean-grid end (hydro+nuclear) |
 | **FI** | factory | ~3/12 | energy-charts (~64) | WISE universal (patchy) | EEA | Corine | — | lake-dense → W2 buffer misses |
 | **NO** | factory `natura=False` | 3/12 | energy-charts (~30) | WISE universal | — (Emerald) | Corine | — | EEA-not-EU: Emerald Network ≠ Natura |
-| **US** | **watchlist only** | — | — | — | — | — | — | A-19: presence + Data Center Watch partnership, no score |
+| **US** | **watchlist only** | — | — | ✅ Aqueduct | — | — | — | A-19: presence, no score. But **W1 (WRI Aqueduct) is the ONE brick that survives for the US** — global, keyless (all other EU bricks fail: not in WISE/Natura/Corine/energy-charts). Added as a sourced *fact* on the US watchlist entries (Mesa = Extremely High, hard-confirming the Colorado-River water story). A future thin US score is one indicator closer; the rest needs US-federal sources (eGRID/NLCD/PAD-US, probed flaky). |
 
 ---
 
