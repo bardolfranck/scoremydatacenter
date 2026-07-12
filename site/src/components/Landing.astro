@@ -22,6 +22,16 @@ const scores = scoresData as any[];
 const methodology = methodologyData as any;
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
 
+// The "money shot" (brief 2026-07-12 #3): a real published case whose fiche grades
+// itself on scroll-in. Real data only — first non-fixture DC with a full pillar
+// spread, so the animation reveals what is already published, never a mock.
+const demo = scores.find((d: any) =>
+  !d.id.startsWith("zz-") &&
+  d.grades.site.grade !== "insufficient_data" &&
+  d.grades.site.score != null &&
+  pillarOrder.every((pid: string) => d.pillars[pid]?.grade && d.pillars[pid].grade !== "insufficient_data")
+) ?? scores.find((d: any) => !d.id.startsWith("zz-") && d.grades.site.score != null);
+
 const pillarIconName: Record<string, PillarIconName> = {
   energy: "energy", water: "water", land_biodiversity: "land",
   local_impact: "local", transparency_governance: "transparency",
@@ -127,6 +137,53 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <h2 id="scores-title">{t.scoresTitle}</h2>
         <p>{t.scoresLede}</p>
       </div>
+
+      {t.demo && demo && (
+        <div class="score-demo">
+          <p class="sr-only">{t.demo.sr.replace("{name}", demo.name)}</p>
+          <div class="demo-anim" aria-hidden="true">
+            <p class="demo-kicker">{t.demo.kicker}</p>
+            <div class="demo-body">
+              <div class="demo-pillars">
+                {pillarOrder.map((pid: string, i: number) => (
+                  <div class="demo-cell demo-pop" style={`--pop-delay:${i * 260}ms`}>
+                    <span class="demo-plabel">{t.pillarShort[pid]}</span>
+                    <ScoreBadge
+                      label={t.pillarShort[pid]}
+                      grade={demo.pillars[pid]}
+                      confidence={demo.confidence.level}
+                      confidenceLabel={t.confidence[demo.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel={t.insufficient}
+                    />
+                  </div>
+                ))}
+              </div>
+              <div class="demo-site">
+                <span class="demo-slabel">{t.siteScore}</span>
+                <span class="demo-score">{demo.grades.site.score.toFixed(1)}/100</span>
+                <span class="demo-bar"><i style={`--demo-score:${demo.grades.site.score / 100}`}></i></span>
+              </div>
+              <div class="demo-badge">
+                <ScoreBadge
+                  label={t.siteScore}
+                  grade={demo.grades.site}
+                  confidence={demo.confidence.level}
+                  confidenceLabel={t.confidence[demo.confidence.level]}
+                  renderConfidence={false}
+                  renderLabel={false}
+                  size="lg"
+                  naLabel={t.insufficient}
+                />
+              </div>
+            </div>
+          </div>
+          <p class="demo-caption">{t.demo.caption.replace("{name}", demo.name)}</p>
+        </div>
+      )}
+
       <div class="scorecard-grid">
         {scores.map((dc) => (
           <article class="scorecard">
@@ -337,5 +394,34 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       });
     }, { threshold: 0.4 });
     io.observe(band);
+  }
+
+  // The self-grading fiche (brief #3): one pass on scroll-in — pillar chips pop,
+  // the SITE bar fills while the score counts, the letter stamps in. All CSS-driven
+  // via .play; JS only adds the class and replays the (already final) score number.
+  const demoEl = document.querySelector<HTMLElement>(".score-demo");
+  if (demoEl && !reduced && "IntersectionObserver" in window) {
+    const io2 = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io2.disconnect();
+      demoEl.classList.add("play");
+      const scoreEl = demoEl.querySelector<HTMLElement>(".demo-score");
+      const final = scoreEl?.textContent || "";
+      const m = final.match(/(\d+(?:[.,]\d+)?)/);
+      if (!scoreEl || !m) return;
+      const target = parseFloat(m[1].replace(",", "."));
+      const sep = m[1].includes(",") ? "," : ".";
+      const start = performance.now() + 1600; // after the five pops
+      const DUR = 1200;                        // in step with the bar fill
+      const frame = (now: number) => {
+        const k = Math.min(Math.max((now - start) / DUR, 0), 1);
+        const eased = 1 - Math.pow(1 - k, 3);
+        scoreEl.textContent = final.replace(m[1], (target * eased).toFixed(1).replace(".", sep));
+        if (k < 1) requestAnimationFrame(frame);
+        else scoreEl.textContent = final; // land exactly on the published score
+      };
+      requestAnimationFrame(frame);
+    }, { threshold: 0.4 });
+    io2.observe(demoEl);
   }
 </script>

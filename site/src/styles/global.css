@@ -211,10 +211,34 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-scan { position: absolute; top: 0; bottom: 0; left: -16%; width: 16%; z-index: 3; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(15, 95, 184, 0.13), transparent); animation: map-scan 2.6s ease-in-out 1 both; animation-delay: var(--scan-delay, 2.4s); }
 @keyframes map-scan { from { transform: translateX(0); } to { transform: translateX(740%); } }
 
+/* The self-grading fiche (brief 2026-07-12 #3 — the reusable money shot): a REAL
+   published case whose five pillar chips pop in, SITE bar fills while the score
+   counts, then the letter stamps. Final state is the default (no-JS / SEO /
+   reduced-motion); animations only exist under .play, added once on scroll-in. */
+.score-demo { margin: 0 0 26px; padding: 18px 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
+.demo-kicker { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+.demo-body { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 30px; }
+.demo-pillars { display: grid; grid-template-columns: repeat(5, minmax(52px, 64px)); gap: 8px; }
+.demo-cell { display: grid; justify-items: center; gap: 6px; padding: 10px 4px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+.demo-plabel { color: var(--muted); font-size: 0.6rem; font-weight: 750; text-transform: uppercase; text-align: center; }
+.demo-site { display: grid; gap: 6px; flex: 1; min-width: 170px; max-width: 300px; }
+.demo-slabel { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.demo-score { font-weight: 850; font-size: 1.35rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.demo-bar { display: block; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.demo-bar i { display: block; height: 100%; width: 100%; background: var(--accent); transform-origin: left; transform: scaleX(var(--demo-score, 1)); }
+.demo-caption { margin-top: 12px; font-size: 0.85rem; color: var(--muted); }
+.score-demo.play .demo-pop { animation: demo-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: var(--pop-delay, 0ms); }
+@keyframes demo-pop { from { opacity: 0; transform: scale(0.4); } to { opacity: 1; transform: scale(1); } }
+.score-demo.play .demo-bar i { animation: demo-fill 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) 1.6s both; }
+@keyframes demo-fill { from { transform: scaleX(0); } to { transform: scaleX(var(--demo-score, 1)); } }
+.score-demo.play .demo-badge { animation: demo-stamp 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 3s both; }
+@keyframes demo-stamp { from { opacity: 0; transform: scale(1.8); } to { opacity: 1; transform: scale(1); } }
+
 @media (prefers-reduced-motion: reduce) {
   .map-chip.chip-drop { animation: none; }
   .map-scan { display: none; }
   .watch-marker::after { display: none; }
+  .score-demo .demo-pop, .score-demo .demo-bar i, .score-demo .demo-badge { animation: none !important; }
 }
 .watch-badge { display: inline-block; width: fit-content; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--wash); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .watch-note { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; font-style: italic; }
@@ -292,7 +316,10 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .stat-anim { display: inline-block; font-variant-numeric: tabular-nums; }
 .stat-bar { display: block; width: 100%; height: 3px; margin-top: 7px; background: rgba(159, 193, 236, 0.22); border-radius: 2px; overflow: hidden; }
 .stat-bar i { display: block; height: 100%; width: 100%; background: #4ea3ff; transform-origin: left; transform: scaleX(1); }
-.stat a, .stat span { color: #9fc1ec; font-size: 0.82rem; font-weight: 650; width: fit-content; }
+/* Direct children only: the attribution line. The counter spans live INSIDE <b>
+   and must keep the big bold figure style (this rule once swallowed them —
+   "the digits disappear" bug). */
+.stat > a, .stat > span { color: #9fc1ec; font-size: 0.82rem; font-weight: 650; width: fit-content; }
 .stat a { border-bottom: 1px solid rgba(159, 193, 236, 0.5); }
 .stat a:hover { color: #fff; }
 .why-punch { max-width: 46ch; font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 800; line-height: 1.3; }
