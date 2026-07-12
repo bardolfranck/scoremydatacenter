@@ -1,0 +1,156 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Public methodology page, shared FR/EN (i18n §13: one template, per-language t).
+// Rendered from the versioned methodology.json (the grid IS data, not prose);
+// the doctrine prose lives in the page t objects. The exhaustive 24-indicator
+// table is collapsed (<details>) and force-expanded in print.
+import Base from "../layouts/Base.astro";
+import PillarIcon from "./PillarIcon.astro";
+import type { PillarIconName } from "./PillarIcon.astro";
+import methodologyData from "../../public/data/methodology.json";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
+  altHref: string; altLabel: string;
+};
+
+const m = methodologyData as any;
+const repo = "https://github.com/bardolfranck/scoremydatacenter";
+const docUrl = `${repo}/blob/main/docs/methodologie-notation.md`;
+const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
+const pillarIcon: Record<string, PillarIconName> = {
+  energy: "energy", water: "water", land_biodiversity: "land",
+  local_impact: "local", transparency_governance: "transparency",
+};
+const pct = (x: number) => `${Math.round(x * 100)} %`;
+const grades = [...m.grade_thresholds].sort((a: any, b: any) => b.min - a.min);
+const byPillar = m.pillars.map((p: any) => ({
+  pillar: p,
+  items: m.indicators.filter((i: any) => i.pillar === p.id && i.mvp),
+}));
+const refBasis = (i: any) =>
+  i.threshold_basis?.reference ?? i.threshold_basis?.justification ?? "—";
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby="meth-title">
+    <div class="section-inner prose legal">
+      <h1 id="meth-title">{t.h1}</h1>
+      <p class="legal-draft" set:html={t.banner.replace("{version}", m.version).replace("{repo}", repo)}></p>
+
+      <div class="meth-actions">
+        <a class="button button-primary" href={docUrl} target="_blank" rel="noopener">📄 {t.download}</a>
+        <button type="button" class="button button-secondary meth-print">{t.print}</button>
+      </div>
+
+      <h2>{t.oneSentenceH2}</h2>
+      {t.oneSentence.map((block: string) => <Fragment set:html={block} />)}
+
+      <h2>{t.scaleH2}</h2>
+      <div class="meth-scale">
+        {grades.map((g: any) => (
+          <span class={`meth-grade grade-${g.grade.toLowerCase()}`}>{g.grade}<small>≥ {g.min}</small></span>
+        ))}
+      </div>
+
+      <h2>{t.aProvenH2}</h2>
+      <Fragment set:html={t.aProvenP} />
+      <div class="meth-example">
+        <p class="meth-example-title" set:html={t.aProvenExTitle}></p>
+        {t.aProvenEx.map((block: string) => <Fragment set:html={block} />)}
+      </div>
+
+      <h2>{t.pillarsH2}</h2>
+      <ul class="meth-pillars">
+        {m.pillars.map((p: any) => (
+          <li><span class="meth-pillar-name"><PillarIcon name={pillarIcon[p.id]} size={18} />{L(p.label)}</span><b>{pct(p.weight)}</b></li>
+        ))}
+      </ul>
+
+      <h2>{t.bulletinH2}</h2>
+      {t.bulletin.map((block: string) => <Fragment set:html={block} />)}
+      <div class="meth-example">
+        <p class="meth-example-title">{t.exampleTitle}</p>
+        <ul>
+          {t.exampleItems.map((item: string) => <li set:html={item}></li>)}
+        </ul>
+      </div>
+
+      <h2>{t.twoNotesH2}</h2>
+      <Fragment set:html={t.twoNotesP} />
+
+      <h2>{t.thresholdsH2}</h2>
+      <Fragment set:html={t.thresholdsP} />
+      <ul>
+        {t.thresholdFamilies.map((item: string) => <li set:html={item}></li>)}
+      </ul>
+      <p class="meth-rule" set:html={t.rule}></p>
+
+      <h2>{t.lockedH2}</h2>
+      <ul>
+        {t.locked.map((item: string) => <li set:html={item}></li>)}
+      </ul>
+
+      <h2>{t.statusH2}</h2>
+      <Fragment set:html={t.statusP} />
+      <ul>
+        {t.statusItems.map((item: string) => <li set:html={item}></li>)}
+      </ul>
+
+      <h2>{t.refsH2}</h2>
+      <ul class="meth-refs">
+        {t.references.map((r: any) => (
+          <li><a href={r.url} target="_blank" rel="noopener">{r.label}</a></li>
+        ))}
+      </ul>
+
+      <details class="meth-details">
+        <summary>{t.detailsSummary}</summary>
+        <Fragment set:html={t.detailsIntro} />
+        {byPillar.map((g: any) => (
+          <div class="meth-block">
+            <h3 class="meth-block-title"><PillarIcon name={pillarIcon[g.pillar.id]} size={18} />{L(g.pillar.label)}<span class="meth-block-weight">{pct(g.pillar.weight)}</span></h3>
+            <div class="fiche-ind-wrap">
+              <table class="meth-table">
+                <thead><tr><th>{t.th.indicator}</th><th>{t.th.block}</th><th>{t.th.coef}</th><th>{t.th.direction}</th><th>{t.th.thresholdRef}</th><th>{t.th.source}</th></tr></thead>
+                <tbody>
+                  {g.items.map((i: any) => (
+                    <tr>
+                      <td><strong>{L(i.label)}</strong>{L(i.description) ? <span class="meth-desc">{L(i.description)}</span> : null}</td>
+                      <td>{t.blockLabel[i.block] ?? i.block}</td>
+                      <td>{i.weight_in_pillar != null ? pct(i.weight_in_pillar) : "—"}</td>
+                      <td>{t.dirLabel[i.direction] ?? i.direction}</td>
+                      <td>{i.threshold_basis?.url
+                        ? <a href={i.threshold_basis.url} target="_blank" rel="noopener">{refBasis(i)}</a>
+                        : refBasis(i)}</td>
+                      <td>{(i.sources && i.sources.length) ? i.sources.join(", ") : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+      </details>
+
+      <p class="legal-back"><a href={t.backHref}>{t.backLabel}</a></p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  document.querySelector(".meth-print")?.addEventListener("click", () => {
+    document.querySelector(".meth-details")?.setAttribute("open", "");
+    window.print();
+  });
+</script>

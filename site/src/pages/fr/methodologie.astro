@@ -2,184 +2,88 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// Public methodology page, rendered from the versioned methodology.json (the
-// grid IS data, not prose). Prose captures the doctrine; the grid is the source.
-// The exhaustive 24-indicator table is collapsed (<details>) so the page reads as
-// an explanation, not a lookup — the full grid stays one <summary> click away and
-// is force-expanded in print (the PDF must be self-contained).
-import Base from "../../layouts/Base.astro";
-import PillarIcon from "../../components/PillarIcon.astro";
-import type { PillarIconName } from "../../components/PillarIcon.astro";
-import methodologyData from "../../../public/data/methodology.json";
+// FR methodology: thin page — template in Methodologie.astro (shared FR/EN, i18n §13),
+// this file only carries the French doctrine prose (t).
+import Methodologie from "../../components/Methodologie.astro";
 import { FR_NAV } from "../../config/nav";
 
-const m = methodologyData as any;
-const repo = "https://github.com/bardolfranck/scoremydatacenter";
-const docUrl = `${repo}/blob/main/docs/methodologie-notation.md`;
-const pillarIcon: Record<string, PillarIconName> = {
-  energy: "energy", water: "water", land_biodiversity: "land",
-  local_impact: "local", transparency_governance: "transparency",
+const t = {
+  title: "Méthodologie — ScoreMyDataCenter",
+  metaDescription: "La méthode de notation : deux notes A–E (site et opérateur), confiance documentaire, 24 indicateurs en 5 piliers, seuils ancrés sur des référentiels publics. Méthode ouverte, versionnée, datée.",
+  tagline: "Observatoire indépendant",
+  h1: "Méthodologie",
+  banner: "Version <strong>{version}</strong>. La méthode est <strong>publique, versionnée et datée</strong> (antériorité vérifiable) ; le code et la grille sont sur <a href=\"{repo}\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
+  download: "Télécharger la méthodologie",
+  print: "Imprimer / PDF",
+  oneSentenceH2: "La note en une phrase",
+  oneSentence: [
+    "<p>Chaque projet reçoit <strong>deux notes de A à E</strong> — une pour le <strong>site</strong> (le contexte que le projet <span class=\"hl-yellow\">subit</span>) et une pour le <strong>projet &amp; processus</strong> (ce que l'opérateur <span class=\"hl-yellow\">choisit</span>) — assorties d'un <strong>niveau de confiance documentaire</strong>. Une note ne s'affiche jamais sans lui ; sous 40 % de couverture, on écrit « données insuffisantes ». On ne note pas l'inconnu.</p>",
+    "<p>Le score est calculé à partir des seules valeurs sourcées du fichier de chaque projet.</p>",
+    "<p class=\"meth-nerd\">🤓 <strong>Méthode reproductible</strong> : quiconque clone le dépôt et lance <code>make score</code> retombe exactement sur les lettres affichées.</p>",
+  ],
+  scaleH2: "L'échelle",
+  aProvenH2: "Le A se prouve, il ne se promet pas",
+  aProvenP: "<p>L'échelle a un sens précis, verrouillé par construction : <i class=\"gl gl-e\">E</i> — opaque, ou vérifié défavorable · <i class=\"gl gl-d\">D</i> / <i class=\"gl gl-c\">C</i> — promesses partielles ou bonnes · <i class=\"gl gl-b\">B</i> — promesses complètes, chiffrées, processus exemplaire · <i class=\"gl gl-a\">A</i> — <strong>réservé à l'exploitation vérifiée</strong>. Un dossier entièrement déclaratif, aussi excellent soit-il, <strong>plafonne mathématiquement sous le <i class=\"gl gl-a\">A</i></strong> : les valeurs annoncées sont notées avec prudence (« annoncé ≠ mesuré »), et seule la preuve lève ce plafond. Personne ne « reçoit » un <i class=\"gl gl-a\">A</i> — on le démontre.</p>",
+  aProvenExTitle: "Opérateurs — comment obtenir votre <i class=\"gl gl-a\">A</i>",
+  aProvenEx: [
+    "<p>Apportez une preuve <strong>tierce</strong> de vos valeurs en exploitation : copie de votre <strong>déclaration EED</strong> transmise au régulateur, certificat d'<strong>audit ISO/IEC 30134</strong> par un organisme accrédité, ou attestation d'un bureau de contrôle — jamais une page marketing. Déposez-la via le canal public de correction (source obligatoire, déclaration d'intérêt). La donnée passe alors d'« annoncée » à « mesurée », le plafond déclaratif saute, et le re-score est <strong>tracé au journal d'audit public</strong>. Aucun courrier à attendre de notre part, aucun paiement — la preuve fait tout.</p>",
+    "<p>Deux précisions qui protègent tout le monde. La preuve fait monter votre note <strong>projet &amp; processus</strong> — <strong>jamais celle du site</strong> : le territoire (eau, réseau, sol) est subi, il ne se prouve pas. Et aucune capture possible : pas de paiement, une preuve <strong>tierce</strong>, une note qui ne bouge que parce que des <strong>faits vérifiés</strong> ont bougé.</p>",
+  ],
+  pillarsH2: "Les 5 piliers",
+  bulletinH2: "La note, comme un bulletin scolaire",
+  bulletin: [
+    "<p>Un data center reçoit un bulletin. Les cinq grands thèmes — les <strong>piliers</strong> — sont les matières : Énergie, Eau, Foncier &amp; biodiversité, Impact local, Transparence &amp; gouvernance. Dans chaque matière, plusieurs « contrôles » — les <strong>indicateurs</strong> — donnent des notes.</p>",
+    "<p><strong>Étage 1</strong> : dans chaque pilier, les indicateurs sont moyennés selon leur coefficient interne (un contrôle compte plus qu'un autre).</p>",
+    "<p><strong>Étage 2</strong> : les scores de piliers sont moyennés selon les poids ci-dessus. Un principe : <strong>pas de croisement</strong> — un indicateur ne compte que dans son pilier, jamais ailleurs.</p>",
+  ],
+  exampleTitle: "Exemple (2 piliers, scores déjà normalisés sur 100)",
+  exampleItems: [
+    "<b>Énergie</b> (poids 25 %) — carbone 80 (coef 0,6) · PUE 40 (coef 0,4) → <b>80×0,6 + 40×0,4 = 64</b>",
+    "<b>Eau</b> (poids 20 %) — stress 30 (coef 0,7) · conso 50 (coef 0,3) → <b>30×0,7 + 50×0,3 = 36</b>",
+    "Global (poids renormalisés 25/45 et 20/45) → 64×0,56 + 36×0,44 ≈ <b>52</b> → lettre <strong>C</strong> (seuil 50–64)",
+  ],
+  twoNotesH2: "Deux notes — et ce n'est pas la moyenne des piliers",
+  twoNotesP: "<p>C'est la nuance qui surprend. Les deux notes de tête n'agrègent pas par pilier mais <strong>par bloc</strong> : la note <strong>site</strong> = les indicateurs <em>subis</em> (ce que le territoire impose — carbone du réseau, stress hydrique, foncier) ; la note <strong>projet &amp; processus</strong> = les indicateurs <em>choisis</em> (efficacité, refroidissement, concertation, transparence). Les <strong>sous-scores par pilier</strong>, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages sont orthogonaux : <strong>une note ne se lit pas comme la moyenne des piliers affichés.</strong></p>",
+  thresholdsH2: "De la mesure à la note — deux familles de seuils",
+  thresholdsP: "<p>Chaque indicateur transforme une valeur brute en sous-score 0–100 via un seuil. Ce seuil est posé de deux manières, et la distinction est <strong>déclarée</strong>, pas cachée :</p>",
+  thresholdFamilies: [
+    "<strong>Famille A — référentiel externe.</strong> On s'ancre sur un standard existant, sourcé et défendable (ISO 30134 pour l'efficacité, Directive Cadre sur l'Eau pour l'état des masses d'eau, WRI Aqueduct pour le stress hydrique…).",
+    "<strong>Famille B — ratio éditorial déclaré.</strong> Là où aucune norme n'existe (« quelle taille est trop grosse ? »), on n'invente pas un seuil absolu : on exprime un <strong>ratio contextuel</strong> (projet rapporté à la commune, au bassin) et on <strong>assume le choix éditorial</strong>.",
+  ],
+  rule: "Règle : <strong>maximiser le référentiel, minimiser l'éditorial — et le déclarer.</strong> La colonne « Référentiel » du détail ci-dessous dit, indicateur par indicateur, sur quoi le seuil s'appuie.",
+  lockedH2: "Ce qui est verrouillé par construction",
+  locked: [
+    "<strong>Annoncé ≠ mesuré</strong> : un chiffre déclaré par l'opérateur est tagué « annoncé », noté avec prudence, re-vérifiable ex-post.",
+    "<strong>Plancher de transparence</strong> : divulguer une donnée ne peut jamais dégrader la note par rapport à l'avoir cachée.",
+    "<strong>Verrou éthique</strong> : la vulnérabilité d'une commune ne peut jamais améliorer la note d'un projet.",
+    "<strong>Firewall « projet ≠ note »</strong> : on aide le projet, jamais la note. La note publique ne bouge que si le <strong>projet réel</strong> change (faits sourcés, re-scoring tracé au journal d'audit) — jamais parce qu'un opérateur a payé.",
+    "<strong>Gouvernance</strong> : toute évolution de la grille passe par une version taguée et une entrée de changelog justifiée et signée.",
+  ],
+  statusH2: "Statut, limites & calibration",
+  statusP: "<p>Cette version est <strong>préliminaire et pourra évoluer</strong>. Ce que la note <strong>n'est pas</strong> : un modèle prédictif validé statistiquement, ni un oracle. Ce qu'elle <strong>est</strong> : une <strong>grille experte, sourcée, versionnée et reproductible</strong>, qui applique des seuils ancrés sur des référentiels publics et déclare ses choix éditoriaux.</p>",
+  statusItems: [
+    "<strong>Poids et seuils provisoires</strong> : ils sont calibrés par <strong>validation rétrospective</strong> sur des cas au dénouement connu (projets acceptés / abandonnés), pas affirmés a priori.",
+    "<strong>Traçabilité</strong> : chaque note est datée et rattachée à une version de méthode ; un « A » signifie « le meilleur atteignable aujourd'hui », pas « le meilleur pour toujours ».",
+  ],
+  refsH2: "Références & standards",
+  references: [
+    { label: "ISO/IEC 30134 (2 PUE · 3 REF · 4 CUE) — indicateurs de performance des centres de données", url: "https://www.iso.org/standard/63451.html" },
+    { label: "EU Code of Conduct for Data Centres (JRC)", url: "https://e3p.jrc.ec.europa.eu/communities/data-centres-code-conduct" },
+    { label: "Directive Efficacité Énergétique (EED) 2023/1791 — reporting des data centers", url: "https://eur-lex.europa.eu/eli/dir/2023/1791/oj" },
+    { label: "WRI Aqueduct — stress hydrique de bassin", url: "https://www.wri.org/aqueduct" },
+    { label: "Directive Cadre sur l'Eau 2000/60/CE — état des masses d'eau", url: "https://eur-lex.europa.eu/eli/dir/2000/60/oj" },
+    { label: "ADEME Base Empreinte — facteurs d'émission du réseau", url: "https://base-empreinte.ademe.fr/" },
+    { label: "RTE eCO2mix / Caparéseau — carbone et capacité du réseau", url: "https://www.rte-france.com/eco2mix" },
+    { label: "Cadre « Social Licence to Operate » — acceptabilité sociale des projets", url: "https://en.wikipedia.org/wiki/Social_license" },
+  ],
+  detailsSummary: "Voir le détail des 24 indicateurs",
+  detailsIntro: "<p>Chaque indicateur porte son <strong>coefficient</strong> (poids dans le pilier), son <strong>sens de notation</strong>, la <strong>base de son seuil</strong> (référentiel externe ou choix éditorial déclaré) et sa <strong>source de donnée</strong> — c'est une contrainte de schéma, pas une bonne pratique.</p>",
+  th: { indicator: "Indicateur", block: "Bloc", coef: "Coef.", direction: "Sens", thresholdRef: "Référentiel de seuil", source: "Source" },
+  blockLabel: { base: "Site (subi)", project: "Projet (choisi)", process: "Processus" },
+  dirLabel: { lower_is_better: "plus bas = mieux", higher_is_better: "plus haut = mieux", encoded_in_scoring: "qualitatif", non_monotonic: "nuancé" },
+  backHref: "/fr/",
+  backLabel: "← Retour à l'accueil",
 };
-const blockLabel: Record<string, string> = {
-  base: "Site (subi)", project: "Projet (choisi)", process: "Processus",
-};
-const dirLabel: Record<string, string> = {
-  lower_is_better: "plus bas = mieux", higher_is_better: "plus haut = mieux",
-  encoded_in_scoring: "qualitatif", non_monotonic: "nuancé",
-};
-const pct = (x: number) => `${Math.round(x * 100)} %`;
-const grades = [...m.grade_thresholds].sort((a: any, b: any) => b.min - a.min);
-const byPillar = m.pillars.map((p: any) => ({
-  pillar: p,
-  items: m.indicators.filter((i: any) => i.pillar === p.id && i.mvp),
-}));
-const refBasis = (i: any) =>
-  i.threshold_basis?.reference ?? i.threshold_basis?.justification ?? "—";
-
-// Curated references — the external standards the thresholds anchor on. A short
-// bibliography is cheap and disarms the "editorial black box" critique.
-const references = [
-  { label: "ISO/IEC 30134 (2 PUE · 3 REF · 4 CUE) — indicateurs de performance des centres de données", url: "https://www.iso.org/standard/63451.html" },
-  { label: "EU Code of Conduct for Data Centres (JRC)", url: "https://e3p.jrc.ec.europa.eu/communities/data-centres-code-conduct" },
-  { label: "Directive Efficacité Énergétique (EED) 2023/1791 — reporting des data centers", url: "https://eur-lex.europa.eu/eli/dir/2023/1791/oj" },
-  { label: "WRI Aqueduct — stress hydrique de bassin", url: "https://www.wri.org/aqueduct" },
-  { label: "Directive Cadre sur l'Eau 2000/60/CE — état des masses d'eau", url: "https://eur-lex.europa.eu/eli/dir/2000/60/oj" },
-  { label: "ADEME Base Empreinte — facteurs d'émission du réseau", url: "https://base-empreinte.ademe.fr/" },
-  { label: "RTE eCO2mix / Caparéseau — carbone et capacité du réseau", url: "https://www.rte-france.com/eco2mix" },
-  { label: "Cadre « Social Licence to Operate » — acceptabilité sociale des projets", url: "https://en.wikipedia.org/wiki/Social_license" },
-];
 ---
 
-<Base
-  lang="fr"
-  title="Méthodologie — ScoreMyDataCenter"
-  description="La méthode de notation : deux notes A–E (site et opérateur), confiance documentaire, 24 indicateurs en 5 piliers, seuils ancrés sur des référentiels publics. Méthode ouverte, versionnée, datée."
-  tagline="Observatoire indépendant"
-  altHref="/"
-  altLabel="🇬🇧 EN"
-  nav={FR_NAV}
->
-  <section class="section" aria-labelledby="meth-title">
-    <div class="section-inner prose legal">
-      <h1 id="meth-title">Méthodologie</h1>
-      <p class="legal-draft">Version <strong>{m.version}</strong>. La méthode est <strong>publique, versionnée et datée</strong> (antériorité vérifiable) ; le code et la grille sont sur <a href={repo} target="_blank" rel="noopener">GitHub</a>.</p>
-
-      <div class="meth-actions">
-        <a class="button button-primary" href={docUrl} target="_blank" rel="noopener">📄 Télécharger la méthodologie</a>
-        <button type="button" class="button button-secondary meth-print">Imprimer / PDF</button>
-      </div>
-
-      <h2>La note en une phrase</h2>
-      <p>Chaque projet reçoit <strong>deux notes de A à E</strong> — une pour le <strong>site</strong> (le contexte que le projet <span class="hl-yellow">subit</span>) et une pour le <strong>projet &amp; processus</strong> (ce que l'opérateur <span class="hl-yellow">choisit</span>) — assorties d'un <strong>niveau de confiance documentaire</strong>. Une note ne s'affiche jamais sans lui ; sous 40 % de couverture, on écrit « données insuffisantes ». On ne note pas l'inconnu.</p>
-      <p>Le score est calculé à partir des seules valeurs sourcées du fichier de chaque projet.</p>
-      <p class="meth-nerd">🤓 <strong>Méthode reproductible</strong> : quiconque clone le dépôt et lance <code>make score</code> retombe exactement sur les lettres affichées.</p>
-
-      <h2>L'échelle</h2>
-      <div class="meth-scale">
-        {grades.map((t: any) => (
-          <span class={`meth-grade grade-${t.grade.toLowerCase()}`}>{t.grade}<small>≥ {t.min}</small></span>
-        ))}
-      </div>
-
-      <h2>Le A se prouve, il ne se promet pas</h2>
-      <p>L'échelle a un sens précis, verrouillé par construction : <i class="gl gl-e">E</i> — opaque, ou vérifié défavorable · <i class="gl gl-d">D</i> / <i class="gl gl-c">C</i> — promesses partielles ou bonnes · <i class="gl gl-b">B</i> — promesses complètes, chiffrées, processus exemplaire · <i class="gl gl-a">A</i> — <strong>réservé à l'exploitation vérifiée</strong>. Un dossier entièrement déclaratif, aussi excellent soit-il, <strong>plafonne mathématiquement sous le <i class="gl gl-a">A</i></strong> : les valeurs annoncées sont notées avec prudence (« annoncé ≠ mesuré »), et seule la preuve lève ce plafond. Personne ne « reçoit » un <i class="gl gl-a">A</i> — on le démontre.</p>
-      <div class="meth-example">
-        <p class="meth-example-title">Opérateurs — comment obtenir votre <i class="gl gl-a">A</i></p>
-        <p>Apportez une preuve <strong>tierce</strong> de vos valeurs en exploitation : copie de votre <strong>déclaration EED</strong> transmise au régulateur, certificat d'<strong>audit ISO/IEC 30134</strong> par un organisme accrédité, ou attestation d'un bureau de contrôle — jamais une page marketing. Déposez-la via le canal public de correction (source obligatoire, déclaration d'intérêt). La donnée passe alors d'« annoncée » à « mesurée », le plafond déclaratif saute, et le re-score est <strong>tracé au journal d'audit public</strong>. Aucun courrier à attendre de notre part, aucun paiement — la preuve fait tout.</p>
-        <p>Deux précisions qui protègent tout le monde. La preuve fait monter votre note <strong>projet &amp; processus</strong> — <strong>jamais celle du site</strong> : le territoire (eau, réseau, sol) est subi, il ne se prouve pas. Et aucune capture possible : pas de paiement, une preuve <strong>tierce</strong>, une note qui ne bouge que parce que des <strong>faits vérifiés</strong> ont bougé.</p>
-      </div>
-
-      <h2>Les 5 piliers</h2>
-      <ul class="meth-pillars">
-        {m.pillars.map((p: any) => (
-          <li><span class="meth-pillar-name"><PillarIcon name={pillarIcon[p.id]} size={18} />{p.label.fr}</span><b>{pct(p.weight)}</b></li>
-        ))}
-      </ul>
-
-      <h2>La note, comme un bulletin scolaire</h2>
-      <p>Un data center reçoit un bulletin. Les cinq grands thèmes — les <strong>piliers</strong> — sont les matières : Énergie, Eau, Foncier &amp; biodiversité, Impact local, Transparence &amp; gouvernance. Dans chaque matière, plusieurs « contrôles » — les <strong>indicateurs</strong> — donnent des notes.</p>
-      <p><strong>Étage 1</strong> : dans chaque pilier, les indicateurs sont moyennés selon leur coefficient interne (un contrôle compte plus qu'un autre).</p>
-      <p><strong>Étage 2</strong> : les scores de piliers sont moyennés selon les poids ci-dessus. Un principe : <strong>pas de croisement</strong> — un indicateur ne compte que dans son pilier, jamais ailleurs.</p>
-      <div class="meth-example">
-        <p class="meth-example-title">Exemple (2 piliers, scores déjà normalisés sur 100)</p>
-        <ul>
-          <li><b>Énergie</b> (poids 25 %) — carbone 80 (coef 0,6) · PUE 40 (coef 0,4) → <b>80×0,6 + 40×0,4 = 64</b></li>
-          <li><b>Eau</b> (poids 20 %) — stress 30 (coef 0,7) · conso 50 (coef 0,3) → <b>30×0,7 + 50×0,3 = 36</b></li>
-          <li>Global (poids renormalisés 25/45 et 20/45) → 64×0,56 + 36×0,44 ≈ <b>52</b> → lettre <strong>C</strong> (seuil 50–64)</li>
-        </ul>
-      </div>
-
-      <h2>Deux notes — et ce n'est pas la moyenne des piliers</h2>
-      <p>C'est la nuance qui surprend. Les deux notes de tête n'agrègent pas par pilier mais <strong>par bloc</strong> : la note <strong>site</strong> = les indicateurs <em>subis</em> (ce que le territoire impose — carbone du réseau, stress hydrique, foncier) ; la note <strong>projet &amp; processus</strong> = les indicateurs <em>choisis</em> (efficacité, refroidissement, concertation, transparence). Les <strong>sous-scores par pilier</strong>, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages sont orthogonaux : <strong>une note ne se lit pas comme la moyenne des piliers affichés.</strong></p>
-
-      <h2>De la mesure à la note — deux familles de seuils</h2>
-      <p>Chaque indicateur transforme une valeur brute en sous-score 0–100 via un seuil. Ce seuil est posé de deux manières, et la distinction est <strong>déclarée</strong>, pas cachée :</p>
-      <ul>
-        <li><strong>Famille A — référentiel externe.</strong> On s'ancre sur un standard existant, sourcé et défendable (ISO 30134 pour l'efficacité, Directive Cadre sur l'Eau pour l'état des masses d'eau, WRI Aqueduct pour le stress hydrique…).</li>
-        <li><strong>Famille B — ratio éditorial déclaré.</strong> Là où aucune norme n'existe (« quelle taille est trop grosse ? »), on n'invente pas un seuil absolu : on exprime un <strong>ratio contextuel</strong> (projet rapporté à la commune, au bassin) et on <strong>assume le choix éditorial</strong>.</li>
-      </ul>
-      <p class="meth-rule">Règle : <strong>maximiser le référentiel, minimiser l'éditorial — et le déclarer.</strong> La colonne « Référentiel » du détail ci-dessous dit, indicateur par indicateur, sur quoi le seuil s'appuie.</p>
-
-      <h2>Ce qui est verrouillé par construction</h2>
-      <ul>
-        <li><strong>Annoncé ≠ mesuré</strong> : un chiffre déclaré par l'opérateur est tagué « annoncé », noté avec prudence, re-vérifiable ex-post.</li>
-        <li><strong>Plancher de transparence</strong> : divulguer une donnée ne peut jamais dégrader la note par rapport à l'avoir cachée.</li>
-        <li><strong>Verrou éthique</strong> : la vulnérabilité d'une commune ne peut jamais améliorer la note d'un projet.</li>
-        <li><strong>Firewall « projet ≠ note »</strong> : on aide le projet, jamais la note. La note publique ne bouge que si le <strong>projet réel</strong> change (faits sourcés, re-scoring tracé au journal d'audit) — jamais parce qu'un opérateur a payé.</li>
-        <li><strong>Gouvernance</strong> : toute évolution de la grille passe par une version taguée et une entrée de changelog justifiée et signée.</li>
-      </ul>
-
-      <h2>Statut, limites &amp; calibration</h2>
-      <p>Cette version est <strong>préliminaire et pourra évoluer</strong>. Ce que la note <strong>n'est pas</strong> : un modèle prédictif validé statistiquement, ni un oracle. Ce qu'elle <strong>est</strong> : une <strong>grille experte, sourcée, versionnée et reproductible</strong>, qui applique des seuils ancrés sur des référentiels publics et déclare ses choix éditoriaux.</p>
-      <ul>
-        <li><strong>Poids et seuils provisoires</strong> : ils sont calibrés par <strong>validation rétrospective</strong> sur des cas au dénouement connu (projets acceptés / abandonnés), pas affirmés a priori.</li>
-        <li><strong>Traçabilité</strong> : chaque note est datée et rattachée à une version de méthode ; un « A » signifie « le meilleur atteignable aujourd'hui », pas « le meilleur pour toujours ».</li>
-      </ul>
-
-      <h2>Références &amp; standards</h2>
-      <ul class="meth-refs">
-        {references.map((r) => (
-          <li><a href={r.url} target="_blank" rel="noopener">{r.label}</a></li>
-        ))}
-      </ul>
-
-      <details class="meth-details">
-        <summary>Voir le détail des 24 indicateurs</summary>
-        <p>Chaque indicateur porte son <strong>coefficient</strong> (poids dans le pilier), son <strong>sens de notation</strong>, la <strong>base de son seuil</strong> (référentiel externe ou choix éditorial déclaré) et sa <strong>source de donnée</strong> — c'est une contrainte de schéma, pas une bonne pratique.</p>
-        {byPillar.map((g: any) => (
-          <div class="meth-block">
-            <h3 class="meth-block-title"><PillarIcon name={pillarIcon[g.pillar.id]} size={18} />{g.pillar.label.fr}<span class="meth-block-weight">{pct(g.pillar.weight)}</span></h3>
-            <div class="fiche-ind-wrap">
-              <table class="meth-table">
-                <thead><tr><th>Indicateur</th><th>Bloc</th><th>Coef.</th><th>Sens</th><th>Référentiel de seuil</th><th>Source</th></tr></thead>
-                <tbody>
-                  {g.items.map((i: any) => (
-                    <tr>
-                      <td><strong>{i.label.fr}</strong>{i.description?.fr ? <span class="meth-desc">{i.description.fr}</span> : null}</td>
-                      <td>{blockLabel[i.block] ?? i.block}</td>
-                      <td>{i.weight_in_pillar != null ? pct(i.weight_in_pillar) : "—"}</td>
-                      <td>{dirLabel[i.direction] ?? i.direction}</td>
-                      <td>{i.threshold_basis?.url
-                        ? <a href={i.threshold_basis.url} target="_blank" rel="noopener">{refBasis(i)}</a>
-                        : refBasis(i)}</td>
-                      <td>{(i.sources && i.sources.length) ? i.sources.join(", ") : "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ))}
-      </details>
-
-      <p class="legal-back"><a href="/fr/">← Retour à l'accueil</a></p>
-    </div>
-  </section>
-</Base>
-
-<script>
-  document.querySelector(".meth-print")?.addEventListener("click", () => {
-    document.querySelector(".meth-details")?.setAttribute("open", "");
-    window.print();
-  });
-</script>
+<Methodologie lang="fr" t={t} nav={FR_NAV} altHref="/methodology" altLabel="🇬🇧 EN" />

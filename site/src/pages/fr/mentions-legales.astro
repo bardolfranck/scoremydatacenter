@@ -2,56 +2,59 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// Legal notices. Structure is in place; the exact wording is pending the phase-6
-// lawyer review (cadrage §11 ter / ARCHITECTURE §12.4) — flagged as such.
-import Base from "../../layouts/Base.astro";
+// FR legal notices: thin page — template in ProsePage.astro (shared FR/EN, i18n §13).
+// Wording pending the phase-6 lawyer review (cadrage §11 ter) — flagged as such.
+import ProsePage from "../../components/ProsePage.astro";
 import { FR_NAV } from "../../config/nav";
+
+const t = {
+  title: "Mentions légales — ScoreMyDataCenter",
+  metaDescription: "Mentions légales de ScoreMyDataCenter : éditeur, hébergement, licences, données personnelles, avertissement sur la notation, indépendance et contradictoire.",
+  tagline: "Observatoire indépendant",
+  h1: "Mentions légales",
+  banner: "<strong>Version de travail — NE PAS PUBLIER en l'état.</strong> L'avertissement et le dispositif contradictoire ci-dessous doivent être validés par une relecture avocat (presse / concurrence déloyale) avant toute mise en ligne publique (phase 6, bloquant).",
+  sections: [
+    {
+      h2: "Éditeur",
+      html: ["<p>ScoreMyDataCenter, observatoire indépendant fondé par <strong>Franck Bardol</strong>. Contact : <a href=\"mailto:contact@scoremydatacenter.org\">contact@scoremydatacenter.org</a>. Le statut juridique de l'éditeur et son adresse seront précisés à la publication.</p>"],
+    },
+    {
+      h2: "Hébergement",
+      html: ["<p>Site statique hébergé par Cloudflare, Inc. (Cloudflare Pages), 101 Townsend Street, San Francisco, CA 94107, États-Unis.</p>"],
+    },
+    {
+      h2: "Propriété intellectuelle et licences",
+      html: [
+        "<p>Le projet est ouvert par conception (« on ouvre la vérité ») :</p>",
+        "<ul><li>Moteur de calcul et parsers : <strong>AGPL-3.0</strong>.</li><li>Données publiées : <strong>ODbL</strong>.</li><li>Méthodologie et contenus éditoriaux : <strong>CC BY-SA 4.0</strong>.</li></ul>",
+        "<p>Le code et les données sont publics sur <a href=\"https://github.com/bardolfranck/scoremydatacenter\" target=\"_blank\" rel=\"noopener\">GitHub</a>. Les articles de presse cités ne sont jamais reproduits : seuls le lien, une copie archivée et le fait extrait sont publiés.</p>",
+      ],
+    },
+    {
+      h2: "Données personnelles",
+      html: ["<p>Le site ne dépose aucun cookie et n'utilise pas de traceur publicitaire. La mesure d'audience (Cloudflare Web Analytics) est sans cookie et sans donnée personnelle. Les notes ne contiennent aucune donnée personnelle : la position des élus n'est enregistrée que sous forme de faits votés (délibérations), jamais de nom de personne.</p>"],
+    },
+    {
+      h2: "Avertissement — à propos de la notation",
+      html: [
+        "<p>ScoreMyDataCenter est un observatoire indépendant qui évalue le <strong>risque d'acceptabilité</strong> des projets de data centers. Les notes publiées constituent une <strong>appréciation méthodique fondée sur des faits publics et sourcés</strong>, et <strong>non l'allégation d'un fait précis</strong> à l'encontre d'une personne ou d'une entreprise. Elles sont publiées <strong>au titre de la contribution au débat d'intérêt général</strong>.</p>",
+        "<p><strong>Méthode ouverte.</strong> La méthodologie (indicateurs, poids, seuils, sources) est publique, datée et versionnée : chacun peut vérifier et refaire une note. Une note exprime l'acceptabilité estimée au regard de l'état de l'art à sa date ; elle peut évoluer avec le projet ou avec la révision de la méthode.</p>",
+        "<p><strong>Faits, pas intentions.</strong> Les informations relatives aux personnes (notamment les élus) se limitent à des faits publics (votes, délibérations, prises de position publiques) ; aucune intention n'est imputée. Traitement conforme au RGPD.</p>",
+        "<p><strong>Neutralité.</strong> ScoreMyDataCenter n'appelle à aucun boycott ni action contre une entreprise.</p>",
+      ],
+    },
+    {
+      h2: "Indépendance et contradictoire",
+      html: [
+        "<p><strong>On aide le projet, jamais la note.</strong> Les entités notées ne paient jamais leur note publique. Un opérateur peut faire analyser son projet (leviers d'amélioration) ; mais la note publique ne bouge que si le <strong>projet réel</strong> change — nouveaux faits sourcés, re-scoring tracé au journal d'audit. « Il paie, la note monte » est structurellement exclu (ce serait la capture qui a tué la crédibilité des agences de notation).</p>",
+        "<p><strong>Deux outils distincts sur chaque fiche.</strong> Une <strong>correction factuelle</strong> (signaler une erreur sourcée → vérification → correction datée) et un <strong>droit de réponse</strong> (la voix de l'opérateur, publiée à côté de la note). Le premier corrige un fait ; le second donne la parole.</p>",
+        "<p><strong>Contradictoire déclenché par la note.</strong> Les notes A à C sont publiées directement. Une note défavorable — <strong>D ou E</strong>, sur le site ou sur le projet — ouvre un <strong>droit de réponse préalable d'au moins 15 jours</strong> : la fiche est alors publiée soit avec la réponse de l'opérateur, soit avec la mention « sollicité, sans réponse ». Ce droit de réponse n'est pas une permission qu'on quémande — c'est une garantie d'opposabilité et de bonne foi.</p>",
+      ],
+    },
+  ],
+  backHref: "/fr/",
+  backLabel: "← Retour à l'accueil",
+};
 ---
 
-<Base
-  lang="fr"
-  title="Mentions légales — ScoreMyDataCenter"
-  description="Mentions légales de ScoreMyDataCenter : éditeur, hébergement, licences, données personnelles."
-  tagline="Observatoire indépendant"
-  altHref="/"
-  altLabel="🇬🇧 EN"
-  nav={FR_NAV}
->
-  <section class="section" aria-labelledby="legal-title">
-    <div class="section-inner prose legal">
-      <h1 id="legal-title">Mentions légales</h1>
-      <p class="legal-draft"><strong>Version de travail — NE PAS PUBLIER en l'état.</strong> L'avertissement et le dispositif contradictoire ci-dessous doivent être validés par une relecture avocat (presse / concurrence déloyale) avant toute mise en ligne publique (phase 6, bloquant).</p>
-
-      <h2>Éditeur</h2>
-      <p>ScoreMyDataCenter, observatoire indépendant fondé par <strong>Franck Bardol</strong>. Contact : <a href="mailto:contact@scoremydatacenter.org">contact@scoremydatacenter.org</a>. Le statut juridique de l'éditeur et son adresse seront précisés à la publication.</p>
-
-      <h2>Hébergement</h2>
-      <p>Site statique hébergé par Cloudflare, Inc. (Cloudflare Pages), 101 Townsend Street, San Francisco, CA 94107, États-Unis.</p>
-
-      <h2>Propriété intellectuelle et licences</h2>
-      <p>Le projet est ouvert par conception (« on ouvre la vérité ») :</p>
-      <ul>
-        <li>Moteur de calcul et parsers : <strong>AGPL-3.0</strong>.</li>
-        <li>Données publiées : <strong>ODbL</strong>.</li>
-        <li>Méthodologie et contenus éditoriaux : <strong>CC BY-SA 4.0</strong>.</li>
-      </ul>
-      <p>Le code et les données sont publics sur <a href="https://github.com/bardolfranck/scoremydatacenter" target="_blank" rel="noopener">GitHub</a>. Les articles de presse cités ne sont jamais reproduits : seuls le lien, une copie archivée et le fait extrait sont publiés.</p>
-
-      <h2>Données personnelles</h2>
-      <p>Le site ne dépose aucun cookie et n'utilise pas de traceur publicitaire. La mesure d'audience (Cloudflare Web Analytics) est sans cookie et sans donnée personnelle. Les notes ne contiennent aucune donnée personnelle : la position des élus n'est enregistrée que sous forme de faits votés (délibérations), jamais de nom de personne.</p>
-
-      <h2>Avertissement — à propos de la notation</h2>
-      <p>ScoreMyDataCenter est un observatoire indépendant qui évalue le <strong>risque d'acceptabilité</strong> des projets de data centers. Les notes publiées constituent une <strong>appréciation méthodique fondée sur des faits publics et sourcés</strong>, et <strong>non l'allégation d'un fait précis</strong> à l'encontre d'une personne ou d'une entreprise. Elles sont publiées <strong>au titre de la contribution au débat d'intérêt général</strong>.</p>
-      <p><strong>Méthode ouverte.</strong> La méthodologie (indicateurs, poids, seuils, sources) est publique, datée et versionnée : chacun peut vérifier et refaire une note. Une note exprime l'acceptabilité estimée au regard de l'état de l'art à sa date ; elle peut évoluer avec le projet ou avec la révision de la méthode.</p>
-      <p><strong>Faits, pas intentions.</strong> Les informations relatives aux personnes (notamment les élus) se limitent à des faits publics (votes, délibérations, prises de position publiques) ; aucune intention n'est imputée. Traitement conforme au RGPD.</p>
-      <p><strong>Neutralité.</strong> ScoreMyDataCenter n'appelle à aucun boycott ni action contre une entreprise.</p>
-
-      <h2>Indépendance et contradictoire</h2>
-      <p><strong>On aide le projet, jamais la note.</strong> Les entités notées ne paient jamais leur note publique. Un opérateur peut faire analyser son projet (leviers d'amélioration) ; mais la note publique ne bouge que si le <strong>projet réel</strong> change — nouveaux faits sourcés, re-scoring tracé au journal d'audit. « Il paie, la note monte » est structurellement exclu (ce serait la capture qui a tué la crédibilité des agences de notation).</p>
-      <p><strong>Deux outils distincts sur chaque fiche.</strong> Une <strong>correction factuelle</strong> (signaler une erreur sourcée → vérification → correction datée) et un <strong>droit de réponse</strong> (la voix de l'opérateur, publiée à côté de la note). Le premier corrige un fait ; le second donne la parole.</p>
-      <p><strong>Contradictoire déclenché par la note.</strong> Les notes A à C sont publiées directement. Une note défavorable — <strong>D ou E</strong>, sur le site ou sur le projet — ouvre un <strong>droit de réponse préalable d'au moins 15 jours</strong> : la fiche est alors publiée soit avec la réponse de l'opérateur, soit avec la mention « sollicité, sans réponse ». Ce droit de réponse n'est pas une permission qu'on quémande — c'est une garantie d'opposabilité et de bonne foi.</p>
-
-      <p class="legal-back"><a href="/fr/">← Retour à l'accueil</a></p>
-    </div>
-  </section>
-</Base>
+<ProsePage lang="fr" t={t} nav={FR_NAV} altHref="/legal" altLabel="🇬🇧 EN" />

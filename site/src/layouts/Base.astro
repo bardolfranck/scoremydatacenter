@@ -56,7 +56,9 @@ const home = lang === "en" ? "/" : "/fr/";
     </main>
     <footer class="site-footer">
       <span>© 2026 Franck Bardol and contributors — Score<span class="brand-my">My</span>DataCenter</span>
-      <span class="footer-links"><a href="/fr/mentions-legales">Mentions légales</a> · <a href="/fr/contact">Contact</a></span>
+      <span class="footer-links">{lang === "fr"
+        ? <Fragment><a href="/fr/mentions-legales">Mentions légales</a> · <a href="/fr/contact">Contact</a></Fragment>
+        : <Fragment><a href="/legal">Legal notices</a> · <a href="/contact">Contact</a></Fragment>}</span>
       <span>Engine AGPL-3.0 · Data ODbL · Methodology CC BY-SA 4.0</span>
     </footer>
   </body>

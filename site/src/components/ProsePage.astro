@@ -1,0 +1,48 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Generic prose page (legal, contact…), shared FR/EN (i18n §13): one template,
+// the page files only carry a t object — heading, optional banner, sections of
+// complete HTML blocks (<p>…</p>, <ul>…</ul>), back link. Keeps the two
+// languages structurally identical.
+import Base from "../layouts/Base.astro";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en";
+  t: {
+    title: string; metaDescription: string; tagline: string;
+    h1: string; banner?: string;
+    sections: { h2: string; html: string[] }[];
+    backHref: string; backLabel: string;
+  };
+  nav: { href: string; label: string }[];
+  altHref: string; altLabel: string;
+};
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby="prose-title">
+    <div class="section-inner prose legal">
+      <h1 id="prose-title">{t.h1}</h1>
+      {t.banner && <p class="legal-draft" set:html={t.banner}></p>}
+
+      {t.sections.map((s) => (
+        <Fragment>
+          <h2>{s.h2}</h2>
+          {s.html.map((block) => <Fragment set:html={block} />)}
+        </Fragment>
+      ))}
+
+      <p class="legal-back"><a href={t.backHref}>{t.backLabel}</a></p>
+    </div>
+  </section>
+</Base>
