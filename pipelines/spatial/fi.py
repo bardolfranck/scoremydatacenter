@@ -1,19 +1,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 # https://scoremydatacenter.org · independent data center acceptability-risk score
-"""Finland — a plain EU member on the shared factory. Clean grid, cold climate.
+"""Finland — the shared EU factory + the EEA Seveso brick + Eurostat income.
 
 E1 ~64 gCO2/kWh (nuclear + hydro + wind). Google Hamina (seawater cooling), the LUMI
-supercomputer — Finland is a flagship green/cold DC destination. Deep indicators are a national
-adapter later; v0 is presence.
+supercomputer — Finland is a flagship green/cold DC destination. Two deepenings that need no
+national wiring: L3 via the EEA IED `has_seveso` flag (populated for Finland — 113 sites in 2024,
+so the EU brick is reliable) and L1 raw via the common Eurostat NUTS2 income. Grid capacity (E2/E3)
+stays a gap: Fingrid's open-data API is key-gated and national-timeseries only, not locational.
 """
 
 from .country import run_cli
 from .eu_member import make_eu_member_spec
 
-FI_SPEC = make_eu_member_spec("FI", summary={
-    "fr": "BROUILLON FI v0 (socle EU) — grille propre (~64 g/kWh) + climat froid. À vérifier.",
-    "en": "FI DRAFT v0 (EU-level) — clean grid (~64 gCO2/kWh) + cold climate. Verify before use.",
+FI_SPEC = make_eu_member_spec("FI", l3_ied=True, summary={
+    "fr": "BROUILLON FI (socle EU + Seveso EEA + revenu Eurostat) — grille propre (~64 g/kWh) + climat froid. À vérifier.",
+    "en": "FI DRAFT (EU-level + EEA Seveso + Eurostat income) — clean grid (~64 gCO2/kWh) + cold climate. Verify before use.",
 })
 
 

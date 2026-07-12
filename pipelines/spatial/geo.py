@@ -17,8 +17,9 @@ from .http import SourceUnavailable, get_json, haversine_m
 
 def arcgis_point_query(service_url: str, layer: int, lat: float, lon: float,
                        distance_m: int, *, geometry: bool = False,
-                       record_count: int = 100) -> list[dict]:
-    """Features of an ArcGIS layer within distance_m of the point (WGS84 in and out)."""
+                       record_count: int = 100, where: str | None = None) -> list[dict]:
+    """Features of an ArcGIS layer within distance_m of the point (WGS84 in and out).
+    `where` adds an attribute filter (e.g. a Seveso flag or reporting-year selector)."""
     params = {
         "f": "json", "geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint",
         "inSR": "4326", "spatialRel": "esriSpatialRelIntersects",
@@ -26,6 +27,8 @@ def arcgis_point_query(service_url: str, layer: int, lat: float, lon: float,
         "outFields": "*", "returnGeometry": "true" if geometry else "false",
         "outSR": "4326", "resultRecordCount": record_count,
     }
+    if where:
+        params["where"] = where
     data = get_json(f"{service_url}/{layer}/query", params)
     if "error" in data:
         raise SourceUnavailable(f"{service_url}/{layer}: {data['error']}")
