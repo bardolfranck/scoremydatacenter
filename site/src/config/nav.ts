@@ -20,9 +20,11 @@ export const FR_NAV: NavItem[] = [
   { href: "/fr/#faq", label: "FAQ" },
 ];
 
+// Same action → same destination as FR (i18n §13): Map and Ranking are real EN
+// pages, not homepage anchors or FR fallbacks.
 export const EN_NAV: NavItem[] = [
-  { href: "/fr/carte", label: "Map" },
-  { href: "/#scores", label: "Scores" },
+  { href: "/map", label: "Map" },
+  { href: "/ranking", label: "Ranking" },
   { href: "/understand", label: "Understanding data centers" },
   { href: "/#method", label: "Method" },
   { href: "/#open", label: "Open model" },

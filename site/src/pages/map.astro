@@ -1,0 +1,48 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN full-screen living map — twin of /fr/carte (i18n §13: shared MapIsland, per-language labels).
+import Base from "../layouts/Base.astro";
+import MapIsland from "../components/MapIsland.astro";
+
+import { EN_NAV } from "../config/nav";
+---
+
+<Base
+  lang="en"
+  title="Map of scored projects — ScoreMyDataCenter"
+  description="The map of A–E graded data center projects: two grades per project, sources and a confidence level."
+  tagline="Independent observatory"
+  altHref="/fr/carte"
+  altLabel="🇫🇷 FR"
+  nav={EN_NAV}
+>
+  <MapIsland
+    variant="full"
+    labels={{
+      site: "Site",
+      operator: "Operator",
+      confidence: { high: "confidence: high", medium: "confidence: medium", low: "confidence: low" },
+      insufficient: "insufficient data",
+      fixture: "Fictional test fixture",
+      reserved: "· A reserved",
+      ficheBase: "/dc",
+      mapPath: "/map",
+      viewFiche: "View the fiche →",
+      replyInProgress: "Right of reply in progress",
+      legendGraded: "Graded project A–E",
+      legendWatch: "On watch — tracked, not yet graded",
+      watch: {
+        badge: "On watch",
+        note: "Tracked project; not yet graded.",
+        source: "Source:",
+        press: "Press: ",
+        selfReported: "self-reported",
+        aria: "Tracked project — contestation",
+        title: "Tracked project; not yet graded",
+        status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+      },
+    }}
+  />
+</Base>

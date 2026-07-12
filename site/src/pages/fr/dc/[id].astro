@@ -2,26 +2,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// The proof page: one static page per published DC, rendered from the engine's
-// dc/{id}.json artifact (never hand-written). A grade letter only ever appears
-// through <ScoreBadge>.
-import Base from "../../../layouts/Base.astro";
-import ScoreBadge from "../../../components/ScoreBadge.astro";
-import PillarIcon from "../../../components/PillarIcon.astro";
-import type { PillarIconName } from "../../../components/PillarIcon.astro";
-import SourceLink from "../../../components/SourceLink.astro";
-import methodologyData from "../../../../public/data/methodology.json";
+// FR fiche: thin page — the template lives in DcFiche.astro (shared FR/EN, i18n §13),
+// this file only carries the French copy (t) and the route.
+import DcFiche from "../../../components/DcFiche.astro";
 import { FR_NAV } from "../../../config/nav";
-
-import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
-import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
-import linkedinLogo from "@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw";
-import envelope from "@phosphor-icons/core/assets/regular/envelope-simple.svg?raw";
-import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw";
-import downloadSimple from "@phosphor-icons/core/assets/regular/download-simple.svg?raw";
-import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?raw";
-import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
-import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
@@ -32,438 +16,99 @@ export async function getStaticPaths() {
 }
 
 const { dc } = Astro.props as { dc: any };
-const methodology = methodologyData as any;
 
-const SITE_ORIGIN = "https://scoremydatacenter.org";
-const pageUrl = `${SITE_ORIGIN}/fr/dc/${dc.id}`;
-
-const pillarIconName: Record<string, PillarIconName> = {
-  energy: "energy",
-  water: "water",
-  land_biodiversity: "land",
-  local_impact: "local",
-  transparency_governance: "transparency",
+const t = {
+  tagline: "Observatoire indépendant",
+  metaDescription: "Fiche {name} ({municipality}) : note du site et note projet & processus A–E, sous-scores par pilier, indicateurs sourcés — observatoire indépendant.",
+  kicker: "Fiche projet",
+  status: { announced: "Annoncé", permitting: "En instruction (permitting)", under_construction: "En construction", operational: "En service" },
+  powerUnknown: "puissance non communiquée",
+  commissioning: "mise en service",
+  siteScore: "Note du site",
+  ppScore: "Note projet & processus",
+  naLabel: "données insuffisantes",
+  reserved: "A réservé — se prouve en exploitation",
+  confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
+  confidenceNote: { high: "dossier largement sourcé", medium: "dossier partiellement sourcé", low: "dossier peu sourcé" },
+  confGlobal: "Confiance documentaire globale",
+  viewMap: "Voir sur la carte",
+  share: "Partager",
+  shareOn: "Partager sur",
+  shareMail: "Partager par e-mail",
+  copyLink: "Copier le lien",
+  copied: "Lien copié",
+  download: "Télécharger l'image du score",
+  signal: "Signaler une erreur",
+  signalSubject: "Correction",
+  signalBody: "Indicateur concerné :\nValeur à corriger :\nSource / preuve (obligatoire) :\n",
+  signalNote: "Corrige un fait, avec sa source — <strong>une preuve est requise</strong>.",
+  methodology: "Méthodologie",
+  replyBanner: "Droit de réponse en cours",
+  replyUntil: "jusqu'au",
+  replyBannerRest: "La note (lettre et chiffre) et tous les faits sourcés sont publics ; seule la synthèse narrative est publiée à l'issue du délai.",
+  replyElapsed: "Délai de droit de réponse échu — fiche finale en cours de publication.",
+  subscoresTitle: "Sous-scores par pilier",
+  subscoresSub: "Un pilier mêle le subi et le choisi ; une note n'est pas la moyenne des piliers.",
+  whyAria: "Pourquoi la note ne se déduit pas des piliers",
+  whyTip: "Les deux notes (site, projet) séparent les indicateurs selon qu'ils sont subis ou choisis — toutes thématiques confondues et pondérés. Les piliers, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages ne se recouvrent pas : la note du site ne se lit pas comme la moyenne des piliers affichés.",
+  legendDoc: "documentation disponible",
+  synthTitle: "Synthèse du projet",
+  synthHeldSub: "publiée à l'issue du droit de réponse",
+  synthHeldNote: "La lecture d'ensemble est retenue le temps du droit de réponse (jusqu'au {date}). Les badges, les piliers et les indicateurs sourcés ci-contre restent publics.",
+  synthSub: "la lecture d'ensemble, derrière les lettres",
+  synthProjectTag: "Projet & processus",
+  synthSiteTag: "Site",
+  quoteOpen: "« ",
+  quoteClose: " »",
+  indicatorsTitle: "Indicateurs suivis",
+  th: { indicator: "Indicateur", value: "Valeur", reading: "Lecture", state: "État", source: "Source" },
+  explanation: "Explication",
+  notDisclosed: "Non communiqué",
+  procedureSeeSource: "Procédure (voir source)",
+  notApplicable: "non applicable",
+  indStatus: { measured: "Mesuré", announced: "Annoncé", missing: "Manquant" },
+  accessed: "consulté le",
+  archived: "archivé",
+  directionHint: { lower_is_better: "Plus la valeur est basse, mieux c'est.", higher_is_better: "Plus la valeur est haute, mieux c'est." },
+  hintDedupe: "mieux c'est",
+  sense: { good: "favorable", mid: "moyen", bad: "défavorable" },
+  proxy: {
+    inquiryHeld: "Enquête publique tenue",
+    inquiryNone: "Pas d'enquête publique",
+    envOpinion: {
+      favorable: "Avis de l'autorité environnementale : favorable",
+      favorable_with_reservations: "Avis de l'autorité environnementale : favorable avec réserves",
+      unfavorable: "Avis de l'autorité environnementale : défavorable",
+      none: "Avis de l'autorité environnementale : aucun requis/rendu",
+    },
+    cndpYes: "Saisine de la CNDP",
+    cndpNo: "Pas de saisine de la CNDP",
+    appeals: "Recours contentieux :",
+    council: {
+      favorable: "Délibérations du conseil : favorables",
+      mixed: "Délibérations du conseil : mitigées",
+      unfavorable: "Délibérations du conseil : défavorables",
+      none_recorded: "Délibérations du conseil : aucune enregistrée",
+    },
+  },
+  opTitle: "Réponse de l'opérateur",
+  opSolicitedNoReply: "Opérateur sollicité le {date} — sans réponse à l'échéance.",
+  opInWindow: "Sollicité le {date} — droit de réponse en cours jusqu'au {deadline}.",
+  opNone: "L'opérateur dispose d'un droit de réponse ; il sera publié ici.",
+  opNote: "Droit de réponse : donne la <strong>parole</strong> à l'opérateur, à côté de la note.",
+  dataStateTitle: "État de la donnée disponible",
+  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} manquants.",
+  contestationTitle: "Contestation & signal",
+  contestationSub: "Faits sourcés — n'entrent pas dans la note.",
+  press: "Presse : ",
+  selfReported: "auto-déclaré",
+  historyTitle: "Historique de la note",
+  histSite: "Note du site à cette date",
+  histPp: "Note projet & processus à cette date",
+  scoredOn: "Scoré le",
+  shareText: "{name} — Note du site : {grade}",
+  shareSuffix: ", selon ScoreMyDataCenter",
 };
-const statusLabels: Record<string, string> = {
-  announced: "Annoncé",
-  permitting: "En instruction (permitting)",
-  under_construction: "En construction",
-  operational: "En service",
-};
-const indStatusLabels: Record<string, string> = {
-  measured: "Mesuré",
-  announced: "Annoncé",
-  missing: "Manquant",
-};
-const confidenceLabels: Record<string, string> = {
-  high: "confiance : haute",
-  medium: "confiance : moyenne",
-  low: "confiance : faible",
-};
-const confidenceNote: Record<string, string> = {
-  high: "dossier largement sourcé",
-  medium: "dossier partiellement sourcé",
-  low: "dossier peu sourcé",
-};
-
-const shareIcon: Record<string, string> = {
-  x: xLogo, whatsapp: whatsappLogo, linkedin: linkedinLogo,
-  mail: envelope, copy: linkSimple, download: downloadSimple, native: shareNetwork,
-  info: infoIcon, map: mapPin,
-};
-const icon = (name: string, size = 18) =>
-  shareIcon[name].replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
-
-const isNa = (g: any) => !g || g.grade === "insufficient_data";
-const siteDocLabel = dc.grades.site.documentation?.label?.fr;
-const ppDocLabel = isNa(dc.grades.project_process)
-  ? "données insuffisantes"
-  : dc.grades.project_process.documentation?.label?.fr;
-
-const confPct = Math.round((dc.confidence.score ?? 0) * 100);
-
-const commissioning = dc.vintage?.expected_commissioning;
-const metaLine = [statusLabels[dc.project_status] ?? dc.project_status,
-  dc.power_mw ? `${dc.power_mw} MW` : null,
-  commissioning ? `mise en service ${commissioning}` : null].filter(Boolean).join(" · ");
-
-const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
-  + (dc.country ? ` · ${dc.country}` : "");
-
-const counts = { measured: 0, announced: 0, missing: 0 } as Record<string, number>;
-for (const ind of dc.indicators) counts[ind.status] = (counts[ind.status] ?? 0) + 1;
-const dataState = `${dc.indicators.length} indicateurs suivis · ${counts.measured} mesurés · `
-  + `${counts.announced} annoncés (non vérifiés) · ${counts.missing} manquants.`;
-
-const op = dc.publication.operator_response;
-const notifiedAt = dc.publication.operator_notified_at;
-// Publication doctrine A-26: letter + score are public in every state; only the FINAL fiche
-// (the narrative synthesis) waits out the right-of-reply window. The clock lives in the view.
-const pubStatus = dc.publication_status;              // "draft" | "right_of_reply" | "published"
-const replyDeadline: string | null = dc.reply_deadline;
-const inReplyWindow = pubStatus === "right_of_reply";
-const frDate = (iso: string | null) => (iso ? iso.split("-").reverse().join("/") : "");
-const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.length - 1].date : null;
-
-const indicatorValue = (ind: any) => {
-  if (ind.status === "missing") return "Non communiqué";
-  if (ind.value !== null && ind.value !== undefined) return String(ind.value);
-  if (ind.proxies) return "Procédure (voir source)";
-  return "—";
-};
-
-// T1 procedural facts (A-21 voie A): neutral facts, never a judgment (G6).
-const proxyFacts = (p: any): string[] => [
-  p.public_inquiry_held ? "Enquête publique tenue" : "Pas d'enquête publique",
-  ({
-    favorable: "Avis de l'autorité environnementale : favorable",
-    favorable_with_reservations: "Avis de l'autorité environnementale : favorable avec réserves",
-    unfavorable: "Avis de l'autorité environnementale : défavorable",
-    none: "Avis de l'autorité environnementale : aucun requis/rendu",
-  } as Record<string, string>)[p.environmental_authority_opinion],
-  p.cndp_referral ? "Saisine de la CNDP" : "Pas de saisine de la CNDP",
-  `Recours contentieux : ${p.legal_appeals_count}`,
-  ({
-    favorable: "Délibérations du conseil : favorables",
-    mixed: "Délibérations du conseil : mitigées",
-    unfavorable: "Délibérations du conseil : défavorables",
-    none_recorded: "Délibérations du conseil : aucune enregistrée",
-  } as Record<string, string>)[p.council_deliberations],
-].filter(Boolean) as string[];
-
-// Methodology meta per indicator — units, scoring direction, threshold basis:
-// the raw value alone ("42") is unreadable to a layperson, so each row also
-// carries its unit, a direction-aware sense gauge (from the engine's normalized
-// score) and an (i) tooltip explaining what "good" means.
-const indMeta: Record<string, any> = {};
-for (const i of methodology.indicators) indMeta[i.id] = i;
-// Only the two monotonic directions add a plain "lower/higher is better" hint;
-// the qualitative ones say nothing generic — the description carries the meaning.
-const directionHint: Record<string, string> = {
-  lower_is_better: "Plus la valeur est basse, mieux c'est.",
-  higher_is_better: "Plus la valeur est haute, mieux c'est.",
-};
-const indUnit = (id: string) => indMeta[id]?.unit ?? "";
-const indTooltip = (id: string) => {
-  const m = indMeta[id];
-  if (!m) return "";
-  const desc = m.description?.fr ?? "";
-  const hint = directionHint[m.direction] ?? "";
-  // avoid repeating the hint when the description already ends with it
-  return [desc, desc.includes("mieux c'est") ? "" : hint].filter(Boolean).join(" ");
-};
-const senseBand = (score: number | null | undefined) => {
-  if (score === null || score === undefined) return null;
-  if (score >= 66) return { cls: "good", label: "favorable" };
-  if (score >= 40) return { cls: "mid", label: "moyen" };
-  return { cls: "bad", label: "défavorable" };
-};
-// Grouped by pillar (methodology order) — 5 labelled blocks instead of 21 flat rows.
-const indByPillar = (methodology.pillars as any[])
-  .map((p: any) => ({ pillar: p, items: dc.indicators.filter((ind: any) => ind.pillar === p.id) }))
-  .filter((g: any) => g.items.length);
-
-const shareText = `${dc.name} — Note du site : ${isNa(dc.grades.site) ? "données insuffisantes" : dc.grades.site.grade}`
-  + (siteDocLabel ? ` · ${siteDocLabel}` : "") + ", selon ScoreMyDataCenter";
-const enc = encodeURIComponent;
-const shareLinks = {
-  x: `https://twitter.com/intent/tweet?text=${enc(shareText)}&url=${enc(pageUrl)}`,
-  whatsapp: `https://wa.me/?text=${enc(shareText + " " + pageUrl)}`,
-  linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`,
-  mail: `mailto:?subject=${enc(dc.name + " — ScoreMyDataCenter")}&body=${enc(shareText + "\n\n" + pageUrl)}`,
-};
-
-const nav = FR_NAV;
-const pillars = methodology.pillars as any[];
 ---
 
-<Base
-  lang="fr"
-  title={`${dc.name} — ScoreMyDataCenter`}
-  description={`Fiche ${dc.name} (${dc.municipality}) : note du site et note projet & processus A–E, sous-scores par pilier, indicateurs sourcés — observatoire indépendant.`}
-  tagline="Observatoire indépendant"
-  altHref="/"
-  altLabel="🇬🇧 EN"
-  nav={nav}
-  ogImage={`${SITE_ORIGIN}/og/dc/${dc.id}.png`}
->
-  <article class="fiche">
-    <aside class="fiche-side">
-      <div>
-        <p class="fiche-kicker">Fiche projet</p>
-        <h1 class="fiche-name">{dc.name}</h1>
-        <p class="fiche-place">{place}</p>
-        <p class="fiche-meta">{metaLine}</p>
-      </div>
-
-      <div class="fiche-badges">
-        <ScoreBadge
-          label="Note du site"
-          grade={dc.grades.site}
-          confidence={dc.confidence.level}
-          confidenceLabel={confidenceLabels[dc.confidence.level]}
-          documentationLabel={siteDocLabel}
-          reservedLabel="A réservé — se prouve en exploitation"
-          size="lg"
-          layout="lead"
-          naLabel="données insuffisantes"
-        />
-        <hr />
-        <ScoreBadge
-          label="Note projet & processus"
-          grade={dc.grades.project_process}
-          confidence={dc.confidence.level}
-          confidenceLabel={confidenceLabels[dc.confidence.level]}
-          documentationLabel={ppDocLabel}
-          reservedLabel="A réservé — se prouve en exploitation"
-          size="lg"
-          layout="lead"
-          naLabel="données insuffisantes"
-        />
-      </div>
-
-      <div class="fiche-conf">
-        <span class="fiche-conf-label">Confiance documentaire globale</span>
-        <div class="fiche-conf-track"><i style={`width:${confPct}%`}></i></div>
-        <span class="fiche-conf-note">{confPct} % — {confidenceNote[dc.confidence.level]}</span>
-      </div>
-
-      <a class="fiche-map-link" href={`/fr/carte?dc=${dc.id}`}>
-        <span set:html={icon("map", 16)}></span>Voir sur la carte
-      </a>
-
-      <div class="fiche-share">
-        <span class="fiche-share-label">Partager</span>
-        <div class="fiche-share-icons">
-          <a href={shareLinks.x} target="_blank" rel="noopener" aria-label="Partager sur X" set:html={icon("x")}></a>
-          <a href={shareLinks.whatsapp} target="_blank" rel="noopener" aria-label="Partager sur WhatsApp" set:html={icon("whatsapp")}></a>
-          <a href={shareLinks.linkedin} target="_blank" rel="noopener" aria-label="Partager sur LinkedIn" set:html={icon("linkedin")}></a>
-          <a href={shareLinks.mail} aria-label="Partager par e-mail" set:html={icon("mail")}></a>
-          <button type="button" class="fiche-copy" data-url={pageUrl} aria-label="Copier le lien" set:html={icon("copy")}></button>
-          <button type="button" class="fiche-share-native" data-url={pageUrl} data-text={shareText} aria-label="Partager" set:html={icon("native")}></button>
-        </div>
-        <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label="Télécharger l'image du score">
-          <span set:html={icon("download", 16)}></span>Télécharger l'image du score
-        </a>
-        <a class="fiche-signal" href={`mailto:contact@scoremydatacenter.org?subject=${enc(`Correction — ${dc.name}`)}&body=${enc("Indicateur concerné :\nValeur à corriger :\nSource / preuve (obligatoire) :\n")}`}>
-          <span set:html={icon("info", 16)}></span>Signaler une erreur
-        </a>
-        <p class="fiche-signal-note">Corrige un fait, avec sa source — <strong>une preuve est requise</strong>.</p>
-      </div>
-
-      <p class="fiche-side-foot">Méthodologie {methodology.version} · scoremydatacenter.org</p>
-    </aside>
-
-    <div class="fiche-main">
-      {inReplyWindow && (
-        <div class="fiche-reply-banner" role="status" data-deadline={replyDeadline}>
-          <strong>Droit de réponse en cours</strong> <span class="reply-until">jusqu'au {frDate(replyDeadline)}</span>.
-          La note (lettre et chiffre) et tous les faits sourcés sont publics ; seule la synthèse narrative est publiée à l'issue du délai.
-        </div>
-      )}
-      <div class="fiche-top">
-      <div class="fiche-subscores">
-        <div class="fiche-subscores-head">
-          <div>
-            <h2>Sous-scores par pilier</h2>
-            <span class="fiche-subscores-sub">Un pilier mêle le subi et le choisi ; une note n'est pas la moyenne des piliers.<span
-              class="fiche-why" tabindex="0" role="note"
-              aria-label="Pourquoi la note ne se déduit pas des piliers"
-              title="Les deux notes (site, projet) séparent les indicateurs selon qu'ils sont subis ou choisis — toutes thématiques confondues et pondérés. Les piliers, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages ne se recouvrent pas : la note du site ne se lit pas comme la moyenne des piliers affichés."
-              set:html={icon("info", 13)}></span></span>
-          </div>
-          <span class="fiche-legend"><span class="pillar-dots"><span class="on">●●●</span><span class="off">○</span></span> = documentation disponible</span>
-        </div>
-        <div class="fiche-pillars">
-          {pillars.map((p) => {
-            const detail = dc.pillars[p.id];
-            const dots = detail?.documentation?.dots;
-            return (
-              <div class="pillar-line">
-                <span class="pillar-name"><PillarIcon name={pillarIconName[p.id]} size={16} />{p.label.fr}</span>
-                <ScoreBadge
-                  label={p.label.fr}
-                  grade={detail}
-                  confidence={dc.confidence.level}
-                  confidenceLabel={confidenceLabels[dc.confidence.level]}
-                  renderConfidence={false}
-                  renderLabel={false}
-                  size="sm"
-                  naLabel="données insuffisantes"
-                />
-                {dots ? (
-                  <span class="pillar-dots">
-                    <span class="on">{"●".repeat(dots)}</span><span class="off">{"○".repeat(4 - dots)}</span>
-                  </span>
-                ) : <span class="pillar-dots"></span>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-        {inReplyWindow && (
-          <aside class="fiche-synthesis fiche-synthesis-held">
-            <div class="synth-head">
-              <h2>Synthèse du projet</h2>
-              <span class="synth-sub">publiée à l'issue du droit de réponse</span>
-            </div>
-            <p class="synth-held-note">La lecture d'ensemble est retenue le temps du droit de réponse (jusqu'au {frDate(replyDeadline)}). Les badges, les piliers et les indicateurs sourcés ci-contre restent publics.</p>
-          </aside>
-        )}
-        {dc.synthesis && !inReplyWindow && (
-          <aside class="fiche-synthesis" aria-labelledby="synth-title">
-            <div class="synth-head">
-              <h2 id="synth-title">Synthèse du projet</h2>
-              <span class="synth-sub">la lecture d'ensemble, derrière les lettres</span>
-            </div>
-            <div class="synth-block synth-project">
-              <span class="synth-tag">Projet &amp; processus</span>
-              <span class="synth-lead">{dc.synthesis.project_process.lead}</span>
-              <p>{dc.synthesis.project_process.fr}</p>
-            </div>
-            <div class="synth-block synth-site">
-              <span class="synth-tag">Site</span>
-              <span class="synth-lead">{dc.synthesis.site.lead}</span>
-              <p>{dc.synthesis.site.fr}</p>
-            </div>
-          </aside>
-        )}
-      </div>
-
-      <blockquote class="fiche-quote"><p>« {dc.citable_quote.fr} »</p></blockquote>
-
-      <section class="fiche-section" aria-label="Indicateurs suivis">
-        <h2>Indicateurs suivis</h2>
-        <div class="fiche-ind-wrap">
-          <table class="fiche-ind">
-            <thead>
-              <tr><th>Indicateur</th><th>Valeur</th><th>Lecture</th><th>État</th><th>Source</th></tr>
-            </thead>
-            <tbody>
-              {indByPillar.map((g: any) => (
-                <Fragment>
-                  <tr class="ind-group">
-                    <td colspan="5"><span class="pillar-name"><PillarIcon name={pillarIconName[g.pillar.id]} size={15} />{g.pillar.label.fr}</span></td>
-                  </tr>
-                  {g.items.map((ind: any) => {
-                    const band = senseBand(ind.score);
-                    const unit = indUnit(ind.id);
-                    const tip = indTooltip(ind.id);
-                    return (
-                      <tr>
-                        <td class="ind-name">
-                          {ind.label.fr}
-                          {tip && (
-                            <span class="info" tabindex="0" role="note" aria-label={`Explication : ${tip}`}>
-                              <span class="info-ico" set:html={icon("info", 14)}></span>
-                              <span class="info-tip">{tip}</span>
-                            </span>
-                          )}
-                        </td>
-                        <td class={ind.status === "missing" ? "ind-missing" : ""}>
-                          {ind.proxies
-                            ? <ul class="proxy-facts">{proxyFacts(ind.proxies).map((f) => <li>{f}</li>)}</ul>
-                            : ind.status === "missing" ? "Non communiqué" : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}
-                        </td>
-                        <td>
-                          {band
-                            ? <span class={`sense sense-${band.cls}`} title={band.label} role="img" aria-label={band.label}><i style={`width:${Math.round(ind.score)}%`}></i></span>
-                            : <span class="sense-na" aria-label="non applicable">—</span>}
-                        </td>
-                        <td><span class={`status-tag status-${ind.status}`}>{indStatusLabels[ind.status]}</span></td>
-                        <td class="ind-source"><SourceLink source={ind.source} /></td>
-                      </tr>
-                    );
-                  })}
-                </Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <div class="fiche-cards">
-        <div class="fiche-card">
-          <h3>Réponse de l'opérateur</h3>
-          {op
-            ? <p>{op.text}{op.date ? ` (${frDate(op.date)})` : ""}</p>
-            : pubStatus === "published" && notifiedAt
-              ? <p class="empty">Opérateur sollicité le {frDate(notifiedAt)} — sans réponse à l'échéance.</p>
-              : inReplyWindow && notifiedAt
-                ? <p class="empty">Sollicité le {frDate(notifiedAt)} — droit de réponse en cours jusqu'au {frDate(replyDeadline)}.</p>
-                : <p class="empty">L'opérateur dispose d'un droit de réponse ; il sera publié ici.</p>}
-          <p class="fiche-card-note">Droit de réponse : donne la <strong>parole</strong> à l'opérateur, à côté de la note.</p>
-        </div>
-        <div class="fiche-card">
-          <h3>État de la donnée disponible</h3>
-          <p>{dataState}</p>
-        </div>
-      </div>
-
-      {dc.contestation && dc.contestation.length > 0 && (
-        <section class="fiche-contestation" aria-labelledby="contestation-title">
-          <h2 id="contestation-title">Contestation &amp; signal</h2>
-          <p class="contestation-sub">Faits sourcés — n'entrent pas dans la note.</p>
-          <ul class="contestation-list">
-            {dc.contestation.map((item: any) => (
-              <li>
-                <span class="contestation-fact">
-                  {item.kind === "press" ? "Presse : " : ""}{item.label.fr}
-                  {item.self_reported && <span class="contestation-tag">auto-déclaré</span>}
-                </span>
-                <span class="contestation-src"><SourceLink source={item.source} /></span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <section class="fiche-history" aria-label="Historique de la note">
-        <h2>Historique de la note</h2>
-        <ul>
-          {dc.score_history.map((h: any) => (
-            <li>
-              <time>{h.date}</time>
-              <span class="hist-grades">
-                <ScoreBadge label="Note du site à cette date" grade={{ grade: h.grades.site }} confidence={h.confidence} confidenceLabel={confidenceLabels[h.confidence]} renderConfidence={false} renderLabel={false} size="sm" naLabel="données insuffisantes" />
-                <ScoreBadge label="Note projet & processus à cette date" grade={{ grade: h.grades.project_process }} confidence={h.confidence} confidenceLabel={confidenceLabels[h.confidence]} renderConfidence={false} renderLabel={false} size="sm" naLabel="données insuffisantes" />
-              </span>
-              <span>{h.rationale ?? h.event}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <div class="fiche-foot">
-        <span>Méthodologie {methodology.version}{lastScored ? ` · Scoré le ${lastScored}` : ""}</span>
-        <span>scoremydatacenter.org</span>
-      </div>
-    </div>
-  </article>
-</Base>
-
-<script>
-  // Copy-link and native share — the only client JS the fiche needs.
-  document.querySelectorAll(".fiche-copy").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const url = (btn as HTMLElement).dataset.url!;
-      try { await navigator.clipboard.writeText(url); (btn as HTMLElement).setAttribute("aria-label", "Lien copié"); }
-      catch { /* clipboard blocked — no-op */ }
-    });
-  });
-  const native = document.querySelector(".fiche-share-native") as HTMLElement | null;
-  if (native && "share" in navigator) {
-    native.addEventListener("click", () => {
-      navigator.share({ title: document.title, text: native.dataset.text, url: native.dataset.url }).catch(() => {});
-    });
-  }
-
-  // Right-of-reply clock lives in the view: once the deadline has passed, the fiche awaits its final
-  // publication (a real data edit flips the status). The banner reflects that, without touching data.
-  const banner = document.querySelector(".fiche-reply-banner") as HTMLElement | null;
-  const deadline = banner?.dataset.deadline;
-  if (banner && deadline && new Date().toISOString().slice(0, 10) >= deadline) {
-    banner.innerHTML = "<strong>Délai de droit de réponse échu</strong> — fiche finale en cours de publication.";
-    banner.classList.add("elapsed");
-  }
-</script>
+<DcFiche dc={dc} lang="fr" t={t} nav={FR_NAV} altHref={`/dc/${dc.id}`} altLabel="🇬🇧 EN" />

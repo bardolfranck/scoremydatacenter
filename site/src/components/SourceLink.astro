@@ -11,14 +11,16 @@ interface Source {
   accessed?: string;
   archived_url?: string;
 }
-const { source } = Astro.props as { source?: Source };
+const { source, accessedLabel = "consulté le", archivedLabel = "archivé" } = Astro.props as {
+  source?: Source; accessedLabel?: string; archivedLabel?: string;
+};
 ---
 
 {source?.url ? (
   <Fragment>
-    <a href={source.url} target="_blank" rel="noopener">{source.title}{source.accessed ? ` — consulté le ${source.accessed}` : ""}</a>
+    <a href={source.url} target="_blank" rel="noopener">{source.title}{source.accessed ? ` — ${accessedLabel} ${source.accessed}` : ""}</a>
     {source.archived_url && (
-      <Fragment> · <a href={source.archived_url} target="_blank" rel="noopener" class="src-archived">archivé</a></Fragment>
+      <Fragment> · <a href={source.archived_url} target="_blank" rel="noopener" class="src-archived">{archivedLabel}</a></Fragment>
     )}
   </Fragment>
 ) : (
