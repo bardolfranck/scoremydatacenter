@@ -87,7 +87,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       <div class="why-stats">
         {t.whyNowStats.map((stat: any) => (
           <div class="stat">
-            <b>{stat.figure}</b>
+            {/* Final value lives in the HTML (no-JS / SEO / reduced-motion baseline);
+                the count-up only replays it once on scroll-in. Sources never animate. */}
+            <b><span class="sr-only">{stat.figure}</span><span class="stat-anim" aria-hidden="true">{stat.figure}</span>
+              {/litres?|liters?/i.test(stat.figure) && <span class="stat-bar" aria-hidden="true"><i></i></span>}</b>
             {stat.url
               ? <a href={stat.url} target="_blank" rel="noopener">{stat.attribution}</a>
               : <span>{stat.attribution}</span>}
@@ -294,3 +297,45 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     <a class="button button-primary" href="mailto:contact@scoremydatacenter.org">{t.contactCta}</a>
   </section>
 </Base>
+
+<script>
+  // Count-up band (brief 2026-07-12 · motion is the data, not dressing): one pass on
+  // scroll-in, 0→published value, ease-out cubes, ~160ms stagger. The HTML already
+  // holds the final figures — this only replays them; reduced-motion never touches it.
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const band = document.querySelector(".why-now");
+  if (band && !reduced && "IntersectionObserver" in window) {
+    const io = new IntersectionObserver((entries) => {
+      if (!entries.some((e) => e.isIntersecting)) return;
+      io.disconnect();
+      document.querySelectorAll<HTMLElement>(".why-stats .stat").forEach((stat, i) => {
+        const el = stat.querySelector<HTMLElement>(".stat-anim");
+        if (!el) return;
+        const text = el.textContent || "";
+        const m = text.match(/(\d+(?:[.,]\d+)?)/);
+        if (!m || m.index === undefined) return;
+        const finalToken = m[1];
+        const decimals = /[.,]\d/.test(finalToken) ? 1 : 0;
+        const sep = finalToken.includes(",") ? "," : ".";
+        const target = parseFloat(finalToken.replace(",", "."));
+        const before = text.slice(0, m.index);
+        const after = text.slice(m.index + finalToken.length);
+        el.style.minWidth = `${el.offsetWidth}px`; // reserve layout — zero CLS
+        const bar = stat.querySelector<HTMLElement>(".stat-bar i");
+        if (bar) bar.style.transform = "scaleX(0)";
+        const start = performance.now() + i * 160;
+        const DURATION = 1500;
+        const frame = (now: number) => {
+          const k = Math.min(Math.max((now - start) / DURATION, 0), 1);
+          const eased = 1 - Math.pow(1 - k, 3);
+          el.textContent = before + (target * eased).toFixed(decimals).replace(".", sep) + after;
+          if (bar) bar.style.transform = `scaleX(${eased})`;
+          if (k < 1) requestAnimationFrame(frame);
+          else el.textContent = before + finalToken + after; // land exactly on the sourced value
+        };
+        requestAnimationFrame(frame);
+      });
+    }, { threshold: 0.4 });
+    io.observe(band);
+  }
+</script>
