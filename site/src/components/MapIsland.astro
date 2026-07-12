@@ -14,6 +14,16 @@ interface Props {
     insufficient: string;
     fixture: string;
     openMap?: string;
+    // i18n (§13): link bases + strings the client script renders. FR defaults
+    // apply when absent so existing callers keep working.
+    ficheBase?: string;   // "/fr/dc" | "/dc"
+    mapPath?: string;     // "/fr/carte" | "/map"
+    viewFiche?: string;
+    replyInProgress?: string;
+    reserved?: string;
+    legendGraded?: string;
+    legendWatch?: string;
+    watch?: { badge: string; note: string; source: string; press: string; selfReported: string; aria: string; title: string; status: Record<string, string> };
   };
 }
 const { variant, labels } = Astro.props;
@@ -22,12 +32,12 @@ const { variant, labels } = Astro.props;
 <div class={`map-island map-${variant}`} data-variant={variant} data-labels={JSON.stringify(labels)}>
   <div class="map-canvas"></div>
   {variant === "hero" && labels.openMap && (
-    <a class="button button-primary map-open-link" href="/fr/carte">{labels.openMap}</a>
+    <a class="button button-primary map-open-link" href={labels.mapPath ?? "/fr/carte"}>{labels.openMap}</a>
   )}
   {variant === "full" && (
     <div class="map-legend" aria-hidden="true">
-      <span><span class="map-legend-graded"></span>Projet noté A–E</span>
-      <span><span class="map-legend-watch">🗣️</span>En veille — suivi, pas encore noté</span>
+      <span><span class="map-legend-graded"></span>{labels.legendGraded ?? "Projet noté A–E"}</span>
+      <span><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
     </div>
   )}
 </div>
@@ -120,11 +130,11 @@ const { variant, labels } = Astro.props;
             <span>${labels.operator} ${chip(p.grade_project_process)}${p.reserved_pp ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
           </div>
           ${pillarStrip(p.pillars)}
-          ${p.publication_status === "right_of_reply" ? `<p class="map-popup-reply">Droit de réponse en cours</p>` : ""}
+          ${p.publication_status === "right_of_reply" ? `<p class="map-popup-reply">${labels.replyInProgress ?? "Droit de réponse en cours"}</p>` : ""}
           ${p.quote_fr ? `<p class="map-popup-quote">« ${p.quote_fr} »</p>` : ""}
           <span class="confidence ${p.confidence}"><span class="dot"></span>${labels.confidence[p.confidence]}</span>
           ${fixtureTag}
-          <a class="map-popup-link" href="/fr/dc/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
+          <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
         </div>`;
 
       const marker = new maplibregl.Marker({ element: el })
@@ -156,10 +166,14 @@ const { variant, labels } = Astro.props;
     // grade. Full map only (the graded DCs stay the hero focus). FR labels: this
     // layer is shown on /fr/carte. No letter is ever rendered here.
     if (isFull) {
-      const WATCH_STATUS: Record<string, string> = {
-        announced: "Annoncé", permitting: "En instruction",
-        under_construction: "En construction", operational: "En service",
+      const W = labels.watch ?? {
+        badge: "En veille", note: "Projet suivi ; pas encore noté.",
+        source: "Source :", press: "Presse : ", selfReported: "auto-déclaré",
+        aria: "Projet suivi — contestation", title: "Projet suivi ; pas encore noté",
+        status: { announced: "Annoncé", permitting: "En instruction",
+                  under_construction: "En construction", operational: "En service" },
       };
+      const WATCH_STATUS: Record<string, string> = W.status;
       try {
         const watch = await (await fetch("/data/watchlist.geojson")).json();
         for (const feature of watch.features) {
@@ -169,21 +183,21 @@ const { variant, labels } = Astro.props;
           el.className = "watch-marker";
           el.textContent = "🗣️";
           el.setAttribute("role", "img");
-          el.setAttribute("aria-label", "Projet suivi — contestation");
-          el.title = "Projet suivi ; pas encore noté";
+          el.setAttribute("aria-label", W.aria);
+          el.title = W.title;
           const sub = [[p.municipality, p.country].filter(Boolean).join(" · "),
             p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
           const factItems = (p.facts || []).map((f: any) =>
-            `<li>${f.kind === "press" ? "Presse : " : ""}${f.label.fr}` +
-            `${f.self_reported ? ` <span class="contestation-tag">auto-déclaré</span>` : ""} — ${srcLink(f.source)}</li>`
+            `<li>${f.kind === "press" ? W.press : ""}${f.label.fr}` +
+            `${f.self_reported ? ` <span class="contestation-tag">${W.selfReported}</span>` : ""} — ${srcLink(f.source)}</li>`
           ).join("");
           const popupHtml = `
             <div class="map-popup watch-popup">
-              <span class="watch-badge">En veille</span>
+              <span class="watch-badge">${W.badge}</span>
               <strong>${p.name}</strong>
               ${sub ? `<span class="map-popup-sub">${sub}</span>` : ""}
-              <p class="watch-note">Projet suivi ; pas encore noté.</p>
-              <p class="watch-src">Source : ${srcLink(p.source)}</p>
+              <p class="watch-note">${W.note}</p>
+              <p class="watch-src">${W.source} ${srcLink(p.source)}</p>
               ${factItems ? `<ul class="watch-facts">${factItems}</ul>` : ""}
             </div>`;
           new maplibregl.Marker({ element: el })

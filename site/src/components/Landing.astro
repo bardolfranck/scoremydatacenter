@@ -88,6 +88,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         fixture: t.fixtureTag,
         openMap: t.mapOpen,
         reserved: t.mapReserved,
+        ficheBase: lang === "fr" ? "/fr/dc" : "/dc",
+        mapPath: lang === "fr" ? "/fr/carte" : "/map",
+        viewFiche: t.viewFiche,
+        replyInProgress: t.replyInProgress,
       }}
     />
   </section>
@@ -191,7 +195,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <div class="scorecard-head">
               <div>
                 <p class="scorecard-status">{t.status[dc.project_status]} · {dc.power_mw} MW</p>
-                <h3><a class="scorecard-name" href={`/fr/dc/${dc.id}`}>{dc.name}</a></h3>
+                <h3><a class="scorecard-name" href={`${lang === "fr" ? "/fr/dc" : "/dc"}/${dc.id}`}>{dc.name}</a></h3>
                 <p class="scorecard-place">{dc.municipality} ({dc.country}) — {dc.operator}</p>
               </div>
               <span class={`confidence ${dc.confidence.level}`}>

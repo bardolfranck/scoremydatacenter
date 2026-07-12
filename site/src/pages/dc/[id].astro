@@ -1,0 +1,114 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN fiche: thin page — the template lives in DcFiche.astro (shared FR/EN, i18n §13),
+// this file only carries the English copy (t) and the route.
+import DcFiche from "../../components/DcFiche.astro";
+import { EN_NAV } from "../../config/nav";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("../../../public/data/dc/*.json", { eager: true });
+  return Object.values(modules).map((m: any) => {
+    const dc = m.default;
+    return { params: { id: dc.id }, props: { dc } };
+  });
+}
+
+const { dc } = Astro.props as { dc: any };
+
+const t = {
+  tagline: "Independent observatory",
+  metaDescription: "{name} ({municipality}): site grade and project & process grade A–E, pillar sub-scores, sourced indicators — independent observatory.",
+  kicker: "Project fiche",
+  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+  powerUnknown: "power not disclosed",
+  commissioning: "commissioning",
+  siteScore: "Site grade",
+  ppScore: "Project & process grade",
+  naLabel: "insufficient data",
+  reserved: "A reserved — proven in operation",
+  confidence: { high: "confidence: high", medium: "confidence: medium", low: "confidence: low" },
+  confidenceNote: { high: "largely sourced file", medium: "partially sourced file", low: "thinly sourced file" },
+  confGlobal: "Overall documentation confidence",
+  viewMap: "View on the map",
+  share: "Share",
+  shareOn: "Share on",
+  shareMail: "Share by email",
+  copyLink: "Copy the link",
+  copied: "Link copied",
+  download: "Download the score image",
+  signal: "Report an error",
+  signalSubject: "Correction",
+  signalBody: "Indicator concerned:\nValue to correct:\nSource / proof (required):\n",
+  signalNote: "Corrects a fact, with its source — <strong>proof is required</strong>.",
+  methodology: "Methodology",
+  replyBanner: "Right of reply in progress",
+  replyUntil: "until",
+  replyBannerRest: "The grade (letter and score) and every sourced fact are public; only the narrative synthesis is published once the period ends.",
+  replyElapsed: "Right-of-reply period elapsed — final fiche being published.",
+  subscoresTitle: "Pillar sub-scores",
+  subscoresSub: "A pillar mixes what is endured and what is chosen; a grade is not the average of the pillars.",
+  whyAria: "Why the grade cannot be derived from the pillars",
+  whyTip: "The two grades (site, project) split the indicators by whether they are endured or chosen — across all themes, weighted. The pillars group each theme, mixing endured and chosen. The two groupings do not overlap: the site grade does not read as the average of the displayed pillars.",
+  legendDoc: "documentation available",
+  synthTitle: "Project synthesis",
+  synthHeldSub: "published once the right of reply ends",
+  synthHeldNote: "The overall reading is withheld for the duration of the right of reply (until {date}). The badges, pillars and sourced indicators opposite remain public.",
+  synthSub: "the overall reading behind the letters",
+  synthProjectTag: "Project & process",
+  synthSiteTag: "Site",
+  quoteOpen: "“",
+  quoteClose: "”",
+  indicatorsTitle: "Tracked indicators",
+  th: { indicator: "Indicator", value: "Value", reading: "Reading", state: "State", source: "Source" },
+  explanation: "Explanation",
+  notDisclosed: "Not disclosed",
+  procedureSeeSource: "Procedure (see source)",
+  notApplicable: "not applicable",
+  indStatus: { measured: "Measured", announced: "Announced", missing: "Missing" },
+  accessed: "accessed",
+  archived: "archived",
+  directionHint: { lower_is_better: "The lower the value, the better.", higher_is_better: "The higher the value, the better." },
+  hintDedupe: "the better",
+  sense: { good: "favorable", mid: "middling", bad: "unfavorable" },
+  proxy: {
+    inquiryHeld: "Public inquiry held",
+    inquiryNone: "No public inquiry",
+    envOpinion: {
+      favorable: "Environmental authority opinion: favorable",
+      favorable_with_reservations: "Environmental authority opinion: favorable with reservations",
+      unfavorable: "Environmental authority opinion: unfavorable",
+      none: "Environmental authority opinion: none required/issued",
+    },
+    cndpYes: "CNDP referral",
+    cndpNo: "No CNDP referral",
+    appeals: "Legal appeals:",
+    council: {
+      favorable: "Council deliberations: favorable",
+      mixed: "Council deliberations: mixed",
+      unfavorable: "Council deliberations: unfavorable",
+      none_recorded: "Council deliberations: none recorded",
+    },
+  },
+  opTitle: "Operator response",
+  opSolicitedNoReply: "Operator solicited on {date} — no reply at the deadline.",
+  opInWindow: "Solicited on {date} — right of reply in progress until {deadline}.",
+  opNone: "The operator has a right of reply; it will be published here.",
+  opNote: "Right of reply: gives the operator a <strong>voice</strong>, alongside the grade.",
+  dataStateTitle: "State of the available data",
+  dataState: "{n} indicators tracked · {measured} measured · {announced} announced (unverified) · {missing} missing.",
+  contestationTitle: "Contestation & signal",
+  contestationSub: "Sourced facts — never an input to the grade.",
+  press: "Press: ",
+  selfReported: "self-reported",
+  historyTitle: "Grade history",
+  histSite: "Site grade at this date",
+  histPp: "Project & process grade at this date",
+  scoredOn: "Scored on",
+  shareText: "{name} — Site grade: {grade}",
+  shareSuffix: ", according to ScoreMyDataCenter",
+};
+---
+
+<DcFiche dc={dc} lang="en" t={t} nav={EN_NAV} altHref={`/fr/dc/${dc.id}`} altLabel="🇫🇷 FR" />

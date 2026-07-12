@@ -1,0 +1,431 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The proof page, shared FR/EN (i18n §13: one template, per-language t object —
+// duplicated pages is how EN silently diverged). Rendered from the engine's
+// dc/{id}.json artifact (never hand-written); a grade letter only ever appears
+// through <ScoreBadge>. Bilingual data reads label[lang]/synthesis .fr/.en.
+import Base from "../layouts/Base.astro";
+import ScoreBadge from "./ScoreBadge.astro";
+import PillarIcon from "./PillarIcon.astro";
+import type { PillarIconName } from "./PillarIcon.astro";
+import SourceLink from "./SourceLink.astro";
+import methodologyData from "../../public/data/methodology.json";
+
+import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
+import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
+import linkedinLogo from "@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw";
+import envelope from "@phosphor-icons/core/assets/regular/envelope-simple.svg?raw";
+import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw";
+import downloadSimple from "@phosphor-icons/core/assets/regular/download-simple.svg?raw";
+import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?raw";
+import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
+import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
+
+const { dc, lang, t, nav, altHref, altLabel } = Astro.props as {
+  dc: any; lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
+  altHref: string; altLabel: string;
+};
+const methodology = methodologyData as any;
+
+const SITE_ORIGIN = "https://scoremydatacenter.org";
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const mapPath = lang === "fr" ? "/fr/carte" : "/map";
+const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
+const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
+const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
+
+const pillarIconName: Record<string, PillarIconName> = {
+  energy: "energy",
+  water: "water",
+  land_biodiversity: "land",
+  local_impact: "local",
+  transparency_governance: "transparency",
+};
+
+const shareIcon: Record<string, string> = {
+  x: xLogo, whatsapp: whatsappLogo, linkedin: linkedinLogo,
+  mail: envelope, copy: linkSimple, download: downloadSimple, native: shareNetwork,
+  info: infoIcon, map: mapPin,
+};
+const icon = (name: string, size = 18) =>
+  shareIcon[name].replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
+
+const isNa = (g: any) => !g || g.grade === "insufficient_data";
+const siteDocLabel = L(dc.grades.site.documentation?.label);
+const ppDocLabel = isNa(dc.grades.project_process)
+  ? t.naLabel
+  : L(dc.grades.project_process.documentation?.label);
+
+const confPct = Math.round((dc.confidence.score ?? 0) * 100);
+
+const commissioning = dc.vintage?.expected_commissioning;
+const metaLine = [t.status[dc.project_status] ?? dc.project_status,
+  dc.power_mw ? `${dc.power_mw} MW` : t.powerUnknown,
+  commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
+
+const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
+  + (dc.country ? ` · ${dc.country}` : "");
+
+const counts = { measured: 0, announced: 0, missing: 0 } as Record<string, number>;
+for (const ind of dc.indicators) counts[ind.status] = (counts[ind.status] ?? 0) + 1;
+const dataState = t.dataState
+  .replace("{n}", String(dc.indicators.length))
+  .replace("{measured}", String(counts.measured))
+  .replace("{announced}", String(counts.announced))
+  .replace("{missing}", String(counts.missing));
+
+const op = dc.publication.operator_response;
+const notifiedAt = dc.publication.operator_notified_at;
+// Publication doctrine A-26: letter + score are public in every state; only the FINAL fiche
+// (the narrative synthesis) waits out the right-of-reply window. The clock lives in the view.
+const pubStatus = dc.publication_status;              // "draft" | "right_of_reply" | "published"
+const replyDeadline: string | null = dc.reply_deadline;
+const inReplyWindow = pubStatus === "right_of_reply";
+const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.length - 1].date : null;
+
+const indicatorValue = (ind: any) => {
+  if (ind.status === "missing") return t.notDisclosed;
+  if (ind.value !== null && ind.value !== undefined) return String(ind.value);
+  if (ind.proxies) return t.procedureSeeSource;
+  return "—";
+};
+
+// T1 procedural facts (A-21 voie A): neutral facts, never a judgment (G6).
+const proxyFacts = (p: any): string[] => [
+  p.public_inquiry_held ? t.proxy.inquiryHeld : t.proxy.inquiryNone,
+  t.proxy.envOpinion[p.environmental_authority_opinion],
+  p.cndp_referral ? t.proxy.cndpYes : t.proxy.cndpNo,
+  `${t.proxy.appeals} ${p.legal_appeals_count}`,
+  t.proxy.council[p.council_deliberations],
+].filter(Boolean) as string[];
+
+// Methodology meta per indicator — units, scoring direction, threshold basis.
+const indMeta: Record<string, any> = {};
+for (const i of methodology.indicators) indMeta[i.id] = i;
+const indUnit = (id: string) => indMeta[id]?.unit ?? "";
+const indTooltip = (id: string) => {
+  const m = indMeta[id];
+  if (!m) return "";
+  const desc = L(m.description) ?? "";
+  const hint = t.directionHint[m.direction] ?? "";
+  // avoid repeating the hint when the description already ends with it
+  return [desc, desc.includes(t.hintDedupe) ? "" : hint].filter(Boolean).join(" ");
+};
+const senseBand = (score: number | null | undefined) => {
+  if (score === null || score === undefined) return null;
+  if (score >= 66) return { cls: "good", label: t.sense.good };
+  if (score >= 40) return { cls: "mid", label: t.sense.mid };
+  return { cls: "bad", label: t.sense.bad };
+};
+// Grouped by pillar (methodology order) — 5 labelled blocks instead of 21 flat rows.
+const indByPillar = (methodology.pillars as any[])
+  .map((p: any) => ({ pillar: p, items: dc.indicators.filter((ind: any) => ind.pillar === p.id) }))
+  .filter((g: any) => g.items.length);
+
+const shareText = t.shareText
+  .replace("{name}", dc.name)
+  .replace("{grade}", isNa(dc.grades.site) ? t.naLabel : dc.grades.site.grade)
+  + (siteDocLabel ? ` · ${siteDocLabel}` : "") + t.shareSuffix;
+const enc = encodeURIComponent;
+const shareLinks = {
+  x: `https://twitter.com/intent/tweet?text=${enc(shareText)}&url=${enc(pageUrl)}`,
+  whatsapp: `https://wa.me/?text=${enc(shareText + " " + pageUrl)}`,
+  linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(pageUrl)}`,
+  mail: `mailto:?subject=${enc(dc.name + " — ScoreMyDataCenter")}&body=${enc(shareText + "\n\n" + pageUrl)}`,
+};
+
+const pillars = methodology.pillars as any[];
+---
+
+<Base
+  lang={lang}
+  title={`${dc.name} — ScoreMyDataCenter`}
+  description={t.metaDescription.replace("{name}", dc.name).replace("{municipality}", dc.municipality)}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+  ogImage={`${SITE_ORIGIN}/og/dc/${dc.id}.png`}
+>
+  <article class="fiche">
+    <aside class="fiche-side">
+      <div>
+        <p class="fiche-kicker">{t.kicker}</p>
+        <h1 class="fiche-name">{dc.name}</h1>
+        <p class="fiche-place">{place}</p>
+        <p class="fiche-meta">{metaLine}</p>
+      </div>
+
+      <div class="fiche-badges">
+        <ScoreBadge
+          label={t.siteScore}
+          grade={dc.grades.site}
+          confidence={dc.confidence.level}
+          confidenceLabel={t.confidence[dc.confidence.level]}
+          documentationLabel={siteDocLabel}
+          reservedLabel={t.reserved}
+          size="lg"
+          layout="lead"
+          naLabel={t.naLabel}
+        />
+        <hr />
+        <ScoreBadge
+          label={t.ppScore}
+          grade={dc.grades.project_process}
+          confidence={dc.confidence.level}
+          confidenceLabel={t.confidence[dc.confidence.level]}
+          documentationLabel={ppDocLabel}
+          reservedLabel={t.reserved}
+          size="lg"
+          layout="lead"
+          naLabel={t.naLabel}
+        />
+      </div>
+
+      <div class="fiche-conf">
+        <span class="fiche-conf-label">{t.confGlobal}</span>
+        <div class="fiche-conf-track"><i style={`width:${confPct}%`}></i></div>
+        <span class="fiche-conf-note">{confPct} % — {t.confidenceNote[dc.confidence.level]}</span>
+      </div>
+
+      <a class="fiche-map-link" href={`${mapPath}?dc=${dc.id}`}>
+        <span set:html={icon("map", 16)}></span>{t.viewMap}
+      </a>
+
+      <div class="fiche-share">
+        <span class="fiche-share-label">{t.share}</span>
+        <div class="fiche-share-icons">
+          <a href={shareLinks.x} target="_blank" rel="noopener" aria-label={t.shareOn + " X"} set:html={icon("x")}></a>
+          <a href={shareLinks.whatsapp} target="_blank" rel="noopener" aria-label={t.shareOn + " WhatsApp"} set:html={icon("whatsapp")}></a>
+          <a href={shareLinks.linkedin} target="_blank" rel="noopener" aria-label={t.shareOn + " LinkedIn"} set:html={icon("linkedin")}></a>
+          <a href={shareLinks.mail} aria-label={t.shareMail} set:html={icon("mail")}></a>
+          <button type="button" class="fiche-copy" data-url={pageUrl} data-copied={t.copied} aria-label={t.copyLink} set:html={icon("copy")}></button>
+          <button type="button" class="fiche-share-native" data-url={pageUrl} data-text={shareText} aria-label={t.share} set:html={icon("native")}></button>
+        </div>
+        <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label={t.download}>
+          <span set:html={icon("download", 16)}></span>{t.download}
+        </a>
+        <a class="fiche-signal" href={`mailto:contact@scoremydatacenter.org?subject=${enc(`${t.signalSubject} — ${dc.name}`)}&body=${enc(t.signalBody)}`}>
+          <span set:html={icon("info", 16)}></span>{t.signal}
+        </a>
+        <p class="fiche-signal-note" set:html={t.signalNote}></p>
+      </div>
+
+      <p class="fiche-side-foot">{t.methodology} {methodology.version} · scoremydatacenter.org</p>
+    </aside>
+
+    <div class="fiche-main">
+      {inReplyWindow && (
+        <div class="fiche-reply-banner" role="status" data-deadline={replyDeadline} data-elapsed={t.replyElapsed}>
+          <strong>{t.replyBanner}</strong> <span class="reply-until">{t.replyUntil} {fmtDate(replyDeadline)}</span>.
+          {t.replyBannerRest}
+        </div>
+      )}
+      <div class="fiche-top">
+      <div class="fiche-subscores">
+        <div class="fiche-subscores-head">
+          <div>
+            <h2>{t.subscoresTitle}</h2>
+            <span class="fiche-subscores-sub">{t.subscoresSub}<span
+              class="fiche-why" tabindex="0" role="note"
+              aria-label={t.whyAria}
+              title={t.whyTip}
+              set:html={icon("info", 13)}></span></span>
+          </div>
+          <span class="fiche-legend"><span class="pillar-dots"><span class="on">●●●</span><span class="off">○</span></span> = {t.legendDoc}</span>
+        </div>
+        <div class="fiche-pillars">
+          {pillars.map((p) => {
+            const detail = dc.pillars[p.id];
+            const dots = detail?.documentation?.dots;
+            return (
+              <div class="pillar-line">
+                <span class="pillar-name"><PillarIcon name={pillarIconName[p.id]} size={16} />{L(p.label)}</span>
+                <ScoreBadge
+                  label={L(p.label)}
+                  grade={detail}
+                  confidence={dc.confidence.level}
+                  confidenceLabel={t.confidence[dc.confidence.level]}
+                  renderConfidence={false}
+                  renderLabel={false}
+                  size="sm"
+                  naLabel={t.naLabel}
+                />
+                {dots ? (
+                  <span class="pillar-dots">
+                    <span class="on">{"●".repeat(dots)}</span><span class="off">{"○".repeat(4 - dots)}</span>
+                  </span>
+                ) : <span class="pillar-dots"></span>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+        {inReplyWindow && (
+          <aside class="fiche-synthesis fiche-synthesis-held">
+            <div class="synth-head">
+              <h2>{t.synthTitle}</h2>
+              <span class="synth-sub">{t.synthHeldSub}</span>
+            </div>
+            <p class="synth-held-note">{t.synthHeldNote.replace("{date}", fmtDate(replyDeadline))}</p>
+          </aside>
+        )}
+        {dc.synthesis && !inReplyWindow && (
+          <aside class="fiche-synthesis" aria-labelledby="synth-title">
+            <div class="synth-head">
+              <h2 id="synth-title">{t.synthTitle}</h2>
+              <span class="synth-sub">{t.synthSub}</span>
+            </div>
+            <div class="synth-block synth-project">
+              <span class="synth-tag">{t.synthProjectTag}</span>
+              <span class="synth-lead">{dc.synthesis.project_process.lead}</span>
+              <p>{L(dc.synthesis.project_process)}</p>
+            </div>
+            <div class="synth-block synth-site">
+              <span class="synth-tag">{t.synthSiteTag}</span>
+              <span class="synth-lead">{dc.synthesis.site.lead}</span>
+              <p>{L(dc.synthesis.site)}</p>
+            </div>
+          </aside>
+        )}
+      </div>
+
+      <blockquote class="fiche-quote"><p>{t.quoteOpen}{L(dc.citable_quote)}{t.quoteClose}</p></blockquote>
+
+      <section class="fiche-section" aria-label={t.indicatorsTitle}>
+        <h2>{t.indicatorsTitle}</h2>
+        <div class="fiche-ind-wrap">
+          <table class="fiche-ind">
+            <thead>
+              <tr><th>{t.th.indicator}</th><th>{t.th.value}</th><th>{t.th.reading}</th><th>{t.th.state}</th><th>{t.th.source}</th></tr>
+            </thead>
+            <tbody>
+              {indByPillar.map((g: any) => (
+                <Fragment>
+                  <tr class="ind-group">
+                    <td colspan="5"><span class="pillar-name"><PillarIcon name={pillarIconName[g.pillar.id]} size={15} />{L(g.pillar.label)}</span></td>
+                  </tr>
+                  {g.items.map((ind: any) => {
+                    const band = senseBand(ind.score);
+                    const unit = indUnit(ind.id);
+                    const tip = indTooltip(ind.id);
+                    return (
+                      <tr>
+                        <td class="ind-name">
+                          {L(ind.label)}
+                          {tip && (
+                            <span class="info" tabindex="0" role="note" aria-label={`${t.explanation}: ${tip}`}>
+                              <span class="info-ico" set:html={icon("info", 14)}></span>
+                              <span class="info-tip">{tip}</span>
+                            </span>
+                          )}
+                        </td>
+                        <td class={ind.status === "missing" ? "ind-missing" : ""}>
+                          {ind.proxies
+                            ? <ul class="proxy-facts">{proxyFacts(ind.proxies).map((f) => <li>{f}</li>)}</ul>
+                            : ind.status === "missing" ? t.notDisclosed : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}
+                        </td>
+                        <td>
+                          {band
+                            ? <span class={`sense sense-${band.cls}`} title={band.label} role="img" aria-label={band.label}><i style={`width:${Math.round(ind.score)}%`}></i></span>
+                            : <span class="sense-na" aria-label={t.notApplicable}>—</span>}
+                        </td>
+                        <td><span class={`status-tag status-${ind.status}`}>{t.indStatus[ind.status]}</span></td>
+                        <td class="ind-source"><SourceLink source={ind.source} accessedLabel={t.accessed} archivedLabel={t.archived} /></td>
+                      </tr>
+                    );
+                  })}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <div class="fiche-cards">
+        <div class="fiche-card">
+          <h3>{t.opTitle}</h3>
+          {op
+            ? <p>{op.text}{op.date ? ` (${fmtDate(op.date)})` : ""}</p>
+            : pubStatus === "published" && notifiedAt
+              ? <p class="empty">{t.opSolicitedNoReply.replace("{date}", fmtDate(notifiedAt))}</p>
+              : inReplyWindow && notifiedAt
+                ? <p class="empty">{t.opInWindow.replace("{date}", fmtDate(notifiedAt)).replace("{deadline}", fmtDate(replyDeadline))}</p>
+                : <p class="empty">{t.opNone}</p>}
+          <p class="fiche-card-note" set:html={t.opNote}></p>
+        </div>
+        <div class="fiche-card">
+          <h3>{t.dataStateTitle}</h3>
+          <p>{dataState}</p>
+        </div>
+      </div>
+
+      {dc.contestation && dc.contestation.length > 0 && (
+        <section class="fiche-contestation" aria-labelledby="contestation-title">
+          <h2 id="contestation-title">{t.contestationTitle}</h2>
+          <p class="contestation-sub">{t.contestationSub}</p>
+          <ul class="contestation-list">
+            {dc.contestation.map((item: any) => (
+              <li>
+                <span class="contestation-fact">
+                  {item.kind === "press" ? t.press : ""}{L(item.label)}
+                  {item.self_reported && <span class="contestation-tag">{t.selfReported}</span>}
+                </span>
+                <span class="contestation-src"><SourceLink source={item.source} accessedLabel={t.accessed} archivedLabel={t.archived} /></span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <section class="fiche-history" aria-label={t.historyTitle}>
+        <h2>{t.historyTitle}</h2>
+        <ul>
+          {dc.score_history.map((h: any) => (
+            <li>
+              <time>{h.date}</time>
+              <span class="hist-grades">
+                <ScoreBadge label={t.histSite} grade={{ grade: h.grades.site }} confidence={h.confidence} confidenceLabel={t.confidence[h.confidence]} renderConfidence={false} renderLabel={false} size="sm" naLabel={t.naLabel} />
+                <ScoreBadge label={t.histPp} grade={{ grade: h.grades.project_process }} confidence={h.confidence} confidenceLabel={t.confidence[h.confidence]} renderConfidence={false} renderLabel={false} size="sm" naLabel={t.naLabel} />
+              </span>
+              <span>{h.rationale ?? h.event}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div class="fiche-foot">
+        <span>{t.methodology} {methodology.version}{lastScored ? ` · ${t.scoredOn} ${lastScored}` : ""}</span>
+        <span>scoremydatacenter.org</span>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<script>
+  // Copy-link and native share — the only client JS the fiche needs.
+  document.querySelectorAll(".fiche-copy").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const url = (btn as HTMLElement).dataset.url!;
+      try { await navigator.clipboard.writeText(url); (btn as HTMLElement).setAttribute("aria-label", (btn as HTMLElement).dataset.copied || "OK"); }
+      catch { /* clipboard blocked — no-op */ }
+    });
+  });
+  const native = document.querySelector(".fiche-share-native") as HTMLElement | null;
+  if (native && "share" in navigator) {
+    native.addEventListener("click", () => {
+      navigator.share({ title: document.title, text: native.dataset.text, url: native.dataset.url }).catch(() => {});
+    });
+  }
+
+  // Right-of-reply clock lives in the view: once the deadline has passed, the fiche awaits its final
+  // publication (a real data edit flips the status). The banner reflects that, without touching data.
+  const banner = document.querySelector(".fiche-reply-banner") as HTMLElement | null;
+  const deadline = banner?.dataset.deadline;
+  if (banner && deadline && new Date().toISOString().slice(0, 10) >= deadline) {
+    banner.innerHTML = `<strong>${banner.dataset.elapsed || ""}</strong>`;
+    banner.classList.add("elapsed");
+  }
+</script>

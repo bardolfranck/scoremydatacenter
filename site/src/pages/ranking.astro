@@ -1,0 +1,49 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN ranking: thin page — the template lives in Ranking.astro (shared FR/EN, i18n §13).
+import Ranking from "../components/Ranking.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  pageTitle: "Project ranking — ScoreMyDataCenter",
+  metaDescription: "The ranking of A–E graded data center projects: sort by site grade, operator grade, pillar, country or confidence — every view has a shareable URL.",
+  tagline: "Independent observatory",
+  title: "Ranking of scored projects",
+  lede: "Sort by grade, pillar or confidence — every view has a shareable address. A grade never appears without its confidence level.",
+  mapCta: "See every project on the map",
+  searchSr: "Search for a project",
+  searchPlaceholder: "Search for a project…",
+  sortBy: "Sort by",
+  sortSite: "Site grade",
+  sortOperator: "Operator grade",
+  pillarPrefix: "Pillar: ",
+  sortConfidence: "Confidence",
+  sortPower: "Power (MW)",
+  sortCountry: "Country",
+  order: "Order",
+  orderBest: "Best first",
+  orderWorst: "Worst first",
+  statusLabel: "Status",
+  statusAll: "All",
+  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+  thProject: "Project",
+  thCountry: "Country",
+  thStatus: "Status",
+  thSite: "Site",
+  thOperator: "Operator",
+  thConfidence: "Confidence",
+  pillarShort: { energy: "Energy", water: "Water", land_biodiversity: "Land", local_impact: "Local", transparency_governance: "Transp." },
+  confidence: { high: "confidence: high", medium: "confidence: medium", low: "confidence: low" },
+  naLabel: "insufficient data",
+  reserved: "A reserved",
+  replyInProgress: "right of reply in progress",
+  fixture: "fictional test fixture",
+  viewOnMap: "View on the map",
+  powerUnknown: "power not disclosed",
+  note: "“–” = insufficient data: we do not grade the unknown. The fictional fixtures will disappear once the first real fiches are published.",
+};
+---
+
+<Ranking lang="en" t={t} nav={EN_NAV} altHref="/fr/classement" altLabel="🇫🇷 FR" />

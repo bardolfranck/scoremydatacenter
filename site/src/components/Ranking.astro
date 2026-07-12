@@ -1,0 +1,243 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The tweetable ranking, shared FR/EN (i18n §13: one template, per-language t).
+// Every sort/filter/search state has a shareable URL. Rows render at build time
+// from the engine's artifacts; the client script only reorders and filters.
+import Base from "../layouts/Base.astro";
+import ScoreBadge from "./ScoreBadge.astro";
+import scoresData from "../../public/data/scores.json";
+import methodologyData from "../../public/data/methodology.json";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
+  altHref: string; altLabel: string;
+};
+
+const scores = scoresData as any[];
+const methodology = methodologyData as any;
+const pillars = methodology.pillars as any[];
+
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const mapPath = lang === "fr" ? "/fr/carte" : "/map";
+const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
+
+const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
+// Accent-insensitive haystack for the basic search engine (client mirrors this).
+const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.country].filter(Boolean).join(" "));
+---
+
+<Base
+  lang={lang}
+  title={t.pageTitle}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby="rank-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="rank-title">{t.title}</h2>
+        <p>{t.lede}</p>
+        <a class="rank-map-cta" href={mapPath}>{t.mapCta} ↗</a>
+      </div>
+
+      <div class="rank-controls">
+        <label class="rank-search">
+          <span class="sr-only">{t.searchSr}</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="search" id="rank-q" placeholder={t.searchPlaceholder} autocomplete="off" />
+        </label>
+        <label>
+          {t.sortBy}
+          <select id="rank-sort">
+            <option value="site">{t.sortSite}</option>
+            <option value="operator">{t.sortOperator}</option>
+            {pillars.map((p) => <option value={p.id}>{t.pillarPrefix}{t.pillarShort[p.id]}</option>)}
+            <option value="confidence">{t.sortConfidence}</option>
+            <option value="power">{t.sortPower}</option>
+            <option value="country">{t.sortCountry}</option>
+          </select>
+        </label>
+        <label>
+          {t.order}
+          <select id="rank-order">
+            <option value="desc">{t.orderBest}</option>
+            <option value="asc">{t.orderWorst}</option>
+          </select>
+        </label>
+        <label>
+          {t.statusLabel}
+          <select id="rank-status">
+            <option value="all">{t.statusAll}</option>
+            {Object.entries(t.status).map(([value, label]) => <option value={value}>{label}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div class="rank-wrap">
+        <table class="rank-table" id="rank-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>{t.thProject}</th>
+              <th>{t.thCountry}</th>
+              <th>{t.thStatus}</th>
+              <th>{t.thSite}</th>
+              <th>{t.thOperator}</th>
+              {pillars.map((p) => <th>{t.pillarShort[p.id]}</th>)}
+              <th>{t.thConfidence}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scores.map((dc) => (
+              <tr
+                data-status={dc.project_status}
+                data-country={dc.country}
+                data-search={haystack(dc)}
+                data-k-site={sortValue(dc.grades.site)}
+                data-k-operator={sortValue(dc.grades.project_process)}
+                data-k-confidence={confidenceRank[dc.confidence.level]}
+                data-k-power={dc.power_mw ?? -1}
+                {...Object.fromEntries(pillars.map((p) => [`data-k-${p.id}`, sortValue(dc.pillars[p.id])]))}
+              >
+                <td class="rank-index"></td>
+                <td class="rank-project">
+                  <strong><a href={`${ficheBase}/${dc.id}`}>{dc.name}</a>{dc.publication_status === "right_of_reply" && <span class="rank-reply">{t.replyInProgress}</span>}</strong>
+                  <span>{dc.municipality} — {dc.operator}{dc.id.startsWith("zz-") ? ` · ${t.fixture}` : ""}</span>
+                  <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
+                </td>
+                <td class="rank-country">{dc.country}</td>
+                <td>{t.status[dc.project_status]}{dc.power_mw ? ` · ${dc.power_mw} MW` : ` · ${t.powerUnknown}`}</td>
+                <td>
+                  <span class="rank-grade">
+                    <ScoreBadge
+                      label={t.thSite}
+                      grade={dc.grades.site}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={t.confidence[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel={t.naLabel}
+                      reservedLabel={t.reserved}
+                    />
+                    {typeof dc.grades.site.score === "number" ? dc.grades.site.score.toFixed(1) : ""}
+                  </span>
+                </td>
+                <td>
+                  <span class="rank-grade">
+                    <ScoreBadge
+                      label={t.thOperator}
+                      grade={dc.grades.project_process}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={t.confidence[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel={t.naLabel}
+                      reservedLabel={t.reserved}
+                    />
+                    {typeof dc.grades.project_process.score === "number" ? dc.grades.project_process.score.toFixed(1) : ""}
+                  </span>
+                </td>
+                {pillars.map((p) => (
+                  <td>
+                    <ScoreBadge
+                      label={t.pillarShort[p.id]}
+                      grade={dc.pillars[p.id]}
+                      confidence={dc.confidence.level}
+                      confidenceLabel={t.confidence[dc.confidence.level]}
+                      renderConfidence={false}
+                      renderLabel={false}
+                      size="sm"
+                      naLabel={t.naLabel}
+                    />
+                  </td>
+                ))}
+                <td>
+                  <span class={`confidence ${dc.confidence.level}`}>
+                    <span class="dot" aria-hidden="true"></span>
+                    {t.confidence[dc.confidence.level]}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="rank-note">{t.note}</p>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Tweetable state: ?tri=<key>&ordre=<asc|desc>&statut=<status>&q=<query> reorders the
+  // build-rendered rows. insufficient_data sorts as -1 (always last on "best first").
+  const table = document.getElementById("rank-table") as HTMLTableElement;
+  const tbody = table.querySelector("tbody")!;
+  const sortSel = document.getElementById("rank-sort") as HTMLSelectElement;
+  const orderSel = document.getElementById("rank-order") as HTMLSelectElement;
+  const statusSel = document.getElementById("rank-status") as HTMLSelectElement;
+  const searchInput = document.getElementById("rank-q") as HTMLInputElement;
+
+  // Same normalisation as the build-time haystack: accent-insensitive matching.
+  const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+  function apply(updateUrl = true) {
+    const key = sortSel.value;
+    const asc = orderSel.value === "asc";
+    const status = statusSel.value;
+    const q = norm(searchInput.value.trim());
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+    rows.sort((a, b) => {
+      if (key === "country") {
+        // Alphabetical: "best first" reads A→Z (real panels before the ZZ fixtures).
+        const diff = (a.dataset.country ?? "").localeCompare(b.dataset.country ?? "");
+        return asc ? -diff : diff;
+      }
+      const va = parseFloat(a.getAttribute(`data-k-${key}`) ?? "-1");
+      const vb = parseFloat(b.getAttribute(`data-k-${key}`) ?? "-1");
+      return asc ? va - vb : vb - va;
+    });
+
+    let rank = 0;
+    for (const row of rows) {
+      const visible = (status === "all" || row.dataset.status === status)
+        && (!q || (row.dataset.search ?? "").includes(q));
+      row.style.display = visible ? "" : "none";
+      if (visible) {
+        rank += 1;
+        row.querySelector(".rank-index")!.textContent = String(rank);
+      }
+      tbody.appendChild(row);
+    }
+
+    if (updateUrl) {
+      const params = new URLSearchParams();
+      if (key !== "site") params.set("tri", key);
+      if (asc) params.set("ordre", "asc");
+      if (status !== "all") params.set("statut", status);
+      if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
+      const query = params.toString();
+      history.replaceState(null, "", query ? `?${query}` : location.pathname);
+    }
+  }
+
+  const params = new URLSearchParams(location.search);
+  if (params.get("tri")) sortSel.value = params.get("tri")!;
+  if (params.get("ordre") === "asc") orderSel.value = "asc";
+  if (params.get("statut")) statusSel.value = params.get("statut")!;
+  if (params.get("q")) searchInput.value = params.get("q")!;
+  if (sortSel.selectedIndex < 0) sortSel.value = "site";
+  if (statusSel.selectedIndex < 0) statusSel.value = "all";
+
+  [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => apply()));
+  searchInput.addEventListener("input", () => apply());
+  apply(false);
+</script>
