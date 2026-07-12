@@ -9,12 +9,15 @@ box; a country module only overrides these when a national source is strictly ri
 Wallonia's own Natura layer carries site names the EEA layer lacks).
 """
 
-from .bands import F1_BEYOND_RINGS, F1_DISTANCE_RINGS, WFD_STATUS_TO_CATEGORY, clc_to_category
+from .bands import (F1_BEYOND_RINGS, F1_DISTANCE_RINGS, WFD_STATUS_TO_CATEGORY,
+                    aqueduct_bws_to_category, clc_to_category)
 from .geo import arcgis_identify, arcgis_point_query
 from .http import SourceUnavailable, get_json
 
 EEA_NATURA = ("https://bio.discomap.eea.europa.eu/arcgis/rest/services/"
               "ProtectedSites/Natura2000Sites/MapServer")
+AQUEDUCT = ("https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/"
+            "aqueduct_water_risk/FeatureServer/1")  # layer 1 = Baseline Annual
 EEA_NATURA_COMBINED_LAYER = 2  # Habitats + Birds directives combined
 EEA_CORINE = ("https://image.discomap.eea.europa.eu/arcgis/rest/services/"
               "Corine/CLC2018_WM/MapServer")
@@ -61,6 +64,32 @@ def corine_at_point(lat: float, lon: float) -> tuple[str | None, str | None]:
         return None, None
     code = results[0]["attributes"].get("Code_18") if results else None
     return code, clc_to_category(code)
+
+
+def collect_w1_aqueduct(lat: float, lon: float, accessed: str) -> dict | None:
+    """W1 baseline water stress for ANY point on Earth — WRI Aqueduct 4.0 (`bws_cat`/`bws_label`),
+    the methodology's cited referential. ArcGIS point query, keyless, no dependency. A stable
+    baseline (not volatile current-drought), which is what a durable site score wants."""
+    try:
+        feats = arcgis_point_query(AQUEDUCT.rsplit("/", 1)[0], int(AQUEDUCT.rsplit("/", 1)[1]),
+                                   lat, lon, 1, record_count=1)
+    except SourceUnavailable:
+        return None
+    if not feats:
+        return None
+    a = feats[0].get("attributes", {})
+    cat, label = a.get("bws_cat"), a.get("bws_label")
+    if cat is None:
+        return None
+    category = aqueduct_bws_to_category(int(cat))
+    if category is None:
+        return None
+    return {
+        "id": "W1", "status": "measured", "value": category,
+        "source": _source(
+            f"WRI Aqueduct 4.0 baseline water stress at point — '{label}' (bws_cat {cat}/4)",
+            "https://www.wri.org/aqueduct", accessed),
+    }
 
 
 def wise_status_category(water_body_code: str, country: str) -> tuple[str | None, str | None]:

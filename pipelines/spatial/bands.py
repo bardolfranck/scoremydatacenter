@@ -38,6 +38,21 @@ WFD_STATUS_TO_CATEGORY = {
 }
 
 
+# W1 · baseline water stress — WRI Aqueduct `bws_cat` (0..4) → methodology category.
+# Aqueduct is the methodology's cited W1 referential (framing note §7.3, "paliers WRI Aqueduct
+# low → extremely high"), so this 5→4 mapping is referential-grounded, not editorial. Global,
+# point-queryable — the international W1 source (FR keeps VigiEau's current-restriction reading).
+# PROVISIONAL boundary between cat 1 and 2 → moderate; methodology owns final calibration.
+def aqueduct_bws_to_category(bws_cat: int) -> str | None:
+    return {
+        0: "no_stress",      # Low (<10%)
+        1: "no_stress",      # Low - Medium (10-20%)
+        2: "moderate",       # Medium - High (20-40%)
+        3: "high",           # High (40-80%)
+        4: "zre_or_crisis",  # Extremely High (>80%)
+    }.get(bws_cat)
+
+
 # F1 · protected-area proximity — the distance rings every country probes, nearest first.
 F1_DISTANCE_RINGS = ((0, "overlap"), (1000, "adjacent_under_1km"), (5000, "near_1_to_5km"))
 F1_BEYOND_RINGS = "distant_over_5km"

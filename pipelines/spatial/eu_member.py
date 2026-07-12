@@ -20,7 +20,6 @@ from .http import SourceUnavailable, get_json
 _BASE_GAPS = {
     "E2": "not_collected — grid hosting capacity is per national TSO; no single open feed wired (v1)",
     "E3": "not_collected — no public national connection-queue feed wired",
-    "W1": "not_collected — no national drought machine feed wired",
     "W3": "not_collected — abstraction volumes not wired",
     "L1": "not_collected — national income per region (v1; bands are a methodology decision anyway)",
     "L3": "not_collected — national Seveso register not wired (v1)",
@@ -69,6 +68,8 @@ def make_eu_member_spec(iso: str, *, e1: bool = True, natura: bool = True,
     if e1:
         collectors.append((("E1",),
             lambda ctx, prov, i=iso_u: [x] if (x := eu.collect_e1_energy_charts(i, ctx["accessed"])) else []))
+    collectors.append((("W1",),
+        lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []))
     collectors.append((("W2",),
         lambda ctx, prov: [x] if (x := eu.collect_w2_universal(ctx["lat"], ctx["lon"], ctx["accessed"])) else []))
     if natura:
@@ -76,7 +77,7 @@ def make_eu_member_spec(iso: str, *, e1: bool = True, natura: bool = True,
             lambda ctx, prov: [x] if (x := eu.natura_rings(ctx["lat"], ctx["lon"], ctx["accessed"])) else []))
     collectors.append((("F2",), _corine_f2))
 
-    collectable = {"E2", "E3", "W1", "W3", "L1", "L3"}
+    collectable = {"E2", "E3", "W3", "L1", "L3"}
     if not e1:
         collectable.add("E1")
     if not natura:

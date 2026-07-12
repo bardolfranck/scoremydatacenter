@@ -213,8 +213,6 @@ def collect_l1_raw(gemeente_code: str | None) -> dict | None:
 # --- the spec ----------------------------------------------------------------------------------
 
 _GAPS = {
-    "W1": "not_collected — LCW/droogtemonitor status is prose (v1: KNMI neerslagtekort proxy, "
-          "keyed)",
     "W3": "not_collected — abstraction volumes fragmented per province/waterschap, no open feed",
     "L1": "not_collected — raw CBS value in provenance (l1_raw); per-household median ≠ FR "
           "€/consumption-unit bands, NL bands pending methodology",
@@ -230,6 +228,7 @@ NL_SPEC = {
     "fetch_commune": fetch_commune,
     "identity_fields": lambda c: {"municipality": c.get("name") or "UNKNOWN — to fill"},
     "collectors": [
+        (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E1",), lambda ctx, prov: [x] if (x := eu.collect_e1_energy_charts("NL", ctx["accessed"])) else []),
         # National KRW WMS first; EEA WISE universal resolver as fallback (polder plots often miss).
         (("W2",), lambda ctx, prov: [x] if (x := (collect_w2(ctx["lat"], ctx["lon"], ctx["accessed"])
@@ -239,7 +238,7 @@ NL_SPEC = {
         (("L3",), lambda ctx, prov: [x] if (x := collect_l3(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E2", "E3"), lambda ctx, prov: collect_grid(ctx["lat"], ctx["lon"], ctx["accessed"])),
     ],
-    "collectable_gaps": frozenset({"W1", "W3", "L1"}),
+    "collectable_gaps": frozenset({"W3", "L1"}),
     "provenance_commune": lambda c: {
         "gemeente_code": c.get("gemeente_code"),
         "province": c.get("province"),
