@@ -769,8 +769,11 @@ sup a { color: var(--accent); font-weight: 750; }
 /* Right column: synthesis (when published) stacked over the geographic mini-map. */
 .fiche-top-right { display: flex; flex-direction: column; min-width: 0; }
 .fiche-top-right .fiche-synthesis { border-bottom: 1px solid var(--line); }
-.fiche-mini-map { position: relative; flex: 1; min-height: 300px; background: var(--wash); }
-.mini-map-canvas { position: absolute; inset: 0; }
+/* maplibre stamps `maplibregl-map { position:relative; overflow:hidden }` on its
+   container — absolute/inset sizing loses that fight and the map clips to nothing.
+   Size the canvas explicitly through flex instead. */
+.fiche-mini-map { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 300px; background: var(--wash); }
+.mini-map-canvas { flex: 1; width: 100%; min-height: 300px; }
 .mini-map-open { position: absolute; right: 12px; bottom: 12px; z-index: 2; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.94); color: var(--ink-soft); font-size: 0.78rem; font-weight: 700; box-shadow: var(--shadow); }
 .mini-map-open:hover { color: var(--accent); border-color: var(--accent); }
 
@@ -907,7 +910,7 @@ sup a { color: var(--accent); font-weight: 750; }
   .fiche-side-foot { margin-top: 8px; }
   .fiche-top { grid-template-columns: minmax(0, 1fr); }
   .fiche-top > .fiche-subscores { border-right: none; border-bottom: 1px solid var(--line); }
-  .fiche-mini-map { min-height: 240px; }
+  .fiche-mini-map, .mini-map-canvas { min-height: 240px; }
   .fiche-quote, .fiche-section, .fiche-cards, .fiche-history, .fiche-subscores, .fiche-synthesis, .fiche-foot, .fiche-contestation { padding-left: 20px; padding-right: 20px; margin-left: 0; margin-right: 0; }
   .contestation-list li { grid-template-columns: 1fr; }
   .fiche-cards { grid-template-columns: 1fr; }
