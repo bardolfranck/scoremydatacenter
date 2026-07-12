@@ -490,12 +490,28 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
   background: var(--paper); color: var(--ink);
   font: inherit; font-size: 0.92rem; font-weight: 650;
 }
-.rank-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+/* Search: a basic client-side engine over name/operator/municipality/country
+   (accent-insensitive) — the state lives in the URL like every other control. */
+.rank-search { position: relative; }
+.rank-search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+.rank-search input {
+  min-height: 40px; padding: 6px 12px 6px 34px; min-width: 220px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--paper); color: var(--ink);
+  font: inherit; font-size: 0.92rem; font-weight: 650;
+}
+.rank-search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* The table scrolls in its own frame so the column headers stay pinned (sticky
+   needs the scroll container to be this wrapper, not the page). */
+.rank-wrap { overflow: auto; max-height: calc(100dvh - 170px); border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
 .rank-table { width: 100%; border-collapse: collapse; min-width: 880px; }
 .rank-table th {
+  position: sticky; top: 0; z-index: 2;
   padding: 12px 14px; text-align: left;
   color: var(--ink-soft); font-size: 0.74rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em;
   border-bottom: 1px solid var(--line); background: var(--wash);
+  box-shadow: 0 1px 0 var(--line);
   white-space: nowrap;
 }
 .rank-table td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
