@@ -136,9 +136,14 @@ Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/p
 
 Ordered roughly by value. Each lifts a country from presence toward decisional scoring.
 
-- **DE — the big one.** 16 Länder for W2 (per-Land WFS water-body code), F2 (Gewestplan/zoning),
-  L3 (Land Seveso registers), W1, W3, L1 (DESTATIS/Regionalatlas per Kreis); E2/E3 per-TSO
-  (50Hertz/Amprion/TenneT/TransnetBW). E1 already done. Biggest market, biggest build.
+- **DE — PROBED, and the ceiling is low (see [`RECON-de-deep.md`](./RECON-de-deep.md)).** The deep
+  DE recon (4 live agents, 2026-07-12) is conclusive: **no open source moves a grade in our corpus.**
+  E2/E3 grid capacity (the real siting constraint) is **locked** (4 TSOs, no unified feed); L3 Seveso
+  has **no national register** (only Sachsen/Hamburg publish, none of our DC states); W1 works but
+  needs `h5py` (breaks stdlib-pure); W3/L1 are login-gated. F2 per-Land ALKIS is keyless in all 6 DC
+  states but returns the same "artificialized" as Corine for urban sites (+0). **A deep DE build is a
+  keyed/dependency/self-host project, not an open-data ride** — keep DE at the EU-level 4/12 until one
+  of those inputs (a GENESIS key for L1, or accepting h5py for W1) is chosen.
 - **IE — grid capacity is THE story.** Wire EirGrid/SEMO for E1 + **E2/E3** (the Dublin moratorium
   = halted connections). CSO income, COMAH Seveso. This is where Ireland becomes decisional.
 - **GB — national build (Brexit tax).** EA/SEPA/NRW catchment data for W2, JNCC SAC/SPA for F1,
