@@ -190,6 +190,17 @@ const pillars = methodology.pillars as any[];
         <span class="fiche-conf-note">{confPct} % — {t.confidenceNote[dc.confidence.level]}</span>
       </div>
 
+      {/* Geographic context (Franck 2026-07-13): right below the confidence gauge,
+          before the share block — geography is context, not content; the prime
+          spot belongs to the written synthesis. */}
+      <div class="fiche-side-map">
+        <span class="fiche-share-label">{t.miniMapTitle}</span>
+        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-fiche-base={ficheBase} aria-label={t.miniMapAria}>
+          <div class="mini-map-canvas" aria-hidden="true"></div>
+          <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
+        </div>
+      </div>
+
       <div class="fiche-share">
         <span class="fiche-share-label">{t.share}</span>
         <div class="fiche-share-icons">
@@ -207,16 +218,6 @@ const pillars = methodology.pillars as any[];
           <span set:html={icon("info", 16)}></span>{t.signal}
         </a>
         <p class="fiche-signal-note" set:html={t.signalNote}></p>
-      </div>
-
-      {/* Geographic context (Franck 2026-07-12): geography is context, not content —
-          the map lives in the sidebar; the prime spot belongs to the written synthesis. */}
-      <div class="fiche-side-map">
-        <span class="fiche-share-label">{t.miniMapTitle}</span>
-        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-fiche-base={ficheBase} aria-label={t.miniMapAria}>
-          <div class="mini-map-canvas" aria-hidden="true"></div>
-          <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
-        </div>
       </div>
 
       <p class="fiche-side-foot">{t.methodology} {methodology.version} · scoremydatacenter.org</p>
