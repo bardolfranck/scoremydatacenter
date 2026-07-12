@@ -6,7 +6,7 @@
 from pipelines.spatial.bands import e2_category, l3_value
 from pipelines.spatial.geo import laea3035
 from pipelines.spatial.lu import _pag_to_category
-from pipelines.spatial.nl import _E2_AFNAME
+from pipelines.spatial.nl import _AFNAME_E2, _AFNAME_E3
 
 
 def test_laea3035_projection_center_is_exact():
@@ -47,10 +47,14 @@ def test_lu_pag_zoning_maps_to_soil_categories():
 
 def test_nl_afname_classes_map_into_the_shared_e2_bands():
     # The NL feed is a class, not MW — its mapping must stay inside the shared enum,
-    # and monotonically: more congestion never reads as more capacity.
-    order = ["ample", "adequate", "constrained", "saturated"]
-    mapped = [_E2_AFNAME[k] for k in sorted(_E2_AFNAME)]
-    assert all(v in order for v in mapped)
-    assert [order.index(v) for v in mapped] == sorted(order.index(v) for v in mapped)
+    # and monotonically: more congestion never reads as more capacity. Class 0 ("capacity
+    # available") must be present — dropping it lost every uncongested feed area.
+    assert 0 in _AFNAME_E2 and 0 in _AFNAME_E3
+    e2_order = ["ample", "adequate", "constrained", "saturated"]
+    e3_order = ["low", "moderate", "high", "critical"]
+    for mapping, order in ((_AFNAME_E2, e2_order), (_AFNAME_E3, e3_order)):
+        mapped = [mapping[k] for k in sorted(mapping)]
+        assert all(v in order for v in mapped)
+        assert [order.index(v) for v in mapped] == sorted(order.index(v) for v in mapped)
     # MW-based countries keep using the shared cutoffs — one scale, two feeds.
     assert e2_category(1.5) == "saturated" and e2_category(150) == "ample"

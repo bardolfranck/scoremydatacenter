@@ -162,3 +162,33 @@ def test_build_refuses_grade_letters_in_prose(methodology, tmp_path, alpha):
 def test_committed_corpus_prose_is_letter_free():
     for dc in load_datacenters().values():
         assert synthesis_grade_citations(dc) == []
+
+# --- Ranking register (brief 2026-07-12 · A-27): we situate, we never judge ------
+# The percentile-context voice is the ONLY allowed voice on the ranking. Judgment
+# words ("pire", "cancre", "mur de la honte", "flop"…) are banned from its copy.
+RANKING_SOURCES = {
+    "classement-fr": (REPO_ROOT / "site" / "src" / "pages" / "fr" / "classement.astro").read_text(),
+    "ranking-en": (REPO_ROOT / "site" / "src" / "pages" / "ranking.astro").read_text(),
+    "ranking-component": (REPO_ROOT / "site" / "src" / "components" / "Ranking.astro").read_text(),
+}
+JUDGMENT_WORDS = [r"\bpires?\b", r"\bcancres?\b", r"\bhonte\b", r"\bflops?\b",
+                  r"\bworst\b", r"\bshame\b", r"\blosers?\b"]
+
+
+def test_ranking_copy_situates_never_judges():
+    for name, text in RANKING_SOURCES.items():
+        low = text.lower()
+        for pattern in JUDGMENT_WORDS:
+            assert re.search(pattern, low) is None, (
+                f"{name} uses the judgment word {pattern!r} — the ranking situates in the "
+                "distribution (percentile-context register), it never judges (A-27)"
+            )
+
+
+def test_ranking_states_its_denominator_and_version():
+    for name in ("classement-fr", "ranking-en"):
+        text = RANKING_SOURCES[name]
+        assert "{n}" in text and "{version}" in text, (
+            f"{name} no longer states the percentile reference (N projects + methodology "
+            "version) — a percentile without its denominator is a naked judgment (A-27)"
+        )

@@ -24,6 +24,31 @@ const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
+
+// Percentile-context register (brief 2026-07-12 · A-27): we SITUATE, we never judge.
+// A presentation-only derived field, computed at build from the frozen published
+// corpus (scores.json) — deterministic, no engine/artifact change, golden untouched.
+const pool = (getter: (d: any) => any) =>
+  scores.map(getter).filter((v: any) => typeof v === "number").sort((a: number, b: number) => a - b);
+const sitePool = pool((d) => d.grades.site.score);
+const ppPool = pool((d) => d.grades.project_process.score);
+// Bottom percentile: share of the corpus scored at or below this value (P4 = bottom 4%).
+const bottomPct = (arr: number[], v: number) => Math.ceil((arr.filter((x) => x <= v).length / arr.length) * 100);
+const topPct = (arr: number[], v: number) => Math.ceil((arr.filter((x) => x >= v).length / arr.length) * 100);
+const pctInfo = (arr: number[], graded: any): { pos: number; label: string } | null => {
+  if (!graded || typeof graded.score !== "number" || arr.length < 2) return null;
+  const bp = bottomPct(arr, graded.score);
+  const tp = topPct(arr, graded.score);
+  let label: string;
+  if (tp <= 10) label = t.pct.top.replace("{p}", String(tp));
+  else if (bp <= 10) label = t.pct.bottom.replace("{p}", String(bp));
+  else if (tp <= 25) label = t.pct.upperQuartile;
+  else if (bp <= 25) label = t.pct.lowerQuartile;
+  else if (bp >= 45 && bp <= 55) label = t.pct.median;
+  else label = bp < 50 ? t.pct.belowMedian : t.pct.aboveMedian;
+  return { pos: Math.min(99, Math.max(1, bp)), label: `P${bp} · ${label}` };
+};
+const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
 // Accent-insensitive haystack for the basic search engine (client mirrors this).
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.country].filter(Boolean).join(" "));
@@ -79,6 +104,9 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
         </label>
       </div>
 
+      <p class="rank-ref">{t.reference.replace("{n}", String(sitePool.length)).replace("{version}", methodology.version)}</p>
+      <p class="sr-only">{t.srSummary}</p>
+
       <div class="rank-wrap">
         <table class="rank-table" id="rank-table">
           <thead>
@@ -87,8 +115,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
               <th>{t.thProject}</th>
               <th>{t.thCountry}</th>
               <th>{t.thStatus}</th>
-              <th>{t.thSite}</th>
-              <th>{t.thOperator}</th>
+              <th>{t.thRails}</th>
               {pillars.map((p) => <th>{t.pillarShort[p.id]}</th>)}
               <th>{t.thConfidence}</th>
             </tr>
@@ -107,14 +134,16 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
               >
                 <td class="rank-index"></td>
                 <td class="rank-project">
-                  <strong><a href={`${ficheBase}/${dc.id}`}>{dc.name}</a>{dc.publication_status === "right_of_reply" && <span class="rank-reply">{t.replyInProgress}</span>}</strong>
+                  <strong><a href={`${ficheBase}/${dc.id}`}>{dc.name}</a>{dc.publication_status === "right_of_reply" && <span class="rank-reply">{t.replyChip.replace("{date}", fmtDate(dc.reply_deadline))}</span>}</strong>
                   <span>{dc.municipality} — {dc.operator}{dc.id.startsWith("zz-") ? ` · ${t.fixture}` : ""}</span>
                   <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
                 </td>
                 <td class="rank-country">{dc.country}</td>
                 <td>{t.status[dc.project_status]}{dc.power_mw ? ` · ${dc.power_mw} MW` : ` · ${t.powerUnknown}`}</td>
-                <td>
-                  <span class="rank-grade">
+                <td class="rank-rails">
+                  {(() => { const p = pctInfo(sitePool, dc.grades.site); return (
+                  <div class="rail" title={typeof dc.grades.site.score === "number" ? `${dc.grades.site.score.toFixed(1)}/100` : undefined}>
+                    <span class="rail-axis">{t.railSite}</span>
                     <ScoreBadge
                       label={t.thSite}
                       grade={dc.grades.site}
@@ -126,11 +155,13 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       naLabel={t.naLabel}
                       reservedLabel={t.reserved}
                     />
-                    {typeof dc.grades.site.score === "number" ? dc.grades.site.score.toFixed(1) : ""}
-                  </span>
-                </td>
-                <td>
-                  <span class="rank-grade">
+                    {p
+                      ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
+                      : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{t.naLabel}</span></Fragment>}
+                  </div> ); })()}
+                  {(() => { const p = pctInfo(ppPool, dc.grades.project_process); return (
+                  <div class="rail" title={typeof dc.grades.project_process.score === "number" ? `${dc.grades.project_process.score.toFixed(1)}/100` : undefined}>
+                    <span class="rail-axis">{t.railOperator}</span>
                     <ScoreBadge
                       label={t.thOperator}
                       grade={dc.grades.project_process}
@@ -142,8 +173,10 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       naLabel={t.naLabel}
                       reservedLabel={t.reserved}
                     />
-                    {typeof dc.grades.project_process.score === "number" ? dc.grades.project_process.score.toFixed(1) : ""}
-                  </span>
+                    {p
+                      ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
+                      : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{t.railUnproven}</span></Fragment>}
+                  </div> ); })()}
                 </td>
                 {pillars.map((p) => (
                   <td>
