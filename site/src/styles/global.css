@@ -196,7 +196,26 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-popup-link { color: var(--accent); font-size: 0.84rem; font-weight: 750; }
 .map-popup-link:hover { text-decoration: underline; }
 /* Watchlist « En veille » — distinct neutral marker, never a grade chip (A-19) */
-.watch-marker { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; border-radius: 50%; background: var(--wash); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(7, 24, 47, 0.3); cursor: pointer; }
+.watch-marker { position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; border-radius: 50%; background: var(--wash); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(7, 24, 47, 0.3); cursor: pointer; }
+/* "En veille" pulse (brief 2026-07-12): the one tolerated continuous motion — a slow,
+   discreet ring on the watchlist markers. Pseudo-element only: maplibre owns the
+   marker's inline transform, so the ring animates without fighting it. */
+.watch-marker::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid rgba(15, 95, 184, 0.45); animation: watch-pulse 2.6s ease-out infinite; pointer-events: none; }
+@keyframes watch-pulse { 0% { transform: scale(1); opacity: 0.8; } 70%, 100% { transform: scale(1.9); opacity: 0; } }
+
+/* Hero map intro (brief 2026-07-12 · one pass, load): pins drop onto their real
+   coordinates (the chip animates, never the maplibre-positioned marker), then one
+   light blue sweep. JS staggers via --pin-delay; reduced-motion kills everything. */
+.map-chip.chip-drop { animation: chip-drop 560ms cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: var(--pin-delay, 0ms); }
+@keyframes chip-drop { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+.map-scan { position: absolute; top: 0; bottom: 0; left: -16%; width: 16%; z-index: 3; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(15, 95, 184, 0.13), transparent); animation: map-scan 2.6s ease-in-out 1 both; animation-delay: var(--scan-delay, 2.4s); }
+@keyframes map-scan { from { transform: translateX(0); } to { transform: translateX(740%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .map-chip.chip-drop { animation: none; }
+  .map-scan { display: none; }
+  .watch-marker::after { display: none; }
+}
 .watch-badge { display: inline-block; width: fit-content; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--wash); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .watch-note { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; font-style: italic; }
 .watch-src { margin: 6px 0 0; font-size: 0.84rem; color: var(--ink-soft); }
@@ -267,6 +286,12 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .why-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 3vw, 40px); }
 .stat { display: grid; gap: 6px; align-content: start; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.25); }
 .stat b { font-size: clamp(1.5rem, 2.6vw, 2.3rem); font-weight: 850; line-height: 1.1; letter-spacing: -0.01em; }
+/* Count-up counters (brief 2026-07-12 · motion = the data): the FINAL value is in the
+   HTML (no-JS/SEO/reduced-motion baseline); JS only replays 0→value once on scroll-in.
+   tabular-nums + reserved width = zero layout shake. */
+.stat-anim { display: inline-block; font-variant-numeric: tabular-nums; }
+.stat-bar { display: block; width: 100%; height: 3px; margin-top: 7px; background: rgba(159, 193, 236, 0.22); border-radius: 2px; overflow: hidden; }
+.stat-bar i { display: block; height: 100%; width: 100%; background: #4ea3ff; transform-origin: left; transform: scaleX(1); }
 .stat a, .stat span { color: #9fc1ec; font-size: 0.82rem; font-weight: 650; width: fit-content; }
 .stat a { border-bottom: 1px solid rgba(159, 193, 236, 0.5); }
 .stat a:hover { color: #fff; }

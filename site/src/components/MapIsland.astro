@@ -87,8 +87,14 @@ const { variant, labels } = Astro.props;
     const focusId = new URLSearchParams(location.search).get("dc");
     const markerById: Record<string, { marker: any; center: [number, number] }> = {};
 
+    // Hero intro (brief 2026-07-12): motion is the data — the pins ARE the published
+    // grades, they just drop in once. Browser-only; the artifacts never change.
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animateIntro = !isFull && !reducedMotion;
+    const DROP_WINDOW_MS = 2200; // whole cascade fits in ~2.2s whatever the pin count
+
     const bounds = new maplibregl.LngLatBounds();
-    for (const feature of geo.features) {
+    geo.features.forEach((feature: any, idx: number) => {
       const p = feature.properties;
       const [lon, lat] = feature.geometry.coordinates;
       bounds.extend([lon, lat]);
@@ -98,6 +104,11 @@ const { variant, labels } = Astro.props;
       const size = Math.round(Math.min(52, Math.max(34, 24 + Math.sqrt(p.power_mw || 100))));
       el.style.width = el.style.height = `${size}px`;
       el.innerHTML = chip(p.grade_site, "map-chip");
+      if (animateIntro) {
+        const chipEl = el.firstElementChild as HTMLElement;
+        chipEl.classList.add("chip-drop");
+        chipEl.style.setProperty("--pin-delay", `${Math.round((idx / geo.features.length) * DROP_WINDOW_MS)}ms`);
+      }
 
       const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
       const popupHtml = `
@@ -121,6 +132,16 @@ const { variant, labels } = Astro.props;
         .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "320px" }).setHTML(popupHtml))
         .addTo(map);
       markerById[p.id] = { marker, center: [lon, lat] };
+    });
+
+    // One light sweep after the pins have landed — a single pass, then gone.
+    if (animateIntro) {
+      const scan = document.createElement("div");
+      scan.className = "map-scan";
+      scan.setAttribute("aria-hidden", "true");
+      scan.style.setProperty("--scan-delay", `${DROP_WINDOW_MS + 500}ms`);
+      scan.addEventListener("animationend", () => scan.remove());
+      canvas.appendChild(scan);
     }
 
     if (focusId && markerById[focusId]) {
