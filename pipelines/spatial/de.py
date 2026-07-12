@@ -24,9 +24,64 @@ like Wallonia/Flanders did for BE:
   L3  Seveso — per-Land registers (no single national INSPIRE download located in recon)
 """
 
+import json
+
 from . import eu
 from .country import build_draft, run_cli
 from .http import SourceUnavailable, get_json
+
+
+# DESTATIS Regionalatlas AI1601 — disposable household income per capita per Kreis (EUR), national,
+# keyless. Income lives in a Postgres table joined to the boundary geometry at query time via an
+# ArcGIS dynamic-layer join (host = IT.NRW DMZ). Discovered in the deep-DE recon (RECON-de-deep.md).
+_REGIONALATLAS = ("https://www.gis-idmz.nrw.de/arcgis/rest/services/stba/regionalatlas/"
+                  "MapServer/identify")
+_RA_INCOME_JOIN = json.dumps([{"id": 101, "source": {"type": "dataLayer", "dataSource": {
+    "type": "joinTable",
+    "leftTableSource": {"type": "dataLayer", "dataSource": {
+        "type": "table", "workspaceId": "gdb",
+        "dataSourceName": "regionalatlas.verwaltungsgrenzen_gesamt"}},
+    "rightTableSource": {"type": "dataLayer", "dataSource": {
+        "type": "table", "workspaceId": "gdb", "dataSourceName": "regionalatlas.ai016_1"}},
+    "leftTableKey": "ags", "rightTableKey": "ags2", "joinType": "leftOuterJoin"}}}])
+
+
+def collect_l1_raw(lat: float, lon: float) -> dict | None:
+    """Disposable household income per capita (EUR) at the point's Kreis — RAW, for provenance only.
+
+    German income bands are a methodology decision (the value is €/inhabitant disposable income, a
+    different quantity from FR Filosofi's €/consumption-unit) — so this never becomes a scored L1,
+    exactly like BE/NL. It enriches the provenance sidecar with a real German income figure.
+    """
+    try:
+        data = get_json(_REGIONALATLAS, {
+            "geometry": f"{lon},{lat}", "geometryType": "esriGeometryPoint", "sr": "4326",
+            "layers": "all", "tolerance": "1",
+            "mapExtent": f"{lon-0.05},{lat-0.05},{lon+0.05},{lat+0.05}",
+            "imageDisplay": "600,600,96", "returnGeometry": "false", "f": "json",
+            "dynamicLayers": _RA_INCOME_JOIN})
+    except SourceUnavailable:
+        return None
+    for res in data.get("results", []):
+        a = res.get("attributes", {})
+        typ = next((v for k, v in a.items() if k.lower().endswith("typ")), None)
+        inc = next((v for k, v in a.items() if k.lower().endswith("ai1601")), None)
+        gen = next((v for k, v in a.items() if k.lower().endswith("gen")), None)
+        if str(typ) in ("3", "5") and inc not in (None, "", " "):  # 3=Landkreis, 5=kreisfreie Stadt
+            try:
+                value = int(str(inc).strip())
+            except ValueError:
+                continue
+            return {
+                "disposable_income_per_capita_eur": value,
+                "kreis": gen,
+                "definition": "verfügbares Einkommen der privaten Haushalte je Einwohner (DESTATIS "
+                              "Regionalatlas AI1601, VGRdL, ref. 2022)",
+                "url": "https://regionalatlas.statistikportal.de/",
+                "note": "raw value only — DE income bands are a methodology decision (per-inhabitant "
+                        "disposable income ≠ FR €/consumption-unit), same refusal as BE/NL",
+            }
+    return None
 
 
 def fetch_commune(lat: float, lon: float) -> dict:
@@ -53,8 +108,10 @@ _GAPS = {
     "E3": "not_collected — no public national connection-queue feed",
     "W1": "not_collected — no national drought machine feed",
     "W3": "not_collected — abstraction volumes are per-Land",
-    "L1": "not_collected — DESTATIS/Regionalatlas income per Kreis (v1; bands pending methodology)",
-    "L3": "not_collected — Seveso registers are per-Land; no national INSPIRE download located",
+    "L1": "not_collected — raw income in provenance (l1_raw, DESTATIS Regionalatlas AI1601); DE "
+          "bands are a methodology decision, same refusal as BE/NL",
+    "L3": "not_collected — Seveso registers are per-Land; only Sachsen/Hamburg publish, neither a "
+          "DC state (RECON-de-deep.md). No national register (EU eSPIRS is access-restricted)",
 }
 
 DE_SPEC = {
@@ -84,6 +141,8 @@ DE_SPEC = {
     },
     "provenance_extra": lambda ctx, prov: {
         "known_gaps": _GAPS,
+        "l1_raw": collect_l1_raw(ctx["lat"], ctx["lon"])
+                  or "unavailable (Regionalatlas AI1601 unreachable or no Kreis at point)",
         "f2_crosscheck": prov.get("f2_crosscheck"),
     },
     "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W1", "W3", "L1", "L3"],
