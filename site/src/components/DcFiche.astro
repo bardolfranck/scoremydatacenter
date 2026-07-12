@@ -289,7 +289,7 @@ const pillars = methodology.pillars as any[];
         )}
         {/* Geographic context (Franck 2026-07-12): the DC on its territory fills the
             column — centred, moderate zoom; the chip wears the real site grade. */}
-        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} aria-label={t.miniMapAria}>
+        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-fiche-base={ficheBase} aria-label={t.miniMapAria}>
           <div class="mini-map-canvas" aria-hidden="true"></div>
           <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
         </div>
@@ -432,12 +432,29 @@ const pillars = methodology.pillars as any[];
           attributionControl: { compact: true },
         });
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        const chipHtml = (grade: string) => {
+          const na = !grade || grade === "insufficient_data";
+          return `<span class="gradechip sm ${na ? "grade-na" : `grade-${grade.toLowerCase()}`} map-chip">${na ? "–" : grade}</span>`;
+        };
+        // Neighbours first (cumulative-effects context is the point of this map):
+        // small, dimmed, clickable to their own fiche — the data is already here.
+        const ficheBase = (mini.dataset.ficheBase || "/fr/dc");
+        for (const n of geo.features) {
+          if (n.properties.id === mini.dataset.dc) continue;
+          const el = document.createElement("a");
+          el.className = "map-marker mini-neighbour";
+          el.href = `${ficheBase}/${n.properties.id}`;
+          el.title = n.properties.name;
+          el.style.width = el.style.height = "24px";
+          el.innerHTML = chipHtml(n.properties.grade_site);
+          new maplibregl.Marker({ element: el }).setLngLat(n.geometry.coordinates).addTo(map);
+        }
+        // The fiche's own project, full size, on top.
         const g = mini.dataset.grade || "insufficient_data";
-        const na = g === "insufficient_data";
         const el = document.createElement("div");
-        el.className = "map-marker";
+        el.className = "map-marker mini-main";
         el.style.width = el.style.height = "40px";
-        el.innerHTML = `<span class="gradechip sm ${na ? "grade-na" : `grade-${g.toLowerCase()}`} map-chip">${na ? "–" : g}</span>`;
+        el.innerHTML = chipHtml(g);
         new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
         map.once("load", () => map.resize()); // re-measure once layout settles
       }
