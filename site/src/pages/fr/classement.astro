@@ -48,6 +48,29 @@ const t = {
     belowMedian: "sous la médiane",
     aboveMedian: "au-dessus de la médiane",
   },
+  // Mid-range labels name the driving pillar (lowest-scored when low,
+  // highest-scored when high) — descriptive states only, never judgments (A-27).
+  driver: {
+    low: {
+      energy: "réseau électrique contraint",
+      water: "ressource en eau sous tension",
+      land_biodiversity: "foncier sensible",
+      local_impact: "tissu local sous pression",
+      transparency_governance: "dossier peu accessible",
+    },
+    high: {
+      energy: "contexte électrique favorable",
+      water: "contexte hydrique favorable",
+      land_biodiversity: "foncier déjà artificialisé",
+      local_impact: "ancrage local documenté",
+      transparency_governance: "dossier accessible au public",
+    },
+  },
+  opBand: {
+    proven: "engagements vérifiés en exploitation",
+    documented: "quelques engagements déclarés",
+    partial: "engagements partiels, peu documentés",
+  },
   replyChip: "droit de réponse · jusqu'au {date}",
   thConfidence: "Confiance",
   pillarShort: { energy: "Énergie", water: "Eau", land_biodiversity: "Foncier", local_impact: "Local", transparency_governance: "Transp." },
