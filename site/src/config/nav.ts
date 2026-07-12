@@ -26,7 +26,7 @@ export const EN_NAV: NavItem[] = [
   { href: "/map", label: "Map" },
   { href: "/ranking", label: "Ranking" },
   { href: "/understand", label: "Understanding data centers" },
-  { href: "/#method", label: "Method" },
+  { href: "/methodology", label: "Method" },
   { href: "/#open", label: "Open model" },
   { href: "/#about", label: "Who we are" },
   { href: "/#contact", label: "Contact" },

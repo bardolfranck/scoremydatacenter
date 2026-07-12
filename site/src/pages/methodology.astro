@@ -1,0 +1,89 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN methodology: thin page — template in Methodologie.astro (shared FR/EN, i18n §13),
+// this file only carries the English doctrine prose (t).
+import Methodologie from "../components/Methodologie.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  title: "Methodology — ScoreMyDataCenter",
+  metaDescription: "The scoring method: two A–E grades (site and operator), documentation confidence, 24 indicators across 5 pillars, thresholds anchored on public referentials. Open, versioned, dated method.",
+  tagline: "Independent observatory",
+  h1: "Methodology",
+  banner: "Version <strong>{version}</strong>. The method is <strong>public, versioned and dated</strong> (verifiable anteriority); the code and the grid are on <a href=\"{repo}\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
+  download: "Download the methodology (FR)",
+  print: "Print / PDF",
+  oneSentenceH2: "The grade in one sentence",
+  oneSentence: [
+    "<p>Each project receives <strong>two grades from A to E</strong> — one for the <strong>site</strong> (the context the project <span class=\"hl-yellow\">endures</span>) and one for the <strong>project &amp; process</strong> (what the operator <span class=\"hl-yellow\">chooses</span>) — coupled with a <strong>documentation confidence level</strong>. A grade never appears without it; below 40% coverage we write “insufficient data”. We do not grade the unknown.</p>",
+    "<p>The score is computed from the sourced values of each project's file, and nothing else.</p>",
+    "<p class=\"meth-nerd\">🤓 <strong>Reproducible method</strong>: anyone who clones the repository and runs <code>make score</code> lands exactly on the displayed letters.</p>",
+  ],
+  scaleH2: "The scale",
+  aProvenH2: "An A is proven, never promised",
+  aProvenP: "<p>The scale has a precise meaning, locked by construction: <i class=\"gl gl-e\">E</i> — opaque, or verified unfavorable · <i class=\"gl gl-d\">D</i> / <i class=\"gl gl-c\">C</i> — partial or good promises · <i class=\"gl gl-b\">B</i> — complete, quantified promises and an exemplary process · <i class=\"gl gl-a\">A</i> — <strong>reserved for verified operation</strong>. A fully declarative file, however excellent, <strong>mathematically caps below the <i class=\"gl gl-a\">A</i></strong>: announced values are graded with caution (“announced ≠ measured”), and only proof lifts that cap. Nobody “receives” an <i class=\"gl gl-a\">A</i> — it is demonstrated.</p>",
+  aProvenExTitle: "Operators — how to earn your <i class=\"gl gl-a\">A</i>",
+  aProvenEx: [
+    "<p>Bring <strong>third-party</strong> proof of your values in operation: a copy of your <strong>EED filing</strong> to the regulator, an <strong>ISO/IEC 30134 audit</strong> certificate from an accredited body, or an inspection-office attestation — never a marketing page. Submit it through the public correction channel (source required, declaration of interest). The data then flips from “announced” to “measured”, the declarative cap lifts, and the re-score is <strong>traced in the public audit log</strong>. No letter to wait for, no payment — the proof does everything.</p>",
+    "<p>Two clarifications that protect everyone. Proof lifts your <strong>project &amp; process</strong> grade — <strong>never the site grade</strong>: the territory (water, grid, land) is endured, it cannot be proven away. And no capture is possible: no payment, <strong>third-party</strong> proof, a grade that moves only because <strong>verified facts</strong> moved.</p>",
+  ],
+  pillarsH2: "The 5 pillars",
+  bulletinH2: "The grade, like a school report",
+  bulletin: [
+    "<p>A data center receives a report card. The five main themes — the <strong>pillars</strong> — are the subjects: Energy, Water, Land &amp; biodiversity, Local impact, Transparency &amp; governance. In each subject, several “tests” — the <strong>indicators</strong> — produce marks.</p>",
+    "<p><strong>Stage 1</strong>: within each pillar, indicators are averaged by their internal coefficient (one test counts more than another).</p>",
+    "<p><strong>Stage 2</strong>: pillar scores are averaged by the weights above. One principle: <strong>no crossover</strong> — an indicator counts in its pillar only, never elsewhere.</p>",
+  ],
+  exampleTitle: "Example (2 pillars, scores already normalised to 100)",
+  exampleItems: [
+    "<b>Energy</b> (weight 25%) — carbon 80 (coef 0.6) · PUE 40 (coef 0.4) → <b>80×0.6 + 40×0.4 = 64</b>",
+    "<b>Water</b> (weight 20%) — stress 30 (coef 0.7) · consumption 50 (coef 0.3) → <b>30×0.7 + 50×0.3 = 36</b>",
+    "Global (weights renormalised 25/45 and 20/45) → 64×0.56 + 36×0.44 ≈ <b>52</b> → letter <strong>C</strong> (threshold 50–64)",
+  ],
+  twoNotesH2: "Two grades — and it is not the average of the pillars",
+  twoNotesP: "<p>This is the nuance that surprises. The two headline grades do not aggregate by pillar but <strong>by block</strong>: the <strong>site</strong> grade = the <em>endured</em> indicators (what the territory imposes — grid carbon, water stress, land); the <strong>project &amp; process</strong> grade = the <em>chosen</em> indicators (efficiency, cooling, consultation, transparency). The <strong>pillar sub-scores</strong> group each theme, mixing endured and chosen. The two groupings are orthogonal: <strong>a grade does not read as the average of the displayed pillars.</strong></p>",
+  thresholdsH2: "From measurement to grade — two families of thresholds",
+  thresholdsP: "<p>Each indicator turns a raw value into a 0–100 sub-score through a threshold. That threshold is set in two ways, and the distinction is <strong>declared</strong>, not hidden:</p>",
+  thresholdFamilies: [
+    "<strong>Family A — external referential.</strong> We anchor on an existing, sourced, defensible standard (ISO 30134 for efficiency, the Water Framework Directive for water-body status, WRI Aqueduct for water stress…).",
+    "<strong>Family B — declared editorial ratio.</strong> Where no norm exists (“what size is too big?”), we do not invent an absolute threshold: we express a <strong>contextual ratio</strong> (project relative to the municipality, to the basin) and <strong>own the editorial choice</strong>.",
+  ],
+  rule: "Rule: <strong>maximise the referential, minimise the editorial — and declare it.</strong> The “Threshold referential” column in the detail below states, indicator by indicator, what each threshold rests on.",
+  lockedH2: "Locked by construction",
+  locked: [
+    "<strong>Announced ≠ measured</strong>: a figure declared by the operator is tagged “announced”, graded with caution, re-verifiable ex-post.",
+    "<strong>Transparency floor</strong>: disclosing a data point can never degrade the grade relative to hiding it.",
+    "<strong>Ethical lock</strong>: a municipality's vulnerability can never improve a project's grade.",
+    "<strong>“Project ≠ grade” firewall</strong>: we help the project, never the grade. The public grade moves only when the <strong>real project</strong> changes (sourced facts, audit-logged re-scoring) — never because an operator paid.",
+    "<strong>Governance</strong>: every grid evolution goes through a tagged version and a justified, signed changelog entry.",
+  ],
+  statusH2: "Status, limits & calibration",
+  statusP: "<p>This version is <strong>preliminary and may evolve</strong>. What the grade <strong>is not</strong>: a statistically validated predictive model, nor an oracle. What it <strong>is</strong>: an <strong>expert, sourced, versioned and reproducible grid</strong>, applying thresholds anchored on public referentials and declaring its editorial choices.</p>",
+  statusItems: [
+    "<strong>Provisional weights and thresholds</strong>: they are calibrated by <strong>retrospective validation</strong> on known-outcome cases (accepted / abandoned projects), not asserted a priori.",
+    "<strong>Traceability</strong>: every grade is dated and tied to a methodology version; an “A” means “the best achievable today”, not “the best forever”.",
+  ],
+  refsH2: "References & standards",
+  references: [
+    { label: "ISO/IEC 30134 (2 PUE · 3 REF · 4 CUE) — data centre performance indicators", url: "https://www.iso.org/standard/63451.html" },
+    { label: "EU Code of Conduct for Data Centres (JRC)", url: "https://e3p.jrc.ec.europa.eu/communities/data-centres-code-conduct" },
+    { label: "Energy Efficiency Directive (EED) 2023/1791 — data centre reporting", url: "https://eur-lex.europa.eu/eli/dir/2023/1791/oj" },
+    { label: "WRI Aqueduct — basin water stress", url: "https://www.wri.org/aqueduct" },
+    { label: "Water Framework Directive 2000/60/EC — water-body status", url: "https://eur-lex.europa.eu/eli/dir/2000/60/oj" },
+    { label: "ADEME Base Empreinte — grid emission factors", url: "https://base-empreinte.ademe.fr/" },
+    { label: "RTE eCO2mix / Caparéseau — grid carbon and capacity", url: "https://www.rte-france.com/eco2mix" },
+    { label: "“Social Licence to Operate” framework — social acceptability of projects", url: "https://en.wikipedia.org/wiki/Social_license" },
+  ],
+  detailsSummary: "See the 24 indicators in detail",
+  detailsIntro: "<p>Each indicator carries its <strong>coefficient</strong> (weight within the pillar), its <strong>scoring direction</strong>, the <strong>basis of its threshold</strong> (external referential or declared editorial choice) and its <strong>data source</strong> — a schema constraint, not a best practice.</p>",
+  th: { indicator: "Indicator", block: "Block", coef: "Coef.", direction: "Direction", thresholdRef: "Threshold referential", source: "Source" },
+  blockLabel: { base: "Site (endured)", project: "Project (chosen)", process: "Process" },
+  dirLabel: { lower_is_better: "lower = better", higher_is_better: "higher = better", encoded_in_scoring: "qualitative", non_monotonic: "nuanced" },
+  backHref: "/",
+  backLabel: "← Back to the home page",
+};
+---
+
+<Methodologie lang="en" t={t} nav={EN_NAV} altHref="/fr/methodologie" altLabel="🇫🇷 FR" />
