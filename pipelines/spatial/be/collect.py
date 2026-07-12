@@ -12,6 +12,7 @@ source), W1/W3/L1/W2-Flanders pad as "not_collected" (collectable, just not by t
 """
 
 from ..country import build_draft, run_cli
+from .. import eu
 from . import sources
 from .elia import collect_e1, collect_grid_capacity
 
@@ -33,8 +34,6 @@ def _collect_f2(ctx, prov):
 _GAPS = {
     "E3": "missing — no public BE equivalent of Caparéseau's connection-queue fill rate "
           "(Elia headroom is already E2's signal)",
-    "W1": "not_collected — no machine drought feed found (Wallonia: Aquawal/RTBF widget trace "
-          "pending; Flanders: waterinfo KiWIS needs a token)",
     "W3": "not_collected — SPW EAU/CAPTAGES exposes abstraction points but volumes are mostly "
           "null; no BNPE-like commune table",
     "L1": "not_collected — raw Statbel value in provenance (l1_raw); FR bands not transposable, "
@@ -54,6 +53,7 @@ BE_SPEC = {
         **({"admin_area": c["province_iso"].removeprefix("BE-")} if c.get("province_iso") else {}),
     },
     "collectors": [
+        (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E1",), _wrap(lambda ctx: collect_e1(ctx["accessed"]))),
         (("W2",), _wrap(lambda ctx: sources.collect_w2(
             ctx["lat"], ctx["lon"], ctx["commune"]["region"], ctx["accessed"]))),
@@ -64,7 +64,7 @@ BE_SPEC = {
         (("F2",), _collect_f2),
         (("E2",), lambda ctx, prov: collect_grid_capacity(ctx["lat"], ctx["lon"], ctx["accessed"])),
     ],
-    "collectable_gaps": frozenset({"W1", "W3", "L1", "W2"}),
+    "collectable_gaps": frozenset({"W3", "L1", "W2"}),
     "provenance_commune": lambda c: {
         "region": c.get("region"),
         "commune_nis": c.get("nis"),

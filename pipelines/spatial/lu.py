@@ -174,8 +174,6 @@ def collect_l3(lat: float, lon: float, accessed: str) -> dict | None:
 _GAPS = {
     "E2": "missing — Creos publishes no hosting-capacity map (no Caparéseau/Elia equivalent)",
     "E3": "missing — no public connection-queue data",
-    "W1": "not_collected — drought status is press-release prose on eau.gouvernement.lu "
-          "(national drinking-water vigilance active since 2026-07-10, per recon)",
     "W3": "not_collected — geoportail.lu abstraction points (collection 567) carry no volumes",
     "L1": "not_collected — LUSTAT publishes commune salaries (DF_C1600), not disposable income; "
           "band mapping is a methodology decision (same refusal as BE/NL)",
@@ -191,6 +189,7 @@ LU_SPEC = {
     "fetch_commune": fetch_commune,
     "identity_fields": lambda c: {"municipality": c.get("name") or "UNKNOWN — to fill"},
     "collectors": [
+        (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E1",), lambda ctx, prov: [x] if (x := eu.collect_e1_energy_charts("LU", ctx["accessed"])) else []),
         # National masses d'eau layer first; EEA WISE universal resolver as fallback.
         (("W2",), lambda ctx, prov: [x] if (x := (collect_w2(ctx["lat"], ctx["lon"], ctx["accessed"])
@@ -199,7 +198,7 @@ LU_SPEC = {
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
         (("L3",), lambda ctx, prov: [x] if (x := collect_l3(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
     ],
-    "collectable_gaps": frozenset({"W1", "W3", "L1"}),
+    "collectable_gaps": frozenset({"W3", "L1"}),
     "provenance_commune": lambda c: {
         "commune_name": c.get("name"),
         "postal_code": c.get("postal_code"),

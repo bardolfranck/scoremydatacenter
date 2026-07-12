@@ -106,7 +106,6 @@ _GAPS = {
     "E2": "not_collected — no single national capacity feed; per-TSO (50Hertz/Amprion/"
           "TenneT DE/TransnetBW), a per-Land/TSO adapter (v1)",
     "E3": "not_collected — no public national connection-queue feed",
-    "W1": "not_collected — no national drought machine feed",
     "W3": "not_collected — abstraction volumes are per-Land",
     "L1": "not_collected — raw income in provenance (l1_raw, DESTATIS Regionalatlas AI1601); DE "
           "bands are a methodology decision, same refusal as BE/NL",
@@ -129,12 +128,13 @@ DE_SPEC = {
     "collectors": [
         # E1 + W2 come from EU-level sources — no Land wiring (energy-charts, EEA WISE spatial).
         (("E1",), lambda ctx, prov: [x] if (x := eu.collect_e1_energy_charts("DE", ctx["accessed"])) else []),
+        (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("W2",), lambda ctx, prov: [x] if (x := eu.collect_w2_universal(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F1",), lambda ctx, prov: [x] if (x := eu.natura_rings(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
     ],
     # Everything unfetched here is collectable by a later Land adapter — never "verified absent".
-    "collectable_gaps": frozenset({"E2", "E3", "W1", "W3", "L1", "L3"}),
+    "collectable_gaps": frozenset({"E2", "E3", "W3", "L1", "L3"}),
     "provenance_commune": lambda c: {
         "kreis": c.get("kreis"),
         "land": c.get("land"),
