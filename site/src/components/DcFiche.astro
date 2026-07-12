@@ -438,6 +438,7 @@ const pillars = methodology.pillars as any[];
         el.style.width = el.style.height = "40px";
         el.innerHTML = `<span class="gradechip sm ${na ? "grade-na" : `grade-${g.toLowerCase()}`} map-chip">${na ? "–" : g}</span>`;
         new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
+        map.once("load", () => map.resize()); // re-measure once layout settles
       }
     } catch {
       mini.style.display = "none";
