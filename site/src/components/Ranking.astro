@@ -35,17 +35,37 @@ const ppPool = pool((d) => d.grades.project_process.score);
 // Bottom percentile: share of the corpus scored at or below this value (P4 = bottom 4%).
 const bottomPct = (arr: number[], v: number) => Math.ceil((arr.filter((x) => x <= v).length / arr.length) * 100);
 const topPct = (arr: number[], v: number) => Math.ceil((arr.filter((x) => x >= v).length / arr.length) * 100);
-const pctInfo = (arr: number[], graded: any): { pos: number; label: string } | null => {
+// The mid-range buckets ("quart inférieur", "sous la médiane") say nothing — the
+// label must carry the DRIVING FACT (Franck, 2026-07-12). Extremes keep the shock
+// phrase; the middle names the pillar that pulls the position (lowest pillar when
+// low, highest pillar when high) — derived from published pillar scores, no invention.
+const siteDriver = (dc: any, positive: boolean): string | null => {
+  const entries = pillars
+    .map((p: any) => ({ id: p.id, s: dc.pillars[p.id]?.score }))
+    .filter((e: any) => typeof e.s === "number");
+  if (!entries.length) return null;
+  entries.sort((a: any, b: any) => a.s - b.s);
+  const pick = positive ? entries[entries.length - 1] : entries[0];
+  return (positive ? t.driver.high : t.driver.low)[pick.id] ?? null;
+};
+const opBand = (score: number): string =>
+  score >= 80 ? t.opBand.proven : score >= 50 ? t.opBand.documented : t.opBand.partial;
+const pctInfo = (arr: number[], graded: any, dc: any, axis: "site" | "operator"): { pos: number; label: string } | null => {
   if (!graded || typeof graded.score !== "number" || arr.length < 2) return null;
   const bp = bottomPct(arr, graded.score);
   const tp = topPct(arr, graded.score);
-  let label: string;
+  let label: string | null;
   if (tp <= 10) label = t.pct.top.replace("{p}", String(tp));
   else if (bp <= 10) label = t.pct.bottom.replace("{p}", String(bp));
-  else if (tp <= 25) label = t.pct.upperQuartile;
-  else if (bp <= 25) label = t.pct.lowerQuartile;
-  else if (bp >= 45 && bp <= 55) label = t.pct.median;
-  else label = bp < 50 ? t.pct.belowMedian : t.pct.aboveMedian;
+  else if (axis === "operator") label = opBand(graded.score);
+  else label = siteDriver(dc, bp >= 50);
+  if (!label) {
+    // no pillar detail published — fall back to the neutral bucket
+    if (tp <= 25) label = t.pct.upperQuartile;
+    else if (bp <= 25) label = t.pct.lowerQuartile;
+    else if (bp >= 45 && bp <= 55) label = t.pct.median;
+    else label = bp < 50 ? t.pct.belowMedian : t.pct.aboveMedian;
+  }
   return { pos: Math.min(99, Math.max(1, bp)), label: `P${bp} · ${label}` };
 };
 const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
@@ -141,7 +161,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                 <td class="rank-country">{dc.country}</td>
                 <td>{t.status[dc.project_status]}{dc.power_mw ? ` · ${dc.power_mw} MW` : ` · ${t.powerUnknown}`}</td>
                 <td class="rank-rails">
-                  {(() => { const p = pctInfo(sitePool, dc.grades.site); return (
+                  {(() => { const p = pctInfo(sitePool, dc.grades.site, dc, "site"); return (
                   <div class="rail" title={typeof dc.grades.site.score === "number" ? `${dc.grades.site.score.toFixed(1)}/100` : undefined}>
                     <span class="rail-axis">{t.railSite}</span>
                     <ScoreBadge
@@ -159,7 +179,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
                       : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{t.naLabel}</span></Fragment>}
                   </div> ); })()}
-                  {(() => { const p = pctInfo(ppPool, dc.grades.project_process); return (
+                  {(() => { const p = pctInfo(ppPool, dc.grades.project_process, dc, "operator"); return (
                   <div class="rail" title={typeof dc.grades.project_process.score === "number" ? `${dc.grades.project_process.score.toFixed(1)}/100` : undefined}>
                     <span class="rail-axis">{t.railOperator}</span>
                     <ScoreBadge

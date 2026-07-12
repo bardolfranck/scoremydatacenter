@@ -48,6 +48,29 @@ const t = {
     belowMedian: "below the median",
     aboveMedian: "above the median",
   },
+  // Mid-range labels name the driving pillar (lowest-scored when low,
+  // highest-scored when high) — descriptive states only, never judgments (A-27).
+  driver: {
+    low: {
+      energy: "constrained power grid",
+      water: "water resource under stress",
+      land_biodiversity: "sensitive land",
+      local_impact: "local fabric under pressure",
+      transparency_governance: "poorly accessible file",
+    },
+    high: {
+      energy: "favourable grid context",
+      water: "favourable water context",
+      land_biodiversity: "already-artificialised land",
+      local_impact: "documented local anchoring",
+      transparency_governance: "publicly accessible file",
+    },
+  },
+  opBand: {
+    proven: "commitments verified in operation",
+    documented: "some declared commitments",
+    partial: "partial, thinly documented commitments",
+  },
   replyChip: "right of reply · until {date}",
   thConfidence: "Confidence",
   pillarShort: { energy: "Energy", water: "Water", land_biodiversity: "Land", local_impact: "Local", transparency_governance: "Transp." },
