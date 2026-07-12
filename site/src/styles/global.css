@@ -781,14 +781,22 @@ sup a { color: var(--accent); font-weight: 750; }
    reading). Present only when the artifact carries a `synthesis`. */
 .fiche-top { display: grid; grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); border-bottom: 1px solid var(--line); }
 .fiche-top > .fiche-subscores { border-bottom: none; border-right: 1px solid var(--line); }
-/* Right column: synthesis (when published) stacked over the geographic mini-map. */
+/* Right column: the written synthesis owns the prime spot (the map moved to the
+   sidebar — geography is context, not content). */
 .fiche-top-right { display: flex; flex-direction: column; min-width: 0; }
-.fiche-top-right .fiche-synthesis { border-bottom: 1px solid var(--line); }
+.fiche-top-right .fiche-synthesis { flex: 1; }
+.fiche-synthesis-empty { display: grid; align-content: start; gap: 10px; }
+.synth-empty-note { font-size: 0.92rem; line-height: 1.6; color: var(--muted); }
 /* maplibre stamps `maplibregl-map { position:relative; overflow:hidden }` on its
    container — absolute/inset sizing loses that fight and the map clips to nothing.
    Size the canvas explicitly through flex instead. */
 .fiche-mini-map { position: relative; flex: 1; display: flex; flex-direction: column; min-height: 300px; background: var(--wash); }
 .mini-map-canvas { flex: 1; width: 100%; min-height: 300px; }
+/* In the dark sidebar the map is a framed locator card, not a hero. */
+.fiche-side-map { display: grid; gap: 10px; }
+.fiche-side-map .fiche-mini-map { flex: none; min-height: 240px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.18); }
+.fiche-side-map .mini-map-canvas { min-height: 240px; }
+.fiche-side-map .mini-map-open { right: 10px; bottom: 10px; padding: 5px 10px; font-size: 0.72rem; }
 /* Neighbour hierarchy: the fiche's project reads first, the surrounding DCs are
    context — smaller, dimmed, clickable to their own fiche. */
 .mini-neighbour { opacity: 0.72; z-index: 1; }

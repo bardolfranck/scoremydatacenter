@@ -124,7 +124,7 @@ const { variant, labels } = Astro.props;
       const popupHtml = `
         <div class="map-popup">
           <strong>${p.name}</strong>
-          <span class="map-popup-sub">${p.power_mw} MW</span>
+          <span class="map-popup-sub">${p.power_mw != null ? `${p.power_mw} MW` : (labels.powerUnknown ?? "puissance non communiquée")}</span>
           <div class="map-popup-grades">
             <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
             <span>${labels.operator} ${chip(p.grade_project_process)}${p.reserved_pp ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
@@ -176,9 +176,12 @@ const { variant, labels } = Astro.props;
       const WATCH_STATUS: Record<string, string> = W.status;
       try {
         const watch = await (await fetch("/data/watchlist.geojson")).json();
+        let watchExtended = false;
         for (const feature of watch.features) {
           const p = feature.properties;
           const [lon, lat] = feature.geometry.coordinates;
+          bounds.extend([lon, lat]); // the "en veille" layer (incl. the US) belongs in frame
+          watchExtended = true;
           const el = document.createElement("div");
           el.className = "watch-marker";
           el.textContent = "🗣️";
@@ -204,6 +207,11 @@ const { variant, labels } = Astro.props;
             .setLngLat([lon, lat])
             .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(popupHtml))
             .addTo(map);
+        }
+        // Re-frame to include the watchlist so the US pins aren't cropped out by the
+        // Europe-only fit above. Skip when a deep-link already flew to one project.
+        if (watchExtended && !focusId) {
+          map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: 0 });
         }
       } catch {
         /* no watchlist artifact yet — the layer is optional */

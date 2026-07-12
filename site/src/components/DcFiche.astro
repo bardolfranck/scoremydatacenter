@@ -209,6 +209,16 @@ const pillars = methodology.pillars as any[];
         <p class="fiche-signal-note" set:html={t.signalNote}></p>
       </div>
 
+      {/* Geographic context (Franck 2026-07-12): geography is context, not content —
+          the map lives in the sidebar; the prime spot belongs to the written synthesis. */}
+      <div class="fiche-side-map">
+        <span class="fiche-share-label">{t.miniMapTitle}</span>
+        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-fiche-base={ficheBase} aria-label={t.miniMapAria}>
+          <div class="mini-map-canvas" aria-hidden="true"></div>
+          <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
+        </div>
+      </div>
+
       <p class="fiche-side-foot">{t.methodology} {methodology.version} · scoremydatacenter.org</p>
     </aside>
 
@@ -287,12 +297,18 @@ const pillars = methodology.pillars as any[];
             </div>
           </aside>
         )}
-        {/* Geographic context (Franck 2026-07-12): the DC on its territory fills the
-            column — centred, moderate zoom; the chip wears the real site grade. */}
-        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-fiche-base={ficheBase} aria-label={t.miniMapAria}>
-          <div class="mini-map-canvas" aria-hidden="true"></div>
-          <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
-        </div>
+        {/* Thin file, nothing held: the spot still explains itself — we do not
+            write an overall reading without sufficient facts (same doctrine as
+            "we do not grade the unknown"). */}
+        {!dc.synthesis && !inReplyWindow && (
+          <aside class="fiche-synthesis fiche-synthesis-empty">
+            <div class="synth-head">
+              <h2>{t.synthTitle}</h2>
+              <span class="synth-sub">{t.synthSub}</span>
+            </div>
+            <p class="synth-empty-note">{t.synthEmptyNote.replace("{pct}", String(confPct))}</p>
+          </aside>
+        )}
         </div>
       </div>
 
