@@ -190,10 +190,6 @@ const pillars = methodology.pillars as any[];
         <span class="fiche-conf-note">{confPct} % — {t.confidenceNote[dc.confidence.level]}</span>
       </div>
 
-      <a class="fiche-map-link" href={`${mapPath}?dc=${dc.id}`}>
-        <span set:html={icon("map", 16)}></span>{t.viewMap}
-      </a>
-
       <div class="fiche-share">
         <span class="fiche-share-label">{t.share}</span>
         <div class="fiche-share-icons">
@@ -263,6 +259,7 @@ const pillars = methodology.pillars as any[];
           })}
         </div>
       </div>
+        <div class="fiche-top-right">
         {inReplyWindow && (
           <aside class="fiche-synthesis fiche-synthesis-held">
             <div class="synth-head">
@@ -290,6 +287,13 @@ const pillars = methodology.pillars as any[];
             </div>
           </aside>
         )}
+        {/* Geographic context (Franck 2026-07-12): the DC on its territory fills the
+            column — centred, moderate zoom; the chip wears the real site grade. */}
+        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} aria-label={t.miniMapAria}>
+          <div class="mini-map-canvas" aria-hidden="true"></div>
+          <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
+        </div>
+        </div>
       </div>
 
       <blockquote class="fiche-quote"><p>{t.quoteOpen}{L(dc.citable_quote)}{t.quoteClose}</p></blockquote>
@@ -405,7 +409,42 @@ const pillars = methodology.pillars as any[];
 </Base>
 
 <script>
-  // Copy-link and native share — the only client JS the fiche needs.
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+
+  // Geographic context: a still mini-map centred on THIS project (coords come from
+  // map.geojson, the same artifact the big maps read — the fiche adds no data).
+  const mini = document.querySelector<HTMLElement>(".fiche-mini-map");
+  if (mini) {
+    try {
+      const geo = await (await fetch("/data/map.geojson")).json();
+      const f = geo.features.find((x: any) => x.properties.id === mini.dataset.dc);
+      if (!f) {
+        mini.style.display = "none"; // no coordinates published — no empty frame
+      } else {
+        const [lon, lat] = f.geometry.coordinates;
+        const map = new maplibregl.Map({
+          container: mini.querySelector<HTMLElement>(".mini-map-canvas")!,
+          style: "https://tiles.openfreemap.org/styles/positron",
+          center: [lon, lat],
+          zoom: 8, // regional context — close enough to read the territory, not a rooftop
+          interactive: false,
+          attributionControl: { compact: true },
+        });
+        const g = mini.dataset.grade || "insufficient_data";
+        const na = g === "insufficient_data";
+        const el = document.createElement("div");
+        el.className = "map-marker";
+        el.style.width = el.style.height = "40px";
+        el.innerHTML = `<span class="gradechip sm ${na ? "grade-na" : `grade-${g.toLowerCase()}`} map-chip">${na ? "–" : g}</span>`;
+        new maplibregl.Marker({ element: el }).setLngLat([lon, lat]).addTo(map);
+      }
+    } catch {
+      mini.style.display = "none";
+    }
+  }
+
+  // Copy-link and native share.
   document.querySelectorAll(".fiche-copy").forEach((btn) => {
     btn.addEventListener("click", async () => {
       const url = (btn as HTMLElement).dataset.url!;
