@@ -362,10 +362,12 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .why-punchline { margin-top: 22px; font-size: clamp(1.4rem, 2.4vw, 1.9rem); font-weight: 850; letter-spacing: -0.015em; color: var(--ink); }
 
 /* Who — Franck Bardol, separate from the why (a different question) */
-.about-block { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-.about-photo-lg { flex: none; display: grid; place-items: center; width: 88px; height: 88px; border-radius: 50%; background: var(--sidebar); color: #fff; font-weight: 800; font-size: 1.8rem; letter-spacing: 0.02em; }
-.about-text { display: grid; gap: 8px; max-width: 62ch; }
-.about-todo { color: var(--muted); font-size: 0.9rem; font-style: italic; }
+.about-block { display: flex; align-items: flex-start; gap: clamp(24px, 3vw, 40px); flex-wrap: wrap; }
+.about-photo-img { flex: none; width: clamp(150px, 16vw, 200px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.about-text { display: grid; gap: 10px; max-width: 68ch; }
+.about-text p { color: var(--ink-soft); font-size: 0.98rem; line-height: 1.6; }
+.about-text .founder-line { font-size: 1.05rem; color: var(--ink); }
+.about-text a { color: var(--accent); }
 
 /* Principles strip */
 .credibility-strip {

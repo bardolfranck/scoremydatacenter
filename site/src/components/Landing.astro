@@ -317,10 +317,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <h2 id="about-title">{t.aboutTitle}</h2>
       </div>
       <div class="about-block">
-        <span class="about-photo-lg" aria-hidden="true">FB</span>
+        <img class="about-photo-img" src="/assets/franck-bardol.jpg" alt={t.aboutPhotoAlt} width="554" height="640" loading="lazy" />
         <div class="about-text">
           <p class="founder-line" set:html={t.founderLine}></p>
-          <p class="about-todo">{t.aboutTodo}</p>
+          {t.aboutBio.map((block: string) => <Fragment set:html={block} />)}
         </div>
       </div>
     </div>
