@@ -363,7 +363,9 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 
 /* Who — Franck Bardol, separate from the why (a different question) */
 .about-block { display: flex; align-items: flex-start; gap: clamp(24px, 3vw, 40px); flex-wrap: wrap; }
-.about-photo-img { flex: none; width: clamp(150px, 16vw, 200px); height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.about-photo-fig { flex: none; margin: 0; width: clamp(150px, 16vw, 200px); }
+.about-photo-img { width: 100%; height: auto; border-radius: var(--radius); box-shadow: var(--shadow); }
+.about-photo-fig figcaption { margin-top: 8px; text-align: center; font-size: 0.78rem; font-weight: 650; color: var(--muted); }
 .about-text { display: grid; gap: 10px; flex: 1; min-width: 280px; max-width: 95ch; }
 .about-text p { color: var(--ink-soft); font-size: 0.98rem; line-height: 1.6; }
 .about-text .founder-line { font-size: 1.05rem; color: var(--ink); }
