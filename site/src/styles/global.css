@@ -216,6 +216,9 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
    counts, then the letter stamps. Final state is the default (no-JS / SEO /
    reduced-motion); animations only exist under .play, added once on scroll-in. */
 .score-demo { padding: 20px 24px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+/* Sit level with the why text: the .why-block carries a 32px top margin, plus its
+   kicker line — drop the card to the lede's visual top. */
+.mission-grid .score-demo { margin-top: 68px; }
 .demo-kicker { font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
 .demo-body { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 30px; }
 .demo-pillars { display: grid; grid-template-columns: repeat(5, minmax(52px, 64px)); gap: 8px; }
