@@ -9,22 +9,56 @@
 The Brexit finding, in data terms: the UK left the EU data commons, so the free EU-level bricks
 partially fail here (probed 2026-07-12):
   * W2 — EEA WISE has ZERO GB water bodies for the 2022 WFD cycle (UK reports nationally now). Gap.
-  * F1 — Natura 2000 is EU-only; UK sites became the national site network (SAC/SPA). EEA layer
-    unreliable for GB. Gap.
+  * F1 — RECOVERED via Natural England/JNCC national layers (SAC England + UK SPA), the
+    post-Brexit replacement for the EU-only EEA Natura. Scotland/Wales SAC = v1 gap.
   * F2 — Corine CLC2018 was produced while the UK was a member → it DOES cover GB. Works.
   * E1 — energy-charts rejects `gb`; instead GB has an excellent national feed: National Grid ESO
     carbonintensity.org.uk (keyless). Works — and GB's grid is comparatively clean (~106 gCO2/kWh,
     wind + gas), the opposite end from Poland.
 
-So GB v0 = E1 (national) + F2 (Corine) = 2/12, honestly. Unlike a fresh EU member, a deeper UK
+So GB now = E1 (National Grid) + W1 (Aqueduct) + F1 (Natural England) + F2 (Corine) = 4/12. Unlike a fresh EU member, a deeper UK
 adapter is a NATIONAL build (Environment Agency / SEPA / NRW catchment data for W2, JNCC for F1,
 NGED/UKPN capacity, HSE COMAH for Seveso) — Brexit turned the free EU ride into national wiring,
 like Germany's Länder but for a whole country. That is itself the strategic point.
 """
 
 from . import eu
+from .bands import F1_BEYOND_RINGS, F1_DISTANCE_RINGS
 from .country import build_draft, run_cli
+from .geo import arcgis_point_query
 from .http import SourceUnavailable, get_json
+
+# Natural England / JNCC Open Data (ArcGIS) — the national protected-areas layers that replace the
+# Brexit-lost EEA Natura 2000. SAC polygons (England) + UK-wide SPAs; probed live 2026-07-12.
+_NE = "https://services.arcgis.com/JJzESW51TqeY9uat/arcgis/rest/services"
+_UK_PROTECTED = [(f"{_NE}/AnnexI_Polygons_NE_SAC_v2/FeatureServer", 0, "SAC (England)"),
+                 (f"{_NE}/c20220316_UKSPAswithMarineComponents_WGS84/FeatureServer", 0, "SPA (UK)")]
+
+
+def collect_f1_uk(lat: float, lon: float, accessed: str) -> dict | None:
+    """F1 protected-area proximity via Natural England/JNCC (SAC + SPA) — recovers the indicator
+    Brexit removed from the EEA Natura layer. England SAC + UK SPA; Scotland/Wales SAC = v1 gap."""
+    reachable = False
+    for radius, category in F1_DISTANCE_RINGS:
+        for service, layer, _ in _UK_PROTECTED:
+            try:
+                feats = arcgis_point_query(service, layer, lat, lon, max(radius, 1), record_count=1)
+            except SourceUnavailable:
+                continue
+            reachable = True
+            if feats:
+                return {"id": "F1", "status": "measured", "value": category,
+                        "source": {"title": "Natural England / JNCC — SAC (England) + UK SPA "
+                                            "protected-areas overlap by distance ring (post-Brexit "
+                                            "national layers, EEA Natura is EU-only)",
+                                   "url": "https://naturalengland-defra.opendata.arcgis.com/",
+                                   "accessed": accessed}}
+    if not reachable:
+        return None
+    return {"id": "F1", "status": "measured", "value": F1_BEYOND_RINGS,
+            "source": {"title": "Natural England / JNCC — no SAC/SPA within 5 km (post-Brexit "
+                               "national layers)",
+                       "url": "https://naturalengland-defra.opendata.arcgis.com/", "accessed": accessed}}
 
 
 def fetch_commune(lat: float, lon: float) -> dict:
@@ -68,8 +102,6 @@ def collect_e1_gb(accessed: str) -> dict | None:
 _GAPS = {
     "W2": "not_collected — BREXIT: EEA WISE has no GB water bodies for the 2022 WFD cycle; the "
           "national source is Environment Agency / SEPA / NRW catchment data (v1)",
-    "F1": "not_collected — BREXIT: Natura 2000 is EU-only; UK sites are the national site network "
-          "(JNCC SAC/SPA) — a national layer, not the EEA one (v1)",
     "E2": "not_collected — grid capacity is per-DNO (NGED/UKPN/SSEN); no single national feed (v1)",
     "E3": "not_collected — no public national connection-queue feed wired",
     "W3": "not_collected — abstraction volumes not wired",
@@ -92,12 +124,13 @@ GB_SPEC = {
     "collectors": [
         (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E1",), lambda ctx, prov: [x] if (x := collect_e1_gb(ctx["accessed"])) else []),
+        (("F1",), lambda ctx, prov: [x] if (x := collect_f1_uk(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
     ],
-    "collectable_gaps": frozenset({"W2", "F1", "E2", "E3", "W3", "L1", "L3"}),
+    "collectable_gaps": frozenset({"W2", "E2", "E3", "W3", "L1", "L3"}),
     "provenance_commune": lambda c: {"county": c.get("county"), "country_part": c.get("country_part")},
     "provenance_extra": lambda ctx, prov: {"known_gaps": _GAPS, "f2_crosscheck": prov.get("f2_crosscheck")},
-    "manual_still_required": ["F3", "L2", "T1", "T2", "W2", "F1", "E2", "E3", "W1", "W3", "L1", "L3"],
+    "manual_still_required": ["F3", "L2", "T1", "T2", "W2", "E2", "E3", "W3", "L1", "L3"],
 }
 
 
