@@ -114,10 +114,58 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   <section class="section section-tinted" id="mission" aria-labelledby="mission-title">
     <div class="section-inner">
       <p class="mission-line" id="mission-title">{t.missionLine}</p>
-      <div class="why-block">
-        <h3>{t.whyTitle}</h3>
-        <p class="why-lede">{t.whyLede}</p>
-        <p class="why-body" set:html={t.whyBody}></p>
+      <div class="mission-grid">
+        <div class="why-block">
+          <h3>{t.whyTitle}</h3>
+          <p class="why-lede">{t.whyLede}</p>
+          <p class="why-body" set:html={t.whyBody}></p>
+        </div>
+        {t.demo && demo && (
+          <div class="score-demo">
+            <p class="sr-only">{t.demo.sr.replace("{name}", demo.name)}</p>
+            <div class="demo-anim" aria-hidden="true">
+              <p class="demo-kicker">{t.demo.kicker}</p>
+              <div class="demo-body">
+                <div class="demo-pillars">
+                  {pillarOrder.map((pid: string, i: number) => (
+                    <div class="demo-cell demo-pop" style={`--pop-delay:${i * 260}ms`}>
+                      <span class="demo-plabel">{t.pillarShort[pid]}</span>
+                      <ScoreBadge
+                        label={t.pillarShort[pid]}
+                        grade={demo.pillars[pid]}
+                        confidence={demo.confidence.level}
+                        confidenceLabel={t.confidence[demo.confidence.level]}
+                        renderConfidence={false}
+                        renderLabel={false}
+                        size="sm"
+                        naLabel={t.insufficient}
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div class="demo-site">
+                  <span class="demo-slabel">{t.siteScore}</span>
+                  <span class="demo-score">{demo.grades.site.score.toFixed(1)}/100</span>
+                  <span class="demo-bar"><i style={`--demo-score:${demo.grades.site.score / 100}`}></i></span>
+                </div>
+                <div class="demo-badge">
+                  <ScoreBadge
+                    label={t.siteScore}
+                    grade={demo.grades.site}
+                    confidence={demo.confidence.level}
+                    confidenceLabel={t.confidence[demo.confidence.level]}
+                    renderConfidence={false}
+                    renderLabel={false}
+                    size="lg"
+                    naLabel={t.insufficient}
+                  />
+                </div>
+              </div>
+            </div>
+            <p class="demo-caption">{t.demo.caption.replace("{name}", demo.name)}
+              <button class="demo-replay" type="button">↻ {t.demo.replay}</button></p>
+          </div>
+        )}
       </div>
     </div>
   </section>
@@ -137,54 +185,6 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <h2 id="scores-title">{t.scoresTitle}</h2>
         <p>{t.scoresLede}</p>
       </div>
-
-      {t.demo && demo && (
-        <div class="score-demo">
-          <p class="sr-only">{t.demo.sr.replace("{name}", demo.name)}</p>
-          <div class="demo-anim" aria-hidden="true">
-            <p class="demo-kicker">{t.demo.kicker}</p>
-            <div class="demo-body">
-              <div class="demo-pillars">
-                {pillarOrder.map((pid: string, i: number) => (
-                  <div class="demo-cell demo-pop" style={`--pop-delay:${i * 260}ms`}>
-                    <span class="demo-plabel">{t.pillarShort[pid]}</span>
-                    <ScoreBadge
-                      label={t.pillarShort[pid]}
-                      grade={demo.pillars[pid]}
-                      confidence={demo.confidence.level}
-                      confidenceLabel={t.confidence[demo.confidence.level]}
-                      renderConfidence={false}
-                      renderLabel={false}
-                      size="sm"
-                      naLabel={t.insufficient}
-                    />
-                  </div>
-                ))}
-              </div>
-              <div class="demo-site">
-                <span class="demo-slabel">{t.siteScore}</span>
-                <span class="demo-score">{demo.grades.site.score.toFixed(1)}/100</span>
-                <span class="demo-bar"><i style={`--demo-score:${demo.grades.site.score / 100}`}></i></span>
-              </div>
-              <div class="demo-badge">
-                <ScoreBadge
-                  label={t.siteScore}
-                  grade={demo.grades.site}
-                  confidence={demo.confidence.level}
-                  confidenceLabel={t.confidence[demo.confidence.level]}
-                  renderConfidence={false}
-                  renderLabel={false}
-                  size="lg"
-                  naLabel={t.insufficient}
-                />
-              </div>
-            </div>
-          </div>
-          <p class="demo-caption">{t.demo.caption.replace("{name}", demo.name)}
-            <button class="demo-replay" type="button">↻ {t.demo.replay}</button></p>
-        </div>
-      )}
-
       <div class="scorecard-grid">
         {scores.map((dc) => (
           <article class="scorecard">
