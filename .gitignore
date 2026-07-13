@@ -21,3 +21,6 @@ site/public/data/
 # local Claude Code dev configs (launch.json etc.)
 .claude/
 **/.claude/
+
+# pipeline HTTP cache (local runs)
+.cache/
