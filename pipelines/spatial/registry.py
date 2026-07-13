@@ -19,6 +19,7 @@ from .gb import GB_SPEC
 from .se import SE_SPEC
 from .fi import FI_SPEC
 from .no import NO_SPEC
+from .es import ES_SPEC
 
 SPECS = {
     "FR": FR_SPEC,
@@ -32,6 +33,7 @@ SPECS = {
     "SE": SE_SPEC,
     "FI": FI_SPEC,
     "NO": NO_SPEC,
+    "ES": ES_SPEC,
 }
 
 

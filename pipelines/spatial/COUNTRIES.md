@@ -80,24 +80,26 @@ picked up with **zero code change** to the build path.
 Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/process is
 `insufficient_data`; no grade shows A without operational proof (A-25 reservation).
 
-> **W1 update (2026-07-12):** every country below now also fills **W1** (baseline water stress) via
-> WRI Aqueduct — a global keyless brick, the methodology's own W1 referential. It is a SCORED
-> indicator (unlike L1/F2-precision), so it moved grades (e.g. Frankfurt C→D on 'high' stress). Add
-> +1 to each country's coverage number in the table below; FR keeps its VigiEau reading.
+> **W1 folded in (2026-07-12):** every country now also fills **W1** (baseline water stress) via
+> WRI Aqueduct — a global keyless brick, the methodology's own W1 referential and a SCORED indicator
+> (it moved grades, e.g. Frankfurt C→D on 'high' stress). **The counts below already include it**
+> (FR via its own VigiEau reading; every other country via Aqueduct — no +1 to do). Rows are ordered
+> by coverage, most-covered first.
 
 | ISO | Kind | Cov. | E1 (carbon) | W2 (water) | F1 (nature) | F2 (land) | Other national | Notes |
 |-----|------|------|-------------|-----------|-------------|-----------|----------------|-------|
 | **FR** | national (own) | **10/12** | RTE eCO2mix | Sandre+WISE | API Carto INPN | PLU/RPG+Corine | E2/E3 Caparéseau, W1 VigiEau, W3 BNPE, L1 Filosofi, L3 Géorisques | the reference build |
-| **BE** | regional ×3 (own) | ~8/12 | Elia ods192 | SPW MESU+WISE | SPW/EEA | plan de secteur/Corine | L3 SPW+Mercator Seveso | Wallonia proven; Flanders W2/zoning partial; Brussels stub |
-| **NL** | national (own) | ~6/12 | energy-charts | PDOK KRW+WISE (fallback) | EEA | Corine | **E2+E3 capaciteitskaart** (richer than Caparéseau), L3 PDOK Seveso, L1 CBS (raw) | |
-| **LU** | national (own) | ~4/12 | energy-charts | geoportail+WISE | EEA | PAG national | L3 INSPIRE GML | one keyless OGC-API endpoint serves W2+F2 |
-| **DE** | EU-level v0 (own) | **4/12** | energy-charts (~381) | WISE universal | EEA | Corine | — | the 16-Länder deep build is the TODO |
-| **PL** | factory + national E2 | ~7/12 | energy-charts (**~652**) | WISE universal (patchy) | EEA | Corine | **E2 PSE bazamocy** (per-substation MW), L3 EEA IED Seveso, L1 Eurostat (raw) | energy angle + real per-node capacity |
-| **IE** | factory `e1=False` | 3/12 | — (energy-charts 500) | WISE universal | EEA | Corine | — | grid CAPACITY is the story (EirGrid, deep) |
-| **GB** | national (own) | 2/12 | **carbonintensity.org.uk** (~106) | — (Brexit) | — (Brexit) | Corine (pre-Brexit) | — | Brexit ejected UK from the EU commons |
-| **SE** | factory + national E2/E3 | ~7/12 | energy-charts (**~23**) | WISE universal | EEA | Corine | **E2+E3 Svenska kraftnät** (per-county, the northern queue), L1 Eurostat (raw) | clean grid, but congestion pulls energy to C |
-| **FI** | factory `l3_ied` | ~5/12 | energy-charts (~64) | WISE universal (patchy) | EEA | Corine | L3 EEA IED Seveso, L1 Eurostat (raw) | grid gap (Fingrid keyed); coastal W2 misses |
-| **NO** | factory `f1_cdda` | ~5/12 | energy-charts (~30) | WISE universal | **EEA CDDA** | Corine | L1 Eurostat (raw, ~2020) | F1 recovered via CDDA; grid/L3 gaps (Statnett Power-BI, IED unflagged) |
+| **BE** | regional ×3 (own) | ~9/12 | Elia ods192 | SPW MESU+WISE | SPW/EEA | plan de secteur/Corine | W1 Aqueduct, L3 SPW+Mercator Seveso | Wallonia proven; Flanders W2/zoning partial; Brussels stub |
+| **PL** | factory + national E2 | ~8/12 | energy-charts (**~652**) | WISE universal (patchy) | EEA | Corine | **E2 PSE bazamocy** (per-substation MW), W1 Aqueduct, L3 EEA IED Seveso, L1 Eurostat (raw) | energy angle + real per-node capacity |
+| **SE** | factory + national E2/E3 | ~8/12 | energy-charts (**~23**) | WISE universal | EEA | Corine | **E2+E3 Svenska kraftnät** (per-county, the northern queue), W1 Aqueduct, L1 Eurostat (raw) | clean grid, but congestion pulls energy to C |
+| **NL** | national (own) | ~7/12 | energy-charts | PDOK KRW+WISE (fallback) | EEA | Corine | **E2+E3 capaciteitskaart** (richer than Caparéseau), W1 Aqueduct, L3 PDOK Seveso, L1 CBS (raw) | |
+| **FI** | factory `l3_ied` | ~6/12 | energy-charts (~64) | WISE universal (patchy) | EEA | Corine | W1 Aqueduct, L3 EEA IED Seveso, L1 Eurostat (raw) | grid gap (Fingrid keyed); coastal W2 misses |
+| **NO** | factory `f1_cdda` | ~6/12 | energy-charts (~30) | WISE universal | **EEA CDDA** | Corine | W1 Aqueduct, L1 Eurostat (raw, ~2020) | F1 recovered via CDDA; grid/L3 gaps (Statnett Power-BI, IED unflagged) |
+| **ES** | factory `l3_ied` | ~6/12 | energy-charts | WISE universal (patchy inland) | EEA | Corine | L3 EEA IED Seveso, L1 Eurostat (raw) | **WATER angle**: Madrid/Barcelona on Aqueduct *Extremely High* (W1 zre_or_crisis). DCs scraped from PeeringDB; hyperscale water-controversy sites (Meta Talavera, AWS Aragón) = priority list add |
+| **DE** | EU-level v0 (own) | **5/12** | energy-charts (~381) | WISE universal | EEA | Corine | W1 Aqueduct | the 16-Länder deep build is the TODO (ceiling low, see RECON-de-deep) |
+| **LU** | national (own) | ~5/12 | energy-charts | geoportail+WISE | EEA | PAG national | W1 Aqueduct, L3 INSPIRE GML | one keyless OGC-API endpoint serves W2+F2 |
+| **IE** | factory `e1=False` | 4/12 | — (energy-charts 500) | WISE universal | EEA | Corine | W1 Aqueduct | grid CAPACITY is the story (EirGrid, deep) |
+| **GB** | national (own) | 3/12 | **carbonintensity.org.uk** (~106) | — (Brexit) | — (Brexit) | Corine (pre-Brexit) | W1 Aqueduct | Brexit ejected UK from the EU commons |
 | **US** | **watchlist only** | — | — | ✅ Aqueduct | — | — | — | A-19: presence, no score. But **W1 (WRI Aqueduct) is the ONE brick that survives for the US** — global, keyless (all other EU bricks fail: not in WISE/Natura/Corine/energy-charts). Added as a sourced *fact* on the US watchlist entries (Mesa = Extremely High, hard-confirming the Colorado-River water story). A future thin US score is one indicator closer; the rest needs US-federal sources (eGRID/NLCD/PAD-US, probed flaky). |
 
 ---
