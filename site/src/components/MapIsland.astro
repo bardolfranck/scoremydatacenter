@@ -49,6 +49,7 @@ const { variant, labels } = Astro.props;
 <script>
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
+  import { whitenBasemap } from "../scripts/basemap";
 
   const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
@@ -95,6 +96,7 @@ const { variant, labels } = Astro.props;
       scrollZoom: isFull,
       cooperativeGestures: isFull,
     });
+    whitenBasemap(map);
     if (isFull) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
     // Deep-link from the ranking: /fr/carte?dc=<id> flies to that project and opens its popup.
