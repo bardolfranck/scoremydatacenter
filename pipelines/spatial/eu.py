@@ -220,46 +220,48 @@ def wise_status_category(water_body_code: str, country: str) -> tuple[str | None
 
 # --- W2 · UNIVERSAL water-body resolver (EEA WISE spatial) — any EU point, no national WFS -----
 
-_WISE_SWB_LAYERS = ((2, 1500), (4, 300), (3, 300), (5, 1500), (6, 3000))  # (layer, buffer m): river line first
+_WISE_SWB_LAYERS = (2, 4, 3, 5, 6)  # search order: river line first, then lake/transitional/coastal
+# Nearest-first buffer escalation. Coastal/riverside points hit at the small tiers; inland points
+# (Madrid ~12 km to the nearest classified body, Rome ~3 km, Talavera ~6 km) need the wider ones.
+# Capped at 15 km: beyond that there is no local water body to speak of → honest None, not a stretch.
+_WISE_BUFFERS_M = (500, 1500, 3000, 6000, 10000, 15000)
 
 
 def collect_w2_universal(lat: float, lon: float, accessed: str) -> dict | None:
-    """W2 for ANY EU country: resolve the water-body code at the point off the EEA WISE spatial
-    service, then join its ecological status from the cached WISE extract. Zero national wiring.
+    """W2 for ANY EU country: resolve the NEAREST WFD water body to the point off the EEA WISE
+    spatial service, then join its ecological status from the cached WISE extract. Zero national
+    wiring. The buffer escalates smallest-first so the first joinable hit is the nearest body, and
+    the reached tier rides in the source as an honest upper bound on the distance ("within ~X km").
 
-    This is a *nearest-within-buffer* resolver (rivers are lines), so a national point-in-polygon
-    source, where one exists, stays preferable and takes precedence; this is the universal
-    fallback that lifts every country lacking one. Returns None off any EU water body (e.g. a
-    Dutch polder plot) — never fabricates.
+    A national point-in-polygon source, where one exists, stays preferable and takes precedence;
+    this is the universal fallback that lifts every country lacking one. Returns None only when no
+    classified water body sits within 15 km — never fabricates, never guesses a far one silently.
     """
-    code = name = country = None
-    for layer, buf in _WISE_SWB_LAYERS:
-        try:
-            feats = arcgis_point_query(
-                EEA_WISE_SWB, layer, lat, lon, buf,
-                # outSR/outFields kept minimal; we only need the code + country to join WISE.
-            )
-        except SourceUnavailable:
-            continue
-        if feats:
+    for buf in _WISE_BUFFERS_M:
+        for layer in _WISE_SWB_LAYERS:
+            try:
+                feats = arcgis_point_query(EEA_WISE_SWB, layer, lat, lon, buf, record_count=1)
+            except SourceUnavailable:
+                continue
+            if not feats:
+                continue
             a = feats[0].get("attributes", {})
-            code = a.get("euSurfaceWaterBodyCode")
-            name = a.get("surfaceWaterBodyName")
-            country = a.get("countryCode")
-            if code and country:
-                break
-    if not code or not country:
-        return None
-    status, category = wise_status_category(code, country)
-    if category is None:
-        return None
-    return {
-        "id": "W2", "status": "measured", "value": category,
-        "source": _source(
-            f"EEA WISE spatial (WFD 2022) — nearest water body {code} '{name}' at point "
-            f"+ WISE ecological status class {status}/5",
-            "https://water.discomap.eea.europa.eu/", accessed),
-    }
+            code, name, country = (a.get("euSurfaceWaterBodyCode"),
+                                   a.get("surfaceWaterBodyName"), a.get("countryCode"))
+            if not code or not country:
+                continue
+            status, category = wise_status_category(code, country)
+            if category is None:
+                continue
+            within = f"within ~{buf // 1000} km" if buf >= 1000 else "at point"
+            return {
+                "id": "W2", "status": "measured", "value": category,
+                "source": _source(
+                    f"EEA WISE spatial (WFD 2022) — nearest water body {code} '{name}' {within} "
+                    f"+ WISE ecological status class {status}/5",
+                    "https://water.discomap.eea.europa.eu/", accessed),
+            }
+    return None
 
 
 # --- E1 · UNIVERSAL grid carbon intensity (Fraunhofer energy-charts) — national, keyless -------
