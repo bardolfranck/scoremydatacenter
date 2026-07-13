@@ -21,6 +21,9 @@ from .fi import FI_SPEC
 from .no import NO_SPEC
 from .es import ES_SPEC
 from .it import IT_SPEC
+from .pt import PT_SPEC
+from .at import AT_SPEC
+from .dk import DK_SPEC
 
 SPECS = {
     "FR": FR_SPEC,
@@ -36,6 +39,9 @@ SPECS = {
     "NO": NO_SPEC,
     "ES": ES_SPEC,
     "IT": IT_SPEC,
+    "PT": PT_SPEC,
+    "AT": AT_SPEC,
+    "DK": DK_SPEC,
 }
 
 
