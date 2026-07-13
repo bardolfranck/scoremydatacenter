@@ -6,6 +6,7 @@
   "country": "ZZ",
   "project_status": "announced",
   "power_mw": 900,
+  "expected_commissioning": 2031,
   "grades": {
     "site": {
       "grade": "E",

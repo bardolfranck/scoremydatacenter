@@ -46,6 +46,13 @@ def _num(raw: str | None) -> float | None:
     return value if value > 0 else None
 
 
+def _year(raw: str | None) -> int | None:
+    """'2031', '2010 (extension 2015)' -> the year; 'à venir', 'années 2000' -> None."""
+    import re
+    m = re.search(r"\b(19|20)\d{2}\b", raw or "")
+    return int(m.group(0)) if m else None
+
+
 def normalize_name(s: str | None) -> str:
     """Accent-insensitive, punctuation-collapsed uppercase key for matching."""
     s = unicodedata.normalize("NFD", (s or "").upper())
@@ -65,6 +72,8 @@ def parse(text: str) -> list[dict]:
             "country": (row.get("code_pays") or "").strip(),
             "status": (row.get("etat_avancement_synthèse") or row.get("etat_avancement") or "").strip(),
             "power_mw": _num(row.get("puiss_MW")),
+            # commissioning year when the common recorded one ('date_service')
+            "year": _year(row.get("date_service")),
             "pue_disclosed": _num(row.get("PUE_officiel")),
             "cooling": (row.get("cooling") or "").strip() or None,
             # primary source when the common recorded one — "the press points, the registry proves"

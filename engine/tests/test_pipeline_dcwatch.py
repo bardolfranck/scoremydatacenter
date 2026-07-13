@@ -62,3 +62,13 @@ def test_propose_reports_absent(tmp_path):
     records = [r for r in parse(CSV) if r["country"] == "FR"]
     out = {o["dc_id"]: o for o in propose(tmp_path, records)}
     assert out["fr-nowhere"]["decision"] == "absent"
+
+
+def test_commune_name_alone_never_binds(tmp_path):
+    # 'DC Université de Strasbourg' must not match 'SFR Netcenter Strasbourg' just
+    # because both carry the city name (gate reject 2026-07-13, year proposals).
+    csv = CSV + 'DC_UNIVERSITE_DE_STRASBOURG,,"",STRASBOURG,67000,67482,Université,En Exploitation,"2,0",,,,FR\n'
+    _dc(tmp_path, "fr-sfr-netcenter-strasbourg", "SFR Netcenter Strasbourg", "SFR", "Strasbourg")
+    records = [r for r in parse(csv) if r["country"] == "FR"]
+    out = {o["dc_id"]: o for o in propose(tmp_path, records)}
+    assert out["fr-sfr-netcenter-strasbourg"]["decision"] == "absent"
