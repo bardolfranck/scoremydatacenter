@@ -36,7 +36,11 @@ const { variant, labels } = Astro.props;
   )}
   {variant === "full" && (
     <div class="map-legend" aria-hidden="true">
-      <span><span class="map-legend-graded"></span>{labels.legendGraded ?? "Projet noté A–E"}</span>
+      <span class="map-legend-grades">
+        {["a", "b", "c", "d", "e"].map((g) => <i class={`legend-dot legend-${g}`}>{g.toUpperCase()}</i>)}
+        {labels.legendGraded ?? "note du site"}
+      </span>
+      <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · pointillé = non communiquée"}</span>
       <span><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
     </div>
   )}
@@ -111,13 +115,21 @@ const { variant, labels } = Astro.props;
 
       const el = document.createElement("div");
       el.className = "map-marker";
-      const size = Math.round(Math.min(52, Math.max(34, 24 + Math.sqrt(p.power_mw || 100))));
+      // Marker redesign (Franck 2026-07-13): a small dot in the site-grade colour,
+      // no letter (the popup carries the letters). Known MW scales the diameter
+      // (√MW — area reads as power), capped; unknown MW = smallest size, dashed
+      // ring — absence shown AS absence, never an invented size.
+      const mw = typeof p.power_mw === "number" ? p.power_mw : null;
+      const size = mw != null ? Math.round(Math.min(46, Math.max(12, 8 + 2 * Math.sqrt(mw)))) : 10;
       el.style.width = el.style.height = `${size}px`;
-      el.innerHTML = chip(p.grade_site, "map-chip");
+      const na = p.grade_site === "insufficient_data";
+      const dot = document.createElement("span");
+      dot.className = `map-dot ${na ? "dot-na" : `dot-${p.grade_site.toLowerCase()}`}${mw == null ? " mw-unknown" : ""}`;
+      dot.title = `${p.name} — ${mw != null ? `${mw} MW` : (labels.powerUnknown ?? "puissance non communiquée")}`;
+      el.appendChild(dot);
       if (animateIntro) {
-        const chipEl = el.firstElementChild as HTMLElement;
-        chipEl.classList.add("chip-drop");
-        chipEl.style.setProperty("--pin-delay", `${Math.round((idx / geo.features.length) * DROP_WINDOW_MS)}ms`);
+        dot.classList.add("chip-drop");
+        dot.style.setProperty("--pin-delay", `${Math.round((idx / geo.features.length) * DROP_WINDOW_MS)}ms`);
       }
 
       const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
