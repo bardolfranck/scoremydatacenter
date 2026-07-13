@@ -113,11 +113,39 @@ def collect_l3_ied_seveso(lat: float, lon: float, accessed: str) -> dict | None:
                 "https://air.discomap.eea.europa.eu/", accessed)}
 
 
+_nuts2_income_cache: dict[str, tuple | None] = {}
+
+
+def _eurostat_nuts2_income(nuts2: str) -> tuple | None:
+    """(value_pps, year) for a NUTS2 region, memoized per run — many DCs in a batch share a NUTS2,
+    and this is the repeated network cost. Genuine 'no data' (e.g. post-Brexit UK) is cached;
+    transient unreachability is not (a later DC retries)."""
+    if nuts2 in _nuts2_income_cache:
+        return _nuts2_income_cache[nuts2]
+    try:
+        data = get_json(EUROSTAT_HH_INCOME, {"format": "JSON", "freq": "A", "na_item": "B6N",
+                                             "direct": "BAL", "unit": "PPS_EU27_2020_HAB", "geo": nuts2})
+    except SourceUnavailable:
+        return None  # transient — not cached
+    idx = (((data.get("dimension") or {}).get("time") or {}).get("category") or {}).get("index") or {}
+    present = {int(k): v for k, v in (data.get("value") or {}).items()}
+    if not idx or not present:
+        _nuts2_income_cache[nuts2] = None  # no data for this region (real negative) — cache it
+        return None
+    pos2year = {pos: yr for yr, pos in idx.items()}
+    latest = max(present)
+    result = (present[latest], pos2year.get(latest))
+    _nuts2_income_cache[nuts2] = result
+    return result
+
+
 def collect_l1_income_raw(lat: float, lon: float, accessed: str) -> dict | None:
     """Regional net disposable household income at the point — Eurostat nama_10r_2hhinc by NUTS2
     (B6N balance, PPS per inhabitant). RAW only: L1 bands (FR Filosofi is €/consumption-unit) are
     a methodology decision, so this rides in provenance, not as a scored indicator. EU/EEA-wide;
-    Norway is covered but lags (~2020). lat/lon → NUTS3 via GISCO find-nuts → truncate to NUTS2."""
+    Norway is covered but lags (~2020); the UK has no data (Brexit). lat/lon → NUTS3 via GISCO
+    find-nuts → truncate to NUTS2. Frozen into the skeleton (country.build_draft) — every draft
+    carries l1_eurostat, no per-spec opt-in."""
     try:
         hit = get_json(GISCO_FIND_NUTS, {"x": lon, "y": lat, "f": "JSON", "year": "2024", "proj": "4326"})
     except SourceUnavailable:
@@ -129,21 +157,14 @@ def collect_l1_income_raw(lat: float, lon: float, accessed: str) -> dict | None:
     if not nuts3:
         return None
     nuts2 = nuts3[:4]
-    try:
-        data = get_json(EUROSTAT_HH_INCOME, {"format": "JSON", "freq": "A", "na_item": "B6N",
-                                             "direct": "BAL", "unit": "PPS_EU27_2020_HAB", "geo": nuts2})
-    except SourceUnavailable:
+    income = _eurostat_nuts2_income(nuts2)
+    if income is None:
         return None
-    idx = (((data.get("dimension") or {}).get("time") or {}).get("category") or {}).get("index") or {}
-    present = {int(k): v for k, v in (data.get("value") or {}).items()}
-    if not idx or not present:
-        return None
-    pos2year = {pos: yr for yr, pos in idx.items()}
-    latest = max(present)
+    value, year = income
     return {
         "nuts2": nuts2, "nuts3": nuts3,
-        "disposable_income_pps_per_inhabitant": present[latest],
-        "year": pos2year.get(latest),
+        "disposable_income_pps_per_inhabitant": value,
+        "year": year,
         "definition": "Eurostat nama_10r_2hhinc — net disposable income of households (B6N, "
                       "balance), PPS per inhabitant, by NUTS2 region",
         "url": "https://ec.europa.eu/eurostat/databrowser/view/nama_10r_2hhinc",

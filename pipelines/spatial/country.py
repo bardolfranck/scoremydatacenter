@@ -37,6 +37,7 @@ import re
 import sys
 from datetime import date
 
+from . import eu
 from .http import SourceUnavailable
 
 
@@ -132,6 +133,12 @@ def build_draft(spec: dict, lat: float, lon: float, *, name: str, operator: str,
         "indicators_filled": collected,
         "indicators_skipped": skipped,
         **(spec["provenance_extra"](ctx, prov) if spec.get("provenance_extra") else prov),
+        # Frozen baseline (2026-07-13): the pan-EU-comparable income (Eurostat NUTS2) rides in
+        # EVERY draft's provenance, not per-spec opt-in — the standard provider, one key. National
+        # finer sources (FR Filosofi, DE Regionalatlas…) stay as their own `l1_raw`; GB → Brexit
+        # 'unavailable'. Placed after the spec spread so no spec can drop it.
+        "l1_eurostat": (eu.collect_l1_income_raw(lat, lon, accessed)
+                        or "unavailable (no NUTS resolved or Eurostat unreachable; UK has no data)"),
         "manual_still_required": list(spec["manual_still_required"]),
         "review_required": True,
         "warning": "Pipeline proposes, it does not publish. Human review mandatory before use.",

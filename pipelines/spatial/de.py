@@ -144,8 +144,6 @@ DE_SPEC = {
         "known_gaps": _GAPS,
         "l1_raw": collect_l1_raw(ctx["lat"], ctx["lon"])
                   or "unavailable (Regionalatlas AI1601 unreachable or no Kreis at point)",
-        "l1_eurostat": (eu.collect_l1_income_raw(ctx["lat"], ctx["lon"], ctx["accessed"])
-                        or "unavailable (no NUTS resolved or Eurostat unreachable)"),
         "f2_crosscheck": prov.get("f2_crosscheck"),
     },
     "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W1", "W3", "L1", "L3"],

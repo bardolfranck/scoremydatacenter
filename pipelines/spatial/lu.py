@@ -175,9 +175,9 @@ _GAPS = {
     "E2": "missing — Creos publishes no hosting-capacity map (no Caparéseau/Elia equivalent)",
     "E3": "missing — no public connection-queue data",
     "W3": "not_collected — geoportail.lu abstraction points (collection 567) carry no volumes",
-    "L1": "not_collected — raw Eurostat NUTS2 disposable income in provenance (l1_raw, common "
-          "brick); LUSTAT salaries (DF_C1600) are not disposable income, and bands are a "
-          "methodology decision anyway (same refusal as BE/NL)",
+    "L1": "not_collected — raw Eurostat NUTS2 disposable income in provenance (l1_eurostat, frozen "
+          "skeleton baseline); LUSTAT salaries (DF_C1600) are not disposable income, and bands are "
+          "a methodology decision anyway (same refusal as BE/NL)",
 }
 
 LU_SPEC = {
@@ -207,8 +207,6 @@ LU_SPEC = {
     "provenance_extra": lambda ctx, prov: {
         "known_gaps": _GAPS,
         "f2_crosscheck": prov.get("f2_crosscheck"),
-        "l1_raw": (eu.collect_l1_income_raw(ctx["lat"], ctx["lon"], ctx["accessed"])
-                   or "unavailable (no NUTS resolved or Eurostat unreachable)"),
     },
     "manual_still_required": ["F3", "L2", "T1", "T2", "E1", "W1", "W3", "L1(bands)"],
 }
