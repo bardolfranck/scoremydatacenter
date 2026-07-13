@@ -50,6 +50,8 @@ def _summary(dc: dict, result: dict) -> dict:
         "country": identity["country"],
         "project_status": identity["project_status"],
         "power_mw": identity.get("power_mw"),
+        # commissioning year (identity.vintage) — the ranking sorts on it; null = not disclosed
+        "expected_commissioning": (identity.get("vintage") or {}).get("expected_commissioning"),
         "grades": result["grades"],
         "confidence": result["confidence"],
         "pillars": result["pillars"],

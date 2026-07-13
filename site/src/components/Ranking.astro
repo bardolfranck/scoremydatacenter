@@ -105,6 +105,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
             {pillars.map((p) => <option value={p.id}>{t.pillarPrefix}{t.pillarShort[p.id]}</option>)}
             <option value="confidence">{t.sortConfidence}</option>
             <option value="power">{t.sortPower}</option>
+            <option value="year">{t.sortYear}</option>
             <option value="country">{t.sortCountry}</option>
           </select>
         </label>
@@ -134,6 +135,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
               <th>#</th>
               <th>{t.thProject}</th>
               <th>{t.thCountry}</th>
+              <th>{t.thYear}</th>
               <th>{t.thStatus}</th>
               <th>{t.thRails}</th>
               {pillars.map((p) => <th>{t.pillarShort[p.id]}</th>)}
@@ -150,6 +152,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                 data-k-operator={sortValue(dc.grades.project_process)}
                 data-k-confidence={confidenceRank[dc.confidence.level]}
                 data-k-power={dc.power_mw ?? -1}
+                data-k-year={dc.expected_commissioning ?? -1}
                 {...Object.fromEntries(pillars.map((p) => [`data-k-${p.id}`, sortValue(dc.pillars[p.id])]))}
               >
                 <td class="rank-index"></td>
@@ -159,6 +162,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                   <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
                 </td>
                 <td class="rank-country">{dc.country}</td>
+                <td class="rank-year">{dc.expected_commissioning ?? <span title={t.yearUnknown}>—</span>}</td>
                 <td>{t.status[dc.project_status]}{dc.power_mw ? ` · ${dc.power_mw} MW` : ` · ${t.powerUnknown}`}</td>
                 <td class="rank-rails">
                   {(() => { const p = pctInfo(sitePool, dc.grades.site, dc, "site"); return (

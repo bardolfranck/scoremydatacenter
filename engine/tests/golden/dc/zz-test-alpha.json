@@ -6,6 +6,7 @@
   "country": "ZZ",
   "project_status": "permitting",
   "power_mw": 120,
+  "expected_commissioning": 2028,
   "grades": {
     "site": {
       "grade": "B",
