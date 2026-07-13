@@ -13,9 +13,9 @@ download in the pan-EU 3035 grid. No sub-national tier — the commune is the on
 Documented gaps (recon 2026-07-11): E1 has no keyless national feed (LU sits in the DE-LU
 bidding zone, ENTSO-E is token-gated) → not_collected; E2/E3 have NO public Creos capacity or
 queue data → missing; W1 drought status is press-release prose → not_collected; W3 abstraction
-points carry no volumes → not_collected; L1 exists at LUSTAT (salaries per commune) but salaries
-are not disposable income and STATEC commune codes need a mapping → not_collected, methodology
-decision pending.
+points carry no volumes → not_collected; L1 raw disposable income comes from the common Eurostat
+NUTS2 brick (l1_raw in provenance, LU00 — LUSTAT commune salaries are not disposable income),
+bands are a methodology decision → still not_collected as a scored indicator.
 """
 
 import re
@@ -175,8 +175,9 @@ _GAPS = {
     "E2": "missing — Creos publishes no hosting-capacity map (no Caparéseau/Elia equivalent)",
     "E3": "missing — no public connection-queue data",
     "W3": "not_collected — geoportail.lu abstraction points (collection 567) carry no volumes",
-    "L1": "not_collected — LUSTAT publishes commune salaries (DF_C1600), not disposable income; "
-          "band mapping is a methodology decision (same refusal as BE/NL)",
+    "L1": "not_collected — raw Eurostat NUTS2 disposable income in provenance (l1_raw, common "
+          "brick); LUSTAT salaries (DF_C1600) are not disposable income, and bands are a "
+          "methodology decision anyway (same refusal as BE/NL)",
 }
 
 LU_SPEC = {
@@ -206,6 +207,8 @@ LU_SPEC = {
     "provenance_extra": lambda ctx, prov: {
         "known_gaps": _GAPS,
         "f2_crosscheck": prov.get("f2_crosscheck"),
+        "l1_raw": (eu.collect_l1_income_raw(ctx["lat"], ctx["lon"], ctx["accessed"])
+                   or "unavailable (no NUTS resolved or Eurostat unreachable)"),
     },
     "manual_still_required": ["F3", "L2", "T1", "T2", "E1", "W1", "W3", "L1(bands)"],
 }
