@@ -179,7 +179,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       {
         title: "Cartes et recensements",
         links: [
-          { name: "Hubblo", desc: "recensement français des data centers (localisation, puissance, opérateur), données librement réutilisables", url: "https://datacenters.hubblo.org" },
+          { name: "DCWatch (Hubblo)", desc: "commun numérique de l'empreinte des data centers (PUE, WUE, CUE, surface, eau), données ODbL téléchargeables — carte : datacenters.hubblo.org", url: "https://dcwatch.hubblo.org" },
           { name: "Le nuage était sous nos pieds", desc: "carte participative des sites, projets et mobilisations en France, tenue par un collectif marseillais", url: "https://lenuageetaitsousnospieds.org" },
           { name: "Data Center Watch", desc: "suivi de la contestation des projets aux États-Unis", url: "https://www.datacenterwatch.org" },
         ],
@@ -352,7 +352,7 @@ export const RICH_EN: Record<string, RichBlock> = {
       {
         title: "Maps and inventories",
         links: [
-          { name: "Hubblo", desc: "French inventory of data centers (location, power, operator), freely reusable data", url: "https://datacenters.hubblo.org" },
+          { name: "DCWatch (Hubblo)", desc: "digital common for data centre footprints (PUE, WUE, CUE, land, water), downloadable ODbL data — map: datacenters.hubblo.org", url: "https://dcwatch.hubblo.org" },
           { name: "Le nuage était sous nos pieds", desc: "participatory map of sites, projects and mobilizations in France, maintained by a Marseille collective", url: "https://lenuageetaitsousnospieds.org" },
           { name: "Data Center Watch", desc: "tracking of project opposition in the United States", url: "https://www.datacenterwatch.org" },
         ],
