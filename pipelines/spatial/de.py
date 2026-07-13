@@ -107,8 +107,9 @@ _GAPS = {
           "TenneT DE/TransnetBW), a per-Land/TSO adapter (v1)",
     "E3": "not_collected — no public national connection-queue feed",
     "W3": "not_collected — abstraction volumes are per-Land",
-    "L1": "not_collected — raw income in provenance (l1_raw, DESTATIS Regionalatlas AI1601); DE "
-          "bands are a methodology decision, same refusal as BE/NL",
+    "L1": "not_collected — raw income in provenance: DESTATIS Regionalatlas AI1601 per Kreis "
+          "(l1_raw, finer) + common Eurostat NUTS2 (l1_eurostat, pan-EU comparable); bands are a "
+          "methodology decision, same refusal as BE/NL",
     "L3": "not_collected — Seveso registers are per-Land; only Sachsen/Hamburg publish, neither a "
           "DC state (RECON-de-deep.md). No national register (EU eSPIRS is access-restricted)",
 }
@@ -143,6 +144,8 @@ DE_SPEC = {
         "known_gaps": _GAPS,
         "l1_raw": collect_l1_raw(ctx["lat"], ctx["lon"])
                   or "unavailable (Regionalatlas AI1601 unreachable or no Kreis at point)",
+        "l1_eurostat": (eu.collect_l1_income_raw(ctx["lat"], ctx["lon"], ctx["accessed"])
+                        or "unavailable (no NUTS resolved or Eurostat unreachable)"),
         "f2_crosscheck": prov.get("f2_crosscheck"),
     },
     "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W1", "W3", "L1", "L3"],

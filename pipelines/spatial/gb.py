@@ -105,7 +105,9 @@ _GAPS = {
     "E2": "not_collected — grid capacity is per-DNO (NGED/UKPN/SSEN); no single national feed (v1)",
     "E3": "not_collected — no public national connection-queue feed wired",
     "W3": "not_collected — abstraction volumes not wired",
-    "L1": "not_collected — ONS income per LAD (v1; bands are a methodology decision anyway)",
+    "L1": "not_collected — BREXIT: the common Eurostat NUTS2 income brick has NO UK data (UK left "
+          "EU regional statistics; find-nuts only resolves UK on pre-2021 vintages). ONS income "
+          "per LAD is the national source (v1); bands are a methodology decision anyway",
     "L3": "not_collected — HSE COMAH (Seveso) establishments register not wired (v1)",
 }
 
