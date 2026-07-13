@@ -200,7 +200,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-dot.dot-d { --dot: var(--grade-d); }
 .map-dot.dot-e { --dot: var(--grade-e); }
 .map-dot.dot-na { --dot: var(--grade-na); }
-.map-dot.mw-unknown { background: transparent; border: 2px dashed var(--dot, var(--grade-na)); box-shadow: none; }
+.map-dot.mw-unknown { border-width: 1.5px; box-shadow: 0 1px 4px rgba(7, 24, 47, 0.3); }
 .map-marker:hover .map-dot {
   transform: scale(1.4);
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--dot, var(--grade-na)) 22%, transparent), 0 4px 14px rgba(7, 24, 47, 0.4);
@@ -214,7 +214,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .legend-a { background: var(--grade-a); } .legend-b { background: var(--grade-b); }
 .legend-c { background: var(--grade-c); } .legend-d { background: var(--grade-d); }
 .legend-e { background: var(--grade-e); }
-.legend-dot-mw { width: 14px; height: 14px; background: transparent; border: 2px dashed var(--muted); box-shadow: none; }
+.legend-dot-mw { width: 10px; height: 10px; background: var(--muted); border-width: 1.5px; }
 .maplibregl-popup-content { padding: 14px 16px; border-radius: var(--radius); box-shadow: var(--shadow); font-family: inherit; }
 .map-popup { display: grid; gap: 7px; font-size: 0.9rem; }
 .map-popup strong { font-size: 0.98rem; }

@@ -40,7 +40,7 @@ const { variant, labels } = Astro.props;
         {["a", "b", "c", "d", "e"].map((g) => <i class={`legend-dot legend-${g}`}>{g.toUpperCase()}</i>)}
         {labels.legendGraded ?? "note du site"}
       </span>
-      <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · pointillé = non communiquée"}</span>
+      <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · petit point = non communiquée"}</span>
       <span><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
     </div>
   )}
@@ -117,10 +117,12 @@ const { variant, labels } = Astro.props;
       el.className = "map-marker";
       // Marker redesign (Franck 2026-07-13): a small dot in the site-grade colour,
       // no letter (the popup carries the letters). Known MW scales the diameter
-      // (√MW — area reads as power), capped; unknown MW = smallest size, dashed
-      // ring — absence shown AS absence, never an invented size.
+      // (√MW — area reads as power), capped; unknown MW = a fixed SMALL solid dot
+      // (dashed rings drowned 161/188 markers) — absence still shown as absence
+      // by the fixed size, never an invented one. Known floor 14px keeps the two
+      // distinguishable.
       const mw = typeof p.power_mw === "number" ? p.power_mw : null;
-      const size = mw != null ? Math.round(Math.min(46, Math.max(12, 8 + 2 * Math.sqrt(mw)))) : 10;
+      const size = mw != null ? Math.round(Math.min(46, Math.max(14, 10 + 2 * Math.sqrt(mw)))) : 10;
       el.style.width = el.style.height = `${size}px`;
       const na = p.grade_site === "insufficient_data";
       const dot = document.createElement("span");
