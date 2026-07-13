@@ -18,8 +18,8 @@ ways fail loudly (see [`../WORKFLOW.md`](../WORKFLOW.md)).
 | `country.py` | **THE skeleton** — `build_draft(spec, …)`: collector loop, block-aware padding, fragment + provenance assembly, the CLI (`run_cli`). One copy, no drift. |
 | `bands.py` | **Canonical value→category mappings** — E2/E3 MW & fill bands, WFD status classes, F1 distance rings, Corine→soil, Seveso `l3_value`. Cross-country comparability *by construction*; national modules import these, never redefine them. |
 | `geo.py` | **Generic access** — ArcGIS REST (point query / identify), OGC WFS + OGC API Features (pygeoapi), `laea3035` (pan-EU INSPIRE grid projection, stdlib), `min_vertex_km` (axis-order-tolerant). |
-| `eu.py` | **EU-level collectors any country gets free** — `collect_e1_energy_charts` (Fraunhofer energy-charts, all ENTSO-E), `collect_w1_aqueduct` (**WRI Aqueduct baseline water stress — GLOBAL, the methodology's cited W1 referential, keyless, no dependency**), `collect_w2_universal` (EEA WISE spatial resolver + status join), `natura_rings` (EEA Natura 2000), `corine_at_point` (Corine CLC2018). |
-| `eu_member.py` | **The anti-clone factory** — `make_eu_member_spec(iso, e1=, natura=)`. A full EU/EEA member with no national quirk IS this spec + its ISO code. |
+| `eu.py` | **EU-level collectors any country gets free** — `collect_e1_energy_charts` (Fraunhofer energy-charts, all ENTSO-E), `collect_w1_aqueduct` (**WRI Aqueduct baseline water stress — GLOBAL, the methodology's cited W1 referential, keyless, no dependency**), `collect_w2_universal` (EEA WISE spatial resolver + status join), `natura_rings` (EEA Natura 2000), `cdda_rings` (**EEA CDDA nationally-designated areas — includes Norway/EEA where Natura does not apply**), `corine_at_point` (Corine CLC2018), `collect_l3_ied_seveso` (**EEA IED `has_seveso` flag — EU-wide L3; only reliable where the country populates it: PL/FI yes, SE/NO no**), `collect_l1_income_raw` (**Eurostat NUTS2 disposable income via GISCO find-nuts — L1 raw to provenance, all members**). |
+| `eu_member.py` | **The anti-clone factory** — `make_eu_member_spec(iso, e1=, natura=, f1_cdda=, income=, l3_ied=, extra_collectors=)`. A full EU/EEA member IS this spec + its ISO code; national particularities are passed as **declarative deltas** (a flag, or a `(ids, fn)` national collector), never a clone. |
 | `registry.py` | **ONE ISO→spec map.** `batch.py` and the orchestrator resolve a country here. Adding a country = add one line here (+ its spec file). |
 
 A **spec** is a plain dict (see `country.py` docstring): `iso`, `generator`, `summary`,
@@ -35,11 +35,15 @@ Is it in the EU/EEA data commons (WISE + Natura + Corine + ENTSO-E)?
 │
 ├─ YES, no national quirk ─────────▶ eu_member.py factory, ONE line:
 │                                     XX_SPEC = make_eu_member_spec("XX")
-│                                     (PL, SE, FI — 4/12: E1+W2+F1+F2)
+│                                     (base ≈5/12: E1+W1+W2+F1+F2, +L1 raw)
 │
-├─ YES, but one deviation ─────────▶ factory with a flag:
-│    • energy-charts 500s on it      make_eu_member_spec("IE", e1=False)   → 3/12
-│    • outside Natura 2000           make_eu_member_spec("NO", natura=False) → 3/12
+├─ YES, but a deviation / delta ───▶ factory with a flag or a national collector (declarative,
+│    • energy-charts 500s on it       never a clone):
+│    • outside Natura 2000             make_eu_member_spec("IE", e1=False)
+│    • has an open grid feed           make_eu_member_spec("NO", natura=False, f1_cdda=True)
+│                                      make_eu_member_spec("PL", l3_ied=True, extra_collectors=[E2])
+│                                      flags: f1_cdda (CDDA), l3_ied (EEA Seveso), income (Eurostat,
+│                                      on by default), extra_collectors=[((ids), national_fn)]
 │
 ├─ Has RICHER national sources ────▶ hand-written spec (own file), reuse eu.py where a national
 │    (worth wiring)                   source is missing:
@@ -71,7 +75,7 @@ picked up with **zero code change** to the build path.
 
 ---
 
-## 3. Country status matrix (2026-07-12)
+## 3. Country status matrix (2026-07-13)
 
 Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/process is
 `insufficient_data`; no grade shows A without operational proof (A-25 reservation).
@@ -88,12 +92,12 @@ Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/p
 | **NL** | national (own) | ~6/12 | energy-charts | PDOK KRW+WISE (fallback) | EEA | Corine | **E2+E3 capaciteitskaart** (richer than Caparéseau), L3 PDOK Seveso, L1 CBS (raw) | |
 | **LU** | national (own) | ~4/12 | energy-charts | geoportail+WISE | EEA | PAG national | L3 INSPIRE GML | one keyless OGC-API endpoint serves W2+F2 |
 | **DE** | EU-level v0 (own) | **4/12** | energy-charts (~381) | WISE universal | EEA | Corine | — | the 16-Länder deep build is the TODO |
-| **PL** | factory | 4/12 | energy-charts (**~652**) | WISE universal | EEA | Corine | — | energy angle (dirtiest EU grid) |
+| **PL** | factory + national E2 | ~7/12 | energy-charts (**~652**) | WISE universal (patchy) | EEA | Corine | **E2 PSE bazamocy** (per-substation MW), L3 EEA IED Seveso, L1 Eurostat (raw) | energy angle + real per-node capacity |
 | **IE** | factory `e1=False` | 3/12 | — (energy-charts 500) | WISE universal | EEA | Corine | — | grid CAPACITY is the story (EirGrid, deep) |
 | **GB** | national (own) | 2/12 | **carbonintensity.org.uk** (~106) | — (Brexit) | — (Brexit) | Corine (pre-Brexit) | — | Brexit ejected UK from the EU commons |
-| **SE** | factory | 4/12 | energy-charts (**~23**) | WISE universal | EEA | Corine | — | clean-grid end (hydro+nuclear) |
-| **FI** | factory | ~3/12 | energy-charts (~64) | WISE universal (patchy) | EEA | Corine | — | lake-dense → W2 buffer misses |
-| **NO** | factory `natura=False` | 3/12 | energy-charts (~30) | WISE universal | — (Emerald) | Corine | — | EEA-not-EU: Emerald Network ≠ Natura |
+| **SE** | factory + national E2/E3 | ~7/12 | energy-charts (**~23**) | WISE universal | EEA | Corine | **E2+E3 Svenska kraftnät** (per-county, the northern queue), L1 Eurostat (raw) | clean grid, but congestion pulls energy to C |
+| **FI** | factory `l3_ied` | ~5/12 | energy-charts (~64) | WISE universal (patchy) | EEA | Corine | L3 EEA IED Seveso, L1 Eurostat (raw) | grid gap (Fingrid keyed); coastal W2 misses |
+| **NO** | factory `f1_cdda` | ~5/12 | energy-charts (~30) | WISE universal | **EEA CDDA** | Corine | L1 Eurostat (raw, ~2020) | F1 recovered via CDDA; grid/L3 gaps (Statnett Power-BI, IED unflagged) |
 | **US** | **watchlist only** | — | — | ✅ Aqueduct | — | — | — | A-19: presence, no score. But **W1 (WRI Aqueduct) is the ONE brick that survives for the US** — global, keyless (all other EU bricks fail: not in WISE/Natura/Corine/energy-charts). Added as a sourced *fact* on the US watchlist entries (Mesa = Extremely High, hard-confirming the Colorado-River water story). A future thin US score is one indicator closer; the rest needs US-federal sources (eGRID/NLCD/PAD-US, probed flaky). |
 
 ---
