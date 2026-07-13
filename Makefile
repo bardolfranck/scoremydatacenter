@@ -20,6 +20,17 @@ collect-drafts:
 collect-country:
 	uv run python -m pipelines.spatial.batch $(SITES) --country $(COUNTRY) --out $(OUT)
 
+# Seed from DCWatch (Hubblo, ODbL) — exports a sites CSV for the batch above; never a new driver.
+# Sites already in the panel (within 300 m) are set aside, not re-proposed. Output stays private
+# in the newsroom (ODbL share-alike pending legal review — see JOURNAL 2026-07-13).
+#   make seed-dcwatch RELEASE=2026.04.09 COUNTRY=FR SEEDS=../smdc-newsroom/seeds
+RELEASE ?= 2026.04.09
+SEEDS ?= ../smdc-newsroom/seeds
+seed-dcwatch:
+	uv run python -m pipelines.seed.dcwatch --release $(RELEASE) --country $(COUNTRY) \
+	  --exclude-panel ../smdc-newsroom/calibration/datacenters \
+	  --exclude-panel ../smdc-newsroom/drafts/datacenters --out $(SEEDS)
+
 # Voie A — enrich drafts with governance sidecars (CNDP referral + judged appeals + review leads).
 # Proposes only; deterministic proxies are pre-filled, the judgment ones stay review leads.
 #   make collect-governance SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
