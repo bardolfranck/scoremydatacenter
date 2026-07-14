@@ -102,6 +102,7 @@ Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/p
 | **IE** | factory `e1=False` | 4/12 | — (energy-charts 500) | WISE universal | EEA | Corine | W1 Aqueduct | grid CAPACITY is the story (EirGrid, deep) |
 | **GB** | national (own) | 3/12 | **carbonintensity.org.uk** (~106) | — (Brexit) | — (Brexit) | Corine (pre-Brexit) | W1 Aqueduct | Brexit ejected UK from the EU commons |
 | **US** | **watchlist only** | — | — | ✅ Aqueduct | — | — | — | A-19: presence, no score. But **W1 (WRI Aqueduct) is the ONE brick that survives for the US** — global, keyless (all other EU bricks fail: not in WISE/Natura/Corine/energy-charts). Added as a sourced *fact* on the US watchlist entries (Mesa = Extremely High, hard-confirming the Colorado-River water story). A future thin US score is one indicator closer; the rest needs US-federal sources (eGRID/NLCD/PAD-US, probed flaky). |
+| **CA** | **watchlist only** | — | — | ✅ Aqueduct | — | — | GDELT press spec (EN "data centre" + FR/BAPE) | A-19 like the US: presence, no score. No structured tracker exists (no fights.json equivalent) → entry point = **per-country GDELT spec** (`press/signal.py GDELT_COUNTRY_SPECS`, probed 2026-07-13: Hamilton moratorium ratified, Vancouver marches, Quinte West, Terrace zoning). A future scored adapter is *plausible* (federal open data cleaner than US: provincial grid carbon, CPCAD protected areas, federal land cover) but per-province for the grid — the DE-Länder wall. Probe only when a hot CA case justifies it. |
 
 ---
 

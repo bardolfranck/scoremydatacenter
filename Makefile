@@ -39,10 +39,13 @@ collect-governance:
 
 # Voie B — harvest the open contestation-signal feeds → DRAFT watchlist (facts only, no grade).
 # uMap FR + US fights + US moratoria; add GDELT press detection with GDELT_QUERY=.
-#   make collect-signal SIGNAL_OUT=../smdc-newsroom/drafts/watchlist
+# SIGNAL_COUNTRIES="CA …" adds per-country GDELT specs (signal.GDELT_COUNTRY_SPECS) — the path
+# for countries with no geo feed (Canada…).
+#   make collect-signal SIGNAL_OUT=../smdc-newsroom/drafts/watchlist SIGNAL_COUNTRIES=CA
 SIGNAL_OUT ?= ../smdc-newsroom/drafts/watchlist
+SIGNAL_COUNTRY_FLAGS = $(foreach c,$(SIGNAL_COUNTRIES),--country $(c))
 collect-signal:
-	uv run python -m pipelines.press.collect_signal --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",)
+	uv run python -m pipelines.press.collect_signal --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",) $(SIGNAL_COUNTRY_FLAGS)
 
 # ── The orchestrated workflow (A-22) — everything auto-chains up to ONE human gate ──
 # Onboard a DC: coords → spatial + governance + contestation match → bundle for review (no publish).
@@ -53,9 +56,10 @@ onboard-dc:
 	  $(if $(POWER_MW),--power-mw $(POWER_MW),) $(if $(PROJECT_STATUS),--project-status $(PROJECT_STATUS),) \
 	  $(if $(SIGNAL),--signal $(SIGNAL),) --out $(OUT)
 
-# Refresh the contestation signal → review queue (facts only). Add GDELT_QUERY= for press detection.
+# Refresh the contestation signal → review queue (facts only). Add GDELT_QUERY= for press
+# detection, SIGNAL_COUNTRIES="CA …" for per-country GDELT specs.
 refresh-signal:
-	uv run python -m pipelines.orchestrate refresh --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",)
+	uv run python -m pipelines.orchestrate refresh --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",) $(SIGNAL_COUNTRY_FLAGS)
 
 # Apply a human-approved contestation review queue (only decision:approve; adds archived_url).
 # Pass INTO=<dc.json> to WRITE the approved facts into the DC file (the last mile → re-score to render).

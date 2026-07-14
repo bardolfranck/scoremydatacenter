@@ -262,21 +262,83 @@ def fetch_moratoria(accessed: str, *, data_center_only: bool = True) -> list[dic
 
 _GDELT = "https://api.gdeltproject.org/api/v2/doc/doc"
 _GDELT_LICENSE = "GDELT — free incl. commercial use with attribution"
+_GDELT_THROTTLE_S = 6                       # GDELT DOC throttle: one request every 5 s
 
 
-def fetch_gdelt(query: str, accessed: str, *, timespan: str = "3m", maxrecords: int = 50) -> list[dict]:
-    """Press-detection articles for a query. DETECTION only — never a score input, never weighted.
+# A new country's press detection is a SPEC (spelling variants + local contestation lexicon),
+# never a cloned collector — the spatial pipeline's anti-clone rule (COUNTRIES.md) applied to
+# voie B. `sourcecountry` filters by OUTLET country, not project country: Canadian outlets also
+# cover US stories, so the reviewer still triages. DETECTION only, like every GDELT record.
+GDELT_COUNTRY_SPECS = {
+    # Canadian English writes "data centre"; Québec writes "centre de données" (BAPE = the
+    # Québec public-hearing body, the CNDP analogue).
+    "CA": {
+        "sourcecountry": "canada",
+        "queries": [
+            '("data centre" OR "data center") (opposition OR protest OR moratorium OR zoning '
+            'OR rezoning OR "public hearing")',
+            '"centre de données" (opposition OR moratoire OR contestation OR zonage '
+            'OR "consultation publique" OR BAPE)',
+        ],
+    },
+}
 
-    GDELT is throttled (one request / 5 s) and OR-matches multiword terms; anchor queries with
-    near20:"operator commune" and a contestation lexicon upstream. Degrades to [] on 429/empty.
+
+def fetch_gdelt_country(iso: str, accessed: str, *, timespan: str = "6m", maxrecords: int = 75,
+                        sleep=None, retries: int = 3) -> list[dict]:
+    """Run every press-detection query of a country spec — throttle-aware, url-deduped, retried.
+
+    GDELT punishes bursts by SLOW-WALKING the response past our timeout (not by a clean 429), so
+    a batch that fired other requests first can silently lose the whole country — the voie-B twin
+    of the spatial E1-memoize gotcha (COUNTRIES.md #2). Hence per-query retries with growing
+    backoff, and a LOUD stderr line when a query is finally given up: a country harvest must never
+    vanish without a trace.
+
+    DETECTION only (A-21): articles are triage leads for the reviewer, never a score input.
+    Unknown ISO → [] (a country without a spec has no press detection yet, not an error).
     """
+    import sys
+    import time
+
+    spec = GDELT_COUNTRY_SPECS.get((iso or "").upper())
+    if not spec:
+        return []
+    sleep = sleep or time.sleep
+    seen, out = set(), []
+    for i, q in enumerate(spec["queries"]):
+        if i:
+            sleep(_GDELT_THROTTLE_S)
+        full = f'sourcecountry:{spec["sourcecountry"]} {q}'
+        data = None
+        for attempt in range(retries):
+            try:
+                data = _gdelt_fetch_raw(full, timespan=timespan, maxrecords=maxrecords)
+                break
+            except (SourceUnavailable, json.JSONDecodeError) as exc:
+                if attempt == retries - 1:
+                    print(f"gdelt[{iso}] query {i + 1}/{len(spec['queries'])}: gave up after "
+                          f"{retries} attempts ({exc})", file=sys.stderr)
+                else:
+                    # A 429 penalty box outlasts the nominal 5 s throttle by minutes — back off
+                    # in 30 s steps (batch context: losing a minute beats losing the country).
+                    sleep(_GDELT_THROTTLE_S * 5 * (attempt + 1))
+        for rec in _gdelt_records(data or {}, accessed):
+            if rec["source_url"] in seen:
+                continue
+            seen.add(rec["source_url"])
+            out.append(rec)
+    return out
+
+
+def _gdelt_fetch_raw(query: str, *, timespan: str, maxrecords: int) -> dict:
+    """One GDELT DOC request. Raises on failure so callers can tell 'failed' from 'no articles'
+    (a 429 returns a plain-text notice → JSONDecodeError; a slow-walked burst → SourceUnavailable)."""
     params = {"query": query, "mode": "artlist", "format": "json",
               "maxrecords": min(maxrecords, 250), "timespan": timespan}
-    try:
-        raw = get_text(_GDELT + "?" + _urlencode(params))
-        data = json.loads(raw)                              # 429 returns a plain-text notice → JSONDecodeError
-    except (SourceUnavailable, json.JSONDecodeError):
-        return []
+    return json.loads(get_text(_GDELT + "?" + _urlencode(params)))
+
+
+def _gdelt_records(data: dict, accessed: str) -> list[dict]:
     out = []
     for a in data.get("articles") or []:
         url = a.get("url")
@@ -289,6 +351,19 @@ def fetch_gdelt(query: str, accessed: str, *, timespan: str = "3m", maxrecords: 
                    "language": a.get("language")},
             sources=[url], retrieved=accessed))
     return out
+
+
+def fetch_gdelt(query: str, accessed: str, *, timespan: str = "3m", maxrecords: int = 50) -> list[dict]:
+    """Press-detection articles for a query. DETECTION only — never a score input, never weighted.
+
+    GDELT is throttled (one request / 5 s) and OR-matches multiword terms; anchor queries with
+    near20:"operator commune" and a contestation lexicon upstream. Degrades to [] on 429/empty.
+    """
+    try:
+        data = _gdelt_fetch_raw(query, timespan=timespan, maxrecords=maxrecords)
+    except (SourceUnavailable, json.JSONDecodeError):
+        return []
+    return _gdelt_records(data, accessed)
 
 
 def _urlencode(params: dict) -> str:

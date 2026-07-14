@@ -109,6 +109,78 @@ def test_gdelt_parses_artlist(monkeypatch):
     assert recs[0]["kind"] == "article" and recs[0]["facts"]["domain"] == "news.test"
 
 
+# --- per-country GDELT specs (the anti-clone factory of voie B) -------------------------------
+
+def test_gdelt_country_prefixes_sourcecountry_dedupes_and_throttles(monkeypatch):
+    seen_queries, slept = [], []
+
+    def fake_raw(query, **kw):
+        seen_queries.append(query)
+        # both queries return the same url once → must be deduped across queries
+        return {"articles": [{"url": "https://news.test/a", "title": "T",
+                              "domain": "news.test", "sourcecountry": "Canada"}]}
+
+    monkeypatch.setattr(signal, "_gdelt_fetch_raw", fake_raw)
+    recs = signal.fetch_gdelt_country("ca", "2026-07-13", sleep=slept.append)
+    assert len(recs) == 1                                     # url-deduped across queries
+    assert len(seen_queries) == len(signal.GDELT_COUNTRY_SPECS["CA"]["queries"])
+    assert all(q.startswith("sourcecountry:canada ") for q in seen_queries)
+    assert slept == [signal._GDELT_THROTTLE_S]                # throttled BETWEEN queries only
+    # the spec carries both Canadian spellings — EN "data centre" and FR "centre de données"
+    joined = " ".join(seen_queries)
+    assert "data centre" in joined and "centre de données" in joined
+
+
+def test_gdelt_country_retries_a_slow_walked_query_then_succeeds(monkeypatch):
+    # GDELT punishes bursts by slow-walking past the timeout (SourceUnavailable), not by a clean
+    # 429 — the harvest must retry with backoff instead of silently losing the country.
+    from pipelines.spatial.http import SourceUnavailable
+    calls, slept = [], []
+
+    def flaky_raw(query, **kw):
+        calls.append(query)
+        if len(calls) == 1:
+            raise SourceUnavailable("timed out")
+        return {"articles": [{"url": f"https://news.test/{len(calls)}", "title": "T",
+                              "domain": "news.test", "sourcecountry": "Canada"}]}
+
+    monkeypatch.setattr(signal, "_gdelt_fetch_raw", flaky_raw)
+    recs = signal.fetch_gdelt_country("CA", "2026-07-13", sleep=slept.append)
+    n_queries = len(signal.GDELT_COUNTRY_SPECS["CA"]["queries"])
+    assert len(calls) == n_queries + 1                        # one retry, then every query ran
+    assert len(recs) == n_queries                             # nothing lost to the slow-walk
+    assert slept[0] > signal._GDELT_THROTTLE_S                # backoff harder than the base throttle
+
+
+def test_gdelt_country_gives_up_loudly_never_raises(monkeypatch, capsys):
+    from pipelines.spatial.http import SourceUnavailable
+
+    def always_down(query, **kw):
+        raise SourceUnavailable("timed out")
+
+    monkeypatch.setattr(signal, "_gdelt_fetch_raw", always_down)
+    recs = signal.fetch_gdelt_country("CA", "2026-07-13", sleep=lambda s: None, retries=2)
+    assert recs == []                                         # degrades, never crashes the batch
+    assert "gave up" in capsys.readouterr().err               # …but never silently
+
+
+def test_gdelt_country_unknown_iso_is_empty_not_an_error():
+    assert signal.fetch_gdelt_country("XX", "2026-07-13") == []
+
+
+def test_harvest_countries_feed_press_detections_not_watchlist(monkeypatch):
+    monkeypatch.setattr(signal, "fetch_umap_layers", lambda a: [])
+    monkeypatch.setattr(signal, "fetch_fights", lambda a, **k: [])
+    monkeypatch.setattr(signal, "fetch_moratoria", lambda a, **k: [])
+    monkeypatch.setattr(signal, "fetch_gdelt_country", lambda iso, a, **k: [
+        signal._record("gdelt", "https://news.test/ca", "l", "article",
+                       name="Quinte West residents", country="Canada", retrieved=a)])
+    watchlist, press, counts = harvest("2026-07-13", countries=("CA",))
+    assert watchlist == []                                    # articles are triage leads,
+    assert len(press) == 1                                    # never watchlist entries directly
+    assert counts["gdelt-ca"] == 1
+
+
 # --- dedupe + the no-grade contract ----------------------------------------------------------
 
 def test_dedupe_merges_same_site_across_feeds():

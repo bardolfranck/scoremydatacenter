@@ -47,3 +47,14 @@ def test_watchlist_allows_empty_facts():
     ids = {e["id"]: e for e in load_watchlist()}
     flagship = ids.get("zz-watch-delta-flagship")
     assert flagship is not None and flagship["facts"] == [], "the empty-facts flagship case must validate"
+
+
+def test_watchlist_marker_kind_is_derived_moratorium_over_opposition():
+    # The map styles on a FLAT feature-level kind; a moratorium (official act) outranks an
+    # opposition signal when an entry carries both; a bare listing falls back to announced_project.
+    from engine.artifacts import _watchlist_kind
+
+    both = {"facts": [{"kind": "opposition"}, {"kind": "moratorium"}]}
+    assert _watchlist_kind(both) == "moratorium"
+    assert _watchlist_kind({"facts": [{"kind": "opposition"}, {"kind": "petition"}]}) == "opposition"
+    assert _watchlist_kind({"facts": []}) == "announced_project"

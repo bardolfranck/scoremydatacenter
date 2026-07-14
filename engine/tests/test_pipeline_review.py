@@ -57,12 +57,27 @@ def test_flags_out_of_country_and_nc_license():
     assert _HARD_FLAGS & set(item["flags"])
 
 
-def test_clean_entry_routes_to_agent_for_label_work():
+def test_clean_structured_entry_gets_templated_label_no_label_work():
+    # Structured US feeds carry enough fields for a deterministic bilingual label — the LLM
+    # reviewer's label pass is only needed for unstructured feeds (raw uMap names).
     item = review_feature(_feature(
         {"source": "us-moratorium", "kind": "moratorium", "name": "Townsville", "country": "US",
-         "sources": ["https://x.test/m"], "retrieved": "2026-07-08"}, [-86.0, 35.1]))
-    assert item["route"] == "agent"                                   # no hard flag; needs label + verify
-    assert item["needs_label_work"] is True
+         "sources": ["https://x.test/m"], "retrieved": "2026-07-08",
+         "facts": {"jurisdiction_type": "county", "date_enacted": "2026-03-03",
+                   "duration_days": "365"}}, [-86.0, 35.1]))
+    assert item["route"] == "agent"                                   # no hard flag; source-verify remains
+    assert item["needs_label_work"] is False                          # label is templated, fr+en
+    fact = item["proposed"]["facts"][0]
+    assert fact["_label_status"] == "templated"
+    assert "Moratoire" in fact["label"]["fr"] and "moratorium" in fact["label"]["en"]
+    assert "county" in fact["label"]["en"] and "2026-03-03" in fact["label"]["fr"]
+
+
+def test_unstructured_entry_still_needs_label_work():
+    item = review_feature(_feature(
+        {"source": "umap-fr", "kind": "opposition", "name": "Opposition au projet X", "country": "FR",
+         "sources": ["https://x.test/a"], "retrieved": "2026-07-08"}, [2.5, 48.5]))
+    assert item["needs_label_work"] is True                           # raw name → LLM reviewer
 
 
 def test_contract_never_publishes_and_never_grades():
