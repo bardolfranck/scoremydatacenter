@@ -423,7 +423,7 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .about-team h3 { font-size: 1.15rem; }
 .team-intro { margin-top: 6px; color: var(--ink-soft); font-size: 0.95rem; max-width: 80ch; }
 .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin-top: 18px; padding: 0; list-style: none; }
-.team-card { display: grid; justify-items: start; gap: 6px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+.team-card { position: relative; display: grid; justify-items: start; gap: 6px; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
 .team-avatar { font-size: 1.7rem; line-height: 1; }
 .team-avatar-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: #e8eff7; color: var(--accent); }
 .team-card strong { font-size: 0.95rem; }
@@ -443,7 +443,6 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .org-branches::before { content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 2px; background: var(--line); }
 .org-branch { position: relative; display: grid; gap: 0; align-content: start; }
 .org-branch::before { content: ""; position: absolute; top: -22px; left: 50%; width: 2px; height: 22px; background: var(--line); }
-.org-branch .team-card { position: relative; }
 .org-drop { width: 2px; height: 18px; margin: 0 auto; background: var(--line); }
 .team-tag { position: absolute; top: 10px; right: 12px; font-size: 1.15rem; line-height: 1; }
 @media (max-width: 640px) {
