@@ -42,8 +42,13 @@ def _dedupe_key(rec: dict):
     return (rec.get("country"), _norm(rec.get("name") or ""))
 
 
-def harvest(accessed: str, *, gdelt_query: str | None = None) -> tuple[list[dict], list[dict], dict]:
-    """Return (watchlist_records, press_detections, per_source_counts)."""
+def harvest(accessed: str, *, gdelt_query: str | None = None,
+            countries: tuple[str, ...] = ()) -> tuple[list[dict], list[dict], dict]:
+    """Return (watchlist_records, press_detections, per_source_counts).
+
+    `countries` adds per-country GDELT press detection (declarative specs in
+    signal.GDELT_COUNTRY_SPECS) — the generalization path for countries with no geo feed (CA…).
+    """
     geo = signal.fetch_umap_layers(accessed) + signal.fetch_fights(accessed) + signal.fetch_moratoria(accessed)
     counts = {}
     for r in geo:
@@ -65,6 +70,10 @@ def harvest(accessed: str, *, gdelt_query: str | None = None) -> tuple[list[dict
 
     press = signal.fetch_gdelt(gdelt_query, accessed) if gdelt_query else []
     counts["gdelt"] = len(press)
+    for iso in countries:
+        found = signal.fetch_gdelt_country(iso, accessed)
+        press += found
+        counts[f"gdelt-{iso.lower()}"] = len(found)
     counts["_watchlist_after_dedupe"] = len(watchlist)
     return watchlist, press, counts
 
@@ -93,9 +102,13 @@ def _coverage(counts: dict) -> str:
     labels = {"umap-fr": "uMap FR (opposition + projects)", "us-fights": "US fights (CC BY 4.0)",
               "us-moratorium": "US moratoria (CC BY 4.0)", "gdelt": "GDELT press detection",
               "_watchlist_after_dedupe": "**watchlist entries (deduped)**"}
-    for key in ("umap-fr", "us-fights", "us-moratorium", "gdelt", "_watchlist_after_dedupe"):
+    ordered = ["umap-fr", "us-fights", "us-moratorium", "gdelt"]
+    ordered += sorted(k for k in counts if k.startswith("gdelt-"))     # per-country detections
+    ordered.append("_watchlist_after_dedupe")
+    for key in ordered:
         if key in counts:
-            lines.append(f"| {labels[key]} | {counts[key]} |")
+            label = labels.get(key) or f"GDELT press detection ({key.split('-', 1)[1].upper()})"
+            lines.append(f"| {label} | {counts[key]} |")
     lines += ["", "Facts only, no grade. Draft for human review (A-19/A-21)."]
     return "\n".join(lines)
 
@@ -106,16 +119,20 @@ def main(argv: list[str] | None = None) -> int:
                    help="Directory for the draft artifacts (private newsroom).")
     p.add_argument("--gdelt-query", default=None,
                    help="If set, fetch GDELT press-detection articles for this query (detection only).")
+    p.add_argument("--country", action="append", default=[], metavar="ISO",
+                   help="Add per-country GDELT press detection (spec in signal.GDELT_COUNTRY_SPECS). "
+                        "Repeatable: --country CA --country …")
     args = p.parse_args(argv)
 
     accessed = date.today().isoformat()
-    watchlist, press, counts = harvest(accessed, gdelt_query=args.gdelt_query)
+    watchlist, press, counts = harvest(accessed, gdelt_query=args.gdelt_query,
+                                       countries=tuple(args.country))
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "watchlist.draft.geojson").write_text(
         json.dumps(_to_geojson(watchlist), indent=2, ensure_ascii=False) + "\n")
-    if args.gdelt_query is not None:
+    if args.gdelt_query is not None or args.country:
         (out_dir / "press_detections.draft.json").write_text(
             json.dumps(press, indent=2, ensure_ascii=False) + "\n")
     report = _coverage(counts)
@@ -123,7 +140,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(report, file=sys.stderr)
     print(f"\nWrote {len(watchlist)} watchlist draft entries → {out_dir}", file=sys.stderr)
-    if args.gdelt_query is not None:
+    if args.gdelt_query is not None or args.country:
         print(f"Wrote {len(press)} press detections → {out_dir}", file=sys.stderr)
     print("Facts only, no grade. Propose only — human review before any publication (A-19/A-21).",
           file=sys.stderr)

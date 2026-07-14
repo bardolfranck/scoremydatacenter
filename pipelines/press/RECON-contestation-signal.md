@@ -92,6 +92,41 @@ carrying the expected opposition entries with named collectives + source links.
 en_veille`; a test fails the build if any `grade`/`letter`/`score`/`confidence` key appears in the
 output. The letter still moves only on the voie-A procedural facts (T1).
 
+## Generalizing to a new country — the CA probe (2026-07-13)
+
+**The anti-clone rule now applies to voie B.** A country with no community geo feed (no uMap, no
+fights.json) gets its press detection through a **declarative spec** — `GDELT_COUNTRY_SPECS` in
+`signal.py`: `sourcecountry` + a list of queries carrying the local spelling variants and
+contestation lexicon. One collector (`fetch_gdelt_country`), zero per-country code. Run it via the
+same ONE path:
+
+```
+make collect-signal SIGNAL_COUNTRIES=CA          # repeatable: SIGNAL_COUNTRIES="CA …"
+make refresh-signal SIGNAL_COUNTRIES=CA          # orchestrated: queue + press leads
+```
+
+**Canada (first spec, probed live 2026-07-13).** Two queries: EN with BOTH spellings (Canadian
+outlets write "data centre") + FR for Québec ("centre de données", BAPE = the CNDP analogue).
+The probe surfaced real signal instantly: Hamilton council ratifying an AI data-centre moratorium,
+hundreds marching in Vancouver, Quinte West residents, Terrace zoning process, Manitoba clean-DC
+debate. Canada has NO structured tracker (no fights.json equivalent) — GDELT press detection is
+the entry point, articles are triage leads for the LLM reviewer, and the entries land as
+watchlist facts (A-19: presence, no score — the US doctrine applies as-is).
+
+**Caveats learned probing:**
+- `sourcecountry:` filters by **outlet** country, not project country — Canadian outlets cover US
+  stories (Maine, Texas); the reviewer triages project-country.
+- **GDELT punishes bursts by slow-walking the response past the timeout** (not only by clean
+  429s) — the voie-B twin of the spatial E1-memoize gotcha. `fetch_gdelt_country` therefore
+  retries each query (30 s-step backoff) and **gives up loudly on stderr**, never silently: a
+  country harvest must not vanish without a trace. After a manual-probe burst, the penalty box
+  outlasts several minutes — space live probes accordingly.
+- **The penalty box can also serve VALID-but-EMPTY JSON** (no clean 429, no timeout — just zero
+  articles). A 0-article country result minutes after other GDELT requests is **suspect, not
+  conclusive**: re-run after a real cooldown (~15 min) before believing it. The scheduled
+  production harvest (one run, spaced queries, dedicated IP) does not hit this; interactive
+  probing does.
+
 ## Operational notes (learned in recon)
 
 - **GDELT**: throttled ("one request / 5 s"); a shared egress IP earns a sustained 429. Production needs

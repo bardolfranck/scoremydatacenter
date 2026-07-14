@@ -64,6 +64,19 @@ def _summary(dc: dict, result: dict) -> dict:
     }
 
 
+def _watchlist_kind(entry: dict) -> str:
+    """Feature-level marker kind, derived from the entry's facts (facts stay untouched).
+
+    moratorium (official act) > opposition (citizen signal) > announced_project (bare listing).
+    """
+    kinds = {f.get("kind") for f in (entry.get("facts") or [])}
+    if "moratorium" in kinds:
+        return "moratorium"
+    if "opposition" in kinds:
+        return "opposition"
+    return "announced_project"
+
+
 def build_artifacts(datacenters: dict[str, dict], methodology: dict,
                     out_dir: Path = ARTIFACTS_DIR, watchlist: list[dict] | None = None) -> dict[str, dict]:
     """Score every DC and write all artifacts. Returns the per-DC results."""
@@ -165,6 +178,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "country": e["country"],
             "project_status": e.get("project_status"),
             "watchlist_status": "en_veille",
+            # Derived marker kind so the map can style flat (styling on the nested facts[]
+            # array is impractical in MapLibre expressions). A moratorium is an OFFICIAL act —
+            # it outranks an opposition signal when an entry carries both. Never a grade.
+            "kind": _watchlist_kind(e),
             "source": e["source"],
             "facts": e.get("facts") or [],
         },

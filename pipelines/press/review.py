@@ -46,6 +46,43 @@ def _slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", text).strip("-")
 
 
+def _templated_label(feed: str, fact_kind: str, raw_facts: dict) -> dict | None:
+    """Neutral bilingual label from a STRUCTURED feed's own fields — deterministic, no judgment.
+
+    Dataset values (status, outcome, jurisdiction type) are quoted verbatim: they are the feed's
+    facts, and translating them would editorialize. Returns None for unstructured feeds → the
+    raw-name proposal + LLM-reviewer path applies unchanged.
+    """
+    if feed == "us-fights" and fact_kind == "opposition":
+        status = raw_facts.get("status")
+        outcome = raw_facts.get("community_outcome")
+        en = "Locally contested data-center project (named opposition groups)"
+        fr = "Projet de data center contesté localement (collectifs d'opposition nommés)"
+        if status:
+            en += f" — status: {status}"
+            fr += f" — statut : {status}"
+        if outcome:
+            en += f"; outcome: {outcome}"
+            fr += f" ; issue : {outcome}"
+        return {"fr": fr, "en": en}
+    if feed == "us-moratorium" and fact_kind == "moratorium":
+        jt = raw_facts.get("jurisdiction_type")
+        enacted = raw_facts.get("date_enacted")
+        days = raw_facts.get("duration_days")
+        en, fr = "Data-center moratorium", "Moratoire sur les data centers"
+        if jt:
+            en += f" — {jt}"
+            fr += f" — {jt}"
+        if enacted:
+            en += f", enacted {enacted}"
+            fr += f", adopté le {enacted}"
+        if days:
+            en += f", {days} days"
+            fr += f", {days} jours"
+        return {"fr": fr, "en": en}
+    return None
+
+
 def _in_bbox(country: str, lat, lon) -> bool | None:
     box = _BBOX.get(country)
     if not box or lat is None or lon is None:
@@ -73,11 +110,14 @@ def reduce_entry(props: dict, coords: list | None) -> dict:
     facts = []
     fact_kind = _KIND_MAP.get(props.get("kind"))
     if fact_kind:
+        # Structured US feeds carry enough fields for a DETERMINISTIC neutral bilingual label
+        # (dataset values quoted verbatim — facts, not prose). Unstructured feeds keep the raw
+        # name as a proposal the LLM reviewer must neutralize + translate.
+        templated = _templated_label(feed, fact_kind, props.get("facts") or {})
         facts.append({
             "kind": fact_kind,
-            # PROPOSED label from the raw name — the LLM reviewer rewrites it neutral + adds `en`.
-            "label": {"fr": name or None, "en": None},
-            "_label_status": "proposed_raw",          # reviewer must neutralize + translate
+            "label": templated or {"fr": name or None, "en": None},
+            "_label_status": "templated" if templated else "proposed_raw",
             "source": dict(entry_source),
             "self_reported": False,
         })

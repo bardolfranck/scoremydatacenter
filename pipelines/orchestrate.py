@@ -90,11 +90,17 @@ def write_bundle(bundle: dict, out_dir: Path) -> Path:
 
 # --- flow B: refresh the contestation signal -------------------------------------------------
 
-def refresh_signal(accessed: str, *, gdelt_query: str | None = None) -> list[dict]:
-    """Re-harvest the open feeds → a review queue (facts only). Returns the queue (no publish)."""
-    watchlist, _press, _counts = collect_signal.harvest(accessed, gdelt_query=gdelt_query)
+def refresh_signal(accessed: str, *, gdelt_query: str | None = None,
+                   countries: tuple[str, ...] = ()) -> tuple[list[dict], list[dict]]:
+    """Re-harvest the open feeds → (review queue, press detections). Facts only, no publish.
+
+    Press detections (GDELT, incl. per-country specs) are triage LEADS for the reviewer —
+    returned so the caller writes them next to the queue instead of discarding the fetch.
+    """
+    watchlist, press, _counts = collect_signal.harvest(accessed, gdelt_query=gdelt_query,
+                                                       countries=countries)
     fc = collect_signal._to_geojson(watchlist)
-    return review.build_queue(fc["features"])
+    return review.build_queue(fc["features"]), press
 
 
 # --- promote: apply the human-approved queue (still not a public publish) ---------------------
@@ -223,6 +229,8 @@ def main(argv: list[str] | None = None) -> int:
 
     r = sub.add_parser("refresh", help="Re-harvest the signal → review queue.")
     r.add_argument("--gdelt-query", default=None)
+    r.add_argument("--country", action="append", default=[], metavar="ISO",
+                   help="Add per-country GDELT press detection (repeatable): --country CA")
     r.add_argument("--out", default="../smdc-newsroom/drafts/watchlist")
 
     pr = sub.add_parser("promote", help="Apply a human-approved contestation review queue.")
@@ -251,13 +259,18 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.cmd == "refresh":
-        queue = refresh_signal(accessed, gdelt_query=args.gdelt_query)
+        queue, press = refresh_signal(accessed, gdelt_query=args.gdelt_query,
+                                      countries=tuple(args.country))
         out_dir = Path(args.out)
         out_dir.mkdir(parents=True, exist_ok=True)
         with (out_dir / "watchlist.review.jsonl").open("w") as fh:
             for item in queue:
                 fh.write(json.dumps(item, ensure_ascii=False) + "\n")
         (out_dir / "watchlist.review.html").write_text(render_review_html(queue, "watchlist (signal)"))
+        if press:
+            (out_dir / "press_detections.draft.json").write_text(
+                json.dumps(press, indent=2, ensure_ascii=False) + "\n")
+            print(f"Press detections ({len(press)}) → {out_dir} (triage leads).", file=sys.stderr)
         print(f"Review queue ({len(queue)}) → {out_dir}. 🚦 Human gate before promotion.", file=sys.stderr)
         return 0
 

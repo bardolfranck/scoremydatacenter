@@ -18,6 +18,7 @@
         "country": "ZZ",
         "project_status": "permitting",
         "watchlist_status": "en_veille",
+        "kind": "opposition",
         "source": {
           "title": "Annonce du projet (test)",
           "url": "https://example.org/w/alpha-annonce",
@@ -71,6 +72,7 @@
         "country": "ZZ",
         "project_status": "announced",
         "watchlist_status": "en_veille",
+        "kind": "moratorium",
         "source": {
           "title": "Communiqué du comté (test)",
           "url": "https://example.org/w/beta-annonce",
@@ -111,6 +113,7 @@
         "country": "ZZ",
         "project_status": "under_construction",
         "watchlist_status": "en_veille",
+        "kind": "announced_project",
         "source": {
           "title": "Dossier de presse (test)",
           "url": "https://example.org/w/gamma-annonce",
@@ -150,6 +153,7 @@
         "country": "ZZ",
         "project_status": "announced",
         "watchlist_status": "en_veille",
+        "kind": "announced_project",
         "source": {
           "title": "Annonce officielle (test)",
           "url": "https://example.org/w/delta-annonce",
