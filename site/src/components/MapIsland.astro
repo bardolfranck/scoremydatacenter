@@ -38,12 +38,12 @@ const { variant, labels } = Astro.props;
     <div class="map-legend" aria-hidden="true">
       <span class="map-legend-grades">
         {["a", "b", "c", "d", "e"].map((g) => <i class={`legend-dot legend-${g}`}>{g.toUpperCase()}</i>)}
-        {labels.legendGraded ?? "note du site"}
+        {labels.legendGraded ?? "notes du site"}
       </span>
       <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · petit point = non communiquée"}</span>
-      <span><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
-      <span><i class="legend-watch-shape legend-watch-round"></i>{labels.legendWatchOpp ?? "Opposition locale — en veille"}</span>
-      <span><i class="legend-watch-shape legend-watch-square"></i>{labels.legendWatchMor ?? "Moratoire (acte officiel) — en veille"}</span>
+      <span class="legend-line-announced"><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
+      <span><span class="legend-emoji">✋🏼</span>{labels.legendWatchOpp ?? "Opposition locale — en veille"}</span>
+      <span><span class="legend-emoji">⏸️</span>{labels.legendWatchMor ?? "Moratoire (acte officiel) — en veille"}</span>
     </div>
   )}
 </div>
@@ -196,7 +196,7 @@ const { variant, labels } = Astro.props;
         typeOpposition: "Opposition locale", typeMoratorium: "Moratoire",
         filterLabel: "En veille :", filterAll: "Tout", filterOppositions: "Oppositions",
         filterMoratoria: "Moratoires", filterAria: "Filtrer la couche en veille",
-        viewWorld: "🌍 Monde", viewEurope: "Europe",
+        viewWorld: "🌍 Monde", viewEurope: "🇪🇺 Europe",
         status: { announced: "Annoncé", permitting: "En instruction",
                   under_construction: "En construction", operational: "En service" },
       }, labels.watch ?? {});
@@ -247,6 +247,9 @@ const { variant, labels } = Astro.props;
         };
 
         // announced_project (no hard fact yet): the existing DOM 🗣️ marker, unchanged.
+        // Zero entries today (US wave 1) — hide its legend line rather than advertise
+        // a marker that is nowhere on the map.
+        if (!announced.length) root.querySelector(".legend-line-announced")?.remove();
         for (const feature of announced) {
           const el = document.createElement("div");
           el.className = "watch-marker";
@@ -262,13 +265,21 @@ const { variant, labels } = Astro.props;
 
         const onStyleReady = (fn: () => void) => (map.isStyleLoaded() ? fn() : map.once("load", fn));
         onStyleReady(() => {
-          // square icon (moratorium = official act, squared corners), same tint as the round
-          const px = 26, cv = document.createElement("canvas");
-          cv.width = cv.height = px;
-          const ctx = cv.getContext("2d")!;
-          ctx.fillStyle = GREY; ctx.strokeStyle = STROKE; ctx.lineWidth = 3;
-          ctx.fillRect(3, 3, px - 6, px - 6); ctx.strokeRect(3, 3, px - 6, px - 6);
-          map.addImage("watch-square", ctx.getImageData(0, 0, px, px), { pixelRatio: 2 });
+          // Pictograms carry the kind (Franck 2026-07-14): ✋🏼 = local opposition (the
+          // citizens' halt — deliberately NOT 🛑, red would read as a D/E grade),
+          // ⏸️ = moratorium (the official pause). Maplibre glyphs have no emoji, so
+          // rasterise via canvas (system emoji font) into layer icons.
+          const emojiIcon = (name: string, emoji: string) => {
+            const px = 48, cv = document.createElement("canvas");
+            cv.width = cv.height = px;
+            const ctx = cv.getContext("2d")!;
+            ctx.font = "38px 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(emoji, px / 2, px / 2 + 2);
+            map.addImage(name, ctx.getImageData(0, 0, px, px), { pixelRatio: 2 });
+          };
+          emojiIcon("watch-hand", "✋🏼");
+          emojiIcon("watch-pause", "⏸️");
 
           map.addSource("watch", { type: "geojson", data: subset(veille), cluster: true, clusterMaxZoom: 10, clusterRadius: 44 });
           map.addLayer({ id: "watch-clusters", type: "circle", source: "watch", filter: ["has", "point_count"], paint: {
@@ -279,13 +290,13 @@ const { variant, labels } = Astro.props;
           map.addLayer({ id: "watch-cluster-count", type: "symbol", source: "watch", filter: ["has", "point_count"], layout: {
             "text-field": ["get", "point_count_abbreviated"], "text-font": ["Noto Sans Bold"], "text-size": 11,
           }, paint: { "text-color": INK }});
-          map.addLayer({ id: "watch-opposition", type: "circle", source: "watch",
-            filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "opposition"]], paint: {
-              "circle-color": GREY, "circle-radius": 6, "circle-stroke-color": STROKE, "circle-stroke-width": 1.5,
+          map.addLayer({ id: "watch-opposition", type: "symbol", source: "watch",
+            filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "opposition"]], layout: {
+              "icon-image": "watch-hand", "icon-size": 0.8, "icon-allow-overlap": true,
             }});
           map.addLayer({ id: "watch-moratorium", type: "symbol", source: "watch",
             filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "moratorium"]], layout: {
-              "icon-image": "watch-square", "icon-size": 1, "icon-allow-overlap": true,
+              "icon-image": "watch-pause", "icon-size": 0.8, "icon-allow-overlap": true,
             }});
 
           for (const layerId of ["watch-opposition", "watch-moratorium"]) {
