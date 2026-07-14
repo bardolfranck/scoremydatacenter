@@ -113,7 +113,7 @@
         "country": "ZZ",
         "project_status": "under_construction",
         "watchlist_status": "en_veille",
-        "kind": "announced_project",
+        "kind": "opposition",
         "source": {
           "title": "Dossier de presse (test)",
           "url": "https://example.org/w/gamma-annonce",

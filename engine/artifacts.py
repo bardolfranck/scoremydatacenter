@@ -67,12 +67,14 @@ def _summary(dc: dict, result: dict) -> dict:
 def _watchlist_kind(entry: dict) -> str:
     """Feature-level marker kind, derived from the entry's facts (facts stay untouched).
 
-    moratorium (official act) > opposition (citizen signal) > announced_project (bare listing).
+    moratorium (official act) > opposition (citizen/legal contestation) > announced_project
+    (bare listing). A legal `appeal` is a contestation signal — it maps to the opposition
+    marker, not to the neutral "just announced" pin.
     """
     kinds = {f.get("kind") for f in (entry.get("facts") or [])}
     if "moratorium" in kinds:
         return "moratorium"
-    if "opposition" in kinds:
+    if kinds & {"opposition", "appeal", "petition"}:
         return "opposition"
     return "announced_project"
 
