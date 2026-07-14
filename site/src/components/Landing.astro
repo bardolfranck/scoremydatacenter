@@ -321,12 +321,35 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <figure class="about-photo-fig">
           <img class="about-photo-img" src="/assets/franck-bardol.jpg" alt={t.aboutPhotoAlt} width="554" height="640" loading="lazy" />
           <figcaption>{t.aboutPhotoCaption}</figcaption>
+          {t.aboutLinkedinUrl && (
+            <a class="about-linkedin" href={t.aboutLinkedinUrl} target="_blank" rel="noopener" aria-label="LinkedIn — Franck Bardol">
+              <svg width="18" height="18" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,24H40A16,16,0,0,0,24,40V216a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V40A16,16,0,0,0,216,24Zm0,192H40V40H216V216ZM96,112v64a8,8,0,0,1-16,0V112a8,8,0,0,1,16,0Zm88,28v36a8,8,0,0,1-16,0V140a20,20,0,0,0-40,0v36a8,8,0,0,1-16,0V112a8,8,0,0,1,15.79-1.78A36,36,0,0,1,184,140ZM100,84A12,12,0,1,1,88,72,12,12,0,0,1,100,84Z"/></svg>
+              LinkedIn
+            </a>
+          )}
         </figure>
         <div class="about-text">
           <p class="founder-line" set:html={t.founderLine}></p>
           {t.aboutBio.map((block: string) => <Fragment set:html={block} />)}
         </div>
       </div>
+      {t.team && (
+        <div class="about-team">
+          <h3>{t.teamTitle}</h3>
+          <p class="team-intro">{t.teamIntro}</p>
+          <ul class="team-grid">
+            {t.team.map((m: any) => (
+              <li class="team-card">
+                <span class="team-avatar" aria-hidden="true">{m.emoji}</span>
+                <strong>{m.name}</strong>
+                <p>{m.role}</p>
+              </li>
+            ))}
+          </ul>
+          <p class="team-note" set:html={t.teamNote}></p>
+          <a class="button button-primary team-cta" href={t.teamCtaUrl} target="_blank" rel="noopener">{t.teamCta}</a>
+        </div>
+      )}
     </div>
   </section>
 
