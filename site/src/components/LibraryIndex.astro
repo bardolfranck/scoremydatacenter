@@ -10,7 +10,7 @@
 // as the ranking. MOCKUP: lorem-Latin entries, fictional dates and prices.
 import Base from "../layouts/Base.astro";
 import LibraryTeaser from "./LibraryTeaser.astro";
-import { BRIEFS_BY_DATE, briefLanguages, coverField } from "../config/library";
+import { BRIEFS_BY_DATE, briefLanguages, coverField, LANG_FLAGS } from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
 const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
@@ -37,7 +37,6 @@ const fmtDate = (iso: string) =>
   <header class="lib-index-head">
     <p class="lib-nameplate-kicker">{t.nameplateKicker}</p>
     <h1 class="lib-index-title">{t.indexTitle}</h1>
-    <p class="lib-index-reminder">{t.reminder}</p>
     <p class="lib-back-link"><a href={t.revueHref}>{t.backToRevue}</a></p>
   </header>
 
@@ -66,10 +65,6 @@ const fmtDate = (iso: string) =>
           </div>
         ))}
       </div>
-      <div class="lib-rail-reminder">
-        <p class="lib-rail-head">{t.reminderHead}</p>
-        <p>{t.reminderBody}</p>
-      </div>
     </aside>
 
     <!-- Dense entries, newest first -->
@@ -91,7 +86,9 @@ const fmtDate = (iso: string) =>
               <LibraryTeaser kind={brief.teaser} tint={coverField(brief)} />
               <span class="lib-fictional">{t.fictionalTag}</span>
               <span class="lib-langs" title={t.langTitle}>
-                {briefLanguages(brief).map((code) => <i class="lib-lang">{code.toUpperCase()}</i>)}
+                {briefLanguages(brief).map((code) => (
+                  <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
+                ))}
               </span>
               <span class="lib-tag-digest">{t.digestTag}</span>
               <span class="lib-price">

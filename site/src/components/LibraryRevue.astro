@@ -12,7 +12,7 @@
 // every card. Purchase CTA is "order — contact us": no checkout exists.
 import Base from "../layouts/Base.astro";
 import LibraryCard from "./LibraryCard.astro";
-import { BRIEFS, FLAGSHIP, briefLanguages, coverField } from "../config/library";
+import { BRIEFS, FLAGSHIP, briefLanguages, coverField, LANG_FLAGS } from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
 
@@ -34,26 +34,8 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
 
   <!-- Nameplate — periodical masthead, form does the register -->
   <header class="lib-masthead">
-    <p class="lib-nameplate-kicker">{t.nameplateKicker}</p>
     <h1 class="lib-title">{t.nameplateTitle}</h1>
-    <p class="lib-edition">{t.editionLabel}</p>
-    <p class="lib-motto">{t.motto}</p>
   </header>
-
-  <!-- The free/paid boundary — always visible, always honest (P6) -->
-  <section class="lib-freeband" aria-label={t.freePaidTitle}>
-    <p class="lib-freeband-title">{t.freePaidTitle}</p>
-    <div class="lib-freeband-cols">
-      <div>
-        <p class="lib-tier lib-tier-free">{t.freeLabel}</p>
-        <p class="lib-tier-items">{t.freeItems}</p>
-      </div>
-      <div>
-        <p class="lib-tier lib-tier-paid">{t.paidLabel}</p>
-        <p class="lib-tier-items">{t.paidItems}</p>
-      </div>
-    </div>
-  </section>
 
   <!-- À la une — the flagship -->
   <section class="lib-featured" aria-label={t.featuredKicker}>
@@ -61,10 +43,13 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
     <div class="lib-featured-grid">
       <div class="lib-flag-cover" style={`background:${coverField(FLAGSHIP)}`}>
         <p class="lib-flag-cover-kicker">{t.flagshipCoverKicker}</p>
-        <p class="lib-flag-cover-edition">{t.editionLabel}</p>
         <p class="lib-flag-cover-title">{FLAGSHIP.title[lang]}</p>
-        <div class="lib-flag-scale" aria-hidden="true">
-          <i class="b-a"></i><i class="b-b"></i><i class="b-c"></i><i class="b-d"></i><i class="b-e"></i>
+        <div class="hero-scale lib-flag-scale" role="img" aria-label={t.scaleAria}>
+          <span class="hs-cell hs-a">A</span>
+          <span class="hs-cell hs-b">B</span>
+          <span class="hs-cell hs-c">C</span>
+          <span class="hs-cell hs-d">D</span>
+          <span class="hs-cell hs-e">E</span>
         </div>
       </div>
       <div class="lib-flag-copy">
@@ -82,7 +67,9 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
         <p class="lib-flag-langs" title={t.langTitle}>
           <span class="lib-langs-label">{t.editionsLabel}</span>
           <span class="lib-langs">
-            {flagshipLangs.map((code) => <i class="lib-lang">{code.toUpperCase()}</i>)}
+            {flagshipLangs.map((code) => (
+              <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
+            ))}
           </span>
         </p>
         <div class="lib-cta-row">
@@ -90,7 +77,7 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
           <a class="button button-primary" href={contactPath}>{t.ctaOrder}</a>
           <span class="lib-price">{t.flagshipPrice}</span>
         </div>
-        <p class="lib-cta-micro">{t.ctaMicro}</p>
+        <p class="lib-operator-note"><a href={contactPath}>{t.operatorNote}</a></p>
       </div>
     </div>
   </section>

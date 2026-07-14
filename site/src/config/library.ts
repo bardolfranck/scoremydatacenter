@@ -64,6 +64,20 @@ const COUNTRY_NATIVE_LANGS: Record<string, string[]> = {
   it: ["it"],
 };
 
+/** Language code → flag emoji (same register as the header's 🇬🇧/🇫🇷 switch). */
+export const LANG_FLAGS: Record<string, string> = {
+  fr: "🇫🇷",
+  en: "🇬🇧",
+  nl: "🇳🇱",
+  de: "🇩🇪",
+  pl: "🇵🇱",
+  sv: "🇸🇪",
+  fi: "🇫🇮",
+  no: "🇳🇴",
+  es: "🇪🇸",
+  it: "🇮🇹",
+};
+
 /** Publication languages of a brief, native first, EN always present. */
 export const briefLanguages = (b: LibraryBrief): string[] => {
   if (b.family === "flagship") return ["en", "fr"];

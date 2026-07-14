@@ -7,7 +7,7 @@
 // (digest tag) always sits NEXT TO the price — the free/paid boundary is
 // visible on every card (P6: truth is never paywalled).
 import LibraryTeaser from "./LibraryTeaser.astro";
-import { briefLanguages, coverField, type LibraryBrief } from "../config/library";
+import { briefLanguages, coverField, LANG_FLAGS, type LibraryBrief } from "../config/library";
 
 interface Props {
   brief: LibraryBrief;
@@ -33,7 +33,9 @@ const langs = briefLanguages(brief);
     <span class="lib-card-cover-foot">
       <span class="lib-card-kicker">{kicker}</span>
       <span class="lib-langs lib-langs-cover" title={langTitle}>
-        {langs.map((code) => <i class="lib-lang">{code.toUpperCase()}</i>)}
+        {langs.map((code) => (
+          <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
+        ))}
       </span>
     </span>
   </div>
