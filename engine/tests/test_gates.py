@@ -15,7 +15,7 @@ TODAY = date(2026, 7, 5)
 
 ALPHA = "datacenters/zz-test-alpha.json"
 BETA = "datacenters/zz-test-beta.json"
-METH = "methodology/v0.1.0-draft.json"
+METH = "methodology/v0.1.0.json"
 
 
 def _ind(doc, indicator_id):

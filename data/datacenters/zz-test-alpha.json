@@ -270,7 +270,7 @@
   "score_history": [
     {
       "date": "2026-07-05",
-      "methodology_version": "0.1.0-draft",
+      "methodology_version": "0.1.0",
       "grades": {
         "site": "B",
         "project_process": "C"
