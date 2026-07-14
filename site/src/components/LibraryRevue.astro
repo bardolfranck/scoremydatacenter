@@ -12,12 +12,13 @@
 // every card. Purchase CTA is "order — contact us": no checkout exists.
 import Base from "../layouts/Base.astro";
 import LibraryCard from "./LibraryCard.astro";
-import { BRIEFS, FLAGSHIP, coverField } from "../config/library";
+import { BRIEFS, FLAGSHIP, briefLanguages, coverField } from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
 
 const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
-const summary = BRIEFS.filter((b) => b.family !== "flagship").slice(0, 4);
+const summary = BRIEFS.filter((b) => b.family !== "flagship").slice(0, 6);
+const flagshipLangs = briefLanguages(FLAGSHIP);
 ---
 
 <Base
@@ -78,6 +79,12 @@ const summary = BRIEFS.filter((b) => b.family !== "flagship").slice(0, 4);
           ))}
         </dl>
         <p class="lib-fictional">{t.fictionalTag}</p>
+        <p class="lib-flag-langs" title={t.langTitle}>
+          <span class="lib-langs-label">{t.editionsLabel}</span>
+          <span class="lib-langs">
+            {flagshipLangs.map((code) => <i class="lib-lang">{code.toUpperCase()}</i>)}
+          </span>
+        </p>
         <div class="lib-cta-row">
           <a class="button button-secondary" href="#digest">{t.ctaDigest}</a>
           <a class="button button-primary" href={contactPath}>{t.ctaOrder}</a>
@@ -105,6 +112,7 @@ const summary = BRIEFS.filter((b) => b.family !== "flagship").slice(0, 4);
           digestTag={t.digestTag}
           fromLabel={t.fromLabel}
           fictionalTag={t.fictionalTag}
+          langTitle={t.langTitle}
         />
       ))}
     </div>

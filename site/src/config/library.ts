@@ -16,6 +16,8 @@ export interface LibraryBrief {
   id: string;
   family: BriefFamily;
   theme: BriefTheme | null; // themed briefs only — null for flagship/country
+  /** ISO country code — country briefs only, drives the native-language rule. */
+  country?: string;
   /** Cover chip — short label printed on the cover field. */
   cover: string;
   /** {fr,en} only for the flagship (real product name = structure, not content);
@@ -41,6 +43,36 @@ export const COVER_FIELDS: Record<string, string> = {
 
 export const coverField = (b: LibraryBrief): string =>
   COVER_FIELDS[b.theme ?? b.family];
+
+// Language rule (intelligence-library.md §5): EN is systematic (the sector's
+// working language); a country brief ships NATIVE + EN (localisation is an
+// acquisition investment, not a traction reward); FR is home market + the
+// pan-EU flagship only — never bolted onto every country edition.
+const COUNTRY_NATIVE_LANGS: Record<string, string[]> = {
+  fr: ["fr"],
+  be: ["fr", "nl"],
+  nl: ["nl"],
+  lu: ["fr", "de"],
+  de: ["de"],
+  pl: ["pl"],
+  ie: ["en"], // native English — the edge case: a single-language edition
+  gb: ["en"],
+  se: ["sv"],
+  fi: ["fi"],
+  no: ["no"],
+  es: ["es"],
+  it: ["it"],
+};
+
+/** Publication languages of a brief, native first, EN always present. */
+export const briefLanguages = (b: LibraryBrief): string[] => {
+  if (b.family === "flagship") return ["en", "fr"];
+  if (b.family === "country" && b.country) {
+    const native = COUNTRY_NATIVE_LANGS[b.country] ?? [];
+    return [...new Set([...native, "en"])];
+  }
+  return ["en"];
+};
 
 export const FLAGSHIP: LibraryBrief = {
   id: "flagship-inaugural",
@@ -77,6 +109,7 @@ export const BRIEFS: LibraryBrief[] = [
     id: "country-nl",
     family: "country",
     theme: null,
+    country: "nl",
     cover: "NL",
     title: {
       fr: "Data centers in Batavia — lorem ipsum retis",
@@ -86,6 +119,51 @@ export const BRIEFS: LibraryBrief[] = [
     date: "2026-04-20",
     priceFromEur: 900,
     teaser: "scatter",
+  },
+  {
+    id: "country-de",
+    family: "country",
+    theme: null,
+    country: "de",
+    cover: "DE",
+    title: {
+      fr: "Data centers in Germania — lorem ipsum industria",
+      en: "Data centers in Germania — lorem ipsum industria",
+    },
+    hook: "Lorem ipsum industria et retis onus, sed do eiusmod tempor incididunt ut labore.",
+    date: "2026-03-30",
+    priceFromEur: 900,
+    teaser: "bars",
+  },
+  {
+    id: "country-ie",
+    family: "country",
+    theme: null,
+    country: "ie",
+    cover: "IE",
+    title: {
+      fr: "Data centers in Hibernia — lorem ipsum insula",
+      en: "Data centers in Hibernia — lorem ipsum insula",
+    },
+    hook: "Lorem ipsum insula, retis saturatio et quaestio publica, ut enim ad minim veniam.",
+    date: "2026-04-05",
+    priceFromEur: 900,
+    teaser: "trend",
+  },
+  {
+    id: "country-pl",
+    family: "country",
+    theme: null,
+    country: "pl",
+    cover: "PL",
+    title: {
+      fr: "Data centers in Polonia — lorem ipsum carbo",
+      en: "Data centers in Polonia — lorem ipsum carbo",
+    },
+    hook: "Lorem ipsum carbo et transitio, quis nostrud exercitation ullamco laboris nisi.",
+    date: "2026-02-14",
+    priceFromEur: 900,
+    teaser: "dots",
   },
   {
     id: "theme-energy",

@@ -7,7 +7,7 @@
 // (digest tag) always sits NEXT TO the price — the free/paid boundary is
 // visible on every card (P6: truth is never paywalled).
 import LibraryTeaser from "./LibraryTeaser.astro";
-import { coverField, type LibraryBrief } from "../config/library";
+import { briefLanguages, coverField, type LibraryBrief } from "../config/library";
 
 interface Props {
   brief: LibraryBrief;
@@ -18,17 +18,24 @@ interface Props {
   digestTag: string;
   fromLabel: string; // « dès » / "from"
   fictionalTag: string;
+  langTitle: string; // tooltip: the native+EN language rule, spelled out
 }
-const { brief, lang, num, familyLabel, themeLabel, digestTag, fromLabel, fictionalTag } = Astro.props;
+const { brief, lang, num, familyLabel, themeLabel, digestTag, fromLabel, fictionalTag, langTitle } = Astro.props;
 const tint = coverField(brief);
 const kicker = themeLabel ? `${familyLabel} · ${themeLabel}` : familyLabel;
+const langs = briefLanguages(brief);
 ---
 
 <article class="lib-card">
   <div class="lib-card-cover" style={`background:${tint}`}>
     {num && <span class="lib-card-num">{num}</span>}
     <span class="lib-card-chip">{brief.cover}</span>
-    <span class="lib-card-kicker">{kicker}</span>
+    <span class="lib-card-cover-foot">
+      <span class="lib-card-kicker">{kicker}</span>
+      <span class="lib-langs lib-langs-cover" title={langTitle}>
+        {langs.map((code) => <i class="lib-lang">{code.toUpperCase()}</i>)}
+      </span>
+    </span>
   </div>
   <div class="lib-card-body">
     <h3 class="lib-card-title">{brief.title[lang]}</h3>
