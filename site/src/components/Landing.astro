@@ -348,28 +348,53 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           {t.aboutBio.map((block: string) => <Fragment set:html={block} />)}
         </div>
       </div>
-      {t.team && (
+      {t.teamDna && (
         <div class="about-team">
           <h3>{t.teamTitle}</h3>
           <p class="team-intro">{t.teamIntro}</p>
-          {/* Org chart: the human at the top (he decides), the agent squad below —
-              the doctrine drawn. Each agent card wears its Phosphor avatar AND its
-              emoji tag (both icon families kept, Franck 2026-07-14). */}
+          {/* Org chart (Franck 2026-07-14, arbitrated): the human + the Designer on
+              top (substance and form), the DNA level below — Juge & Boussole, the
+              trades that come first (judgment + defensible method = the house's
+              credibility) — then the factory pairs. Double icon: Phosphor avatar
+              carries the craft, the emoji tag the wink. */}
           <div class="org">
-            <div class="team-card org-lead">
-              <img class="org-photo" src="/assets/franck-bardol.jpg" alt="" width="56" height="65" loading="lazy" />
-              <strong>{t.teamLead.name}</strong>
-              <p>{t.teamLead.role}</p>
+            <div class="org-top">
+              <div class="team-card org-lead">
+                <img class="org-photo" src="/assets/franck-bardol.jpg" alt="" width="56" height="65" loading="lazy" />
+                <strong>{t.teamLead.name}</strong>
+                <p>{t.teamLead.role}</p>
+              </div>
+              {[t.teamDesigner].map((m: any) => (
+                <div class="team-card">
+                  <span class="team-tag" aria-hidden="true">{m.tag}</span>
+                  <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
+                  <strong>{m.name}</strong>
+                  <p>{m.role}</p>
+                </div>
+              ))}
             </div>
             <div class="org-trunk" aria-hidden="true"></div>
+            <p class="org-caption">{t.teamDnaCaption}</p>
+            <ul class="org-dna">
+              {t.teamDna.map((m: any) => (
+                <li class="team-card team-card-dna">
+                  <span class="team-tag" aria-hidden="true">{m.tag}</span>
+                  <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
+                  <strong>{m.name}</strong>
+                  <p>{m.role}</p>
+                </li>
+              ))}
+            </ul>
+            <div class="org-trunk" aria-hidden="true"></div>
+            <p class="org-caption">{t.teamFabCaption}</p>
             <ul class="org-branches">
-              {t.team.map((branch: any[]) => (
+              {t.teamBranches.map((branch: any[]) => (
                 <li class="org-branch">
                   {branch.map((m: any, depth: number) => (
                     <Fragment>
                       {depth > 0 && <span class="org-drop" aria-hidden="true"></span>}
                       <div class="team-card">
-                        {m.tag && <span class="team-tag" aria-hidden="true">{m.tag}</span>}
+                        <span class="team-tag" aria-hidden="true">{m.tag}</span>
                         <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
                         <strong>{m.name}</strong>
                         <p>{m.role}</p>

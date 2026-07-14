@@ -431,10 +431,15 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 /* Org chart: lead centred, trunk, rail, one tick per card. Pure CSS; connectors
    vanish on mobile where the grid stacks. */
 .org { margin-top: 18px; }
-.org-lead { max-width: 330px; margin: 0 auto; align-items: center; text-align: center; justify-items: center; }
+.org-top { display: flex; justify-content: center; align-items: stretch; gap: 14px; flex-wrap: wrap; }
+.org-top .team-card { max-width: 300px; }
+.org-lead { align-items: center; text-align: center; justify-items: center; }
+.org-caption { margin: 0 0 10px; text-align: center; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.org-dna { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 280px)); justify-content: center; gap: 14px; margin: 0; padding: 0; list-style: none; }
+.team-card-dna { border-color: rgba(15, 95, 184, 0.35); background: #f6f9fd; }
 .org-photo { width: 56px; height: 65px; object-fit: cover; border-radius: 10px; }
-.org-trunk { width: 2px; height: 22px; margin: 0 auto; background: var(--line); }
-.org-branches { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin: 0; padding: 22px 0 0; list-style: none; }
+.org-trunk { width: 2px; height: 22px; margin: 10px auto; background: var(--line); }
+.org-branches { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 300px)); justify-content: center; gap: 14px; margin: 0; padding: 22px 0 0; list-style: none; }
 .org-branches::before { content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 2px; background: var(--line); }
 .org-branch { position: relative; display: grid; gap: 0; align-content: start; }
 .org-branch::before { content: ""; position: absolute; top: -22px; left: 50%; width: 2px; height: 22px; background: var(--line); }
