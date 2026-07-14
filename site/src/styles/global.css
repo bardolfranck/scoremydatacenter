@@ -428,6 +428,21 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .team-avatar-icon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: #e8eff7; color: var(--accent); }
 .team-card strong { font-size: 0.95rem; }
 .team-card p { color: var(--ink-soft); font-size: 0.85rem; line-height: 1.5; }
+/* Org chart: lead centred, trunk, rail, one tick per card. Pure CSS; connectors
+   vanish on mobile where the grid stacks. */
+.org { margin-top: 18px; }
+.org-lead { max-width: 330px; margin: 0 auto; align-items: center; text-align: center; justify-items: center; }
+.org-photo { width: 56px; height: 65px; object-fit: cover; border-radius: 10px; }
+.org-trunk { width: 2px; height: 22px; margin: 0 auto; background: var(--line); }
+.org-grid { position: relative; margin-top: 0; padding-top: 22px; }
+.org-grid::before { content: ""; position: absolute; top: 0; left: 8%; right: 8%; height: 2px; background: var(--line); }
+.org-grid .team-card { position: relative; }
+.org-grid .team-card::before { content: ""; position: absolute; top: -22px; left: 50%; width: 2px; height: 22px; background: var(--line); }
+.team-tag { position: absolute; top: 10px; right: 12px; font-size: 1.15rem; line-height: 1; }
+@media (max-width: 640px) {
+  .org-trunk, .org-grid::before, .org-grid .team-card::before { display: none; }
+  .org-grid { padding-top: 14px; }
+}
 .team-note { margin-top: 14px; color: var(--muted); font-size: 0.85rem; max-width: 80ch; }
 .team-cta { margin-top: 14px; }
 

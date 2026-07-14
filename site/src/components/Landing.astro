@@ -352,17 +352,29 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <div class="about-team">
           <h3>{t.teamTitle}</h3>
           <p class="team-intro">{t.teamIntro}</p>
-          <ul class="team-grid">
-            {t.team.map((m: any) => (
-              <li class="team-card">
-                {m.icon
-                  ? <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
-                  : <span class="team-avatar" aria-hidden="true">{m.emoji}</span>}
-                <strong>{m.name}</strong>
-                <p>{m.role}</p>
-              </li>
-            ))}
-          </ul>
+          {/* Org chart: the human at the top (he decides), the agent squad below —
+              the doctrine drawn. Each agent card wears its Phosphor avatar AND its
+              emoji tag (both icon families kept, Franck 2026-07-14). */}
+          <div class="org">
+            <div class="team-card org-lead">
+              <img class="org-photo" src="/assets/franck-bardol.jpg" alt="" width="56" height="65" loading="lazy" />
+              <strong>{t.teamLead.name}</strong>
+              <p>{t.teamLead.role}</p>
+            </div>
+            <div class="org-trunk" aria-hidden="true"></div>
+            <ul class="team-grid org-grid">
+              {t.team.map((m: any) => (
+                <li class="team-card">
+                  {m.tag && <span class="team-tag" aria-hidden="true">{m.tag}</span>}
+                  {m.icon
+                    ? <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
+                    : <span class="team-avatar" aria-hidden="true">{m.emoji}</span>}
+                  <strong>{m.name}</strong>
+                  <p>{m.role}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
           <p class="team-note" set:html={t.teamNote}></p>
           <a class="button button-primary team-cta" href={t.teamCtaUrl} target="_blank" rel="noopener">{t.teamCta}</a>
         </div>
