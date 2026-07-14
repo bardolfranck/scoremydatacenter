@@ -413,7 +413,9 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .about-photo-fig figcaption { margin-top: 8px; text-align: left; font-size: 0.78rem; font-weight: 650; color: var(--muted); }
 .about-text { display: grid; gap: 10px; flex: 1; min-width: 280px; max-width: 95ch; }
 .about-text p { color: var(--ink-soft); font-size: 0.98rem; line-height: 1.6; }
-.about-text .founder-line { font-size: 1.05rem; color: var(--ink); }
+.about-intro { margin-bottom: 20px; font-size: 1.05rem; line-height: 1.6; color: var(--ink); max-width: 95ch; }
+/* The photo's top edge aligns with the 'Le Fondateur' line (Franck 2026-07-14). */
+.founder-heading { margin: 0 0 2px; font-size: 1.12rem; line-height: 1.2; }
 .about-text a { color: var(--accent); }
 .about-linkedin { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; width: 100%; justify-content: flex-start; font-size: 0.8rem; font-weight: 750; color: var(--accent); }
 .about-linkedin:hover { text-decoration: underline; }
