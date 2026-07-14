@@ -370,6 +370,51 @@ def _slug_title(url: str) -> str:
     return words[:140] if len(words) >= 8 else url[:140]
 
 
+# Canonical DC operators — the OPERATOR aggregation axis. GDELT's V2Organizations carries
+# free-text entity names; we map them to a canonical operator so "all contestation press
+# mentioning Equinix" becomes one aggregation (and the B2B per-operator alert). Recall-first:
+# a hit is a triage lead, the gate confirms the article really concerns that operator's project.
+_OPERATORS = {
+    "Equinix": r"equinix",
+    "Digital Realty": r"digital realty|interxion",
+    "Data4": r"\bdata4\b",
+    "OVHcloud": r"ovh",
+    "Scaleway/Iliad": r"scaleway|iliad|\bfree pro\b",
+    "Microsoft": r"microsoft",
+    "Amazon/AWS": r"amazon|\baws\b|amazon web services",
+    "Google": r"google",
+    "Meta": r"\bmeta\b|facebook",
+    "Vantage": r"vantage",
+    "CyrusOne": r"cyrusone",
+    "NTT": r"\bntt\b",
+    "Colt": r"\bcolt\b",
+    "Telehouse/KDDI": r"telehouse|kddi",
+    "STACK Infrastructure": r"stack infrastructure",
+    "EdgeConneX": r"edgeconnex",
+    "Vertiv": r"vertiv",
+    "Segro": r"segro",
+    "Goodman": r"goodman",
+    "AtNorth": r"atnorth",
+    "Nscale": r"nscale",
+    "Mistral/MGX": r"mistral|\bmgx\b",
+    "Microsoft/OpenAI": r"openai",
+}
+_OPERATOR_RE = {name: re.compile(pat, re.I) for name, pat in _OPERATORS.items()}
+
+
+def _match_operators(organizations: str) -> tuple[list[str], list[str]]:
+    """From a GKG V2Organizations blob ('name,offset;name,offset;…'), return
+    (raw org names, canonical operators matched). Empty lists when nothing recognised."""
+    names = []
+    for chunk in (organizations or "").split(";"):
+        nm = chunk.split(",")[0].strip()
+        if nm and nm not in names:
+            names.append(nm)
+    joined = " ; ".join(names)
+    operators = [op for op, rx in _OPERATOR_RE.items() if rx.search(joined)]
+    return names[:20], operators
+
+
 def fetch_gdelt_bq(source: str, accessed: str) -> list[dict]:
     """Press-detection articles from the BigQuery JSONL export (A-23) — the bulk route.
 
@@ -403,11 +448,13 @@ def fetch_gdelt_bq(source: str, accessed: str) -> list[dict]:
         seen.add(url)
         fips = set(re.findall(r"#([A-Z]{2})#", row.get("locations") or ""))
         isos = sorted({_GKG_FIPS_TO_ISO[f] for f in fips if f in _GKG_FIPS_TO_ISO})
+        org_names, operators = _match_operators(row.get("organizations") or "")
         out.append(_record(
             "gdelt-bq", url, _GDELT_LICENSE, "article",
             name=_slug_title(url), country=",".join(isos) or None,
             facts={"domain": row.get("domain"), "seendate": row.get("seendate"),
-                   "mentioned_countries": isos, "title_is_slug": True},
+                   "mentioned_countries": isos, "title_is_slug": True,
+                   "organizations": org_names, "operators": operators},
             sources=[url], retrieved=accessed))
     return out
 

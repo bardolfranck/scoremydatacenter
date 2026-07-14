@@ -242,3 +242,20 @@ def test_gdelt_bq_reads_jsonl_export(tmp_path):
 def test_gdelt_bq_degrades_to_empty_on_missing_export(tmp_path):
     from pipelines.press.signal import fetch_gdelt_bq
     assert fetch_gdelt_bq(str(tmp_path / "absent.jsonl"), "2026-07-14") == []
+
+
+def test_gdelt_bq_operator_axis(tmp_path):
+    from pipelines.press.signal import fetch_gdelt_bq
+    export = tmp_path / "orgs.jsonl"
+    export.write_text(
+        '{"url": "https://x.test/opposition-equinix-pa10", "domain": "x.test", '
+        '"seendate": "20260713120000", "locations": "1#Paris#FR#FR75#48.8#2.3#1", '
+        '"themes": "PROTEST", "organizations": "equinix,12;plaine commune,40;prefecture,80"}\n'
+        '{"url": "https://y.test/rechenzentrum-widerstand", "domain": "y.test", '
+        '"seendate": "20260713110000", "locations": "1#Berlin#GM##51#10#9", '
+        '"themes": "PROTEST", "organizations": "stadtwerke,5"}\n'
+    )
+    recs = fetch_gdelt_bq(str(export), "2026-07-14")
+    assert recs[0]["facts"]["operators"] == ["Equinix"]
+    assert "equinix" in recs[0]["facts"]["organizations"]
+    assert recs[1]["facts"]["operators"] == []          # no known operator -> honest empty
