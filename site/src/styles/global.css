@@ -215,11 +215,9 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .legend-c { background: var(--grade-c); } .legend-d { background: var(--grade-d); }
 .legend-e { background: var(--grade-e); }
 .legend-dot-mw { width: 10px; height: 10px; background: var(--muted); border-width: 1.5px; }
-/* Watchlist kinds (A-19, 2026-07-13): same neutral tint, the SHAPE carries the kind —
-   round = local opposition, square = moratorium (official act). */
-.legend-watch-shape { display: inline-block; width: 12px; height: 12px; background: #c3d0dc; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(7, 24, 47, 0.3); }
-.legend-watch-round { border-radius: 50%; }
-.legend-watch-square { border-radius: 2px; }
+/* Watchlist kinds (A-19, 2026-07-14): the PICTOGRAM carries the kind —
+   ✋🏼 = local opposition, ⏸️ = moratorium (official act). */
+.legend-emoji { display: inline-flex; align-items: center; justify-content: center; width: 20px; font-size: 14px; line-height: 1; }
 /* Shareable watch filter + view toggle, top-left of the full map */
 .map-veille-ctl { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px); box-shadow: var(--shadow); font-size: 0.78rem; font-weight: 700; }
 .veille-ctl-label { padding: 0 4px 0 6px; color: var(--muted); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
