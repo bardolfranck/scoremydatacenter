@@ -205,3 +205,40 @@ def test_output_geojson_carries_no_grade(monkeypatch):
         assert forbidden not in blob
     assert gj["features"][0]["properties"]["watchlist_status"] == "en_veille"
     assert counts["_watchlist_after_dedupe"] == 1
+
+
+# --- GDELT BigQuery bulk route (A-23) ------------------------------------------------
+
+def test_gdelt_bq_reads_jsonl_export(tmp_path):
+    from pipelines.press.signal import fetch_gdelt_bq
+    export = tmp_path / "export.jsonl"
+    export.write_text("\n".join([
+        '{"url": "https://presse.example/fr/actu/opposition-au-data-center-de-testville", '
+        '"domain": "presse.example", "seendate": "20260713120000", '
+        '"locations": "1#Testville, France#FR#FR75#48.8#2.3#123", "themes": "PROTEST;ENV_GENERAL"}',
+        '{"url": "https://zeitung.example/rechenzentrum-widerstand-in-teststadt", '
+        '"domain": "zeitung.example", "seendate": "20260713110000", '
+        '"locations": "1#Teststadt, Germany#GM##51.0#10.0#9", "themes": "PROTEST"}',
+        'not json at all',
+        '{"no_url": true}',
+        # duplicate url must dedupe
+        '{"url": "https://presse.example/fr/actu/opposition-au-data-center-de-testville", '
+        '"domain": "presse.example", "seendate": "20260713130000", "locations": "", "themes": ""}',
+    ]))
+    records = fetch_gdelt_bq(str(export), "2026-07-14")
+    assert len(records) == 2
+    fr = records[0]
+    assert fr["source"] == "gdelt-bq" and fr["kind"] == "article"
+    assert fr["country"] == "FR"                       # FIPS FR -> ISO FR
+    assert "opposition au data center" in fr["name"]   # slug title, triage aid
+    assert fr["facts"]["title_is_slug"] is True
+    de = records[1]
+    assert de["country"] == "DE"                       # FIPS GM -> ISO DE
+    # never a grade-like key anywhere (A-19/A-21)
+    for r in records:
+        assert not ({"grade", "score", "confidence"} & set(r))
+
+
+def test_gdelt_bq_degrades_to_empty_on_missing_export(tmp_path):
+    from pipelines.press.signal import fetch_gdelt_bq
+    assert fetch_gdelt_bq(str(tmp_path / "absent.jsonl"), "2026-07-14") == []
