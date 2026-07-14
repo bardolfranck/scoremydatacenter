@@ -24,7 +24,8 @@ WITH hits AS (
     DATE               AS seendate,
     V2Locations        AS locations,
     V2Themes           AS themes,
-    IFNULL(TranslationInfo, '') AS translation_info
+    IFNULL(TranslationInfo, '') AS translation_info,
+    V2Organizations    AS organizations
   FROM `gdelt-bq.gdeltv2.gkg_partitioned`
   WHERE _PARTITIONTIME >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 8 DAY)
     -- a data-center term in the URL slug (en/fr/de/nl/es/it) — cheap and language-robust
@@ -38,7 +39,7 @@ WITH hits AS (
     AND REGEXP_CONTAINS(V2Locations,
         r'#(FR|BE|SZ|LU|GM|NL|EI|UK|SP|IT|PO|AU|DA|SW|FI|NO|PL)#')
 )
-SELECT url, domain, seendate, locations, themes, translation_info
+SELECT url, domain, seendate, locations, themes, translation_info, organizations
 FROM hits
 -- one row per url (gkg re-processes updated pages)
 QUALIFY ROW_NUMBER() OVER (PARTITION BY url ORDER BY seendate DESC) = 1
