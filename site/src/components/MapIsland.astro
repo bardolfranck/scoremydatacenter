@@ -249,10 +249,11 @@ const { variant, labels } = Astro.props;
             </div>`;
         };
 
-        // announced_project (no hard fact yet): the existing DOM 🗣️ marker, unchanged.
+        // announced_project (no hard fact yet): the existing DOM 🗣️ marker.
         // Zero entries today (US wave 1) — hide its legend line rather than advertise
         // a marker that is nowhere on the map.
         if (!announced.length) root.querySelector(".legend-line-announced")?.remove();
+        const announcedEls: HTMLElement[] = [];
         for (const feature of announced) {
           const el = document.createElement("div");
           el.className = "watch-marker";
@@ -264,8 +265,16 @@ const { variant, labels } = Astro.props;
             .setLngLat(feature.geometry.coordinates)
             .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(watchPopupHtml(feature.properties)))
             .addTo(map);
+          announcedEls.push(el);
         }
 
+        // Toggling the graded corpus on demand (Franck 2026-07-14): a kind filter
+        // (Oppositions / Moratoires) HIDES the DC grade pins so the contestation layer
+        // reads clearly; "Tout" brings them back. The DC pins are DOM markers.
+        const dcEls = Object.values(markerById).map((m) => m.marker.getElement());
+        const setDcVisible = (v: boolean) => { for (const el of dcEls) el.style.display = v ? "" : "none"; };
+
+        let applyVeille: (v: string) => void = () => {};
         const onStyleReady = (fn: () => void) => (map.isStyleLoaded() ? fn() : map.once("load", fn));
         onStyleReady(() => {
           // Pictograms carry the kind (Franck 2026-07-14): ✋🏼 = local opposition (the
@@ -284,24 +293,35 @@ const { variant, labels } = Astro.props;
           emojiIcon("watch-hand", "✋🏼");
           emojiIcon("watch-pause", "⏸️");
 
-          map.addSource("watch", { type: "geojson", data: subset(veille), cluster: true, clusterMaxZoom: 10, clusterRadius: 44 });
-          map.addLayer({ id: "watch-clusters", type: "circle", source: "watch", filter: ["has", "point_count"], paint: {
-            "circle-color": GREY, "circle-opacity": 0.92,
-            "circle-stroke-color": STROKE, "circle-stroke-width": 2,
-            "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20, 200, 26],
-          }});
-          map.addLayer({ id: "watch-cluster-count", type: "symbol", source: "watch", filter: ["has", "point_count"], layout: {
-            "text-field": ["get", "point_count_abbreviated"], "text-font": ["Noto Sans Bold"], "text-size": 11,
-          }, paint: { "text-color": INK }});
-          map.addLayer({ id: "watch-opposition", type: "symbol", source: "watch",
-            filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "opposition"]], layout: {
-              "icon-image": "watch-hand", "icon-size": 0.8, "icon-allow-overlap": true,
+          // (Re)mount the watch source + its layers. Clustering is ON for "Tout" (the US
+          // wave is 800+ points and would carpet the map) and OFF while a kind filter is
+          // active — the filtered subset is sparse, so every ✋🏼/⏸️ must show individually
+          // rather than hide inside a grey cluster at the Europe frame (Franck 2026-07-14).
+          const WATCH_LAYERS = ["watch-clusters", "watch-cluster-count", "watch-opposition", "watch-moratorium"];
+          const mountWatch = (data: any, clustered: boolean) => {
+            for (const id of WATCH_LAYERS) if (map.getLayer(id)) map.removeLayer(id);
+            if (map.getSource("watch")) map.removeSource("watch");
+            map.addSource("watch", { type: "geojson", data, cluster: clustered, clusterMaxZoom: 10, clusterRadius: 44 });
+            map.addLayer({ id: "watch-clusters", type: "circle", source: "watch", filter: ["has", "point_count"], paint: {
+              "circle-color": GREY, "circle-opacity": 0.92,
+              "circle-stroke-color": STROKE, "circle-stroke-width": 2,
+              "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20, 200, 26],
             }});
-          map.addLayer({ id: "watch-moratorium", type: "symbol", source: "watch",
-            filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "moratorium"]], layout: {
-              "icon-image": "watch-pause", "icon-size": 0.8, "icon-allow-overlap": true,
-            }});
+            map.addLayer({ id: "watch-cluster-count", type: "symbol", source: "watch", filter: ["has", "point_count"], layout: {
+              "text-field": ["get", "point_count_abbreviated"], "text-font": ["Noto Sans Bold"], "text-size": 11,
+            }, paint: { "text-color": INK }});
+            map.addLayer({ id: "watch-opposition", type: "symbol", source: "watch",
+              filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "opposition"]], layout: {
+                "icon-image": "watch-hand", "icon-size": 0.8, "icon-allow-overlap": true,
+              }});
+            map.addLayer({ id: "watch-moratorium", type: "symbol", source: "watch",
+              filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "moratorium"]], layout: {
+                "icon-image": "watch-pause", "icon-size": 0.8, "icon-allow-overlap": true,
+              }});
+          };
+          mountWatch(subset(veille), veille === "tout");
 
+          // Handlers bind to layer ids and survive a remove/re-add, so bind once.
           for (const layerId of ["watch-opposition", "watch-moratorium"]) {
             map.on("click", layerId, (e: any) => {
               new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
@@ -318,8 +338,16 @@ const { variant, labels } = Astro.props;
           map.on("mouseenter", "watch-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
           map.on("mouseleave", "watch-clusters", () => { map.getCanvas().style.cursor = ""; });
 
-          // A ?veille= deep-link frames the layer it filters (dc focus wins).
-          if (veille !== "tout" && !focusId) fitWorld(0);
+          // A kind filter hides the graded corpus + the 🗣️ announced pins so the
+          // contestation reads clean — never re-frames the map (it stays where you are).
+          applyVeille = (v: string) => {
+            veille = v;
+            const filtered = v !== "tout";
+            setDcVisible(!filtered);
+            for (const el of announcedEls) el.style.display = filtered ? "none" : "";
+            mountWatch(subset(v), !filtered);
+          };
+          if (veille !== "tout") applyVeille(veille);
         });
 
         // Filter control (shareable) + view toggle — mirrors the ranking's tweetable URLs.
@@ -338,15 +366,16 @@ const { variant, labels } = Astro.props;
         ctl.addEventListener("click", (e) => {
           const btn = (e.target as HTMLElement).closest("button");
           if (!btn) return;
+          // Geographic view toggles: US and Europe re-frame the map (that IS their job).
           if (btn.dataset.view === "world") return fitWorld();
           if (btn.dataset.view === "europe") return fitEurope();
+          // Kind filters: toggle layers in place, never jump the map.
           veille = btn.dataset.veille!;
-          (map.getSource("watch") as any)?.setData(subset(veille));
+          applyVeille(veille);
           ctl.querySelectorAll("[data-veille]").forEach((b) => b.classList.toggle("active", (b as HTMLElement).dataset.veille === veille));
           const url = new URL(location.href);
           if (veille === "tout") url.searchParams.delete("veille"); else url.searchParams.set("veille", veille);
           history.replaceState(null, "", url);
-          if (veille !== "tout") fitWorld();
         });
       } catch {
         /* no watchlist artifact yet — the layer is optional */
