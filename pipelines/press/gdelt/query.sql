@@ -12,7 +12,8 @@
 -- Always partition-bounded (last 8 days for a daily schedule) — an unbounded scan of gkg eats
 -- the whole free quota in one run.
 --
--- v1 recall-oriented: URL slug carries a data-center term in any of 6 languages AND the GKG
+-- v1 recall-oriented: URL slug carries a data-center term in any of 11 languages
+-- (en/fr/de/nl/es/it + pt/pl/fi/no/sv-da via datacenter/datasenter/datakeskus/datahall/centrum-danych) AND the GKG
 -- themes carry an opposition/decision signal. Precision is the reviewer's job (recall THEN
 -- precision, same doctrine as voie A). Tune terms per country as real noise arrives.
 
@@ -28,7 +29,7 @@ WITH hits AS (
   WHERE _PARTITIONTIME >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 8 DAY)
     -- a data-center term in the URL slug (en/fr/de/nl/es/it) — cheap and language-robust
     AND REGEXP_CONTAINS(LOWER(DocumentIdentifier),
-        r'data-?cent(er|re)|datacenter|rechenzentrum|centre-de-donnees|centro-de-datos|centro-dati|datacentrum')
+        r'data-?cent(er|re)|datacenter|rechenzentrum|centre-de-donnees|centro-de-datos|centro-dati|datacentrum|centro-de-dados|centrum-danych|datakeskus|datasenter|datahall')
     -- an opposition / public-decision signal in the GKG themes
     AND REGEXP_CONTAINS(V2Themes,
         r'PROTEST|OPPOSITION|MORATORIUM|SELF_IDENTIFIED_ENVIRON_DISASTER|WB_2432|LEGISLATION|GENERAL_GOVERNMENT|ENV_')
