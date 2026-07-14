@@ -1053,3 +1053,278 @@ sup a { color: var(--accent); font-weight: 750; }
   .button { width: 100%; }
   .hero-actions { margin-top: 22px; }
 }
+
+/* ============================================================
+   Intelligence Library — « la bibliothèque » (MOCKUP, 2026-07-14)
+   Two views: « La Revue » (landing, prestige-periodical register) and
+   « L'Index » (archive, utility register). The editorial register is carried
+   by FORM — type, hairline rules, layout — never by a foreign tint: same
+   palette, same Chivo/Chivo Mono, one brand. Grade colours appear only as the
+   A–E scale motif (bands, no letters) — never as decoration for content.
+   Micro-tokens (draft-5 1h): cover fields live in src/config/library.ts.
+   ============================================================ */
+
+:root {
+  --lib-pad-x: max(clamp(20px, 5vw, 72px), calc((100vw - 1620px) / 2));
+  --lib-tag-free-bg: #e3f0e8;
+  --lib-tag-free-ink: #0b6a42;
+  --lib-band: #eef2f6;
+}
+
+/* Mockup banner — the placeholder nature stays visible on every screen */
+.lib-mock-note {
+  padding: 8px var(--lib-pad-x);
+  background: var(--wash);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* --- Nameplate (La Revue) — newspaper masthead, rules do the register --- */
+.lib-masthead {
+  padding: clamp(36px, 5vw, 64px) var(--lib-pad-x) clamp(24px, 3vw, 40px);
+  text-align: center;
+}
+.lib-nameplate-kicker {
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+.lib-title {
+  max-width: none;
+  margin: 14px auto 0;
+  padding: 18px 0;
+  border-top: 3px double var(--ink);
+  border-bottom: 3px double var(--ink);
+  width: min(760px, 100%);
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.01em;
+}
+.lib-edition {
+  margin-top: 12px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.lib-motto { margin-top: 8px; color: var(--ink-soft); font-size: 1rem; font-weight: 650; }
+
+/* --- Free/paid band — the boundary, stated before anything is sold --- */
+.lib-freeband {
+  width: min(880px, calc(100% - 2 * var(--lib-pad-x)));
+  margin: 0 auto clamp(32px, 4vw, 56px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.lib-freeband-title {
+  padding: 10px 18px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.lib-freeband-cols { display: grid; grid-template-columns: 1fr 1fr; }
+.lib-freeband-cols > div { padding: 14px 18px; }
+.lib-freeband-cols > div + div { border-left: 1px solid var(--line); }
+.lib-tier { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.lib-tier-free { color: var(--lib-tag-free-ink); }
+.lib-tier-paid { color: var(--ink-soft); }
+.lib-tier-items { margin-top: 4px; color: var(--ink-soft); font-size: 0.92rem; }
+
+/* --- Section kickers --- */
+.lib-section-kicker {
+  margin-bottom: 18px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.lib-section-kicker-inverse { color: var(--sidebar-muted); }
+
+/* --- Featured flagship --- */
+.lib-featured { padding: clamp(32px, 4vw, 56px) var(--lib-pad-x); background: var(--lib-band); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.lib-featured-grid { display: grid; grid-template-columns: minmax(280px, 0.72fr) 1.28fr; gap: clamp(24px, 4vw, 56px); align-items: center; }
+.lib-flag-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  aspect-ratio: 3 / 4;
+  max-width: 400px;
+  padding: 26px 24px 56px;
+  border-radius: 10px;
+  color: #fff;
+  box-shadow: var(--shadow);
+}
+.lib-flag-cover-kicker { color: var(--sidebar-muted); font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; }
+.lib-flag-cover-edition { margin-top: clamp(24px, 6vh, 56px); font-family: var(--font-mono); font-size: 1.05rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; }
+.lib-flag-cover-title { margin-top: 14px; font-size: clamp(1.3rem, 1.8vw, 1.7rem); font-weight: 800; line-height: 1.15; letter-spacing: -0.01em; }
+/* A–E scale as a MOTIF: colour bands only, no letters (echoes the brand bars). */
+.lib-flag-scale { position: absolute; left: 24px; right: 24px; bottom: 24px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; height: 8px; }
+.lib-flag-scale i { display: block; border-radius: 2px; }
+.lib-flag-scale .b-a { background: var(--grade-a); }
+.lib-flag-scale .b-b { background: var(--grade-b); }
+.lib-flag-scale .b-c { background: var(--grade-c); }
+.lib-flag-scale .b-d { background: var(--grade-d); }
+.lib-flag-scale .b-e { background: var(--grade-e); }
+.lib-flag-title { font-size: clamp(1.7rem, 2.6vw, 2.5rem); line-height: 1.08; letter-spacing: -0.01em; }
+.lib-flag-hook { margin-top: 14px; max-width: 62ch; color: var(--ink-soft); font-size: 1.02rem; }
+.lib-stats { display: flex; flex-wrap: wrap; gap: clamp(20px, 3vw, 44px); margin: 22px 0 0; }
+.lib-stat dt { order: 2; color: var(--muted); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.lib-stat dd { order: 1; margin: 0; font-size: clamp(1.7rem, 2.4vw, 2.3rem); font-weight: 850; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.lib-stat { display: flex; flex-direction: column; gap: 2px; }
+.lib-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; }
+.lib-cta-micro { margin-top: 10px; color: var(--muted); font-size: 0.82rem; }
+.lib-price { color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; }
+.lib-price-inverse { color: var(--sidebar-muted); }
+
+/* The fictional-example caption — mandatory next to every figure/graph */
+.lib-fictional {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* --- Summary of the issue (numbered cards) --- */
+.lib-toc { padding: clamp(36px, 4vw, 60px) var(--lib-pad-x); }
+.lib-toc-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+.lib-toc-note { color: var(--muted); font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.lib-toc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 20px; margin-top: 8px; }
+.lib-card { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 11px; overflow: hidden; background: var(--paper); transition: box-shadow 0.18s ease, transform 0.18s ease; }
+.lib-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+.lib-card-cover { position: relative; display: flex; flex-direction: column; gap: 6px; min-height: 118px; padding: 14px 16px; color: #fff; }
+.lib-card-num { position: absolute; top: 10px; right: 14px; color: rgba(255, 255, 255, 0.55); font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; }
+.lib-card-chip { align-self: flex-start; padding: 3px 9px; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; }
+.lib-card-kicker { margin-top: auto; font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
+.lib-card-body { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 10px; }
+.lib-card-title { font-size: 1.08rem; line-height: 1.25; letter-spacing: -0.005em; }
+.lib-card-hook { color: var(--ink-soft); font-size: 0.88rem; }
+.lib-card-teaser { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 6px; }
+.lib-teaser { width: 120px; height: 36px; flex: 0 0 auto; }
+.lib-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--wash); }
+.lib-tag-digest { padding: 3px 10px; border-radius: 99px; background: var(--lib-tag-free-bg); color: var(--lib-tag-free-ink); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.lib-index-link { margin-top: 26px; text-align: center; }
+.lib-index-link a { display: inline-block; padding: 10px 18px; border: 1px solid var(--line); border-radius: 99px; font-weight: 750; }
+.lib-index-link a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* --- Bespoke band — confidential register, no price --- */
+.lib-bespoke { padding: clamp(36px, 4vw, 60px) var(--lib-pad-x); background: var(--sidebar); color: #fff; }
+.lib-bespoke h2 { max-width: 26ch; font-size: clamp(1.5rem, 2.4vw, 2.1rem); line-height: 1.12; }
+.lib-bespoke-body { max-width: 62ch; margin-top: 12px; color: var(--sidebar-muted); }
+.lib-button-inverse { color: var(--ink); background: #fff; }
+.lib-button-inverse:hover { background: var(--wash); }
+
+/* --- Digest capture — the free tier, framed as an exchange, never a wall --- */
+.lib-digest { padding: clamp(36px, 4vw, 60px) var(--lib-pad-x); text-align: center; background: var(--lib-band); border-bottom: 1px solid var(--line); }
+.lib-digest h2 { font-size: clamp(1.5rem, 2.4vw, 2.1rem); }
+.lib-digest-body { max-width: 56ch; margin: 10px auto 0; color: var(--ink-soft); }
+.lib-digest-form { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+.lib-digest-form input {
+  min-width: min(320px, 100%);
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper);
+  font: inherit;
+  color: var(--ink);
+}
+.lib-digest-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.lib-digest-micro { margin-top: 12px; color: var(--muted); font-size: 0.8rem; }
+.lib-footline { padding: 18px var(--lib-pad-x); color: var(--muted); font-family: var(--font-mono); font-size: 0.74rem; letter-spacing: 0.04em; text-align: center; }
+
+/* --- L'Index — archive view --- */
+.lib-index-head { padding: clamp(30px, 4vw, 48px) var(--lib-pad-x) 8px; }
+.lib-index-title { margin-top: 10px; font-size: clamp(1.9rem, 3.4vw, 2.9rem); letter-spacing: -0.01em; }
+.lib-index-reminder { margin-top: 8px; max-width: 70ch; color: var(--ink-soft); }
+.lib-back-link { margin-top: 10px; font-weight: 700; font-size: 0.9rem; }
+.lib-back-link a:hover { color: var(--accent); }
+.lib-index-layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: clamp(20px, 3vw, 44px); align-items: start; padding: 18px var(--lib-pad-x) clamp(36px, 4vw, 60px); }
+.lib-rail { position: sticky; top: 84px; display: grid; gap: 20px; }
+.lib-rail-group { border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.lib-rail-head { margin-bottom: 10px; color: var(--muted); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+.lib-rail-esg + .lib-rail-esg { margin-top: 12px; }
+.lib-rail-esg-label { margin-bottom: 6px; color: var(--ink-soft); font-size: 0.74rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.lib-rail-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.lib-pill {
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  background: var(--paper);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.lib-pill:hover { border-color: var(--accent); color: var(--accent); }
+.lib-pill.is-active { border-color: var(--ink); background: var(--ink); color: #fff; }
+.lib-rail-reminder { padding: 14px; border-radius: var(--radius); background: var(--wash); border: 1px solid var(--line); color: var(--ink-soft); font-size: 0.85rem; }
+.lib-entries-count { color: var(--muted); font-family: var(--font-mono); font-size: 0.76rem; letter-spacing: 0.08em; text-transform: uppercase; }
+.lib-entry-list { list-style: none; margin: 10px 0 0; padding: 0; }
+.lib-entry {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 10px;
+  border-top: 1px solid var(--line);
+}
+.lib-entry:last-child { border-bottom: 1px solid var(--line); }
+.lib-entry:hover { background: var(--wash); }
+.lib-entry-chip {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 7px;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.lib-entry-kicker { color: var(--muted); font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+.lib-entry-title { margin-top: 3px; font-size: 1.05rem; line-height: 1.25; }
+.lib-entry-hook { margin-top: 3px; color: var(--ink-soft); font-size: 0.86rem; }
+.lib-entry-meta { display: grid; justify-items: end; gap: 6px; }
+.lib-entries-empty { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
+.lib-entry-bespoke { margin-top: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
+.lib-entry-bespoke:hover { background: var(--wash); }
+
+@media (max-width: 960px) {
+  .lib-freeband { width: calc(100% - 40px); }
+  .lib-featured-grid { grid-template-columns: 1fr; }
+  .lib-flag-cover { max-width: 320px; }
+  .lib-index-layout { grid-template-columns: 1fr; }
+  .lib-rail { position: static; }
+}
+
+@media (max-width: 640px) {
+  .lib-freeband-cols { grid-template-columns: 1fr; }
+  .lib-freeband-cols > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .lib-entry { grid-template-columns: 44px minmax(0, 1fr); }
+  .lib-entry-chip { width: 44px; height: 44px; font-size: 0.7rem; }
+  .lib-entry-meta { grid-column: 2; justify-items: start; grid-auto-flow: column; align-items: center; gap: 10px; }
+  .lib-entry-meta .lib-teaser { display: none; }
+  .lib-digest-form input { min-width: 100%; }
+  .lib-cta-row .lib-price { width: 100%; }
+}

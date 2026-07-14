@@ -1,0 +1,56 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import LibraryIndex from "../../components/LibraryIndex.astro";
+import { EN_NAV } from "../../config/nav";
+
+const t = {
+  title: "The Index — all Intelligence Library entries (mockup)",
+  description:
+    "The ScoreMyDataCenter Intelligence Library catalogue: E·S·G filters, families, entries sorted by date. Mockup — fictional content.",
+  altHref: "/fr/bibliotheque/tous",
+  altLabel: "🇫🇷 FR",
+  tagline: "Independent observatory",
+  nav: EN_NAV,
+  mockupNote: "Working mockup — all content is fictional (lorem). No brief is published.",
+  nameplateKicker: "ScoreMyDataCenter · Intelligence Library",
+  indexTitle: "The Index — all entries",
+  reminder: "Every brief has a free digest. The scores and the methodology stay free.",
+  revueHref: "/intelligence",
+  backToRevue: "← Back to the Review",
+  railAria: "Library filters",
+  familyHead: "Family",
+  allLabel: "All",
+  familyLabels: { flagship: "Flagship", country: "Country", theme: "Theme" },
+  themeHead: "Theme · E·S·G aligned",
+  esgGroups: [
+    { label: "Environment", themes: ["water", "energy", "land"] },
+    { label: "Social", themes: ["impact"] },
+    { label: "Governance", themes: ["transparency"] },
+  ],
+  themeLabels: {
+    water: "Water",
+    energy: "Energy",
+    land: "Land & biodiv.",
+    impact: "Local impact",
+    transparency: "Transparency",
+  },
+  reminderHead: "Reminder",
+  reminderBody: "The truth is free; the synthesis is paid. Each brief's digest is the free tier.",
+  entriesAria: "All library entries",
+  entriesCountLabel: "entries · sorted by date",
+  emptyLabel: "No entry matches these filters — mockup: the catalogue is fictional.",
+  digestTag: "Free digest",
+  fromLabel: "from",
+  onRequest: "on request",
+  fictionalTag: "fictional example",
+  bespokeKicker: "Operator benchmark · on request",
+  bespokeTitle: "Your European portfolio, read through our grid.",
+  bespokeBody: "A confidential reading, site by site, using the public methodology. Reserved for strategy teams and investors.",
+  bespokeCta: "Contact us",
+  footLine: "Intelligence Library · ScoreMyDataCenter · open methodology · ODbL data · scoremydatacenter.org",
+};
+---
+
+<LibraryIndex lang="en" t={t} />

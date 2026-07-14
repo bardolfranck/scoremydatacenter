@@ -27,6 +27,8 @@ PAIRS = [
     ("fr/contact.astro", "contact.astro", False),
     ("fr/comprendre.astro", "understand.astro", True),
     ("fr/comprendre/one-pager.astro", "understand/one-pager.astro", False),
+    ("fr/bibliotheque.astro", "intelligence.astro", True),
+    ("fr/bibliotheque/tous.astro", "intelligence/all.astro", True),
 ]
 # FR-only internal tooling, exempt from parity: fr/apercu-partage.astro (OG preview gallery).
 

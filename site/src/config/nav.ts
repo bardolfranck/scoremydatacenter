@@ -12,6 +12,7 @@ export interface NavItem {
 export const FR_NAV: NavItem[] = [
   { href: "/fr/carte", label: "Carte" },
   { href: "/fr/classement", label: "Classement" },
+  { href: "/fr/bibliotheque", label: "Bibliothèque" },
   { href: "/fr/comprendre", label: "Comprendre les data centers" },
   { href: "/fr/methodologie", label: "Méthode" },
   { href: "/fr/#open", label: "Modèle ouvert" },
@@ -25,6 +26,7 @@ export const FR_NAV: NavItem[] = [
 export const EN_NAV: NavItem[] = [
   { href: "/map", label: "Map" },
   { href: "/ranking", label: "Ranking" },
+  { href: "/intelligence", label: "Intelligence Library" },
   { href: "/understand", label: "Understanding data centers" },
   { href: "/methodology", label: "Method" },
   { href: "/#open", label: "Open model" },

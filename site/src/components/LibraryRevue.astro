@@ -1,0 +1,137 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// « La Revue » — the Intelligence Library LANDING (brief COWORK 2026-07-14),
+// shared FR/EN (i18n §13: one template, per-language t objects).
+//
+// MOCKUP ONLY: every title/hook is lorem-Latin, every figure is tagged as a
+// fictional example. Register = prestige periodical (nameplate, hairlines,
+// numbered summary) carried by FORM — type, rules, layout — never by a foreign
+// tint. The free/paid boundary is stated in the masthead band and repeated on
+// every card. Purchase CTA is "order — contact us": no checkout exists.
+import Base from "../layouts/Base.astro";
+import LibraryCard from "./LibraryCard.astro";
+import { BRIEFS, FLAGSHIP, coverField } from "../config/library";
+
+const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
+
+const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
+const summary = BRIEFS.filter((b) => b.family !== "flagship").slice(0, 4);
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.description}
+  tagline={t.tagline}
+  altHref={t.altHref}
+  altLabel={t.altLabel}
+  nav={t.nav}
+>
+  <p class="lib-mock-note">{t.mockupNote}</p>
+
+  <!-- Nameplate — periodical masthead, form does the register -->
+  <header class="lib-masthead">
+    <p class="lib-nameplate-kicker">{t.nameplateKicker}</p>
+    <h1 class="lib-title">{t.nameplateTitle}</h1>
+    <p class="lib-edition">{t.editionLabel}</p>
+    <p class="lib-motto">{t.motto}</p>
+  </header>
+
+  <!-- The free/paid boundary — always visible, always honest (P6) -->
+  <section class="lib-freeband" aria-label={t.freePaidTitle}>
+    <p class="lib-freeband-title">{t.freePaidTitle}</p>
+    <div class="lib-freeband-cols">
+      <div>
+        <p class="lib-tier lib-tier-free">{t.freeLabel}</p>
+        <p class="lib-tier-items">{t.freeItems}</p>
+      </div>
+      <div>
+        <p class="lib-tier lib-tier-paid">{t.paidLabel}</p>
+        <p class="lib-tier-items">{t.paidItems}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- À la une — the flagship -->
+  <section class="lib-featured" aria-label={t.featuredKicker}>
+    <p class="lib-section-kicker">{t.featuredKicker}</p>
+    <div class="lib-featured-grid">
+      <div class="lib-flag-cover" style={`background:${coverField(FLAGSHIP)}`}>
+        <p class="lib-flag-cover-kicker">{t.flagshipCoverKicker}</p>
+        <p class="lib-flag-cover-edition">{t.editionLabel}</p>
+        <p class="lib-flag-cover-title">{FLAGSHIP.title[lang]}</p>
+        <div class="lib-flag-scale" aria-hidden="true">
+          <i class="b-a"></i><i class="b-b"></i><i class="b-c"></i><i class="b-d"></i><i class="b-e"></i>
+        </div>
+      </div>
+      <div class="lib-flag-copy">
+        <h2 class="lib-flag-title">{FLAGSHIP.title[lang]}</h2>
+        <p class="lib-flag-hook">{FLAGSHIP.hook}</p>
+        <dl class="lib-stats">
+          {t.flagshipStats.map((s: { value: string; label: string }) => (
+            <div class="lib-stat">
+              <dt>{s.label}</dt>
+              <dd>{s.value}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="lib-fictional">{t.fictionalTag}</p>
+        <div class="lib-cta-row">
+          <a class="button button-secondary" href="#digest">{t.ctaDigest}</a>
+          <a class="button button-primary" href={contactPath}>{t.ctaOrder}</a>
+          <span class="lib-price">{t.flagshipPrice}</span>
+        </div>
+        <p class="lib-cta-micro">{t.ctaMicro}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Au sommaire — numbered summary of the issue -->
+  <section class="lib-toc" aria-label={t.tocKicker}>
+    <div class="lib-toc-head">
+      <p class="lib-section-kicker">{t.tocKicker}</p>
+      <p class="lib-toc-note">{t.tocNote}</p>
+    </div>
+    <div class="lib-toc-grid">
+      {summary.map((brief, i) => (
+        <LibraryCard
+          brief={brief}
+          lang={lang}
+          num={String(i + 1).padStart(2, "0")}
+          familyLabel={t.familyLabels[brief.family]}
+          themeLabel={brief.theme ? t.themeLabels[brief.theme] : undefined}
+          digestTag={t.digestTag}
+          fromLabel={t.fromLabel}
+          fictionalTag={t.fictionalTag}
+        />
+      ))}
+    </div>
+    <p class="lib-index-link"><a href={t.indexHref}>{t.indexLink}</a></p>
+  </section>
+
+  <!-- Benchmark opérateur — bespoke, on request, confidential register -->
+  <section class="lib-bespoke" aria-label={t.bespokeKicker}>
+    <p class="lib-section-kicker lib-section-kicker-inverse">{t.bespokeKicker}</p>
+    <h2>{t.bespokeTitle}</h2>
+    <p class="lib-bespoke-body">{t.bespokeBody}</p>
+    <div class="lib-cta-row">
+      <a class="button lib-button-inverse" href={contactPath}>{t.bespokeCta}</a>
+      <span class="lib-price lib-price-inverse">{t.onRequest}</span>
+    </div>
+  </section>
+
+  <!-- Digest — the free tier, not a wall -->
+  <section class="lib-digest" id="digest" aria-label={t.newsletterTitle}>
+    <h2>{t.newsletterTitle}</h2>
+    <p class="lib-digest-body">{t.newsletterBody}</p>
+    <div class="lib-digest-form">
+      <input type="email" inputmode="email" placeholder={t.newsletterPlaceholder} aria-label={t.newsletterPlaceholder} />
+      <button type="button" class="button button-primary" title={t.mockupNote}>{t.newsletterCta}</button>
+    </div>
+    <p class="lib-digest-micro">{t.newsletterMicro}</p>
+  </section>
+
+  <p class="lib-footline">{t.footLine}</p>
+</Base>

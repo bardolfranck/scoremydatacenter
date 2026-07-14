@@ -1,0 +1,68 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import LibraryRevue from "../../components/LibraryRevue.astro";
+import { FR_NAV } from "../../config/nav";
+
+const t = {
+  title: "La bibliothèque — ScoreMyDataCenter (maquette)",
+  description:
+    "La bibliothèque de briefs ScoreMyDataCenter : ce que les scores veulent dire, et où va le secteur. Maquette — contenus fictifs.",
+  altHref: "/intelligence",
+  altLabel: "🇬🇧 EN",
+  tagline: "Observatoire indépendant",
+  nav: FR_NAV,
+  mockupNote: "Maquette de travail — tous les contenus sont fictifs (lorem). Aucun brief n'est publié.",
+  nameplateKicker: "ScoreMyDataCenter · Observatoire indépendant",
+  nameplateTitle: "La bibliothèque",
+  editionLabel: "Édition inaugurale",
+  motto: "Les scores restent gratuits, pour toujours. · Les briefs vendent la synthèse.",
+  freePaidTitle: "La vérité est gratuite · la synthèse est payante",
+  freeLabel: "Gratuit",
+  freeItems: "Notes A–E · sous-scores · méthodologie · données ODbL",
+  paidLabel: "Payant",
+  paidItems: "Briefs : synthèse, tendances, benchmarks, lecture experte",
+  featuredKicker: "À la une · le rapport de référence",
+  flagshipCoverKicker: "Rapport phare · ScoreMyDataCenter",
+  flagshipStats: [
+    { value: "161", label: "data centers" },
+    { value: "13", label: "pays" },
+    { value: "5", label: "piliers E·S·G" },
+  ],
+  flagshipPrice: "dès 1 900 €",
+  ctaDigest: "Télécharger le digest gratuit",
+  ctaOrder: "Commander — nous contacter",
+  ctaMicro: "Digest gratuit contre email · version complète par exemplaire · commande = nous contacter à ce stade",
+  tocKicker: "Au sommaire",
+  tocNote: "Pays · Thème · chaque brief a son digest gratuit",
+  familyLabels: { flagship: "Phare", country: "Pays", theme: "Thème" },
+  themeLabels: {
+    water: "Eau",
+    energy: "Énergie",
+    land: "Foncier & biodiversité",
+    impact: "Impact local",
+    transparency: "Transparence",
+  },
+  digestTag: "Digest gratuit",
+  fromLabel: "dès",
+  fictionalTag: "exemple fictif",
+  indexHref: "/fr/bibliotheque/tous",
+  indexLink: "Voir toutes les entrées — l'Index →",
+  bespokeKicker: "Benchmark opérateur · sur demande",
+  bespokeTitle: "Votre portefeuille européen, lu par notre grille.",
+  bespokeBody:
+    "Une lecture confidentielle, site par site, selon la méthodologie publique. Le livrable le plus complet — cadré avec vous, réservé aux équipes stratégie et investisseurs.",
+  bespokeCta: "Nous contacter",
+  onRequest: "sur demande",
+  newsletterTitle: "Recevez le digest.",
+  newsletterBody:
+    "Les TL;DR des nouveaux briefs et les mouvements du corpus. Gratuit — c'est l'étage gratuit de la bibliothèque, pas un mur.",
+  newsletterPlaceholder: "vous@organisation.eu",
+  newsletterCta: "Recevoir le digest",
+  newsletterMicro: "Pas de spam · désinscription en un clic · les scores restent gratuits",
+  footLine: "La bibliothèque · ScoreMyDataCenter · méthodologie ouverte · données ODbL · scoremydatacenter.org",
+};
+---
+
+<LibraryRevue lang="fr" t={t} />
