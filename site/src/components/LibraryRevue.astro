@@ -12,13 +12,17 @@
 // every card. Purchase CTA is "order — contact us": no checkout exists.
 import Base from "../layouts/Base.astro";
 import LibraryCard from "./LibraryCard.astro";
-import { BRIEFS, FLAGSHIP, briefLanguages, coverField, LANG_FLAGS } from "../config/library";
+import PillarIcon from "./PillarIcon.astro";
+import {
+  COMING_SOON_COUNTRIES, COUNTRY_BRIEFS, COUNTRY_FLAGS, FLAGSHIP, LANG_FLAGS,
+  THEME_BRIEFS, briefLanguages, coverField,
+} from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
 
 const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
-const summary = BRIEFS.filter((b) => b.family !== "flagship").slice(0, 6);
 const flagshipLangs = briefLanguages(FLAGSHIP);
+const num = (i: number) => String(i + 1).padStart(2, "0");
 ---
 
 <Base
@@ -63,6 +67,11 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
             </div>
           ))}
         </dl>
+        <ul class="lib-pillars" aria-label={t.pillarsAria}>
+          {t.pillars.map((p: { icon: any; label: string }) => (
+            <li><PillarIcon name={p.icon} size={16} /> {p.label}</li>
+          ))}
+        </ul>
         <p class="lib-fictional">{t.fictionalTag}</p>
         <p class="lib-flag-langs" title={t.langTitle}>
           <span class="lib-langs-label">{t.editionsLabel}</span>
@@ -88,12 +97,13 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
       <p class="lib-section-kicker">{t.tocKicker}</p>
       <p class="lib-toc-note">{t.tocNote}</p>
     </div>
+    <p class="lib-toc-group-label">{t.tocThemesLabel}</p>
     <div class="lib-toc-grid">
-      {summary.map((brief, i) => (
+      {THEME_BRIEFS.map((brief, i) => (
         <LibraryCard
           brief={brief}
           lang={lang}
-          num={String(i + 1).padStart(2, "0")}
+          num={num(i)}
           familyLabel={t.familyLabels[brief.family]}
           themeLabel={brief.theme ? t.themeLabels[brief.theme] : undefined}
           digestTag={t.digestTag}
@@ -103,6 +113,27 @@ const flagshipLangs = briefLanguages(FLAGSHIP);
         />
       ))}
     </div>
+    <p class="lib-toc-group-label">{t.tocCountriesLabel}</p>
+    <div class="lib-toc-grid">
+      {COUNTRY_BRIEFS.map((brief, i) => (
+        <LibraryCard
+          brief={brief}
+          lang={lang}
+          num={num(THEME_BRIEFS.length + i)}
+          familyLabel={t.familyLabels[brief.family]}
+          digestTag={t.digestTag}
+          fromLabel={t.fromLabel}
+          fictionalTag={t.fictionalTag}
+          langTitle={t.langTitle}
+        />
+      ))}
+    </div>
+    <p class="lib-soon">
+      <span class="lib-soon-label">{t.comingSoonLabel}</span>
+      {COMING_SOON_COUNTRIES.map((code) => (
+        <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()} title={`${code.toUpperCase()} — ${t.comingSoonWord}`}>{COUNTRY_FLAGS[code]}</span>
+      ))}
+    </p>
     <p class="lib-index-link"><a href={t.indexHref}>{t.indexLink}</a></p>
   </section>
 

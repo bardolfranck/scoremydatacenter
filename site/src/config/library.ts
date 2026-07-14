@@ -150,6 +150,21 @@ export const BRIEFS: LibraryBrief[] = [
     teaser: "bars",
   },
   {
+    id: "country-fr",
+    family: "country",
+    theme: null,
+    country: "fr",
+    cover: "FR",
+    title: {
+      fr: "Data centers in Gallia — lorem ipsum patria",
+      en: "Data centers in Gallia — lorem ipsum patria",
+    },
+    hook: "Lorem ipsum patria, retis nuclearis et arva magna, sed ut perspiciatis unde omnis.",
+    date: "2026-05-28",
+    priceFromEur: 900,
+    teaser: "bars",
+  },
+  {
     id: "country-ie",
     family: "country",
     theme: null,
@@ -163,21 +178,6 @@ export const BRIEFS: LibraryBrief[] = [
     date: "2026-04-05",
     priceFromEur: 900,
     teaser: "trend",
-  },
-  {
-    id: "country-pl",
-    family: "country",
-    theme: null,
-    country: "pl",
-    cover: "PL",
-    title: {
-      fr: "Data centers in Polonia — lorem ipsum carbo",
-      en: "Data centers in Polonia — lorem ipsum carbo",
-    },
-    hook: "Lorem ipsum carbo et transitio, quis nostrud exercitation ullamco laboris nisi.",
-    date: "2026-02-14",
-    priceFromEur: 900,
-    teaser: "dots",
   },
   {
     id: "theme-energy",
@@ -241,3 +241,23 @@ export const BRIEFS: LibraryBrief[] = [
 export const BRIEFS_BY_DATE: LibraryBrief[] = [...BRIEFS].sort((a, b) =>
   b.date.localeCompare(a.date),
 );
+
+/** Revue summary — theme cards in the site's pillar order (fiche DC order). */
+export const THEME_ORDER: BriefTheme[] = ["energy", "water", "land", "impact", "transparency"];
+export const THEME_BRIEFS: LibraryBrief[] = THEME_ORDER
+  .map((th) => BRIEFS.find((b) => b.theme === th))
+  .filter((b): b is LibraryBrief => Boolean(b));
+/** Country cards — home market first, then the sector's main markets. */
+const COUNTRY_ORDER = ["fr", "nl", "de", "ie"];
+export const COUNTRY_BRIEFS: LibraryBrief[] = COUNTRY_ORDER
+  .map((c) => BRIEFS.find((b) => b.family === "country" && b.country === c))
+  .filter((b): b is LibraryBrief => Boolean(b));
+
+/** Country flags (not language flags — 🇮🇪 vs the 🇬🇧 of English). */
+export const COUNTRY_FLAGS: Record<string, string> = {
+  fr: "🇫🇷", be: "🇧🇪", nl: "🇳🇱", lu: "🇱🇺", de: "🇩🇪", pl: "🇵🇱", ie: "🇮🇪",
+  gb: "🇬🇧", se: "🇸🇪", fi: "🇫🇮", no: "🇳🇴", es: "🇪🇸", it: "🇮🇹",
+};
+
+/** Corpus countries with no dedicated brief yet — shown as a "coming soon" flag strip. */
+export const COMING_SOON_COUNTRIES: string[] = ["pl", "be", "lu", "gb", "es", "it", "se", "fi", "no"];
