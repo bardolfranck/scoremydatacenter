@@ -353,6 +353,65 @@ def _gdelt_records(data: dict, accessed: str) -> list[dict]:
     return out
 
 
+_GKG_FIPS_TO_ISO = {  # V2Locations carries FIPS 10-4 country codes, not ISO
+    "FR": "FR", "BE": "BE", "SZ": "CH", "LU": "LU", "GM": "DE", "NL": "NL", "EI": "IE",
+    "UK": "GB", "SP": "ES", "IT": "IT", "PO": "PT", "AU": "AT", "DA": "DK", "SW": "SE",
+    "FI": "FI", "NO": "NO", "PL": "PL",
+}
+
+
+def _slug_title(url: str) -> str:
+    """Rough human label from the URL slug — the GKG export has no article title.
+    A triage aid for the reviewer, never displayed publicly (the gate swaps in the real title)."""
+    import urllib.parse
+    path = urllib.parse.urlparse(url).path.rstrip("/")
+    slug = re.sub(r"\.\w{2,5}$", "", path.rsplit("/", 1)[-1])
+    words = re.sub(r"[-_+]+", " ", slug).strip()
+    return words[:140] if len(words) >= 8 else url[:140]
+
+
+def fetch_gdelt_bq(source: str, accessed: str) -> list[dict]:
+    """Press-detection articles from the BigQuery JSONL export (A-23) — the bulk route.
+
+    `source` is a local file path or an HTTPS URL (signed GCS URL / public object) pointing to
+    the newline-delimited JSON produced by `pipelines/press/gdelt/query.sql` (one object per
+    article: url, domain, seendate, locations, themes). No cloud dependency here — BigQuery and
+    the schedule live at GCP; we only read the export. DETECTION only (A-21): triage leads for
+    the reviewer, never a score input. Degrades to [] on any failure (a missing export must
+    never sink the rest of the harvest); malformed lines are skipped.
+    """
+    try:
+        if re.match(r"^https?://", source):
+            text = get_text(source)
+        else:
+            from pathlib import Path
+            text = Path(source).read_text()
+    except (SourceUnavailable, OSError):
+        return []
+    seen, out = set(), []
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        url = row.get("url")
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        fips = set(re.findall(r"#([A-Z]{2})#", row.get("locations") or ""))
+        isos = sorted({_GKG_FIPS_TO_ISO[f] for f in fips if f in _GKG_FIPS_TO_ISO})
+        out.append(_record(
+            "gdelt-bq", url, _GDELT_LICENSE, "article",
+            name=_slug_title(url), country=",".join(isos) or None,
+            facts={"domain": row.get("domain"), "seendate": row.get("seendate"),
+                   "mentioned_countries": isos, "title_is_slug": True},
+            sources=[url], retrieved=accessed))
+    return out
+
+
 def fetch_gdelt(query: str, accessed: str, *, timespan: str = "3m", maxrecords: int = 50) -> list[dict]:
     """Press-detection articles for a query. DETECTION only — never a score input, never weighted.
 

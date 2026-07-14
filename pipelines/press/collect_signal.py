@@ -43,7 +43,7 @@ def _dedupe_key(rec: dict):
 
 
 def harvest(accessed: str, *, gdelt_query: str | None = None,
-            countries: tuple[str, ...] = ()) -> tuple[list[dict], list[dict], dict]:
+            countries: tuple[str, ...] = (), gdelt_bq: str | None = None) -> tuple[list[dict], list[dict], dict]:
     """Return (watchlist_records, press_detections, per_source_counts).
 
     `countries` adds per-country GDELT press detection (declarative specs in
@@ -70,6 +70,11 @@ def harvest(accessed: str, *, gdelt_query: str | None = None,
 
     press = signal.fetch_gdelt(gdelt_query, accessed) if gdelt_query else []
     counts["gdelt"] = len(press)
+    if gdelt_bq:
+        # Bulk route (A-23): the BigQuery JSONL export replaces the throttled DOC API at scale.
+        found = signal.fetch_gdelt_bq(gdelt_bq, accessed)
+        press += found
+        counts["gdelt-bq"] = len(found)
     for iso in countries:
         found = signal.fetch_gdelt_country(iso, accessed)
         press += found
@@ -100,9 +105,9 @@ def _coverage(counts: dict) -> str:
     lines = ["# Contestation-signal coverage (voie B — draft)", "",
              "| Source | Records |", "|--------|---------|"]
     labels = {"umap-fr": "uMap FR (opposition + projects)", "us-fights": "US fights (CC BY 4.0)",
-              "us-moratorium": "US moratoria (CC BY 4.0)", "gdelt": "GDELT press detection",
+              "us-moratorium": "US moratoria (CC BY 4.0)", "gdelt": "GDELT press detection", "gdelt-bq": "GDELT press detection (BigQuery bulk)",
               "_watchlist_after_dedupe": "**watchlist entries (deduped)**"}
-    ordered = ["umap-fr", "us-fights", "us-moratorium", "gdelt"]
+    ordered = ["umap-fr", "us-fights", "us-moratorium", "gdelt", "gdelt-bq"]
     ordered += sorted(k for k in counts if k.startswith("gdelt-"))     # per-country detections
     ordered.append("_watchlist_after_dedupe")
     for key in ordered:
@@ -119,6 +124,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="Directory for the draft artifacts (private newsroom).")
     p.add_argument("--gdelt-query", default=None,
                    help="If set, fetch GDELT press-detection articles for this query (detection only).")
+    p.add_argument("--gdelt-bq", default=None, metavar="PATH_OR_URL",
+                   help="BigQuery JSONL export (local path or signed GCS URL) from "
+                        "pipelines/press/gdelt/query.sql — the A-23 bulk route (detection only).")
     p.add_argument("--country", action="append", default=[], metavar="ISO",
                    help="Add per-country GDELT press detection (spec in signal.GDELT_COUNTRY_SPECS). "
                         "Repeatable: --country CA --country …")
@@ -126,13 +134,13 @@ def main(argv: list[str] | None = None) -> int:
 
     accessed = date.today().isoformat()
     watchlist, press, counts = harvest(accessed, gdelt_query=args.gdelt_query,
-                                       countries=tuple(args.country))
+                                       countries=tuple(args.country), gdelt_bq=args.gdelt_bq)
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "watchlist.draft.geojson").write_text(
         json.dumps(_to_geojson(watchlist), indent=2, ensure_ascii=False) + "\n")
-    if args.gdelt_query is not None or args.country:
+    if args.gdelt_query is not None or args.country or args.gdelt_bq:
         (out_dir / "press_detections.draft.json").write_text(
             json.dumps(press, indent=2, ensure_ascii=False) + "\n")
     report = _coverage(counts)
@@ -140,7 +148,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(report, file=sys.stderr)
     print(f"\nWrote {len(watchlist)} watchlist draft entries → {out_dir}", file=sys.stderr)
-    if args.gdelt_query is not None or args.country:
+    if args.gdelt_query is not None or args.country or args.gdelt_bq:
         print(f"Wrote {len(press)} press detections → {out_dir}", file=sys.stderr)
     print("Facts only, no grade. Propose only — human review before any publication (A-19/A-21).",
           file=sys.stderr)
