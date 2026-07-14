@@ -196,7 +196,7 @@ const { variant, labels } = Astro.props;
         typeOpposition: "Opposition locale", typeMoratorium: "Moratoire",
         filterLabel: "En veille :", filterAll: "Tout", filterOppositions: "Oppositions",
         filterMoratoria: "Moratoires", filterAria: "Filtrer la couche en veille",
-        viewWorld: "🌍 Monde", viewEurope: "🇪🇺 Europe",
+        viewWorld: "🇺🇸 US", viewEurope: "🇪🇺 Europe",
         status: { announced: "Annoncé", permitting: "En instruction",
                   under_construction: "En construction", operational: "En service" },
       }, labels.watch ?? {});
@@ -219,10 +219,13 @@ const { variant, labels } = Astro.props;
         const watchBounds = new maplibregl.LngLatBounds();
         for (const f of watch.features) watchBounds.extend(f.geometry.coordinates);
         // View doctrine (COUNTRIES.md §6, decided 2026-07-13): the full map keeps the
-        // EUROPE frame by default — the graded corpus is the product, the world must
-        // not drown it. The world is one explicit click away (🌍 Monde), and an active
-        // ?veille= filter auto-frames the layer it shows.
-        const fitWorld = (ms = 600) => map.fitBounds(watchBounds.extend(bounds.getNorthEast()).extend(bounds.getSouthWest()), { padding: 60, maxZoom: 6, duration: ms });
+        // EUROPE frame by default — the graded corpus is the product. The other shore
+        // is one explicit click away, honestly labelled 🇺🇸 US (the watch layer is
+        // US-only so far — "Monde" overpromised); an active ?veille= filter
+        // auto-frames the layer it shows.
+        const usBounds = new maplibregl.LngLatBounds();
+        for (const f of watch.features) if (f.properties.country === "US") usBounds.extend(f.geometry.coordinates);
+        const fitWorld = (ms = 600) => map.fitBounds(usBounds.isEmpty() ? watchBounds : usBounds, { padding: 60, maxZoom: 6, duration: ms });
         const fitEurope = (ms = 600) => map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: ms });
 
         const watchPopupHtml = (p: any) => {
