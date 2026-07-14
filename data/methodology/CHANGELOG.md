@@ -2,6 +2,17 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0 — 2026-07-14 — FREEZE
+
+The grid is frozen exactly as calibrated through draft revisions (a)-(i) — **zero scoring change in this entry**: every grade in the corpus is byte-identical before and after the freeze (only version strings move). What the freeze changes is the standing of the grid:
+
+- **`version` drops the `-draft` suffix**; the file becomes `v0.1.0.json` (Gate 5 anteriority: one active version, tagged in git — the tag is the timestamped proof of anteriority).
+- **`calibration_status` flips to `calibrated` on 23/24 indicators**, retro-validated against the 311-DC corpus (FR 257, CH 54, BE 2) with the 4 CI anchors green (E-anchor and D-anchor hard assertions among them). **L1 stays `provisional` by construction**: `direction: non_monotonic` cannot claim `calibrated` (schema rule) — its sense is deliberately carried by the ethical lock (`vulnerability_cannot_improve_score`), not by curve fitting; this is a feature of the freeze, not an omission.
+- **`parameters.provisional` -> `false`.** Placeholder rationales ("PROVISIONAL — to be calibrated…") are re-stamped "Calibrated at the v0.1.0 freeze"; nuanced calibration notes (WRI severity note, Uptime ranges pending citable reference, tier-3 out-of-MVP rows E5/W5) are kept verbatim as history — they document known limits, and honest limits are part of an opposable method.
+- **Known reconciliations carried into v0.1.x**: the 22/24-vs-21 MVP legend discrepancy (initial draft note) reads 22 in MVP since F5 entered (f); beta's rounding-boundary pin (30.0 = E) holds and is re-pinned by the golden snapshot at this freeze.
+- **Effect on gates**: the A-27 nominative-ranking gate's freeze condition is now met (its second condition, the D/E contradictoire, is wired since A-26); Gate 5 stops treating the corpus as scored against a draft.
+- Signatory: **frozen on Franck Bardol's instruction (« gèle v0.1.0 », 2026-07-14)**; prepared in working session (Claude).
+
 ## 0.1.0-draft (i) — 2026-07-11 — the A is reserved: it is proven, never granted by data (A-25)
 
 Surfaced by the EU expansion: very favorable foreign sites (clean-ish grid, no water stress, artificialized land, no Seveso, far from Natura) crossed the site A threshold (≥80) — the FR corpus had only ever reached B, so the "no A" property held by accident, not by construction. An A on the badge that a journalist screenshots reads as "proven excellent", which A-25 forbids: **A = exploitation vérifiée seulement**.

@@ -3,7 +3,7 @@
     "dc_id": "zz-test-alpha",
     "dc_name": "Alpha Test Campus",
     "date": "2026-07-05",
-    "methodology_version": "0.1.0-draft",
+    "methodology_version": "0.1.0",
     "grades": {
       "site": "B",
       "project_process": "C"
@@ -16,7 +16,7 @@
     "dc_id": "zz-test-beta",
     "dc_name": "Beta Test Hyperscale",
     "date": "2026-07-05",
-    "methodology_version": "0.1.0-draft",
+    "methodology_version": "0.1.0",
     "grades": {
       "site": "D",
       "project_process": "insufficient_data"
@@ -29,13 +29,13 @@
     "dc_id": "zz-test-beta",
     "dc_name": "Beta Test Hyperscale",
     "date": "2026-07-09",
-    "methodology_version": "0.1.0-draft",
+    "methodology_version": "0.1.0",
     "grades": {
       "site": "E",
       "project_process": "insufficient_data"
     },
     "confidence": "medium",
     "event": "methodology_change",
-    "rationale": "Calibration iter-2 (methodology 0.1.0-draft (h)): base thresholds recalibrated so the site scale can express E — F2 agricultural 25->0 (ENAF category fix), F1/F2 and E1/E2/E3 weight rebalance, W1 high 30->20. Beta (the sparse tier-1-only fixture) moves D 35.0 -> E 30.0."
+    "rationale": "Calibration iter-2 (methodology 0.1.0 (h)): base thresholds recalibrated so the site scale can express E — F2 agricultural 25->0 (ENAF category fix), F1/F2 and E1/E2/E3 weight rebalance, W1 high 30->20. Beta (the sparse tier-1-only fixture) moves D 35.0 -> E 30.0."
   }
 ]

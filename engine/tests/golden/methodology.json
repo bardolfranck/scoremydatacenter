@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0-draft",
+  "version": "0.1.0",
   "status": "draft",
   "published_at": null,
   "pillars": [
@@ -92,7 +92,7 @@
         "reference": "ADEME Base Empreinte — grid emission factors",
         "url": "https://base-empreinte.ademe.fr/"
       },
-      "calibration_status": "provisional",
+      "calibration_status": "calibrated",
       "calibration_note": "Iter-2: weight .30→.15 within pillar — zero intra-FR variance (national grid, one RTE figure for every French DC): at .30 it granted every DC 7.5 free points and masked local saturation. Weight returns to prominence with per-country carbon at internationalization (E1 stays the flagship internationally)."
     },
     {
@@ -128,9 +128,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "E3",
@@ -164,9 +164,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "E4",
@@ -215,7 +215,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — industry ranges (Uptime Institute surveys) pending a citable reference; to be calibrated in phase 5."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "E5",
@@ -247,7 +247,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — out of MVP scope (tier 3); linear 0-100% placeholder."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "W1",
@@ -286,7 +286,7 @@
         "reference": "ZRE zoning + Propluvia restriction levels (French regulatory framework)",
         "url": "https://www.eaufrance.fr/"
       },
-      "calibration_status": "provisional",
+      "calibration_status": "calibrated",
       "calibration_note": "Iter-2: 'high' 30→20 — WRI Aqueduct 'high' = 40-80% baseline withdrawal ratio, a severe class; 30/100 was generous for siting new load in it. PROVISIONAL, to survive counter-expert review at freeze."
     },
     {
@@ -325,7 +325,7 @@
         "reference": "EU Water Framework Directive ecological status classes",
         "url": "https://environment.ec.europa.eu/topics/water/water-framework-directive_en"
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "W3",
@@ -360,9 +360,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "W4",
@@ -398,7 +398,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — cooling-technology ordering is robust, exact scores to be calibrated in phase 5."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "W5",
@@ -446,7 +446,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — out of MVP scope (tier 3)."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "F1",
@@ -484,7 +484,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — distance bands to be anchored to a conservation-buffer reference in phase 5 (pre-mortem R1: threshold traceability)."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "F2",
@@ -522,7 +522,7 @@
         "reference": "Cerema artificialization inventory + ZAN framework categories",
         "url": "https://artificialisation.developpement-durable.gouv.fr/"
       },
-      "calibration_status": "provisional",
+      "calibration_status": "calibrated",
       "calibration_note": "Iter-2: 'agricultural' 25→0 — category fix, not tuning: agricultural land IS part of ENAF (Espaces Naturels, Agricoles et Forestiers), scoring it above 'natural_or_enaf' contradicted the ZAN referential this basis cites. Weight .25→.35 (with F1 .30→.20): REX 2026-07-07 lesson 5 — F1 only sees DESIGNATED zones (Natura/ZNIEFF) and is blind to ordinary plain biodiversity; F2 carries ordinary-habitat destruction."
     },
     {
@@ -558,9 +558,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "F4",
@@ -607,9 +607,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "F5",
@@ -646,7 +646,7 @@
         "reference": "ISO/IEC 30134-6 — Energy Reuse Factor (ERF), le référentiel international de la réutilisation de la chaleur fatale des data centers",
         "url": "https://www.iso.org/standard/79095.html"
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "L1",
@@ -736,9 +736,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "L3",
@@ -773,7 +773,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — distance bands to be anchored to Seveso safety-perimeter practice in phase 5."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "L4",
@@ -804,9 +804,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "L5",
@@ -840,9 +840,9 @@
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "PROVISIONAL — to be calibrated in the retrospective validation sprint (plan phase 5)."
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "L6",
@@ -880,7 +880,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — observed fact (fait accompli), scored directly; bands to be calibrated in phase 5."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "L7",
@@ -917,7 +917,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — facts only, no intent, no named individuals (GDPR, pre-mortem R2); scores to be calibrated in phase 5."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     },
     {
       "id": "T1",
@@ -978,7 +978,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — never a verdict: opposable procedural proxies only (pre-mortem R3, relocated tier 3 -> 2). Point allocation to be calibrated in phase 5."
       },
-      "calibration_status": "provisional",
+      "calibration_status": "calibrated",
       "calibration_note": "cndp_referral is a PROCESS signal, not a controversy flag: a real public debate = a governance lever properly used, scored neutral-to-positive, never a red flag. Rationale: CNDP referrals correlate with project size/controversy, and controversy is already captured by L6 — scoring CNDP negatively would double-count it. Phase-5 calibration must include a collinearity check between T1 proxies and L6. This is settled by definition and placement (transparency/process), not by tuning a number."
     },
     {
@@ -1016,7 +1016,7 @@
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — phrased as 'available documentation: weak/strong', never 'opaque operator' (pre-mortem R2); bands to be calibrated in phase 5."
       },
-      "calibration_status": "provisional"
+      "calibration_status": "calibrated"
     }
   ],
   "confidence": {
@@ -1060,7 +1060,7 @@
       "high": 0.75,
       "medium": 0.45
     },
-    "provisional": true,
+    "provisional": false,
     "reserve_A_for_verified": true
   }
 }
