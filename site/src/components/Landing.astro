@@ -10,6 +10,13 @@ import MapIsland from "./MapIsland.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import scoresData from "../../public/data/scores.json";
+import iconDatabase from "@phosphor-icons/core/assets/regular/database.svg?raw";
+import iconChartBar from "@phosphor-icons/core/assets/regular/chart-bar.svg?raw";
+import iconStack from "@phosphor-icons/core/assets/regular/stack.svg?raw";
+import iconCode from "@phosphor-icons/core/assets/regular/code.svg?raw";
+import iconPaintBrush from "@phosphor-icons/core/assets/regular/paint-brush.svg?raw";
+import iconCompass from "@phosphor-icons/core/assets/regular/compass.svg?raw";
+import iconScales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
 import methodologyData from "../../public/data/methodology.json";
 
 interface Props {
@@ -17,6 +24,14 @@ interface Props {
   t: Record<string, any>;
 }
 const { lang, t } = Astro.props;
+
+// Team avatars: the house icon system (Phosphor), classier than emoji, same meaning.
+const TEAM_ICONS: Record<string, string> = {
+  database: iconDatabase, "chart-bar": iconChartBar, stack: iconStack,
+  code: iconCode, "paint-brush": iconPaintBrush, compass: iconCompass, scales: iconScales,
+};
+const teamIcon = (name: string) =>
+  (TEAM_ICONS[name] ?? "").replace("<svg", '<svg width="22" height="22" fill="currentColor" aria-hidden="true"');
 
 const scores = scoresData as any[];
 const methodology = methodologyData as any;
@@ -340,7 +355,9 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <ul class="team-grid">
             {t.team.map((m: any) => (
               <li class="team-card">
-                <span class="team-avatar" aria-hidden="true">{m.emoji}</span>
+                {m.icon
+                  ? <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
+                  : <span class="team-avatar" aria-hidden="true">{m.emoji}</span>}
                 <strong>{m.name}</strong>
                 <p>{m.role}</p>
               </li>
