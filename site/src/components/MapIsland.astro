@@ -42,6 +42,8 @@ const { variant, labels } = Astro.props;
       </span>
       <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · petit point = non communiquée"}</span>
       <span><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
+      <span><i class="legend-watch-shape legend-watch-round"></i>{labels.legendWatchOpp ?? "Opposition locale — en veille"}</span>
+      <span><i class="legend-watch-shape legend-watch-square"></i>{labels.legendWatchMor ?? "Moratoire (acte officiel) — en veille"}</span>
     </div>
   )}
 </div>
@@ -97,6 +99,7 @@ const { variant, labels } = Astro.props;
       cooperativeGestures: isFull,
     });
     whitenBasemap(map);
+    (root as any).__map = map; // test handle — verification scripts drive the view through it
     if (isFull) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
     // Deep-link from the ranking: /fr/carte?dc=<id> flies to that project and opens its popup.
@@ -179,56 +182,158 @@ const { variant, labels } = Astro.props;
     }
 
     // Watchlist layer (A-19) — world "En veille" projects: sourced facts, NEVER a
-    // grade. Full map only (the graded DCs stay the hero focus). FR labels: this
-    // layer is shown on /fr/carte. No letter is ever rendered here.
+    // grade, a score or a confidence. Full map only. 863 entries (US wave 1) ride a
+    // clustered geojson SOURCE (DOM markers would melt the map); only the rare
+    // announced_project entries keep the DOM 🗣️ marker. Shape carries the kind —
+    // round = local opposition, square = moratorium (official act) — same neutral
+    // tint; the fine distinction lives in the popup, not in visual noise.
     if (isFull) {
-      const W = labels.watch ?? {
+      const W = Object.assign({
         badge: "En veille", note: "Projet suivi ; pas encore noté.",
         source: "Source :", press: "Presse : ", selfReported: "auto-déclaré",
         aria: "Projet suivi — contestation", title: "Projet suivi ; pas encore noté",
+        lang: "fr",
+        typeOpposition: "Opposition locale", typeMoratorium: "Moratoire",
+        filterLabel: "En veille :", filterAll: "Tout", filterOppositions: "Oppositions",
+        filterMoratoria: "Moratoires", filterAria: "Filtrer la couche en veille",
+        viewWorld: "🌍 Monde", viewEurope: "Europe",
         status: { announced: "Annoncé", permitting: "En instruction",
                   under_construction: "En construction", operational: "En service" },
-      };
+      }, labels.watch ?? {});
       const WATCH_STATUS: Record<string, string> = W.status;
+      const GREY = "#c3d0dc", STROKE = "#ffffff", INK = "#33475c";
       try {
         const watch = await (await fetch("/data/watchlist.geojson")).json();
-        let watchExtended = false;
-        for (const feature of watch.features) {
-          const p = feature.properties;
-          const [lon, lat] = feature.geometry.coordinates;
-          bounds.extend([lon, lat]); // the "en veille" layer (incl. the US) belongs in frame
-          watchExtended = true;
+        const isClusteredKind = (f: any) => f.properties.kind === "opposition" || f.properties.kind === "moratorium";
+        const clusteredAll = { type: "FeatureCollection", features: watch.features.filter(isClusteredKind) };
+        const announced = watch.features.filter((f: any) => !isClusteredKind(f));
+
+        // Shareable filter state, ranking-style URL: /fr/carte?veille=moratoires
+        const FILTERS: Record<string, string | null> = { tout: null, oppositions: "opposition", moratoires: "moratorium" };
+        let veille = new URLSearchParams(location.search).get("veille") ?? "tout";
+        if (!(veille in FILTERS)) veille = "tout";
+        const subset = (v: string) => FILTERS[v]
+          ? { type: "FeatureCollection", features: clusteredAll.features.filter((f: any) => f.properties.kind === FILTERS[v]) }
+          : clusteredAll;
+
+        const watchBounds = new maplibregl.LngLatBounds();
+        for (const f of watch.features) watchBounds.extend(f.geometry.coordinates);
+        // View doctrine (COUNTRIES.md §6, decided 2026-07-13): the full map keeps the
+        // EUROPE frame by default — the graded corpus is the product, the world must
+        // not drown it. The world is one explicit click away (🌍 Monde), and an active
+        // ?veille= filter auto-frames the layer it shows.
+        const fitWorld = (ms = 600) => map.fitBounds(watchBounds.extend(bounds.getNorthEast()).extend(bounds.getSouthWest()), { padding: 60, maxZoom: 6, duration: ms });
+        const fitEurope = (ms = 600) => map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: ms });
+
+        const watchPopupHtml = (p: any) => {
+          const facts = typeof p.facts === "string" ? JSON.parse(p.facts) : (p.facts || []);
+          const src = typeof p.source === "string" && p.source.startsWith("{") ? JSON.parse(p.source) : p.source;
+          const typeLabel = p.kind === "moratorium" ? W.typeMoratorium : p.kind === "opposition" ? W.typeOpposition : "";
+          const sub = [[p.municipality, p.country].filter(Boolean).join(" · "),
+            p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
+          const factItems = facts.map((f: any) =>
+            `<li>${f.kind === "press" ? W.press : ""}${(f.label || {})[W.lang] ?? (f.label || {}).fr ?? ""}` +
+            `${f.self_reported ? ` <span class="contestation-tag">${W.selfReported}</span>` : ""} — ${srcLink(f.source)}</li>`
+          ).join("");
+          return `
+            <div class="map-popup watch-popup">
+              <span class="watch-badge">${W.badge}</span>
+              <strong>${typeLabel ? `${typeLabel} — ` : ""}${p.name}</strong>
+              ${sub ? `<span class="map-popup-sub">${sub}</span>` : ""}
+              <p class="watch-note">${W.note}</p>
+              <p class="watch-src">${W.source} ${srcLink(src)}</p>
+              ${factItems ? `<ul class="watch-facts">${factItems}</ul>` : ""}
+            </div>`;
+        };
+
+        // announced_project (no hard fact yet): the existing DOM 🗣️ marker, unchanged.
+        for (const feature of announced) {
           const el = document.createElement("div");
           el.className = "watch-marker";
           el.textContent = "🗣️";
           el.setAttribute("role", "img");
           el.setAttribute("aria-label", W.aria);
           el.title = W.title;
-          const sub = [[p.municipality, p.country].filter(Boolean).join(" · "),
-            p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
-          const factItems = (p.facts || []).map((f: any) =>
-            `<li>${f.kind === "press" ? W.press : ""}${f.label.fr}` +
-            `${f.self_reported ? ` <span class="contestation-tag">${W.selfReported}</span>` : ""} — ${srcLink(f.source)}</li>`
-          ).join("");
-          const popupHtml = `
-            <div class="map-popup watch-popup">
-              <span class="watch-badge">${W.badge}</span>
-              <strong>${p.name}</strong>
-              ${sub ? `<span class="map-popup-sub">${sub}</span>` : ""}
-              <p class="watch-note">${W.note}</p>
-              <p class="watch-src">${W.source} ${srcLink(p.source)}</p>
-              ${factItems ? `<ul class="watch-facts">${factItems}</ul>` : ""}
-            </div>`;
           new maplibregl.Marker({ element: el })
-            .setLngLat([lon, lat])
-            .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(popupHtml))
+            .setLngLat(feature.geometry.coordinates)
+            .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(watchPopupHtml(feature.properties)))
             .addTo(map);
         }
-        // Re-frame to include the watchlist so the US pins aren't cropped out by the
-        // Europe-only fit above. Skip when a deep-link already flew to one project.
-        if (watchExtended && !focusId) {
-          map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: 0 });
-        }
+
+        const onStyleReady = (fn: () => void) => (map.isStyleLoaded() ? fn() : map.once("load", fn));
+        onStyleReady(() => {
+          // square icon (moratorium = official act, squared corners), same tint as the round
+          const px = 26, cv = document.createElement("canvas");
+          cv.width = cv.height = px;
+          const ctx = cv.getContext("2d")!;
+          ctx.fillStyle = GREY; ctx.strokeStyle = STROKE; ctx.lineWidth = 3;
+          ctx.fillRect(3, 3, px - 6, px - 6); ctx.strokeRect(3, 3, px - 6, px - 6);
+          map.addImage("watch-square", ctx.getImageData(0, 0, px, px), { pixelRatio: 2 });
+
+          map.addSource("watch", { type: "geojson", data: subset(veille), cluster: true, clusterMaxZoom: 10, clusterRadius: 44 });
+          map.addLayer({ id: "watch-clusters", type: "circle", source: "watch", filter: ["has", "point_count"], paint: {
+            "circle-color": GREY, "circle-opacity": 0.92,
+            "circle-stroke-color": STROKE, "circle-stroke-width": 2,
+            "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20, 200, 26],
+          }});
+          map.addLayer({ id: "watch-cluster-count", type: "symbol", source: "watch", filter: ["has", "point_count"], layout: {
+            "text-field": ["get", "point_count_abbreviated"], "text-font": ["Noto Sans Bold"], "text-size": 11,
+          }, paint: { "text-color": INK }});
+          map.addLayer({ id: "watch-opposition", type: "circle", source: "watch",
+            filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "opposition"]], paint: {
+              "circle-color": GREY, "circle-radius": 6, "circle-stroke-color": STROKE, "circle-stroke-width": 1.5,
+            }});
+          map.addLayer({ id: "watch-moratorium", type: "symbol", source: "watch",
+            filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "moratorium"]], layout: {
+              "icon-image": "watch-square", "icon-size": 1, "icon-allow-overlap": true,
+            }});
+
+          for (const layerId of ["watch-opposition", "watch-moratorium"]) {
+            map.on("click", layerId, (e: any) => {
+              new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
+                .setLngLat(e.lngLat).setHTML(watchPopupHtml(e.features[0].properties)).addTo(map);
+            });
+            map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
+          }
+          map.on("click", "watch-clusters", async (e: any) => {
+            const cluster = e.features[0];
+            const zoom = await (map.getSource("watch") as any).getClusterExpansionZoom(cluster.properties.cluster_id);
+            map.easeTo({ center: cluster.geometry.coordinates, zoom, duration: 500 });
+          });
+          map.on("mouseenter", "watch-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
+          map.on("mouseleave", "watch-clusters", () => { map.getCanvas().style.cursor = ""; });
+
+          // A ?veille= deep-link frames the layer it filters (dc focus wins).
+          if (veille !== "tout" && !focusId) fitWorld(0);
+        });
+
+        // Filter control (shareable) + view toggle — mirrors the ranking's tweetable URLs.
+        const ctl = document.createElement("div");
+        ctl.className = "map-veille-ctl";
+        ctl.setAttribute("role", "group");
+        ctl.setAttribute("aria-label", W.filterAria);
+        ctl.innerHTML =
+          `<span class="veille-ctl-label">${W.filterLabel}</span>` +
+          [["tout", W.filterAll], ["oppositions", W.filterOppositions], ["moratoires", W.filterMoratoria]]
+            .map(([v, label]) => `<button type="button" data-veille="${v}"${v === veille ? ' class="active"' : ""}>${label}</button>`).join("") +
+          `<span class="veille-ctl-sep"></span>` +
+          `<button type="button" data-view="world">${W.viewWorld}</button>` +
+          `<button type="button" data-view="europe">${W.viewEurope}</button>`;
+        canvas.appendChild(ctl);
+        ctl.addEventListener("click", (e) => {
+          const btn = (e.target as HTMLElement).closest("button");
+          if (!btn) return;
+          if (btn.dataset.view === "world") return fitWorld();
+          if (btn.dataset.view === "europe") return fitEurope();
+          veille = btn.dataset.veille!;
+          (map.getSource("watch") as any)?.setData(subset(veille));
+          ctl.querySelectorAll("[data-veille]").forEach((b) => b.classList.toggle("active", (b as HTMLElement).dataset.veille === veille));
+          const url = new URL(location.href);
+          if (veille === "tout") url.searchParams.delete("veille"); else url.searchParams.set("veille", veille);
+          history.replaceState(null, "", url);
+          if (veille !== "tout") fitWorld();
+        });
       } catch {
         /* no watchlist artifact yet — the layer is optional */
       }
