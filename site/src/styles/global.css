@@ -1435,12 +1435,14 @@ sup a { color: var(--accent); font-weight: 750; }
 .founder-card h3 { font-size: 1.15rem; margin: 0; }
 .founder-card-name { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-weight: 800; color: var(--accent); }
 .founder-facts { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
-.founder-facts li { position: relative; padding-left: 22px; font-size: 0.87rem; line-height: 1.5; color: var(--ink-soft); }
-.founder-facts li::before { content: "◆"; position: absolute; left: 2px; top: 1px; color: var(--accent); font-size: 0.6rem; }
+.founder-facts li { display: flex; gap: 11px; align-items: flex-start; font-size: 0.87rem; line-height: 1.5; color: var(--ink-soft); }
+.fact-ic { flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); display: grid; place-items: center; color: var(--accent); margin-top: 1px; }
 .founder-facts a { color: var(--accent); font-weight: 650; }
 .about-bottom { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(24px, 4vw, 48px); margin-top: 32px; align-items: start; }
 .expertise-list { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
-.expertise-list li { display: grid; gap: 2px; font-size: 0.9rem; }
+.expertise-list li { display: flex; gap: 14px; align-items: flex-start; font-size: 0.9rem; }
+.expertise-list li > div { display: grid; gap: 2px; }
+.expertise-list .ia-ic { flex: none; }
 .expertise-list strong { color: var(--ink); font-size: 0.95rem; }
 .expertise-list span { color: var(--ink-soft); line-height: 1.5; }
 .strengths { border: 1px solid var(--line); border-radius: 14px; background: var(--wash); padding: 22px 26px; }
