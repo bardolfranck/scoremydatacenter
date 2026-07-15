@@ -1297,6 +1297,8 @@ sup a { color: var(--accent); font-weight: 750; }
   .lib-entry-meta .lib-teaser { display: none; }
   .lib-digest-form input { min-width: 100%; }
   .lib-cta-row .lib-price { width: 100%; }
+}
+
 /* ============ HOME V2 (Franck GO 2026-07-15 — fusion-v2 assainie) ============ */
 /* Hero: rupture line + the corpus at a glance. The red is the scale's own E red. */
 .hero-v2 { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: clamp(28px, 4vw, 56px); align-items: start; }
