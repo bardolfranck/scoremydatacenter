@@ -1344,19 +1344,20 @@ sup a { color: var(--accent); font-weight: 750; }
 .explore-search input { width: 100%; box-sizing: border-box; padding: 13px 18px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: 0.95rem; color: var(--ink); background: var(--paper); }
 .explore-search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
 
-/* Intelligence Library teaser (page on its way — PR #101) */
-.lib-teaser { display: grid; grid-template-columns: 170px 1fr auto; gap: clamp(20px, 3vw, 36px); align-items: center; background: var(--wash); border: 1px solid var(--line); border-radius: 14px; padding: 26px 30px; }
-.lib-cover { width: 170px; height: 220px; border-radius: 6px; background: var(--sidebar, #102a43); color: #fff; padding: 16px 14px; box-sizing: border-box; box-shadow: 8px 10px 24px rgba(16, 42, 67, 0.25); position: relative; }
-.lib-cover-brand { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9fb3c8; }
-.lib-cover b { display: block; margin-top: 10px; font-size: 1rem; line-height: 1.3; }
-.lib-cover-bars { position: absolute; bottom: 14px; left: 14px; display: flex; gap: 4px; }
-.lib-cover-bars i { width: 18px; height: 6px; border-radius: 2px; display: block; }
-.lib-copy h2 { font-size: 1.4rem; letter-spacing: -0.01em; }
-.lib-copy p { margin: 8px 0 0; color: var(--ink-soft); }
-.lib-copy ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--ink); font-weight: 600; font-size: 0.92rem; }
-.lib-copy ul li::before { content: "✓"; color: var(--grade-a); font-weight: 900; margin-right: 9px; }
-.lib-badge { display: inline-block; margin-left: 10px; padding: 3px 10px; border-radius: 999px; background: var(--paper); border: 1px solid var(--grade-c); color: #8a6a10; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: middle; }
-.lib-cta { align-self: center; }
+/* Intelligence Library teaser on the home — classes are home-lib-* on purpose:
+   the library PAGE (#101) owns the plain .lib-* namespace (its .lib-teaser is a
+   120x36 sparkline, which squashed this section — seen live 2026-07-15). */
+.home-lib { display: grid; grid-template-columns: 170px 1fr auto; gap: clamp(20px, 3vw, 36px); align-items: center; background: var(--wash); border: 1px solid var(--line); border-radius: 14px; padding: 26px 30px; }
+.home-lib-cover { width: 170px; height: 220px; border-radius: 6px; background: var(--sidebar, #102a43); color: #fff; padding: 16px 14px; box-sizing: border-box; box-shadow: 8px 10px 24px rgba(16, 42, 67, 0.25); position: relative; }
+.home-lib-cover-brand { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9fb3c8; }
+.home-lib-cover b { display: block; margin-top: 10px; font-size: 1rem; line-height: 1.3; }
+.home-lib-cover-bars { position: absolute; bottom: 14px; left: 14px; display: flex; gap: 4px; }
+.home-lib-cover-bars i { width: 18px; height: 6px; border-radius: 2px; display: block; }
+.home-lib-copy h2 { font-size: 1.4rem; letter-spacing: -0.01em; }
+.home-lib-copy p { margin: 8px 0 0; color: var(--ink-soft); }
+.home-lib-copy ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--ink); font-weight: 600; font-size: 0.92rem; }
+.home-lib-copy ul li::before { content: "✓"; color: var(--grade-a); font-weight: 900; margin-right: 9px; }
+.home-lib-cta { align-self: center; }
 
 /* For whom — one strip, not a page */
 .who-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
@@ -1382,7 +1383,7 @@ sup a { color: var(--accent); font-weight: 750; }
 .footer-v2 a:hover { color: #fff; }
 
 @media (max-width: 960px) {
-  .hero-v2, .explore-grid, .lib-teaser, .footer-v2 { grid-template-columns: 1fr; }
+  .hero-v2, .explore-grid, .home-lib, .footer-v2 { grid-template-columns: 1fr; }
   .explore-grid > div + div { border-left: none; border-top: 1px solid var(--line); }
   .who-grid { grid-template-columns: repeat(2, 1fr); }
   .header-search { display: none; }

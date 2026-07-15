@@ -369,20 +369,20 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   </section>
 
   <section class="section" id="library" aria-labelledby="library-title">
-    <div class="section-inner lib-teaser">
-      <div class="lib-cover" aria-hidden="true">
-        <span class="lib-cover-brand">ScoreMyDataCenter</span>
+    <div class="section-inner home-lib">
+      <div class="home-lib-cover" aria-hidden="true">
+        <span class="home-lib-cover-brand">ScoreMyDataCenter</span>
         <b>{t.library.coverTitle}</b>
-        <span class="lib-cover-bars"><i class="hs-a"></i><i class="hs-b"></i><i class="hs-c"></i><i class="hs-d"></i><i class="hs-e"></i></span>
+        <span class="home-lib-cover-bars"><i class="hs-a"></i><i class="hs-b"></i><i class="hs-c"></i><i class="hs-d"></i><i class="hs-e"></i></span>
       </div>
-      <div class="lib-copy">
-        <h2 id="library-title">{t.library.title} <span class="lib-badge">{t.library.badge}</span></h2>
+      <div class="home-lib-copy">
+        <h2 id="library-title">{t.library.title}</h2>
         <p>{t.library.lede}</p>
         <ul>
           {t.library.items.map((it: string) => <li>{it}</li>)}
         </ul>
       </div>
-      <a class="button button-primary lib-cta" href={lang === "fr" ? "/fr/bibliotheque" : "/intelligence"}>{t.library.cta} →</a>
+      <a class="button button-primary home-lib-cta" href={lang === "fr" ? "/fr/bibliotheque" : "/intelligence"}>{t.library.cta} →</a>
     </div>
   </section>
 
