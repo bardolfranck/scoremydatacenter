@@ -27,7 +27,7 @@ from .core import DATA_DIR, REPO_ROOT, GateError, load_json, load_methodology, d
 from .scoring import history_entry_fields, score_datacenter
 from .validate import run_gates
 
-VALID_EVENTS = ["initial_scoring", "ex_post_rescore", "right_of_reply_revision",
+VALID_EVENTS = ["initial_scoring", "ex_post_rescore",
                 "data_correction", "methodology_change"]
 
 
@@ -102,13 +102,12 @@ def build() -> int:
         print(f"score: {dc_id}: site={g['site']['grade']} project_process={pp} "
               f"confidence={results[dc_id]['confidence']['level']}")
     print(f"score: artifacts written for {len(results)} datacenter(s)")
-    # Notification load (brief 2026-07-06 §1, phase 5): only D/E grades — on either the site or
-    # the project note — trigger the ≥15-day right of reply before publication. Count them so the
-    # contradictory workload is dimensioned automatically.
+    # Exposure count: D/E grades (on either head note) are the most sensitive fiches —
+    # worth an editorial glance before shipping. Informational only (grades publish
+    # directly, 2026-07-15 legal review).
     de = [dc_id for dc_id, r in results.items()
           if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"}]
-    print(f"score: right-of-reply load — {len(de)} DC(s) exposed at D/E (need ≥15-day notice): "
-          + (", ".join(sorted(de)) if de else "none"))
+    print(f"score: exposure — {len(de)} DC(s) at D/E: " + (", ".join(sorted(de)) if de else "none"))
     return 0
 
 

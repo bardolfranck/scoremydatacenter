@@ -100,8 +100,7 @@
     "fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
     "en": "Rated E on site; project data insufficient to grade project & process."
   },
-  "publication_status": "right_of_reply",
-  "reply_deadline": "2026-07-24",
+  "publication_status": "published",
   "summary": {
     "fr": "Fixture de test (fictive) : hyperscale annoncé, faiblement documenté — étage 1 seul, cas « données insuffisantes » et confiance faible.",
     "en": "Test fixture (fictional): announced hyperscale, poorly documented — tier 1 only, exercises the insufficient-data and low-confidence paths."
@@ -492,8 +491,7 @@
     }
   ],
   "publication": {
-    "status": "right_of_reply",
-    "operator_notified_at": "2026-07-09",
+    "status": "published",
     "operator_response": null
   },
   "score_history": [

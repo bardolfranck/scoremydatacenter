@@ -139,6 +139,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <h3>{t.whyTitle}</h3>
           <p class="why-lede">{t.whyLede}</p>
           <p class="why-body" set:html={t.whyBody}></p>
+          {t.whyMotto && <p class="why-motto">{t.whyMotto}</p>}
         </div>
         {t.demo && demo && (
           <div class="score-demo">

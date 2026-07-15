@@ -135,24 +135,15 @@
       "additionalProperties": false,
       "required": [
         "status",
-        "operator_notified_at",
         "operator_response"
       ],
       "properties": {
         "status": {
           "enum": [
             "draft",
-            "right_of_reply",
             "published"
-          ]
-        },
-        "operator_notified_at": {
-          "type": [
-            "string",
-            "null"
           ],
-          "format": "date",
-          "description": "Required (non-null, >= 15 days in the past — engine gate) before status can be published."
+          "description": "Lifecycle: draft (internal) -> published. Grades publish directly (2026-07-15, legal review); the permanent response space is publication.operator_response."
         },
         "operator_response": {
           "oneOf": [
@@ -186,28 +177,7 @@
             }
           ]
         }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "status": {
-                "enum": [
-                  "right_of_reply",
-                  "published"
-                ]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "operator_notified_at": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      ]
+      }
     },
     "score_history": {
       "type": "array",
@@ -661,7 +631,6 @@
           "enum": [
             "initial_scoring",
             "ex_post_rescore",
-            "right_of_reply_revision",
             "data_correction",
             "methodology_change"
           ]

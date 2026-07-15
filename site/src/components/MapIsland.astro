@@ -19,7 +19,6 @@ interface Props {
     ficheBase?: string;   // "/fr/dc" | "/dc"
     mapPath?: string;     // "/fr/carte" | "/map"
     viewFiche?: string;
-    replyInProgress?: string;
     reserved?: string;
     legendGraded?: string;
     legendWatch?: string;
@@ -149,7 +148,6 @@ const { variant, labels } = Astro.props;
             <span>${labels.operator} ${chip(p.grade_project_process)}${p.reserved_pp ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
           </div>
           ${pillarStrip(p.pillars)}
-          ${p.publication_status === "right_of_reply" ? `<p class="map-popup-reply">${labels.replyInProgress ?? "Droit de réponse en cours"}</p>` : ""}
           ${p.quote_fr ? `<p class="map-popup-quote">« ${p.quote_fr} »</p>` : ""}
           <span class="confidence ${p.confidence}"><span class="dot"></span>${labels.confidence[p.confidence]}</span>
           ${fixtureTag}

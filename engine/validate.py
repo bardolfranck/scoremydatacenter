@@ -9,8 +9,8 @@ Gate 2  Announced vs measured never merged: an indicator that the methodology
 Gate 3  Methodology coherence: threshold traceability (schema), weights sum to 1,
         unique ids, direction contract, declared-but-unenforced ethical
         constraints cannot claim 'calibrated'.
-Gate 4  Contradictory review: the public repo only holds published DCs, and
-        published requires operator notification >= 15 days old.
+Gate 4  (removed 2026-07-15) The prior-notice mechanism was retired on legal
+        review: grades publish directly; the permanent response space remains.
 Gate 5  Methodology anteriority: exactly one active version; a real (non-zz)
         DC cannot be scored against a draft methodology; score_history entries
         must reference the current version.
@@ -25,7 +25,7 @@ Journal gate: every score_history entry after the first carries a rationale.
 """
 
 import sys
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -34,7 +34,7 @@ from .core import (
     DATA_DIR, FICTIONAL_PREFIX, GateError, load_json, load_methodology,
     datacenter_paths, watchlist_paths,
 )
-from .scoring import NOTICE_DAYS, reply_window_start, score_datacenter, worst_exposed_grade  # NOTICE_DAYS re-exported
+from .scoring import score_datacenter
 
 # A watchlist entry is FACTS ONLY (A-19/A-21): a grade must be structurally
 # impossible. additionalProperties:false already blocks these keys; this explicit
@@ -181,47 +181,8 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                     "before publication"
                 )
 
-        # Gate 4 — publication doctrine A-26: never hide on grade, sequence on time. A/B/C publish
-        # directly. A D or E (the worst of the two head notes) is public from day 0 — letter and score
-        # online, fiche visible — and only the FINAL fiche waits out the right of reply: during the
-        # window the fiche is `right_of_reply` (banner + deadline), never `draft`/absent in the public
-        # repo. The window attaches to the unfavorable note: it needs a notification on/after the date
-        # the grade entered or worsened into D/E (reply_window_start); an improvement re-opens nothing.
-        pub = dc["publication"]
-        grades = score_datacenter(dc, methodology)["grades"]
-        worst = worst_exposed_grade({"site": grades["site"]["grade"],
-                                     "project_process": grades["project_process"]["grade"]})
-        if worst not in ("D", "E"):
-            if pub["status"] != "published":
-                problems.append(
-                    f"GATE 4: {label}: an A/B/C fiche publishes directly — status must be 'published', "
-                    f"not {pub['status']!r} (no hold below D)"
-                )
-        else:
-            if pub["status"] == "draft":
-                problems.append(
-                    f"GATE 4: {label}: a D/E fiche is never 'draft' in the public repo — it is public from "
-                    "day 0 as 'right_of_reply' (window open) or 'published'"
-                )
-            window = reply_window_start(dc["score_history"])
-            notified = pub["operator_notified_at"]
-            if window is not None:  # entered/worsened into D/E → a fresh right of reply is owed
-                if not notified:
-                    problems.append(
-                        f"GATE 4: {label}: the D/E window opened {window} but no operator notification is "
-                        "recorded — notify (status right_of_reply) before the fiche is finalised"
-                    )
-                elif notified < window:
-                    problems.append(
-                        f"GATE 4: {label}: operator notified {notified}, before the D/E aggravation on {window} "
-                        "— a fresh notification (on or after that date) is required"
-                    )
-                elif pub["status"] == "published" and date.fromisoformat(notified) + timedelta(days=NOTICE_DAYS) > today:
-                    problems.append(
-                        f"GATE 4: {label}: published as final, but the {NOTICE_DAYS}-day right of reply (opened "
-                        f"{notified}) is not over — keep it 'right_of_reply' until the deadline"
-                    )
-            # window is None (D/E reached by improvement, e.g. E→D): publication directe, no fresh hold.
+        # Gate 4 removed (2026-07-15): grades publish directly — no prior-notice hold.
+        # The permanent response space (publication.operator_response) is untouched.
 
         # Gate 5 — anteriority
         if not dc["id"].startswith(FICTIONAL_PREFIX) and methodology["status"] != "published":

@@ -260,7 +260,6 @@
   ],
   "publication": {
     "status": "published",
-    "operator_notified_at": "2026-06-10",
     "operator_response": {
       "text": "Fictional operator response (test fixture): we confirm the announced PUE target and dispute nothing.",
       "date": "2026-06-20",

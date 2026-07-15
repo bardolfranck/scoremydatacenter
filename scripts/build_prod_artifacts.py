@@ -36,7 +36,7 @@ def main() -> int:
     de = sorted(i for i, r in results.items()
                 if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"})
     print(f"prod-artifacts: {len(dcs)} DC + {len(watchlist)} watchlist entries → {ARTIFACTS_DIR}")
-    print(f"prod-artifacts: right-of-reply load — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
+    print(f"prod-artifacts: exposure — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
     return 0
 
 

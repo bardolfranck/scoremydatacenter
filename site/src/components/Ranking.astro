@@ -157,7 +157,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
               >
                 <td class="rank-index"></td>
                 <td class="rank-project">
-                  <strong><a href={`${ficheBase}/${dc.id}`}>{dc.name}</a>{dc.publication_status === "right_of_reply" && <span class="rank-reply">{t.replyChip.replace("{date}", fmtDate(dc.reply_deadline))}</span>}</strong>
+                  <strong><a href={`${ficheBase}/${dc.id}`}>{dc.name}</a></strong>
                   <span>{dc.municipality} — {dc.operator}{dc.id.startsWith("zz-") ? ` · ${t.fixture}` : ""}</span>
                   <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
                 </td>

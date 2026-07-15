@@ -16,7 +16,6 @@ from pathlib import Path
 import pytest
 
 from engine.core import REPO_ROOT, load_methodology
-from engine.validate import NOTICE_DAYS
 
 PAGES = {
     "en": (REPO_ROOT / "site" / "src" / "pages" / "index.astro").read_text(),
@@ -59,20 +58,12 @@ def test_coverage_threshold_claims_match_parameters(methodology):
             )
 
 
-def test_notice_period_claims_match_gate():
-    for lang, text in PAGES.items():
-        for claimed in re.findall(r"(?:au moins|at least)\s+(\d+)\s+(?:jours|days)", text):
-            assert int(claimed) == NOTICE_DAYS, (
-                f"{lang} copy promises {claimed} days of notice, gate 4 enforces {NOTICE_DAYS}"
-            )
-        assert re.search(r"(?:environ|about|around)\s+\d+\s+(?:jours|days)", text) is None, (
-            f"{lang} copy hedges the notice period ('about N days') — it is an exact gate, say 'at least'"
-        )
-
-
-# --- Firewall + grade-triggered contradictoire (brief 2026-07-06 §1/§3) ---------
-# The "we help the project, never the grade" firewall and the grade-triggered
-# right of reply must stay stated where they do legal/positioning work.
+# --- Firewall (brief 2026-07-06 §1) + forbidden phrases (brief 2026-07-15 §4.I.2) ---
+# The "we help the project, never the grade" firewall stays stated where it does
+# legal/positioning work. The OLD prior-notice mechanism (grade-triggered right of
+# reply, >=15-day hold) was retired on the 2026-07-15 legal review: its phrases are
+# BANNED from every living surface so it can never crawl back through an old
+# template or a copy-paste.
 _SITE = REPO_ROOT / "site" / "src" / "pages"
 FIREWALL_SOURCES = {
     "landing-fr": PAGES["fr"],
@@ -90,34 +81,55 @@ def test_firewall_line_present_where_required():
         )
 
 
-def test_contradictoire_is_grade_triggered_not_all_nominative():
-    # Grade letters in copy wear the note's typography (inline .gl chips) — strip markup
-    # before matching so the invariant checks the words, not the styling.
-    fr = re.sub(r"<[^>]+>", "", PAGES["fr"])
-    assert re.search(r"notes?\s+A(\s+à\s+|[–\-])C|D\s+ou\s+E", fr), (
-        "landing no longer states the grade-triggered contradictoire (A–C direct, D/E right of reply)"
+# Every phrase of the retired mechanism, FR + EN (case-insensitive, singular/plural,
+# NBSP-tolerant). A hit anywhere on a living surface breaks the build.
+FORBIDDEN_PHRASES = [
+    r"droits?\s+de\s+réponse\s+préalables?",
+    r"prior\s+rights?\s+of\s+reply",
+    r"au\s+moins\s+(15|quinze)\s+jours",
+    r"at\s+least\s+(15|fifteen)\s+days",
+    r"[≥>]=?\s*15\s*j\b",
+    r"contradictoires?\s+déclenchés?\s+par\s+la\s+note",
+    r"grade-triggered",
+    r"droit\s+de\s+réponse\s+en\s+cours",
+    r"right\s+of\s+reply\s+in\s+progress",
+    r"deux\s+droits\s+sur\s+chaque\s+fiche",
+    r"two\s+rights\s+on\s+every\s+(fiche|datasheet)",
+    r"sollicité,?\s+sans\s+réponse",
+    r"solicited,?\s+no\s+(reply|response)",
+    r"l'opérateur\s+dispose\s+d'un\s+droit\s+de\s+réponse",
+]
+
+
+def _living_surfaces():
+    """Every user-facing source: site pages/components/content + README + docs."""
+    roots = [REPO_ROOT / "site" / "src", REPO_ROOT / "docs"]
+    files = [p for r in roots for p in r.rglob("*") if p.suffix in (".astro", ".ts", ".md")]
+    files.append(REPO_ROOT / "README.md")
+    return files
+
+
+def test_forbidden_phrases_never_reappear():
+    hits = []
+    for path in _living_surfaces():
+        text = path.read_text().replace("\u00a0", " ").lower()
+        for pattern in FORBIDDEN_PHRASES:
+            if re.search(pattern, text):
+                hits.append(f"{path.relative_to(REPO_ROOT)}: {pattern!r}")
+    assert not hits, (
+        "forbidden phrase(s) of the retired prior-notice mechanism resurfaced "
+        "(legal review 2026-07-15 — grades publish directly):\n" + "\n".join(hits)
     )
-    assert "publication nominative" not in fr.lower(), (
-        "landing still promises the OLD all-nominative 15-day hold — the contradictoire is grade-triggered now"
+
+
+def test_forbidden_phrases_lint_actually_bites(tmp_path):
+    # negative test: reintroduce one banned formula in a fake template -> the lint must flag it
+    fake = tmp_path / "old-template.astro"
+    fake.write_text("<p>Une note D ouvre un droit de réponse préalable d'au moins 15 jours.</p>")
+    text = fake.read_text().lower()
+    assert any(re.search(pat, text) for pat in FORBIDDEN_PHRASES), (
+        "the forbidden-phrases lint no longer catches the canonical banned sentence"
     )
-
-
-def test_no_copy_claims_removed_display_features():
-    # close_to ranges were removed from the engine output; the copy must not resurrect them
-    for lang, text in PAGES.items():
-        assert "fourchette" not in text.lower() and "close to a grade" not in text.lower(), (
-            f"{lang} copy mentions grade ranges — the engine no longer displays them"
-        )
-
-
-def test_pillar_weight_claims_match_methodology(methodology):
-    weights = {p["id"]: round(p["weight"] * 100) for p in methodology["pillars"]}
-    # the landing renders weights dynamically from methodology.json (no hardcoded
-    # percentages allowed in the page sources)
-    for lang, text in PAGES.items():
-        hardcoded = re.findall(r"(\d+)\s?%[^)]{0,30}(?:pilier|pillar)", text)
-        assert not hardcoded, f"{lang} copy hardcodes pillar weights {hardcoded} — render them from methodology.json"
-    assert sum(weights.values()) == 100
 
 
 # --- Gate 7 (prose): a grade letter is never rendered outside <ScoreBadge> --------

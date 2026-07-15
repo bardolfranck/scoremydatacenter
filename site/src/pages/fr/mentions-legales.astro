@@ -26,29 +26,34 @@ const t = {
       h2: "Propriété intellectuelle et licences",
       html: [
         "<p>Le projet est ouvert par conception (« on ouvre la vérité ») :</p>",
-        "<ul><li>Moteur de calcul et parsers : <strong>AGPL-3.0</strong>.</li><li>Données publiées : <strong>ODbL</strong>.</li><li>Méthodologie et contenus éditoriaux : <strong>CC BY-SA 4.0</strong>.</li></ul>",
+        "<ul><li>Moteur de calcul et parsers : <strong>AGPL-3.0</strong>.</li><li>Données : <strong>licence selon la source</strong> — OpenStreetMap et DCWatch (Hubblo) sous ODbL, données institutionnelles sous Licence Ouverte ou licence propre ; chaque valeur affichée cite sa source.</li><li>Méthodologie et contenus éditoriaux : <strong>CC BY-SA 4.0</strong>.</li></ul>",
         "<p>Le code et les données sont publics sur <a href=\"https://github.com/bardolfranck/scoremydatacenter\" target=\"_blank\" rel=\"noopener\">GitHub</a>. Les articles de presse cités ne sont jamais reproduits : seuls le lien, une copie archivée et le fait extrait sont publiés.</p>",
       ],
     },
     {
       h2: "Données personnelles",
-      html: ["<p>Le site ne dépose aucun cookie et n'utilise pas de traceur publicitaire. La mesure d'audience (Cloudflare Web Analytics) est sans cookie et sans donnée personnelle. Les notes ne contiennent aucune donnée personnelle : la position des élus n'est enregistrée que sous forme de faits votés (délibérations), jamais de nom de personne.</p>"],
+      html: [
+        "<p>Le site ne dépose aucun cookie et n'utilise pas de traceur publicitaire. La mesure d'audience (Cloudflare Web Analytics) est sans cookie et sans donnée personnelle. Les notes ne contiennent aucune donnée personnelle : la position des élus n'est enregistrée que sous forme de faits votés (délibérations), jamais de nom de personne.</p>",
+        // À VALIDER FRANCK : section données personnelles proportionnée (relecture avocat 2026-07-15)
+        "<p>Lorsque des données personnelles apparaissent dans nos contenus, elles se limitent à des faits publics et professionnels (délibérations, votes, prises de position publiques de personnes intervenant dans un projet). Finalité : informer sur l'acceptabilité des projets de data centers. Base : l'intérêt légitime, mis en balance avec les droits des personnes. Nous ne constituons aucun profil personnel et n'inférons aucune intention. Pour exercer vos droits (accès, rectification, opposition) : contact@scoremydatacenter.org.</p>",
+      ],
     },
     {
       h2: "Avertissement — à propos de la notation",
       html: [
-        "<p>ScoreMyDataCenter est un observatoire indépendant qui évalue le <strong>risque d'acceptabilité</strong> des projets de data centers. Les notes publiées constituent une <strong>appréciation méthodique fondée sur des faits publics et sourcés</strong>, et <strong>non l'allégation d'un fait précis</strong> à l'encontre d'une personne ou d'une entreprise. Elles sont publiées <strong>au titre de la contribution au débat d'intérêt général</strong>.</p>",
+        "<p>ScoreMyDataCenter est un observatoire indépendant qui évalue le <strong>risque d'acceptabilité</strong> des projets de data centers. Les notes publiées constituent une <strong>appréciation méthodique fondée sur des faits publics et sourcés</strong>. La note est une évaluation résultant de l'application de la méthodologie publiée aux données disponibles. Elle ne constitue ni une certification réglementaire, ni une mesure de la conformité juridique du projet, ni une recommandation d'investissement ou de boycott. Elles sont publiées <strong>au titre de la contribution au débat d'intérêt général</strong>.</p>",
         "<p><strong>Méthode ouverte.</strong> La méthodologie (indicateurs, poids, seuils, sources) est publique, datée et versionnée : chacun peut vérifier et refaire une note. Une note exprime l'acceptabilité estimée au regard de l'état de l'art à sa date ; elle peut évoluer avec le projet ou avec la révision de la méthode.</p>",
-        "<p><strong>Faits, pas intentions.</strong> Les informations relatives aux personnes (notamment les élus) se limitent à des faits publics (votes, délibérations, prises de position publiques) ; aucune intention n'est imputée. Traitement conforme au RGPD.</p>",
+        "<p><strong>Faits, pas intentions.</strong> Les informations relatives aux personnes (notamment les élus) se limitent à des faits publics (votes, délibérations, prises de position publiques) ; aucune intention n'est imputée.</p>",
         "<p><strong>Neutralité.</strong> ScoreMyDataCenter n'appelle à aucun boycott ni action contre une entreprise.</p>",
       ],
     },
     {
-      h2: "Indépendance et contradictoire",
+      h2: "Indépendance, correction et réponse",
       html: [
         "<p><strong>On aide le projet, jamais la note.</strong> Les entités notées ne paient jamais leur note publique. Un opérateur peut faire analyser son projet (leviers d'amélioration) ; mais la note publique ne bouge que si le <strong>projet réel</strong> change — nouveaux faits sourcés, re-scoring tracé au journal d'audit. « Il paie, la note monte » est structurellement exclu (ce serait la capture qui a tué la crédibilité des agences de notation).</p>",
-        "<p><strong>Deux outils distincts sur chaque fiche.</strong> Une <strong>correction factuelle</strong> (signaler une erreur sourcée → vérification → correction datée) et un <strong>droit de réponse</strong> (la voix de l'opérateur, publiée à côté de la note). Le premier corrige un fait ; le second donne la parole.</p>",
-        "<p><strong>Contradictoire déclenché par la note.</strong> Les notes A à C sont publiées directement. Une note défavorable — <strong>D ou E</strong>, sur le site ou sur le projet — ouvre un <strong>droit de réponse préalable d'au moins 15 jours</strong> : la fiche est alors publiée soit avec la réponse de l'opérateur, soit avec la mention « sollicité, sans réponse ». Ce droit de réponse n'est pas une permission qu'on quémande — c'est une garantie d'opposabilité et de bonne foi.</p>",
+        "<p><strong>Correction des données.</strong> ScoreMyDataCenter publie ses notes à partir des informations disponibles à la date indiquée. Toute personne peut signaler une information inexacte ou incomplète en joignant une source ou un justificatif vérifiable. Après vérification, les corrections sont intégrées et datées. Lorsque la modification affecte le calcul, la note est recalculée selon la même version de la méthode.</p>",
+        "<p><strong>Réponse des opérateurs.</strong> L'opérateur concerné peut transmettre une réponse relative à une fiche. Cette réponse peut être publiée dans un espace dédié, clairement attribuée et datée. ScoreMyDataCenter peut refuser ou raccourcir un contenu sans rapport avec la fiche, manifestement illicite, inutilement injurieux, publicitaire ou contenant des informations confidentielles ou personnelles non nécessaires. La publication d'une réponse ne modifie pas automatiquement la note : celle-ci évolue uniquement lorsque des faits nouveaux ou corrigés changent le résultat obtenu par la méthode.</p>",
+        "<p>En présence d'une information particulièrement sensible ou incertaine, ScoreMyDataCenter peut solliciter l'opérateur avant publication. Cet espace volontaire de réponse est distinct d'une éventuelle demande formelle de droit de réponse prévue par la loi, qui serait traitée comme telle.</p>",
       ],
     },
   ],

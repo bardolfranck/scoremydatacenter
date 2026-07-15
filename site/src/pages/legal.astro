@@ -10,7 +10,7 @@ import { EN_NAV } from "../config/nav";
 
 const t = {
   title: "Legal notices — ScoreMyDataCenter",
-  metaDescription: "ScoreMyDataCenter legal notices: publisher, hosting, licences, personal data, rating disclaimer, independence and right of reply.",
+  metaDescription: "ScoreMyDataCenter legal notices: publisher, hosting, licences, personal data, rating disclaimer, independence, correction and response.",
   tagline: "Independent observatory",
   h1: "Legal notices",
   banner: "<strong>Working version — DO NOT PUBLISH as-is.</strong> The disclaimer and the right-of-reply mechanism below must be validated by a lawyer (press / unfair-competition) before any public release (phase 6, blocking).",
@@ -27,29 +27,33 @@ const t = {
       h2: "Intellectual property and licences",
       html: [
         "<p>The project is open by design (“we open the truth”):</p>",
-        "<ul><li>Scoring engine and parsers: <strong>AGPL-3.0</strong>.</li><li>Published data: <strong>ODbL</strong>.</li><li>Methodology and editorial content: <strong>CC BY-SA 4.0</strong>.</li></ul>",
+        "<ul><li>Scoring engine and parsers: <strong>AGPL-3.0</strong>.</li><li>Data: <strong>licence by source</strong> — OpenStreetMap and DCWatch (Hubblo) under ODbL, institutional open data under Licence Ouverte or its own licence; every displayed value cites its source.</li><li>Methodology and editorial content: <strong>CC BY-SA 4.0</strong>.</li></ul>",
         "<p>The code and the data are public on <a href=\"https://github.com/bardolfranck/scoremydatacenter\" target=\"_blank\" rel=\"noopener\">GitHub</a>. Press articles are never reproduced: only the link, an archived copy and the extracted fact are published.</p>",
       ],
     },
     {
       h2: "Personal data",
-      html: ["<p>The site sets no cookie and uses no advertising tracker. Audience measurement (Cloudflare Web Analytics) is cookie-free and holds no personal data. The grades contain no personal data: elected officials' positions are recorded only as voted facts (deliberations), never as a person's name.</p>"],
+      html: ["<p>The site sets no cookie and uses no advertising tracker. Audience measurement (Cloudflare Web Analytics) is cookie-free and holds no personal data. The grades contain no personal data: elected officials' positions are recorded only as voted facts (deliberations), never as a person's name.</p>",
+        // À VALIDER FRANCK : proportionate personal-data section (legal review 2026-07-15)
+        "<p>When personal data appears in our content, it is limited to public, professional facts (deliberations, votes, public positions taken by people acting in a project). Purpose: informing about the acceptability of data-center projects. Basis: legitimate interest, balanced against the rights of the persons concerned. We build no personal profile and infer no intention. To exercise your rights (access, rectification, objection): contact@scoremydatacenter.org.</p>",
+      ],
     },
     {
       h2: "Disclaimer — about the rating",
       html: [
-        "<p>ScoreMyDataCenter is an independent observatory assessing the <strong>acceptability risk</strong> of data center projects. Published grades are a <strong>methodical assessment grounded in public, sourced facts</strong>, and <strong>not the allegation of a specific fact</strong> against a person or a company. They are published <strong>as a contribution to the public-interest debate</strong>.</p>",
+        "<p>ScoreMyDataCenter is an independent observatory assessing the <strong>acceptability risk</strong> of data center projects. Published grades are a <strong>methodical assessment grounded in public, sourced facts</strong>. A grade is an evaluation resulting from applying the published methodology to the available data. It is neither a regulatory certification, nor a measure of the project's legal compliance, nor an investment or boycott recommendation. They are published <strong>as a contribution to the public-interest debate</strong>.</p>",
         "<p><strong>Open method.</strong> The methodology (indicators, weights, thresholds, sources) is public, dated and versioned: anyone can verify and recompute a grade. A grade expresses estimated acceptability against the state of the art at its date; it can evolve with the project or with a methodology revision.</p>",
-        "<p><strong>Facts, not intentions.</strong> Information about persons (notably elected officials) is limited to public facts (votes, deliberations, public positions); no intention is imputed. Processing complies with the GDPR.</p>",
+        "<p><strong>Facts, not intentions.</strong> Information about persons (notably elected officials) is limited to public facts (votes, deliberations, public positions); no intention is imputed.</p>",
         "<p><strong>Neutrality.</strong> ScoreMyDataCenter calls for no boycott or action against any company.</p>",
       ],
     },
     {
-      h2: "Independence and right of reply",
+      h2: "Independence, correction and response",
       html: [
         "<p><strong>We help the project, never the grade.</strong> Scored entities never pay for their public grade. An operator may have its project analysed (improvement levers); but the public grade moves only when the <strong>real project</strong> changes — new sourced facts, audit-logged re-scoring. “Pay to raise the grade” is structurally impossible (that capture is what killed the rating agencies' credibility).</p>",
-        "<p><strong>Two distinct tools on every fiche.</strong> A <strong>factual correction</strong> (report a sourced error → verification → dated correction) and a <strong>right of reply</strong> (the operator's voice, published alongside the grade). The first corrects a fact; the second gives a voice.</p>",
-        "<p><strong>Right of reply triggered by the grade.</strong> A to C grades publish directly. An unfavorable grade — <strong>D or E</strong>, on the site or the project — opens a <strong>prior right of reply of at least 15 days</strong>: the fiche is then published either with the operator's response, or with a “solicited, no reply” note. This right of reply is not a permission to beg for — it is a guarantee of opposability and good faith.</p>",
+        "<p><strong>Data correction.</strong> ScoreMyDataCenter publishes its grades from the information available at the indicated date. Anyone can report inaccurate or incomplete information, attaching a verifiable source or supporting document. After verification, corrections are integrated and dated. When the change affects the calculation, the grade is recomputed under the same version of the method.</p>",
+        "<p><strong>Operator responses.</strong> The operator concerned can send a response about a datasheet. That response can be published in a dedicated space, clearly attributed and dated. ScoreMyDataCenter may refuse or shorten content unrelated to the datasheet, manifestly unlawful, needlessly abusive, promotional, or containing unnecessary confidential or personal information. Publishing a response never changes the grade automatically: it only moves when new or corrected facts change the result produced by the method.</p>",
+        "<p>Where a piece of information is particularly sensitive or uncertain, ScoreMyDataCenter may contact the operator before publication. This voluntary response space is distinct from any formal legal right-of-reply request, which would be handled as such.</p>",
       ],
     },
   ],

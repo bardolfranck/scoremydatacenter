@@ -21,7 +21,7 @@ make score
 
 The engine, the methodology, the published data and the audit log are open. **The paywall never falls on the truth**: a project's grade and its justification are always public and free. **We help the project, never the grade** — an operator can have its project analysed, but the public grade moves only when the real project changes (new sourced facts, audit-logged re-scoring), never because someone paid.
 
-Contradictory review is **grade-triggered**: A–C publish directly; a D or E (the only truly exposed grades) opens a pre-publication right of reply of **at least 15 days**, then the page ships with the operator's answer or a "solicited, no reply" note.
+We don't ask permission to publish our scores. We hold ourselves to the method: grades publish directly for every letter, each determining data point is sourced and dated, corrections are verified, integrated and dated (same method version when the calculation is affected), and operators can send a response at any time — published in a dedicated space, attributed and dated. A response never changes a grade by itself; only new or corrected facts do.
 
 ## Repository layout
 
@@ -46,7 +46,7 @@ Scores are computed **at build time** by `engine/` from the JSON files in `data/
 
 ## Publication workflow
 
-Named data centers enter this repository **only after** a contradictory-review period (operator notified ≥ 15 days before publication, response published alongside the score). Drafts live in a separate private repository until then. CI gates block any file that violates these rules.
+Named data centers enter this repository once their file is sourced and reproducible. Drafts live in a separate private repository until then. CI gates block any file that violates these rules.
 
 ## Contributing
 
