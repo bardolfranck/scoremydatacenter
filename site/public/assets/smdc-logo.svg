@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 96" role="img" aria-label="ScoreMyDataCenter — observatoire indépendant">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 96" role="img" aria-label="ScoreMyDataCenter — independent observatory">
   <!-- Icon (draft-4): dark tile, server rack, A→E grade bars -->
   <g>
     <rect width="96" height="96" rx="21" fill="#102A43"/>
@@ -25,5 +25,5 @@
     <rect x="345" y="63" width="72" height="6" rx="2" fill="#CF6A1C"/>
     <rect x="421" y="63" width="72" height="6" rx="2" fill="#BF3B21"/>
   </g>
-  <text x="117" y="86" font-family="'IBM Plex Mono','SF Mono',ui-monospace,monospace" font-size="13" font-weight="600" letter-spacing="3.2" fill="#627D98">OBSERVATOIRE INDÉPENDANT</text>
+  <text x="117" y="86" font-family="'IBM Plex Mono','SF Mono',ui-monospace,monospace" font-size="13" font-weight="600" letter-spacing="3.2" fill="#627D98">INDEPENDENT OBSERVATORY</text>
 </svg>
