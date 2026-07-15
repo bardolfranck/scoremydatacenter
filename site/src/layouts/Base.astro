@@ -46,6 +46,11 @@ const home = lang === "en" ? "/" : "/fr/";
           <span class="brand-tagline">{tagline}</span>
         </span>
       </a>
+      <form class="header-search" action={lang === "fr" ? "/fr/classement" : "/ranking"} method="get" role="search">
+        <input type="search" name="q"
+          placeholder={lang === "fr" ? "Rechercher un site, un opérateur, un pays…" : "Search a site, an operator, a country…"}
+          aria-label={lang === "fr" ? "Rechercher dans les projets notés" : "Search the scored projects"} />
+      </form>
       <nav class="main-nav" aria-label="Site sections">
         {nav.map((item) => <a href={item.href}>{item.label}</a>)}
         <a class="lang-switch" href={altHref}>{altLabel}</a>
@@ -54,12 +59,28 @@ const home = lang === "en" ? "/" : "/fr/";
     <main>
       <slot />
     </main>
-    <footer class="site-footer">
-      <span>© 2026 Franck Bardol and contributors — Score<span class="brand-my">My</span>DataCenter</span>
-      <span class="footer-links">{lang === "fr"
-        ? <Fragment><a href="/fr/mentions-legales">Mentions légales</a> · <a href="/fr/contact">Contact</a></Fragment>
-        : <Fragment><a href="/legal">Legal notices</a> · <a href="/contact">Contact</a></Fragment>}</span>
-      <span>Engine AGPL-3.0 · Data: licence by source (ODbL, Licence Ouverte…) · Methodology CC BY-SA 4.0</span>
+    <footer class="site-footer footer-v2">
+      <div class="footer-brand">
+        <span class="footer-name">Score<span class="brand-my">My</span>DataCenter</span>
+        <p>{lang === "fr"
+          ? "Observatoire indépendant du risque d'acceptabilité des data centers."
+          : "Independent observatory of data-center acceptability risk."}</p>
+        <p class="footer-lic">Engine AGPL-3.0 · Data: licence by source (ODbL, Licence Ouverte…) · Methodology CC BY-SA 4.0<br/>© 2026 Franck Bardol and contributors</p>
+      </div>
+      {(lang === "fr" ? [
+        ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Comprendre les data centers", "/fr/comprendre"]]],
+        ["Ressources", [["Méthodologie", "/fr/methodologie"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque"], ["FAQ", "/fr/#faq"]]],
+        ["À propos", [["Qui sommes-nous ?", "/fr/#about"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
+      ] : [
+        ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Understanding data centers", "/understand"]]],
+        ["Resources", [["Methodology", "/methodology"], ["Open model", "/#open"], ["Library", "/intelligence"], ["FAQ", "/#faq"]]],
+        ["About", [["Who we are", "/#about"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
+      ]).map(([heading, links]: any) => (
+        <div class="footer-col">
+          <h4>{heading}</h4>
+          <ul>{links.map(([label, href]: any) => <li><a href={href}>{label}</a></li>)}</ul>
+        </div>
+      ))}
     </footer>
   </body>
 </html>

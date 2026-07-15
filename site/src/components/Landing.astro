@@ -35,6 +35,42 @@ const teamIcon = (name: string) =>
 
 const scores = scoresData as any[];
 const methodology = methodologyData as any;
+
+// v2 hero (Franck GO 2026-07-15): the corpus at a glance — every figure computed
+// from the build's own artifacts, never hand-written; no invented trends.
+import { readFileSync } from "node:fs";
+const real = scores.filter((d: any) => !d.id.startsWith("zz-"));
+const dcFiles = import.meta.glob("../../public/data/dc/*.json", { eager: true });
+const dcAll = Object.values(dcFiles).map((m: any) => (m as any).default).filter((d: any) => !d.id.startsWith("zz-"));
+const stressCount = dcAll.filter((d: any) => (d.indicators || []).some((i: any) =>
+  i.id === "W1" && ["high", "extremely_high"].includes(String(i.value ?? "").toLowerCase()))).length;
+let watchCount = 0;
+try { watchCount = JSON.parse(readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf8")).features.length; } catch { /* optional layer */ }
+const nCountries = new Set(real.map((d: any) => d.country)).size;
+const noPowerCount = real.filter((d: any) => typeof d.power_mw !== "number").length;
+const corpusStats = [
+  { figure: String(real.length), label: t.corpus.noted },
+  { figure: String(nCountries), label: t.corpus.countries },
+  { figure: String(stressCount), label: t.corpus.stress },
+  { figure: String(watchCount), label: t.corpus.watch },
+];
+// Explore teasers — the strongest project and the two most exposed, percentile-framed
+// (A-27 register: we situate, we never judge), plus the last scored fiches.
+const graded = real.filter((d: any) => typeof d.grades.site.score === "number");
+const sitePool = graded.map((d: any) => d.grades.site.score).sort((a: number, b: number) => a - b);
+const bottomPct = (v: number) => Math.ceil((sitePool.filter((x: number) => x <= v).length / sitePool.length) * 100);
+const byScore = [...graded].sort((a: any, b: any) => b.grades.site.score - a.grades.site.score);
+const rankTeaser = [byScore[0], byScore[byScore.length - 1], byScore[byScore.length - 2]]
+  .filter(Boolean).map((d: any) => ({ dc: d, p: Math.min(100, Math.max(1, bottomPct(d.grades.site.score))) }));
+// "Latest scored" would need a real score_history — the bulk corpus has none yet,
+// and we never invent a date. Until the audit history fills, the honest teaser is
+// the highest DECLARED power (same MW story as the map).
+const latest = [...real]
+  .filter((d: any) => typeof d.power_mw === "number")
+  .sort((a: any, b: any) => b.power_mw - a.power_mw)
+  .slice(0, 5);
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const rankPath = lang === "fr" ? "/fr/classement" : "/ranking";
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
 
 // The "money shot" (brief 2026-07-12 #3): a real published case whose fiche grades
@@ -76,40 +112,51 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   altLabel={t.altLabel}
   nav={t.nav}
 >
-  <section class="hero">
+  <section class="hero hero-v2">
     <div class="hero-copy">
+      {t.heroEyebrow && <p class="hero-eyebrow">{t.heroEyebrow}</p>}
       <h1 set:html={t.heroTitle}></h1>
       <p class="hero-lede">{t.heroLede}</p>
-      <div class="hero-scale" role="img" aria-label={t.heroScaleLabel}>
-        <span class="hs-cell hs-a">A</span>
-        <span class="hs-cell hs-b">B</span>
-        <span class="hs-cell hs-c">C</span>
-        <span class="hs-cell hs-d">D</span>
-        <span class="hs-cell hs-e">E</span>
-      </div>
-      {t.heroKicker && <p class="hero-kicker">{t.heroKicker}</p>}
+      <ul class="hero-checks">
+        {t.heroChecks.map((c: string) => <li set:html={c}></li>)}
+      </ul>
       <div class="hero-actions">
         <a class="button button-primary" href="#scores">{t.ctaScores}</a>
         <a class="button button-secondary" href="#method">{t.ctaMethod}</a>
       </div>
     </div>
-    <MapIsland
-      variant="hero"
-      labels={{
-        site: t.siteScore,
-        operator: t.operatorScore,
-        confidence: t.confidence,
-        insufficient: t.insufficient,
-        fixture: t.fixtureTag,
-        openMap: t.mapOpen,
-        reserved: t.mapReserved,
-        ficheBase: lang === "fr" ? "/fr/dc" : "/dc",
-        mapPath: lang === "fr" ? "/fr/carte" : "/map",
-        viewFiche: t.viewFiche,
-        replyInProgress: t.replyInProgress,
-        powerUnknown: lang === "fr" ? "puissance non communiquée" : "power not disclosed",
-      }}
-    />
+    <aside class="hero-corpus" aria-label={t.corpus.aria}>
+      <p class="corpus-label">{t.corpus.label}</p>
+      <div class="corpus-stats">
+        {corpusStats.map((stat) => (
+          <div class="stat">
+            <b><span class="sr-only">{stat.figure}</span><span class="stat-anim" aria-hidden="true">{stat.figure}</span></b>
+            <span>{stat.label}</span>
+          </div>
+        ))}
+      </div>
+      <div class="corpus-scale">
+        <div class="hero-scale" role="img" aria-label={t.heroScaleLabel}>
+          <span class="hs-cell hs-a">A</span>
+          <span class="hs-cell hs-b">B</span>
+          <span class="hs-cell hs-c">C</span>
+          <span class="hs-cell hs-d">D</span>
+          <span class="hs-cell hs-e">E</span>
+        </div>
+        <p set:html={t.corpus.scaleNote}></p>
+      </div>
+    </aside>
+  </section>
+
+  <section class="manifesto" aria-label={t.manifesto.aria}>
+    <div class="manifesto-inner">
+      <div class="manifesto-shield" aria-hidden="true">✓</div>
+      <div>
+        <p class="manifesto-motto">{t.whyMotto}</p>
+        <p class="manifesto-body">{t.manifesto.line1}</p>
+        <p class="manifesto-body"><strong>{t.manifesto.contractLead}</strong> {t.manifesto.contract} <a href="#faq">{t.manifesto.link} →</a></p>
+      </div>
+    </div>
   </section>
 
   <section class="why-now" aria-label={t.whyNowAria}>
@@ -139,7 +186,6 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <h3>{t.whyTitle}</h3>
           <p class="why-lede">{t.whyLede}</p>
           <p class="why-body" set:html={t.whyBody}></p>
-          {t.whyMotto && <p class="why-motto">{t.whyMotto}</p>}
         </div>
         {t.demo && demo && (
           <div class="score-demo">
@@ -191,75 +237,90 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     </div>
   </section>
 
-  <section class="credibility-strip" aria-label={t.principlesAria}>
-    {t.principles.map((p: any) => (
-      <div>
-        <strong>{p.title}</strong>
-        <span>{p.body}</span>
-      </div>
-    ))}
+  <section class="principles-section" aria-labelledby="principles-title">
+    <h2 id="principles-title" class="principles-title">{t.principlesTitle}</h2>
+    <div class="credibility-strip" aria-label={t.principlesAria}>
+      {t.principles.map((p: any) => (
+        <div>
+          <strong>{p.title}</strong>
+          <span>{p.body}</span>
+        </div>
+      ))}
+    </div>
   </section>
 
   <section class="section" id="scores" aria-labelledby="scores-title">
     <div class="section-inner">
       <div class="section-heading">
-        <h2 id="scores-title">{t.scoresTitle}</h2>
-        <p>{t.scoresLede}</p>
+        <h2 id="scores-title">{t.exploreTitle}</h2>
+        <p>{t.exploreSub}</p>
       </div>
-      <div class="scorecard-grid">
-        {scores.map((dc) => (
-          <article class="scorecard">
-            <div class="scorecard-head">
-              <div>
-                <p class="scorecard-status">{t.status[dc.project_status]} · {dc.power_mw} MW</p>
-                <h3><a class="scorecard-name" href={`${lang === "fr" ? "/fr/dc" : "/dc"}/${dc.id}`}>{dc.name}</a></h3>
-                <p class="scorecard-place">{dc.municipality} ({dc.country}) — {dc.operator}</p>
-              </div>
-              <span class={`confidence ${dc.confidence.level}`}>
-                <span class="dot" aria-hidden="true"></span>
-                {t.confidence[dc.confidence.level]}
-              </span>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
-              <ScoreBadge
-                label={t.siteScore}
-                grade={dc.grades.site}
-                confidence={dc.confidence.level}
-                confidenceLabel={t.confidence[dc.confidence.level]}
-                renderConfidence={false}
-                showScore={true}
-                naLabel={t.insufficient}
-              />
-              <ScoreBadge
-                label={t.operatorScore}
-                grade={dc.grades.project_process}
-                confidence={dc.confidence.level}
-                confidenceLabel={t.confidence[dc.confidence.level]}
-                renderConfidence={false}
-                naLabel={t.insufficient}
-              />
-            </div>
-            <dl class="pillar-row">
-              {pillarOrder.map((pid: string) => (
-                <div class="pillar-cell">
-                  <dt>{t.pillarShort[pid]}</dt>
-                  <dd>
-                    <ScoreBadge
-                      label={t.pillarShort[pid]}
-                      grade={dc.pillars[pid]}
-                      confidence={dc.confidence.level}
-                      confidenceLabel={t.confidence[dc.confidence.level]}
-                      renderConfidence={false}
-                      renderLabel={false}
-                      size="sm"
-                      naLabel={t.insufficient}
-                    />
-                  </dd>
-                </div>
-              ))}
-            </dl>
-            {dc.id.startsWith("zz-") && <span class="fixture-tag">{t.fixtureTag}</span>}
-          </article>
+      <div class="explore-grid">
+        <div class="explore-map">
+          <p class="explore-label">{t.exploreMapLabel}</p>
+          <MapIsland
+            variant="hero"
+            labels={{
+              site: t.siteScore,
+              operator: t.operatorScore,
+              confidence: t.confidence,
+              insufficient: t.insufficient,
+              fixture: t.fixtureTag,
+              openMap: t.mapOpen,
+              reserved: t.mapReserved,
+              ficheBase: ficheBase,
+              mapPath: lang === "fr" ? "/fr/carte" : "/map",
+              viewFiche: t.viewFiche,
+              powerUnknown: lang === "fr" ? "puissance non communiquée" : "power not disclosed",
+            }}
+          />
+        </div>
+        <div class="explore-col">
+          <p class="explore-label">{t.exploreRankLabel}</p>
+          {rankTeaser.map(({ dc, p }) => (
+            <a class="teaser-row" href={`${ficheBase}/${dc.id}`}>
+              <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
+                confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
+                size="sm" naLabel={t.insufficient} />
+              <span class="teaser-name">{dc.name}<small>{dc.country}{dc.power_mw ? ` — ${Math.round(dc.power_mw)} MW` : ""}{dc.grades.site.reserved_from ? ` — ${t.mapReserved.replace("· ", "")}` : ""}</small></span>
+              <span class="teaser-pct">P{p}</span>
+            </a>
+          ))}
+          <a class="teaser-more" href={rankPath}>{t.exploreRankMore} →</a>
+        </div>
+        <div class="explore-col">
+          <p class="explore-label">{t.exploreLatestLabel}</p>
+          {latest.map((dc: any) => (
+            <a class="teaser-row" href={`${ficheBase}/${dc.id}`}>
+              <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
+                confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
+                size="sm" naLabel={t.insufficient} />
+              <span class="teaser-name">{dc.name}<small>{dc.country} — {Math.round(dc.power_mw)} MW</small></span>
+            </a>
+          ))}
+          <a class="teaser-more" href={rankPath}>{t.exploreLatestMore} →</a>
+        </div>
+      </div>
+      <form class="explore-search" action={rankPath} method="get" role="search">
+        <input type="search" name="q" placeholder={t.searchPlaceholder} aria-label={t.searchPlaceholder} />
+      </form>
+    </div>
+  </section>
+
+  <section class="section section-tinted" id="matters" aria-labelledby="matters-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="matters-title">{t.mattersTitle}</h2>
+        <p>{t.mattersSub}</p>
+      </div>
+      <div class="matters-grid">
+        {t.matters.map((m: any) => (
+          <div class="matters-card">
+            <span class="matters-ic" aria-hidden="true"><PillarIcon name={m.icon} size={20} /></span>
+            <h3>{m.title}</h3>
+            <p set:html={m.body.replace("{stress}", String(stressCount)).replace("{total}", String(real.length)).replace("{noPower}", String(noPowerCount))}></p>
+            <a href={m.href}>{m.link} →</a>
+          </div>
         ))}
       </div>
     </div>
@@ -284,7 +345,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <span>{t.confidenceExplain}</span>
           </li>
         </ul>
-        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/comprendre" : "/understand"}>{t.methodPedago} →</a>}
+        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{t.methodPedago} →</a>}
       </div>
       <div class="weighting" aria-label={t.weightsAria}>
         <p class="weighting-caption">{t.weightsCaption}</p>
@@ -307,6 +368,24 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     </div>
   </section>
 
+  <section class="section" id="library" aria-labelledby="library-title">
+    <div class="section-inner lib-teaser">
+      <div class="lib-cover" aria-hidden="true">
+        <span class="lib-cover-brand">ScoreMyDataCenter</span>
+        <b>{t.library.coverTitle}</b>
+        <span class="lib-cover-bars"><i class="hs-a"></i><i class="hs-b"></i><i class="hs-c"></i><i class="hs-d"></i><i class="hs-e"></i></span>
+      </div>
+      <div class="lib-copy">
+        <h2 id="library-title">{t.library.title} <span class="lib-badge">{t.library.badge}</span></h2>
+        <p>{t.library.lede}</p>
+        <ul>
+          {t.library.items.map((it: string) => <li>{it}</li>)}
+        </ul>
+      </div>
+      <a class="button button-primary lib-cta" href={lang === "fr" ? "/fr/bibliotheque" : "/intelligence"}>{t.library.cta} →</a>
+    </div>
+  </section>
+
   <section class="section section-dark" id="open" aria-labelledby="open-title">
     <div class="section-inner">
       <div class="section-heading">
@@ -325,6 +404,20 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <a class="button button-secondary open-cta" href={t.repoUrl} target="_blank" rel="noopener">{t.openCta} ↗</a>
       )}
       <p class="redline" set:html={t.redline}></p>
+    </div>
+  </section>
+
+  <section class="section" id="who" aria-labelledby="who-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="who-title">{t.whoTitle}</h2>
+        <p>{t.whoSub}</p>
+      </div>
+      <div class="who-grid">
+        {t.who.map((w: any) => (
+          <a href={w.href}><b>{w.name}</b><span>{w.line}</span></a>
+        ))}
+      </div>
     </div>
   </section>
 
@@ -453,12 +546,11 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   // scroll-in, 0→published value, ease-out cubes, ~160ms stagger. The HTML already
   // holds the final figures — this only replays them; reduced-motion never touches it.
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const band = document.querySelector(".why-now");
-  if (band && !reduced && "IntersectionObserver" in window) {
+  const countUpIn = (root: HTMLElement) => {
     const io = new IntersectionObserver((entries) => {
       if (!entries.some((e) => e.isIntersecting)) return;
       io.disconnect();
-      document.querySelectorAll<HTMLElement>(".why-stats .stat").forEach((stat, i) => {
+      root.querySelectorAll<HTMLElement>(".stat").forEach((stat, i) => {
         const el = stat.querySelector<HTMLElement>(".stat-anim");
         if (!el) return;
         const text = el.textContent || "";
@@ -486,7 +578,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         requestAnimationFrame(frame);
       });
     }, { threshold: 0.4 });
-    io.observe(band);
+    io.observe(root);
+  };
+  if (!reduced && "IntersectionObserver" in window) {
+    document.querySelectorAll<HTMLElement>(".why-now, .hero-corpus").forEach(countUpIn);
   }
 
   // The self-grading fiche (brief #3): pillar chips pop, the SITE bar fills while
