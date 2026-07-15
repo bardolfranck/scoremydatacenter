@@ -47,6 +47,7 @@ const stressCount = dcAll.filter((d: any) => (d.indicators || []).some((i: any) 
 let watchCount = 0;
 try { watchCount = JSON.parse(readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf8")).features.length; } catch { /* optional layer */ }
 const nCountries = new Set(real.map((d: any) => d.country)).size;
+const noPowerCount = real.filter((d: any) => typeof d.power_mw !== "number").length;
 const corpusStats = [
   { figure: String(real.length), label: t.corpus.noted },
   { figure: String(nCountries), label: t.corpus.countries },
@@ -236,13 +237,16 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     </div>
   </section>
 
-  <section class="credibility-strip" aria-label={t.principlesAria}>
-    {t.principles.map((p: any) => (
-      <div>
-        <strong>{p.title}</strong>
-        <span>{p.body}</span>
-      </div>
-    ))}
+  <section class="principles-section" aria-labelledby="principles-title">
+    <h2 id="principles-title" class="principles-title">{t.principlesTitle}</h2>
+    <div class="credibility-strip" aria-label={t.principlesAria}>
+      {t.principles.map((p: any) => (
+        <div>
+          <strong>{p.title}</strong>
+          <span>{p.body}</span>
+        </div>
+      ))}
+    </div>
   </section>
 
   <section class="section" id="scores" aria-labelledby="scores-title">
@@ -303,6 +307,25 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     </div>
   </section>
 
+  <section class="section section-tinted" id="matters" aria-labelledby="matters-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="matters-title">{t.mattersTitle}</h2>
+        <p>{t.mattersSub}</p>
+      </div>
+      <div class="matters-grid">
+        {t.matters.map((m: any) => (
+          <div class="matters-card">
+            <span class="matters-ic" aria-hidden="true"><PillarIcon name={m.icon} size={20} /></span>
+            <h3>{m.title}</h3>
+            <p set:html={m.body.replace("{stress}", String(stressCount)).replace("{total}", String(real.length)).replace("{noPower}", String(noPowerCount))}></p>
+            <a href={m.href}>{m.link} →</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <section class="section section-tinted" id="method" aria-labelledby="method-title">
     <div class="section-inner method-layout">
       <div class="method-copy">
@@ -322,7 +345,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <span>{t.confidenceExplain}</span>
           </li>
         </ul>
-        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/comprendre" : "/understand"}>{t.methodPedago} →</a>}
+        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{t.methodPedago} →</a>}
       </div>
       <div class="weighting" aria-label={t.weightsAria}>
         <p class="weighting-caption">{t.weightsCaption}</p>

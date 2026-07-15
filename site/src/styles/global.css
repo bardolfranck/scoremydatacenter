@@ -610,7 +610,11 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
    the official grade palette; the cursor marks the percentile position; the text
    label carries the information (never color-only). Unproven operator axis: dashed
    badge + hatched track, no fabricated cursor — the emptiness is the message. */
-.rank-rails { display: grid; gap: 8px; min-width: 340px; }
+/* keep the TD a real table-cell (display:grid on a td loses vertical-align and
+   misaligns tall rows — seen live on ?q=google, 2026-07-15) */
+.rank-rails { min-width: 340px; }
+.rank-rails .rail + .rail { margin-top: 8px; }
+.rank-project { min-width: 190px; }
 .rail { display: grid; grid-template-columns: 72px 30px minmax(90px, 1fr) auto; align-items: center; gap: 10px; }
 .rail-axis { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); }
 .rail-track { position: relative; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--grade-e), var(--grade-d), var(--grade-c), var(--grade-b), var(--grade-a)); }
@@ -1137,3 +1141,14 @@ sup a { color: var(--accent); font-weight: 750; }
   .who-grid { grid-template-columns: repeat(2, 1fr); }
   .header-search { display: none; }
 }
+
+/* Why it matters — four pillar cards with computed stats (home v2, Franck review) */
+.matters-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+.matters-card { display: grid; gap: 8px; align-content: start; }
+.matters-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); display: grid; place-items: center; color: var(--accent); }
+.matters-card h3 { font-size: 0.98rem; margin: 2px 0 0; }
+.matters-card p { margin: 0; font-size: 0.87rem; line-height: 1.55; color: var(--ink-soft); }
+.matters-card a { font-size: 0.84rem; font-weight: 750; width: fit-content; }
+.principles-title { text-align: center; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.015em; margin: 44px 0 22px; }
+@media (max-width: 960px) { .matters-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .matters-grid { grid-template-columns: 1fr; } }
