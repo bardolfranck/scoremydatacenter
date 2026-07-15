@@ -22,12 +22,9 @@ Only MVP indicators are scored; tier-3 out-of-MVP indicators are ignored for
 both score and confidence.
 """
 
-from datetime import date, timedelta
-
 from .normalize import normalized_score
 
 # Right-of-reply window length (doctrine A-24/A-26). Single source; validate re-exports it.
-NOTICE_DAYS = 15
 
 BLOCK_BASE = "base"
 BLOCK_PROJECT = "project"
@@ -291,35 +288,3 @@ def history_entry_fields(result: dict, methodology: dict) -> dict:
     }
 
 
-def worst_exposed_grade(grades: dict) -> str | None:
-    """Most severe LETTER grade across the two head notes (None if neither is a letter).
-
-    `insufficient_data` is not a letter — it never exposes a right-of-reply window.
-    """
-    letters = [g for g in (grades.get("site"), grades.get("project_process")) if g in _GRADE_ORDER]
-    return max(letters, key=_GRADE_ORDER.index) if letters else None
-
-
-def reply_window_start(score_history: list[dict]) -> str | None:
-    """Date the CURRENT D/E right-of-reply window opened, or None if none is required (A-26).
-
-    The window attaches to the *unfavorable note*, not the DC. It opens when the worst head-grade
-    enters D/E or worsens within it (≤C→D/E, D→E) and keeps counting while the grade is stable
-    (weights-only re-scores never re-open it). Any improvement (E→D, D/E→≤C) closes it — a milder
-    or better grade never opens a window. Derived from stored facts only (no `now()`).
-    """
-    start = None
-    prev = None
-    for e in score_history:
-        w = worst_exposed_grade(e["grades"])
-        if w in ("D", "E") and (prev is None or _GRADE_ORDER.index(w) > _GRADE_ORDER.index(prev)):
-            start = e["date"]                                  # entered / worsened into D/E → (re)open
-        elif prev in ("D", "E") and (w is None or _GRADE_ORDER.index(w) < _GRADE_ORDER.index(prev)):
-            start = None                                       # improvement → close the window
-        prev = w
-    return start
-
-
-def reply_deadline(notified: str | None) -> str | None:
-    """Right-of-reply deadline = notification + NOTICE_DAYS, ISO. Deterministic — never `now()`."""
-    return (date.fromisoformat(notified) + timedelta(days=NOTICE_DAYS)).isoformat() if notified else None

@@ -76,13 +76,9 @@ const dataState = t.dataState
   .replace("{announced}", String(counts.announced))
   .replace("{missing}", String(counts.missing));
 
+// Direct publication (2026-07-15, legal review): the permanent response space is
+// publication.operator_response — attributed, dated, shown whenever present.
 const op = dc.publication.operator_response;
-const notifiedAt = dc.publication.operator_notified_at;
-// Publication doctrine A-26: letter + score are public in every state; only the FINAL fiche
-// (the narrative synthesis) waits out the right-of-reply window. The clock lives in the view.
-const pubStatus = dc.publication_status;              // "draft" | "right_of_reply" | "published"
-const replyDeadline: string | null = dc.reply_deadline;
-const inReplyWindow = pubStatus === "right_of_reply";
 const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.length - 1].date : null;
 
 const indicatorValue = (ind: any) => {
@@ -214,7 +210,7 @@ const pillars = methodology.pillars as any[];
         <a class="fiche-download" href={`/og/dc/${dc.id}.png`} download aria-label={t.download}>
           <span set:html={icon("download", 16)}></span>{t.download}
         </a>
-        <a class="fiche-signal" href={`mailto:contact@scoremydatacenter.org?subject=${enc(`${t.signalSubject} — ${dc.name}`)}&body=${enc(t.signalBody)}`}>
+        <a class="fiche-signal" href={`mailto:contact@scoremydatacenter.org?subject=${enc(`${t.signalSubject} — ${dc.id}`)}&body=${enc(t.signalBody.replace("{url}", pageUrl))}`}>
           <span set:html={icon("info", 16)}></span>{t.signal}
         </a>
         <p class="fiche-signal-note" set:html={t.signalNote}></p>
@@ -224,12 +220,6 @@ const pillars = methodology.pillars as any[];
     </aside>
 
     <div class="fiche-main">
-      {inReplyWindow && (
-        <div class="fiche-reply-banner" role="status" data-deadline={replyDeadline} data-elapsed={t.replyElapsed}>
-          <strong>{t.replyBanner}</strong> <span class="reply-until">{t.replyUntil} {fmtDate(replyDeadline)}</span>.
-          {t.replyBannerRest}
-        </div>
-      )}
       <div class="fiche-top">
       <div class="fiche-subscores">
         <div class="fiche-subscores-head">
@@ -271,16 +261,7 @@ const pillars = methodology.pillars as any[];
         </div>
       </div>
         <div class="fiche-top-right">
-        {inReplyWindow && (
-          <aside class="fiche-synthesis fiche-synthesis-held">
-            <div class="synth-head">
-              <h2>{t.synthTitle}</h2>
-              <span class="synth-sub">{t.synthHeldSub}</span>
-            </div>
-            <p class="synth-held-note">{t.synthHeldNote.replace("{date}", fmtDate(replyDeadline))}</p>
-          </aside>
-        )}
-        {dc.synthesis && !inReplyWindow && (
+        {dc.synthesis && (
           <aside class="fiche-synthesis" aria-labelledby="synth-title">
             <div class="synth-head">
               <h2 id="synth-title">{t.synthTitle}</h2>
@@ -301,7 +282,7 @@ const pillars = methodology.pillars as any[];
         {/* Thin file, nothing held: the spot still explains itself — we do not
             write an overall reading without sufficient facts (same doctrine as
             "we do not grade the unknown"). */}
-        {!dc.synthesis && !inReplyWindow && (
+        {!dc.synthesis && (
           <aside class="fiche-synthesis fiche-synthesis-empty">
             <div class="synth-head">
               <h2>{t.synthTitle}</h2>
@@ -370,11 +351,7 @@ const pillars = methodology.pillars as any[];
           <h3>{t.opTitle}</h3>
           {op
             ? <p>{op.text}{op.date ? ` (${fmtDate(op.date)})` : ""}</p>
-            : pubStatus === "published" && notifiedAt
-              ? <p class="empty">{t.opSolicitedNoReply.replace("{date}", fmtDate(notifiedAt))}</p>
-              : inReplyWindow && notifiedAt
-                ? <p class="empty">{t.opInWindow.replace("{date}", fmtDate(notifiedAt)).replace("{deadline}", fmtDate(replyDeadline))}</p>
-                : <p class="empty">{t.opNone}</p>}
+            : <p class="empty">{t.opNone}</p>}
           <p class="fiche-card-note" set:html={t.opNote}></p>
         </div>
         <div class="fiche-card">
@@ -497,12 +474,4 @@ const pillars = methodology.pillars as any[];
     });
   }
 
-  // Right-of-reply clock lives in the view: once the deadline has passed, the fiche awaits its final
-  // publication (a real data edit flips the status). The banner reflects that, without touching data.
-  const banner = document.querySelector(".fiche-reply-banner") as HTMLElement | null;
-  const deadline = banner?.dataset.deadline;
-  if (banner && deadline && new Date().toISOString().slice(0, 10) >= deadline) {
-    banner.innerHTML = `<strong>${banner.dataset.elapsed || ""}</strong>`;
-    banner.classList.add("elapsed");
-  }
 </script>

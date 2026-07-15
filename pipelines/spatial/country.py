@@ -115,7 +115,6 @@ def build_draft(spec: dict, lat: float, lon: float, *, name: str, operator: str,
         "indicators": indicators,
         "publication": {
             "status": "draft",
-            "operator_notified_at": None,
             "operator_response": None,
         },
         "score_history": [],

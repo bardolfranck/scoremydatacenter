@@ -121,7 +121,6 @@
     "en": "Rated B on site, C on project & process."
   },
   "publication_status": "published",
-  "reply_deadline": "2026-06-25",
   "summary": {
     "fr": "Fixture de test (fictive) : campus moyen bien documenté — étages 1 et 2 renseignés, cas nominal du pipeline.",
     "en": "Test fixture (fictional): well-documented mid-size campus — tiers 1 and 2 filled, nominal pipeline case."
@@ -560,7 +559,6 @@
   ],
   "publication": {
     "status": "published",
-    "operator_notified_at": "2026-06-10",
     "operator_response": {
       "text": "Fictional operator response (test fixture): we confirm the announced PUE target and dispute nothing.",
       "date": "2026-06-20",
