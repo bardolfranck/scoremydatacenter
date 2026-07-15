@@ -1,0 +1,56 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Library mockup — the desirable brief card (draft-5 1e, grid variant).
+// Cover field carries the family accent (never a grade colour); the free tier
+// (digest tag) always sits NEXT TO the price — the free/paid boundary is
+// visible on every card (P6: truth is never paywalled).
+import LibraryTeaser from "./LibraryTeaser.astro";
+import { briefLanguages, coverField, LANG_FLAGS, type LibraryBrief } from "../config/library";
+
+interface Props {
+  brief: LibraryBrief;
+  lang: "fr" | "en";
+  num?: string; // "01" … — table-of-contents number on the Revue
+  familyLabel: string;
+  themeLabel?: string;
+  digestTag: string;
+  fromLabel: string; // « dès » / "from"
+  fictionalTag: string;
+  langTitle: string; // tooltip: the native+EN language rule, spelled out
+}
+const { brief, lang, num, familyLabel, themeLabel, digestTag, fromLabel, fictionalTag, langTitle } = Astro.props;
+const tint = coverField(brief);
+const kicker = themeLabel ? `${familyLabel} · ${themeLabel}` : familyLabel;
+const langs = briefLanguages(brief);
+---
+
+<article class="lib-card">
+  <div class="lib-card-cover" style={`background:${tint}`}>
+    {num && <span class="lib-card-num">{num}</span>}
+    <span class="lib-card-chip">{brief.cover}</span>
+    <span class="lib-card-cover-foot">
+      <span class="lib-card-kicker">{kicker}</span>
+      <span class="lib-langs lib-langs-cover" title={langTitle}>
+        {langs.map((code) => (
+          <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
+        ))}
+      </span>
+    </span>
+  </div>
+  <div class="lib-card-body">
+    <h3 class="lib-card-title">{brief.title[lang]}</h3>
+    <p class="lib-card-hook">{brief.hook}</p>
+    <div class="lib-card-teaser">
+      <LibraryTeaser kind={brief.teaser} tint={tint} />
+      <span class="lib-fictional">{fictionalTag}</span>
+    </div>
+  </div>
+  <footer class="lib-card-foot">
+    <span class="lib-tag-digest">{digestTag}</span>
+    <span class="lib-price">
+      {brief.priceFromEur ? `${fromLabel} ${brief.priceFromEur.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB")} €` : "—"}
+    </span>
+  </footer>
+</article>

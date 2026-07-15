@@ -1,0 +1,74 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import LibraryRevue from "../components/LibraryRevue.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  title: "Intelligence Library — ScoreMyDataCenter (mockup)",
+  description:
+    "The ScoreMyDataCenter Intelligence Library: what the scores mean, and where the sector is heading. Mockup — fictional content.",
+  altHref: "/fr/bibliotheque",
+  altLabel: "🇫🇷 FR",
+  tagline: "Independent observatory",
+  nav: EN_NAV,
+  mockupNote: "Working mockup — all content is fictional (lorem). No brief is published.",
+  nameplateTitle: "Intelligence Library",
+  featuredKicker: "Featured · the reference report",
+  scaleAria: "The A–E grading scale",
+  flagshipCoverKicker: "Flagship report · ScoreMyDataCenter",
+  flagshipStats: [
+    { value: "161", label: "data centers" },
+    { value: "13", label: "countries" },
+  ],
+  pillarsAria: "The 5 E·S·G pillars",
+  pillars: [
+    { icon: "energy", label: "Energy" },
+    { icon: "water", label: "Water" },
+    { icon: "land", label: "Land & biodiversity" },
+    { icon: "local", label: "Local impact" },
+    { icon: "transparency", label: "Transparency" },
+  ],
+  flagshipPrice: "from €1,900",
+  ctaDigest: "Download the free digest",
+  ctaOrder: "Order — contact us",
+  operatorNote: "Operator study — all your sites, one reading. On quote →",
+  tocKicker: "In this issue",
+  tocNote: "Theme · Country · every brief has a free digest",
+  tocThemesLabel: "By theme — the 5 pillars",
+  tocCountriesLabel: "By country",
+  comingSoonLabel: "Coming soon:",
+  comingSoonWord: "coming soon",
+  familyLabels: { flagship: "Flagship", country: "Country", theme: "Theme" },
+  themeLabels: {
+    water: "Water",
+    energy: "Energy",
+    land: "Land & biodiversity",
+    impact: "Local impact",
+    transparency: "Transparency",
+  },
+  digestTag: "Free digest",
+  fromLabel: "from",
+  fictionalTag: "fictional example",
+  editionsLabel: "Editions",
+  langTitle: "Publication languages — a country brief ships native + English; the flagship in English + French",
+  indexHref: "/intelligence/all",
+  indexLink: "See all entries — the Index →",
+  bespokeKicker: "Operator benchmark · on request",
+  bespokeTitle: "Your European portfolio, read through our grid.",
+  bespokeBody:
+    "A confidential reading, site by site, using the public methodology. The most complete deliverable — scoped with you, reserved for strategy teams and investors.",
+  bespokeCta: "Contact us",
+  onRequest: "on request",
+  newsletterTitle: "Get the digest.",
+  newsletterBody:
+    "The TL;DRs of new briefs and the movements of the corpus. Free — it is the library's free tier, not a wall.",
+  newsletterPlaceholder: "you@organisation.eu",
+  newsletterCta: "Get the digest",
+  newsletterMicro: "No spam · one-click unsubscribe · the scores stay free",
+  footLine: "Intelligence Library · ScoreMyDataCenter · open methodology · ODbL data · scoremydatacenter.org",
+};
+---
+
+<LibraryRevue lang="en" t={t} />

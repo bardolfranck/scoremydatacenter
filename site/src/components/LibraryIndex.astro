@@ -1,0 +1,177 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// « L'Index » — the Intelligence Library ARCHIVE (brief COWORK 2026-07-14),
+// shared FR/EN. Utility register: an E·S·G filter rail (Environment: Water /
+// Energy / Land · Social: Impact · Gouvernance: Transparency) + family filter
+// (Flagship / Country / Theme), dense indexed entries sorted by date.
+// Every filter state has a shareable URL (?family=…&theme=…) — same doctrine
+// as the ranking. MOCKUP: lorem-Latin entries, fictional dates and prices.
+import Base from "../layouts/Base.astro";
+import LibraryTeaser from "./LibraryTeaser.astro";
+import { BRIEFS_BY_DATE, briefLanguages, coverField, LANG_FLAGS } from "../config/library";
+
+const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
+const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
+
+const fmtDate = (iso: string) =>
+  new Date(`${iso}T00:00:00Z`).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.description}
+  tagline={t.tagline}
+  altHref={t.altHref}
+  altLabel={t.altLabel}
+  nav={t.nav}
+>
+  <p class="lib-mock-note">{t.mockupNote}</p>
+
+  <header class="lib-index-head">
+    <p class="lib-nameplate-kicker">{t.nameplateKicker}</p>
+    <h1 class="lib-index-title">{t.indexTitle}</h1>
+    <p class="lib-back-link"><a href={t.revueHref}>{t.backToRevue}</a></p>
+  </header>
+
+  <div class="lib-index-layout">
+    <!-- Filter rail — family + E·S·G themes -->
+    <aside class="lib-rail" aria-label={t.railAria}>
+      <div class="lib-rail-group">
+        <p class="lib-rail-head">{t.familyHead}</p>
+        <div class="lib-rail-pills" data-filter="family">
+          <button type="button" class="lib-pill is-active" data-value="all">{t.allLabel}</button>
+          <button type="button" class="lib-pill" data-value="flagship">{t.familyLabels.flagship}</button>
+          <button type="button" class="lib-pill" data-value="country">{t.familyLabels.country}</button>
+          <button type="button" class="lib-pill" data-value="theme">{t.familyLabels.theme}</button>
+        </div>
+      </div>
+      <div class="lib-rail-group">
+        <p class="lib-rail-head">{t.themeHead}</p>
+        {t.esgGroups.map((group: { label: string; themes: string[] }) => (
+          <div class="lib-rail-esg">
+            <p class="lib-rail-esg-label">{group.label}</p>
+            <div class="lib-rail-pills" data-filter="theme">
+              {group.themes.map((key: string) => (
+                <button type="button" class="lib-pill" data-value={key}>{t.themeLabels[key]}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </aside>
+
+    <!-- Dense entries, newest first -->
+    <section class="lib-entries" aria-label={t.entriesAria}>
+      <p class="lib-entries-count"><span data-count>{BRIEFS_BY_DATE.length}</span> {t.entriesCountLabel}</p>
+      <ol class="lib-entry-list">
+        {BRIEFS_BY_DATE.map((brief) => (
+          <li class="lib-entry" data-family={brief.family} data-theme={brief.theme ?? ""}>
+            <span class="lib-entry-chip" style={`background:${coverField(brief)}`}>{brief.cover}</span>
+            <div class="lib-entry-main">
+              <p class="lib-entry-kicker">
+                {t.familyLabels[brief.family]}{brief.theme ? ` · ${t.themeLabels[brief.theme]}` : ""}
+                {" · "}<time datetime={brief.date}>{fmtDate(brief.date)}</time>
+              </p>
+              <h2 class="lib-entry-title">{brief.title[lang]}</h2>
+              <p class="lib-entry-hook">{brief.hook}</p>
+            </div>
+            <div class="lib-entry-meta">
+              <LibraryTeaser kind={brief.teaser} tint={coverField(brief)} />
+              <span class="lib-fictional">{t.fictionalTag}</span>
+              <span class="lib-langs" title={t.langTitle}>
+                {briefLanguages(brief).map((code) => (
+                  <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
+                ))}
+              </span>
+              <span class="lib-tag-digest">{t.digestTag}</span>
+              <span class="lib-price">
+                {brief.priceFromEur
+                  ? `${t.fromLabel} ${brief.priceFromEur.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB")} €`
+                  : t.onRequest}
+              </span>
+            </div>
+          </li>
+        ))}
+      </ol>
+      <p class="lib-entries-empty" hidden>{t.emptyLabel}</p>
+
+      <!-- Bespoke: outside the filterable list — no price, on request only -->
+      <aside class="lib-entry lib-entry-bespoke">
+        <span class="lib-entry-chip" style="background:#102a43">Op.</span>
+        <div class="lib-entry-main">
+          <p class="lib-entry-kicker">{t.bespokeKicker}</p>
+          <h2 class="lib-entry-title">{t.bespokeTitle}</h2>
+          <p class="lib-entry-hook">{t.bespokeBody}</p>
+        </div>
+        <div class="lib-entry-meta">
+          <span class="lib-price">{t.onRequest}</span>
+          <a class="button button-secondary" href={contactPath}>{t.bespokeCta}</a>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <p class="lib-footline">{t.footLine}</p>
+
+  <script>
+    // Shareable filter state (?family=…&theme=…) — same doctrine as the ranking:
+    // the client script only shows/hides rows, the URL restores the view.
+    const rails = document.querySelectorAll<HTMLElement>(".lib-rail-pills");
+    const entries = document.querySelectorAll<HTMLElement>(".lib-entry[data-family]");
+    const countEl = document.querySelector<HTMLElement>("[data-count]");
+    const emptyEl = document.querySelector<HTMLElement>(".lib-entries-empty");
+    const state: Record<string, string> = { family: "all", theme: "" };
+
+    const apply = () => {
+      let shown = 0;
+      entries.forEach((row) => {
+        const okFamily = state.family === "all" || row.dataset.family === state.family;
+        const okTheme = !state.theme || row.dataset.theme === state.theme;
+        const on = okFamily && okTheme;
+        row.hidden = !on;
+        if (on) shown += 1;
+      });
+      if (countEl) countEl.textContent = String(shown);
+      if (emptyEl) emptyEl.hidden = shown > 0;
+      rails.forEach((rail) => {
+        const key = rail.dataset.filter!;
+        rail.querySelectorAll<HTMLButtonElement>(".lib-pill").forEach((pill) => {
+          const active = key === "family" ? state.family === pill.dataset.value : state.theme === pill.dataset.value;
+          pill.classList.toggle("is-active", active);
+        });
+      });
+      const params = new URLSearchParams();
+      if (state.family !== "all") params.set("family", state.family);
+      if (state.theme) params.set("theme", state.theme);
+      const qs = params.toString();
+      history.replaceState(null, "", qs ? `?${qs}` : location.pathname);
+    };
+
+    rails.forEach((rail) => {
+      rail.addEventListener("click", (e) => {
+        const pill = (e.target as HTMLElement).closest<HTMLButtonElement>(".lib-pill");
+        if (!pill) return;
+        const key = rail.dataset.filter!;
+        if (key === "family") {
+          state.family = pill.dataset.value!;
+        } else {
+          // toggle: clicking the active theme clears it
+          state.theme = state.theme === pill.dataset.value ? "" : pill.dataset.value!;
+        }
+        apply();
+      });
+    });
+
+    const params = new URLSearchParams(location.search);
+    if (params.get("family")) state.family = params.get("family")!;
+    if (params.get("theme")) state.theme = params.get("theme")!;
+    apply();
+  </script>
+</Base>

@@ -1,0 +1,54 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import LibraryIndex from "../../../components/LibraryIndex.astro";
+import { FR_NAV } from "../../../config/nav";
+
+const t = {
+  title: "L'Index — toutes les entrées de la bibliothèque (maquette)",
+  description:
+    "Le catalogue de la bibliothèque ScoreMyDataCenter : filtres E·S·G, familles, entrées triées par date. Maquette — contenus fictifs.",
+  altHref: "/intelligence/all",
+  altLabel: "🇬🇧 EN",
+  tagline: "Observatoire indépendant",
+  nav: FR_NAV,
+  mockupNote: "Maquette de travail — tous les contenus sont fictifs (lorem). Aucun brief n'est publié.",
+  nameplateKicker: "ScoreMyDataCenter · la bibliothèque",
+  indexTitle: "L'Index — toutes les entrées",
+  revueHref: "/fr/bibliotheque",
+  backToRevue: "← Retour à la Revue",
+  railAria: "Filtres de la bibliothèque",
+  familyHead: "Famille",
+  allLabel: "Tous",
+  familyLabels: { flagship: "Phare", country: "Pays", theme: "Thème" },
+  themeHead: "Thème · aligné E·S·G",
+  esgGroups: [
+    { label: "Environnement", themes: ["water", "energy", "land"] },
+    { label: "Social", themes: ["impact"] },
+    { label: "Gouvernance", themes: ["transparency"] },
+  ],
+  themeLabels: {
+    water: "Eau",
+    energy: "Énergie",
+    land: "Foncier & biodiv.",
+    impact: "Impact local",
+    transparency: "Transparence",
+  },
+  entriesAria: "Toutes les entrées de la bibliothèque",
+  entriesCountLabel: "entrées · triées par date",
+  emptyLabel: "Aucune entrée ne correspond à ces filtres — maquette : le catalogue est fictif.",
+  digestTag: "Digest gratuit",
+  fromLabel: "dès",
+  onRequest: "sur demande",
+  fictionalTag: "exemple fictif",
+  langTitle: "Langues de publication — un brief pays sort en langue native + anglais ; le flagship en anglais + français",
+  bespokeKicker: "Benchmark opérateur · sur demande",
+  bespokeTitle: "Votre portefeuille européen, lu par notre grille.",
+  bespokeBody: "Lecture confidentielle, site par site, selon la méthodologie publique. Réservé aux équipes stratégie et investisseurs.",
+  bespokeCta: "Nous contacter",
+  footLine: "La bibliothèque · ScoreMyDataCenter · méthodologie ouverte · données ODbL · scoremydatacenter.org",
+};
+---
+
+<LibraryIndex lang="fr" t={t} />

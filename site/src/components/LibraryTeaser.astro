@@ -1,0 +1,46 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Library mockup — decorative graph teaser for a brief card. Purely fictional
+// shapes (the corpus does not feed the library yet), so every instance ships
+// with a visible "fictional example" caption next to it. Neutral inks only —
+// grade colours are banned from decoration (they belong to real score badges).
+import type { BriefTeaser } from "../config/library";
+
+interface Props {
+  kind: BriefTeaser;
+  tint: string; // cover-field colour of the brief family/theme
+}
+const { kind, tint } = Astro.props;
+---
+
+{kind === "trend" && (
+  <svg class="lib-teaser" viewBox="0 0 120 36" aria-hidden="true">
+    <polyline points="4,26 24,22 44,27 64,18 84,20 104,10 116,12" fill="none" stroke={tint} stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="116" cy="12" r="3" fill={tint} />
+  </svg>
+)}
+{kind === "bars" && (
+  <svg class="lib-teaser" viewBox="0 0 120 36" aria-hidden="true">
+    {[10, 17, 13, 22, 27, 19, 31].map((h, i) => (
+      <rect x={6 + i * 16} y={34 - h} width="10" height={h} rx="1.5" fill={tint} opacity={0.45 + (i % 3) * 0.22} />
+    ))}
+  </svg>
+)}
+{kind === "dots" && (
+  <svg class="lib-teaser" viewBox="0 0 120 36" aria-hidden="true">
+    {Array.from({ length: 3 }).map((_, r) =>
+      Array.from({ length: 10 }).map((_, c) => (
+        <circle cx={9 + c * 11.5} cy={9 + r * 9} r="3.1" fill={tint} opacity={(r * 10 + c) % 3 === 0 ? 0.9 : 0.22} />
+      )),
+    )}
+  </svg>
+)}
+{kind === "scatter" && (
+  <svg class="lib-teaser" viewBox="0 0 120 36" aria-hidden="true">
+    {[[12, 24, 3], [28, 14, 4.5], [40, 27, 2.5], [55, 9, 5.5], [70, 20, 3.5], [88, 15, 6], [105, 25, 3], [112, 8, 2.5]].map(([x, y, r]) => (
+      <circle cx={x} cy={y} r={r} fill={tint} opacity="0.5" />
+    ))}
+  </svg>
+)}

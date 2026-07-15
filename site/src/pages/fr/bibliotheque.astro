@@ -1,0 +1,74 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import LibraryRevue from "../../components/LibraryRevue.astro";
+import { FR_NAV } from "../../config/nav";
+
+const t = {
+  title: "La bibliothèque — ScoreMyDataCenter (maquette)",
+  description:
+    "La bibliothèque de briefs ScoreMyDataCenter : ce que les scores veulent dire, et où va le secteur. Maquette — contenus fictifs.",
+  altHref: "/intelligence",
+  altLabel: "🇬🇧 EN",
+  tagline: "Observatoire indépendant",
+  nav: FR_NAV,
+  mockupNote: "Maquette de travail — tous les contenus sont fictifs (lorem). Aucun brief n'est publié.",
+  nameplateTitle: "La bibliothèque",
+  featuredKicker: "À la une · le rapport de référence",
+  scaleAria: "L'échelle de notation A–E",
+  flagshipCoverKicker: "Rapport phare · ScoreMyDataCenter",
+  flagshipStats: [
+    { value: "161", label: "data centers" },
+    { value: "13", label: "pays" },
+  ],
+  pillarsAria: "Les 5 piliers E·S·G",
+  pillars: [
+    { icon: "energy", label: "Énergie" },
+    { icon: "water", label: "Eau" },
+    { icon: "land", label: "Foncier & biodiversité" },
+    { icon: "local", label: "Impact local" },
+    { icon: "transparency", label: "Transparence" },
+  ],
+  flagshipPrice: "dès 1 900 €",
+  ctaDigest: "Télécharger le digest gratuit",
+  ctaOrder: "Commander — nous contacter",
+  operatorNote: "Étude opérateur — tous vos sites, une seule lecture. Sur devis →",
+  tocKicker: "Au sommaire",
+  tocNote: "Thème · Pays · chaque brief a son digest gratuit",
+  tocThemesLabel: "Par thème — les 5 piliers",
+  tocCountriesLabel: "Par pays",
+  comingSoonLabel: "Bientôt :",
+  comingSoonWord: "bientôt",
+  familyLabels: { flagship: "Phare", country: "Pays", theme: "Thème" },
+  themeLabels: {
+    water: "Eau",
+    energy: "Énergie",
+    land: "Foncier & biodiversité",
+    impact: "Impact local",
+    transparency: "Transparence",
+  },
+  digestTag: "Digest gratuit",
+  fromLabel: "dès",
+  fictionalTag: "exemple fictif",
+  editionsLabel: "Éditions",
+  langTitle: "Langues de publication — un brief pays sort en langue native + anglais ; le flagship en anglais + français",
+  indexHref: "/fr/bibliotheque/tous",
+  indexLink: "Voir toutes les entrées — l'Index →",
+  bespokeKicker: "Benchmark opérateur · sur demande",
+  bespokeTitle: "Votre portefeuille européen, lu par notre grille.",
+  bespokeBody:
+    "Une lecture confidentielle, site par site, selon la méthodologie publique. Le livrable le plus complet — cadré avec vous, réservé aux équipes stratégie et investisseurs.",
+  bespokeCta: "Nous contacter",
+  onRequest: "sur demande",
+  newsletterTitle: "Recevez le digest.",
+  newsletterBody:
+    "Les TL;DR des nouveaux briefs et les mouvements du corpus. Gratuit — c'est l'étage gratuit de la bibliothèque, pas un mur.",
+  newsletterPlaceholder: "vous@organisation.eu",
+  newsletterCta: "Recevoir le digest",
+  newsletterMicro: "Pas de spam · désinscription en un clic · les scores restent gratuits",
+  footLine: "La bibliothèque · ScoreMyDataCenter · méthodologie ouverte · données ODbL · scoremydatacenter.org",
+};
+---
+
+<LibraryRevue lang="fr" t={t} />
