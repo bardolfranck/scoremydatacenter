@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 96" role="img" aria-label="ScoreMyDataCenter — observatoire indépendant">
+  <!-- Icon (draft-4): dark tile, server rack, A→E grade bars -->
+  <g>
+    <rect width="96" height="96" rx="21" fill="#102A43"/>
+    <rect x="15" y="30" width="15" height="39" rx="3.75" fill="#FFFFFF" opacity="0.85"/>
+    <rect x="66" y="30" width="15" height="39" rx="3.75" fill="#FFFFFF" opacity="0.85"/>
+    <rect x="34.5" y="18" width="27" height="51" rx="4.5" fill="#FFFFFF"/>
+    <rect x="40.5" y="27" width="15" height="3.75" rx="1.875" fill="#102A43"/>
+    <rect x="40.5" y="37.5" width="15" height="3.75" rx="1.875" fill="#102A43"/>
+    <rect x="40.5" y="48" width="15" height="3.75" rx="1.875" fill="#102A43"/>
+    <rect x="40.5" y="58.5" width="15" height="3.75" rx="1.875" fill="#102A43"/>
+    <rect x="16.5" y="75" width="10.8" height="7.5" rx="2.7" fill="#0B7A4B"/>
+    <rect x="29.55" y="75" width="10.8" height="7.5" rx="2.7" fill="#6FA032"/>
+    <rect x="42.6" y="75" width="10.8" height="7.5" rx="2.7" fill="#DFA918"/>
+    <rect x="55.65" y="75" width="10.8" height="7.5" rx="2.7" fill="#CF6A1C"/>
+    <rect x="68.7" y="75" width="10.8" height="7.5" rx="2.7" fill="#BF3B21"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="116" y="52" font-family="'Chivo','Avenir Next','Segoe UI',system-ui,-apple-system,sans-serif" font-size="38" font-weight="800" letter-spacing="-0.5" fill="#102A43">Score<tspan fill="#627D98">My</tspan>DataCenter</text>
+  <!-- Grade bars under the wordmark, header-style -->
+  <g>
+    <rect x="117" y="63" width="72" height="6" rx="2" fill="#0B7A4B"/>
+    <rect x="193" y="63" width="72" height="6" rx="2" fill="#6FA032"/>
+    <rect x="269" y="63" width="72" height="6" rx="2" fill="#DFA918"/>
+    <rect x="345" y="63" width="72" height="6" rx="2" fill="#CF6A1C"/>
+    <rect x="421" y="63" width="72" height="6" rx="2" fill="#BF3B21"/>
+  </g>
+  <text x="117" y="86" font-family="'IBM Plex Mono','SF Mono',ui-monospace,monospace" font-size="13" font-weight="600" letter-spacing="3.2" fill="#627D98">OBSERVATOIRE INDÉPENDANT</text>
+</svg>

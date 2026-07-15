@@ -1,4 +1,12 @@
-# ScoreMyDataCenter
+<p align="center">
+  <img src="site/public/assets/smdc-logo.svg" alt="ScoreMyDataCenter — observatoire indépendant" width="460">
+</p>
+
+<p align="center">
+  <a href="https://github.com/bardolfranck/scoremydatacenter/releases/tag/v0.1.0"><img alt="methodology v0.1.0 — frozen" src="https://img.shields.io/badge/m%C3%A9thodologie-v0.1.0%20gel%C3%A9e-102A43"></a>
+  <img alt="grades A–E" src="https://img.shields.io/badge/notes-A%E2%80%93E%20opposables-0B7A4B">
+  <img alt="license AGPL + ODbL" src="https://img.shields.io/badge/licences-AGPL%20%2B%20ODbL-627D98">
+</p>
 
 **Independent observatory scoring the social acceptability of data center projects — public A–E grades, Nutri-Score style, France first.**
 
