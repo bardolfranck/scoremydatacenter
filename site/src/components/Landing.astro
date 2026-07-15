@@ -17,6 +17,12 @@ import iconCalculator from "@phosphor-icons/core/assets/regular/calculator.svg?r
 import iconBell from "@phosphor-icons/core/assets/regular/bell.svg?raw";
 import iconArticle from "@phosphor-icons/core/assets/regular/article.svg?raw";
 import iconUserCircle from "@phosphor-icons/core/assets/regular/user-circle.svg?raw";
+import iconGradCap from "@phosphor-icons/core/assets/regular/graduation-cap.svg?raw";
+import iconUsersThree from "@phosphor-icons/core/assets/regular/users-three.svg?raw";
+import iconChartUp from "@phosphor-icons/core/assets/regular/chart-line-up.svg?raw";
+import iconBookOpen from "@phosphor-icons/core/assets/regular/book-open.svg?raw";
+import iconBank from "@phosphor-icons/core/assets/regular/bank.svg?raw";
+import iconCertificate from "@phosphor-icons/core/assets/regular/certificate.svg?raw";
 import methodologyData from "../../public/data/methodology.json";
 
 interface Props {
@@ -30,6 +36,8 @@ const { lang, t } = Astro.props;
 const CHAIN_ICONS: Record<string, string> = {
   collect: iconMagnifier, structure: iconStack, verify: iconShieldCheck,
   compute: iconCalculator, watch: iconBell, publish: iconArticle, human: iconUserCircle,
+  gradcap: iconGradCap, users: iconUsersThree, chartup: iconChartUp,
+  book: iconBookOpen, bank: iconBank, certificate: iconCertificate,
 };
 const chainIcon = (name: string, size = 22) =>
   (CHAIN_ICONS[name] ?? "").replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
@@ -445,7 +453,9 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             </div>
           </div>
           <ul class="founder-facts">
-            {t.founderFacts.map((f: string) => <li set:html={f}></li>)}
+            {t.founderFacts.map((f: any) => (
+              <li><span class="fact-ic" aria-hidden="true" set:html={chainIcon(f.icon, 18)}></span><span set:html={f.text}></span></li>
+            ))}
           </ul>
         </aside>
       </div>
@@ -479,7 +489,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <p class="hero-eyebrow">{t.expertiseKicker}</p>
           <ul class="expertise-list">
             {t.expertise.map((e: any) => (
-              <li><strong>{e.title}</strong><span set:html={e.body}></span></li>
+              <li>
+                <span class="ia-ic" aria-hidden="true" set:html={chainIcon(e.icon)}></span>
+                <div><strong>{e.title}</strong><span set:html={e.body}></span></div>
+              </li>
             ))}
           </ul>
         </div>
