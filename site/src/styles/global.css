@@ -1421,3 +1421,32 @@ sup a { color: var(--accent); font-weight: 750; }
 .ia-github:hover { color: #fff; }
 @media (max-width: 1100px) { .ia-chain { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 640px) { .ia-chain { grid-template-columns: 1fr; } }
+
+/* About v3 (review 2026-07-15): observatory statement left, founder card right,
+   expertise + strengths row, closing band last. */
+.about-hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(24px, 4vw, 48px); align-items: start; }
+.about-h2 { font-size: clamp(1.6rem, 2.6vw, 2.1rem); line-height: 1.15; letter-spacing: -0.02em; margin: 8px 0 0; }
+.about-pledges { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+.about-pledges li { display: flex; gap: 14px; align-items: center; color: var(--ink-soft); font-size: 0.95rem; }
+.about-pledges .ia-ic { flex: none; }
+.founder-card { border: 1px solid var(--line); border-radius: 14px; background: var(--wash); padding: 22px 24px; }
+.founder-card-head { display: flex; gap: 16px; align-items: center; }
+.founder-card-photo { width: 110px; height: 127px; object-fit: cover; border-radius: 10px; }
+.founder-card h3 { font-size: 1.15rem; margin: 0; }
+.founder-card-name { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-weight: 800; color: var(--accent); }
+.founder-facts { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.founder-facts li { position: relative; padding-left: 22px; font-size: 0.87rem; line-height: 1.5; color: var(--ink-soft); }
+.founder-facts li::before { content: "◆"; position: absolute; left: 2px; top: 1px; color: var(--accent); font-size: 0.6rem; }
+.founder-facts a { color: var(--accent); font-weight: 650; }
+.about-bottom { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(24px, 4vw, 48px); margin-top: 32px; align-items: start; }
+.expertise-list { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
+.expertise-list li { display: grid; gap: 2px; font-size: 0.9rem; }
+.expertise-list strong { color: var(--ink); font-size: 0.95rem; }
+.expertise-list span { color: var(--ink-soft); line-height: 1.5; }
+.strengths { border: 1px solid var(--line); border-radius: 14px; background: var(--wash); padding: 22px 26px; }
+.strengths h3 { font-size: 1.1rem; margin: 0; }
+.strengths ul { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; color: var(--ink); font-weight: 650; font-size: 0.92rem; }
+.strengths ul li::before { content: "✓"; color: var(--grade-a); font-weight: 900; margin-right: 10px; }
+.about-ia { margin-top: 36px; }
+.ia-closing { margin-top: 32px; }
+@media (max-width: 900px) { .about-hero, .about-bottom { grid-template-columns: 1fr; } }
