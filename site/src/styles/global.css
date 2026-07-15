@@ -1399,3 +1399,25 @@ sup a { color: var(--accent); font-weight: 750; }
 .principles-title { text-align: center; font-size: 1.7rem; font-weight: 800; letter-spacing: -0.015em; margin: 44px 0 22px; }
 @media (max-width: 960px) { .matters-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .matters-grid { grid-template-columns: 1fr; } }
+
+/* About — the AI production chain (review 2026-07-15: the pipeline is the proof,
+   not a character gallery). Numbers are meaningful: it IS a sequence. */
+.about-ia { margin-top: 40px; }
+.ia-heading { font-size: 1.45rem; letter-spacing: -0.015em; }
+.ia-chain { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin: 22px 0 0; padding: 0; list-style: none; counter-reset: none; }
+.ia-step { position: relative; display: grid; gap: 8px; align-content: start; padding: 18px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); }
+.ia-num { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 0.72rem; font-weight: 800; }
+.ia-ic { width: 40px; height: 40px; border-radius: 10px; background: var(--wash); border: 1px solid var(--line); display: grid; place-items: center; color: var(--accent); }
+.ia-step h4 { margin: 2px 0 0; font-size: 0.95rem; color: var(--ink); }
+.ia-step p { margin: 0; font-size: 0.82rem; line-height: 1.5; color: var(--ink-soft); }
+.ia-human { display: flex; gap: 16px; align-items: center; margin-top: 18px; padding: 18px 22px; border: 1.5px solid var(--accent); border-radius: var(--radius); background: var(--paper); }
+.ia-ic-human { flex: none; color: var(--accent); background: #e8eff7; border: none; }
+.ia-human strong { color: var(--accent); font-size: 1rem; }
+.ia-human p { margin: 4px 0 0; font-size: 0.92rem; line-height: 1.55; color: var(--ink-soft); }
+.ia-closing { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-top: 18px; padding: 20px 24px; border-radius: var(--radius); background: var(--sidebar, #102a43); color: #fff; }
+.ia-closing p { margin: 0; font-size: 1.02rem; line-height: 1.45; max-width: 60ch; }
+.ia-closing-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.ia-github { color: #c8d5e2; font-size: 0.86rem; font-weight: 700; }
+.ia-github:hover { color: #fff; }
+@media (max-width: 1100px) { .ia-chain { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px) { .ia-chain { grid-template-columns: 1fr; } }

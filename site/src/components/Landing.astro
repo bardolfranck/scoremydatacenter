@@ -10,13 +10,13 @@ import MapIsland from "./MapIsland.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import scoresData from "../../public/data/scores.json";
-import iconDatabase from "@phosphor-icons/core/assets/regular/database.svg?raw";
-import iconChartBar from "@phosphor-icons/core/assets/regular/chart-bar.svg?raw";
+import iconMagnifier from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
 import iconStack from "@phosphor-icons/core/assets/regular/stack.svg?raw";
-import iconCode from "@phosphor-icons/core/assets/regular/code.svg?raw";
-import iconPaintBrush from "@phosphor-icons/core/assets/regular/paint-brush.svg?raw";
-import iconCompass from "@phosphor-icons/core/assets/regular/compass.svg?raw";
-import iconScales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
+import iconShieldCheck from "@phosphor-icons/core/assets/regular/shield-check.svg?raw";
+import iconCalculator from "@phosphor-icons/core/assets/regular/calculator.svg?raw";
+import iconBell from "@phosphor-icons/core/assets/regular/bell.svg?raw";
+import iconArticle from "@phosphor-icons/core/assets/regular/article.svg?raw";
+import iconUserCircle from "@phosphor-icons/core/assets/regular/user-circle.svg?raw";
 import methodologyData from "../../public/data/methodology.json";
 
 interface Props {
@@ -25,13 +25,14 @@ interface Props {
 }
 const { lang, t } = Astro.props;
 
-// Team avatars: the house icon system (Phosphor), classier than emoji, same meaning.
-const TEAM_ICONS: Record<string, string> = {
-  database: iconDatabase, "chart-bar": iconChartBar, stack: iconStack,
-  code: iconCode, "paint-brush": iconPaintBrush, compass: iconCompass, scales: iconScales,
+// Production-chain icons (about section, review 2026-07-15: the credibility lives
+// in the pipeline, not in a character gallery).
+const CHAIN_ICONS: Record<string, string> = {
+  collect: iconMagnifier, structure: iconStack, verify: iconShieldCheck,
+  compute: iconCalculator, watch: iconBell, publish: iconArticle, human: iconUserCircle,
 };
-const teamIcon = (name: string) =>
-  (TEAM_ICONS[name] ?? "").replace("<svg", '<svg width="22" height="22" fill="currentColor" aria-hidden="true"');
+const chainIcon = (name: string, size = 22) =>
+  (CHAIN_ICONS[name] ?? "").replace("<svg", `<svg width="${size}" height="${size}" fill="currentColor" aria-hidden="true"`);
 
 const scores = scoresData as any[];
 const methodology = methodologyData as any;
@@ -443,65 +444,36 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           {t.aboutBio.map((block: string) => <Fragment set:html={block} />)}
         </div>
       </div>
-      {t.teamDna && (
-        <div class="about-team">
-          <h3>{t.teamTitle}</h3>
-          <p class="team-intro">{t.teamIntro}</p>
-          {/* Org chart (Franck 2026-07-14, arbitrated): the human + the Designer on
-              top (substance and form), the DNA level below — Juge & Boussole, the
-              trades that come first (judgment + defensible method = the house's
-              credibility) — then the factory pairs. Double icon: Phosphor avatar
-              carries the craft, the emoji tag the wink. */}
-          <div class="org">
-            <div class="org-top">
-              <div class="team-card org-lead">
-                <img class="org-photo" src="/assets/franck-bardol.jpg" alt="" width="56" height="65" loading="lazy" />
-                <strong>{t.teamLead.name}</strong>
-                <p>{t.teamLead.role}</p>
-              </div>
-              {[t.teamDesigner].map((m: any) => (
-                <div class="team-card">
-                  <span class="team-tag" aria-hidden="true">{m.tag}</span>
-                  <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
-                  <strong>{m.name}</strong>
-                  <p>{m.role}</p>
-                </div>
-              ))}
-            </div>
-            <div class="org-trunk" aria-hidden="true"></div>
-            <p class="org-caption">{t.teamDnaCaption}</p>
-            <ul class="org-dna">
-              {t.teamDna.map((m: any) => (
-                <li class="team-card team-card-dna">
-                  <span class="team-tag" aria-hidden="true">{m.tag}</span>
-                  <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
-                  <strong>{m.name}</strong>
-                  <p>{m.role}</p>
-                </li>
-              ))}
-            </ul>
-            <div class="org-trunk" aria-hidden="true"></div>
-            <p class="org-caption">{t.teamFabCaption}</p>
-            <ul class="org-branches">
-              {t.teamBranches.map((branch: any[]) => (
-                <li class="org-branch">
-                  {branch.map((m: any, depth: number) => (
-                    <Fragment>
-                      {depth > 0 && <span class="org-drop" aria-hidden="true"></span>}
-                      <div class="team-card">
-                        <span class="team-tag" aria-hidden="true">{m.tag}</span>
-                        <span class="team-avatar team-avatar-icon" aria-hidden="true" set:html={teamIcon(m.icon)}></span>
-                        <strong>{m.name}</strong>
-                        <p>{m.role}</p>
-                      </div>
-                    </Fragment>
-                  ))}
-                </li>
-              ))}
-            </ul>
+      {t.ia && (
+        <div class="about-ia">
+          <div class="section-heading">
+            <h3 class="ia-heading">{t.ia.heading}</h3>
+            <p>{t.ia.sub}</p>
           </div>
-          <p class="team-note" set:html={t.teamNote}></p>
-          <a class="button button-primary team-cta" href={t.teamCtaUrl} target="_blank" rel="noopener">{t.teamCta}</a>
+          <ol class="ia-chain">
+            {t.ia.steps.map((step: any, i: number) => (
+              <li class="ia-step">
+                <span class="ia-num" aria-hidden="true">{i + 1}</span>
+                <span class="ia-ic" aria-hidden="true" set:html={chainIcon(step.icon)}></span>
+                <h4>{step.title}</h4>
+                <p>{step.body}</p>
+              </li>
+            ))}
+          </ol>
+          <div class="ia-human">
+            <span class="ia-ic ia-ic-human" aria-hidden="true" set:html={chainIcon("human", 26)}></span>
+            <div>
+              <strong>{t.ia.humanTitle}</strong>
+              <p>{t.ia.humanBody}</p>
+            </div>
+          </div>
+          <div class="ia-closing">
+            <p set:html={t.ia.closing}></p>
+            <div class="ia-closing-actions">
+              <a class="button button-primary" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{t.ia.closingCta} →</a>
+              <a class="ia-github" href={t.teamCtaUrl} target="_blank" rel="noopener">{t.teamCta}</a>
+            </div>
+          </div>
         </div>
       )}
     </div>
