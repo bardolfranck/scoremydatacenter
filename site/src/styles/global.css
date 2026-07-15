@@ -1293,4 +1293,91 @@ sup a { color: var(--accent); font-weight: 750; }
   .lib-entry-meta .lib-teaser { display: none; }
   .lib-digest-form input { min-width: 100%; }
   .lib-cta-row .lib-price { width: 100%; }
+/* ============ HOME V2 (Franck GO 2026-07-15 — fusion-v2 assainie) ============ */
+/* Hero: rupture line + the corpus at a glance. The red is the scale's own E red. */
+.hero-v2 { display: grid; grid-template-columns: 1.08fr 0.92fr; gap: clamp(28px, 4vw, 56px); align-items: start; }
+.hero-v2 .hero-copy { width: auto; }
+.hero-eyebrow { margin: 0 0 10px; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.hero-red { color: var(--grade-e); }
+.hero-checks { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; color: var(--ink); font-weight: 650; }
+.hero-checks li::before { content: "✓"; color: var(--grade-a); font-weight: 900; margin-right: 10px; }
+.hero-corpus { border: 1px solid var(--line); border-radius: 14px; background: var(--wash); padding: 24px 26px; }
+.corpus-label { margin: 0; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); }
+.corpus-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 16px; margin-top: 16px; }
+/* the shared .stat is styled for the dark band — re-ground it on the light card */
+.hero-corpus .stat { border-top: 1px solid var(--line); padding-top: 12px; }
+.hero-corpus .stat b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.hero-corpus .stat > span { color: var(--ink-soft); font-size: 0.82rem; line-height: 1.35; }
+.corpus-scale { display: flex; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
+.corpus-scale .hero-scale { margin-top: 0; flex: none; }
+.corpus-scale .hs-cell { width: 30px; height: 30px; font-size: 0.9rem; border-radius: 7px; }
+.corpus-scale p { margin: 0; font-size: 0.8rem; line-height: 1.4; color: var(--ink-soft); }
+
+/* Manifesto strip — the motto as a first-class citizen */
+.manifesto { border-block: 1px solid #ead9b8; background: #fdf8ee; padding: 26px clamp(20px, 6vw, 72px); }
+.manifesto-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 20px; align-items: flex-start; }
+.manifesto-shield { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--ink); display: grid; place-items: center; font-size: 1.15rem; color: var(--ink); font-weight: 900; }
+.manifesto-motto { margin: 2px 0 0; font-size: 1.16rem; font-weight: 850; letter-spacing: -0.01em; color: var(--ink); }
+.manifesto-body { margin: 8px 0 0; font-size: 0.93rem; line-height: 1.55; color: var(--ink-soft); max-width: 95ch; }
+.manifesto-body a { font-weight: 750; }
+
+/* Explore: map + real teasers + one search */
+.explore-grid { display: grid; grid-template-columns: 1.15fr 1fr 0.95fr; gap: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.explore-grid > div { padding: 18px 20px; min-width: 0; }
+.explore-grid > div + div { border-left: 1px solid var(--line); }
+.explore-label { margin: 0 0 10px; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); }
+.explore-map .map-island { height: 300px; border-radius: 8px; overflow: hidden; }
+.explore-map .map-canvas { height: 100%; }
+.teaser-row { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); color: var(--ink); }
+.teaser-row:hover .teaser-name { color: var(--accent); }
+.teaser-name { flex: 1; min-width: 0; font-weight: 700; font-size: 0.9rem; line-height: 1.25; }
+.teaser-name small { display: block; font-weight: 500; color: var(--muted); font-size: 0.72rem; }
+.teaser-pct { font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); white-space: nowrap; }
+.teaser-more { display: inline-block; margin-top: 12px; font-weight: 750; font-size: 0.86rem; }
+.explore-search { margin-top: 18px; }
+.explore-search input { width: 100%; box-sizing: border-box; padding: 13px 18px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: 0.95rem; color: var(--ink); background: var(--paper); }
+.explore-search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* Intelligence Library teaser (page on its way — PR #101) */
+.lib-teaser { display: grid; grid-template-columns: 170px 1fr auto; gap: clamp(20px, 3vw, 36px); align-items: center; background: var(--wash); border: 1px solid var(--line); border-radius: 14px; padding: 26px 30px; }
+.lib-cover { width: 170px; height: 220px; border-radius: 6px; background: var(--sidebar, #102a43); color: #fff; padding: 16px 14px; box-sizing: border-box; box-shadow: 8px 10px 24px rgba(16, 42, 67, 0.25); position: relative; }
+.lib-cover-brand { font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: #9fb3c8; }
+.lib-cover b { display: block; margin-top: 10px; font-size: 1rem; line-height: 1.3; }
+.lib-cover-bars { position: absolute; bottom: 14px; left: 14px; display: flex; gap: 4px; }
+.lib-cover-bars i { width: 18px; height: 6px; border-radius: 2px; display: block; }
+.lib-copy h2 { font-size: 1.4rem; letter-spacing: -0.01em; }
+.lib-copy p { margin: 8px 0 0; color: var(--ink-soft); }
+.lib-copy ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; color: var(--ink); font-weight: 600; font-size: 0.92rem; }
+.lib-copy ul li::before { content: "✓"; color: var(--grade-a); font-weight: 900; margin-right: 9px; }
+.lib-badge { display: inline-block; margin-left: 10px; padding: 3px 10px; border-radius: 999px; background: var(--paper); border: 1px solid var(--grade-c); color: #8a6a10; font-family: var(--font-mono); font-size: 0.58rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; vertical-align: middle; }
+.lib-cta { align-self: center; }
+
+/* For whom — one strip, not a page */
+.who-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+.who-grid > a { border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 5px; align-content: start; color: inherit; background: var(--paper); }
+.who-grid > a:hover { border-color: var(--accent); }
+.who-grid b { color: var(--ink); font-size: 0.9rem; }
+.who-grid span { font-size: 0.77rem; line-height: 1.4; color: var(--ink-soft); }
+
+/* Header global search — submits to the ranking's ?q (already supported there) */
+.header-search { flex: 1; max-width: 320px; margin-left: auto; }
+.header-search input { width: 100%; box-sizing: border-box; padding: 9px 15px; border: 1px solid var(--line); border-radius: 999px; font: inherit; font-size: 0.83rem; color: var(--ink); background: var(--paper); }
+.header-search input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.site-header:has(.header-search) .main-nav { margin-left: 0; }
+
+/* Footer v2 — three labelled sections on the dark ground */
+.footer-v2 { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 30px; align-items: start; }
+.footer-v2 .footer-brand p { margin: 8px 0 0; font-size: 0.85rem; color: #c8d5e2; max-width: 34ch; }
+.footer-v2 .footer-name { font-weight: 800; color: #fff; font-size: 1.02rem; }
+.footer-v2 .footer-lic { font-size: 0.7rem; color: #8fa5ba; line-height: 1.6; }
+.footer-v2 h4 { margin: 0 0 12px; color: #fff; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; }
+.footer-v2 ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 0.86rem; }
+.footer-v2 a { color: #c8d5e2; }
+.footer-v2 a:hover { color: #fff; }
+
+@media (max-width: 960px) {
+  .hero-v2, .explore-grid, .lib-teaser, .footer-v2 { grid-template-columns: 1fr; }
+  .explore-grid > div + div { border-left: none; border-top: 1px solid var(--line); }
+  .who-grid { grid-template-columns: repeat(2, 1fr); }
+  .header-search { display: none; }
 }
