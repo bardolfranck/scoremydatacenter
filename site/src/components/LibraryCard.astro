@@ -18,7 +18,7 @@ interface Props {
   digestTag: string;
   reportLabel: string; // « Rapport complet » / "Full report"
   soonLabel: string; // disabled-button tooltip
-  fictionalTag: string;
+  fictionalTag?: string; // omitted once a card carries real content
   langTitle: string; // tooltip: the native+EN language rule, spelled out
 }
 const { brief, lang, num, familyLabel, themeLabel, digestTag, reportLabel, soonLabel, fictionalTag, langTitle } = Astro.props;
@@ -45,7 +45,7 @@ const langs = briefLanguages(brief);
     <p class="lib-card-hook">{hookText(brief.hook, lang)}</p>
     <div class="lib-card-teaser">
       <LibraryTeaser kind={brief.teaser} tint={tint} />
-      <span class="lib-fictional">{fictionalTag}</span>
+      {fictionalTag && <span class="lib-fictional">{fictionalTag}</span>}
     </div>
   </div>
   <footer class="lib-card-foot">

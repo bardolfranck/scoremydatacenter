@@ -84,7 +84,7 @@ const fmtDate = (iso: string) =>
             </div>
             <div class="lib-entry-meta">
               <LibraryTeaser kind={brief.teaser} tint={coverField(brief)} />
-              <span class="lib-fictional">{t.fictionalTag}</span>
+              {brief.family !== "theme" && <span class="lib-fictional">{t.fictionalTag}</span>}
               <span class="lib-langs" title={t.langTitle}>
                 {briefLanguages(brief).map((code) => (
                   <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
