@@ -160,6 +160,169 @@ export const PHRASES: Record<string, { fr: string; en: string }> = {
   },
 };
 
+/** « Ce que cela signifie » — one fixed meaning line per stat (mockup v3):
+ * the consequence, never a judgment. Written once, like the punch phrases. */
+export const MEANINGS: Record<string, { fr: string; en: string }> = {
+  grid_saturated: {
+    fr: "Les nouveaux raccordements peuvent devenir plus longs, plus coûteux ou plus incertains.",
+    en: "New grid connections can become longer, costlier or more uncertain.",
+  },
+  grid_queue_critical: {
+    fr: "La file d'attente devient un paramètre de calendrier à part entière.",
+    en: "The connection queue becomes a schedule parameter in its own right.",
+  },
+  water_stress_high: {
+    fr: "Le choix du refroidissement devient une question territoriale, pas seulement technique.",
+    en: "Cooling choices become a territorial question, not only a technical one.",
+  },
+  water_no_stress: {
+    fr: "Là où l'eau ne manque pas, le débat se déplace vers le réseau et les sols.",
+    en: "Where water is not scarce, the debate shifts to grid and land.",
+  },
+  soil_artificialized: {
+    fr: "Le parc se développe surtout sur des espaces déjà transformés — tous les nouveaux projets ne suivent pas cette logique.",
+    en: "The fleet grows mostly on already-transformed land — not every new project follows that logic.",
+  },
+  protected_area_close: {
+    fr: "La proximité d'un espace protégé pèse sur l'instruction et sur l'acceptation locale.",
+    en: "Proximity to a protected area weighs on permitting and local acceptance.",
+  },
+  seveso_high_2km: {
+    fr: "Le voisinage industriel s'ajoute au dossier — rarement en sa faveur.",
+    en: "Industrial neighbours add to the file — rarely in its favour.",
+  },
+  power_disclosed: {
+    fr: "La donnée de base du débat public est le plus souvent disponible.",
+    en: "The basic figure of any public debate is usually available.",
+  },
+  pue_published: {
+    fr: "L'efficacité annoncée ne vaut jamais preuve — publier est le premier pas.",
+    en: "Claimed efficiency is never proof — publishing is the first step.",
+  },
+  heat_reuse: {
+    fr: "Entre intention et mise en œuvre, l'écart reste immense.",
+    en: "Between intention and implementation, the gap remains huge.",
+  },
+  operational_share: {
+    fr: "Nous mesurons d'abord l'existant, pas seulement les promesses.",
+    en: "We measure what exists first, not only what is promised.",
+  },
+  pipeline: {
+    fr: "", en: "",
+  },
+  oppositions: {
+    fr: "Des faits sourcés, jamais une note — un contexte.",
+    en: "Sourced facts, never a grade — context.",
+  },
+};
+
+/** Hero meaning — the one-line reading under the edition figure. */
+export const HERO_MEANING: Record<string, { fr: string; en: string }> = {
+  grid_saturated: {
+    fr: "Le parc existe. Le réseau, lui, manque déjà de marge.",
+    en: "The fleet is here. The grid already lacks headroom.",
+  },
+  water_stress_high: {
+    fr: "Le parc existe. L'eau, elle, est déjà sous tension.",
+    en: "The fleet is here. The water is already under stress.",
+  },
+  soil_artificialized: {
+    fr: "Le parc s'est construit sur des espaces déjà transformés.",
+    en: "The fleet was built on already-transformed land.",
+  },
+  power_disclosed: {
+    fr: "La donnée de base du débat est le plus souvent disponible.",
+    en: "The basic figure of the debate is usually available.",
+  },
+};
+
+/** Card icons — Phosphor name + tint family (mockup v3.1: the tint follows
+ * the SUBJECT family; bonus/friction stays on the bar). */
+export const STAT_ICON: Record<string, { icon: string; tint: string }> = {
+  grid_saturated: { icon: "lightning", tint: "blue" },
+  grid_queue_critical: { icon: "hourglass", tint: "blue" },
+  water_stress_high: { icon: "drop", tint: "cyan" },
+  water_no_stress: { icon: "drop", tint: "cyan" },
+  soil_artificialized: { icon: "leaf", tint: "green" },
+  protected_area_close: { icon: "plant", tint: "green" },
+  seveso_high_2km: { icon: "warning", tint: "orange" },
+  power_disclosed: { icon: "file-text", tint: "blue" },
+  pue_published: { icon: "gauge", tint: "orange" },
+  heat_reuse: { icon: "flame", tint: "purple" },
+  operational_share: { icon: "hard-drives", tint: "green" },
+  pipeline: { icon: "chart-bar", tint: "blue" },
+  oppositions: { icon: "warning", tint: "orange" },
+};
+
+/** Act 4 — descriptive constraint ranking: share of sites concerned,
+ * recomputed per perimeter (`invert` reads the friction as 100−pct). */
+export const RANK_SPEC: { id: string; invert?: boolean; label: { fr: string; en: string }; phrase: { fr: string; en: string } }[] = [
+  { id: "pue_published", invert: true, label: { fr: "Transparence", en: "Transparency" },
+    phrase: { fr: "des sites ne publient pas leur efficacité réelle.", en: "of sites do not publish their real efficiency." } },
+  { id: "grid_saturated", label: { fr: "Réseau électrique", en: "Power grid" },
+    phrase: { fr: "des sites proches d'un poste saturé.", en: "of sites near a saturated substation." } },
+  { id: "water_stress_high", label: { fr: "Eau", en: "Water" },
+    phrase: { fr: "des sites en zone de stress hydrique fort.", en: "of sites in high water-stress areas." } },
+  { id: "protected_area_close", label: { fr: "Zones protégées", en: "Protected areas" },
+    phrase: { fr: "des sites à moins d'1 km d'un espace naturel protégé.", en: "of sites within 1 km of a protected natural area." } },
+  { id: "seveso_high_2km", label: { fr: "Sites à risque", en: "High-hazard sites" },
+    phrase: { fr: "des sites à moins de 2 km d'un site industriel à haut risque.", en: "of sites within 2 km of a high-hazard industrial site." } },
+];
+
+export function rankConstraints(peri: any, lang: Lang) {
+  return RANK_SPEC
+    .map((spec) => {
+      const st = peri.stats?.[spec.id];
+      if (!st || st.kind !== "share") return null;
+      const share = spec.invert ? Math.round(10 * (100 - st.pct)) / 10 : st.pct;
+      return { id: spec.id, label: spec.label[lang], phrase: spec.phrase[lang], share, n: st.n };
+    })
+    .filter(Boolean)
+    .sort((a: any, b: any) => b.share - a.share);
+}
+
+/** Act 5 — exemplar cards: fixed copy + data-driven bullets. */
+export const EXEMPLAR_COPY = {
+  fr: {
+    title: "Trois projets qui racontent ce territoire",
+    sub: "Sélection mécanique et publiée — le profil le plus courant, le plus contraint, le mieux documenté. Des situations réelles derrière les agrégats.",
+    why: { representative: "Le profil le plus courant", constrained: "Le plus contraint", documented: "Le mieux documenté" },
+    crit: {
+      representative: "critère : profil modal du territoire (statut, réseau, sols, note la plus fréquente)",
+      constrained: "critère : plus grand cumul de frictions territoriales du périmètre",
+      documented: "critère : score de confiance documentaire maximal",
+    },
+    fiche: "Voir la fiche →",
+    status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service" },
+    mwUnknown: "puissance non communiquée",
+    frictionsLine: (n: number) => `${n} contrainte${n > 1 ? "s" : ""} territoriale${n > 1 ? "s" : ""} cumulée${n > 1 ? "s" : ""}`,
+    confLine: { high: "Confiance documentaire : haute", medium: "Confiance documentaire : moyenne", low: "Confiance documentaire : faible" },
+    facts: {
+      e2: "Raccordé à un poste déjà saturé", w1: "En zone de stress hydrique fort",
+      f2: "Sur des sols déjà artificialisés", f1: "À moins d'1 km d'un espace protégé", l3: "Site à haut risque à moins de 2 km",
+    },
+  },
+  en: {
+    title: "Three projects that tell this territory",
+    sub: "A mechanical, published selection — the most common profile, the most constrained, the best documented. Real situations behind the aggregates.",
+    why: { representative: "The most common profile", constrained: "The most constrained", documented: "The best documented" },
+    crit: {
+      representative: "criterion: the territory's modal profile (status, grid, soil, most frequent grade)",
+      constrained: "criterion: highest cumulated territorial frictions in the perimeter",
+      documented: "criterion: highest documentary-confidence score",
+    },
+    fiche: "View the fiche →",
+    status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+    mwUnknown: "capacity not disclosed",
+    frictionsLine: (n: number) => `${n} cumulated territorial constraint${n > 1 ? "s" : ""}`,
+    confLine: { high: "Documentary confidence: high", medium: "Documentary confidence: medium", low: "Documentary confidence: low" },
+    facts: {
+      e2: "Connected to an already-saturated substation", w1: "In a high water-stress area",
+      f2: "On already-artificialized soil", f1: "Within 1 km of a protected area", l3: "High-hazard site within 2 km",
+    },
+  },
+};
+
 /** Page structure — four question-sections, each pairing at least one
  * flattering stat with one uncomfortable one (the neutrality signature). */
 export const SECTIONS: { id: string; lead: string; stats: string[] }[] = [
@@ -263,6 +426,54 @@ export const T = {
       methode: { title: "La méthode, en chiffres", sub: "d'où viennent ces nombres" },
     },
     regionAll: "France entière",
+    v3: {
+      q: {
+        territoire: "Peut-on encore construire ici ?",
+        transparence: "Que sait-on vraiment des projets ?",
+        dynamique: "Où va le parc ?",
+        tension: "Qu'est-ce qui pèse le plus ici ?",
+        methode: "Comment lire ces chiffres ?",
+      },
+      looking: "Vous regardez",
+      allRegions: "Toutes les régions",
+      seeSelection: "Voir cette sélection",
+      heroKicker: "Le chiffre de l'édition — sur le territoire sélectionné",
+      disclaim: "Ce n'est pas un classement. C'est la photographie d'un territoire : ce qu'il accueille déjà, ce qu'il peut encore absorber, et ce que les dossiers publics permettent réellement de savoir.",
+      copyView: "⧉ Copier le lien de cette vue",
+      meaningLabel: "Ce que cela signifie",
+      mapCap: "Sites du corpus — en orange, ceux raccordés à un poste saturé. Calculé depuis les coordonnées, jamais une illustration.",
+      mapCta: "Explorer la carte →",
+      projWord: (n: number) => `${n} projet${n > 1 ? "s" : ""} à venir`,
+      editionShort: "édition du",
+      compare: {
+        title: "Annoncer n'est pas mesurer.",
+        colPub: "Ce qui est souvent publié", colMiss: "Ce qui manque encore",
+        rows: [["Puissance prévue", "Consommation réelle"], ["PUE annoncé", "PUE mesuré"], ["Chaleur récupérable", "Chaleur effectivement utilisée"]],
+        close: "Quand la donnée manque, ScoreMyDataCenter ne l'invente pas. L'absence d'information reste visible.",
+        cta: "Comprendre notre approche →",
+      },
+      t1: {
+        title: "📈 L'historique commence ici.",
+        p1: (d: string) => `Ceci est la première édition (corpus au ${d}). Les évolutions — nouveaux projets, puissances, oppositions — apparaîtront ici d'édition en édition, à méthode et périmètre constants.`,
+        p2: "Nous n'affichons aucune tendance que nos propres données ne portent pas encore.",
+        cta: "Voir les projets à venir →",
+      },
+      rankSub: "Les contraintes du territoire, classées par part des sites concernés — un classement descriptif, jamais une note.",
+      rankNote: "classement recalculé par périmètre : part des sites concernés par chaque contrainte",
+      guarantee: {
+        title: "Aucun chiffre de cette page n'est écrit à la main.",
+        chips: (n: string, cov: string) => [
+          [n, "sites analysés un par un"],
+          [cov, "de couverture moyenne — le manque est affiché"],
+          ["100 %", "recalculable (données, grille, moteur ouverts)"],
+          ["1", "même méthode pour tous les territoires"],
+          ["100 %", "des chiffres reliés à leurs sources"],
+        ],
+        line: "Les chiffres changent quand les faits changent — jamais pour arranger le récit.",
+        cta: "Voir la méthode complète →",
+      },
+      indband: "ScoreMyDataCenter est un observatoire indépendant. Aucun financement d'opérateur. Aucune donnée propriétaire. Aucune complaisance.",
+    },
     moreLabel: (n: number) => `Tous les chiffres (${n} de plus)`,
     methodStory: '<span class="up">Aucun chiffre de cette page n\'est déclaratif : tout est recalculé site par site</span> — et quand la donnée manque, <span class="down">le chiffre le dit</span>.',
     regionAria: "Filtrer le territoire par région",
@@ -304,6 +515,54 @@ export const T = {
       methode: { title: "The method, in figures", sub: "where these numbers come from" },
     },
     regionAll: "All of France",
+    v3: {
+      q: {
+        territoire: "Can you still build here?",
+        transparence: "What do we really know about the projects?",
+        dynamique: "Where is the fleet heading?",
+        tension: "What weighs most here?",
+        methode: "How to read these figures?",
+      },
+      looking: "You are looking at",
+      allRegions: "All regions",
+      seeSelection: "View this selection",
+      heroKicker: "The figure of this edition — on the selected territory",
+      disclaim: "This is not a ranking. It is the photograph of a territory: what it already hosts, what it can still absorb, and what public files actually allow to know.",
+      copyView: "⧉ Copy the link to this view",
+      meaningLabel: "What it means",
+      mapCap: "Corpus sites — in orange, those connected to a saturated substation. Computed from coordinates, never an illustration.",
+      mapCta: "Explore the map →",
+      projWord: (n: number) => `${n} upcoming project${n > 1 ? "s" : ""}`,
+      editionShort: "edition of",
+      compare: {
+        title: "Announcing is not measuring.",
+        colPub: "What is often published", colMiss: "What is still missing",
+        rows: [["Planned capacity", "Actual consumption"], ["Announced PUE", "Measured PUE"], ["Recoverable heat", "Heat actually used"]],
+        close: "When data is missing, ScoreMyDataCenter does not invent it. The absence of information stays visible.",
+        cta: "Understand our approach →",
+      },
+      t1: {
+        title: "📈 The history starts here.",
+        p1: (d: string) => `This is the first edition (corpus as of ${d}). Changes — new projects, capacity, opposition — will appear here edition after edition, with constant method and perimeter.`,
+        p2: "We display no trend our own data does not yet carry.",
+        cta: "See upcoming projects →",
+      },
+      rankSub: "The territory's constraints, ranked by the share of sites concerned — a descriptive ranking, never a grade.",
+      rankNote: "recomputed per perimeter: share of sites concerned by each constraint",
+      guarantee: {
+        title: "No figure on this page is written by hand.",
+        chips: (n: string, cov: string) => [
+          [n, "sites analysed one by one"],
+          [cov, "average coverage — the gap is displayed"],
+          ["100%", "recomputable (open data, grid and engine)"],
+          ["1", "same method for every territory"],
+          ["100%", "of figures linked to their sources"],
+        ],
+        line: "Figures change when facts change — never to fit the story.",
+        cta: "See the full method →",
+      },
+      indband: "ScoreMyDataCenter is an independent observatory. No operator funding. No proprietary data. No complacency.",
+    },
     moreLabel: (n: number) => `All the figures (${n} more)`,
     methodStory: '<span class="up">Nothing on this page is declarative: everything is recomputed site by site</span> — and when data is missing, <span class="down">the figure says so</span>.',
     regionAria: "Filter the territory by region",

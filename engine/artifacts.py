@@ -189,7 +189,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     write_json(out_dir / "scores.json", scores)
     # T0 « Les chiffres du parc » — corpus aggregates, one file per build
     # (cadrage §4.10). Data only: labels and editorial framing live site-side.
-    write_json(out_dir / "stats.json", build_stats(datacenters, methodology, watchlist))
+    write_json(out_dir / "stats.json", build_stats(datacenters, methodology, watchlist, results))
     write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "features": features})
     write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "features": watch_features})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))
