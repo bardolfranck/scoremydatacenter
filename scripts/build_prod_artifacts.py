@@ -30,9 +30,20 @@ def main() -> int:
     if not (CAL / "datacenters").is_dir():
         raise SystemExit(f"newsroom calibration not found at {CAL} — clone smdc-newsroom or set NEWSROOM_CAL")
     dcs = load_datacenters(CAL)          # every datacenters* panel (FR, BE, …)
-    dcs.update(load_datacenters())       # + the public zz- fixtures (tagged on site; carry the demo states)
+    # The zz- fixtures NEVER ship to production (Franck 2026-07-17): they are
+    # internal plumbing for CI and the public clone (`make score`), not
+    # something visitors should meet. Prod = the real corpus only.
+    dcs = {k: v for k, v in dcs.items() if not k.startswith("zz-")}
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
     results = build_artifacts(dcs, load_methodology(), out_dir=ARTIFACTS_DIR, watchlist=watchlist)
+    # Purge stale per-DC artifacts (build_artifacts writes, never deletes):
+    # anything on disk that is not in this corpus would silently resurrect
+    # as a fiche page — the exact leak this script must prevent.
+    stale = [f for f in (ARTIFACTS_DIR / "dc").glob("*.json") if f.stem not in dcs]
+    for f in stale:
+        f.unlink()
+    if stale:
+        print(f"prod-artifacts: purged {len(stale)} stale fiche artifact(s): " + ", ".join(f.stem for f in stale))
     de = sorted(i for i, r in results.items()
                 if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"})
     print(f"prod-artifacts: {len(dcs)} DC + {len(watchlist)} watchlist entries → {ARTIFACTS_DIR}")
