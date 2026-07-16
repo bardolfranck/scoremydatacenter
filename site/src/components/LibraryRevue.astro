@@ -46,8 +46,14 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
     <p class="lib-section-kicker">{t.featuredKicker}</p>
     <div class="lib-featured-grid">
       <div class="lib-flag-cover" style={`background:${coverField(FLAGSHIP)}`}>
-        <p class="lib-flag-cover-kicker">{t.flagshipCoverKicker}</p>
+        {/* white wordmark variant of the house logo — the dark tile icon would
+            vanish on the navy cover; the grade bars carry the identity */}
+        <svg class="lib-flag-cover-logo" viewBox="0 0 404 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ScoreMyDataCenter">
+          <text x="0" y="24" font-family="'Avenir Next','Segoe UI',system-ui,sans-serif" font-size="26" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Score<tspan fill="#9fb3c8">My</tspan>DataCenter</text>
+          <g><rect x="1" y="32" width="50" height="4.5" rx="1.6" fill="#0B7A4B"/><rect x="54" y="32" width="50" height="4.5" rx="1.6" fill="#6FA032"/><rect x="107" y="32" width="50" height="4.5" rx="1.6" fill="#DFA918"/><rect x="160" y="32" width="50" height="4.5" rx="1.6" fill="#CF6A1C"/><rect x="213" y="32" width="50" height="4.5" rx="1.6" fill="#BF3B21"/></g>
+        </svg>
         <p class="lib-flag-cover-title">{FLAGSHIP.title[lang]}</p>
+        <p class="lib-flag-cover-year">{FLAGSHIP.date.slice(0, 4)}</p>
         <div class="hero-scale lib-flag-scale" role="img" aria-label={t.scaleAria}>
           <span class="hs-cell hs-a">A</span>
           <span class="hs-cell hs-b">B</span>
