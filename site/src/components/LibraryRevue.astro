@@ -12,6 +12,7 @@
 // every card. Purchase CTA is "order — contact us": no checkout exists.
 import Base from "../layouts/Base.astro";
 import LibraryCard from "./LibraryCard.astro";
+import FeedbackBand from "./FeedbackBand.astro";
 import PillarIcon from "./PillarIcon.astro";
 import {
   COMING_SOON_COUNTRIES, COUNTRY_BRIEFS, COUNTRY_FLAGS, FLAGSHIP, LANG_FLAGS,
@@ -188,4 +189,6 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
   </section>
 
   <p class="lib-footline">{t.footLine}</p>
+
+  <FeedbackBand lang={lang} />
 </Base>
