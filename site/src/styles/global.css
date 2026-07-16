@@ -1190,12 +1190,13 @@ sup a { color: var(--accent); font-weight: 750; }
 .lib-card-num { position: absolute; top: 10px; right: 14px; color: rgba(255, 255, 255, 0.55); font-family: var(--font-mono); font-size: 1.5rem; font-weight: 700; }
 .lib-card-chip { align-self: flex-start; padding: 3px 9px; border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 6px; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 700; }
 .lib-card-kicker { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.85; }
-.lib-card-body { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 10px; }
+.lib-card-body { display: flex; flex: 1; flex-direction: column; gap: 8px; padding: 14px 16px 10px; }
 .lib-card-title { font-size: 1.08rem; line-height: 1.25; letter-spacing: -0.005em; }
 .lib-card-hook { color: var(--ink-soft); font-size: 0.88rem; }
 .lib-card-teaser { display: flex; align-items: center; gap: 10px; margin-top: auto; padding-top: 6px; }
 .lib-teaser { width: 120px; height: 36px; flex: 0 0 auto; }
 .lib-card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--line); background: var(--wash); }
+.lib-card-btn { padding: 6px 12px; font-size: 0.78rem; white-space: nowrap; }
 .lib-tag-digest { padding: 3px 10px; border-radius: 99px; background: var(--lib-tag-free-bg); color: var(--lib-tag-free-ink); font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .lib-index-link { margin-top: 26px; text-align: center; }
 .lib-index-link a { display: inline-block; padding: 10px 18px; border: 1px solid var(--line); border-radius: 99px; font-weight: 750; }
@@ -1455,7 +1456,7 @@ sup a { color: var(--accent); font-weight: 750; }
 
 /* Library — download zone (Franck 2026-07-16): free digest + full report, buttons
    greyed until the files exist; the order CTA is the only live action. */
-.lib-dl { margin-top: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); padding: 16px 20px; display: grid; gap: 10px; }
+.lib-dl { margin-top: 22px; max-width: 440px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); padding: 16px 20px; display: grid; gap: 10px; }
 .lib-dl-kicker { margin: 0; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); }
 .lib-dl-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .lib-dl-name { flex: 1; min-width: 120px; font-weight: 750; color: var(--ink); font-size: 0.92rem; }
@@ -1464,4 +1465,4 @@ sup a { color: var(--accent); font-weight: 750; }
 /* Flagship cover (Franck 2026-07-16): the white wordmark logo replaces the
    kicker; the edition year sits under the title. */
 .lib-flag-cover-logo { width: 78%; height: auto; display: block; }
-.lib-flag-cover-year { margin-top: 10px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; letter-spacing: 0.22em; color: #9fb3c8; }
+.lib-flag-cover-year { margin-top: 26px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; letter-spacing: 0.22em; color: #9fb3c8; }
