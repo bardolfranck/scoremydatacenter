@@ -111,7 +111,7 @@ prod-artifacts:
 # Deploy the built site to Cloudflare Pages (direct upload — the prod build needs
 # the private newsroom, so it happens HERE, never in a public-repo CI).
 # One-time setup: `cd site && npx wrangler login` (Franck's Cloudflare account).
-# Soft-launch doctrine (2026-07-16): the noindex meta stays until Franck lifts it.
+# Indexing open since 2026-07-16 (noindex lifted on Franck's call; robots.txt + sitemap served).
 deploy: build
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 
