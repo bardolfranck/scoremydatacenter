@@ -5,6 +5,19 @@
 import Landing from "../components/Landing.astro";
 import { EN_NAV } from "../config/nav";
 import { EN_ABOUT } from "../config/about";
+import { STATS, statView, fmtInt } from "../config/stats";
+
+// "Why now": our own fleet figures (T0) — computed at build from stats.json,
+// linked to their canonical anchors. External stats are gone for good.
+const _peri = STATS.perimeters.europe;
+const _grid = _peri && statView(_peri, "grid_saturated", "en");
+const _water = _peri && statView(_peri, "water_stress_high", "en");
+const _pipe = _peri?.stats?.pipeline;
+const OUR_STATS = [
+  _grid && { figure: `${_grid.big} on already-saturated substations`, attribution: `Fleet figures · grid operators' data · n = ${_grid.n}`, url: "/figures#reseau-sature" },
+  _water && { figure: `${_water.big} under high water stress`, attribution: `Fleet figures · WRI Aqueduct · n = ${_water.n}`, url: "/figures#stress-hydrique" },
+  _pipe && { figure: `${fmtInt(_pipe.mw_announced, "en")} MW announced in the pipeline`, attribution: `Fleet figures · ${_pipe.projects} projects not yet in service`, url: "/figures#pipeline-mw" },
+].filter(Boolean);
 
 const t = {
   title: "ScoreMyDataCenter — the public score for data center acceptability",
@@ -87,11 +100,7 @@ const t = {
   fixtureNote:
     "Fictional test fixture, shown for format only — the first real French scorecards are in preparation.",
   whyNowAria: "Why now",
-  whyNowStats: [
-    { figure: "+57% more CO₂ than estimated", attribution: "Allianz Trade, June 2026 (vs IEA)", url: "https://www.allianz-trade.com/en_global/news-insights/economic-insights/Code-carbon-kilowatts.html" },
-    { figure: "$130bn in blocked projects", attribution: "Data Center Watch, Q1 2026", url: "https://www.datacenterwatch.org/q1-2026" },
-    { figure: "9.5bn liters of water withdrawn", attribution: "AWS, 2025 data", url: "https://www.aboutamazon.com/news/sustainability/amazon-data-center-water-usage" },
-  ],
+  whyNowStats: OUR_STATS,
   whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",
   missionLine:
     "Our mission: measure, source and make public the acceptability of every data center project — grounding the debate in facts.",

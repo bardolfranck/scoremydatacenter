@@ -1,0 +1,19 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR perimeter pages — every non-default perimeter gets its own URL (the
+// selector is pure navigation; each view stays shareable and crawlable).
+import StatsPage from "../../../components/StatsPage.astro";
+import { FR_NAV } from "../../../config/nav";
+import { perimeterKeys, STATS } from "../../../config/stats";
+
+export function getStaticPaths() {
+  const defaultKey = (STATS as any).perimeters.FR ? "FR" : "europe";
+  return perimeterKeys().filter((k) => k !== defaultKey)
+    .map((k) => ({ params: { perimetre: k.toLowerCase() }, props: { key: k } }));
+}
+const { key } = Astro.props;
+---
+
+<StatsPage lang="fr" perimeter={key} nav={FR_NAV} basePath="/fr/chiffres" altBase="/figures" />

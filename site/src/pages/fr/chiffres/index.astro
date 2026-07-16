@@ -1,0 +1,13 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR default perimeter = France (cadrage §4.10) — falls back to Europe when
+// the build has no FR corpus (public zz-fixture clone).
+import StatsPage from "../../../components/StatsPage.astro";
+import { FR_NAV } from "../../../config/nav";
+import { STATS } from "../../../config/stats";
+const perimeter = STATS.perimeters.FR ? "FR" : "europe";
+---
+
+<StatsPage lang="fr" perimeter={perimeter} nav={FR_NAV} basePath="/fr/chiffres" altBase="/figures" />
