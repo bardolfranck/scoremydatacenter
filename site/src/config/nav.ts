@@ -16,7 +16,7 @@ export const FR_NAV: NavItem[] = [
   { href: "/fr/comprendre", label: "Comprendre les data centers" },
   { href: "/fr/methodologie", label: "Méthode" },
   { href: "/fr/#open", label: "Modèle ouvert" },
-  { href: "/fr/#about", label: "Qui sommes-nous ?" },
+  { href: "/fr/qui-sommes-nous", label: "Qui sommes-nous ?" },
   { href: "/fr/#contact", label: "Contact" },
   { href: "/fr/#faq", label: "FAQ" },
 ];
@@ -30,7 +30,7 @@ export const EN_NAV: NavItem[] = [
   { href: "/understand", label: "Understanding data centers" },
   { href: "/methodology", label: "Method" },
   { href: "/#open", label: "Open model" },
-  { href: "/#about", label: "Who we are" },
+  { href: "/who-we-are", label: "Who we are" },
   { href: "/#contact", label: "Contact" },
   { href: "/#faq", label: "FAQ" },
 ];
