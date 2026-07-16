@@ -81,5 +81,63 @@ const home = lang === "en" ? "/" : "/fr/";
         </div>
       ))}
     </footer>
+    <!-- Audience measurement (GA4) is consent-gated: nothing loads and no cookie
+         is set until the visitor clicks Accept. Choice kept 6 months, revocable
+         from the legal-notices page (CNIL guidelines). -->
+    <div class="consent-banner" id="consent-banner" hidden role="dialog" aria-live="polite"
+      aria-label={lang === "fr" ? "Consentement à la mesure d'audience" : "Audience-measurement consent"}>
+      <p class="consent-text">
+        {lang === "fr"
+          ? "Mesure d'audience : nous utilisons Google Analytics pour compter les visites et comprendre ce qui est lu. Aucun cookie n'est déposé sans votre accord."
+          : "Audience measurement: we use Google Analytics to count visits and understand what gets read. No cookie is set without your consent."}
+        <a href={lang === "fr" ? "/fr/mentions-legales" : "/legal"}>
+          {lang === "fr" ? "En savoir plus" : "Learn more"}</a>
+      </p>
+      <div class="consent-actions">
+        <button class="button button-secondary" type="button" data-consent="denied">
+          {lang === "fr" ? "Refuser" : "Decline"}</button>
+        <button class="button button-secondary" type="button" data-consent="granted">
+          {lang === "fr" ? "Accepter" : "Accept"}</button>
+      </div>
+    </div>
+    <script is:inline>
+      (function () {
+        var KEY = "smdc-consent";
+        var MAX_AGE = 182 * 24 * 3600 * 1000; // re-ask after ~6 months (CNIL)
+        function readChoice() {
+          try {
+            var raw = localStorage.getItem(KEY);
+            if (!raw) return null;
+            var c = JSON.parse(raw);
+            if (!c || !c.v || Date.now() - c.t > MAX_AGE) { localStorage.removeItem(KEY); return null; }
+            return c.v;
+          } catch (e) { return null; }
+        }
+        function loadGA() {
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () { dataLayer.push(arguments); };
+          gtag("js", new Date());
+          gtag("config", "G-L6TGP1783C");
+          var el = document.createElement("script");
+          el.async = true;
+          el.src = "https://www.googletagmanager.com/gtag/js?id=G-L6TGP1783C";
+          document.head.appendChild(el);
+        }
+        window.smdcConsentReset = function () { localStorage.removeItem(KEY); location.reload(); };
+        var banner = document.getElementById("consent-banner");
+        var choice = readChoice();
+        if (choice === "granted") loadGA();
+        else if (choice === null && banner) {
+          banner.hidden = false;
+          banner.addEventListener("click", function (ev) {
+            var v = ev.target && ev.target.getAttribute && ev.target.getAttribute("data-consent");
+            if (!v) return;
+            try { localStorage.setItem(KEY, JSON.stringify({ v: v, t: Date.now() })); } catch (e) {}
+            banner.hidden = true;
+            if (v === "granted") loadGA();
+          });
+        }
+      })();
+    </script>
   </body>
 </html>
