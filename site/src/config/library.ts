@@ -23,7 +23,7 @@ export interface LibraryBrief {
   /** {fr,en} only for the flagship (real product name = structure, not content);
    *  every other title is placeholder Latin, identical in both languages. */
   title: { fr: string; en: string };
-  hook: string; // one-line standfirst — lorem Latin, clearly fictional
+  hook: string | { fr: string; en: string }; // standfirst — per-language when real copy exists
   date: string; // fictional ISO date, drives the Index sort
   priceFromEur: number | null; // fictional; null = bespoke, on request only
   teaser: BriefTeaser;
@@ -88,6 +88,9 @@ export const briefLanguages = (b: LibraryBrief): string[] => {
   return ["en"];
 };
 
+export const hookText = (hook: LibraryBrief["hook"], lang: "fr" | "en"): string =>
+  typeof hook === "string" ? hook : hook[lang];
+
 export const FLAGSHIP: LibraryBrief = {
   id: "flagship-inaugural",
   family: "flagship",
@@ -97,9 +100,12 @@ export const FLAGSHIP: LibraryBrief = {
     fr: "État de l'acceptabilité des data centers en Europe",
     en: "State of Data Center Acceptability in Europe",
   },
-  hook: "Lorem ipsum dolor sit amet, corpus integrum legitur — ubi notae crescunt, ubi decrescunt, pilari singuli.",
+  hook: {
+    fr: "Où l'acceptabilité monte, où elle se dégrade — et pourquoi. La lecture de référence avant d'implanter, d'investir ou de débattre.",
+    en: "Where acceptability rises, where it erodes — and why. The reference read before you site, invest or debate.",
+  },
   date: "2026-06-01",
-  priceFromEur: 1900,
+  priceFromEur: null, // price to be set later (Franck, 2026-07-16)
   teaser: "bars",
 };
 

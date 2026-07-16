@@ -15,7 +15,7 @@ import LibraryCard from "./LibraryCard.astro";
 import PillarIcon from "./PillarIcon.astro";
 import {
   COMING_SOON_COUNTRIES, COUNTRY_BRIEFS, COUNTRY_FLAGS, FLAGSHIP, LANG_FLAGS,
-  THEME_BRIEFS, briefLanguages, coverField,
+  THEME_BRIEFS, briefLanguages, coverField, hookText,
 } from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
@@ -58,7 +58,7 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
       </div>
       <div class="lib-flag-copy">
         <h2 class="lib-flag-title">{FLAGSHIP.title[lang]}</h2>
-        <p class="lib-flag-hook">{FLAGSHIP.hook}</p>
+        <p class="lib-flag-hook">{hookText(FLAGSHIP.hook, lang)}</p>
         <dl class="lib-stats">
           {t.flagshipStats.map((s: { value: string; label: string }) => (
             <div class="lib-stat">
@@ -81,10 +81,17 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
             ))}
           </span>
         </p>
-        <div class="lib-cta-row">
-          <a class="button button-secondary" href="#digest">{t.ctaDigest}</a>
-          <a class="button button-primary" href={contactPath}>{t.ctaOrder}</a>
-          <span class="lib-price">{t.flagshipPrice}</span>
+        <div class="lib-dl" id="telechargement">
+          <p class="lib-dl-kicker">{t.dlKicker}</p>
+          <div class="lib-dl-row">
+            <span class="lib-dl-name">{t.dlDigest}</span>
+            <button class="button button-secondary" type="button" disabled title={t.dlSoon}>{t.dlBtn}</button>
+          </div>
+          <div class="lib-dl-row">
+            <span class="lib-dl-name">{t.dlReport}</span>
+            <a class="button button-primary" href={contactPath}>{t.ctaOrder}</a>
+            <button class="button button-secondary" type="button" disabled title={t.dlSoon}>{t.dlBtn}</button>
+          </div>
         </div>
         <p class="lib-operator-note"><a href={contactPath}>{t.operatorNote}</a></p>
       </div>

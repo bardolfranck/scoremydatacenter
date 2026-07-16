@@ -7,7 +7,7 @@
 // (digest tag) always sits NEXT TO the price — the free/paid boundary is
 // visible on every card (P6: truth is never paywalled).
 import LibraryTeaser from "./LibraryTeaser.astro";
-import { briefLanguages, coverField, LANG_FLAGS, type LibraryBrief } from "../config/library";
+import { briefLanguages, coverField, LANG_FLAGS, type LibraryBrief , hookText} from "../config/library";
 
 interface Props {
   brief: LibraryBrief;
@@ -41,7 +41,7 @@ const langs = briefLanguages(brief);
   </div>
   <div class="lib-card-body">
     <h3 class="lib-card-title">{brief.title[lang]}</h3>
-    <p class="lib-card-hook">{brief.hook}</p>
+    <p class="lib-card-hook">{hookText(brief.hook, lang)}</p>
     <div class="lib-card-teaser">
       <LibraryTeaser kind={brief.teaser} tint={tint} />
       <span class="lib-fictional">{fictionalTag}</span>

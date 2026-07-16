@@ -1452,3 +1452,11 @@ sup a { color: var(--accent); font-weight: 750; }
 .about-ia { margin-top: 36px; }
 .ia-closing { margin-top: 32px; }
 @media (max-width: 900px) { .about-hero, .about-bottom { grid-template-columns: 1fr; } }
+
+/* Library — download zone (Franck 2026-07-16): free digest + full report, buttons
+   greyed until the files exist; the order CTA is the only live action. */
+.lib-dl { margin-top: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); padding: 16px 20px; display: grid; gap: 10px; }
+.lib-dl-kicker { margin: 0; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--muted); }
+.lib-dl-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.lib-dl-name { flex: 1; min-width: 120px; font-weight: 750; color: var(--ink); font-size: 0.92rem; }
+.button[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
