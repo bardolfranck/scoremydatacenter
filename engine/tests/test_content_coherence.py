@@ -98,6 +98,10 @@ FORBIDDEN_PHRASES = [
     r"sollicité,?\s+sans\s+réponse",
     r"solicited,?\s+no\s+(reply|response)",
     r"l'opérateur\s+dispose\s+d'un\s+droit\s+de\s+réponse",
+    # the pre-review draft banner must never ship again (seen LIVE 2026-07-16)
+    r"ne\s+pas\s+publier\s+en\s+l'état",
+    r"do\s+not\s+publish\s+as-is",
+    r"version\s+de\s+travail\s+—",
 ]
 
 
