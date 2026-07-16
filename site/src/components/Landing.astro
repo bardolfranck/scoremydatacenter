@@ -463,7 +463,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <div class="about-ia">
           <div class="section-heading">
             <h3 class="ia-heading">{t.ia.heading}</h3>
-            <p>{t.ia.sub}</p>
+            <p set:html={t.ia.sub} />
           </div>
           <ol class="ia-chain">
             {t.ia.steps.map((step: any, i: number) => (
