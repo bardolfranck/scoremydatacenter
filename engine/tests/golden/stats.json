@@ -2,7 +2,7 @@
   "schema": "stats/1",
   "methodology_version": "0.1.0",
   "corpus_date": null,
-  "min_n": 10,
+  "min_n": 5,
   "perimeters": {
     "europe": {
       "n_sites": 0,

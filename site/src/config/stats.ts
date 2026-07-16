@@ -41,9 +41,14 @@ export function perimeterLabel(key: string, lang: Lang): string {
   return COUNTRY_NAMES[key]?.[lang] ?? key;
 }
 
-/** Number formatting — FR uses a narrow no-break space and a comma. */
-export const fmtPct = (pct: number, lang: Lang): string =>
-  lang === "fr" ? `${String(pct).replace(".", ",")} %` : `${pct}%`;
+/** Number formatting — whole numbers only (Franck 2026-07-16: the decimal
+ * adds nothing). Sub-1% shares render "<1 %" — rounding 0.8 up to 1 would
+ * overstate by a quarter. */
+export const fmtPct = (pct: number, lang: Lang): string => {
+  if (pct > 0 && pct < 1) return lang === "fr" ? `<1 %` : "<1%";
+  const v = Math.round(pct);
+  return lang === "fr" ? `${v} %` : `${v}%`;
+};
 export const fmtInt = (n: number, lang: Lang): string =>
   n.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB");
 
@@ -191,7 +196,7 @@ export const T = {
     },
     regionAll: "France entière",
     regionAria: "Filtrer le territoire par région",
-    regionGated: (n: number) => `n insuffisant dans ce périmètre (n=${n} < 10) — chiffre non publié`,
+    regionGated: (n: number) => `n insuffisant dans ce périmètre (n=${n}) — pas de pourcentage sur si peu de sites`,
     franceOnly: "France seulement",
     countriesOn: (agg: number, total: number) => (agg < total ? `${agg} pays sur ${total}` : `${agg} pays`),
     nLabel: "n =",
@@ -230,7 +235,7 @@ export const T = {
     },
     regionAll: "All of France",
     regionAria: "Filter the territory by region",
-    regionGated: (n: number) => `not enough sites in this perimeter (n=${n} < 10) — figure not published`,
+    regionGated: (n: number) => `not enough sites in this perimeter (n=${n}) — no percentage on so few sites`,
     franceOnly: "France only",
     countriesOn: (agg: number, total: number) => (agg < total ? `${agg} of ${total} countries` : `${agg} countries`),
     nLabel: "n =",

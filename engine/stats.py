@@ -24,7 +24,9 @@ bonus/friction editorial rule live site-side (i18n), never here.
 from collections import Counter
 
 # Below this many assessed sites a percentage is noise, not a fact.
-STATS_MIN_N = 10
+# 5, pas 10 (Franck, 2026-07-16) : une part sur 8 sites se publie — avec son n
+# affiché, le lecteur juge. Sous 5, c'est une anecdote déguisée en moyenne.
+STATS_MIN_N = 5
 
 # Indicator statuses that mean "a published/sourced value exists".
 _ASSESSED = ("measured", "announced", "verified")

@@ -245,8 +245,8 @@ const sectionsToRender = SECTIONS.map((sec) => ({
           } else {
             big.hidden = true; body.hidden = true; src.hidden = true;
             gated.textContent = (regionGatedTpl === "fr"
-              ? "n insuffisant dans ce périmètre (n=" + (v ? v.gated : 0) + " < 10) — chiffre non publié"
-              : "not enough sites in this perimeter (n=" + (v ? v.gated : 0) + " < 10) — figure not published");
+              ? "n insuffisant dans ce périmètre (n=" + (v ? v.gated : 0) + ") — pas de pourcentage sur si peu de sites"
+              : "not enough sites in this perimeter (n=" + (v ? v.gated : 0) + ") — no percentage on so few sites");
             gated.hidden = false;
           }
         });
