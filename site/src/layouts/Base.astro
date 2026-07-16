@@ -69,11 +69,11 @@ const home = lang === "en" ? "/" : "/fr/";
       {(lang === "fr" ? [
         ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Comprendre les data centers", "/fr/comprendre"]]],
         ["Ressources", [["Méthodologie", "/fr/methodologie"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque"], ["FAQ", "/fr/#faq"]]],
-        ["À propos", [["Qui sommes-nous ?", "/fr/#about"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
+        ["À propos", [["Qui sommes-nous ?", "/fr/qui-sommes-nous"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
       ] : [
         ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Understanding data centers", "/understand"]]],
         ["Resources", [["Methodology", "/methodology"], ["Open model", "/#open"], ["Library", "/intelligence"], ["FAQ", "/#faq"]]],
-        ["About", [["Who we are", "/#about"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
+        ["About", [["Who we are", "/who-we-are"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
       ]).map(([heading, links]: any) => (
         <div class="footer-col">
           <h4>{heading}</h4>

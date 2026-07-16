@@ -1,0 +1,65 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Page dédiée "Qui sommes-nous" — même contenu que la section #about de la home
+// (composant partagé), avec title/description propres et données structurées
+// Schema.org (Person + Organization) pour le Knowledge Graph.
+import Base from "../../layouts/Base.astro";
+import AboutSection from "../../components/AboutSection.astro";
+import { FR_ABOUT } from "../../config/about";
+import { FR_NAV } from "../../config/nav";
+
+const SITE = "https://scoremydatacenter.org";
+// Facts only — every claim below is stated on this very page.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE}/#organization`,
+      name: "ScoreMyDataCenter",
+      url: SITE,
+      logo: `${SITE}/assets/smdc-icon.svg`,
+      description:
+        "Observatoire indépendant du risque d'acceptabilité des data centers : deux notes A–E par projet, sources, confiance et méthode ouverte.",
+      founder: { "@id": `${SITE}/#founder` },
+      sameAs: ["https://github.com/bardolfranck/scoremydatacenter"],
+    },
+    {
+      "@type": "Person",
+      "@id": `${SITE}/#founder`,
+      name: "Franck Bardol",
+      jobTitle: "Fondateur",
+      worksFor: { "@id": `${SITE}/#organization` },
+      url: `${SITE}/fr/qui-sommes-nous/`,
+      image: `${SITE}/assets/franck-bardol.jpg`,
+      sameAs: [
+        "https://www.linkedin.com/in/franckbardol/",
+        "https://www.meetup.com/paris-machine-learning-applications-group/",
+      ],
+    },
+    {
+      "@type": "AboutPage",
+      "@id": `${SITE}/fr/qui-sommes-nous/#page`,
+      url: `${SITE}/fr/qui-sommes-nous/`,
+      name: "Qui sommes-nous ? — ScoreMyDataCenter",
+      inLanguage: "fr",
+      about: { "@id": `${SITE}/#organization` },
+    },
+  ],
+};
+---
+
+<Base
+  lang="fr"
+  title="Qui sommes-nous ? — ScoreMyDataCenter"
+  description="ScoreMyDataCenter est un observatoire indépendant fondé par Franck Bardol : la note publique d'acceptabilité des data centers — méthode ouverte, sources, responsabilité humaine."
+  tagline="Observatoire indépendant"
+  altHref="/who-we-are"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <AboutSection lang="fr" t={FR_ABOUT} />
+</Base>
