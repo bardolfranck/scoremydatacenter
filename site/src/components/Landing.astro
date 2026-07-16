@@ -156,7 +156,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <b><span class="sr-only">{stat.figure}</span><span class="stat-anim" aria-hidden="true">{stat.figure}</span>
               {/litres?|liters?/i.test(stat.figure) && <span class="stat-bar" aria-hidden="true"><i></i></span>}</b>
             {stat.url
-              ? <a href={stat.url} target="_blank" rel="noopener">{stat.attribution}</a>
+              ? <a href={stat.url} {...(stat.url.startsWith("/") ? {} : { target: "_blank", rel: "noopener" })}>{stat.attribution}</a>
               : <span>{stat.attribution}</span>}
           </div>
         ))}

@@ -1,0 +1,17 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN perimeter pages — twin of /fr/chiffres/[perimetre].
+import StatsPage from "../../components/StatsPage.astro";
+import { EN_NAV } from "../../config/nav";
+import { perimeterKeys } from "../../config/stats";
+
+export function getStaticPaths() {
+  return perimeterKeys().filter((k) => k !== "europe")
+    .map((k) => ({ params: { perimeter: k.toLowerCase() }, props: { key: k } }));
+}
+const { key } = Astro.props;
+---
+
+<StatsPage lang="en" perimeter={key} nav={EN_NAV} basePath="/figures" altBase="/fr/chiffres" />

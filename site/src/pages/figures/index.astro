@@ -1,0 +1,10 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN default perimeter = Europe (cadrage §4.10). Twin of /fr/chiffres.
+import StatsPage from "../../components/StatsPage.astro";
+import { EN_NAV } from "../../config/nav";
+---
+
+<StatsPage lang="en" perimeter="europe" nav={EN_NAV} basePath="/figures" altBase="/fr/chiffres" />

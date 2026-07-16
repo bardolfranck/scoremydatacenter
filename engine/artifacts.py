@@ -12,6 +12,7 @@ from pathlib import Path
 
 from .core import ARTIFACTS_DIR, GateError, load_watchlist, write_json
 from .scoring import score_datacenter
+from .stats import build_stats
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -186,6 +187,9 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     } for e in watchlist]
 
     write_json(out_dir / "scores.json", scores)
+    # T0 « Les chiffres du parc » — corpus aggregates, one file per build
+    # (cadrage §4.10). Data only: labels and editorial framing live site-side.
+    write_json(out_dir / "stats.json", build_stats(datacenters, methodology, watchlist))
     write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "features": features})
     write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "features": watch_features})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))

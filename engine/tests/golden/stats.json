@@ -1,0 +1,27 @@
+{
+  "schema": "stats/1",
+  "methodology_version": "0.1.0",
+  "corpus_date": null,
+  "min_n": 10,
+  "perimeters": {
+    "europe": {
+      "n_sites": 0,
+      "countries": [],
+      "coverage_mean_pct": 0.0,
+      "by_status": {},
+      "stats": {},
+      "gated": {
+        "grid_queue_critical": 0,
+        "grid_saturated": 0,
+        "heat_reuse": 0,
+        "power_disclosed": 0,
+        "protected_area_close": 0,
+        "pue_published": 0,
+        "seveso_high_2km": 0,
+        "soil_artificialized": 0,
+        "water_no_stress": 0,
+        "water_stress_high": 0
+      }
+    }
+  }
+}

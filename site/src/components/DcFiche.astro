@@ -12,6 +12,7 @@ import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import methodologyData from "../../public/data/methodology.json";
+import { STATS, fmtPct } from "../config/stats";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
 import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
@@ -27,6 +28,33 @@ const { dc, lang, t, nav, altHref, altLabel } = Astro.props as {
   dc: any; lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
   altHref: string; altLabel: string;
 };
+
+// T0 « Les chiffres du parc » : la ligne contextuelle — ce site situé dans les
+// agrégats de SON pays (jamais un jugement, une position dans le parc).
+const _fleetPeri = (STATS as any).perimeters?.[dc.country];
+const _fleetInd = (iid: string) => (dc.indicators || []).find((i: any) => i.id === iid);
+const _FLEET_RULES: [string, string, (v: any) => boolean, string][] = [
+  ["grid_saturated", "E2", (v) => v === "saturated", "reseau-sature"],
+  ["water_stress_high", "W1", (v) => v === "high" || v === "zre_or_crisis", "stress-hydrique"],
+  ["soil_artificialized", "F2", (v) => v === "artificialized", "sols-artificialises"],
+];
+let fleetLine: { text: string; href: string } | null = null;
+if (_fleetPeri && (t as any).fleet) {
+  for (const [statId, iid, pred, anchorId] of _FLEET_RULES) {
+    const stat = _fleetPeri.stats?.[statId];
+    const ind = _fleetInd(iid);
+    if (stat && ind && ["measured", "announced", "verified"].includes(ind.status) && pred(ind.value)) {
+      const base = lang === "fr"
+        ? (dc.country === "FR" ? "/fr/chiffres" : `/fr/chiffres/${dc.country.toLowerCase()}`)
+        : `/figures/${dc.country.toLowerCase()}`;
+      fleetLine = {
+        text: (t as any).fleet[statId].replace("{pct}", fmtPct(stat.pct, lang)),
+        href: `${base}#${anchorId}`,
+      };
+      break;
+    }
+  }
+}
 const methodology = methodologyData as any;
 
 const SITE_ORIGIN = "https://scoremydatacenter.org";
@@ -295,6 +323,10 @@ const pillars = methodology.pillars as any[];
       </div>
 
       <blockquote class="fiche-quote"><p>{t.quoteOpen}{L(dc.citable_quote)}{t.quoteClose}</p></blockquote>
+
+      {fleetLine && (
+        <p class="fiche-fleetline">{fleetLine.text} <a href={fleetLine.href}>{(t as any).fleet.cta}</a></p>
+      )}
 
       <section class="fiche-section" aria-label={t.indicatorsTitle}>
         <h2>{t.indicatorsTitle}</h2>

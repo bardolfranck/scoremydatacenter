@@ -5,6 +5,19 @@
 import Landing from "../../components/Landing.astro";
 import { FR_NAV } from "../../config/nav";
 import { FR_ABOUT } from "../../config/about";
+import { STATS, statView, fmtInt } from "../../config/stats";
+
+// « Pourquoi maintenant » : nos propres chiffres (T0), plus jamais des stats
+// externes — calculés au build depuis stats.json, liés à leur ancre canonique.
+const _peri = STATS.perimeters.FR ?? STATS.perimeters.europe;
+const _grid = _peri && statView(_peri, "grid_saturated", "fr");
+const _pue = _peri && statView(_peri, "pue_published", "fr");
+const _pipe = _peri?.stats?.pipeline;
+const OUR_STATS = [
+  _grid && { figure: `${_grid.big} sur poste électrique saturé`, attribution: `Les chiffres du parc · ${_grid.src} · n = ${_grid.n}`, url: "/fr/chiffres#reseau-sature" },
+  _pue && { figure: `${_pue.big} publient leur PUE`, attribution: `Les chiffres du parc · déclarations opérateurs · n = ${_pue.n}`, url: "/fr/chiffres#pue-publie" },
+  _pipe && { figure: `${fmtInt(_pipe.mw_announced, "fr")} MW annoncés en pipeline`, attribution: `Les chiffres du parc · ${_pipe.projects} projets pas encore en service`, url: "/fr/chiffres#pipeline-mw" },
+].filter(Boolean);
 
 const t = {
   title: "ScoreMyDataCenter — la note publique d'acceptabilité des data centers",
@@ -87,11 +100,7 @@ const t = {
   fixtureNote:
     "Fixture de test fictive, montrée pour le format — les premières fiches réelles françaises sont en préparation.",
   whyNowAria: "Pourquoi maintenant",
-  whyNowStats: [
-    { figure: "+57 % de CO₂ sous-estimé", attribution: "Allianz Trade, juin 2026 (vs AIE)", url: "https://www.allianz-trade.com/en_global/news-insights/economic-insights/Code-carbon-kilowatts.html" },
-    { figure: "130 Md$ de projets bloqués", attribution: "Data Center Watch, T1 2026", url: "https://www.datacenterwatch.org/q1-2026" },
-    { figure: "9,5 Md de litres d'eau prélevés", attribution: "AWS, données 2025", url: "https://www.aboutamazon.com/news/sustainability/amazon-data-center-water-usage" },
-  ],
+  whyNowStats: OUR_STATS,
   whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
   missionLine:
     "Notre mission : mesurer, sourcer et rendre publique l'acceptabilité de chaque projet de data center. Ancrer le débat dans les faits.",
