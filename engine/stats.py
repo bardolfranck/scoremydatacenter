@@ -220,6 +220,98 @@ def _watchlist_stat(entries: list[dict], countries: set[str]) -> dict | None:
     }
 
 
+def _frictions(dc: dict) -> int:
+    """Cumulated territorial frictions — the published rule behind the
+    « plus contraint » exemplar (act 5)."""
+    v = lambda iid: (_indicator(dc, iid) or {}).get("value")
+    return (
+        (v("E2") == "saturated")
+        + (v("E3") in ("critical", "high"))
+        + (v("W1") in ("high", "zre_or_crisis"))
+        + (v("F1") in ("adjacent_under_1km", "overlap"))
+        + (v("L3") == "seveso_high_within_2km")
+    )
+
+
+def _exemplar_payload(dc: dict, result: dict | None) -> dict:
+    ident = dc["identity"]
+    v = lambda iid: (_indicator(dc, iid) or {}).get("value")
+    return {
+        "id": dc["id"],
+        "name": ident["name"],
+        "municipality": ident.get("municipality"),
+        "admin_area": ident.get("admin_area"),
+        "country": ident["country"],
+        "project_status": ident["project_status"],
+        "power_mw": ident.get("power_mw"),
+        "grade_site": (result or {}).get("grades", {}).get("site", {}).get("grade"),
+        "confidence": (result or {}).get("confidence", {}).get("level"),
+        "confidence_score": (result or {}).get("confidence", {}).get("score"),
+        "frictions": _frictions(dc),
+        "facts": {"e2": v("E2"), "e3": v("E3"), "w1": v("W1"), "f1": v("F1"), "f2": v("F2"), "l3": v("L3")},
+    }
+
+
+def _exemplars(sites: list[dict], results: dict[str, dict] | None) -> dict | None:
+    """Three real projects, mechanically selected (act 5 — the rule is
+    published on each card, never an editorial pick):
+    - representative: modal profile (operational, saturated grid,
+      artificialized soil, modal site grade, calm water), middle by id —
+      criteria relaxed one by one when the perimeter is too small;
+    - constrained: highest cumulated frictions;
+    - documented: highest documentary-confidence score.
+    Needs scored results (grades); silently absent otherwise."""
+    if not results or len(sites) < 3:
+        return None
+    res = lambda dc: results.get(dc["id"])
+    graded = [dc for dc in sites if res(dc)]
+    if len(graded) < 3:
+        return None
+    v = lambda dc, iid: (_indicator(dc, iid) or {}).get("value")
+
+    grades = Counter(res(dc)["grades"]["site"]["grade"] for dc in graded)
+    modal = grades.most_common(1)[0][0]
+    criteria = [
+        lambda dc: dc["identity"]["project_status"] == "operational",
+        lambda dc: v(dc, "E2") == "saturated",
+        lambda dc: v(dc, "F2") == "artificialized",
+        lambda dc: res(dc)["grades"]["site"]["grade"] == modal,
+        lambda dc: v(dc, "W1") in ("moderate", "no_stress"),
+    ]
+    cands: list[dict] = []
+    for upto in range(len(criteria), 0, -1):
+        cands = [dc for dc in graded if all(c(dc) for c in criteria[:upto])]
+        if cands:
+            break
+    cands = sorted(cands, key=lambda dc: dc["id"]) or sorted(graded, key=lambda dc: dc["id"])
+    representative = cands[len(cands) // 2]
+
+    constrained = sorted(graded, key=lambda dc: (-_frictions(dc), dc["id"]))[0]
+    documented = sorted(
+        graded,
+        key=lambda dc: (-(res(dc)["confidence"].get("score") or 0), dc["id"]),
+    )[0]
+    return {
+        "representative": _exemplar_payload(representative, res(representative)),
+        "constrained": _exemplar_payload(constrained, res(constrained)),
+        "documented": _exemplar_payload(documented, res(documented)),
+    }
+
+
+def _map_points(sites: list[dict]) -> list[list]:
+    """[lon, lat, grid-constrained?] per site — the computed constraint map
+    (never an illustration). Rounded to 2 decimals (~1 km): enough for a
+    density picture, useless for pinpointing."""
+    pts = []
+    for dc in sites:
+        coords = dc["identity"].get("coordinates") or {}
+        if "lon" not in coords or "lat" not in coords:
+            continue
+        flag = 1 if (_indicator(dc, "E2") or {}).get("value") == "saturated" else 0
+        pts.append([round(coords["lon"], 2), round(coords["lat"], 2), flag])
+    return pts
+
+
 def _coverage_mean_pct(sites: list[dict], mvp_ids: list[str]) -> float:
     if not sites or not mvp_ids:
         return 0.0
@@ -230,7 +322,8 @@ def _coverage_mean_pct(sites: list[dict], mvp_ids: list[str]) -> float:
     return round(100.0 * total / len(sites), 1)
 
 
-def _perimeter(sites: list[dict], watchlist: list[dict], mvp_ids: list[str]) -> dict:
+def _perimeter(sites: list[dict], watchlist: list[dict], mvp_ids: list[str],
+               results: dict[str, dict] | None = None) -> dict:
     countries = sorted({dc["identity"]["country"] for dc in sites})
     stats: dict[str, dict] = {}
     gated: dict[str, int] = {}
@@ -248,18 +341,23 @@ def _perimeter(sites: list[dict], watchlist: list[dict], mvp_ids: list[str]) -> 
         stats["pipeline"] = pipe
     if (watch := _watchlist_stat(watchlist, set(countries))) is not None:
         stats["oppositions"] = watch
-    return {
+    peri = {
         "n_sites": len(sites),
         "countries": countries,
         "coverage_mean_pct": _coverage_mean_pct(sites, mvp_ids),
         "by_status": dict(sorted(Counter(dc["identity"]["project_status"] for dc in sites).items())),
         "stats": stats,
         "gated": dict(sorted(gated.items())),
+        "points": _map_points(sites),
     }
+    if (ex := _exemplars(sites, results)) is not None:
+        peri["exemplars"] = ex
+    return peri
 
 
 def build_stats(datacenters: dict[str, dict], methodology: dict,
-                watchlist: list[dict] | None = None) -> dict:
+                watchlist: list[dict] | None = None,
+                results: dict[str, dict] | None = None) -> dict:
     """Compute the full stats.json payload (see module docstring for the contract)."""
     watchlist = watchlist or []
     sites = [dc for dc_id, dc in sorted(datacenters.items()) if not dc_id.startswith("zz-")]
@@ -273,14 +371,14 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
                  if isinstance((src := entry.get("source")), dict) and src.get("accessed")]
     corpus_date = max(dates) if dates else None
 
-    perimeters: dict[str, dict] = {"europe": _perimeter(sites, watchlist, mvp_ids)}
+    perimeters: dict[str, dict] = {"europe": _perimeter(sites, watchlist, mvp_ids, results)}
     for country in sorted({dc["identity"]["country"] for dc in sites}):
         c_sites = [dc for dc in sites if dc["identity"]["country"] == country]
-        peri = _perimeter(c_sites, watchlist, mvp_ids)
+        peri = _perimeter(c_sites, watchlist, mvp_ids, results)
         regions: dict[str, dict] = {}
         for slug in sorted({r for dc in c_sites if (r := _region(dc))}):
             r_sites = [dc for dc in c_sites if _region(dc) == slug]
-            regions[slug] = _perimeter(r_sites, watchlist, mvp_ids)
+            regions[slug] = _perimeter(r_sites, watchlist, mvp_ids, results)
         if regions:
             peri["regions"] = regions
         perimeters[country] = peri

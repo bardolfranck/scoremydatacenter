@@ -136,3 +136,28 @@ def test_deterministic_and_dated():
     assert stats["corpus_date"] == "2026-07-01"
     assert stats["methodology_version"] == "0.1.0-test"
     assert stats["min_n"] == STATS_MIN_N
+
+
+def test_exemplars_mechanical_and_optional():
+    dcs = _corpus()
+    # without results: absent (grades unknown)
+    assert "exemplars" not in build_stats(dcs, METHODOLOGY)["perimeters"]["FR"]
+    results = {k: {"grades": {"site": {"grade": "C"}},
+                   "confidence": {"level": "medium", "score": 0.5 + i / 100}}
+               for i, k in enumerate(sorted(dcs))}
+    stats = build_stats(dcs, METHODOLOGY, None, results)
+    ex = stats["perimeters"]["FR"]["exemplars"]
+    assert set(ex) == {"representative", "constrained", "documented"}
+    # documented = highest confidence score (last id by construction)
+    assert ex["documented"]["id"] == sorted(dcs)[-1]
+    # constrained = max frictions, deterministic tie-break by id
+    fr = [d for d in sorted(dcs)]
+    assert ex["constrained"]["frictions"] >= 1
+
+
+def test_map_points_flag_and_rounding():
+    dcs = _corpus()
+    stats = build_stats(dcs, METHODOLOGY)
+    pts = stats["perimeters"]["FR"]["points"]
+    assert len(pts) == len(dcs)
+    assert all(len(p) == 3 and p[2] in (0, 1) for p in pts)

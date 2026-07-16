@@ -2,34 +2,54 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// « Les chiffres du parc » — perimeter template, layout v2 (mockup validé
-// 2026-07-16) : phrase de section COMPOSÉE au build (plus fort bonus publié
-// + plus forte friction — fragments fixes, zéro relecture par édition),
-// barres de proportion (la couleur porte le bonus/friction, sans étiquette),
-// hiérarchie 1+2 (une dominante + deux secondaires), le reste en dépliant.
-// FR défaut = France, EN défaut = Europe; draft-4 skin (Bricolage/Chivo/mono).
+// « Les chiffres du parc » — layout v3 « six actes » (mockup validé 2026-07-16) :
+// barre territoriale sticky · hero (LE chiffre + ligne de sens + panneau
+// « Vous regardez ») · six sections-questions avec icônes par carte, « ce que
+// cela signifie », barres de proportion · carte des contraintes CALCULÉE
+// depuis les coordonnées du corpus · comparateur « annoncer n'est pas
+// mesurer » · « l'historique commence ici » (aucune tendance inventée) ·
+// classement descriptif des contraintes · trois projets réels à sélection
+// mécanique publiée · méthode-garantie. La phrase de section reste COMPOSÉE
+// au build (plus fort bonus publié + plus forte friction — zéro LLM).
 import "@fontsource/bricolage-grotesque/700.css";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
-import iconMap from "@phosphor-icons/core/assets/regular/map-trifold.svg?raw";
-import iconLens from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
-import iconTrend from "@phosphor-icons/core/assets/regular/chart-line-up.svg?raw";
-import iconCalc from "@phosphor-icons/core/assets/regular/calculator.svg?raw";
+import ScoreBadge from "./ScoreBadge.astro";
+import iconMapH from "@phosphor-icons/core/assets/regular/map-trifold.svg?raw";
+import iconLensH from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
+import iconTrendH from "@phosphor-icons/core/assets/regular/chart-line-up.svg?raw";
+import iconCalcH from "@phosphor-icons/core/assets/regular/calculator.svg?raw";
+import iconScaleH from "@phosphor-icons/core/assets/regular/scales.svg?raw";
+import iconBuildingsH from "@phosphor-icons/core/assets/regular/buildings.svg?raw";
+import icLightning from "@phosphor-icons/core/assets/regular/lightning.svg?raw";
+import icHourglass from "@phosphor-icons/core/assets/regular/hourglass.svg?raw";
+import icDrop from "@phosphor-icons/core/assets/regular/drop.svg?raw";
+import icLeaf from "@phosphor-icons/core/assets/regular/leaf.svg?raw";
+import icPlant from "@phosphor-icons/core/assets/regular/plant.svg?raw";
+import icWarning from "@phosphor-icons/core/assets/regular/warning.svg?raw";
+import icFileText from "@phosphor-icons/core/assets/regular/file-text.svg?raw";
+import icGauge from "@phosphor-icons/core/assets/regular/gauge.svg?raw";
+import icFlame from "@phosphor-icons/core/assets/regular/flame.svg?raw";
+import icHardDrives from "@phosphor-icons/core/assets/regular/hard-drives.svg?raw";
+import icChartBar from "@phosphor-icons/core/assets/regular/chart-bar.svg?raw";
 import {
-  STATS, T, SECTIONS, HERO_PRIORITY, REGION_NAMES, STAT_TONE, FRAGMENTS,
+  STATS, T, SECTIONS, HERO_PRIORITY, REGION_NAMES, STAT_TONE, STAT_ICON, FRAGMENTS,
+  MEANINGS, HERO_MEANING, EXEMPLAR_COPY, rankConstraints,
   perimeterKeys, perimeterLabel, statView, composeStory, fmtPct, fmtInt,
   type Lang,
 } from "../config/stats";
 
 interface Props {
   lang: Lang;
-  perimeter: string; // "europe" | ISO country code
+  perimeter: string;
   nav: { href: string; label: string }[];
-  basePath: string; // "/fr/chiffres" | "/figures"
-  altBase: string;  // the twin page in the other language
+  basePath: string;
+  altBase: string;
 }
 const { lang, perimeter, nav, basePath, altBase } = Astro.props;
 const t = T[lang];
+const v3 = (t as any).v3;
+const ex = EXEMPLAR_COPY[lang];
 const peri = STATS.perimeters[perimeter];
 const defaultKey = lang === "fr" ? "FR" : "europe";
 const pathFor = (key: string) =>
@@ -49,9 +69,10 @@ const dateFmt = (iso: string | null) => {
   return lang === "fr" ? `${parseInt(d, 10)} ${mo} ${y}` : `${mo} ${parseInt(d, 10)}, ${y}`;
 };
 
-// LE chiffre — first priority stat this perimeter can publish.
+// LE chiffre + sa ligne de sens.
 const heroId = HERO_PRIORITY.find((id) => peri.stats[id]) ?? null;
 const hero = heroId ? statView(peri, heroId, lang) : null;
+const heroMean = heroId ? HERO_MEANING[heroId]?.[lang] : null;
 
 const totalCountries: number = peri.countries.length;
 const badge = (countries: string[]) => {
@@ -63,8 +84,108 @@ const badge = (countries: string[]) => {
 const toneClass = (id: string) => `stx-${STAT_TONE[id]?.tone ?? "neutral"}`;
 const barWidth = (pct?: number) => (pct === undefined || pct === null) ? null : Math.max(pct, 1.2);
 
-// Region payload (FR territoire) — per-region values incl. pct (bar width);
-// the story recomposes client-side with the same rule and the same fragments.
+// Card icons — Phosphor, tinted by subject family (mockup v3.1).
+const IC: Record<string, string> = {
+  lightning: icLightning, hourglass: icHourglass, drop: icDrop, leaf: icLeaf,
+  plant: icPlant, warning: icWarning, "file-text": icFileText, gauge: icGauge,
+  flame: icFlame, "hard-drives": icHardDrives, "chart-bar": icChartBar,
+};
+const statIcon = (id: string) => {
+  const meta = STAT_ICON[id];
+  if (!meta) return null;
+  return {
+    tint: meta.tint,
+    svg: (IC[meta.icon] ?? "").replace("<svg", '<svg width="19" height="19" fill="currentColor" aria-hidden="true"'),
+  };
+};
+
+// Section-head icons (kept from the numbered-question skeleton).
+const HEAD_ICON: Record<string, string> = {
+  territoire: iconMapH, transparence: iconLensH, dynamique: iconTrendH,
+  tension: iconScaleH, projets: iconBuildingsH, methode: iconCalcH,
+};
+const headIcon = (id: string) =>
+  (HEAD_ICON[id] ?? "").replace("<svg", '<svg width="21" height="21" fill="currentColor" aria-hidden="true"');
+
+// Carte des contraintes — computed at build from the corpus coordinates
+// (equirectangular fit, latitude-corrected). Orange = saturated substation.
+function pointsSvg(points: number[][]): string | null {
+  if (!points || points.length < 3) return null;
+  const lons = points.map((p) => p[0]), lats = points.map((p) => p[1]);
+  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const midLat = (minLat + maxLat) / 2;
+  const kx = Math.cos((midLat * Math.PI) / 180);
+  const W = 220, H = 200, pad = 12;
+  const spanX = Math.max((maxLon - minLon) * kx, 0.01), spanY = Math.max(maxLat - minLat, 0.01);
+  const scale = Math.min((W - 2 * pad) / spanX, (H - 2 * pad) / spanY);
+  const ox = (W - spanX * scale) / 2, oy = (H - spanY * scale) / 2;
+  const dots = points.map(([lon, lat, flag]) => {
+    const x = ox + (lon - minLon) * kx * scale;
+    const y = H - (oy + (lat - minLat) * scale);
+    return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${flag ? "#CF6A1C" : "#8fa6c2"}" opacity="${flag ? 0.62 : 0.4}"/>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img">${dots}</svg>`;
+}
+const mapSvg = pointsSvg(peri.points);
+const mapHref = lang === "fr" ? "/fr/carte" : "/map";
+
+const ANCHORS: Record<string, string> = {
+  grid_saturated: "reseau-sature", grid_queue_critical: "file-attente",
+  water_stress_high: "stress-hydrique", water_no_stress: "sans-stress",
+  soil_artificialized: "sols-artificialises", protected_area_close: "zones-protegees",
+  seveso_high_2km: "sites-a-risque", pue_published: "pue-publie",
+  heat_reuse: "chaleur-valorisee", power_disclosed: "puissance-communiquee",
+  operational_share: "parc-en-service", pipeline: "pipeline-mw", oppositions: "oppositions",
+};
+
+// Acts 1-3 — three featured cards each; territoire keeps its fold.
+const ACTS: { id: string; featured: string[] }[] = [
+  { id: "territoire", featured: ["grid_saturated", "water_stress_high", "soil_artificialized"] },
+  { id: "transparence", featured: ["power_disclosed", "pue_published", "heat_reuse"] },
+  { id: "dynamique", featured: ["operational_share", "pipeline", "oppositions"] },
+];
+const actsToRender = ACTS.map((act) => {
+  const sec = SECTIONS.find((s) => s.id === act.id)!;
+  const cards = act.featured
+    .map((id) => ({ id, view: statView(peri, id, lang) }))
+    .filter((c) => c.view);
+  const moreCards = sec.stats
+    .filter((id) => !act.featured.includes(id))
+    .map((id) => ({ id, view: statView(peri, id, lang) }))
+    .filter((c) => c.view);
+  return { ...act, cards, moreCards, story: composeStory(peri, act.id, lang) };
+}).filter((act) => act.cards.length > 0);
+
+const ranking = rankConstraints(peri, lang);
+const exemplars = peri.exemplars ?? null;
+const exOrder: ["representative", "constrained", "documented"] = ["representative", "constrained", "documented"];
+
+function exemplarBullets(kind: string, e: any): string[] {
+  const f = e.facts || {};
+  const bullets: string[] = [];
+  if (kind === "representative") {
+    const status = (ex.status as any)[e.project_status] ?? e.project_status;
+    bullets.push(`${status}${typeof e.power_mw === "number" ? ` · ${fmtInt(Math.round(e.power_mw), lang)} MW` : ` · ${ex.mwUnknown}`}`);
+    if (f.e2 === "saturated") bullets.push(ex.facts.e2);
+    if (f.f2 === "artificialized") bullets.push(ex.facts.f2);
+  } else if (kind === "constrained") {
+    bullets.push(ex.frictionsLine(e.frictions));
+    if (f.e2 === "saturated") bullets.push(ex.facts.e2);
+    if (f.w1 === "high" || f.w1 === "zre_or_crisis") bullets.push(ex.facts.w1);
+    if (f.f1 === "adjacent_under_1km" || f.f1 === "overlap") bullets.push(ex.facts.f1);
+    if (f.l3 === "seveso_high_within_2km") bullets.push(ex.facts.l3);
+  } else {
+    if (typeof e.confidence_score === "number") bullets.push(`${(ex.confLine as any)[e.confidence] ?? ""} — ${fmtPct(Math.round(e.confidence_score * 100), lang)}`);
+    else if (e.confidence) bullets.push((ex.confLine as any)[e.confidence]);
+    const status = (ex.status as any)[e.project_status] ?? e.project_status;
+    bullets.push(status);
+  }
+  return bullets.slice(0, 3);
+}
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+
+// Region payload (FR) — act-1 swap + story recomposition, same rule as build.
 const territoireSec = SECTIONS[0];
 const regions = peri.regions ?? null;
 const regionPayload = regions
@@ -77,7 +198,6 @@ const regionPayload = regions
       })),
     }]))
   : null;
-// Fragment mini-map for the client-side recomposition (territoire only).
 const territoireMeta = territoireSec.stats.map((id) => ({
   id, tone: STAT_TONE[id]?.tone ?? "neutral", inverse: !!STAT_TONE[id]?.inverse,
   up: FRAGMENTS[id]?.up?.[lang] ?? null, down: FRAGMENTS[id]?.down?.[lang] ?? null,
@@ -85,33 +205,7 @@ const territoireMeta = territoireSec.stats.map((id) => ({
 
 const ogFor = (id: string) => `/og/stats/${lang}-${perimeter.toLowerCase()}-${id}.png`;
 const pageOg = heroId ? new URL(ogFor(heroId), Astro.site ?? "https://scoremydatacenter.org").href : undefined;
-
-// Section icons — same Phosphor family as the fiche pillars & the ia-chain.
-const SECTION_ICON: Record<string, string> = { territoire: iconMap, transparence: iconLens, dynamique: iconTrend, methode: iconCalc };
-const secIcon = (id: string) =>
-  (SECTION_ICON[id] ?? "").replace("<svg", '<svg width="22" height="22" fill="currentColor" aria-hidden="true"');
-
-const ANCHORS: Record<string, string> = {
-  grid_saturated: "reseau-sature", grid_queue_critical: "file-attente",
-  water_stress_high: "stress-hydrique", water_no_stress: "sans-stress",
-  soil_artificialized: "sols-artificialises", protected_area_close: "zones-protegees",
-  seveso_high_2km: "sites-a-risque", pue_published: "pue-publie",
-  heat_reuse: "chaleur-valorisee", power_disclosed: "puissance-communiquee",
-  operational_share: "parc-en-service", pipeline: "pipeline-mw", oppositions: "oppositions",
-};
-
-// Hierarchy 1+2: lead card + two stacked secondaries + the rest folded away.
-const sectionsToRender = SECTIONS.map((sec) => {
-  const cards = sec.stats
-    .map((id) => ({ id, view: statView(peri, id, lang) }))
-    .filter((c) => c.view);
-  const lead = cards.find((c) => c.id === sec.lead) ?? cards[0] ?? null;
-  const rest = cards.filter((c) => c !== lead);
-  return {
-    ...sec, lead, stackCards: rest.slice(0, 2), moreCards: rest.slice(2),
-    story: composeStory(peri, sec.id, lang),
-  };
-}).filter((sec) => sec.lead);
+const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
 ---
 
 <Base
@@ -124,88 +218,85 @@ const sectionsToRender = SECTIONS.map((sec) => {
   nav={nav}
   ogImage={pageOg}
 >
-  <div class="stx">
-    <header class="stx-head">
-      <h1 class="stx-h1">{t.h1}</h1>
-      <p class="stx-lede">{t.lede}</p>
-      <div class="stx-edition">
-        {STATS.corpus_date && <span>{t.editionOf} <b>{dateFmt(STATS.corpus_date)}</b></span>}
-        <span><b>{fmtInt(peri.n_sites, lang)}</b> {t.dcWord} · <b>{t.countriesWord(totalCountries)}</b></span>
-        <span>{t.methodo} <b>v{STATS.methodology_version}</b></span>
-        <label class="stx-peri">
-          {t.perimeter}
-          <select aria-label={t.perimeterSelectAria} data-peri-select>
+  <div class="stx stx-v3">
+    <!-- barre territoriale persistante -->
+    <div class="stx-terrbar">
+      <span>{v3.looking} : <b data-terr-label>{perimeterLabel(perimeter, lang)}</b></span>
+      <span class="stx-crumb">
+        <a href={pathFor("europe")}>Europe</a>
+        {perimeter !== "europe" && <> › <a href={pathFor(perimeter)}>{perimeterLabel(perimeter, lang)}</a></>}
+        {regionPayload && <> › <span data-terr-region>{v3.allRegions}</span></>}
+      </span>
+      <span class="stx-terr-spacer"></span>
+      <span class="stx-terr-meta">{fmtInt(peri.n_sites, lang)} {t.dcWord}{pipelineProjects > 0 && <> · {v3.projWord(pipelineProjects)}</>}{STATS.corpus_date && <> · {v3.editionShort} {dateFmt(STATS.corpus_date)}</>}</span>
+      <button class="stx-copy" type="button" data-copy={pathFor(perimeter)}>{v3.copyView}</button>
+    </div>
+
+    <h1 class="stx-h1">{t.h1}</h1>
+    <p class="stx-lede">{t.lede}</p>
+
+    <!-- hero : LE chiffre + panneau sélection -->
+    {hero && (
+      <div class="stx-hero3" id={ANCHORS[heroId!]}>
+        <div class="stx-hero3-main">
+          <p class="stx-kicker">{v3.heroKicker}</p>
+          <p class="stx-big"><em>{hero.big}</em></p>
+          <p class="stx-fact">{hero.phrase}</p>
+          {heroMean && <p class="stx-hero-mean">{heroMean}</p>}
+          <p class="stx-meta">
+            {hero.src} · {t.nLabel} {fmtInt(hero.n, lang)} · <span class="stx-badge">{badge(hero.countries)}</span>
+            {STATS.corpus_date && <> · {dateFmt(STATS.corpus_date)}</>} · v{STATS.methodology_version}
+          </p>
+        </div>
+        <div class="stx-hero3-side">
+          <p class="stx-looking">{v3.looking}</p>
+          <p class="stx-terrname" data-terr-name>{perimeterLabel(perimeter, lang)}</p>
+          <select aria-label={t.perimeterSelectAria} data-peri-select autocomplete="off">
             {["europe", ...perimeterKeys().filter((k) => k !== "europe")].map((key) => (
               <option value={pathFor(key)} selected={key === perimeter}>{perimeterLabel(key, lang)}</option>
             ))}
           </select>
-        </label>
-      </div>
-    </header>
-
-    {hero && (
-      <div class="stx-hero" id={ANCHORS[heroId!]}>
-        <div class="stx-hero-actions">
-          <button class="stx-copy" type="button" data-copy={`${pathFor(perimeter)}#${ANCHORS[heroId!]}`}>{t.copyLink}</button>
-        </div>
-        <p class="stx-kicker">{t.heroKicker}</p>
-        <p class="stx-big"><em>{hero.big}</em></p>
-        <p class="stx-fact">{hero.phrase}</p>
-        <p class="stx-meta">
-          {hero.src} · {t.nLabel} {fmtInt(hero.n, lang)} · <span class="stx-badge">{badge(hero.countries)}</span>
-          {hero.excluded > 0 && <> · {t.excludedNote(hero.excluded)}</>}
-        </p>
-      </div>
-    )}
-
-    {sectionsToRender.map((sec) => (
-      <section class="stx-section" aria-labelledby={`stx-${sec.id}`}>
-        <div class="stx-sechead">
-          <h2 id={`stx-${sec.id}`}><span class="stx-sec-ic" aria-hidden="true" set:html={secIcon(sec.id)}></span>{(t.sections as any)[sec.id].title}</h2>
-          <span class="stx-sub">{(t.sections as any)[sec.id].sub}</span>
-          {sec.id === "territoire" && regionPayload && (
-            <select class="stx-region" aria-label={t.regionAria} data-region-select>
-              <option value="">{t.regionAll}</option>
+          {regionPayload && (
+            <select aria-label={t.regionAria} data-region-select autocomplete="off">
+              <option value="">{v3.allRegions}</option>
               {Object.entries(regionPayload).map(([slug, r]: [string, any]) => (
                 <option value={slug}>{r.label}</option>
               ))}
             </select>
           )}
+          <button class="stx-go" type="button" data-go-selection>{v3.seeSelection}</button>
         </div>
-        {sec.story && <p class="stx-story" data-story={sec.id} set:html={sec.story} />}
-        <div class="stx-duo" data-section={sec.id}>
-          {[sec.lead!, ...sec.stackCards].map(({ id, view }, i) => (
-            <article
-              class={`stx-stat ${toneClass(id)} ${i === 0 ? "stx-lead" : ""}`}
-              id={ANCHORS[id]} data-stat={id}>
-              <p class="stx-n" data-slot="big">{view!.big}</p>
-              {barWidth(view!.pct) !== null && (
-                <div class="stx-bar" aria-hidden="true"><i data-slot="bar" style={`width:${barWidth(view!.pct)}%`}></i></div>
-              )}
-              <p class="stx-f">{view!.phrase}</p>
-              <p class="stx-src">
-                <span>{view!.src} · {t.nLabel} <span data-slot="n">{fmtInt(view!.n, lang)}</span>
-                  {view!.excluded > 0 && <> · {t.excludedNote(view!.excluded)}</>}</span>
-                <span class="stx-srcend">
-                  <span class="stx-badge" data-slot="badge">{badge(view!.countries)}</span>
-                  <button class="stx-copy stx-copy-sm" type="button" data-copy={`${pathFor(perimeter)}#${ANCHORS[id]}`}>⧉</button>
-                </span>
-              </p>
-              <p class="stx-gated" data-slot="gated" hidden></p>
-            </article>
-          ))}
-        </div>
-        {sec.moreCards.length > 0 && (
-          <details class="stx-more">
-            <summary>{t.moreLabel(sec.moreCards.length)}</summary>
-            <div class="stx-grid" data-section-more={sec.id}>
-              {sec.moreCards.map(({ id, view }) => (
+      </div>
+    )}
+
+    <div class="stx-disclaim">
+      <span>ⓘ {v3.disclaim}</span>
+      <button class="stx-copy stx-copy-sm" type="button" data-copy={pathFor(perimeter)}>⧉</button>
+    </div>
+
+    <!-- actes 1-3 -->
+    {actsToRender.map((act, actIdx) => (
+      <section class="stx-section" aria-labelledby={`stx-${act.id}`}>
+        <h2 class="stx-q" id={`stx-${act.id}`}>
+          <span class="stx-qnum">{actIdx + 1}.</span>
+          <span class="stx-sec-ic" aria-hidden="true" set:html={headIcon(act.id)}></span>
+          {v3.q[act.id]}
+        </h2>
+        {act.story && <p class="stx-story" data-story={act.id} set:html={act.story} />}
+        <div class="stx-split">
+          <div class="stx-grid3" data-section={act.id}>
+            {act.cards.map(({ id, view }) => {
+              const icon = statIcon(id);
+              const meaning = MEANINGS[id]?.[lang];
+              return (
                 <article class={`stx-stat ${toneClass(id)}`} id={ANCHORS[id]} data-stat={id}>
-                  <p class="stx-n stx-n-sm" data-slot="big">{view!.big}</p>
+                  {icon && <span class={`stx-ic stx-ic-${icon.tint}`} aria-hidden="true" set:html={icon.svg}></span>}
+                  <p class="stx-n" data-slot="big">{view!.big}</p>
                   {barWidth(view!.pct) !== null && (
                     <div class="stx-bar" aria-hidden="true"><i data-slot="bar" style={`width:${barWidth(view!.pct)}%`}></i></div>
                   )}
                   <p class="stx-f">{view!.phrase}</p>
+                  {meaning && <p class="stx-mean"><b>{v3.meaningLabel}</b>{meaning}</p>}
                   <p class="stx-src">
                     <span>{view!.src} · {t.nLabel} <span data-slot="n">{fmtInt(view!.n, lang)}</span>
                       {view!.excluded > 0 && <> · {t.excludedNote(view!.excluded)}</>}</span>
@@ -216,127 +307,273 @@ const sectionsToRender = SECTIONS.map((sec) => {
                   </p>
                   <p class="stx-gated" data-slot="gated" hidden></p>
                 </article>
-              ))}
+              );
+            })}
+          </div>
+
+          {act.id === "territoire" && mapSvg && (
+            <aside class="stx-mapcard">
+              <div class="stx-mapsvg" set:html={mapSvg}></div>
+              <p class="stx-mapcap">{v3.mapCap}</p>
+              <a class="stx-cta" href={mapHref}>{v3.mapCta}</a>
+            </aside>
+          )}
+          {act.id === "transparence" && (
+            <aside class="stx-compare">
+              <h3>{v3.compare.title}</h3>
+              <table>
+                <thead><tr><th>{v3.compare.colPub}</th><th>{v3.compare.colMiss}</th></tr></thead>
+                <tbody>
+                  {v3.compare.rows.map((row: string[]) => (
+                    <tr><td>{row[0]}</td><td class="stx-miss">{row[1]}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+              <p class="stx-compclose">{v3.compare.close}</p>
+              <a class="stx-cta" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{v3.compare.cta}</a>
+            </aside>
+          )}
+          {act.id === "dynamique" && (
+            <aside class="stx-t1note">
+              <h3>{v3.t1.title}</h3>
+              <p>{v3.t1.p1(STATS.corpus_date ? dateFmt(STATS.corpus_date) : "")}</p>
+              <p>{v3.t1.p2}</p>
+              <a class="stx-cta" href={lang === "fr" ? "/fr/classement?statut=announced" : "/ranking?statut=announced"}>{v3.t1.cta}</a>
+            </aside>
+          )}
+        </div>
+        {act.moreCards.length > 0 && (
+          <details class="stx-more">
+            <summary>{t.moreLabel(act.moreCards.length)}</summary>
+            <div class="stx-grid" data-section-more={act.id}>
+              {act.moreCards.map(({ id, view }) => {
+                const icon = statIcon(id);
+                return (
+                  <article class={`stx-stat ${toneClass(id)}`} id={ANCHORS[id]} data-stat={id}>
+                    {icon && <span class={`stx-ic stx-ic-${icon.tint}`} aria-hidden="true" set:html={icon.svg}></span>}
+                    <p class="stx-n stx-n-sm" data-slot="big">{view!.big}</p>
+                    {barWidth(view!.pct) !== null && (
+                      <div class="stx-bar" aria-hidden="true"><i data-slot="bar" style={`width:${barWidth(view!.pct)}%`}></i></div>
+                    )}
+                    <p class="stx-f">{view!.phrase}</p>
+                    <p class="stx-src">
+                      <span>{view!.src} · {t.nLabel} <span data-slot="n">{fmtInt(view!.n, lang)}</span></span>
+                      <span class="stx-srcend">
+                        <span class="stx-badge" data-slot="badge">{badge(view!.countries)}</span>
+                        <button class="stx-copy stx-copy-sm" type="button" data-copy={`${pathFor(perimeter)}#${ANCHORS[id]}`}>⧉</button>
+                      </span>
+                    </p>
+                    <p class="stx-gated" data-slot="gated" hidden></p>
+                  </article>
+                );
+              })}
             </div>
           </details>
         )}
       </section>
     ))}
 
+    <!-- acte 4 : classement descriptif des contraintes -->
+    {ranking.length > 0 && (
+      <section class="stx-section" aria-labelledby="stx-tension">
+        <h2 class="stx-q" id="stx-tension">
+          <span class="stx-qnum">4.</span>
+          <span class="stx-sec-ic" aria-hidden="true" set:html={headIcon("tension")}></span>
+          {v3.q.tension}
+        </h2>
+        <p class="stx-qsub">{v3.rankSub}</p>
+        <div class="stx-rank">
+          {ranking.map((r: any, i: number) => {
+            const icon = statIcon(r.id);
+            return (
+              <div class={`stx-rk ${i === 0 ? "stx-rk1" : ""}`}>
+                <span class="stx-pos">{i + 1}</span>
+                {icon && <span class={`stx-ic stx-ic-${icon.tint}`} aria-hidden="true" set:html={icon.svg}></span>}
+                <h3>{r.label}</h3>
+                <p class="stx-share">{fmtPct(r.share, lang)}</p>
+                <p class="stx-rkp">{r.phrase}</p>
+              </div>
+            );
+          })}
+        </div>
+        <p class="stx-ranknote">{v3.rankNote}</p>
+      </section>
+    )}
+
+    <!-- acte 5 : trois projets réels -->
+    {exemplars && (
+      <section class="stx-section" aria-labelledby="stx-projets">
+        <h2 class="stx-q" id="stx-projets">
+          <span class="stx-qnum">5.</span>
+          <span class="stx-sec-ic" aria-hidden="true" set:html={headIcon("projets")}></span>
+          {ex.title}
+        </h2>
+        <p class="stx-qsub">{ex.sub}</p>
+        <div class="stx-projs">
+          {exOrder.map((kind) => {
+            const e = exemplars[kind];
+            if (!e) return null;
+            return (
+              <article class="stx-proj">
+                <span class="stx-why">{(ex.why as any)[kind]}</span>
+                <div class="stx-projhead">
+                  <h3>{String(e.name).replace(/_/g, " ").replace(/\s+/g, " ").trim()}{e.municipality && <span class="stx-projloc"> — {e.municipality}{e.admin_area ? ` (${e.admin_area})` : ""}</span>}</h3>
+                  {e.grade_site && (
+                    <ScoreBadge label={lang === "fr" ? "Note du site" : "Site grade"} grade={{ grade: e.grade_site }}
+                      confidence={e.confidence ?? "medium"} confidenceLabel=""
+                      renderLabel={false} renderConfidence={false} size="sm" />
+                  )}
+                </div>
+                <ul>
+                  {exemplarBullets(kind, e).map((b) => <li>{b}</li>)}
+                </ul>
+                <p class="stx-crit">{(ex.crit as any)[kind]}</p>
+                <a class="stx-cta" href={`${ficheBase}/${e.id}`}>{ex.fiche}</a>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+    )}
+
+    <!-- acte 6 : méthode-garantie -->
     <section class="stx-section" aria-labelledby="stx-methode">
-      <div class="stx-sechead">
-        <h2 id="stx-methode"><span class="stx-sec-ic" aria-hidden="true" set:html={secIcon("methode")}></span>{t.sections.methode.title}</h2>
-        <span class="stx-sub">{t.sections.methode.sub}</span>
-      </div>
-      <p class="stx-story" set:html={t.methodStory} />
-      <div class="stx-grid">
-        <article class="stx-stat" id="corpus">
-          <p class="stx-n stx-n-sm">{fmtInt(peri.n_sites, lang)}</p>
-          <p class="stx-f">{t.method.corpus(peri.n_sites, totalCountries)}</p>
-          <p class="stx-src"><span>{t.method.corpusSrc(STATS.methodology_version, STATS.corpus_date ? dateFmt(STATS.corpus_date) : "")}</span></p>
-        </article>
-        <article class="stx-stat" id="couverture">
-          <p class="stx-n stx-n-sm">{fmtPct(peri.coverage_mean_pct, lang)}</p>
-          <p class="stx-f">{t.method.coverage}</p>
-          <p class="stx-src"><span>{t.method.coverageSrc}</span></p>
-        </article>
-        <article class="stx-stat" id="ouvert">
-          <p class="stx-n stx-n-sm">{fmtPct(100, lang)}</p>
-          <p class="stx-f">{t.method.open}</p>
-          <p class="stx-src"><span><a href="https://github.com/bardolfranck/scoremydatacenter" target="_blank" rel="noopener">{t.method.openSrc} ↗</a></span></p>
-        </article>
+      <h2 class="stx-q" id="stx-methode">
+        <span class="stx-qnum">{exemplars ? "6." : "5."}</span>
+        <span class="stx-sec-ic" aria-hidden="true" set:html={headIcon("methode")}></span>
+        {v3.q.methode}
+      </h2>
+      <div class="stx-guarantee">
+        <h3>{v3.guarantee.title}</h3>
+        <div class="stx-gchips">
+          {v3.guarantee.chips(fmtInt(peri.n_sites, lang), fmtPct(peri.coverage_mean_pct, lang)).map((c: string[]) => (
+            <span><b>{c[0]}</b>{c[1]}</span>
+          ))}
+        </div>
+        <p class="stx-gline">{v3.guarantee.line}</p>
+        <a class="stx-cta" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{v3.guarantee.cta}</a>
       </div>
     </section>
+
+    <div class="stx-indband">{v3.indband}</div>
   </div>
 
-  <script is:inline define:vars={{ regionPayload, territoireMeta, copied: t.copied, pageLang: lang }}>
-    // Perimeter navigation (static pages — the select is a link).
-    document.querySelectorAll("[data-peri-select]").forEach(function (sel) {
-      sel.addEventListener("change", function () { window.location.href = sel.value; });
-    });
-    // Copy-link buttons.
+  <script is:inline define:vars={{ regionPayload, territoireMeta, copied: t.copied, pageLang: lang, allRegionsLabel: v3.allRegions }}>
+    // Copy-link buttons (path-based).
     document.querySelectorAll(".stx-copy").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var url = window.location.origin + btn.getAttribute("data-copy");
+        var url = window.location.origin + btn.getAttribute("data-copy") + (regionPayload && window.__stxRegion ? "#region=" + window.__stxRegion : "");
         navigator.clipboard && navigator.clipboard.writeText(url).then(function () {
           var old = btn.textContent; btn.textContent = copied;
           setTimeout(function () { btn.textContent = old; }, 1600);
         });
       });
     });
-    // Region swap (FR territoire) — values pre-computed at build; the story
-    // recomposes with the SAME rule as the build (strongest bonus + friction).
+
+    var periSel = document.querySelector("[data-peri-select]");
     var regSel = document.querySelector("[data-region-select]");
-    if (regSel && regionPayload) {
-      var zones = document.querySelectorAll('[data-section="territoire"], [data-section-more="territoire"]');
+    var goBtn = document.querySelector("[data-go-selection]");
+
+    function applyRegion(slug) {
+      window.__stxRegion = slug || null;
+      var r = slug && regionPayload ? regionPayload[slug] : null;
+      var label = r ? r.label : null;
+      var regionCrumb = document.querySelector("[data-terr-region]");
+      if (regionCrumb) regionCrumb.textContent = label || allRegionsLabel;
       var storyEl = document.querySelector('[data-story="territoire"]');
-      var initial = { story: storyEl ? storyEl.innerHTML : "" };
-      zones.forEach(function (grid) {
-        grid.querySelectorAll("[data-stat]").forEach(function (card) {
-          var bar = card.querySelector('[data-slot="bar"]');
-          initial[card.getAttribute("data-stat")] = {
-            big: card.querySelector('[data-slot="big"]').textContent,
-            n: card.querySelector('[data-slot="n"]').textContent,
-            badge: card.querySelector('[data-slot="badge"]').textContent,
-            bar: bar ? bar.style.width : null,
-          };
-        });
-      });
-      function recompose(r) {
-        var bonus = null, friction = null;
-        territoireMeta.forEach(function (m) {
-          var v = r.stats[m.id];
-          if (!v || v.big === undefined || v.pct === null || v.pct === undefined) return;
-          if (m.tone === "good" && m.up) {
-            if (!bonus || v.pct > bonus.score) bonus = { m: m, score: v.pct };
-          } else if (m.tone === "bad" && m.down) {
-            var score = m.inverse ? 100 - v.pct : v.pct;
-            if (!friction || score > friction.score) friction = { m: m, score: score };
-          }
-        });
-        var cap = function (x) { return x.charAt(0).toUpperCase() + x.slice(1); };
-        var joiner = pageLang === "fr" ? " — mais " : " — but ";
-        if (bonus && friction) return '<span class="up">' + cap(bonus.m.up) + "</span>" + joiner + '<span class="down">' + friction.m.down + "</span>.";
-        if (bonus) return '<span class="up">' + cap(bonus.m.up) + "</span>.";
-        if (friction) return '<span class="down">' + cap(friction.m.down) + "</span>.";
-        return "";
-      }
-      regSel.addEventListener("change", function () {
-        var slug = regSel.value;
-        var r = slug ? regionPayload[slug] : null;
-        if (storyEl) storyEl.innerHTML = r ? recompose(r) : initial.story;
-        zones.forEach(function (grid) {
-          grid.querySelectorAll("[data-stat]").forEach(function (card) {
-            var id = card.getAttribute("data-stat");
-            var big = card.querySelector('[data-slot="big"]');
-            var n = card.querySelector('[data-slot="n"]');
-            var bdg = card.querySelector('[data-slot="badge"]');
-            var bar = card.querySelector('[data-slot="bar"]');
-            var gated = card.querySelector('[data-slot="gated"]');
-            var body = card.querySelector(".stx-f");
-            var src = card.querySelector(".stx-src");
-            var barBox = card.querySelector(".stx-bar");
-            function show(vals) {
-              big.textContent = vals.big; n.textContent = vals.n; bdg.textContent = vals.badge;
-              if (bar && vals.bar !== null && vals.bar !== undefined) { bar.style.width = vals.bar; if (barBox) barBox.hidden = false; }
-              big.hidden = false; body.hidden = false; src.hidden = false; gated.hidden = true;
-            }
-            if (!r) { show(initial[id]); return; }
-            var v = r.stats[id];
-            if (v && v.big !== undefined) {
-              show({ big: v.big, n: String(v.n), badge: r.label,
-                     bar: v.pct === null ? null : Math.max(v.pct, 1.2) + "%" });
-            } else {
-              big.hidden = true; body.hidden = true; src.hidden = true;
-              if (barBox) barBox.hidden = true;
-              gated.textContent = (pageLang === "fr"
-                ? "n insuffisant dans ce périmètre (n=" + (v ? v.gated : 0) + ") — pas de pourcentage sur si peu de sites"
-                : "not enough sites in this perimeter (n=" + (v ? v.gated : 0) + ") — no percentage on so few sites");
-              gated.hidden = false;
+      if (storyEl) {
+        if (!r) { if (window.__stxStory0 !== undefined) storyEl.innerHTML = window.__stxStory0; }
+        else {
+          if (window.__stxStory0 === undefined) window.__stxStory0 = storyEl.innerHTML;
+          var bonus = null, friction = null;
+          territoireMeta.forEach(function (m) {
+            var v = r.stats[m.id];
+            if (!v || v.big === undefined || v.pct === null || v.pct === undefined) return;
+            if (m.tone === "good" && m.up) { if (!bonus || v.pct > bonus.score) bonus = { m: m, score: v.pct }; }
+            else if (m.tone === "bad" && m.down) {
+              var sc = m.inverse ? 100 - v.pct : v.pct;
+              if (!friction || sc > friction.score) friction = { m: m, score: sc };
             }
           });
-        });
+          var cap = function (x) { return x.charAt(0).toUpperCase() + x.slice(1); };
+          var joiner = pageLang === "fr" ? " — mais " : " — but ";
+          storyEl.innerHTML = (bonus && friction)
+            ? '<span class="up">' + cap(bonus.m.up) + "</span>" + joiner + '<span class="down">' + friction.m.down + "</span>."
+            : bonus ? '<span class="up">' + cap(bonus.m.up) + "</span>."
+            : friction ? '<span class="down">' + cap(friction.m.down) + "</span>." : "";
+        }
+      }
+      document.querySelectorAll('[data-section="territoire"] [data-stat], [data-section-more="territoire"] [data-stat]').forEach(function (card) {
+        var id = card.getAttribute("data-stat");
+        var big = card.querySelector('[data-slot="big"]');
+        var n = card.querySelector('[data-slot="n"]');
+        var bdg = card.querySelector('[data-slot="badge"]');
+        var bar = card.querySelector('[data-slot="bar"]');
+        var barBox = card.querySelector(".stx-bar");
+        var gated = card.querySelector('[data-slot="gated"]');
+        var body = card.querySelector(".stx-f");
+        var mean = card.querySelector(".stx-mean");
+        var src = card.querySelector(".stx-src");
+        if (!window.__stxInit) window.__stxInit = {};
+        if (!window.__stxInit[id]) window.__stxInit[id] = {
+          big: big.textContent, n: n ? n.textContent : "", badge: bdg ? bdg.textContent : "",
+          bar: bar ? bar.style.width : null,
+        };
+        function show(vals) {
+          big.textContent = vals.big; if (n) n.textContent = vals.n; if (bdg) bdg.textContent = vals.badge;
+          if (bar && vals.bar) { bar.style.width = vals.bar; if (barBox) barBox.hidden = false; }
+          big.hidden = false; if (body) body.hidden = false; if (mean) mean.hidden = false; if (src) src.hidden = false; gated.hidden = true;
+        }
+        if (!r) { show(window.__stxInit[id]); return; }
+        var v = r.stats[id];
+        if (v && v.big !== undefined) {
+          show({ big: v.big, n: String(v.n), badge: r.label, bar: v.pct === null ? null : Math.max(v.pct, 1.2) + "%" });
+        } else {
+          big.hidden = true; if (body) body.hidden = true; if (mean) mean.hidden = true; if (src) src.hidden = true;
+          if (barBox) barBox.hidden = true;
+          gated.textContent = (pageLang === "fr"
+            ? "n insuffisant dans ce périmètre (n=" + (v ? v.gated : 0) + ") — pas de pourcentage sur si peu de sites"
+            : "not enough sites in this perimeter (n=" + (v ? v.gated : 0) + ") — no percentage on so few sites");
+          gated.hidden = false;
+        }
       });
+      var terrName = document.querySelector("[data-terr-name]");
+      if (terrName && label) terrName.textContent = label;
+      else if (terrName && window.__stxTerr0) terrName.textContent = window.__stxTerr0;
+      if (terrName && !window.__stxTerr0) window.__stxTerr0 = terrName.textContent;
+      if (slug) { history.replaceState(null, "", "#region=" + slug); }
+      else if (window.location.hash.indexOf("#region=") === 0) { history.replaceState(null, "", window.location.pathname); }
     }
+
+    if (goBtn) goBtn.addEventListener("click", function () {
+      var target = periSel ? periSel.value : null;
+      var slug = regSel ? regSel.value : "";
+      var current = window.location.pathname.replace(/\/$/, "");
+      if (target && target.replace(/\/$/, "") !== current) {
+        window.location.href = target + (slug ? "#region=" + slug : "");
+      } else {
+        applyRegion(slug);
+      }
+    });
+    if (regSel) regSel.addEventListener("change", function () { applyRegion(regSel.value); });
+    if (periSel) periSel.addEventListener("change", function () {
+      var target = periSel.value;
+      var current = window.location.pathname.replace(/\/$/, "");
+      if (target.replace(/\/$/, "") !== current) window.location.href = target;
+    });
+    // Deep link: #region=slug (on load AND on hash-only navigation)
+    function applyHash() {
+      var m = window.location.hash.match(/^#region=([a-z0-9-]+)$/);
+      if (m && regionPayload && regionPayload[m[1]]) {
+        if (regSel) regSel.value = m[1];
+        applyRegion(m[1]);
+      }
+    }
+    window.addEventListener("hashchange", applyHash);
+    // Browser form restoration can resurrect a stale selection on load —
+    // the URL is the only source of truth: force the selects to match it.
+    var m0 = window.location.hash.match(/^#region=([a-z0-9-]+)$/);
+    if (regSel && !m0) regSel.value = "";
+    applyHash();
   </script>
 </Base>

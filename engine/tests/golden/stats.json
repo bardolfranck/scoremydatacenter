@@ -21,7 +21,8 @@
         "soil_artificialized": 0,
         "water_no_stress": 0,
         "water_stress_high": 0
-      }
+      },
+      "points": []
     }
   }
 }
