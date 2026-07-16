@@ -2,18 +2,18 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// « Les chiffres du parc » — the perimeter template (T0, cadrage §4.10).
-// One page per perimeter (Europe / country), FR default = France, EN default
-// = Europe. Layout = validated v1 mock, re-skinned draft-4 (Bricolage display,
-// Chivo text, mono data, navy #102A43). Every stat card: anchor, perimeter
-// badge, n, per-country source line, copy-link. The engine gates what exists;
-// this template only renders what stats.json publishes.
+// « Les chiffres du parc » — perimeter template, layout v2 (mockup validé
+// 2026-07-16) : phrase de section COMPOSÉE au build (plus fort bonus publié
+// + plus forte friction — fragments fixes, zéro relecture par édition),
+// barres de proportion (la couleur porte le bonus/friction, sans étiquette),
+// hiérarchie 1+2 (une dominante + deux secondaires), le reste en dépliant.
+// FR défaut = France, EN défaut = Europe; draft-4 skin (Bricolage/Chivo/mono).
 import "@fontsource/bricolage-grotesque/700.css";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
 import {
-  STATS, T, SECTIONS, HERO_PRIORITY, REGION_NAMES,
-  perimeterKeys, perimeterLabel, statView, fmtPct, fmtInt,
+  STATS, T, SECTIONS, HERO_PRIORITY, REGION_NAMES, STAT_TONE, FRAGMENTS,
+  perimeterKeys, perimeterLabel, statView, composeStory, fmtPct, fmtInt,
   type Lang,
 } from "../config/stats";
 
@@ -49,7 +49,6 @@ const dateFmt = (iso: string | null) => {
 const heroId = HERO_PRIORITY.find((id) => peri.stats[id]) ?? null;
 const hero = heroId ? statView(peri, heroId, lang) : null;
 
-// Perimeter badge for a card: names when few, count when many.
 const totalCountries: number = peri.countries.length;
 const badge = (countries: string[]) => {
   if (countries.length === 1 && countries[0] === "FR" && perimeter === "europe") return t.franceOnly;
@@ -57,19 +56,28 @@ const badge = (countries: string[]) => {
   return t.countriesOn(countries.length, totalCountries);
 };
 
-// Region payload (FR territoire selector) — the pre-computed per-region stats,
-// embedded so the swap is instant and still 100% build-computed.
+const toneClass = (id: string) => `stx-${STAT_TONE[id]?.tone ?? "neutral"}`;
+const barWidth = (pct?: number) => (pct === undefined || pct === null) ? null : Math.max(pct, 1.2);
+
+// Region payload (FR territoire) — per-region values incl. pct (bar width);
+// the story recomposes client-side with the same rule and the same fragments.
+const territoireSec = SECTIONS[0];
 const regions = peri.regions ?? null;
 const regionPayload = regions
   ? Object.fromEntries(Object.entries(regions).map(([slug, r]: [string, any]) => [slug, {
       label: REGION_NAMES[slug] ?? slug,
       n_sites: r.n_sites,
-      stats: Object.fromEntries(SECTIONS[0].stats.map((id) => {
+      stats: Object.fromEntries(territoireSec.stats.map((id) => {
         const v = statView(r, id, lang);
-        return [id, v ? { big: v.big, n: v.n } : { gated: r.gated?.[id] ?? 0 }];
+        return [id, v ? { big: v.big, n: v.n, pct: v.pct ?? null } : { gated: r.gated?.[id] ?? 0 }];
       })),
     }]))
   : null;
+// Fragment mini-map for the client-side recomposition (territoire only).
+const territoireMeta = territoireSec.stats.map((id) => ({
+  id, tone: STAT_TONE[id]?.tone ?? "neutral", inverse: !!STAT_TONE[id]?.inverse,
+  up: FRAGMENTS[id]?.up?.[lang] ?? null, down: FRAGMENTS[id]?.down?.[lang] ?? null,
+}));
 
 const ogFor = (id: string) => `/og/stats/${lang}-${perimeter.toLowerCase()}-${id}.png`;
 const pageOg = heroId ? new URL(ogFor(heroId), Astro.site ?? "https://scoremydatacenter.org").href : undefined;
@@ -83,12 +91,18 @@ const ANCHORS: Record<string, string> = {
   operational_share: "parc-en-service", pipeline: "pipeline-mw", oppositions: "oppositions",
 };
 
-const sectionsToRender = SECTIONS.map((sec) => ({
-  ...sec,
-  cards: sec.stats
+// Hierarchy 1+2: lead card + two stacked secondaries + the rest folded away.
+const sectionsToRender = SECTIONS.map((sec) => {
+  const cards = sec.stats
     .map((id) => ({ id, view: statView(peri, id, lang) }))
-    .filter((c) => c.view),
-})).filter((sec) => sec.cards.length > 0);
+    .filter((c) => c.view);
+  const lead = cards.find((c) => c.id === sec.lead) ?? cards[0] ?? null;
+  const rest = cards.filter((c) => c !== lead);
+  return {
+    ...sec, lead, stackCards: rest.slice(0, 2), moreCards: rest.slice(2),
+    story: composeStory(peri, sec.id, lang),
+  };
+}).filter((sec) => sec.lead);
 ---
 
 <Base
@@ -123,7 +137,7 @@ const sectionsToRender = SECTIONS.map((sec) => ({
     {hero && (
       <div class="stx-hero" id={ANCHORS[heroId!]}>
         <div class="stx-hero-actions">
-          <button class="stx-copy" type="button" data-copy={`${basePath === "/figures" ? "/figures" : basePath}${perimeter === defaultKey ? "" : "/" + perimeter.toLowerCase()}#${ANCHORS[heroId!]}`}>{t.copyLink}</button>
+          <button class="stx-copy" type="button" data-copy={`${pathFor(perimeter)}#${ANCHORS[heroId!]}`}>{t.copyLink}</button>
         </div>
         <p class="stx-kicker">{t.heroKicker}</p>
         <p class="stx-big"><em>{hero.big}</em></p>
@@ -149,10 +163,16 @@ const sectionsToRender = SECTIONS.map((sec) => ({
             </select>
           )}
         </div>
-        <div class="stx-grid" data-section={sec.id}>
-          {sec.cards.map(({ id, view }) => (
-            <article class="stx-stat" id={ANCHORS[id]} data-stat={id}>
+        {sec.story && <p class="stx-story" data-story={sec.id} set:html={sec.story} />}
+        <div class="stx-duo" data-section={sec.id}>
+          {[sec.lead!, ...sec.stackCards].map(({ id, view }, i) => (
+            <article
+              class={`stx-stat ${toneClass(id)} ${i === 0 ? "stx-lead" : ""}`}
+              id={ANCHORS[id]} data-stat={id}>
               <p class="stx-n" data-slot="big">{view!.big}</p>
+              {barWidth(view!.pct) !== null && (
+                <div class="stx-bar" aria-hidden="true"><i data-slot="bar" style={`width:${barWidth(view!.pct)}%`}></i></div>
+              )}
               <p class="stx-f">{view!.phrase}</p>
               <p class="stx-src">
                 <span>{view!.src} · {t.nLabel} <span data-slot="n">{fmtInt(view!.n, lang)}</span>
@@ -166,6 +186,31 @@ const sectionsToRender = SECTIONS.map((sec) => ({
             </article>
           ))}
         </div>
+        {sec.moreCards.length > 0 && (
+          <details class="stx-more">
+            <summary>{t.moreLabel(sec.moreCards.length)}</summary>
+            <div class="stx-grid" data-section-more={sec.id}>
+              {sec.moreCards.map(({ id, view }) => (
+                <article class={`stx-stat ${toneClass(id)}`} id={ANCHORS[id]} data-stat={id}>
+                  <p class="stx-n stx-n-sm" data-slot="big">{view!.big}</p>
+                  {barWidth(view!.pct) !== null && (
+                    <div class="stx-bar" aria-hidden="true"><i data-slot="bar" style={`width:${barWidth(view!.pct)}%`}></i></div>
+                  )}
+                  <p class="stx-f">{view!.phrase}</p>
+                  <p class="stx-src">
+                    <span>{view!.src} · {t.nLabel} <span data-slot="n">{fmtInt(view!.n, lang)}</span>
+                      {view!.excluded > 0 && <> · {t.excludedNote(view!.excluded)}</>}</span>
+                    <span class="stx-srcend">
+                      <span class="stx-badge" data-slot="badge">{badge(view!.countries)}</span>
+                      <button class="stx-copy stx-copy-sm" type="button" data-copy={`${pathFor(perimeter)}#${ANCHORS[id]}`}>⧉</button>
+                    </span>
+                  </p>
+                  <p class="stx-gated" data-slot="gated" hidden></p>
+                </article>
+              ))}
+            </div>
+          </details>
+        )}
       </section>
     ))}
 
@@ -174,19 +219,20 @@ const sectionsToRender = SECTIONS.map((sec) => ({
         <h2 id="stx-methode">{t.sections.methode.title}</h2>
         <span class="stx-sub">{t.sections.methode.sub}</span>
       </div>
+      <p class="stx-story" set:html={t.methodStory} />
       <div class="stx-grid">
         <article class="stx-stat" id="corpus">
-          <p class="stx-n">{fmtInt(peri.n_sites, lang)}</p>
+          <p class="stx-n stx-n-sm">{fmtInt(peri.n_sites, lang)}</p>
           <p class="stx-f">{t.method.corpus(peri.n_sites, totalCountries)}</p>
           <p class="stx-src"><span>{t.method.corpusSrc(STATS.methodology_version, STATS.corpus_date ? dateFmt(STATS.corpus_date) : "")}</span></p>
         </article>
         <article class="stx-stat" id="couverture">
-          <p class="stx-n">{fmtPct(peri.coverage_mean_pct, lang)}</p>
+          <p class="stx-n stx-n-sm">{fmtPct(peri.coverage_mean_pct, lang)}</p>
           <p class="stx-f">{t.method.coverage}</p>
           <p class="stx-src"><span>{t.method.coverageSrc}</span></p>
         </article>
         <article class="stx-stat" id="ouvert">
-          <p class="stx-n">{fmtPct(100, lang)}</p>
+          <p class="stx-n stx-n-sm">{fmtPct(100, lang)}</p>
           <p class="stx-f">{t.method.open}</p>
           <p class="stx-src"><span><a href="https://github.com/bardolfranck/scoremydatacenter" target="_blank" rel="noopener">{t.method.openSrc} ↗</a></span></p>
         </article>
@@ -194,7 +240,7 @@ const sectionsToRender = SECTIONS.map((sec) => ({
     </section>
   </div>
 
-  <script is:inline define:vars={{ regionPayload, copied: t.copied, regionGatedTpl: lang }}>
+  <script is:inline define:vars={{ regionPayload, territoireMeta, copied: t.copied, pageLang: lang }}>
     // Perimeter navigation (static pages — the select is a link).
     document.querySelectorAll("[data-peri-select]").forEach(function (sel) {
       sel.addEventListener("change", function () { window.location.href = sel.value; });
@@ -209,46 +255,77 @@ const sectionsToRender = SECTIONS.map((sec) => ({
         });
       });
     });
-    // Region swap (FR territoire) — all values pre-computed at build.
+    // Region swap (FR territoire) — values pre-computed at build; the story
+    // recomposes with the SAME rule as the build (strongest bonus + friction).
     var regSel = document.querySelector("[data-region-select]");
     if (regSel && regionPayload) {
-      var grid = document.querySelector('[data-section="territoire"]');
-      var initial = {};
-      grid.querySelectorAll("[data-stat]").forEach(function (card) {
-        initial[card.getAttribute("data-stat")] = {
-          big: card.querySelector('[data-slot="big"]').textContent,
-          n: card.querySelector('[data-slot="n"]').textContent,
-          badge: card.querySelector('[data-slot="badge"]').textContent,
-        };
+      var zones = document.querySelectorAll('[data-section="territoire"], [data-section-more="territoire"]');
+      var storyEl = document.querySelector('[data-story="territoire"]');
+      var initial = { story: storyEl ? storyEl.innerHTML : "" };
+      zones.forEach(function (grid) {
+        grid.querySelectorAll("[data-stat]").forEach(function (card) {
+          var bar = card.querySelector('[data-slot="bar"]');
+          initial[card.getAttribute("data-stat")] = {
+            big: card.querySelector('[data-slot="big"]').textContent,
+            n: card.querySelector('[data-slot="n"]').textContent,
+            badge: card.querySelector('[data-slot="badge"]').textContent,
+            bar: bar ? bar.style.width : null,
+          };
+        });
       });
+      function recompose(r) {
+        var bonus = null, friction = null;
+        territoireMeta.forEach(function (m) {
+          var v = r.stats[m.id];
+          if (!v || v.big === undefined || v.pct === null || v.pct === undefined) return;
+          if (m.tone === "good" && m.up) {
+            if (!bonus || v.pct > bonus.score) bonus = { m: m, score: v.pct };
+          } else if (m.tone === "bad" && m.down) {
+            var score = m.inverse ? 100 - v.pct : v.pct;
+            if (!friction || score > friction.score) friction = { m: m, score: score };
+          }
+        });
+        var cap = function (x) { return x.charAt(0).toUpperCase() + x.slice(1); };
+        var joiner = pageLang === "fr" ? " — mais " : " — but ";
+        if (bonus && friction) return '<span class="up">' + cap(bonus.m.up) + "</span>" + joiner + '<span class="down">' + friction.m.down + "</span>.";
+        if (bonus) return '<span class="up">' + cap(bonus.m.up) + "</span>.";
+        if (friction) return '<span class="down">' + cap(friction.m.down) + "</span>.";
+        return "";
+      }
       regSel.addEventListener("change", function () {
         var slug = regSel.value;
-        grid.querySelectorAll("[data-stat]").forEach(function (card) {
-          var id = card.getAttribute("data-stat");
-          var big = card.querySelector('[data-slot="big"]');
-          var n = card.querySelector('[data-slot="n"]');
-          var bdg = card.querySelector('[data-slot="badge"]');
-          var gated = card.querySelector('[data-slot="gated"]');
-          var body = card.querySelector(".stx-f");
-          var src = card.querySelector(".stx-src");
-          if (!slug) {
-            big.textContent = initial[id].big; n.textContent = initial[id].n;
-            bdg.textContent = initial[id].badge;
-            big.hidden = false; body.hidden = false; src.hidden = false; gated.hidden = true;
-            return;
-          }
-          var r = regionPayload[slug];
-          var v = r.stats[id];
-          if (v && v.big !== undefined) {
-            big.textContent = v.big; n.textContent = String(v.n); bdg.textContent = r.label;
-            big.hidden = false; body.hidden = false; src.hidden = false; gated.hidden = true;
-          } else {
-            big.hidden = true; body.hidden = true; src.hidden = true;
-            gated.textContent = (regionGatedTpl === "fr"
-              ? "n insuffisant dans ce périmètre (n=" + (v ? v.gated : 0) + ") — pas de pourcentage sur si peu de sites"
-              : "not enough sites in this perimeter (n=" + (v ? v.gated : 0) + ") — no percentage on so few sites");
-            gated.hidden = false;
-          }
+        var r = slug ? regionPayload[slug] : null;
+        if (storyEl) storyEl.innerHTML = r ? recompose(r) : initial.story;
+        zones.forEach(function (grid) {
+          grid.querySelectorAll("[data-stat]").forEach(function (card) {
+            var id = card.getAttribute("data-stat");
+            var big = card.querySelector('[data-slot="big"]');
+            var n = card.querySelector('[data-slot="n"]');
+            var bdg = card.querySelector('[data-slot="badge"]');
+            var bar = card.querySelector('[data-slot="bar"]');
+            var gated = card.querySelector('[data-slot="gated"]');
+            var body = card.querySelector(".stx-f");
+            var src = card.querySelector(".stx-src");
+            var barBox = card.querySelector(".stx-bar");
+            function show(vals) {
+              big.textContent = vals.big; n.textContent = vals.n; bdg.textContent = vals.badge;
+              if (bar && vals.bar !== null && vals.bar !== undefined) { bar.style.width = vals.bar; if (barBox) barBox.hidden = false; }
+              big.hidden = false; body.hidden = false; src.hidden = false; gated.hidden = true;
+            }
+            if (!r) { show(initial[id]); return; }
+            var v = r.stats[id];
+            if (v && v.big !== undefined) {
+              show({ big: v.big, n: String(v.n), badge: r.label,
+                     bar: v.pct === null ? null : Math.max(v.pct, 1.2) + "%" });
+            } else {
+              big.hidden = true; body.hidden = true; src.hidden = true;
+              if (barBox) barBox.hidden = true;
+              gated.textContent = (pageLang === "fr"
+                ? "n insuffisant dans ce périmètre (n=" + (v ? v.gated : 0) + ") — pas de pourcentage sur si peu de sites"
+                : "not enough sites in this perimeter (n=" + (v ? v.gated : 0) + ") — no percentage on so few sites");
+              gated.hidden = false;
+            }
+          });
         });
       });
     }

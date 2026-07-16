@@ -1531,3 +1531,25 @@ sup a { color: var(--accent); font-weight: 750; }
 }
 .fiche-fleetline { margin: 10px 0 0; font-size: 0.9rem; color: var(--ink-soft); }
 .fiche-fleetline a { color: var(--accent); white-space: nowrap; }
+
+/* ── Chiffres v2 (mockup validé 2026-07-16) : récit composé, barres, 1+2, dépliant ── */
+.stx-story { margin: 14px 0 18px; font-size: 1.12rem; line-height: 1.45; max-width: 56ch; }
+.stx-story .up { color: var(--grade-a, #0b7a4b); font-weight: 700; }
+.stx-story .down { color: #cf6a1c; font-weight: 700; }
+.stx-duo { display: grid; grid-template-columns: 1.6fr 1fr; grid-template-rows: auto auto; gap: 14px; grid-auto-flow: column; }
+.stx-duo .stx-lead { grid-row: span 2; }
+@media (max-width: 720px) { .stx-duo { display: flex; flex-direction: column; } }
+.stx-lead { padding: 24px 26px 16px; background: var(--wash); }
+.stx-lead .stx-n { font-size: 4rem; }
+.stx-lead .stx-f { font-size: 1.02rem; }
+.stx-bar { height: 7px; border-radius: 4px; background: var(--line); margin: 6px 0 4px; overflow: hidden; }
+.stx-bar i { display: block; height: 100%; border-radius: 4px; background: #5a7ca6; transition: width 0.35s ease; }
+.stx-good .stx-bar i { background: var(--grade-a, #0b7a4b); }
+.stx-bad .stx-bar i { background: #cf6a1c; }
+.stx-more { margin-top: 12px; }
+.stx-more summary { cursor: pointer; font-size: 0.86rem; color: var(--muted); font-weight: 600; padding: 8px 2px; list-style: none; }
+.stx-more summary::-webkit-details-marker { display: none; }
+.stx-more summary::before { content: "▸ "; }
+.stx-more[open] summary::before { content: "▾ "; }
+.stx-more .stx-grid { margin-top: 8px; }
+.stx-n-sm { font-size: 1.7rem; }

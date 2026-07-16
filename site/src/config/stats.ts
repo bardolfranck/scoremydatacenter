@@ -162,11 +162,79 @@ export const PHRASES: Record<string, { fr: string; en: string }> = {
 
 /** Page structure — four question-sections, each pairing at least one
  * flattering stat with one uncomfortable one (the neutrality signature). */
-export const SECTIONS: { id: string; stats: string[] }[] = [
-  { id: "territoire", stats: ["soil_artificialized", "water_stress_high", "grid_saturated", "grid_queue_critical", "protected_area_close", "seveso_high_2km"] },
-  { id: "transparence", stats: ["power_disclosed", "pue_published", "heat_reuse"] },
-  { id: "dynamique", stats: ["operational_share", "pipeline", "oppositions"] },
+export const SECTIONS: { id: string; lead: string; stats: string[] }[] = [
+  { id: "territoire", lead: "grid_saturated", stats: ["grid_saturated", "soil_artificialized", "water_stress_high", "grid_queue_critical", "protected_area_close", "seveso_high_2km"] },
+  { id: "transparence", lead: "pue_published", stats: ["pue_published", "power_disclosed", "heat_reuse"] },
+  { id: "dynamique", lead: "pipeline", stats: ["pipeline", "operational_share", "oppositions"] },
 ];
+
+/** Editorial tone — the colour of the proportion bar (green/orange/blue),
+ * never a label: the neutrality signature stays visual (Franck 2026-07-16).
+ * `inverse` marks shares whose NUMERATOR is the virtue: their friction
+ * intensity is 100−pct (0.8 % publishing PUE = a 99.2-strong friction). */
+export const STAT_TONE: Record<string, { tone: "good" | "bad" | "neutral"; inverse?: boolean }> = {
+  soil_artificialized: { tone: "good" }, water_no_stress: { tone: "good" },
+  power_disclosed: { tone: "good" }, operational_share: { tone: "good" },
+  grid_saturated: { tone: "bad" }, grid_queue_critical: { tone: "bad" },
+  water_stress_high: { tone: "bad" }, protected_area_close: { tone: "bad" },
+  seveso_high_2km: { tone: "bad" },
+  pue_published: { tone: "bad", inverse: true }, heat_reuse: { tone: "bad", inverse: true },
+  pipeline: { tone: "neutral" }, oppositions: { tone: "neutral" },
+};
+
+/** Story fragments — written ONCE per stat (like the punch phrases), then the
+ * section phrase is COMPOSED at build: strongest published bonus + strongest
+ * friction, "X — mais Y." Deterministic, per perimeter, per language. */
+export const FRAGMENTS: Record<string, { up?: { fr: string; en: string }; down?: { fr: string; en: string } }> = {
+  soil_artificialized: { up: { fr: "le parc s'est construit sur des sols déjà pris", en: "the fleet was built on land already taken" } },
+  water_no_stress: { up: { fr: "la plupart des sites échappent au stress hydrique", en: "most sites escape water stress" } },
+  power_disclosed: { up: { fr: "les opérateurs disent leur puissance", en: "operators disclose their capacity" } },
+  operational_share: { up: { fr: "le parc suivi tourne déjà", en: "the tracked fleet is already running" } },
+  grid_saturated: { down: { fr: "il s'est branché sur un réseau qui n'a plus de place", en: "it plugged into a grid with no room left" } },
+  grid_queue_critical: { down: { fr: "les files d'attente de raccordement s'allongent", en: "connection queues keep growing" } },
+  water_stress_high: { down: { fr: "une partie du parc puise dans des bassins déjà sous tension", en: "part of the fleet draws from basins already under stress" } },
+  protected_area_close: { down: { fr: "beaucoup jouxtent des espaces naturels protégés", en: "many border protected natural areas" } },
+  seveso_high_2km: { down: { fr: "certains voisinent des sites industriels à haut risque", en: "some neighbour high-hazard industrial sites" } },
+  pue_published: { down: { fr: "presque aucun ne prouve ses performances", en: "almost none proves its performance" } },
+  heat_reuse: { down: { fr: "la chaleur part en l'air presque partout", en: "the heat is wasted almost everywhere" } },
+  pipeline: { down: { fr: "ce qui s'annonce ne dit pas toujours sa puissance", en: "what's coming doesn't always state its capacity" } },
+};
+
+const _esc = (x: string) => x.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+/** Composed section phrase — HTML with .up/.down spans, or null when the
+ * perimeter publishes neither side. Rule: among the section's published
+ * stats, strongest bonus (max pct) + strongest friction (max pct, or
+ * 100−pct for `inverse` shares; a pipeline with silent projects counts). */
+export function composeStory(peri: any, sectionId: string, lang: Lang): string | null {
+  const sec = SECTIONS.find((s) => s.id === sectionId);
+  if (!sec) return null;
+  let bonus: { id: string; score: number } | null = null;
+  let friction: { id: string; score: number } | null = null;
+  for (const id of sec.stats) {
+    const view = statView(peri, id, lang);
+    if (!view) continue;
+    const meta = STAT_TONE[id];
+    if (meta.tone === "good" && FRAGMENTS[id]?.up) {
+      const score = view.pct ?? 0;
+      if (!bonus || score > bonus.score) bonus = { id, score };
+    } else if (meta.tone === "bad" && FRAGMENTS[id]?.down) {
+      const score = meta.inverse ? 100 - (view.pct ?? 0) : (view.pct ?? 0);
+      if (!friction || score > friction.score) friction = { id, score };
+    } else if (id === "pipeline" && FRAGMENTS.pipeline?.down) {
+      const p = peri.stats?.pipeline;
+      if (p && p.mw_undisclosed_n > 0 && !friction) friction = { id, score: 0 };
+    }
+  }
+  const up = bonus ? _esc(FRAGMENTS[bonus.id].up![lang]) : null;
+  const down = friction ? _esc(FRAGMENTS[friction.id].down![lang]) : null;
+  const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
+  const joiner = lang === "fr" ? " — mais " : " — but ";
+  if (up && down) return `<span class="up">${cap(up)}</span>${joiner}<span class="down">${down}</span>.`;
+  if (up) return `<span class="up">${cap(up)}</span>.`;
+  if (down) return `<span class="down">${cap(down)}</span>.`;
+  return null;
+}
 
 /** LE chiffre — the single huge number on top; first available wins. */
 export const HERO_PRIORITY = ["grid_saturated", "water_stress_high", "soil_artificialized", "power_disclosed"];
@@ -195,6 +263,8 @@ export const T = {
       methode: { title: "La méthode, en chiffres", sub: "d'où viennent ces nombres" },
     },
     regionAll: "France entière",
+    moreLabel: (n: number) => `Tous les chiffres (${n} de plus)`,
+    methodStory: '<span class="up">Aucun chiffre de cette page n\'est déclaratif : tout est recalculé site par site</span> — et quand la donnée manque, <span class="down">le chiffre le dit</span>.',
     regionAria: "Filtrer le territoire par région",
     regionGated: (n: number) => `n insuffisant dans ce périmètre (n=${n}) — pas de pourcentage sur si peu de sites`,
     franceOnly: "France seulement",
@@ -234,6 +304,8 @@ export const T = {
       methode: { title: "The method, in figures", sub: "where these numbers come from" },
     },
     regionAll: "All of France",
+    moreLabel: (n: number) => `All the figures (${n} more)`,
+    methodStory: '<span class="up">Nothing on this page is declarative: everything is recomputed site by site</span> — and when data is missing, <span class="down">the figure says so</span>.',
     regionAria: "Filter the territory by region",
     regionGated: (n: number) => `not enough sites in this perimeter (n=${n}) — no percentage on so few sites`,
     franceOnly: "France only",
@@ -269,7 +341,7 @@ export function statView(peri: any, id: string, lang: Lang) {
     const op = peri.by_status?.operational ?? 0;
     const pct = peri.n_sites ? Math.round((1000 * op) / peri.n_sites) / 10 : 0;
     return {
-      big: fmtPct(pct, lang), phrase: PHRASES[id][lang],
+      big: fmtPct(pct, lang), pct, phrase: PHRASES[id][lang],
       n: peri.n_sites, countries: peri.countries, excluded: 0,
       src: sourceLine(id, peri.countries, lang),
     };
@@ -279,7 +351,7 @@ export function statView(peri: any, id: string, lang: Lang) {
   if (s.kind === "share") {
     const excluded = Object.values(s.excluded as Record<string, number>).reduce((a: number, b: number) => a + b, 0);
     return {
-      big: fmtPct(s.pct, lang), phrase: PHRASES[id][lang],
+      big: fmtPct(s.pct, lang), pct: s.pct, phrase: PHRASES[id][lang],
       n: s.n, countries: s.countries, excluded,
       src: sourceLine(id, s.countries, lang),
     };
@@ -290,13 +362,13 @@ export function statView(peri: any, id: string, lang: Lang) {
       phrase: PHRASES[id][lang]
         .replace("{projects}", String(s.projects))
         .replace("{undisclosed}", String(s.mw_undisclosed_n)),
-      n: s.projects, countries: s.countries, excluded: 0,
+      n: s.projects, pct: undefined, countries: s.countries, excluded: 0,
       src: sourceLine(id, s.countries, lang),
     };
   }
   if (s.kind === "watchlist") {
     return {
-      big: fmtInt(s.entries, lang), phrase: PHRASES[id][lang],
+      big: fmtInt(s.entries, lang), pct: undefined, phrase: PHRASES[id][lang],
       n: s.entries, countries: s.countries, excluded: 0,
       src: sourceLine(id, s.countries, lang),
     };
