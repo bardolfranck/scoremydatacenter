@@ -7,6 +7,7 @@
 import Base from "../layouts/Base.astro";
 import ScoreBadge from "./ScoreBadge.astro";
 import AboutSection from "./AboutSection.astro";
+import FeedbackBand from "./FeedbackBand.astro";
 import MapIsland from "./MapIsland.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -436,6 +437,8 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       })}
     />
   </section>
+
+  <FeedbackBand lang={lang} />
 
   <section class="contact-band" id="contact">
     <h2>{t.contactTitle}</h2>

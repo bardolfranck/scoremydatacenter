@@ -1,0 +1,102 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Ultra-light testimonial form ("Votre avis"). The visitor never sees Google:
+// the form POSTs straight to a Google Form backend (responses land in Franck's
+// account); testimonials are only ever published manually, with the explicit
+// consent checkbox ticked. Honeypot field for bots; no cookie, no tracker.
+interface Props {
+  lang: "en" | "fr";
+}
+const { lang } = Astro.props;
+
+const FORM_ACTION =
+  "https://docs.google.com/forms/d/e/1FAIpQLScJTzPxnAj7oyrnuUZ9hrg6W_gRksnDYJzOh2aRsk55lN3vJw/formResponse";
+const ENTRY = { useful: "entry.1688955439", missing: "entry.2059619893", name: "entry.1441381114", consent: "entry.1483875603" };
+const CONSENT_VALUE =
+  "J'accepte que ce témoignage soit publié sur scoremydatacenter.org avec mon nom et ma fonction";
+
+const t = lang === "fr" ? {
+  kicker: "Votre avis",
+  title: "Notre travail vous est utile ? Dites-le. Il manque quelque chose ? Dites-le aussi.",
+  usefulLabel: "Qu'est-ce qui vous est utile dans ScoreMyDataCenter ?",
+  usefulHint: "La carte, une note, la méthode, un rapport… dites-le avec vos mots.",
+  missingLabel: "Et qu'est-ce qui vous manque ?",
+  missingHint: "facultatif",
+  nameLabel: "Votre nom et votre fonction",
+  namePlaceholder: "Ex. : Marie Dupont, élue municipale",
+  consentLabel: "J'accepte que ce témoignage soit publié avec mon nom et ma fonction.",
+  consentNote: "Sans cette case, votre message nous parvient quand même — il reste privé.",
+  submit: "Envoyer",
+  thanks: "Merci ! Votre avis est bien parti — nous lisons tout.",
+  error: "L'envoi a échoué. Réessayez, ou écrivez-nous : contact@scoremydatacenter.org",
+} : {
+  kicker: "Your feedback",
+  title: "Is our work useful to you? Say it. Is something missing? Say that too.",
+  usefulLabel: "What do you find useful in ScoreMyDataCenter?",
+  usefulHint: "The map, a grade, the method, a report… in your own words.",
+  missingLabel: "And what's missing?",
+  missingHint: "optional",
+  nameLabel: "Your name and role",
+  namePlaceholder: "E.g.: Marie Dupont, city councillor",
+  consentLabel: "I agree that this testimonial may be published with my name and role.",
+  consentNote: "Without this box your message still reaches us — it just stays private.",
+  submit: "Send",
+  thanks: "Thank you! Your feedback is on its way — we read everything.",
+  error: "Sending failed. Try again, or write to us: contact@scoremydatacenter.org",
+};
+---
+
+<section class="feedback-band" aria-labelledby="feedback-title">
+  <div class="section-inner">
+    <div class="feedback-card">
+      <p class="hero-eyebrow">{t.kicker}</p>
+      <h2 id="feedback-title" class="feedback-title">{t.title}</h2>
+      <form class="feedback-form" method="POST" action={FORM_ACTION} data-feedback>
+        <label class="fb-label">
+          <span>{t.usefulLabel} <span class="fb-hint">{t.usefulHint}</span></span>
+          <textarea name={ENTRY.useful} rows="3" required></textarea>
+        </label>
+        <label class="fb-label">
+          <span>{t.missingLabel} <span class="fb-hint">({t.missingHint})</span></span>
+          <textarea name={ENTRY.missing} rows="2"></textarea>
+        </label>
+        <label class="fb-label">
+          <span>{t.nameLabel}</span>
+          <input type="text" name={ENTRY.name} placeholder={t.namePlaceholder} required />
+        </label>
+        <label class="fb-consent">
+          <input type="checkbox" name={ENTRY.consent} value={CONSENT_VALUE} />
+          <span>{t.consentLabel} <span class="fb-hint">{t.consentNote}</span></span>
+        </label>
+        <!-- honeypot: real visitors never fill this -->
+        <input type="text" name="website" class="fb-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+        <div class="fb-actions">
+          <button class="button button-primary" type="submit">{t.submit}</button>
+        </div>
+        <p class="fb-thanks" hidden>{t.thanks}</p>
+        <p class="fb-error" hidden>{t.error}</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function () {
+    document.querySelectorAll("form[data-feedback]").forEach(function (form) {
+      form.addEventListener("submit", function (ev) {
+        ev.preventDefault();
+        if (form.querySelector(".fb-hp").value) return; // bot
+        var data = new FormData(form);
+        data.delete("website");
+        fetch(form.action, { method: "POST", mode: "no-cors", body: new URLSearchParams(data) })
+          .then(function () {
+            form.querySelectorAll(".fb-label, .fb-consent, .fb-actions").forEach(function (el) { el.hidden = true; });
+            form.querySelector(".fb-thanks").hidden = false;
+          })
+          .catch(function () { form.querySelector(".fb-error").hidden = false; });
+      });
+    });
+  })();
+</script>
