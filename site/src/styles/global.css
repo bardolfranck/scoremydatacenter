@@ -1553,3 +1553,6 @@ sup a { color: var(--accent); font-weight: 750; }
 .stx-more[open] summary::before { content: "▾ "; }
 .stx-more .stx-grid { margin-top: 8px; }
 .stx-n-sm { font-size: 1.7rem; }
+.stx-sechead h2 { display: inline-flex; align-items: center; gap: 9px; }
+.stx-sec-ic { display: inline-flex; color: var(--accent, #0f5fb8); }
+.stx-sec-ic svg { display: block; }

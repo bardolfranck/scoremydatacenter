@@ -11,6 +11,10 @@
 import "@fontsource/bricolage-grotesque/700.css";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
+import iconMap from "@phosphor-icons/core/assets/regular/map-trifold.svg?raw";
+import iconLens from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
+import iconTrend from "@phosphor-icons/core/assets/regular/chart-line-up.svg?raw";
+import iconCalc from "@phosphor-icons/core/assets/regular/calculator.svg?raw";
 import {
   STATS, T, SECTIONS, HERO_PRIORITY, REGION_NAMES, STAT_TONE, FRAGMENTS,
   perimeterKeys, perimeterLabel, statView, composeStory, fmtPct, fmtInt,
@@ -82,6 +86,11 @@ const territoireMeta = territoireSec.stats.map((id) => ({
 const ogFor = (id: string) => `/og/stats/${lang}-${perimeter.toLowerCase()}-${id}.png`;
 const pageOg = heroId ? new URL(ogFor(heroId), Astro.site ?? "https://scoremydatacenter.org").href : undefined;
 
+// Section icons — same Phosphor family as the fiche pillars & the ia-chain.
+const SECTION_ICON: Record<string, string> = { territoire: iconMap, transparence: iconLens, dynamique: iconTrend, methode: iconCalc };
+const secIcon = (id: string) =>
+  (SECTION_ICON[id] ?? "").replace("<svg", '<svg width="22" height="22" fill="currentColor" aria-hidden="true"');
+
 const ANCHORS: Record<string, string> = {
   grid_saturated: "reseau-sature", grid_queue_critical: "file-attente",
   water_stress_high: "stress-hydrique", water_no_stress: "sans-stress",
@@ -152,7 +161,7 @@ const sectionsToRender = SECTIONS.map((sec) => {
     {sectionsToRender.map((sec) => (
       <section class="stx-section" aria-labelledby={`stx-${sec.id}`}>
         <div class="stx-sechead">
-          <h2 id={`stx-${sec.id}`}>{(t.sections as any)[sec.id].title}</h2>
+          <h2 id={`stx-${sec.id}`}><span class="stx-sec-ic" aria-hidden="true" set:html={secIcon(sec.id)}></span>{(t.sections as any)[sec.id].title}</h2>
           <span class="stx-sub">{(t.sections as any)[sec.id].sub}</span>
           {sec.id === "territoire" && regionPayload && (
             <select class="stx-region" aria-label={t.regionAria} data-region-select>
@@ -216,7 +225,7 @@ const sectionsToRender = SECTIONS.map((sec) => {
 
     <section class="stx-section" aria-labelledby="stx-methode">
       <div class="stx-sechead">
-        <h2 id="stx-methode">{t.sections.methode.title}</h2>
+        <h2 id="stx-methode"><span class="stx-sec-ic" aria-hidden="true" set:html={secIcon("methode")}></span>{t.sections.methode.title}</h2>
         <span class="stx-sub">{t.sections.methode.sub}</span>
       </div>
       <p class="stx-story" set:html={t.methodStory} />
