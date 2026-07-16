@@ -16,11 +16,12 @@ interface Props {
   familyLabel: string;
   themeLabel?: string;
   digestTag: string;
-  fromLabel: string; // « dès » / "from"
+  reportLabel: string; // « Rapport complet » / "Full report"
+  soonLabel: string; // disabled-button tooltip
   fictionalTag: string;
   langTitle: string; // tooltip: the native+EN language rule, spelled out
 }
-const { brief, lang, num, familyLabel, themeLabel, digestTag, fromLabel, fictionalTag, langTitle } = Astro.props;
+const { brief, lang, num, familyLabel, themeLabel, digestTag, reportLabel, soonLabel, fictionalTag, langTitle } = Astro.props;
 const tint = coverField(brief);
 const kicker = themeLabel ? `${familyLabel} · ${themeLabel}` : familyLabel;
 const langs = briefLanguages(brief);
@@ -48,9 +49,7 @@ const langs = briefLanguages(brief);
     </div>
   </div>
   <footer class="lib-card-foot">
-    <span class="lib-tag-digest">{digestTag}</span>
-    <span class="lib-price">
-      {brief.priceFromEur ? `${fromLabel} ${brief.priceFromEur.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB")} €` : "—"}
-    </span>
+    <button class="button button-secondary lib-card-btn" type="button" disabled title={soonLabel}>{digestTag}</button>
+    <button class="button button-secondary lib-card-btn" type="button" disabled title={soonLabel}>{reportLabel}</button>
   </footer>
 </article>

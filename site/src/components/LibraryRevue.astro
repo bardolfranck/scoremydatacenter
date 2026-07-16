@@ -48,9 +48,24 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
       <div class="lib-flag-cover" style={`background:${coverField(FLAGSHIP)}`}>
         {/* white wordmark variant of the house logo — the dark tile icon would
             vanish on the navy cover; the grade bars carry the identity */}
-        <svg class="lib-flag-cover-logo" viewBox="0 0 404 40" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ScoreMyDataCenter">
-          <text x="0" y="24" font-family="'Avenir Next','Segoe UI',system-ui,sans-serif" font-size="26" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Score<tspan fill="#9fb3c8">My</tspan>DataCenter</text>
-          <g><rect x="1" y="32" width="50" height="4.5" rx="1.6" fill="#0B7A4B"/><rect x="54" y="32" width="50" height="4.5" rx="1.6" fill="#6FA032"/><rect x="107" y="32" width="50" height="4.5" rx="1.6" fill="#DFA918"/><rect x="160" y="32" width="50" height="4.5" rx="1.6" fill="#CF6A1C"/><rect x="213" y="32" width="50" height="4.5" rx="1.6" fill="#BF3B21"/></g>
+        <svg class="lib-flag-cover-logo" viewBox="0 0 448 42" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ScoreMyDataCenter">
+          {/* the house icon, cover variant: white rack + grade bars (no tile — it would vanish on the navy field) */}
+          <g transform="translate(0,1)">
+            <rect x="0" y="6" width="7" height="19" rx="1.8" fill="#ffffff" opacity="0.85"/>
+            <rect x="25" y="6" width="7" height="19" rx="1.8" fill="#ffffff" opacity="0.85"/>
+            <rect x="9.5" y="0" width="13" height="25" rx="2.2" fill="#ffffff"/>
+            <rect x="12.5" y="4.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
+            <rect x="12.5" y="9.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
+            <rect x="12.5" y="14.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
+            <rect x="12.5" y="19.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
+            <rect x="0" y="28" width="5.4" height="3.8" rx="1.3" fill="#0B7A4B"/>
+            <rect x="6.7" y="28" width="5.4" height="3.8" rx="1.3" fill="#6FA032"/>
+            <rect x="13.4" y="28" width="5.4" height="3.8" rx="1.3" fill="#DFA918"/>
+            <rect x="20.1" y="28" width="5.4" height="3.8" rx="1.3" fill="#CF6A1C"/>
+            <rect x="26.8" y="28" width="5.4" height="3.8" rx="1.3" fill="#BF3B21"/>
+          </g>
+          <text x="44" y="25" font-family="'Avenir Next','Segoe UI',system-ui,sans-serif" font-size="26" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Score<tspan fill="#9fb3c8">My</tspan>DataCenter</text>
+          <g><rect x="45" y="33" width="50" height="4.5" rx="1.6" fill="#0B7A4B"/><rect x="98" y="33" width="50" height="4.5" rx="1.6" fill="#6FA032"/><rect x="151" y="33" width="50" height="4.5" rx="1.6" fill="#DFA918"/><rect x="204" y="33" width="50" height="4.5" rx="1.6" fill="#CF6A1C"/><rect x="257" y="33" width="50" height="4.5" rx="1.6" fill="#BF3B21"/></g>
         </svg>
         <p class="lib-flag-cover-title">{FLAGSHIP.title[lang]}</p>
         <p class="lib-flag-cover-year">{FLAGSHIP.date.slice(0, 4)}</p>
@@ -95,7 +110,6 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
           </div>
           <div class="lib-dl-row">
             <span class="lib-dl-name">{t.dlReport}</span>
-            <a class="button button-primary" href={contactPath}>{t.ctaOrder}</a>
             <button class="button button-secondary" type="button" disabled title={t.dlSoon}>{t.dlBtn}</button>
           </div>
         </div>
@@ -120,7 +134,8 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
           familyLabel={t.familyLabels[brief.family]}
           themeLabel={brief.theme ? t.themeLabels[brief.theme] : undefined}
           digestTag={t.digestTag}
-          fromLabel={t.fromLabel}
+          reportLabel={t.dlReport}
+          soonLabel={t.dlSoon}
           fictionalTag={t.fictionalTag}
           langTitle={t.langTitle}
         />
@@ -135,7 +150,8 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
           num={num(THEME_BRIEFS.length + i)}
           familyLabel={t.familyLabels[brief.family]}
           digestTag={t.digestTag}
-          fromLabel={t.fromLabel}
+          reportLabel={t.dlReport}
+          soonLabel={t.dlSoon}
           fictionalTag={t.fictionalTag}
           langTitle={t.langTitle}
         />
