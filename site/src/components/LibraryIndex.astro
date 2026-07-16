@@ -10,7 +10,7 @@
 // as the ranking. MOCKUP: lorem-Latin entries, fictional dates and prices.
 import Base from "../layouts/Base.astro";
 import LibraryTeaser from "./LibraryTeaser.astro";
-import { BRIEFS_BY_DATE, briefLanguages, coverField, LANG_FLAGS } from "../config/library";
+import { BRIEFS_BY_DATE, briefLanguages, coverField, LANG_FLAGS , hookText} from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
 const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
@@ -80,7 +80,7 @@ const fmtDate = (iso: string) =>
                 {" · "}<time datetime={brief.date}>{fmtDate(brief.date)}</time>
               </p>
               <h2 class="lib-entry-title">{brief.title[lang]}</h2>
-              <p class="lib-entry-hook">{brief.hook}</p>
+              <p class="lib-entry-hook">{hookText(brief.hook, lang)}</p>
             </div>
             <div class="lib-entry-meta">
               <LibraryTeaser kind={brief.teaser} tint={coverField(brief)} />
