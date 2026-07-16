@@ -108,6 +108,13 @@ methodology-doc:
 prod-artifacts:
 	uv run python scripts/build_prod_artifacts.py
 
+# Deploy the built site to Cloudflare Pages (direct upload — the prod build needs
+# the private newsroom, so it happens HERE, never in a public-repo CI).
+# One-time setup: `cd site && npx wrangler login` (Franck's Cloudflare account).
+# Soft-launch doctrine (2026-07-16): the noindex meta stays until Franck lifts it.
+deploy: build
+	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
+
 # Regenerate the downloadable one-pager PDFs from the built pages.
 # Run after ANY change to site/src/content/questions.ts, then commit the PDFs.
 onepager:
