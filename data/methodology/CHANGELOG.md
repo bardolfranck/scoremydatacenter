@@ -2,6 +2,14 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0 (metadata note) — 2026-07-15 — fill `published_at` (zero scoring change)
+
+- `published_at: null → "2026-07-14"` — the freeze date. The git tag `v0.1.0` remains the primary
+  timestamped proof of anteriority (as stated in the FREEZE entry); this fills the schema field so
+  the published grid carries its own date, matching the site's "public, versioned and dated" claim.
+  No weight, threshold, indicator or version change; grades are byte-identical.
+- Signatory: metadata completion on Franck Bardol's instruction (2026-07-15), working session (Claude).
+
 ## 0.1.0 — 2026-07-14 — FREEZE
 
 The grid is frozen exactly as calibrated through draft revisions (a)-(i) — **zero scoring change in this entry**: every grade in the corpus is byte-identical before and after the freeze (only version strings move). What the freeze changes is the standing of the grid:
