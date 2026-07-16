@@ -1,0 +1,43 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// 404 — without this file, Cloudflare Pages soft-200s every unknown route to
+// the home page (retired fiches looked alive). Bilingual, links to the maps.
+import Base from "../layouts/Base.astro";
+import { EN_NAV } from "../config/nav";
+---
+
+<Base
+  lang="en"
+  title="Page not found — ScoreMyDataCenter"
+  description="This page does not exist or is no longer published."
+  tagline="Independent observatory"
+  altHref="/fr/"
+  altLabel="🇫🇷 FR"
+  nav={EN_NAV}
+>
+  <div class="nf">
+    <p class="nf-code">404</p>
+    <h1>Page not found · Page introuvable</h1>
+    <p class="nf-body">
+      This page does not exist or is no longer published — projects can leave the
+      corpus when the facts change.<br />
+      Cette page n'existe pas ou n'est plus publiée — un projet peut quitter le
+      corpus quand les faits changent.
+    </p>
+    <p class="nf-links">
+      <a class="button button-primary" href="/map">Map / Carte</a>
+      <a class="button button-secondary" href="/ranking">Ranking</a>
+      <a class="button button-secondary" href="/fr/classement">Classement</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  .nf { max-width: 640px; margin: 0 auto; padding: 70px 20px 90px; text-align: center; }
+  .nf-code { margin: 0; font-family: var(--font-mono); font-size: 3.4rem; font-weight: 700; color: var(--muted); }
+  .nf h1 { margin: 4px 0 12px; font-size: 1.5rem; }
+  .nf-body { color: var(--ink-soft); line-height: 1.6; }
+  .nf-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+</style>
