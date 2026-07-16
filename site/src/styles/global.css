@@ -1460,3 +1460,8 @@ sup a { color: var(--accent); font-weight: 750; }
 .lib-dl-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .lib-dl-name { flex: 1; min-width: 120px; font-weight: 750; color: var(--ink); font-size: 0.92rem; }
 .button[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+/* Flagship cover (Franck 2026-07-16): the white wordmark logo replaces the
+   kicker; the edition year sits under the title. */
+.lib-flag-cover-logo { width: 78%; height: auto; display: block; }
+.lib-flag-cover-year { margin-top: 10px; font-family: var(--font-mono); font-size: 1.05rem; font-weight: 600; letter-spacing: 0.22em; color: #9fb3c8; }
