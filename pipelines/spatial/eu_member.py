@@ -56,6 +56,7 @@ def _corine_f2(ctx, prov):
 
 
 def make_eu_member_spec(iso: str, *, e1: bool = True, natura: bool = True, f1_cdda: bool = False,
+                        f2=None,
                         l3_ied: bool = False, extra_collectors: list | None = None,
                         summary: dict | None = None, extra_gaps: dict | None = None) -> dict:
     """The standard EU/EEA-member spatial spec, parameterized by ISO code (see module docstring).
@@ -89,7 +90,9 @@ def make_eu_member_spec(iso: str, *, e1: bool = True, natura: bool = True, f1_cd
     elif f1_cdda:
         collectors.append((("F1",),
             lambda ctx, prov: [x] if (x := eu.cdda_rings(ctx["lat"], ctx["lon"], ctx["accessed"])) else []))
-    collectors.append((("F2",), _corine_f2))
+    # F2 defaults to Corine (EU-wide land cover). A country with real LEGAL zoning passes its own
+    # collector here — better evidence, same slot, no clone (CH: ARE parcel-level building zones).
+    collectors.append((("F2",), f2 or _corine_f2))
     if l3_ied:
         collectors.append((("L3",),
             lambda ctx, prov: [x] if (x := eu.collect_l3_ied_seveso(ctx["lat"], ctx["lon"], ctx["accessed"])) else []))
