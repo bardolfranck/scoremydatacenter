@@ -105,8 +105,17 @@ methodology-doc:
 # Rebuild the SERVED artifacts from the private newsroom (real DCs + watchlist),
 # NOT the public zz- fixtures. Use this — never `make score` — to refresh the site
 # data; `make score` reads the public repo and would wipe the corpus to 2 test DCs.
+# WORKFLOW (brief 9-img-sat, A-28) : toute nouvelle fiche reçoit sa photo
+# satellite AUTOMATIQUEMENT au build de prod — génération idempotente (skip si
+# déjà sur R2), non fatale (le build n'échoue jamais pour une image), politesse
+# réseau. Secret HMAC + base URL : ~/.smdc/media.env (hors repos).
 prod-artifacts:
 	uv run python scripts/build_prod_artifacts.py
+	-@if [ -f $$HOME/.smdc/media.env ]; then 	  set -a; . $$HOME/.smdc/media.env; set +a; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
+
+# Génération/upload manuel des photos satellite (mêmes règles, à la demande).
+media-sat:
+	@set -a; . $$HOME/.smdc/media.env; set +a; 	uv run python -m pipelines.media.satellite --upload
 
 # Deploy the built site to Cloudflare Pages (direct upload — the prod build needs
 # the private newsroom, so it happens HERE, never in a public-repo CI).

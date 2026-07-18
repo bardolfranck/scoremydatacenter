@@ -14,6 +14,7 @@ drafts) — use `make score` / `make validate` for the public fixtures.
     NEWSROOM_CAL=/path make prod-artifacts
 """
 
+import json
 import os
 import sys
 from pathlib import Path
@@ -24,6 +25,42 @@ from engine.artifacts import build_artifacts
 from engine.core import ARTIFACTS_DIR, load_datacenters, load_methodology, load_watchlist
 
 CAL = Path(os.environ.get("NEWSROOM_CAL", Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
+
+# Media env (HMAC secret + public base URL) lives OUTSIDE both repos —
+# ~/.smdc/media.env — loaded here so `make prod-artifacts` just works.
+_MEDIA_ENV = Path.home() / ".smdc" / "media.env"
+if _MEDIA_ENV.is_file():
+    for line in _MEDIA_ENV.read_text().splitlines():
+        if "=" in line and not line.startswith("#"):
+            k, _, v = line.partition("=")
+            os.environ.setdefault(k.strip(), v.strip())
+
+
+def patch_satellite_images() -> int:
+    """Brief 9-img-sat: every fiche artifact gets its satellite_image
+    {url, thumb, credit} — URL derived from the frozen id + HMAC secret
+    (A-28 non-enumerable keys). Only when the media env is configured;
+    the engine build and the golden never see this."""
+    secret = os.environ.get("SMDC_MEDIA_SECRET")
+    base = (os.environ.get("SMDC_MEDIA_BASE") or "").rstrip("/")
+    if not secret or not base:
+        return 0
+    from engine.core import write_json
+    from pipelines.media.satellite import media_key
+    patched = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        if d["id"].startswith("zz-"):
+            continue
+        key = media_key(d["id"], secret)
+        d["satellite_image"] = {
+            "url": f"{base}/{key}",
+            "thumb": f"{base}/{key.replace('.webp', '-thumb.webp')}",
+            "credit": "Esri, Maxar, Earthstar Geographics",
+        }
+        write_json(f, d)
+        patched += 1
+    return patched
 
 
 def main() -> int:
@@ -48,6 +85,11 @@ def main() -> int:
                 if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"})
     print(f"prod-artifacts: {len(dcs)} DC + {len(watchlist)} watchlist entries → {ARTIFACTS_DIR}")
     print(f"prod-artifacts: exposure — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
+    patched = patch_satellite_images()
+    if patched:
+        print(f"prod-artifacts: satellite_image patched on {patched} fiches (media env configured)")
+    else:
+        print("prod-artifacts: satellite_image skipped (SMDC_MEDIA_SECRET/BASE not set — see ~/.smdc/media.env)")
     return 0
 
 
