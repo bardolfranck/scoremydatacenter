@@ -24,3 +24,4 @@ site/public/data/
 
 # pipeline HTTP cache (local runs)
 .cache/
+.media-sat/

@@ -1625,3 +1625,8 @@ sup a { color: var(--accent); font-weight: 750; }
 .stx-gchips b { font-family: "Bricolage Grotesque", var(--font-sans); font-size: 1.2rem; display: block; color: var(--ink); }
 .stx-gline { margin: 14px 0 8px; font-weight: 750; font-size: 0.95rem; }
 .stx-indband { margin-top: 34px; background: #102a43; color: #dfe8f3; border-radius: 10px; padding: 14px 20px; font-size: 0.88rem; }
+
+/* ── Vignette satellite de fiche (brief 9-img-sat, A-28) ── */
+.fiche-sat { margin: 0 0 14px; }
+.fiche-sat img { width: 100%; height: auto; border-radius: 9px; border: 1px solid var(--line); display: block; }
+.fiche-sat figcaption { margin-top: 5px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
