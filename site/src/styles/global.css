@@ -1630,3 +1630,5 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-sat { margin: 0 0 14px; }
 .fiche-sat img { width: 100%; height: auto; border-radius: 9px; border: 1px solid var(--line); display: block; }
 .fiche-sat figcaption { margin-top: 5px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
+.fiche-sat a { position: relative; display: block; }
+.fiche-sat-chip { position: absolute; top: 8px; left: 8px; padding: 3px 10px; border-radius: 99px; background: rgba(16, 42, 67, 0.88); color: #f5d24b; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }

@@ -223,8 +223,16 @@ const pillars = methodology.pillars as any[];
             <a href={dc.satellite_image.url} target="_blank" rel="noopener">
               <img src={dc.satellite_image.thumb} alt={(t as any).satAlt?.replace("{name}", dc.name) ?? dc.name}
                 width="400" height="267" loading="lazy" />
+              {dc.project_status !== "operational" && (t as any).satStatusChip?.[dc.project_status] && (
+                <span class="fiche-sat-chip">{(t as any).satStatusChip[dc.project_status]}</span>
+              )}
             </a>
-            <figcaption>{(t as any).satCaption?.replace("{municipality}", dc.municipality ?? "")} {dc.satellite_image.credit}</figcaption>
+            <figcaption>
+              {(t as any).satCaption?.replace("{municipality}", dc.municipality ?? "")} {dc.satellite_image.credit}
+              {dc.project_status !== "operational" && (t as any).satStatusNote && (
+                <> — {(t as any).satStatusNote}</>
+              )}
+            </figcaption>
           </figure>
         )}
         <span class="fiche-share-label">{t.miniMapTitle}</span>
