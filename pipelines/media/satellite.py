@@ -45,6 +45,7 @@ W, H = 1200, 800
 THUMB_W, THUMB_H = 400, 267
 BUCKET = "smdc-media"
 OUT_DIR = REPO / ".media-sat"  # local staging, gitignored — R2 is the store
+MANIFEST = OUT_DIR / "uploaded.txt"  # keys confirmed on R2 — skips 444 network probes
 FONT = REPO / "site" / "src" / "og" / "fonts" / "chivo-mono-400.ttf"
 
 
@@ -133,6 +134,16 @@ def r2_available() -> bool:
     return p.returncode == 0
 
 
+def manifest_keys() -> set[str]:
+    return set(MANIFEST.read_text().split()) if MANIFEST.is_file() else set()
+
+
+def manifest_add(key: str) -> None:
+    OUT_DIR.mkdir(exist_ok=True)
+    with MANIFEST.open("a") as f:
+        f.write(key + "\n")
+
+
 def r2_object_exists(key: str) -> bool:
     p = subprocess.run(["npx", "wrangler", "r2", "object", "get", f"{BUCKET}/{key}",
                         "--file", "/dev/null", "--remote"],
@@ -204,10 +215,15 @@ def main() -> int:
         return 1
 
     session = requests.Session()
+    uploaded = manifest_keys()
     done = skipped = failed = 0
     for dc in dcs:
         key = media_key(dc["id"], secret)
+        if args.upload and key in uploaded:
+            skipped += 1
+            continue
         if args.upload and r2_object_exists(key):
+            manifest_add(key)
             skipped += 1
             continue
         # Local staging is reusable: a previous run's image never regenerates
@@ -217,6 +233,8 @@ def main() -> int:
         if staged.is_file() and staged_thumb.is_file():
             if args.upload:
                 ok = r2_upload(key, staged) and r2_upload(key.replace(".webp", "-thumb.webp"), staged_thumb)
+                if ok:
+                    manifest_add(key)
                 failed += 0 if ok else 1
                 done += 1 if ok else 0
             else:
@@ -230,6 +248,8 @@ def main() -> int:
             continue
         if args.upload:
             ok = r2_upload(key, full_path) and r2_upload(key.replace(".webp", "-thumb.webp"), thumb_path)
+            if ok:
+                manifest_add(key)
             failed += 0 if ok else 1
             done += 1 if ok else 0
         else:
