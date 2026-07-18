@@ -11,6 +11,11 @@ import re
 from pathlib import Path
 
 from .core import ARTIFACTS_DIR, GateError, load_watchlist, write_json
+
+# A-28: the credit travels WITH the data — every object artifact carries it
+# (scores.json/audit.json are arrays: adding a key would break consumers;
+# the site footer and the fiche pages carry the credit for those).
+CREDIT = "scoremydatacenter.org · data: licence by source (ODbL, Licence Ouverte…) · methodology CC BY-SA 4.0"
 from .scoring import score_datacenter
 from .stats import build_stats
 
@@ -146,6 +151,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             })
 
         write_json(out_dir / "dc" / f"{dc_id}.json", {
+            "credit": CREDIT,
             **_summary(dc, result),
             "summary": dc["identity"]["summary"],
             "vintage": dc["identity"].get("vintage"),
@@ -190,8 +196,8 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # T0 « Les chiffres du parc » — corpus aggregates, one file per build
     # (cadrage §4.10). Data only: labels and editorial framing live site-side.
     write_json(out_dir / "stats.json", build_stats(datacenters, methodology, watchlist, results))
-    write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "features": features})
-    write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "features": watch_features})
+    write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": features})
+    write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": watch_features})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))
     write_json(out_dir / "methodology.json", methodology)
     return results

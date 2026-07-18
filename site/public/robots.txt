@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+# A-28: the JSON artifacts are open data, not search-index material —
+# polite layer against blind harvesting (the ODbL dataset lives on GitHub).
+Disallow: /data/
 
 Sitemap: https://scoremydatacenter.org/sitemap-index.xml
