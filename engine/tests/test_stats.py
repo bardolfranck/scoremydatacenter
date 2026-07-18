@@ -161,3 +161,9 @@ def test_map_points_flag_and_rounding():
     pts = stats["perimeters"]["FR"]["points"]
     assert len(pts) == len(dcs)
     assert all(len(p) == 3 and p[2] in (0, 1) for p in pts)
+
+
+def test_credit_travels_with_the_data():
+    # A-28: every object artifact carries the credit line
+    stats = build_stats(_corpus(), METHODOLOGY)
+    assert "scoremydatacenter.org" in stats["credit"]

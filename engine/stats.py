@@ -385,6 +385,7 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
 
     return {
         "schema": "stats/1",
+        "credit": "scoremydatacenter.org · data: licence by source (ODbL, Licence Ouverte…) · methodology CC BY-SA 4.0",
         "methodology_version": methodology["version"],
         "corpus_date": corpus_date,
         "min_n": STATS_MIN_N,
