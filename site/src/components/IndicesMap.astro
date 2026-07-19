@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// Country SITE-index map — geometry is the run-0 validated mockup, verbatim
-// (config/eu-map.json). Every country renders LETTER + DOCUMENTATION welded
-// (règle n°1); n<5 hatches as « en veille »; out-of-corpus neighbours stay
-// neutral grey. THE READING INSERT IS PART OF THIS COMPONENT and cannot be
-// detached from the map (amendement 2026-07-19 + §4 presence gate): any
-// surface that renders the map renders the insert.
-import euMap from "../config/eu-map.json";
+// Country SITE-index map — the SAME OSM basemap as the site map (MapLibre +
+// OpenFreeMap positron, whitened), one marker per country in the site's own
+// typography: grade chip + score + documentation dots welded together
+// (règle n°1); n<5 renders a grey « veille » chip, never a letter.
+// THE READING INSERT IS PART OF THIS COMPONENT and cannot be detached from
+// the map (amendement 2026-07-19 + §4 presence gate): any surface that
+// renders the map renders the insert.
 import indicesData from "../../public/data/indices.json";
 
 interface Props {
@@ -45,45 +45,47 @@ const T = {
   },
 }[lang];
 
+// Visual anchor per country (lon/lat) — cartographic constants, same family
+// as the site map's hardcoded Europe center; NOT corpus data.
+const ANCHORS: Record<string, [number, number]> = {
+  AT: [15.2, 47.5], BE: [4.0, 50.4], CH: [7.9, 46.4], DE: [10.8, 51.6],
+  DK: [9.3, 56.1], ES: [-3.7, 40.0], FI: [26.0, 62.8], FR: [2.3, 46.6],
+  GB: [-2.2, 53.0], IE: [-8.3, 53.3], IT: [12.5, 42.9], LU: [6.6, 49.5],
+  NL: [5.4, 52.8], NO: [8.7, 61.0], PL: [19.3, 52.1], PT: [-8.4, 39.4],
+  SE: [15.5, 60.0],
+};
+
+// Crowded coastline fix: these markers hang LEFT of their anchor (into the
+// Atlantic) so PT/ES, IE/GB, FR/CH and BE/LU never overlap at Europe zoom.
+const HANG_LEFT = new Set(["IE", "PT", "FR", "BE"]);
+
 const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
-const countries = INDICES.countries as Record<string, any>;
-const gradeClass = (e: any) => (e?.eligible ? `idx-g${e.grade}` : "idx-veille");
 const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
 
-const titleFor = (iso: string, e: any) => {
-  if (!e) return iso;
-  if (!e.eligible) return `${iso} — ${T.veille} (n=${e.n})`;
-  const res = e.reserved_from === "A" ? ` · ${T.reserved}` : "";
-  return `${iso} — ${e.grade}${res} · ${fmtScore(e.score)} · n=${e.n} · doc ${e.documentation.band}`;
-};
+// Markers are server-computed (grade, score, dots) — the client script only
+// places them; no grade logic ever runs front-side.
+const markers = Object.entries(INDICES.countries as Record<string, any>)
+  .filter(([iso]) => ANCHORS[iso])
+  .map(([iso, e]) => ({
+    iso,
+    lon: ANCHORS[iso][0],
+    lat: ANCHORS[iso][1],
+    side: HANG_LEFT.has(iso) ? "right" : "left",
+    eligible: !!e.eligible,
+    grade: e.eligible ? e.grade : null,
+    reserved: e.eligible && e.reserved_from === "A",
+    score: e.eligible ? fmtScore(e.score) : null,
+    dots: e.eligible ? DOTS[e.documentation.band] : null,
+    title: e.eligible
+      ? `${iso} — ${e.grade}${e.reserved_from === "A" ? ` · ${T.reserved}` : ""} · ${fmtScore(e.score)} · n=${e.n} · doc ${e.documentation.band}`
+      : `${iso} — ${T.veille} (n=${e.n})`,
+  }));
 ---
 
 <div class="idx-map" data-indices-map>
   <p class="idx-insert">ⓘ {T.insert}</p>
-  <svg viewBox={euMap.viewBox} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={T.aria}>
-    {euMap.context.map((d: string) => <path class="idx-cty idx-ctx" d={d} />)}
-    {Object.entries(euMap.countries).map(([iso, d]) => (
-      <path class={`idx-cty ${gradeClass(countries[iso])}`} d={d as string} data-cc={iso}>
-        <title>{titleFor(iso, countries[iso])}</title>
-      </path>
-    ))}
-    {Object.entries(euMap.labels).map(([iso, pos]: [string, any]) => {
-      const e = countries[iso];
-      if (!e) return null;
-      const letter = e.eligible ? e.grade : "–";
-      const res = e.eligible && e.reserved_from === "A";
-      return (
-        <text class={`idx-lbl ${e.eligible ? "" : "idx-lbl-veille"}`} x={pos.x} y={pos.y}
-          style={`font-size:${pos.big ? 15 : 11}px`} data-cc={iso}>
-          {iso} {letter}{res ? "·A rés." : ""}
-          {pos.big && e.eligible && <>
-            <tspan x={pos.x} dy="11" class="idx-lsub">{fmtScore(e.score)}</tspan>
-            <tspan x={pos.x} dy="10" class="idx-ldot">{DOTS[e.documentation.band]}</tspan>
-          </>}
-        </text>
-      );
-    })}
-  </svg>
+  <div class={`idx-map-canvas ${compact ? "idx-map-compact" : ""}`} role="img" aria-label={T.aria}
+    data-markers={JSON.stringify(markers)}></div>
   {!compact && (
     <div class="idx-legend">
       <span><i class="idx-sw idx-gA"></i>{T.legend.a}</span>
@@ -96,3 +98,47 @@ const titleFor = (iso: string, e: any) => {
     </div>
   )}
 </div>
+
+<script>
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+  import { whitenBasemap } from "../scripts/basemap";
+
+  const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+
+  document.querySelectorAll<HTMLElement>(".idx-map-canvas").forEach((canvas) => {
+    const markers = JSON.parse(canvas.dataset.markers || "[]");
+    const compact = canvas.classList.contains("idx-map-compact");
+
+    const map = new maplibregl.Map({
+      container: canvas,
+      style: STYLE_URL,
+      center: [7.5, 51.5],
+      zoom: 3.6,
+      attributionControl: { compact: true },
+      scrollZoom: false,
+      cooperativeGestures: true,
+    });
+    whitenBasemap(map);
+    if (!compact) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+    const bounds = new maplibregl.LngLatBounds();
+    for (const m of markers) {
+      bounds.extend([m.lon, m.lat]);
+      const el = document.createElement("div");
+      el.className = "idx-mk";
+      el.dataset.cc = m.iso;
+      el.title = m.title;
+      el.innerHTML = m.eligible
+        ? `<span class="idx-chip idx-g${m.grade}">${m.grade}</span>` +
+          `<span class="idx-mk-body"><b>${m.iso}${m.reserved ? " · A rés." : ""}</b>` +
+          `<span class="idx-mk-score">${m.score} <span class="idx-mk-dots">${m.dots}</span></span></span>`
+        : `<span class="idx-chip idx-chip-veille">–</span><span class="idx-mk-body"><b>${m.iso}</b></span>`;
+      new maplibregl.Marker({ element: el, anchor: m.side, offset: [m.side === "right" ? -4 : 4, 0] })
+        .setLngLat([m.lon, m.lat]).addTo(map);
+    }
+    if (markers.length > 1) map.fitBounds(bounds, { padding: compact ? 40 : 70, maxZoom: 5.5, duration: 0 });
+    // Markers exist now — let the page replay any ?pays= highlight.
+    document.dispatchEvent(new CustomEvent("smdc:idx-markers"));
+  });
+</script>

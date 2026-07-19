@@ -3,7 +3,7 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 // /fr/indices + /indices — the canonical SITE-index page (brief §2.1):
-// validated run-0 map (insert welded inside IndicesMap), full table view
+// OSM basemap (insert welded inside IndicesMap), full table view
 // (accessibility), method footer (aggregation, thresholds, A-25 reserve,
 // changelog link, operational/announced denominators, §1 bis dating),
 // ?pays=XX shareable state. Letters render ONLY through the map component
@@ -31,7 +31,7 @@ const T = {
     pageTitle: "Indice SITE par pays — ScoreMyDataCenter",
     metaDescription: "L'indice SITE par pays : la moyenne des notes de sites (réseau, eau, foncier, risques) agrégée pays par pays — avec sa documentation, ses seuils et son historique. Il ne note ni les opérateurs ni la conduite des projets.",
     tagline: "Observatoire indépendant",
-    lede: "La moyenne équipondérée des notes de SITES publiées, pays par pays — le contexte que les projets subissent (réseau, eau, foncier, risques). Chaque indice sort avec sa documentation ; sous 5 sites, pas de moyenne.",
+    lede: "La moyenne équipondérée des notes de SITES publiées, pays par pays — le contexte que les projets subissent (réseau, eau, foncier, risques).",
     tableTitle: "Le classement (vue table)",
     th: { country: "Pays", index: "Indice", score: "Score", n: "n sites", doc: "Documentation", denom: "En service / annoncés", last: "Dernière évolution" },
     veilleRow: "en veille — moyenne non calculée",
@@ -56,7 +56,7 @@ const T = {
     pageTitle: "Country SITE index — ScoreMyDataCenter",
     metaDescription: "The country SITE index: the mean of site grades (grid, water, land, hazards) aggregated per country — with its documentation, thresholds and history. It grades neither operators nor how projects are run.",
     tagline: "Independent observatory",
-    lede: "The equal-weighted mean of published SITE grades, country by country — the context projects endure (grid, water, land, hazards). Every index ships with its documentation; below 5 sites, no mean.",
+    lede: "The equal-weighted mean of published SITE grades, country by country — the context projects endure (grid, water, land, hazards).",
     tableTitle: "The ranking (table view)",
     th: { country: "Country", index: "Index", score: "Score", n: "n sites", doc: "Documentation", denom: "Operational / announced", last: "Last change" },
     veilleRow: "on watch — no mean computed",
@@ -177,27 +177,36 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
   </div>
 
   <script is:inline>
-    // ?pays=XX — shareable per-country state: highlight on map + table.
+    // ?pays=XX — shareable per-country state: highlight on map + table. The
+    // map markers mount asynchronously (MapLibre module script), so clicks go
+    // through delegation and the initial highlight replays on the component's
+    // "markers ready" signal.
     (function () {
-      var m = new URLSearchParams(window.location.search).get("pays");
-      function apply(cc) {
+      function apply(cc, scroll) {
         if (!cc) return;
         cc = cc.toUpperCase();
-        document.querySelectorAll("[data-indices-map] path[data-cc]").forEach(function (p) {
+        document.querySelectorAll("[data-indices-map] [data-cc]").forEach(function (p) {
           p.classList.toggle("idx-focus", p.getAttribute("data-cc") === cc);
           p.classList.toggle("idx-dim", p.getAttribute("data-cc") !== cc);
         });
         var row = document.getElementById("pays-" + cc.toLowerCase());
-        if (row) { row.classList.add("idx-row-focus"); row.scrollIntoView({ block: "center", behavior: "smooth" }); }
-      }
-      apply(m);
-      document.querySelectorAll("[data-indices-map] path[data-cc]").forEach(function (p) {
-        p.addEventListener("click", function () {
-          var cc = p.getAttribute("data-cc");
-          history.replaceState(null, "", "?pays=" + cc);
+        if (row) {
           document.querySelectorAll(".idx-row-focus").forEach(function (r) { r.classList.remove("idx-row-focus"); });
-          apply(cc);
-        });
+          row.classList.add("idx-row-focus");
+          if (scroll) row.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+      }
+      function fromUrl(scroll) {
+        apply(new URLSearchParams(window.location.search).get("pays"), scroll);
+      }
+      fromUrl(true);
+      document.addEventListener("smdc:idx-markers", function () { fromUrl(false); });
+      document.addEventListener("click", function (e) {
+        var mk = e.target.closest && e.target.closest("[data-indices-map] [data-cc]");
+        if (!mk) return;
+        var cc = mk.getAttribute("data-cc");
+        history.replaceState(null, "", "?pays=" + cc);
+        apply(cc, true);
       });
     })();
   </script>

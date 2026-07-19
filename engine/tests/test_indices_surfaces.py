@@ -35,15 +35,16 @@ def test_insert_welded_inside_the_map_component():
 
 
 def test_every_map_surface_goes_through_the_component():
-    # No template inlines the country paths by hand: eu-map.json is imported
-    # ONLY by IndicesMap.astro (bypassing the component would detach the insert).
-    importers = [
+    # No template builds index markers by hand: the idx-map canvas (MapLibre +
+    # markers) exists ONLY in IndicesMap.astro — bypassing the component would
+    # detach the insert.
+    builders = [
         p.relative_to(_SRC)
         for p in _SRC.rglob("*.astro")
-        if "eu-map.json" in p.read_text()
+        if "idx-map-canvas" in p.read_text()
     ]
-    assert importers == [Path("components/IndicesMap.astro")], (
-        f"eu-map.json imported outside IndicesMap.astro: {importers}"
+    assert builders == [Path("components/IndicesMap.astro")], (
+        f"index-map canvas built outside IndicesMap.astro: {builders}"
     )
 
 
