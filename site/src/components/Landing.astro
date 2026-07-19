@@ -13,6 +13,16 @@ import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
+import indicesData from "../../public/data/indices.json";
+import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
+
+// Bloc home « Classement des pays » (brief indices §2.2) : top 5 éligibles.
+const idxCountries = (indicesData as any).countries as Record<string, any>;
+const idxTop5 = Object.entries(idxCountries)
+  .filter(([, e]) => e.eligible)
+  .sort(([, a], [, b]) => b.score - a.score)
+  .slice(0, 5);
+const idxTotal = Object.keys(idxCountries).length;
 
 interface Props {
   lang: "en" | "fr";
@@ -291,6 +301,29 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       <form class="explore-search" action={rankPath} method="get" role="search">
         <input type="search" name="q" placeholder={t.searchPlaceholder} aria-label={t.searchPlaceholder} />
       </form>
+    </div>
+  </section>
+
+  <section class="section" id="indices" aria-labelledby="indices-title">
+    <div class="section-inner">
+      <div class="section-heading">
+        <h2 id="indices-title">{lang === "fr" ? "Le classement des pays" : "The country ranking"}</h2>
+        <p>{lang === "fr"
+          ? "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets."
+          : "This index aggregates SITE grades (the territorial context: grid, water, land, hazards). It grades neither operators nor how projects are run."}</p>
+      </div>
+      <div class="home-idx-rows">
+        {idxTop5.map(([iso, e]) => (
+            <a class="home-idx-row" href={`${lang === "fr" ? "/fr" : ""}/indices?pays=${iso}`}>
+              <span class={`idx-chip idx-g${e.grade}`}>{e.grade}</span>
+              <span class="home-idx-name">{(COUNTRY_FLAGS_ISO as any)[iso]} {(COUNTRY_NAMES as any)[iso]?.[lang] ?? iso}
+                <small>{e.reserved_from === "A" ? (lang === "fr" ? "A réservé · " : "A reserved · ") : ""}n = {e.n} · doc {e.documentation.band}</small>
+              </span>
+              <span class="home-idx-score">{lang === "fr" ? String(e.score).replace(".", ",") : e.score}</span>
+            </a>
+        ))}
+      </div>
+      <p><a class="teaser-more" href={lang === "fr" ? "/fr/indices" : "/indices"}>{lang === "fr" ? `Voir la carte et les ${idxTotal} pays` : `See the map and all ${idxTotal} countries`} →</a></p>
     </div>
   </section>
 

@@ -57,6 +57,24 @@ if (_fleetPeri && (t as any).fleet) {
 }
 const methodology = methodologyData as any;
 
+// Indices pays (brief 2026-07-18/19 §2.3) : la ligne de croisement — l'indice
+// SITE du pays de cette fiche, avec sa réserve A-25 si elle s'applique.
+import indicesData from "../../public/data/indices.json";
+import { COUNTRY_NAMES } from "../config/indices";
+const _idxEntry = (indicesData as any).countries?.[dc.country];
+let idxLine: { text: string; href: string } | null = null;
+if (_idxEntry?.eligible) {
+  const cname = (COUNTRY_NAMES as any)[dc.country]?.[lang] ?? dc.country;
+  const score = lang === "fr" ? String(_idxEntry.score).replace(".", ",") : String(_idxEntry.score);
+  const res = _idxEntry.reserved_from === "A" ? (lang === "fr" ? " · A réservé" : " · A reserved") : "";
+  idxLine = {
+    text: lang === "fr"
+      ? `Ce site est en ${cname} — indice site du pays : ${_idxEntry.grade}${res} (${score}).`
+      : `This site is in ${cname} — the country's site index: ${_idxEntry.grade}${res} (${score}).`,
+    href: `${lang === "fr" ? "/fr" : ""}/indices?pays=${dc.country}`,
+  };
+}
+
 const SITE_ORIGIN = "https://scoremydatacenter.org";
 const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
@@ -343,6 +361,10 @@ const pillars = methodology.pillars as any[];
 
       {fleetLine && (
         <p class="fiche-fleetline">{fleetLine.text} <a href={fleetLine.href}>{(t as any).fleet.cta}</a></p>
+      )}
+
+      {idxLine && (
+        <p class="fiche-idxline">{idxLine.text} <a href={idxLine.href}>{lang === "fr" ? "Voir l'indice pays" : "See the country index"} →</a></p>
       )}
 
       <section class="fiche-section" aria-label={t.indicatorsTitle}>

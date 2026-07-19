@@ -1,0 +1,177 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Country SITE-index map — the SAME OSM basemap as the site map (MapLibre +
+// OpenFreeMap positron, whitened), one marker per country in the site's own
+// typography: grade chip + score + documentation dots welded together
+// (règle n°1); n<5 renders a grey « veille » chip, never a letter.
+// THE READING INSERT IS PART OF THIS COMPONENT and cannot be detached from
+// the map (amendement 2026-07-19 + §4 presence gate): any surface that
+// renders the map renders the insert.
+import indicesData from "../../public/data/indices.json";
+
+interface Props {
+  lang: "fr" | "en";
+  compact?: boolean; // home block: map only + insert (no legend)
+}
+const { lang, compact = false } = Astro.props;
+const INDICES = indicesData as any;
+
+const T = {
+  fr: {
+    insert: "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets.",
+    veille: "en veille — n < 5 : moyenne non calculée",
+    aria: "Carte d'Europe : indice SITE par pays",
+    reserved: "A réservé",
+    legend: {
+      a: "A ≥ 80 — réservé : ne s'affiche qu'adossé à des exploitations vérifiées (A-25)",
+      b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
+      veille: "en veille — n < 5 : moyenne non calculée",
+      dots: "●●● doc solide · ●●○ moyenne · ●○○ faible — la documentation accompagne toujours la note (règle n°1)",
+    },
+  },
+  en: {
+    insert: "This index aggregates SITE grades (the territorial context: grid, water, land, hazards). It grades neither operators nor how projects are run.",
+    veille: "on watch — n < 5: no mean computed",
+    aria: "Map of Europe: SITE index per country",
+    reserved: "A reserved",
+    legend: {
+      a: "A ≥ 80 — reserved: only shown backed by verified operations (A-25)",
+      b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
+      veille: "on watch — n < 5: no mean computed",
+      dots: "●●● solid doc · ●●○ medium · ●○○ weak — documentation always ships with the grade (rule #1)",
+    },
+  },
+}[lang];
+
+// Visual anchor per country (lon/lat) — cartographic constants, same family
+// as the site map's hardcoded Europe center; NOT corpus data.
+const ANCHORS: Record<string, [number, number]> = {
+  AT: [15.2, 47.5], BE: [4.0, 50.4], CH: [7.9, 46.4], DE: [10.8, 51.6],
+  DK: [9.3, 56.1], ES: [-3.7, 40.0], FI: [26.0, 62.8], FR: [2.3, 46.6],
+  GB: [-2.2, 53.0], IE: [-8.3, 53.3], IT: [12.5, 42.9], LU: [6.6, 49.5],
+  NL: [5.4, 52.8], NO: [8.7, 61.0], PL: [19.3, 52.1], PT: [-8.4, 39.4],
+  SE: [15.5, 60.0],
+};
+
+// Crowded coastline fix: these markers hang LEFT of their anchor (into the
+// Atlantic) so PT/ES, IE/GB, FR/CH and BE/LU never overlap at Europe zoom.
+const HANG_LEFT = new Set(["IE", "PT", "FR", "BE"]);
+
+const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
+const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
+
+// Markers are server-computed (grade, score, dots) — the client script only
+// places them; no grade logic ever runs front-side.
+const markers = Object.entries(INDICES.countries as Record<string, any>)
+  .filter(([iso]) => ANCHORS[iso])
+  .map(([iso, e]) => ({
+    iso,
+    lon: ANCHORS[iso][0],
+    lat: ANCHORS[iso][1],
+    side: HANG_LEFT.has(iso) ? "right" : "left",
+    eligible: !!e.eligible,
+    grade: e.eligible ? e.grade : null,
+    reserved: e.eligible && e.reserved_from === "A",
+    score: e.eligible ? fmtScore(e.score) : null,
+    dots: e.eligible ? DOTS[e.documentation.band] : null,
+    title: e.eligible
+      ? `${iso} — ${e.grade}${e.reserved_from === "A" ? ` · ${T.reserved}` : ""} · ${fmtScore(e.score)} · n=${e.n} · doc ${e.documentation.band}`
+      : `${iso} — ${T.veille} (n=${e.n})`,
+  }));
+---
+
+<div class="idx-map" data-indices-map>
+  <p class="idx-insert">ⓘ {T.insert}</p>
+  <div class={`idx-map-canvas ${compact ? "idx-map-compact" : ""}`} role="img" aria-label={T.aria}
+    data-markers={JSON.stringify(markers)}></div>
+  {!compact && (
+    <div class="idx-legend">
+      <span><i class="idx-sw idx-gA"></i>{T.legend.a}</span>
+      <span><i class="idx-sw idx-gB"></i>{T.legend.b}</span>
+      <span><i class="idx-sw idx-gC"></i>{T.legend.c}</span>
+      <span><i class="idx-sw idx-gD"></i>{T.legend.d}</span>
+      <span><i class="idx-sw idx-gE"></i>{T.legend.e}</span>
+      <span><i class="idx-sw idx-swv"></i>{T.legend.veille}</span>
+      <span>{T.legend.dots}</span>
+    </div>
+  )}
+</div>
+
+<script>
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+  import { whitenBasemap } from "../scripts/basemap";
+
+  const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+
+  // Country-scale declutter (Franck 2026-07-20): we grade COUNTRIES here —
+  // country names and capitals are enough. Roads, rail, rivers, buildings,
+  // POIs and sub-capital place labels are noise at this scale and go dark.
+  // Same defensive pattern as whitenBasemap: layer inspection + try/catch,
+  // an upstream style update degrades to stock positron, never breaks.
+  const HIDE_SOURCE_LAYERS = new Set([
+    "transportation", "transportation_name", "aeroway", "building",
+    "housenumber", "poi", "waterway",
+  ]);
+  function declutter(map: any): void {
+    const apply = () => {
+      for (const layer of map.getStyle().layers ?? []) {
+        try {
+          const sl = (layer as any)["source-layer"];
+          if (HIDE_SOURCE_LAYERS.has(sl)) {
+            map.setLayoutProperty(layer.id, "visibility", "none");
+          } else if (sl === "place") {
+            // Positron ships a dedicated capitals layer (label_city_capital):
+            // keep it and the country/continent labels, hide every other
+            // place label (cities, towns, villages, states) — no setFilter,
+            // so no legacy/expression filter-syntax clash.
+            const id = layer.id.toLowerCase();
+            if (id.includes("country") || id.includes("continent") || id.includes("capital")) continue;
+            map.setLayoutProperty(layer.id, "visibility", "none");
+          }
+        } catch { /* unknown layer/property — leave it as designed */ }
+      }
+    };
+    if (map.isStyleLoaded()) apply();
+    else map.once("load", apply);
+  }
+
+  document.querySelectorAll<HTMLElement>(".idx-map-canvas").forEach((canvas) => {
+    const markers = JSON.parse(canvas.dataset.markers || "[]");
+    const compact = canvas.classList.contains("idx-map-compact");
+
+    const map = new maplibregl.Map({
+      container: canvas,
+      style: STYLE_URL,
+      center: [7.5, 51.5],
+      zoom: 3.6,
+      attributionControl: { compact: true },
+      scrollZoom: false,
+      cooperativeGestures: true,
+    });
+    whitenBasemap(map);
+    declutter(map);
+    if (!compact) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+    const bounds = new maplibregl.LngLatBounds();
+    for (const m of markers) {
+      bounds.extend([m.lon, m.lat]);
+      const el = document.createElement("div");
+      el.className = "idx-mk";
+      el.dataset.cc = m.iso;
+      el.title = m.title;
+      el.innerHTML = m.eligible
+        ? `<span class="idx-chip idx-g${m.grade}">${m.grade}</span>` +
+          `<span class="idx-mk-body"><b>${m.iso}${m.reserved ? " · A rés." : ""}</b>` +
+          `<span class="idx-mk-score">${m.score} <span class="idx-mk-dots">${m.dots}</span></span></span>`
+        : `<span class="idx-chip idx-chip-veille">–</span><span class="idx-mk-body"><b>${m.iso}</b></span>`;
+      new maplibregl.Marker({ element: el, anchor: m.side, offset: [m.side === "right" ? -4 : 4, 0] })
+        .setLngLat([m.lon, m.lat]).addTo(map);
+    }
+    if (markers.length > 1) map.fitBounds(bounds, { padding: compact ? 40 : 70, maxZoom: 5.5, duration: 0 });
+    // Markers exist now — let the page replay any ?pays= highlight.
+    document.dispatchEvent(new CustomEvent("smdc:idx-markers"));
+  });
+</script>

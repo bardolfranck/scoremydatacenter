@@ -1632,3 +1632,60 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-sat figcaption { margin-top: 5px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
 .fiche-sat a { position: relative; display: block; }
 .fiche-sat-chip { position: absolute; top: 8px; left: 8px; padding: 3px 10px; border-radius: 99px; background: rgba(16, 42, 67, 0.88); color: #f5d24b; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* --- Indices pays (brief 2026-07-18/19) — carte SVG run-0 + table + encart --- */
+.idx { max-width: 1060px; margin: 0 auto; padding: 48px 24px 72px; }
+.idx-h1 { font-family: "Bricolage Grotesque", var(--font-sans); font-weight: 800; font-size: clamp(1.7rem, 3.6vw, 2.5rem); color: var(--ink); margin: 0 0 10px; }
+.idx-h2 { font-family: "Bricolage Grotesque", var(--font-sans); font-weight: 700; font-size: 1.35rem; color: var(--ink); margin: 44px 0 14px; }
+.idx-lede { font-size: 1.05rem; color: var(--ink-soft); max-width: 46rem; margin: 0 0 6px; }
+.idx-meta { font-family: var(--font-mono); font-size: 0.82rem; color: var(--muted); margin: 0 0 20px; }
+
+.idx-insert { font-size: 0.92rem; color: var(--ink); background: var(--wash); border-left: 3px solid var(--ink); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 0 0 14px; max-width: 52rem; }
+/* OSM basemap (MapLibre, same chain as the site map) + country markers in
+   the site typography — grade chip + score + doc dots welded. */
+.idx-map-canvas { height: 560px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+.idx-map-compact { height: 380px; }
+.idx-mk { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.94); border: 1px solid var(--line); border-radius: 10px; padding: 3px 7px 3px 3px; box-shadow: 0 2px 8px rgba(7, 24, 47, 0.16); cursor: pointer; transition: box-shadow 0.15s, transform 0.15s, opacity 0.2s; }
+.idx-mk:hover { box-shadow: 0 4px 14px rgba(7, 24, 47, 0.26); transform: translateY(-1px); }
+.idx-mk-body { display: flex; flex-direction: column; line-height: 1.15; }
+.idx-mk-body b { font-family: "Bricolage Grotesque", var(--font-sans); font-weight: 700; font-size: 0.78rem; color: var(--ink); white-space: nowrap; }
+.idx-mk-score { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 0.72rem; color: var(--ink-soft); white-space: nowrap; }
+.idx-mk-dots { font-size: 0.55rem; color: var(--ink); letter-spacing: 1px; }
+.idx-chip-veille { background: #c8d2dd; color: #5c6b7c; }
+.idx-mk.idx-focus { outline: 2.5px solid var(--ink); outline-offset: 1px; z-index: 5; }
+.idx-mk.idx-dim { opacity: 0.42 !important; } /* beats MapLibre's inline marker opacity */
+.idx-gA { background: var(--grade-a); }
+.idx-gB { background: var(--grade-b); }
+.idx-gC { background: var(--grade-c); }
+.idx-gD { background: var(--grade-d); }
+.idx-gE { background: var(--grade-e); }
+
+.idx-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 0.82rem; color: var(--ink-soft); }
+.idx-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.idx-sw { width: 14px; height: 14px; border-radius: 4px; display: inline-block; flex: none; }
+.idx-swv { background: repeating-linear-gradient(45deg, #c8d2dd, #c8d2dd 3px, #eef3f8 3px, #eef3f8 6px); }
+
+.idx-tablewrap { overflow-x: auto; }
+.idx-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.idx-table th { text-align: left; font-family: var(--font-mono); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); padding: 8px 12px; border-bottom: 2px solid var(--ink); }
+.idx-table td { padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.idx-num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.idx-ev { font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); white-space: nowrap; }
+.idx-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 7px; color: #fff; font-family: var(--font-sans); font-weight: 900; font-size: 0.95rem; }
+.idx-row-veille td { color: var(--muted); font-style: italic; }
+.idx-row-focus td { background: #fdf6e3; }
+.idx-denoms { font-size: 0.85rem; color: var(--muted); margin: 10px 0 0; }
+.idx-method ul { margin: 0 0 14px; padding-left: 20px; }
+.idx-method li { margin: 7px 0; color: var(--ink-soft); font-size: 0.95rem; }
+.idx-cta { font-weight: 700; color: var(--ink); }
+
+/* bloc home « Classement des pays » */
+.home-idx-rows { display: grid; gap: 6px; max-width: 560px; }
+.home-idx-row { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: var(--ink-soft); background: #fff; transition: border-color 0.15s; }
+.home-idx-row:hover { border-color: var(--ink); }
+.home-idx-name { flex: 1; font-weight: 600; }
+.home-idx-name small { display: block; font-weight: 400; color: var(--muted); font-size: 0.8rem; }
+.home-idx-score { font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+
+/* ligne fiche : indice site du pays */
+.fiche-idxline { font-size: 0.92rem; color: var(--ink-soft); border-left: 3px solid var(--ink); background: var(--wash); border-radius: 0 8px 8px 0; padding: 9px 14px; margin: 14px 0 0; }
