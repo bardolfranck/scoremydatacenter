@@ -2,6 +2,34 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## ⏳ DRAFT — EN ATTENTE DE SIGNATURE (A-16) — 0.1.0 (aggregation note) — Indice SITE par pays
+
+> **Statut : rédigé, NON signé. Prérequis de mise en prod des surfaces `/fr/indices` (brief
+> 2026-07-18/19) — la PR reste non déployée tant que cette entrée n'est pas signée par Franck.**
+
+- **Objet** : publication d'un agrégat par pays — l'« indice SITE » — calculé par le moteur au
+  build (`engine/indices.py` → `indices.json` + `indices_history.json`). **Aucun changement de
+  notation** : aucun poids, seuil ou indicateur ne bouge ; les notes de sites sont byte-identiques.
+  L'entrée existe parce qu'un agrégat publié est un choix méthodologique opposable (A-16).
+- **Règle d'agrégation** : moyenne **équipondérée** des scores SITE continus publiés du pays.
+  Rationale : l'indice mesure ce que les territoires offrent ; pondérer par la puissance ferait
+  parler les mégawatts (les opérateurs) et non les sites — l'agrégat pondéré MW est publié À CÔTÉ
+  (`mw_weighted`) quand ≥ 5 sites du pays communiquent leur puissance, jamais à la place.
+- **Périmètre énoncé** : tous les scores site publiés entrent dans la moyenne, y compris les
+  sites annoncés (le score site mesure le territoire, valable à T0) ; les dénominateurs
+  `n_operational` / `n_announced` sont émis et affichés en pied de carte.
+- **Plancher** : n ≥ 5 sites notés, seul critère d'éligibilité (« en veille » en dessous).
+  La documentation (médiane des scores doc SITE, bandes solide ≥ 0,75 / moyenne ≥ 0,5 / faible)
+  accompagne toujours la lettre — règle n°1 — et ne filtre jamais.
+- **Réserve A-25 héritée, dans l'agrégation** : indice ≥ 80 sans `verification_source` dans le
+  pays → « B · A réservé », score réel conservé. Jamais un patch d'affichage.
+- **Seuils de lettres** : la grille des fiches inchangée (A ≥ 80 · B ≥ 65 · C ≥ 50 · D ≥ 35 ·
+  E < 35), désormais exposée en `grade_thresholds` au niveau racine de la méthodo.
+- **Historique** : append-only, événements uniquement (changement de lettre, bascule de réserve,
+  bascule d'éligibilité, nouveau pays) ; le score continu dérive dans `indices.json`, pas dans
+  l'historique. Gate d'idempotence : corpus inchangé ⇒ historique byte-identique.
+- Signataire : _(à signer — Franck Bardol)_.
+
 ## 0.1.0 (policy note) — 2026-07-19 — L2 power provenance: an aggregator MW is a claim, not a fact
 
 - **Rule (memo signed Franck Bardol, 2026-07-19)**: L2 ("monster ratio", MW per 1000 inhabitants) may

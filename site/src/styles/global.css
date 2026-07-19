@@ -1632,3 +1632,64 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-sat figcaption { margin-top: 5px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); }
 .fiche-sat a { position: relative; display: block; }
 .fiche-sat-chip { position: absolute; top: 8px; left: 8px; padding: 3px 10px; border-radius: 99px; background: rgba(16, 42, 67, 0.88); color: #f5d24b; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* --- Indices pays (brief 2026-07-18/19) — carte SVG run-0 + table + encart --- */
+.idx { max-width: 1060px; margin: 0 auto; padding: 48px 24px 72px; }
+.idx-h1 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: clamp(1.7rem, 3.6vw, 2.5rem); color: var(--navy-900); margin: 0 0 10px; }
+.idx-h2 { font-family: "Bricolage Grotesque", sans-serif; font-weight: 700; font-size: 1.35rem; color: var(--navy-900); margin: 44px 0 14px; }
+.idx-lede { font-size: 1.05rem; color: var(--ink-700); max-width: 46rem; margin: 0 0 6px; }
+.idx-meta { font-family: var(--mono, "Chivo Mono", monospace); font-size: 0.82rem; color: var(--ink-500); margin: 0 0 20px; }
+
+.idx-map svg { width: 100%; height: auto; display: block; }
+.idx-insert { font-size: 0.92rem; color: var(--navy-900); background: var(--tint-50, #eef3f8); border-left: 3px solid var(--navy-700, #1b3a5c); border-radius: 0 8px 8px 0; padding: 10px 14px; margin: 0 0 14px; max-width: 52rem; }
+.idx-cty { stroke: #fff; stroke-width: 1.1; }
+.idx-ctx { fill: #dfe6ee; }
+.idx-gA { fill: var(--grade-a); }
+.idx-gB { fill: var(--grade-b); }
+.idx-gC { fill: var(--grade-c); }
+.idx-gD { fill: var(--grade-d); }
+.idx-gE { fill: var(--grade-e); }
+.idx-veille { fill: #c8d2dd; stroke-dasharray: 3 2.4; }
+path.idx-cty[data-cc] { cursor: pointer; transition: filter 0.15s; }
+path.idx-cty[data-cc]:hover { filter: brightness(1.08); }
+path.idx-focus { stroke: var(--navy-900); stroke-width: 2.4; }
+path.idx-dim { opacity: 0.45; }
+.idx-lbl { font-family: "Chivo", sans-serif; font-weight: 900; fill: #fff; paint-order: stroke; stroke: rgba(16, 42, 67, 0.55); stroke-width: 2.6px; text-anchor: middle; pointer-events: none; }
+.idx-lbl-veille { fill: #5c6b7c; stroke: rgba(255, 255, 255, 0.7); }
+.idx-lsub { font-weight: 700; font-size: 9px; letter-spacing: 0.02em; }
+.idx-ldot { font-size: 7px; letter-spacing: 1px; stroke-width: 0; }
+
+.idx-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 14px; font-size: 0.82rem; color: var(--ink-700); }
+.idx-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.idx-sw { width: 14px; height: 14px; border-radius: 4px; display: inline-block; flex: none; }
+.idx-swv { background: repeating-linear-gradient(45deg, #c8d2dd, #c8d2dd 3px, #eef3f8 3px, #eef3f8 6px); }
+
+.idx-tablewrap { overflow-x: auto; }
+.idx-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.idx-table th { text-align: left; font-family: var(--mono, "Chivo Mono", monospace); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-500); padding: 8px 12px; border-bottom: 2px solid var(--navy-900); }
+.idx-table td { padding: 9px 12px; border-bottom: 1px solid #e3e9f0; color: var(--ink-800, #24313f); }
+.idx-num { font-family: var(--mono, "Chivo Mono", monospace); font-variant-numeric: tabular-nums; }
+.idx-ev { font-family: var(--mono, "Chivo Mono", monospace); font-size: 0.8rem; color: var(--ink-500); white-space: nowrap; }
+.idx-chip { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 26px; border-radius: 7px; color: #fff; font-family: "Chivo", sans-serif; font-weight: 900; font-size: 0.95rem; }
+.idx-chip.idx-gA { background: var(--grade-a); }
+.idx-chip.idx-gB { background: var(--grade-b); }
+.idx-chip.idx-gC { background: var(--grade-c); }
+.idx-chip.idx-gD { background: var(--grade-d); }
+.idx-chip.idx-gE { background: var(--grade-e); }
+.idx-row-veille td { color: var(--ink-500); font-style: italic; }
+.idx-row-focus td { background: #fdf6e3; }
+.idx-denoms { font-size: 0.85rem; color: var(--ink-500); margin: 10px 0 0; }
+.idx-method ul { margin: 0 0 14px; padding-left: 20px; }
+.idx-method li { margin: 7px 0; color: var(--ink-700); font-size: 0.95rem; }
+.idx-cta { font-weight: 700; color: var(--navy-700, #1b3a5c); }
+
+/* bloc home « Classement des pays » */
+.home-idx-rows { display: grid; gap: 6px; max-width: 560px; }
+.home-idx-row { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border: 1px solid #e3e9f0; border-radius: 10px; text-decoration: none; color: var(--ink-800, #24313f); background: #fff; transition: border-color 0.15s; }
+.home-idx-row:hover { border-color: var(--navy-700, #1b3a5c); }
+.home-idx-name { flex: 1; font-weight: 600; }
+.home-idx-name small { display: block; font-weight: 400; color: var(--ink-500); font-size: 0.8rem; }
+.home-idx-score { font-family: var(--mono, "Chivo Mono", monospace); font-variant-numeric: tabular-nums; color: var(--ink-700); }
+
+/* ligne fiche : indice site du pays */
+.fiche-idxline { font-size: 0.92rem; color: var(--ink-700); border-left: 3px solid var(--navy-700, #1b3a5c); background: var(--tint-50, #eef3f8); border-radius: 0 8px 8px 0; padding: 9px 14px; margin: 14px 0 0; }

@@ -18,6 +18,7 @@ from .core import ARTIFACTS_DIR, GateError, load_watchlist, write_json
 CREDIT = "scoremydatacenter.org · data: licence by source (ODbL, Licence Ouverte…) · methodology CC BY-SA 4.0"
 from .scoring import score_datacenter
 from .stats import build_stats
+from .indices import build_indices, update_history
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -196,6 +197,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # T0 « Les chiffres du parc » — corpus aggregates, one file per build
     # (cadrage §4.10). Data only: labels and editorial framing live site-side.
     write_json(out_dir / "stats.json", build_stats(datacenters, methodology, watchlist, results))
+    # Country SITE index (brief 2026-07-18/19): artifact + append-only history.
+    indices = build_indices(datacenters, methodology, results)
+    write_json(out_dir / "indices.json", indices)
+    write_json(out_dir / "indices_history.json", update_history(indices, out_dir / "indices_history.json"))
     write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": features})
     write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": watch_features})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))

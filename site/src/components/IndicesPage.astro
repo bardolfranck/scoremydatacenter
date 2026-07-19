@@ -1,0 +1,204 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// /fr/indices + /indices — the canonical SITE-index page (brief §2.1):
+// validated run-0 map (insert welded inside IndicesMap), full table view
+// (accessibility), method footer (aggregation, thresholds, A-25 reserve,
+// changelog link, operational/announced denominators, §1 bis dating),
+// ?pays=XX shareable state. Letters render ONLY through the map component
+// and the table chips (gate 7 extended).
+import "@fontsource/bricolage-grotesque/700.css";
+import "@fontsource/bricolage-grotesque/800.css";
+import Base from "../layouts/Base.astro";
+import IndicesMap from "./IndicesMap.astro";
+import indicesData from "../../public/data/indices.json";
+import historyData from "../../public/data/indices_history.json";
+import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
+
+interface Props {
+  lang: "fr" | "en";
+  nav: { href: string; label: string }[];
+  altHref: string;
+  altLabel: string;
+}
+const { lang, nav, altHref, altLabel } = Astro.props;
+const INDICES = indicesData as any;
+const HISTORY = historyData as any[];
+
+const T = {
+  fr: {
+    pageTitle: "Indice SITE par pays — ScoreMyDataCenter",
+    metaDescription: "L'indice SITE par pays : la moyenne des notes de sites (réseau, eau, foncier, risques) agrégée pays par pays — avec sa documentation, ses seuils et son historique. Il ne note ni les opérateurs ni la conduite des projets.",
+    tagline: "Observatoire indépendant",
+    lede: "La moyenne équipondérée des notes de SITES publiées, pays par pays — le contexte que les projets subissent (réseau, eau, foncier, risques). Chaque indice sort avec sa documentation ; sous 5 sites, pas de moyenne.",
+    tableTitle: "Le classement (vue table)",
+    th: { country: "Pays", index: "Indice", score: "Score", n: "n sites", doc: "Documentation", denom: "En service / annoncés", last: "Dernière évolution" },
+    veilleRow: "en veille — moyenne non calculée",
+    reserved: "· A réservé",
+    docBands: { solide: "solide", moyenne: "moyenne", faible: "faible" },
+    asOf: "Indice au",
+    lastEvo: "dernière évolution :",
+    method: {
+      title: "La méthode de l'indice",
+      items: [
+        "Agrégation : moyenne équipondérée des scores SITE continus publiés (tous les sites notés entrent dans la moyenne, y compris les sites annoncés — le score site mesure le territoire). L'agrégat pondéré par la puissance (MW) est publié à côté quand un pays communique assez de puissances.",
+        "Seuils : A ≥ 80 · B ≥ 65 · C ≥ 50 · D ≥ 35 · E < 35 — la grille des fiches, inchangée.",
+        "Réserve A-25 : un indice ≥ 80 s'affiche « B · A réservé » tant qu'aucun site du pays ne porte de vérification tierce en exploitation.",
+        "Documentation : médiane des scores de documentation SITE — solide ≥ 0,75 · moyenne ≥ 0,5 · faible. Elle accompagne toujours la note, elle ne filtre jamais.",
+        "Plancher : n ≥ 5 sites notés. En dessous, pays « en veille » — une moyenne de 2 n'est pas une moyenne.",
+      ],
+      changelog: "Méthodologie versionnée →",
+    },
+    ogTitle: (name: string) => `L'indice site de ${name}`,
+  },
+  en: {
+    pageTitle: "Country SITE index — ScoreMyDataCenter",
+    metaDescription: "The country SITE index: the mean of site grades (grid, water, land, hazards) aggregated per country — with its documentation, thresholds and history. It grades neither operators nor how projects are run.",
+    tagline: "Independent observatory",
+    lede: "The equal-weighted mean of published SITE grades, country by country — the context projects endure (grid, water, land, hazards). Every index ships with its documentation; below 5 sites, no mean.",
+    tableTitle: "The ranking (table view)",
+    th: { country: "Country", index: "Index", score: "Score", n: "n sites", doc: "Documentation", denom: "Operational / announced", last: "Last change" },
+    veilleRow: "on watch — no mean computed",
+    reserved: "· A reserved",
+    docBands: { solide: "solid", moyenne: "medium", faible: "weak" },
+    asOf: "Index as of",
+    lastEvo: "last change:",
+    method: {
+      title: "How this index is computed",
+      items: [
+        "Aggregation: equal-weighted mean of published continuous SITE scores (every scored site enters the mean, announced sites included — the site score measures the territory). An MW-weighted aggregate is published alongside where a country discloses enough capacities.",
+        "Thresholds: A ≥ 80 · B ≥ 65 · C ≥ 50 · D ≥ 35 · E < 35 — the fiche grid, unchanged.",
+        "A-25 reserve: an index ≥ 80 displays “B · A reserved” until a site in the country carries third-party operational verification.",
+        "Documentation: median of SITE documentation scores — solid ≥ 0.75 · medium ≥ 0.5 · weak. It always ships with the grade, it never filters.",
+        "Floor: n ≥ 5 scored sites. Below, the country is “on watch” — a mean of 2 is not a mean.",
+      ],
+      changelog: "Versioned methodology →",
+    },
+    ogTitle: (name: string) => `${name}'s site index`,
+  },
+}[lang];
+
+const dateFmt = (iso: string | null) => {
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-");
+  return lang === "fr" ? `${d}/${m}/${y}` : `${y}-${m}-${d}`;
+};
+
+const lastEventByCountry: Record<string, any> = {};
+for (const ev of HISTORY) lastEventByCountry[ev.country] = ev;
+
+const countries = Object.entries(INDICES.countries as Record<string, any>)
+  .sort(([, a], [, b]) => {
+    if (a.eligible !== b.eligible) return a.eligible ? -1 : 1;
+    return (b.score ?? -1) - (a.score ?? -1);
+  });
+
+const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
+const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
+const name = (iso: string) => (COUNTRY_NAMES as any)[iso]?.[lang] ?? iso;
+const flag = (iso: string) => (COUNTRY_FLAGS_ISO as any)[iso] ?? "";
+// Page-level OG = the top-ranked eligible country's card (the ranking's own
+// headline; per-country cards live at /og/indices/{lang}-{cc}.png for shares).
+const topIso = countries.find(([, e]) => e.eligible)?.[0];
+const pageOg = topIso ? `https://scoremydatacenter.org/og/indices/${lang}-${topIso.toLowerCase()}.png` : undefined;
+const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?? 0), acc[1] + (e.n_announced ?? 0)], [0, 0]);
+---
+
+<Base
+  lang={lang}
+  title={T.pageTitle}
+  description={T.metaDescription}
+  tagline={T.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+  ogImage={pageOg}
+>
+  <div class="idx">
+    <h1 class="idx-h1">{INDICES.labels.title[lang]}</h1>
+    <p class="idx-lede">{T.lede}</p>
+    <p class="idx-meta">
+      {T.asOf} <b>{dateFmt(INDICES.computed_at)}</b> · {lang === "fr" ? "méthodologie" : "methodology"} <b>v{INDICES.methodology_version}</b>
+    </p>
+
+    <IndicesMap lang={lang} />
+
+    <h2 class="idx-h2">{T.tableTitle}</h2>
+    <div class="idx-tablewrap">
+      <table class="idx-table">
+        <thead>
+          <tr>
+            <th>{T.th.country}</th><th>{T.th.index}</th><th>{T.th.score}</th><th>{T.th.n}</th>
+            <th>{T.th.doc}</th><th>{T.th.denom}</th><th>{T.th.last}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {countries.map(([iso, e]) => {
+            const ev = lastEventByCountry[iso];
+            return (
+              <tr id={`pays-${iso.toLowerCase()}`} class={e.eligible ? "" : "idx-row-veille"} data-cc={iso}>
+                <td>{flag(iso)} {name(iso)}</td>
+                {e.eligible ? (
+                  <>
+                    <td><span class={`idx-chip idx-g${e.grade}`}>{e.grade}</span>{e.reserved_from === "A" && <small> {T.reserved}</small>}</td>
+                    <td class="idx-num">{fmtScore(e.score)}</td>
+                    <td class="idx-num">{e.n}</td>
+                    <td>{DOTS[e.documentation.band]} {(T.docBands as any)[e.documentation.band]}</td>
+                    <td class="idx-num">{e.n_operational} / {e.n_announced}</td>
+                    <td class="idx-ev">{ev && `→ ${ev.to.grade ?? "–"} · ${dateFmt(ev.date)}`}</td>
+                  </>
+                ) : (
+                  <>
+                    <td colspan="4">{T.veilleRow} (n={e.n})</td>
+                    <td></td>
+                    <td class="idx-ev">{ev && <>{dateFmt(ev.date)}</>}</td>
+                  </>
+                )}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <p class="idx-denoms">
+      {lang === "fr"
+        ? `Dénominateurs corpus : ${denomTotal[0]} sites en service · ${denomTotal[1]} sites annoncés entrent dans les moyennes — énoncé, jamais caché.`
+        : `Corpus denominators: ${denomTotal[0]} operational · ${denomTotal[1]} announced sites enter the means — stated, never hidden.`}
+    </p>
+
+    <div class="idx-method">
+      <h2 class="idx-h2">{T.method.title}</h2>
+      <ul>
+        {T.method.items.map((item) => <li>{item}</li>)}
+      </ul>
+      <a class="idx-cta" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{T.method.changelog}</a>
+    </div>
+  </div>
+
+  <script is:inline>
+    // ?pays=XX — shareable per-country state: highlight on map + table.
+    (function () {
+      var m = new URLSearchParams(window.location.search).get("pays");
+      function apply(cc) {
+        if (!cc) return;
+        cc = cc.toUpperCase();
+        document.querySelectorAll("[data-indices-map] path[data-cc]").forEach(function (p) {
+          p.classList.toggle("idx-focus", p.getAttribute("data-cc") === cc);
+          p.classList.toggle("idx-dim", p.getAttribute("data-cc") !== cc);
+        });
+        var row = document.getElementById("pays-" + cc.toLowerCase());
+        if (row) { row.classList.add("idx-row-focus"); row.scrollIntoView({ block: "center", behavior: "smooth" }); }
+      }
+      apply(m);
+      document.querySelectorAll("[data-indices-map] path[data-cc]").forEach(function (p) {
+        p.addEventListener("click", function () {
+          var cc = p.getAttribute("data-cc");
+          history.replaceState(null, "", "?pays=" + cc);
+          document.querySelectorAll(".idx-row-focus").forEach(function (r) { r.classList.remove("idx-row-focus"); });
+          apply(cc);
+        });
+      });
+    })();
+  </script>
+</Base>

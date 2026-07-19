@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "kind": "site_index",
+  "labels": {
+    "title": {
+      "fr": "Indice SITE — ce que les territoires offrent",
+      "en": "SITE index — what the territories offer"
+    }
+  },
+  "methodology_version": "0.1.0",
+  "computed_at": null,
+  "credit": "scoremydatacenter.org · data: licence by source (ODbL, Licence Ouverte…) · methodology CC BY-SA 4.0",
+  "countries": {}
+}

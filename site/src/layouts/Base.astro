@@ -67,11 +67,11 @@ const home = lang === "en" ? "/" : "/fr/";
         <p class="footer-lic">Engine AGPL-3.0 · Data: licence by source (ODbL, Licence Ouverte…) · Methodology CC BY-SA 4.0<br/>© 2026 Franck Bardol and contributors</p>
       </div>
       {(lang === "fr" ? [
-        ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Les chiffres du parc", "/fr/chiffres"], ["Comprendre les data centers", "/fr/comprendre"]]],
+        ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Indices pays", "/fr/indices"], ["Les chiffres du parc", "/fr/chiffres"], ["Comprendre les data centers", "/fr/comprendre"]]],
         ["Ressources", [["Méthodologie", "/fr/methodologie"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque"], ["FAQ", "/fr/#faq"]]],
         ["À propos", [["Qui sommes-nous ?", "/fr/qui-sommes-nous"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
       ] : [
-        ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Fleet figures", "/figures"], ["Understanding data centers", "/understand"]]],
+        ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Country index", "/indices"], ["Fleet figures", "/figures"], ["Understanding data centers", "/understand"]]],
         ["Resources", [["Methodology", "/methodology"], ["Open model", "/#open"], ["Library", "/intelligence"], ["FAQ", "/#faq"]]],
         ["About", [["Who we are", "/who-we-are"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
       ]).map(([heading, links]: any) => (

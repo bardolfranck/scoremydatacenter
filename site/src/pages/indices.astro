@@ -1,0 +1,10 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN indices: thin page — the template lives in IndicesPage.astro (FR/EN, §13).
+import IndicesPage from "../components/IndicesPage.astro";
+import { EN_NAV } from "../config/nav";
+---
+
+<IndicesPage lang="en" nav={EN_NAV} altHref="/fr/indices" altLabel="🇫🇷 FR" />

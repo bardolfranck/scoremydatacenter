@@ -1,0 +1,98 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Country SITE-index map — geometry is the run-0 validated mockup, verbatim
+// (config/eu-map.json). Every country renders LETTER + DOCUMENTATION welded
+// (règle n°1); n<5 hatches as « en veille »; out-of-corpus neighbours stay
+// neutral grey. THE READING INSERT IS PART OF THIS COMPONENT and cannot be
+// detached from the map (amendement 2026-07-19 + §4 presence gate): any
+// surface that renders the map renders the insert.
+import euMap from "../config/eu-map.json";
+import indicesData from "../../public/data/indices.json";
+
+interface Props {
+  lang: "fr" | "en";
+  compact?: boolean; // home block: map only + insert (no legend)
+}
+const { lang, compact = false } = Astro.props;
+const INDICES = indicesData as any;
+
+const T = {
+  fr: {
+    insert: "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets.",
+    veille: "en veille — n < 5 : moyenne non calculée",
+    aria: "Carte d'Europe : indice SITE par pays",
+    reserved: "A réservé",
+    legend: {
+      a: "A ≥ 80 — réservé : ne s'affiche qu'adossé à des exploitations vérifiées (A-25)",
+      b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
+      veille: "en veille — n < 5 : moyenne non calculée",
+      dots: "●●● doc solide · ●●○ moyenne · ●○○ faible — la documentation accompagne toujours la note (règle n°1)",
+    },
+  },
+  en: {
+    insert: "This index aggregates SITE grades (the territorial context: grid, water, land, hazards). It grades neither operators nor how projects are run.",
+    veille: "on watch — n < 5: no mean computed",
+    aria: "Map of Europe: SITE index per country",
+    reserved: "A reserved",
+    legend: {
+      a: "A ≥ 80 — reserved: only shown backed by verified operations (A-25)",
+      b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
+      veille: "on watch — n < 5: no mean computed",
+      dots: "●●● solid doc · ●●○ medium · ●○○ weak — documentation always ships with the grade (rule #1)",
+    },
+  },
+}[lang];
+
+const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
+const countries = INDICES.countries as Record<string, any>;
+const gradeClass = (e: any) => (e?.eligible ? `idx-g${e.grade}` : "idx-veille");
+const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
+
+const titleFor = (iso: string, e: any) => {
+  if (!e) return iso;
+  if (!e.eligible) return `${iso} — ${T.veille} (n=${e.n})`;
+  const res = e.reserved_from === "A" ? ` · ${T.reserved}` : "";
+  return `${iso} — ${e.grade}${res} · ${fmtScore(e.score)} · n=${e.n} · doc ${e.documentation.band}`;
+};
+---
+
+<div class="idx-map" data-indices-map>
+  <p class="idx-insert">ⓘ {T.insert}</p>
+  <svg viewBox={euMap.viewBox} xmlns="http://www.w3.org/2000/svg" role="img" aria-label={T.aria}>
+    {euMap.context.map((d: string) => <path class="idx-cty idx-ctx" d={d} />)}
+    {Object.entries(euMap.countries).map(([iso, d]) => (
+      <path class={`idx-cty ${gradeClass(countries[iso])}`} d={d as string} data-cc={iso}>
+        <title>{titleFor(iso, countries[iso])}</title>
+      </path>
+    ))}
+    {Object.entries(euMap.labels).map(([iso, pos]: [string, any]) => {
+      const e = countries[iso];
+      if (!e) return null;
+      const letter = e.eligible ? e.grade : "–";
+      const res = e.eligible && e.reserved_from === "A";
+      return (
+        <text class={`idx-lbl ${e.eligible ? "" : "idx-lbl-veille"}`} x={pos.x} y={pos.y}
+          style={`font-size:${pos.big ? 15 : 11}px`} data-cc={iso}>
+          {iso} {letter}{res ? "·A rés." : ""}
+          {pos.big && e.eligible && <>
+            <tspan x={pos.x} dy="11" class="idx-lsub">{fmtScore(e.score)}</tspan>
+            <tspan x={pos.x} dy="10" class="idx-ldot">{DOTS[e.documentation.band]}</tspan>
+          </>}
+        </text>
+      );
+    })}
+  </svg>
+  {!compact && (
+    <div class="idx-legend">
+      <span><i class="idx-sw idx-gA"></i>{T.legend.a}</span>
+      <span><i class="idx-sw idx-gB"></i>{T.legend.b}</span>
+      <span><i class="idx-sw idx-gC"></i>{T.legend.c}</span>
+      <span><i class="idx-sw idx-gD"></i>{T.legend.d}</span>
+      <span><i class="idx-sw idx-gE"></i>{T.legend.e}</span>
+      <span><i class="idx-sw idx-swv"></i>{T.legend.veille}</span>
+      <span>{T.legend.dots}</span>
+    </div>
+  )}
+</div>
