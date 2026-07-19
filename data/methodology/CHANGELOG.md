@@ -2,6 +2,27 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0 (policy note) — 2026-07-19 — L2 power provenance: an aggregator MW is a claim, not a fact
+
+- **Rule (memo signed Franck Bardol, 2026-07-19)**: L2 ("monster ratio", MW per 1000 inhabitants) may
+  only carry `status: measured` when its power figure comes from a **regulatory register** (EED —
+  e.g. the Dutch RVO disclosure, which states the INSTALLED/RATED basis). A power figure from an
+  aggregator, the press or the operator itself is an unverified third-party claim whose basis
+  (IT load? grid feed? full-build?) is undeclared — measured wrong 2x-13x against the RVO register
+  (DCWatch's own CSV column is `power_total_mw`). Such L2 entries carry `status: announced`:
+  the existing declarative cap + confidence penalty apply. No weight, threshold or indicator
+  change — existing engine semantics only; version stays 0.1.0.
+- **Enforcement**: Gate 9 (`engine/validate.py`) blocks a 'measured' L2 on a positively-identified
+  non-regulatory figure; lenient on unattributed prose (never promoted NOR accused). Canonical tier
+  definition: `pipelines/labels/power_tier.py` (adds an `operator` tier); migration:
+  `scripts/migrate_l2_prudence.py`.
+- **Effect on the corpus (479 DC)**: 214 L2 entries flipped to announced; **43 site letters move
+  down one grade** (B 110→83, C 170→181, D 30→46) — every move recorded in the DC's public
+  score_history with this rationale. The 13 letter-fragile DCs were hand-checked first: 3 sourced
+  corrections applied (Colt campus 24 MW IT official — aggregator overstated 2.5x; DataOne 400 MW
+  announced per primary press), 10 marked "verification attempted, no better source".
+- Signatory: decision Franck Bardol (memo 2026-07-19), implemented in working session (Claude).
+
 ## 0.1.0 (metadata note) — 2026-07-15 — fill `published_at` (zero scoring change)
 
 - `published_at: null → "2026-07-14"` — the freeze date. The git tag `v0.1.0` remains the primary

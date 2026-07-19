@@ -126,3 +126,25 @@ def test_history_entry_fields_shape(methodology):
         "grades": {"site": "B", "project_process": "C"},
         "confidence": "high",
     }
+
+
+def test_gate9_l2_measured_on_aggregator_power(data_copy):
+    # memo 2026-07-19: an aggregator MW is a third-party claim — L2 may not stay 'measured' on it.
+    root, edit = data_copy
+    edit(ALPHA, lambda d: _ind(d, "L2")["source"].update(
+        title="puissance 7.0 MW (DCWatch ODbL, export 7dd5b5e9)"))
+    assert any("GATE 9" in p and "non-regulatory" in p for p in run_gates(root, TODAY))
+
+
+def test_gate9_l2_measured_on_regulatory_power_passes(data_copy):
+    root, edit = data_copy
+    edit(ALPHA, lambda d: _ind(d, "L2")["source"].update(
+        title="puissance 7.0 MW (EED register RVO, INSTALLED)"))
+    assert not any("GATE 9" in p for p in run_gates(root, TODAY))
+
+
+def test_gate9_lenient_on_unattributed_prose(data_copy):
+    # 'unknown' is never silently promoted NOR accused — fictional fixtures stay green.
+    root, edit = data_copy
+    edit(ALPHA, lambda d: _ind(d, "L2")["source"].update(title="Fictional census (test)"))
+    assert not any("GATE 9" in p for p in run_gates(root, TODAY))
