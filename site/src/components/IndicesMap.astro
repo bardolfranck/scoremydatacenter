@@ -106,6 +106,38 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
 
   const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
+  // Country-scale declutter (Franck 2026-07-20): we grade COUNTRIES here —
+  // country names and capitals are enough. Roads, rail, rivers, buildings,
+  // POIs and sub-capital place labels are noise at this scale and go dark.
+  // Same defensive pattern as whitenBasemap: layer inspection + try/catch,
+  // an upstream style update degrades to stock positron, never breaks.
+  const HIDE_SOURCE_LAYERS = new Set([
+    "transportation", "transportation_name", "aeroway", "building",
+    "housenumber", "poi", "waterway",
+  ]);
+  function declutter(map: any): void {
+    const apply = () => {
+      for (const layer of map.getStyle().layers ?? []) {
+        try {
+          const sl = (layer as any)["source-layer"];
+          if (HIDE_SOURCE_LAYERS.has(sl)) {
+            map.setLayoutProperty(layer.id, "visibility", "none");
+          } else if (sl === "place") {
+            // Positron ships a dedicated capitals layer (label_city_capital):
+            // keep it and the country/continent labels, hide every other
+            // place label (cities, towns, villages, states) — no setFilter,
+            // so no legacy/expression filter-syntax clash.
+            const id = layer.id.toLowerCase();
+            if (id.includes("country") || id.includes("continent") || id.includes("capital")) continue;
+            map.setLayoutProperty(layer.id, "visibility", "none");
+          }
+        } catch { /* unknown layer/property — leave it as designed */ }
+      }
+    };
+    if (map.isStyleLoaded()) apply();
+    else map.once("load", apply);
+  }
+
   document.querySelectorAll<HTMLElement>(".idx-map-canvas").forEach((canvas) => {
     const markers = JSON.parse(canvas.dataset.markers || "[]");
     const compact = canvas.classList.contains("idx-map-compact");
@@ -120,6 +152,7 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
       cooperativeGestures: true,
     });
     whitenBasemap(map);
+    declutter(map);
     if (!compact) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
     const bounds = new maplibregl.LngLatBounds();
