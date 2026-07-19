@@ -35,8 +35,9 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-TIERS = ("regulatory", "open_common", "press", "unknown")
+TIERS = ("regulatory", "operator", "open_common", "press", "unknown")
 _POWER_IN_L2 = re.compile(r"puissance\s+[\d.]+\s*MW\s*\(([^)]+)\)", re.I)
+_OPERATOR = re.compile(r"op[ée]rateur officiel|official operator|operator official", re.I)
 _OPEN_COMMON = re.compile(r"DCWatch|Hubblo", re.I)
 _PRESS = re.compile(r"presse|press|CNDP|concertation|communiqu", re.I)
 
@@ -66,7 +67,10 @@ def classify(dc: dict, provenance: dict | None) -> dict:
     cited = m.group(1).strip()
     out["source"] = cited
     out["evidence"] = title[:200]
-    if _OPEN_COMMON.search(cited):
+    if _OPERATOR.search(cited):
+        # The operator's own published figure: basis-aware but self-declared — a claim, not a fact.
+        out.update(tier="operator", confidence="medium", basis="self_declared")
+    elif _OPEN_COMMON.search(cited):
         # An open common (ODbL) — real provenance, but the figure's basis is undeclared: it may be
         # IT load, grid feed or full-build. That ambiguity is what makes the class low-confidence.
         out.update(tier="open_common", confidence="low", basis="undeclared")

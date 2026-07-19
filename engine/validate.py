@@ -18,12 +18,16 @@ Gate 6  Retrospective fixtures + transparency floor: enforced by the test
         suite (make test), which CI runs before make build.
 Gate 7  No grade rendered outside <ScoreBadge>: template lint, arrives with
         the site components (plan phase 2).
+Gate 9  L2 power provenance (memo 2026-07-19): a 'measured' L2 may only rest on a
+        regulatory-tier power figure (EED register); a positively-identified
+        aggregator/press/operator MW is a third-party claim -> 'announced'.
 Gate 8  Extraction coherence: a project indicator may only be 'missing' (an
         opacity claim) with a read-trace source once T2 attests a public dossier;
         'not_collected' (nobody looked) is a draft-only state and blocks publication.
 Journal gate: every score_history entry after the first carries a rationale.
 """
 
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -35,6 +39,12 @@ from .core import (
     datacenter_paths, watchlist_paths,
 )
 from .scoring import score_datacenter
+
+# Gate 9 — canonical tier definition lives in pipelines/labels/power_tier.py; the two patterns
+# are mirrored here because the engine imports nothing from pipelines. Unify the day the schema
+# gains a structured power_source field (A-16).
+_L2_POWER_PROSE = re.compile(r"puissance\s+[\d.]+\s*MW\s*\(([^)]+)\)", re.I)
+_L2_REGULATORY = re.compile(r"EED|RVO|registre r[ée]glementaire|regulatory register", re.I)
 
 # A watchlist entry is FACTS ONLY (A-19/A-21): a grade must be structurally
 # impossible. additionalProperties:false already blocks these keys; this explicit
@@ -179,6 +189,23 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                     f"GATE 8: {label}: {e['id']} is 'not_collected' but the DC is published — every project/"
                     "process indicator must be harvested (announced/measured) or verified-absent (missing) "
                     "before publication"
+                )
+
+        # Gate 9 — L2 power provenance (memo signed Franck 2026-07-19): a 'measured' L2 may
+        # only rest on a regulatory-tier power figure. Canonical tier definition:
+        # pipelines/labels/power_tier.py (patterns mirrored here — the engine imports nothing
+        # from pipelines; unify the day the schema gains a structured power_source field).
+        # Lenient on unattributed prose: 'unknown' is never silently promoted NOR accused.
+        l2e = entries_by_id.get("L2", {})
+        if l2e.get("status") == "measured":
+            _t = (l2e.get("source") or {}).get("title", "")
+            _m = _L2_POWER_PROSE.search(_t)
+            if _m and not _L2_REGULATORY.search(_m.group(1)):
+                problems.append(
+                    f"GATE 9: {label}: L2 is 'measured' on a non-regulatory power figure "
+                    f"({_m.group(1).strip()[:50]!r}) — an aggregator/press/operator MW is an "
+                    "unverified third-party claim: mark L2 'announced' (declarative cap + "
+                    "confidence penalty) until a regulatory register (EED) confirms it"
                 )
 
         # Gate 4 removed (2026-07-15): grades publish directly — no prior-notice hold.
