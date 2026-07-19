@@ -2,10 +2,7 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
-## ⏳ DRAFT — EN ATTENTE DE SIGNATURE (A-16) — 0.1.0 (aggregation note) — Indice SITE par pays
-
-> **Statut : rédigé, NON signé. Prérequis de mise en prod des surfaces `/fr/indices` (brief
-> 2026-07-18/19) — la PR reste non déployée tant que cette entrée n'est pas signée par Franck.**
+## 0.1.0 (aggregation note) — 2026-07-20 — Indice SITE par pays
 
 - **Objet** : publication d'un agrégat par pays — l'« indice SITE » — calculé par le moteur au
   build (`engine/indices.py` → `indices.json` + `indices_history.json`). **Aucun changement de
@@ -28,7 +25,7 @@ Every methodology change is a version bump with a rationale and a signatory. No 
 - **Historique** : append-only, événements uniquement (changement de lettre, bascule de réserve,
   bascule d'éligibilité, nouveau pays) ; le score continu dérive dans `indices.json`, pas dans
   l'historique. Gate d'idempotence : corpus inchangé ⇒ historique byte-identique.
-- Signataire : _(à signer — Franck Bardol)_.
+- Signataire : décision Franck Bardol (signée en session, 2026-07-20), implémentation Claude.
 
 ## 0.1.0 (policy note) — 2026-07-19 — L2 power provenance: an aggregator MW is a claim, not a fact
 
