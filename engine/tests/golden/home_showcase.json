@@ -1,0 +1,14 @@
+{
+  "schema_version": "1.0",
+  "kind": "home_showcase",
+  "rule": {
+    "demo": "site score closest to the corpus median; excluded: not operational, fewer than 4 pillars graded, any contestation, an operator response, a watchlist entry nearby; ties break on id",
+    "wall": "whole corpus, grade-then-country round robin"
+  },
+  "median_site_score": null,
+  "n_scored": 0,
+  "n_eligible_demo": 0,
+  "n_pipeline": 0,
+  "demo_candidates": [],
+  "wall_candidates": []
+}

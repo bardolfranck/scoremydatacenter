@@ -1,0 +1,110 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// « Le mur orbital » (Franck 2026-07-20) — the corpus seen from space, in a
+// marquee. What it proves in one glance: the scale (every fiche has its own
+// satellite image), the automation (crop + credit are pipeline-generated),
+// and the reality (no marketing render, the territory as it is).
+//
+// WHO appears is engine-owned (home_showcase.json, grade-then-country round
+// robin) — this component never picks favourites, it renders the given order
+// and keeps whatever carries an image. Tiles link to their fiche.
+//
+// Motion: three CSS-transform tracks, opposite directions, seamless via a
+// duplicated set. No JS, no reflow. Hover pauses everything; reduced-motion
+// freezes it. Images are lazy and served from the media domain (A-28 credit
+// is burned into each file, so the credit travels even when embedded).
+import showcaseData from "../../public/data/home_showcase.json";
+
+interface Props {
+  lang: "fr" | "en";
+  dcById: Record<string, any>;   // built once by the caller (import.meta.glob)
+}
+const { lang, dcById } = Astro.props;
+const SHOWCASE = showcaseData as any;
+
+const T = {
+  fr: {
+    eyebrow: "La preuve par l'image",
+    titleA: "sites.\u00a0", titleEm: "Vus du ciel.", titleB: "\u00a0Notés.",
+    lede: "Chaque data center du corpus est photographié depuis l'orbite, recadré automatiquement sur son emprise, et re-photographié à chaque mise à jour. Aucune image marketing : le territoire, tel qu'il est.",
+    projectTag: "Site en projet",
+    legend: "terrain nu ou chantier : le data center n'est pas encore construit — on note déjà le territoire qui l'accueillera.",
+    seeFiche: "voir la fiche →",
+    aria: "Vignettes satellite des sites notés — défilement décoratif",
+    credit: "Imagerie © Esri, Maxar, Earthstar Geographics",
+    hint: "Pause au survol · clic → la fiche du site",
+  },
+  en: {
+    eyebrow: "Proof you can look at",
+    titleA: "sites.\u00a0", titleEm: "Seen from orbit.", titleB: "\u00a0Graded.",
+    lede: "Every data centre in the corpus is photographed from orbit, cropped automatically to its footprint, and re-photographed at each update. No marketing imagery: the territory as it is.",
+    projectTag: "Planned site",
+    legend: "bare land or building site: the data centre does not exist yet — we already grade the territory that will host it.",
+    seeFiche: "see the fiche →",
+    aria: "Satellite thumbnails of graded sites — decorative marquee",
+    credit: "Imagery © Esri, Maxar, Earthstar Geographics",
+    hint: "Hover to pause · click for the site's fiche",
+  },
+}[lang];
+
+const PIPELINE = ["announced", "permitting", "under_construction"];
+const ROWS = 3;
+const PER_ROW = 13;
+
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const tiles = (SHOWCASE.wall_candidates as string[])
+  .map((id) => dcById[id])
+  .filter((dc: any) => dc?.satellite_image?.thumb)
+  .slice(0, ROWS * PER_ROW)
+  .map((dc: any) => ({
+    id: dc.id,
+    name: dc.name,
+    country: dc.country,
+    grade: dc.grades.site.grade,
+    thumb: dc.satellite_image.thumb,
+    planned: PIPELINE.includes(dc.project_status),
+  }));
+
+const rows = Array.from({ length: ROWS }, (_, i) => tiles.slice(i * PER_ROW, (i + 1) * PER_ROW))
+  .filter((r) => r.length);
+const nScored = SHOWCASE.n_scored;
+const hasPlanned = tiles.some((t) => t.planned);
+---
+
+{tiles.length > 0 && (
+  <section class="orbital" aria-labelledby="orbital-title">
+    <div class="orbital-inner">
+      <p class="orbital-eyebrow">{T.eyebrow}</p>
+      <h2 id="orbital-title" class="orbital-title">
+{nScored}&nbsp;{T.titleA} <em>{T.titleEm}</em> {T.titleB}
+      </h2>
+      <p class="orbital-lede">{T.lede}</p>
+    </div>
+
+    <div class="orbital-rows" role="img" aria-label={T.aria}>
+      {rows.map((row, i) => (
+        <div class="orbital-row">
+          {/* the set is rendered twice: the track translates by -50% and loops seamlessly */}
+          <div class={`orbital-track otrack-${i}`}>
+            {[0, 1].map((pass) => row.map((tile) => (
+              <a class="otile" href={`${ficheBase}/${tile.id}`}
+                tabindex={pass === 0 ? 0 : -1} aria-hidden={pass === 1 ? "true" : undefined}>
+                <img src={tile.thumb} alt="" loading="lazy" decoding="async" width="400" height="267" />
+                <span class={`otile-chip grade-${tile.grade.toLowerCase()}`}>{tile.grade}</span>
+                {tile.planned && <span class="otile-status">⏳ {T.projectTag}</span>}
+                <span class="otile-cap">{tile.name}<small>{tile.country} · {T.seeFiche}</small></span>
+              </a>
+            )))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {hasPlanned && (
+      <p class="orbital-legend"><i>⏳ {T.projectTag}</i>&nbsp;{T.legend}</p>
+    )}
+    <p class="orbital-foot"><span>{T.hint}</span><span>{T.credit}</span></p>
+  </section>
+)}

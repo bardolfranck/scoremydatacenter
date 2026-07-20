@@ -19,6 +19,7 @@ CREDIT = "scoremydatacenter.org · data: licence by source (ODbL, Licence Ouvert
 from .scoring import score_datacenter
 from .stats import build_stats
 from .indices import build_indices, update_history
+from .showcase import build_showcase
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -201,6 +202,9 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     indices = build_indices(datacenters, methodology, results)
     write_json(out_dir / "indices.json", indices)
     write_json(out_dir / "indices_history.json", update_history(indices, out_dir / "indices_history.json"))
+    # Home showcase (2026-07-20): who appears on the front page is a RULE,
+    # not an accident of filtering — the engine ranks, the site renders.
+    write_json(out_dir / "home_showcase.json", build_showcase(datacenters, results, watchlist))
     write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": features})
     write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": watch_features})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))
