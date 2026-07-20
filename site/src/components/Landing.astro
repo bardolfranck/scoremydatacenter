@@ -14,7 +14,11 @@ import type { PillarIconName } from "./PillarIcon.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
 import indicesData from "../../public/data/indices.json";
+import showcaseData from "../../public/data/home_showcase.json";
+import SatelliteWall from "./SatelliteWall.astro";
 import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
+
+const showcase = showcaseData as any;
 
 // Bloc home « Classement des pays » (brief indices §2.2) : top 5 éligibles.
 const idxCountries = (indicesData as any).countries as Record<string, any>;
@@ -39,6 +43,7 @@ import { readFileSync } from "node:fs";
 const real = scores.filter((d: any) => !d.id.startsWith("zz-"));
 const dcFiles = import.meta.glob("../../public/data/dc/*.json", { eager: true });
 const dcAll = Object.values(dcFiles).map((m: any) => (m as any).default).filter((d: any) => !d.id.startsWith("zz-"));
+const dcById: Record<string, any> = Object.fromEntries(dcAll.map((d: any) => [d.id, d]));
 const stressCount = dcAll.filter((d: any) => (d.indicators || []).some((i: any) =>
   i.id === "W1" && ["high", "extremely_high"].includes(String(i.value ?? "").toLowerCase()))).length;
 let watchCount = 0;
@@ -70,15 +75,19 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 const rankPath = lang === "fr" ? "/fr/classement" : "/ranking";
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
 
-// The "money shot" (brief 2026-07-12 #3): a real published case whose fiche grades
-// itself on scroll-in. Real data only — first non-fixture DC with a full pillar
-// spread, so the animation reveals what is already published, never a mock.
-const demo = scores.find((d: any) =>
-  !d.id.startsWith("zz-") &&
-  d.grades.site.grade !== "insufficient_data" &&
-  d.grades.site.score != null &&
-  pillarOrder.every((pid: string) => d.pillars[pid]?.grade && d.pillars[pid].grade !== "insufficient_data")
-) ?? scores.find((d: any) => !d.id.startsWith("zz-") && d.grades.site.score != null);
+// The "money shot" (brief 2026-07-12 #3): a real published case whose fiche
+// grades itself on scroll-in, now ON its own satellite photo (Franck 2026-07-20).
+// WHICH site is an engine decision, not a filter accident: home_showcase.json
+// ranks the most ORDINARY site (closest to the corpus median) and excludes every
+// hot signal. The old rule here demanded all 5 pillars — only 2 fiches of 479
+// qualify, and the home ended up on the most contested FR project by accident.
+// We walk the ranked candidates and take the first one that has a photo.
+const demoPick = (showcase.demo_candidates as any[])
+  .map((c: any) => ({ candidate: c, dc: dcById[c.id], score: scores.find((s: any) => s.id === c.id) }))
+  .find((x: any) => x.dc?.satellite_image?.url && x.score);
+const demo = demoPick?.score ?? scores.find((d: any) => !d.id.startsWith("zz-") && d.grades.site.score != null);
+const demoPhoto = demoPick?.dc?.satellite_image?.url ?? null;
+const demoPlace = demoPick?.dc?.municipality ?? null;
 
 const pillarIconName: Record<string, PillarIconName> = {
   energy: "energy", water: "water", land_biodiversity: "land",
@@ -185,8 +194,14 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <p class="why-body" set:html={t.whyBody}></p>
         </div>
         {t.demo && demo && (
-          <div class="score-demo">
+          <div class={`score-demo${demoPhoto ? " score-demo-photo" : ""}`}>
             <p class="sr-only">{t.demo.sr.replace("{name}", demo.name)}</p>
+            {demoPhoto && (
+              <>
+                <img class="demo-sat" src={demoPhoto} alt="" loading="lazy" decoding="async" />
+                <span class="demo-veil" aria-hidden="true"></span>
+              </>
+            )}
             <div class="demo-anim" aria-hidden="true">
               <p class="demo-kicker">{t.demo.kicker}</p>
               <div class="demo-body">
@@ -228,6 +243,14 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             </div>
             <p class="demo-caption">{t.demo.caption.replace("{name}", demo.name)}
               <button class="demo-replay" type="button">↻ {t.demo.replay}</button></p>
+            {demoPhoto && t.demo.why && (
+              // Why THIS site: the neutrality rule, stated where it is applied —
+              // a front-page pick that hides its rule is an editorial choice in disguise.
+              <p class="demo-why">{t.demo.why
+                .replace("{place}", demoPlace ?? demo.country)
+                .replace("{score}", lang === "fr" ? String(demo.grades.site.score).replace(".", ",") : String(demo.grades.site.score))
+                .replace("{n}", String(showcase.n_scored))}</p>
+            )}
           </div>
         )}
       </div>
@@ -303,6 +326,8 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       </form>
     </div>
   </section>
+
+  <SatelliteWall lang={lang} dcById={dcById} />
 
   <section class="section" id="indices" aria-labelledby="indices-title">
     <div class="section-inner">
