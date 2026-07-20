@@ -80,6 +80,11 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
 const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
+// The synthesis `lead` is per-language like the body. Back-compat: older records carry a bare
+// string (single language) — render it as-is until they are regenerated. New records carry
+// {fr,en,…}, resolved by the active locale exactly like the body, so adding a language is a locale,
+// not a code change (i18n §13: "la langue suit le pays").
+const Lead = (block: any) => (typeof block?.lead === "string" ? block.lead : L(block?.lead));
 const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
 
 const pillarIconName: Record<string, PillarIconName> = {
@@ -332,12 +337,12 @@ const pillars = methodology.pillars as any[];
             </div>
             <div class="synth-block synth-project">
               <span class="synth-tag">{t.synthProjectTag}</span>
-              <span class="synth-lead">{dc.synthesis.project_process.lead}</span>
+              <span class="synth-lead">{Lead(dc.synthesis.project_process)}</span>
               <p>{L(dc.synthesis.project_process)}</p>
             </div>
             <div class="synth-block synth-site">
               <span class="synth-tag">{t.synthSiteTag}</span>
-              <span class="synth-lead">{dc.synthesis.site.lead}</span>
+              <span class="synth-lead">{Lead(dc.synthesis.site)}</span>
               <p>{L(dc.synthesis.site)}</p>
             </div>
           </aside>

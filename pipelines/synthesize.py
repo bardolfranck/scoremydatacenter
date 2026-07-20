@@ -36,7 +36,7 @@ BANNED = ["mauvais", "scandaleu", "inacceptable", "catastroph", "désastr", "hon
 
 # project_process withheld → one honest, country-neutral statement (no model call needed).
 FIXED_PROJECT = {
-    "lead": "En attente de documentation",
+    "lead": {"fr": "En attente de documentation", "en": "Awaiting documentation"},
     "fr": ("Les éléments propres au projet et à son processus — efficacité annoncée, engagements sur "
            "l'eau et l'énergie, concertation, transparence du dossier — ne sont pas encore documentés "
            "au seuil requis. La note projet & processus n'est donc pas attribuée : sous le seuil de "
@@ -74,8 +74,25 @@ def measured_signals(scored: dict) -> list[dict]:
             "value": ind.get("value"),
             "score": ind.get("score"),
             "reading": _band(ind.get("score")),
+            # The measurement behind the label. Without it the model can only paraphrase the
+            # administrative name ("profil socio-économique favorable" — favourable to whom?),
+            # which is jargon. With it, it can write what was actually measured (a median income
+            # in euros). The attribution is stripped: the reader needs the QUANTITY, and naming a
+            # national source would break the country-neutral vocabulary rule below.
+            "measured": _measurement(ind),
         })
     return out
+
+
+def _measurement(ind: dict) -> str:
+    """The factual part of a source title — the quantity, never the issuing body."""
+    title = ((ind.get("source") or {}).get("title") or "").strip()
+    # Source titles are written "<issuing body> — <what was measured>"; keep the right-hand side.
+    for sep in (" — ", " - "):
+        if sep in title:
+            title = title.split(sep, 1)[1]
+            break
+    return title[:160]
 
 
 def build_prompt(source: dict, scored: dict) -> str:
@@ -90,10 +107,14 @@ def build_prompt(source: dict, scored: dict) -> str:
     nu = [s for s in signals if s["reading"] == "nuancé"]
 
     def fmt(items):
-        return "\n".join(f'    - {s["label"]} = {s["value"]} (score {s["score"]:.0f})' for s in items) or "    (aucun)"
+        return "\n".join(
+            f'    - {s["label"]} = {s["value"]} (score {s["score"]:.0f})'
+            + (f' — mesure : {s["measured"]}' if s.get("measured") else "")
+            for s in items) or "    (aucun)"
 
     want_pp = pp_grade != "insufficient_data"
-    shape = '{"site": {"lead","fr","en"}' + (', "project_process": {"lead","fr","en"}' if want_pp else "") + "}"
+    block_shape = '{"lead":{"fr","en"},"fr","en"}'
+    shape = '{"site": ' + block_shape + (', "project_process": ' + block_shape if want_pp else "") + "}"
     return f"""Tu écris la SYNTHÈSE d'une fiche data center pour un observatoire indépendant. Analyste sérieux,
 factuel, jamais militant. Tu ne juges pas, tu paraphrases des mesures sourcées. Orthogonal au pays :
 tu décris LES VALEURS CI-DESSOUS, jamais un présupposé (ex. « peu carbonée » n'a de sens que si le score l'indique).
@@ -115,11 +136,19 @@ RÈGLES (dures) :
 - Cite 1–3 favorables et 1–3 contraintes, les plus saillants ; termine en situant la note du site (sans lettre).
 - Vocabulaire GÉNÉRIQUE (réseau électrique local, zones naturelles protégées, site Seveso, masse d'eau,
   terrain artificialisé/agricole) — jamais un opérateur ou une source nationale.
+- **LANGAGE ORDINAIRE, pas de jargon administratif.** N'ÉCRIS JAMAIS l'étiquette de l'indicateur telle
+  quelle : dis ce qui est MESURÉ, avec le chiffre quand il est fourni en « mesure : ». Contre-exemple à
+  bannir : « le profil socio-économique de la commune est jugé favorable » — favorable pour qui ? Écris
+  plutôt : « les habitants de la commune ont un revenu médian de 30 680 € par an, au-dessus de la
+  moyenne ». Un lecteur non spécialiste doit comprendre sans dictionnaire.
+- Si tu emploies « favorable » ou « contrainte », dis TOUJOURS pour qui ou pour quoi (les riverains, la
+  ressource en eau, le raccordement du projet…). Un adjectif suspendu ne dit rien.
 - Ne crédite AUCUNE mitigation projet dans le volet site.
 - Interdits : « mauvais », « scandaleux », accusations/intentions, angle juridique. Emploie « médiocre/dégradé ».
 {"- VOLET PROJET & PROCESSUS : cohérent avec la note projet déjà calculée (INTERDIT de l'écrire) = " + pp_grade + " ; décris les engagements documentés, plafond « annoncé, pas prouvé »." if want_pp else ""}
 
-`lead` ≤ 6 mots, neutre. `fr` 2–3 phrases. `en` traduction fidèle.
+`lead` = un titre ≤ 6 mots, neutre, DANS LES DEUX LANGUES (`lead.fr` en français, `lead.en` en anglais —
+jamais l'anglais côté FR ni l'inverse). `fr` = 2–3 phrases. `en` = traduction fidèle du `fr`.
 Réponds UNIQUEMENT par un objet JSON valide de forme {shape} — aucun texte autour, aucune balise."""
 
 
@@ -129,7 +158,11 @@ def validate(synthesis: dict, dc_id: str = "dc") -> list[str]:
     for side, block in synthesis.items():
         if not isinstance(block, dict):
             continue
-        blob = " ".join(str(block.get(k, "")) for k in ("lead", "fr", "en")).lower()
+        lead = block.get("lead", "")
+        # lead is per-language now ({fr,en}); scan every string in it plus the body, so a banned
+        # word or a grade letter cannot slip through in one language's title.
+        lead_text = " ".join(lead.values()) if isinstance(lead, dict) else str(lead)
+        blob = (lead_text + " " + " ".join(str(block.get(k, "")) for k in ("fr", "en"))).lower()
         problems += [f"{dc_id}: synthesis.{side} uses banned term {w!r}" for w in BANNED if w in blob]
     return problems
 

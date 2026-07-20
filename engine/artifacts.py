@@ -40,10 +40,15 @@ def synthesis_grade_citations(dc: dict) -> list[str]:
         if not isinstance(texts, dict):
             continue
         for lang, text in texts.items():
-            if not isinstance(text, str):
-                continue
-            for m in _GRADE_IN_PROSE.finditer(text):
-                hits.append(f"{dc['id']}: synthesis.{badge}.{lang} cites grade {m.group(1)!r} in prose ({m.group(0)!r})")
+            # `lead` is per-language now ({fr,en}); flatten one nested level so a grade letter in a
+            # localized title is caught, not skipped. Body fields stay plain strings.
+            fields = text.items() if isinstance(text, dict) else [(lang, text)]
+            for sublang, value in fields:
+                if not isinstance(value, str):
+                    continue
+                for m in _GRADE_IN_PROSE.finditer(value):
+                    hits.append(f"{dc['id']}: synthesis.{badge}.{sublang} cites grade "
+                                f"{m.group(1)!r} in prose ({m.group(0)!r})")
     return hits
 
 
