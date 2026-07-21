@@ -43,10 +43,15 @@ _PIPELINE_STATUSES = ("announced", "permitting", "under_construction")
 
 
 def _corpus_date(sites: list[dict]) -> str | None:
+    # The corpus's freshest information date — MAX over BOTH score_history and
+    # source.accessed (their UNION), never one-or-the-other. The old
+    # "score_history else accessed" short-circuited on a handful of scored FR
+    # DCs (dated 2026-07-19) and ignored 5900+ sources freshly accessed on
+    # 2026-07-21 when a new country batch landed — dating the whole index two
+    # days stale. Deterministic (still corpus-derived, no clock); golden safe.
     dates = [e.get("date") for dc in sites for e in dc.get("score_history", []) if e.get("date")]
-    if not dates:
-        dates = [src["accessed"] for dc in sites for entry in dc["indicators"]
-                 if isinstance((src := entry.get("source")), dict) and src.get("accessed")]
+    dates += [src["accessed"] for dc in sites for entry in dc["indicators"]
+              if isinstance((src := entry.get("source")), dict) and src.get("accessed")]
     return max(dates) if dates else None
 
 
