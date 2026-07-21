@@ -72,3 +72,7 @@ their public grade. See [AUTHORS](AUTHORS), and cite the project via
 
 [scoremydatacenter.org](https://scoremydatacenter.org)
 
+
+## Déploiement
+
+Prod = **local uniquement** (`make deploy`, machine avec `../smdc-newsroom`). La CI ne déploie jamais. Runbook complet + statut juridique : [docs/DEPLOY.md](docs/DEPLOY.md).
