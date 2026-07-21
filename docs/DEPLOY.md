@@ -50,6 +50,28 @@ prochain `make deploy` local qui le relit.
 Une session sans ces trois éléments **ne peut pas** déployer — elle push, un
 mainteneur avec le montage lance `make deploy`.
 
+## ⚠️ UN SEUL run à la fois — le pipeline média n'est PAS concurrency-safe
+
+Toutes les sessions (agents inclus) tournent sur **la même machine** et partagent
+`~/.smdc/media.env`. Donc **n'importe quelle** session lançant `make deploy`,
+`make prod-artifacts` ou `make build` déclenche `media-sat --upload` avec les
+mêmes creds R2. Deux runs simultanés se battent sur R2 et sur les tuiles Esri →
+`ConnectionReset`, uploads échoués, photos manquantes (vécu le 2026-07-21 :
+un `make prod-artifacts` lancé par un autre agent en parallèle du deploy).
+
+Règle : **une seule** de ces commandes tourne à un instant donné. Avant de lancer,
+vérifie qu'aucun run média n'est en cours :
+
+```
+pgrep -fl "satellite|prod-artifacts" || echo "safe"
+```
+
+La reprise est sûre : le manifest `.media-sat/uploaded.txt` (append-on-succès)
+fait sauter les photos déjà sur R2, donc relancer après un run interrompu ne
+regénère que ce qui manque. **Répartition** : la moisson du corpus (scores,
+synthèses → newsroom) et la génération média + `make deploy` (→ R2 + Cloudflare)
+sont deux lanes distinctes ; elles ne doivent pas tourner en même temps.
+
 ## Gate qui casse le deploy
 
 **Gate 7 (prose)** : `build_artifacts` lève une `GateError` si une synthèse cite
