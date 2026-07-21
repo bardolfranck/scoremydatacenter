@@ -126,18 +126,25 @@ def collect_grid_capacity(lat: float, lon: float, accessed: str) -> list[dict]:
         return []
     best = min(subs, key=lambda s: haversine_m(lat, lon, s["lat"], s["lon"]))
     dist_km = round(haversine_m(lat, lon, best["lat"], best["lon"]) / 1000, 2)
-    mw = best.get("load_0flex_mw")
+    # Band on Elia's WITH-flexibility figure (Load 20% flex), not the 0%-flex worst case: 0% flex
+    # read `saturated` for ~40 of 42 Belgian substations, collapsing the whole country's energy
+    # pillar to E on a single scenario choice. 20% flex is Elia's own published demand-flexibility
+    # capacity — the realistic operational reading — with the 0% figure kept in the source for the
+    # conservative bound. Fall back to 0% only if the 20% column is empty.
+    mw = best.get("load_20flex_mw")
+    if mw is None:
+        mw = best.get("load_0flex_mw")
     if mw is None:
         return []
-    flex = best.get("load_20flex_mw")
-    flex_txt = f" ({flex} MW at 20% flex)" if flex is not None else ""
+    conservative = best.get("load_0flex_mw")
+    cons_txt = f" (worst case {conservative} MW at 0% flex)" if conservative is not None else ""
     return [{
         "id": "E2",
         "status": "measured",
         "value": _e2_category(float(mw)),
         "source": _source(
-            f"Elia Hosting Capacity Map (2027, Load 0% flex) — nearest substation "
-            f"{best['substation']} at {dist_km} km: {mw} MW available for load{flex_txt}. "
+            f"Elia Hosting Capacity Map (2027, Load 20% flex — with demand flexibility) — nearest "
+            f"substation {best['substation']} at {dist_km} km: {mw} MW available for load{cons_txt}. "
             f"Provisional FR bands",
             "https://www.elia.be/en/customers/connection/grid-hosting-capacity",
             accessed),
