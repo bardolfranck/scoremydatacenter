@@ -119,6 +119,53 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 .main-nav a:hover { color: var(--accent); }
 .lang-switch { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.8rem; }
 
+/* ── Grouped header: 4 heads, dropdowns on desktop, accordions on mobile ── */
+.nav-group { position: relative; }
+.nav-summary {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  color: var(--ink-soft); font-weight: 650;
+}
+.nav-summary::-webkit-details-marker { display: none; }
+.nav-summary:hover,
+.nav-group[open] > .nav-summary { color: var(--accent); }
+.nav-summary.is-active { color: var(--ink); }              /* current section */
+.nav-summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.nav-caret { flex: none; transition: transform 0.18s ease; }
+.nav-group[open] > .nav-summary .nav-caret { transform: rotate(180deg); }
+
+.nav-menu {
+  position: absolute; top: calc(100% + 9px); left: 0; z-index: 20;
+  min-width: 212px; display: grid; gap: 2px;
+  padding: 8px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--paper); box-shadow: 0 14px 34px rgba(20, 30, 45, 0.15);
+}
+/* invisible bridge so the pointer can cross the gap without closing the menu */
+.nav-menu::before { content: ""; position: absolute; left: 0; right: 0; top: -9px; height: 9px; }
+.nav-menu a {
+  display: block; padding: 8px 11px; border-radius: 8px;
+  font-weight: 600; color: var(--ink-soft); white-space: nowrap;
+}
+.nav-menu a:hover { background: var(--wash); color: var(--accent); }
+.nav-menu a.is-active { background: var(--wash); color: var(--ink); }
+.nav-link.is-active { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) { .nav-caret { transition: none; } }
+
+/* Stacked header (≤960): the row can't hold 4 dropdowns → vertical accordion. */
+@media (max-width: 960px) {
+  .main-nav { flex-direction: column; align-items: stretch; width: 100%; gap: 2px; }
+  .nav-group { width: 100%; border-top: 1px solid var(--line); }
+  .nav-summary { justify-content: space-between; width: 100%; padding: 11px 2px; }
+  .nav-menu {
+    position: static; min-width: 0; padding: 0 0 8px 14px;
+    border: none; border-radius: 0; background: transparent; box-shadow: none;
+  }
+  .nav-menu::before { display: none; }
+  .main-nav > .nav-link { width: 100%; padding: 11px 2px; border-top: 1px solid var(--line); }
+  .main-nav > .lang-switch { align-self: flex-start; width: auto; margin-top: 8px; }
+}
+
 /* Hero — split, image right, dual-grade panel anchored to the real product */
 .hero {
   display: grid;
