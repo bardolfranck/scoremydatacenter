@@ -88,6 +88,18 @@ rescore:
 build:
 	@if [ -d ../smdc-newsroom/calibration ]; then $(MAKE) prod-artifacts; else $(MAKE) score; fi
 	npm run build --prefix site
+	$(MAKE) prune-public-json
+
+# Anti-pillage (Franck 2026-07-22): the deployed site serves HTML, never the raw
+# data. The build already INLINES every JSON it needs into the HTML; Astro also
+# mirrors public/data/*.json into dist/ — those served copies are the bulk-scrape
+# hole (one curl on scores.json = the whole corpus). Delete them, keeping ONLY
+# the two geojson the map fetches at runtime (already reduced to the free Seau-A
+# floor). The machine door becomes the (future) authenticated API, nothing else.
+prune-public-json:
+	@rm -rf site/dist/data/dc
+	@find site/dist/data -maxdepth 1 -type f ! -name '*.geojson' -delete
+	@echo "prune: dist/data serves only → $$(ls site/dist/data 2>/dev/null | tr '\n' ' ')"
 
 test: headers-check
 	uv run pytest -q

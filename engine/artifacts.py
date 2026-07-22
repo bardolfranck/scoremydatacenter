@@ -112,29 +112,34 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
         result = results[dc_id]
         scores.append(_summary(dc, result))
 
+        # ── Anti-pillage (Franck 2026-07-22): map.geojson is the ONE data file
+        # the site MUST serve publicly (the map fetches it client-side), so it
+        # is the paywall's real frontier. It carries ONLY the free "Seau A"
+        # floor — the identity + the site LETTER — and NOTHING sellable. Dropped
+        # here (premium, Seau B, sold via the API): operator grade, per-pillar
+        # scores, exact power_mw, the citable quote, confidence, precise GPS.
+        # Coordinates are rounded to ~1 km (2 decimals); a coarse size_tier
+        # keeps the map's dot-sizing without disclosing the MW figure.
+        coords = dc["identity"]["coordinates"]
+        mw = dc["identity"].get("power_mw")
+        size_tier = 0 if not isinstance(mw, (int, float)) else (1 if mw < 10 else 2 if mw < 50 else 3)
         features.append({
             "type": "Feature",
             "geometry": {
                 "type": "Point",
-                "coordinates": [dc["identity"]["coordinates"]["lon"], dc["identity"]["coordinates"]["lat"]],
+                "coordinates": [round(coords["lon"], 2), round(coords["lat"], 2)],
             },
             "properties": {
                 "id": dc_id,
                 "name": dc["identity"]["name"],
+                "operator": dc["identity"]["operator"],
+                "municipality": dc["identity"]["municipality"],
+                "country": dc["identity"]["country"],
                 "grade_site": result["grades"]["site"]["grade"],
-                "grade_project_process": result["grades"]["project_process"]["grade"],
-                # A-25: only emitted when the letter was capped from A (keeps zz fixtures byte-stable).
+                # A-25 reserve is part of the public letter's presentation, not a sold field.
                 **({"reserved_site": True} if result["grades"]["site"].get("reserved_from") == "A" else {}),
-                **({"reserved_pp": True} if result["grades"]["project_process"].get("reserved_from") == "A" else {}),
-                "confidence": result["confidence"]["level"],
-                "power_mw": dc["identity"].get("power_mw"),
                 "project_status": dc["identity"]["project_status"],
-                # A richer popup than two letters: per-pillar grades + the generated
-                # citable line (the map teaser that makes people click through).
-                "pillars": [{"id": p["id"], "grade": result["pillars"][p["id"]]["grade"]}
-                            for p in methodology["pillars"]],
-                "quote_fr": result["citable_quote"]["fr"],
-                "publication_status": dc["publication"]["status"],
+                "size_tier": size_tier,
             },
         })
 
@@ -181,7 +186,8 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # The engine never scores these; it only passes the facts through to the map.
     watch_features = [{
         "type": "Feature",
-        "geometry": {"type": "Point", "coordinates": [e["coordinates"]["lon"], e["coordinates"]["lat"]]},
+        # Coords rounded to ~1 km like the graded layer (no precise GPS in a public file).
+        "geometry": {"type": "Point", "coordinates": [round(e["coordinates"]["lon"], 2), round(e["coordinates"]["lat"], 2)]},
         "properties": {
             "id": e["id"],
             "name": e["name"],

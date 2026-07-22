@@ -14,35 +14,12 @@
       "properties": {
         "id": "zz-test-alpha",
         "name": "Alpha Test Campus",
+        "operator": "Alpha Fictional Cloud (test fixture)",
+        "municipality": "Alphaville",
+        "country": "ZZ",
         "grade_site": "B",
-        "grade_project_process": "C",
-        "confidence": "high",
-        "power_mw": 120,
         "project_status": "permitting",
-        "pillars": [
-          {
-            "id": "energy",
-            "grade": "B"
-          },
-          {
-            "id": "water",
-            "grade": "B"
-          },
-          {
-            "id": "land_biodiversity",
-            "grade": "B"
-          },
-          {
-            "id": "local_impact",
-            "grade": "B"
-          },
-          {
-            "id": "transparency_governance",
-            "grade": "B"
-          }
-        ],
-        "quote_fr": "Noté B sur le site, C en projet & processus.",
-        "publication_status": "published"
+        "size_tier": 3
       }
     },
     {
@@ -57,35 +34,12 @@
       "properties": {
         "id": "zz-test-beta",
         "name": "Beta Test Hyperscale",
+        "operator": "Beta Fictional Compute (test fixture)",
+        "municipality": "Betaburg",
+        "country": "ZZ",
         "grade_site": "E",
-        "grade_project_process": "insufficient_data",
-        "confidence": "medium",
-        "power_mw": 900,
         "project_status": "announced",
-        "pillars": [
-          {
-            "id": "energy",
-            "grade": "E"
-          },
-          {
-            "id": "water",
-            "grade": "E"
-          },
-          {
-            "id": "land_biodiversity",
-            "grade": "E"
-          },
-          {
-            "id": "local_impact",
-            "grade": "E"
-          },
-          {
-            "id": "transparency_governance",
-            "grade": "insufficient_data"
-          }
-        ],
-        "quote_fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
-        "publication_status": "published"
+        "size_tier": 3
       }
     }
   ]
