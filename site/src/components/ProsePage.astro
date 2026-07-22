@@ -7,6 +7,7 @@
 // complete HTML blocks (<p>…</p>, <ul>…</ul>), back link. Keeps the two
 // languages structurally identical.
 import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
 
 const { lang, t, nav, altHref, altLabel } = Astro.props as {
   lang: "fr" | "en";
@@ -16,7 +17,7 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
     sections: { h2: string; html: string[] }[];
     backHref: string; backLabel: string;
   };
-  nav: { href: string; label: string }[];
+  nav: NavNode[];
   altHref: string; altLabel: string;
 };
 ---

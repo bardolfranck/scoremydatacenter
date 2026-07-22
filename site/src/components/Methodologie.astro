@@ -7,12 +7,13 @@
 // the doctrine prose lives in the page t objects. The exhaustive 24-indicator
 // table is collapsed (<details>) and force-expanded in print.
 import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import methodologyData from "../../public/data/methodology.json";
 
 const { lang, t, nav, altHref, altLabel } = Astro.props as {
-  lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
+  lang: "fr" | "en"; t: any; nav: NavNode[];
   altHref: string; altLabel: string;
 };
 

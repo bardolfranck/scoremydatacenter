@@ -12,6 +12,7 @@
 // mécanique publiée · méthode-garantie. La phrase de section reste COMPOSÉE
 // au build (plus fort bonus publié + plus forte friction — zéro LLM).
 import "@fontsource/bricolage-grotesque/700.css";
+import type { NavNode } from "../config/nav";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
 import ScoreBadge from "./ScoreBadge.astro";
@@ -42,7 +43,7 @@ import {
 interface Props {
   lang: Lang;
   perimeter: string;
-  nav: { href: string; label: string }[];
+  nav: NavNode[];
   basePath: string;
   altBase: string;
 }

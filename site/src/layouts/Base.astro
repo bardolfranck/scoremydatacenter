@@ -3,6 +3,7 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import "../styles/global.css";
+import { isGroup, type NavNode } from "../config/nav";
 
 interface Props {
   lang: "en" | "fr";
@@ -11,12 +12,23 @@ interface Props {
   tagline: string;
   altHref: string; // path of the same page in the other language
   altLabel: string;
-  nav: { href: string; label: string }[];
+  nav: NavNode[];
   ogImage?: string; // absolute URL of the social card
 }
 const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = Astro.props;
 const altLang = lang === "en" ? "fr" : "en";
 const home = lang === "en" ? "/" : "/fr/";
+
+// Mark the current section so the header shows where you are. Anchor links
+// (/#faq…) point back to a homepage section, never a standalone page, so they
+// never light up. Compare on the path only, trailing slash normalised.
+const here = (Astro.url.pathname.replace(/\/+$/, "") || "/");
+const isActive = (href: string) => {
+  if (href.includes("#")) return false;
+  const p = (href.replace(/\/+$/, "") || "/");
+  return p === here;
+};
+const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActive(c.href));
 ---
 
 <!doctype html>
@@ -51,9 +63,56 @@ const home = lang === "en" ? "/" : "/fr/";
           aria-label={lang === "fr" ? "Rechercher dans les projets notés" : "Search the scored projects"} />
       </form>
       <nav class="main-nav" aria-label="Site sections">
-        {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+        {nav.map((item) => (
+          isGroup(item) ? (
+            <details class="nav-group" data-nav-group>
+              <summary class:list={["nav-summary", { "is-active": groupActive(item) }]}>
+                <span>{item.label}</span>
+                <svg class="nav-caret" viewBox="0 0 12 12" width="11" height="11" aria-hidden="true">
+                  <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </summary>
+              <div class="nav-menu">
+                {item.children.map((c) => (
+                  <a href={c.href} class:list={{ "is-active": isActive(c.href) }}
+                     aria-current={isActive(c.href) ? "page" : undefined}>{c.label}</a>
+                ))}
+              </div>
+            </details>
+          ) : (
+            <a class:list={["nav-link", { "is-active": isActive(item.href) }]} href={item.href}
+               aria-current={isActive(item.href) ? "page" : undefined}>{item.label}</a>
+          )
+        ))}
         <a class="lang-switch" href={altHref}>{altLabel}</a>
       </nav>
+      <script>
+        // Progressive enhancement over native <details> (which already gives
+        // click + keyboard + no-JS). Desktop pointer: open on hover, single
+        // group open at a time; everywhere: close on outside-click and Escape.
+        const groups = Array.from(document.querySelectorAll<HTMLDetailsElement>("[data-nav-group]"));
+        const fine = matchMedia("(hover: hover) and (pointer: fine)");
+        for (const g of groups) {
+          g.addEventListener("toggle", () => {
+            if (g.open) for (const o of groups) if (o !== g) o.open = false;
+          });
+          if (fine.matches) {
+            let t: number | undefined;
+            g.addEventListener("pointerenter", () => { clearTimeout(t); g.open = true; });
+            g.addEventListener("pointerleave", () => { t = window.setTimeout(() => { g.open = false; }, 130); });
+          }
+        }
+        document.addEventListener("click", (e) => {
+          if (!(e.target as HTMLElement).closest("[data-nav-group]"))
+            for (const g of groups) g.open = false;
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") for (const g of groups) if (g.open) {
+            g.open = false;
+            g.querySelector("summary")?.focus();
+          }
+        });
+      </script>
     </header>
     <main>
       <slot />

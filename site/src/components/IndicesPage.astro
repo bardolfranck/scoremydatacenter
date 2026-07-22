@@ -9,6 +9,7 @@
 // ?pays=XX shareable state. Letters render ONLY through the map component
 // and the table chips (gate 7 extended).
 import "@fontsource/bricolage-grotesque/700.css";
+import type { NavNode } from "../config/nav";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
 import IndicesMap from "./IndicesMap.astro";
@@ -18,7 +19,7 @@ import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
 
 interface Props {
   lang: "fr" | "en";
-  nav: { href: string; label: string }[];
+  nav: NavNode[];
   altHref: string;
   altLabel: string;
 }
