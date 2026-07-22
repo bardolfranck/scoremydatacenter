@@ -16,6 +16,7 @@ import methodologyData from "../../public/data/methodology.json";
 import indicesData from "../../public/data/indices.json";
 import showcaseData from "../../public/data/home_showcase.json";
 import SatelliteWall from "./SatelliteWall.astro";
+import CountryRing from "./CountryRing.astro";
 import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
 
 const showcase = showcaseData as any;
@@ -48,7 +49,8 @@ const stressCount = dcAll.filter((d: any) => (d.indicators || []).some((i: any) 
   i.id === "W1" && ["high", "extremely_high"].includes(String(i.value ?? "").toLowerCase()))).length;
 let watchCount = 0;
 try { watchCount = JSON.parse(readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf8")).features.length; } catch { /* optional layer */ }
-const nCountries = new Set(real.map((d: any) => d.country)).size;
+const ringCountries = [...new Set(real.map((d: any) => d.country))].filter(Boolean);
+const nCountries = ringCountries.length;
 const noPowerCount = real.filter((d: any) => typeof d.power_mw !== "number").length;
 const corpusStats = [
   { figure: String(real.length), label: t.corpus.noted },
@@ -56,6 +58,9 @@ const corpusStats = [
   { figure: String(stressCount), label: t.corpus.stress },
   { figure: String(watchCount), label: t.corpus.watch },
 ];
+// The flag ring now MAKES the "N pays" statement, so the hero strip drops that
+// stat and keeps the three figures the ring can't say (sites / stress / veille).
+const heroStrip = corpusStats.filter((s) => s.label !== t.corpus.countries);
 // Explore teasers — the strongest project and the two most exposed, percentile-framed
 // (A-27 register: we situate, we never judge), plus the last scored fiches.
 const graded = real.filter((d: any) => typeof d.grades.site.score === "number");
@@ -131,10 +136,11 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <a class="button button-secondary" href="#method">{t.ctaMethod}</a>
       </div>
     </div>
-    <aside class="hero-corpus" aria-label={t.corpus.aria}>
+    <aside class="hero-corpus hero-ring-aside" aria-label={t.corpus.aria}>
       <p class="corpus-label">{t.corpus.label}</p>
-      <div class="corpus-stats">
-        {corpusStats.map((stat) => (
+      <CountryRing countries={ringCountries} lang={lang} />
+      <div class="corpus-stats corpus-strip">
+        {heroStrip.map((stat) => (
           <div class="stat">
             <b><span class="sr-only">{stat.figure}</span><span class="stat-anim" aria-hidden="true">{stat.figure}</span></b>
             <span>{stat.label}</span>
