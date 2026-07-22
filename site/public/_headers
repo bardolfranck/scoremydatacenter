@@ -1,0 +1,7 @@
+# Anti-pillage (Franck 2026-07-22): the raw data files are never served (the
+# build prunes them from dist/), but if one is EVER re-exposed by accident it
+# must not become a 7-day-cached bulk-scrape hole. Force no-store on every
+# /data/*.json path. The two geojson the map needs (*.geojson) keep a normal
+# cache — they are the free Seau-A floor and benefit from edge caching.
+/data/*.json
+  Cache-Control: no-store, max-age=0
