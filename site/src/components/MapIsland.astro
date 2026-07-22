@@ -111,6 +111,7 @@ const { variant, labels } = Astro.props;
     const animateIntro = !isFull && !reducedMotion;
     const DROP_WINDOW_MS = 2200; // whole cascade fits in ~2.2s whatever the pin count
 
+    const introDots: HTMLElement[] = [];
     const bounds = new maplibregl.LngLatBounds();
     geo.features.forEach((feature: any, idx: number) => {
       const p = feature.properties;
@@ -134,8 +135,10 @@ const { variant, labels } = Astro.props;
       dot.title = `${p.name} — ${mw != null ? `${mw} MW` : (labels.powerUnknown ?? "puissance non communiquée")}`;
       el.appendChild(dot);
       if (animateIntro) {
-        dot.classList.add("chip-drop");
+        // Armed but hidden until the section scrolls into view (see below).
+        dot.classList.add("pin-armed");
         dot.style.setProperty("--pin-delay", `${Math.round((idx / geo.features.length) * DROP_WINDOW_MS)}ms`);
+        introDots.push(dot);
       }
 
       const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
@@ -161,14 +164,29 @@ const { variant, labels } = Astro.props;
       markerById[p.id] = { marker, center: [lon, lat] };
     });
 
-    // One light sweep after the pins have landed — a single pass, then gone.
+    // Play the cascade WHEN THE SECTION SCROLLS INTO VIEW, not on load (Franck
+    // 2026-07-21): since the satellite wall moved to position 2, "Explorer les
+    // scores" now sits well below the fold — a load-time animation fired unseen.
+    // Pins stay armed (hidden) until the map enters the viewport, then drop +
+    // one light sweep. Fires once; degrades to immediate play without IO.
     if (animateIntro) {
-      const scan = document.createElement("div");
-      scan.className = "map-scan";
-      scan.setAttribute("aria-hidden", "true");
-      scan.style.setProperty("--scan-delay", `${DROP_WINDOW_MS + 500}ms`);
-      scan.addEventListener("animationend", () => scan.remove());
-      canvas.appendChild(scan);
+      const playIntro = () => {
+        for (const dot of introDots) { dot.classList.remove("pin-armed"); dot.classList.add("chip-drop"); }
+        const scan = document.createElement("div");
+        scan.className = "map-scan";
+        scan.setAttribute("aria-hidden", "true");
+        scan.style.setProperty("--scan-delay", `${DROP_WINDOW_MS + 500}ms`);
+        scan.addEventListener("animationend", () => scan.remove());
+        canvas.appendChild(scan);
+      };
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+          if (entries.some((e) => e.isIntersecting)) { io.disconnect(); playIntro(); }
+        }, { threshold: 0.3 });
+        io.observe(root);
+      } else {
+        playIntro();
+      }
     }
 
     if (focusId && markerById[focusId]) {
