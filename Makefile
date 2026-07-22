@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2
 
 install:
 	uv sync
@@ -124,6 +124,32 @@ methodology-doc:
 prod-artifacts:
 	uv run python scripts/build_prod_artifacts.py
 	-@if [ -f $$HOME/.smdc/media.env ]; then 	  set -a; . $$HOME/.smdc/media.env; set +a; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
+	$(MAKE) sync-api-r2
+
+# Go-live paid-API hook (Franck 2026-07-23): push the freshly built artifacts to
+# the PRIVATE API bucket (paid Seau B) via the API repo's own sync script. It is
+# GARDÉ + NON FATAL + INERTE — it does NOTHING until BOTH exist: the committed
+# script AND its dedicated R2 creds. So a site deploy can never touch the API
+# bucket by accident, and never before the API's test key is killed + auth locked
+# (P6: the paywall must be shut before the real corpus lands in R2).
+# Contract for agent-codeur-API:
+#   - script:  api/scripts/sync-r2.sh  (committed; runs `aws s3 sync … --delete`,
+#              excludes zz-*, targets the smdc-api-data bucket)
+#   - creds:   ~/.smdc/r2-api.env  (KEY=VALUE — AWS_ACCESS_KEY_ID / _SECRET_ACCESS_KEY
+#              / endpoint), an S3 R2 token scoped to smdc-api-data ONLY. NOT the
+#              média-sat HMAC token (different mechanism + least privilege).
+# Env is parsed line-by-line (KEY=VALUE only) — a malformed line is skipped, never
+# executed, so a secret can never leak into the build log (cf. the cloudflare.env
+# lesson).
+SYNC_R2 ?= api/scripts/sync-r2.sh
+sync-api-r2:
+	-@if [ -f "$(SYNC_R2)" ] && [ -f "$$HOME/.smdc/r2-api.env" ]; then \
+	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < "$$HOME/.smdc/r2-api.env"; \
+	  echo "sync-api-r2: pushing published artifacts → smdc-api-data (R2)"; \
+	  sh "$(SYNC_R2)" || echo "sync-api-r2: non-fatal failure (see logs)"; \
+	else \
+	  echo "sync-api-r2: inert — needs $(SYNC_R2) (committed) + ~/.smdc/r2-api.env; API bucket untouched"; \
+	fi
 
 # Génération/upload manuel des photos satellite (mêmes règles, à la demande).
 media-sat:
