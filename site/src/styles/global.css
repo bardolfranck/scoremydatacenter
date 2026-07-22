@@ -1322,6 +1322,67 @@ sup a { color: var(--accent); font-weight: 750; }
 .corpus-scale .hs-cell { width: 30px; height: 30px; font-size: 0.9rem; border-radius: 7px; }
 .corpus-scale p { margin: 0; font-size: 0.8rem; line-height: 1.4; color: var(--ink-soft); }
 
+/* ── The « N pays » flag-ring signature (hero right column) ─────────────── */
+.hero-ring-aside { display: flex; flex-direction: column; align-items: center; }
+.hero-ring-aside .corpus-label { align-self: flex-start; }
+/* the ring IS the country statement → the strip below drops to 3 even columns */
+.hero-ring-aside .corpus-strip { grid-template-columns: repeat(3, 1fr); width: 100%; gap: 14px 12px; }
+
+.country-ring {
+  position: relative;
+  width: var(--box); height: var(--box);
+  max-width: 100%;
+  margin: 14px auto 4px;
+}
+/* keep the ring fluid on narrow cards without distorting the trig positions */
+@media (max-width: 1040px) { .country-ring { transform: scale(0.92); transform-origin: center; margin: 6px auto 0; } }
+
+.ring-rotor { position: absolute; inset: 0; transform-origin: 50% 50%; }
+.ring-guide {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(var(--ring-r) * 2); height: calc(var(--ring-r) * 2);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 1px dashed color-mix(in srgb, var(--line) 80%, transparent);
+}
+.fslot {
+  position: absolute;
+  width: var(--flag-w); height: var(--flag-h);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 1px 2px rgba(20, 30, 45, 0.14));
+  will-change: transform;
+}
+.fflag { display: block; width: var(--flag-w); height: var(--flag-h); border-radius: 3px; }
+.fslot-chip { display: grid; place-items: center; }
+.fchip {
+  display: grid; place-items: center;
+  width: var(--flag-w); height: var(--flag-h);
+  font-family: var(--font-mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.04em;
+  color: var(--ink-soft); background: var(--wash);
+  border: 1px solid var(--line); border-radius: 3px;
+}
+.ring-core {
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  display: grid; justify-items: center; gap: 2px;
+  text-align: center; pointer-events: none;
+}
+.ring-n { font-size: 3.2rem; line-height: 1; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.ring-label {
+  font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+}
+
+/* Slow living rotation: the rotor turns, each flag counter-turns to stay upright.
+   Same duration + linear + opposite sign → flags orbit without tumbling. It arms
+   on scroll-in (JS adds .ring-live) so it isn't spinning unseen above the fold. */
+@keyframes ring-orbit { to { transform: rotate(360deg); } }
+@keyframes ring-upright { to { transform: rotate(-360deg); } }
+@media (prefers-reduced-motion: no-preference) {
+  .country-ring.ring-live .ring-rotor { animation: ring-orbit 90s linear infinite; }
+  .country-ring.ring-live .fslot { animation: ring-upright 90s linear infinite; }
+}
+
 /* Manifesto strip — the motto as a first-class citizen */
 .manifesto { border-block: 1px solid #ead9b8; background: #fdf8ee; padding: 26px clamp(20px, 6vw, 72px); }
 .manifesto-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 20px; align-items: flex-start; }
