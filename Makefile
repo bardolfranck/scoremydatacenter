@@ -135,6 +135,26 @@ media-sat:
 # Indexing open since 2026-07-16 (noindex lifted on Franck's call; robots.txt + sitemap served).
 deploy: build
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
+	$(MAKE) purge-cache
+
+# Post-deploy cache purge (Franck 2026-07-22): a Pages deploy does NOT evict the
+# edge cache of paths it REMOVED (scores.json etc.) — "Purge Everything" misses
+# them too. So we purge the data prefix by URL explicitly. Needs a Cloudflare
+# token with Zone > Cache Purge:Edit + the zone id, in ~/.smdc/cloudflare.env
+# (CF_PURGE_TOKEN=... / CF_ZONE_ID=...). Without it: skipped with a loud notice
+# (the raw files stay cache-served until a manual dashboard purge).
+purge-cache:
+	@if [ -f $$HOME/.smdc/cloudflare.env ]; then \
+	  set -a; . $$HOME/.smdc/cloudflare.env; set +a; \
+	  for f in scores stats indices indices_history home_showcase methodology audit; do \
+	    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
+	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \
+	      --data "{\"files\":[\"https://scoremydatacenter.org/data/$$f.json\"]}" >/dev/null; \
+	  done; \
+	  echo "purge-cache: /data/*.json purged on the edge"; \
+	else \
+	  echo "purge-cache: ~/.smdc/cloudflare.env absent — cache NOT purged (create a Zone>Cache Purge:Edit token, else purge /data/*.json by URL in the dashboard)"; \
+	fi
 
 # Regenerate the downloadable one-pager PDFs from the built pages.
 # Run after ANY change to site/src/content/questions.ts, then commit the PDFs.
