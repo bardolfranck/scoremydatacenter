@@ -251,6 +251,8 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 /* Hero map intro (brief 2026-07-12 · one pass, load): pins drop onto their real
    coordinates (the chip animates, never the maplibre-positioned marker), then one
    light blue sweep. JS staggers via --pin-delay; reduced-motion kills everything. */
+/* Armed-but-hidden until the section scrolls into view (JS swaps pin-armed→chip-drop). */
+.map-dot.pin-armed { opacity: 0; }
 .map-chip.chip-drop, .map-dot.chip-drop { animation: chip-drop 560ms cubic-bezier(0.34, 1.56, 0.64, 1) backwards; animation-delay: var(--pin-delay, 0ms); }
 @keyframes chip-drop { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
 .map-scan { position: absolute; top: 0; bottom: 0; left: -16%; width: 16%; z-index: 3; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(15, 95, 184, 0.13), transparent); animation: map-scan 2.6s ease-in-out 1 both; animation-delay: var(--scan-delay, 2.4s); }
