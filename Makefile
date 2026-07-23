@@ -135,16 +135,19 @@ prod-artifacts:
 # script AND its dedicated R2 creds. So a site deploy can never touch the API
 # bucket by accident, and never before the API's test key is killed + auth locked
 # (P6: the paywall must be shut before the real corpus lands in R2).
-# Contract for agent-codeur-API:
-#   - script:  api/scripts/sync-r2.sh  (committed; runs `aws s3 sync … --delete`,
-#              excludes zz-*, targets the smdc-api-data bucket)
+# Contract for agent-codeur-API (the Worker lives in the PRIVATE sibling repo
+# ../smdc-api — option A, Franck 2026-07-23 — NOT inside this public repo):
+#   - script:  ../smdc-api/scripts/sync-r2.sh  (committed there; runs
+#              `aws s3 sync … --delete`, excludes zz-*, targets smdc-api-data)
 #   - creds:   ~/.smdc/r2-api.env  (KEY=VALUE — AWS_ACCESS_KEY_ID / _SECRET_ACCESS_KEY
 #              / endpoint), an S3 R2 token scoped to smdc-api-data ONLY. NOT the
 #              média-sat HMAC token (different mechanism + least privilege).
+# The script's DATA_DIR defaults to site/public/data, resolved from the make cwd
+# (this repo root), so the sibling location does not change what gets synced.
 # Env is parsed line-by-line (KEY=VALUE only) — a malformed line is skipped, never
 # executed, so a secret can never leak into the build log (cf. the cloudflare.env
 # lesson).
-SYNC_R2 ?= api/scripts/sync-r2.sh
+SYNC_R2 ?= ../smdc-api/scripts/sync-r2.sh
 sync-api-r2:
 	-@if [ -f "$(SYNC_R2)" ] && [ -f "$$HOME/.smdc/r2-api.env" ]; then \
 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < "$$HOME/.smdc/r2-api.env"; \
