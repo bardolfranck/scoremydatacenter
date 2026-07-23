@@ -70,6 +70,13 @@ const detailCurl = `curl -H "X-API-Key: <votre_clé>" \\
 const detailCurlEn = `curl -H "X-API-Key: <your_key>" \\
   "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3"`;
 const detailSample = fr ? detailCurl : detailCurlEn;
+const detailPy = `import requests
+
+r = requests.get(
+    "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3",
+    headers={"X-API-Key": "${fr ? "<votre_clé>" : "<your_key>"}"},
+)
+fiche = r.json()`;
 // Illustrative shape of the paid fiche (openapi DataCenterFull) — abbreviated,
 // so a buyer sees exactly what they get: the two grades, the 5 scored pillars,
 // sourced indicators, and the analyst synthesis. Values are an example.
@@ -226,30 +233,10 @@ const t = fr ? {
   </div>
 </section>
 
-<section class="section">
-  <div class="section-inner">
-    <h2 class="dev-h2"><svg class="dev-h2-ic" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="currentColor"/></svg>{t.qsTitle}</h2>
-    <p class="dev-body">{t.qsNote}</p>
-    <div class="dev-tabs" data-tabs>
-      <div class="dev-tabbar" role="tablist">
-        <button class="dev-tab is-active" type="button" data-tab="curl" role="tab">curl</button>
-        <button class="dev-tab" type="button" data-tab="py" role="tab">Python</button>
-      </div>
-      <div class="dev-tabpanel dev-copyable" data-panel="curl">
-        <pre class="dev-code"><code class="dev-copy-src">{listCurl}</code></pre>
-        <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
-      </div>
-      <div class="dev-tabpanel is-hidden dev-copyable" data-panel="py">
-        <pre class="dev-code"><code class="dev-copy-src">{listPy}</code></pre>
-        <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="section section-tinted">
   <div class="section-inner">
     <h2 class="dev-h2">{t.epTitle}</h2>
+    <p class="dev-body">{t.qsNote}</p>
 
     <article class="dev-ep">
       <header class="dev-ep-head">
@@ -260,9 +247,19 @@ const t = fr ? {
       <p class="dev-ep-name">{t.listName}</p>
       <p class="dev-ep-desc" set:html={t.listDesc}></p>
       <p class="dev-code-label">{t.reqLabel}</p>
-      <div class="dev-codewrap dev-copyable">
-        <pre class="dev-code"><code class="dev-copy-src">{listCurl}</code></pre>
-        <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+      <div class="dev-tabs" data-tabs>
+        <div class="dev-tabbar" role="tablist">
+          <button class="dev-tab is-active" type="button" data-tab="curl" role="tab">curl</button>
+          <button class="dev-tab" type="button" data-tab="py" role="tab">Python</button>
+        </div>
+        <div class="dev-tabpanel dev-copyable" data-panel="curl">
+          <pre class="dev-code"><code class="dev-copy-src">{listCurl}</code></pre>
+          <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+        </div>
+        <div class="dev-tabpanel is-hidden dev-copyable" data-panel="py">
+          <pre class="dev-code"><code class="dev-copy-src">{listPy}</code></pre>
+          <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+        </div>
       </div>
       <p class="dev-code-label">{t.respLabel}</p>
       <div class="dev-resp dev-copyable">
@@ -281,9 +278,19 @@ const t = fr ? {
       <p class="dev-ep-name">{t.detailName}</p>
       <p class="dev-ep-desc" set:html={t.detailDesc}></p>
       <p class="dev-code-label">{t.reqLabel}</p>
-      <div class="dev-codewrap dev-copyable">
-        <pre class="dev-code"><code class="dev-copy-src">{detailSample}</code></pre>
-        <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+      <div class="dev-tabs" data-tabs>
+        <div class="dev-tabbar" role="tablist">
+          <button class="dev-tab is-active" type="button" data-tab="curl" role="tab">curl</button>
+          <button class="dev-tab" type="button" data-tab="py" role="tab">Python</button>
+        </div>
+        <div class="dev-tabpanel dev-copyable" data-panel="curl">
+          <pre class="dev-code"><code class="dev-copy-src">{detailSample}</code></pre>
+          <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+        </div>
+        <div class="dev-tabpanel is-hidden dev-copyable" data-panel="py">
+          <pre class="dev-code"><code class="dev-copy-src">{detailPy}</code></pre>
+          <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+        </div>
       </div>
       <p class="dev-code-label">{t.respLabel}</p>
       <div class="dev-resp dev-copyable">
@@ -337,6 +344,16 @@ const t = fr ? {
 </section>
 
 <section class="section">
+  <div class="section-inner dev-key-cta">
+    <div>
+      <h2 class="dev-h2">{t.keyTitle}</h2>
+      <p class="dev-body">{t.keyBody}</p>
+    </div>
+    <a class="button button-secondary" href={keyPath}>{t.keyLink}</a>
+  </div>
+</section>
+
+<section class="section section-tinted">
   <div class="section-inner dev-split">
     <div>
       <h2 class="dev-h2">{t.authTitle}</h2>
@@ -353,16 +370,6 @@ const t = fr ? {
         </tbody>
       </table>
     </div>
-  </div>
-</section>
-
-<section class="section section-tinted">
-  <div class="section-inner dev-key-cta">
-    <div>
-      <h2 class="dev-h2">{t.keyTitle}</h2>
-      <p class="dev-body">{t.keyBody}</p>
-    </div>
-    <a class="button button-secondary" href={keyPath}>{t.keyLink}</a>
   </div>
 </section>
 
