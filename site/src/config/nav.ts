@@ -40,6 +40,7 @@ export const FR_NAV: NavNode[] = [
   { label: "L'observatoire", children: [
     { href: "/fr/qui-sommes-nous", label: "Qui sommes-nous ?" },
     { href: "/fr/#open", label: "Modèle ouvert" },
+    { href: "/fr/developpeurs", label: "API développeurs" },
     { href: "/fr/#contact", label: "Contact" },
   ]},
 ];
@@ -62,6 +63,7 @@ export const EN_NAV: NavNode[] = [
   { label: "Observatory", children: [
     { href: "/who-we-are", label: "Who we are" },
     { href: "/#open", label: "Open model" },
+    { href: "/developers", label: "Developer API" },
     { href: "/#contact", label: "Contact" },
   ]},
 ];

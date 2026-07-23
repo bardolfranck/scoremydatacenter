@@ -1,0 +1,203 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// The developer / API page (presentation half of the 2026-07-23 boundary:
+// agent-codeur-site owns the on-brand page, agent-API owns the contract in
+// 11-api/brief-page-dev.md + openapi.yaml). Two GET endpoints: an open Seau-A
+// list, a keyed Seau-B detail. P6: the truth is free to read on the site; the
+// API sells machine access + synthesis, never the raw fact locked away.
+import { API_BASE, CONTACT_EMAIL, LEMONSQUEEZY_CHECKOUT_URL_DATA_DC } from "../config/api";
+
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+const fr = lang === "fr";
+const keyPath = fr ? "/fr/developpeurs/cle" : "/developers/key";
+
+// Contract-frozen code samples (brief §2). API_BASE is the single moving target.
+const listCurl = `curl "${API_BASE}/v1/datacenters?country=FR&limit=10"`;
+const listJson = `{
+  "pagination": { "page": 1, "limit": 10, "total": 257 },
+  "data": [
+    {
+      "id": "fr-databank-fr3-gdc3",
+      "name": "DataBank FR3 / GDC3",
+      "operator": "DataBank",
+      "municipality": "Vélizy-Villacoublay",
+      "country": "FR",
+      "project_status": "operational",
+      "grade": "C",
+      "coordinates": { "lat": 48.78, "lon": 2.20 },
+      "power_rank": 1
+    }
+  ]
+}`;
+const detailCurl = `curl -H "X-API-Key: <votre_clé>" \\
+  "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3"`;
+const detailCurlEn = `curl -H "X-API-Key: <your_key>" \\
+  "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3"`;
+
+const errors = [
+  ["400", "bad_id", fr ? "id malformé" : "malformed id"],
+  ["401", "missing_key", fr ? "en-tête X-API-Key absent" : "missing X-API-Key header"],
+  ["403", "invalid_key", fr ? "clé inconnue ou révoquée" : "unknown or revoked key"],
+  ["404", "not_found", fr ? "fiche inexistante" : "fiche not found"],
+  ["405", "method_not_allowed", fr ? "verbe autre que GET" : "non-GET verb"],
+  ["429", "quota_exceeded", fr ? "quota journalier dépassé" : "daily quota exceeded"],
+];
+
+const dataDcHref = LEMONSQUEEZY_CHECKOUT_URL_DATA_DC || `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(fr ? "API ScoreMyDataCenter — accès Data DC" : "ScoreMyDataCenter API — Data DC access")}`;
+
+const t = fr ? {
+  eyebrow: "API",
+  title: "API développeurs",
+  lede: "ScoreMyDataCenter ouvre la vérité et vend la commodité. Les notes et les fiches sont <strong>gratuites à lire</strong> sur le site. L'API vend l'<strong>accès machine</strong> — structuré, à jour, requêtable — et la <strong>synthèse</strong>, jamais le fait brut. La liste est ouverte&nbsp;; la profondeur est derrière la clé.",
+  baseLabel: "URL de base",
+  epTitle: "Deux endpoints, en lecture seule",
+  listTag: "Gratuit · sans clé",
+  listName: "Lister les data centers",
+  listDesc: "Le seau A&nbsp;: identité, note-lettre, statut, position approximative. Filtrable par pays, paginé.",
+  listNote: "Corpus total <strong>1&nbsp;269</strong>. <code>limit</code> plafonné à <strong>10</strong> (même si vous demandez plus).",
+  reqLabel: "Requête",
+  respLabel: "Réponse",
+  detailTag: "Payant · clé requise",
+  detailName: "Détail d'une fiche",
+  detailDesc: "Le seau B&nbsp;: la fiche scorée complète — 5 piliers, indicateurs sourcés, synthèse.",
+  detailNote: "Réponse <code>200</code> · <code>Cache-Control: private, no-store</code>.",
+  authTitle: "Authentification",
+  authBody: "La clé passe dans l'en-tête <code>X-API-Key</code>, <strong>uniquement</strong>. Une clé en paramètre d'URL (<code>?api_key=</code>) n'authentifie pas et renvoie <code>401</code> — pour ne jamais laisser fuir une clé dans les logs.",
+  errTitle: "Codes d'erreur",
+  errCols: ["Code", "Type", "Quand"],
+  priceTitle: "Tarifs",
+  tiers: [
+    { name: "Découverte", price: "0 €", copy: "Testez la liste et les résumés, sans clé, gratuitement.", cta: null },
+    { name: "Data DC", price: "2 000 €/an", copy: "Accès complet aux fiches : notes détaillées, 5 piliers, indicateurs sourcés, synthèse.", cta: { label: "Obtenir un accès", href: dataDcHref, primary: true } },
+    { name: "Gros volume", price: "sur contact", copy: "Vous intégrez la donnée à grande échelle ? Écrivez-nous.", cta: { label: "Nous écrire", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("API ScoreMyDataCenter — gros volume")}`, primary: false } },
+  ],
+  keyTitle: "Récupérer votre clé",
+  keyBody: "Après paiement, revenez ici et récupérez votre clé en un clic — aucun email à attendre.",
+  keyLink: "J'ai payé, révéler ma clé →",
+} : {
+  eyebrow: "API",
+  title: "Developer API",
+  lede: "ScoreMyDataCenter opens the truth and sells the convenience. Grades and fiches are <strong>free to read</strong> on the site. The API sells <strong>machine access</strong> — structured, fresh, queryable — and <strong>synthesis</strong>, never the raw fact. The list is open; the depth is behind the key.",
+  baseLabel: "Base URL",
+  epTitle: "Two endpoints, read-only",
+  listTag: "Free · no key",
+  listName: "List data centers",
+  listDesc: "Bucket A: identity, letter grade, status, approximate location. Filterable by country, paginated.",
+  listNote: "Total corpus <strong>1,269</strong>. <code>limit</code> capped at <strong>10</strong> (even if you ask for more).",
+  reqLabel: "Request",
+  respLabel: "Response",
+  detailTag: "Paid · key required",
+  detailName: "Fiche detail",
+  detailDesc: "Bucket B: the full scored fiche — 5 pillars, sourced indicators, synthesis.",
+  detailNote: "Returns <code>200</code> · <code>Cache-Control: private, no-store</code>.",
+  authTitle: "Authentication",
+  authBody: "The key goes in the <code>X-API-Key</code> header, <strong>only</strong>. A key in a URL query (<code>?api_key=</code>) does not authenticate and returns <code>401</code> — so a key never leaks into logs.",
+  errTitle: "Error codes",
+  errCols: ["Code", "Type", "When"],
+  priceTitle: "Pricing",
+  tiers: [
+    { name: "Discover", price: "€0", copy: "Try the list and summaries, no key, for free.", cta: null },
+    { name: "Data DC", price: "€2,000/yr", copy: "Full fiche access: detailed grades, 5 pillars, sourced indicators, synthesis.", cta: { label: "Get access", href: dataDcHref, primary: true } },
+    { name: "High volume", price: "contact us", copy: "Embedding the data at scale? Get in touch.", cta: { label: "Get in touch", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("ScoreMyDataCenter API — high volume")}`, primary: false } },
+  ],
+  keyTitle: "Get your key",
+  keyBody: "After payment, come back here and grab your key in one click — no email to wait for.",
+  keyLink: "I've paid, reveal my key →",
+};
+const detailSample = fr ? detailCurl : detailCurlEn;
+---
+
+<section class="dev-hero">
+  <div class="section-inner">
+    <p class="hero-eyebrow">{t.eyebrow}</p>
+    <h1>{t.title}</h1>
+    <p class="dev-lede" set:html={t.lede}></p>
+    <p class="dev-base"><span>{t.baseLabel}</span><code>{API_BASE}</code></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-inner">
+    <h2 class="dev-h2">{t.epTitle}</h2>
+
+    <article class="dev-ep">
+      <header class="dev-ep-head">
+        <span class="dev-verb">GET</span>
+        <code class="dev-route">/v1/datacenters</code>
+        <span class="dev-tag dev-tag-free">{t.listTag}</span>
+      </header>
+      <p class="dev-ep-name">{t.listName}</p>
+      <p class="dev-ep-desc" set:html={t.listDesc}></p>
+      <p class="dev-code-label">{t.reqLabel}</p>
+      <pre class="dev-code"><code>{listCurl}</code></pre>
+      <p class="dev-code-label">{t.respLabel} <span class="dev-200">200</span></p>
+      <pre class="dev-code"><code>{listJson}</code></pre>
+      <p class="dev-ep-note" set:html={t.listNote}></p>
+    </article>
+
+    <article class="dev-ep">
+      <header class="dev-ep-head">
+        <span class="dev-verb">GET</span>
+        <code class="dev-route">/v1/datacenters/&#123;id&#125;</code>
+        <span class="dev-tag dev-tag-paid">{t.detailTag}</span>
+      </header>
+      <p class="dev-ep-name">{t.detailName}</p>
+      <p class="dev-ep-desc" set:html={t.detailDesc}></p>
+      <p class="dev-code-label">{t.reqLabel}</p>
+      <pre class="dev-code"><code>{detailSample}</code></pre>
+      <p class="dev-ep-note" set:html={t.detailNote}></p>
+    </article>
+  </div>
+</section>
+
+<section class="section section-tinted">
+  <div class="section-inner dev-split">
+    <div>
+      <h2 class="dev-h2">{t.authTitle}</h2>
+      <p class="dev-body" set:html={t.authBody}></p>
+    </div>
+    <div>
+      <h2 class="dev-h2">{t.errTitle}</h2>
+      <table class="dev-errors">
+        <thead><tr>{t.errCols.map((c) => <th>{c}</th>)}</tr></thead>
+        <tbody>
+          {errors.map(([code, name, when]) => (
+            <tr><td><span class="dev-err-code">{code}</span></td><td><code>{name}</code></td><td>{when}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="pricing">
+  <div class="section-inner">
+    <h2 class="dev-h2">{t.priceTitle}</h2>
+    <div class="dev-tiers">
+      {t.tiers.map((tier: any) => (
+        <div class={`dev-tier${tier.cta?.primary ? " dev-tier-feat" : ""}`}>
+          <p class="dev-tier-name">{tier.name}</p>
+          <p class="dev-tier-price">{tier.price}</p>
+          <p class="dev-tier-copy">{tier.copy}</p>
+          {tier.cta && (
+            <a class={`button ${tier.cta.primary ? "button-primary" : "button-secondary"}`} href={tier.cta.href}>{tier.cta.label}</a>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section section-tinted">
+  <div class="section-inner dev-key-cta">
+    <div>
+      <h2 class="dev-h2">{t.keyTitle}</h2>
+      <p class="dev-body">{t.keyBody}</p>
+    </div>
+    <a class="button button-secondary" href={keyPath}>{t.keyLink}</a>
+  </div>
+</section>
