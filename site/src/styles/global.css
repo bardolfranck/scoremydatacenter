@@ -1904,7 +1904,19 @@ sup a { color: var(--accent); font-weight: 750; }
 .dev-qs > .dev-codewrap { min-width: 0; } /* let the grid cell shrink so the pre scrolls, not the page */
 .dev-codewrap { position: relative; }
 .dev-codewrap .dev-code { min-width: 0; }
-.dev-copy-abs { position: absolute; top: 30px; right: 10px; }
+.dev-copy-abs { position: absolute; top: 8px; right: 8px; }
+
+/* Lightning icon on « Start in 10 seconds » */
+.dev-h2-ic { color: var(--accent); vertical-align: -3px; margin-right: 7px; }
+
+/* Quick-start tabs (curl / Python) */
+.dev-tabs { margin-top: 6px; }
+.dev-tabbar { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.dev-tab { cursor: pointer; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 12px; margin-bottom: -1px; }
+.dev-tab:hover { color: var(--ink); }
+.dev-tab.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+.dev-tabpanel { position: relative; min-width: 0; margin-top: 12px; }
+.dev-tabpanel.is-hidden { display: none; }
 
 /* Free vs Pro comparison */
 .dev-compare { width: 100%; border-collapse: collapse; font-size: 0.92rem; max-width: 620px; }
@@ -1940,8 +1952,11 @@ th.dev-cmp-pro { color: var(--accent); }
 
 .dev-code-label { margin: 16px 0 6px; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 .dev-200 { color: #2a7d4f; }
-.dev-code { margin: 0; padding: 14px 16px; border-radius: 10px; background: #0f1721; overflow-x: auto; }
-.dev-code code { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.55; color: #e6edf3; white-space: pre; }
+/* Request code = light « Jupyter cell » (Franck); the JSON response stays dark. */
+.dev-code { margin: 0; padding: 13px 16px; border-radius: 10px; background: #f5f6f8; border: 1px solid var(--line); overflow-x: auto; }
+.dev-code code { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.55; color: var(--ink); white-space: pre; }
+.dev-code-resp { background: #0f1721; border: none; }
+.dev-code-resp code { color: #e6edf3; }
 
 .dev-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
 .dev-errors { width: 100%; border-collapse: collapse; font-size: 0.88rem; }

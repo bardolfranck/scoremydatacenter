@@ -70,6 +70,31 @@ const detailCurl = `curl -H "X-API-Key: <votre_clé>" \\
 const detailCurlEn = `curl -H "X-API-Key: <your_key>" \\
   "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3"`;
 const detailSample = fr ? detailCurl : detailCurlEn;
+// Illustrative shape of the paid fiche (openapi DataCenterFull) — abbreviated,
+// so a buyer sees exactly what they get: the two grades, the 5 scored pillars,
+// sourced indicators, and the analyst synthesis. Values are an example.
+const detailJson = `{
+  "id": "fr-databank-fr3-gdc3",
+  "name": "DataBank FR3 / GDC3",
+  "operator": "DataBank",
+  "country": "FR",
+  "grades": {
+    "site":            { "grade": "C", "score": 58 },
+    "project_process": { "grade": "B", "score": 71 }
+  },
+  "confidence": { "level": "medium" },
+  "pillars": {
+    "energy":                  { "grade": "C", "score": 55 },
+    "water":                   { "grade": "B", "score": 68 },
+    "land_biodiversity":       { "grade": "C", "score": 60 },
+    "local_impact":            { "grade": "D", "score": 42 },
+    "transparency_governance": { "grade": "B", "score": 70 }
+  },
+  "indicators": [
+    { "id": "E1", "value": "PUE 1.28", "source": "https://…" }
+  ],
+  "synthesis": { "fr": "…", "en": "…" }
+}`;
 
 const errors = [
   ["400", "bad_id", fr ? "id malformé" : "malformed id"],
@@ -97,12 +122,12 @@ const t = fr ? {
   epTitle: "Deux endpoints, en lecture seule",
   listTag: "Gratuit · sans clé",
   listName: "Lister les data centers",
-  listDesc: "Le seau A&nbsp;: identité, note-lettre, statut, position approximative. Filtrable par pays, paginé.",
-  listNote: "Corpus total <strong>1&nbsp;269</strong>. <code>limit</code> plafonné à <strong>10</strong> (même si vous demandez plus).",
+  listDesc: "Identité, note-lettre A–E, statut, position approximative. Filtrable par pays, paginé.",
+  listNote: `Corpus total <strong>${nDc.toLocaleString("fr-FR")}</strong>. <code>limit</code> plafonné à <strong>10</strong>.`,
   reqLabel: "Requête", respLabel: "Réponse",
   detailTag: "Payant · clé requise",
   detailName: "Détail d'une fiche",
-  detailDesc: "Le seau B&nbsp;: la fiche scorée complète — 5 piliers, indicateurs sourcés, synthèse.",
+  detailDesc: "La fiche scorée complète — les 5 piliers notés, les indicateurs sourcés et la synthèse d'analyste. Exemple de réponse&nbsp;:",
   detailNote: "Réponse <code>200</code> · <code>Cache-Control: private, no-store</code>.",
   cmpTitle: "Gratuit vs API Pro",
   cmpCols: ["", "Gratuit", "API Pro"],
@@ -146,12 +171,12 @@ const t = fr ? {
   epTitle: "Two endpoints, read-only",
   listTag: "Free · no key",
   listName: "List data centers",
-  listDesc: "Bucket A: identity, letter grade, status, approximate location. Filterable by country, paginated.",
-  listNote: "Total corpus <strong>1,269</strong>. <code>limit</code> capped at <strong>10</strong> (even if you ask for more).",
+  listDesc: "Identity, A–E letter grade, status, approximate location. Filterable by country, paginated.",
+  listNote: `Total corpus <strong>${nDc.toLocaleString("en-US")}</strong>. <code>limit</code> capped at <strong>10</strong>.`,
   reqLabel: "Request", respLabel: "Response",
   detailTag: "Paid · key required",
   detailName: "Fiche detail",
-  detailDesc: "Bucket B: the full scored fiche — 5 pillars, sourced indicators, synthesis.",
+  detailDesc: "The full scored fiche — the 5 scored pillars, sourced indicators and the analyst synthesis. Example response:",
   detailNote: "Returns <code>200</code> · <code>Cache-Control: private, no-store</code>.",
   cmpTitle: "Free vs API Pro",
   cmpCols: ["", "Free", "API Pro"],
@@ -203,16 +228,18 @@ const t = fr ? {
 
 <section class="section">
   <div class="section-inner">
-    <h2 class="dev-h2">{t.qsTitle}</h2>
+    <h2 class="dev-h2"><svg class="dev-h2-ic" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" fill="currentColor"/></svg>{t.qsTitle}</h2>
     <p class="dev-body">{t.qsNote}</p>
-    <div class="dev-qs">
-      <div class="dev-codewrap dev-copyable">
-        <p class="dev-code-label">curl</p>
+    <div class="dev-tabs" data-tabs>
+      <div class="dev-tabbar" role="tablist">
+        <button class="dev-tab is-active" type="button" data-tab="curl" role="tab">curl</button>
+        <button class="dev-tab" type="button" data-tab="py" role="tab">Python</button>
+      </div>
+      <div class="dev-tabpanel dev-copyable" data-panel="curl">
         <pre class="dev-code"><code class="dev-copy-src">{listCurl}</code></pre>
         <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
       </div>
-      <div class="dev-codewrap dev-copyable">
-        <p class="dev-code-label">Python</p>
+      <div class="dev-tabpanel is-hidden dev-copyable" data-panel="py">
         <pre class="dev-code"><code class="dev-copy-src">{listPy}</code></pre>
         <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
       </div>
@@ -258,6 +285,11 @@ const t = fr ? {
         <pre class="dev-code"><code class="dev-copy-src">{detailSample}</code></pre>
         <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
       </div>
+      <p class="dev-code-label">{t.respLabel}</p>
+      <div class="dev-resp dev-copyable">
+        <div class="dev-resp-bar"><span class="dev-resp-status">{t.jsonHeader}</span><button class="dev-copy-btn" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button></div>
+        <pre class="dev-code dev-code-resp"><code class="dev-copy-src" set:html={highlightJson(detailJson)}></code></pre>
+      </div>
       <p class="dev-ep-note" set:html={t.detailNote}></p>
     </article>
   </div>
@@ -281,27 +313,7 @@ const t = fr ? {
   </div>
 </section>
 
-<section class="section section-tinted">
-  <div class="section-inner dev-split">
-    <div>
-      <h2 class="dev-h2">{t.authTitle}</h2>
-      <p class="dev-body" set:html={t.authBody}></p>
-    </div>
-    <div>
-      <h2 class="dev-h2">{t.errTitle}</h2>
-      <table class="dev-errors">
-        <thead><tr>{t.errCols.map((c) => <th>{c}</th>)}</tr></thead>
-        <tbody>
-          {errors.map(([code, name, when]) => (
-            <tr><td><span class="dev-err-code">{code}</span></td><td><code>{name}</code></td><td>{when}</td></tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<section class="section" id="pricing">
+<section class="section section-tinted" id="pricing">
   <div class="section-inner">
     <h2 class="dev-h2">{t.priceTitle}</h2>
     <div class="dev-tiers">
@@ -324,6 +336,26 @@ const t = fr ? {
   </div>
 </section>
 
+<section class="section">
+  <div class="section-inner dev-split">
+    <div>
+      <h2 class="dev-h2">{t.authTitle}</h2>
+      <p class="dev-body" set:html={t.authBody}></p>
+    </div>
+    <div>
+      <h2 class="dev-h2">{t.errTitle}</h2>
+      <table class="dev-errors">
+        <thead><tr>{t.errCols.map((c) => <th>{c}</th>)}</tr></thead>
+        <tbody>
+          {errors.map(([code, name, when]) => (
+            <tr><td><span class="dev-err-code">{code}</span></td><td><code>{name}</code></td><td>{when}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 <section class="section section-tinted">
   <div class="section-inner dev-key-cta">
     <div>
@@ -335,8 +367,20 @@ const t = fr ? {
 </section>
 
 <script>
-  // Copy buttons (base URL + quick-start snippets). Each button sits in a
-  // .dev-copyable and copies that block's .dev-copy-src text.
+  // Quick-start tabs (curl / Python).
+  for (const tabs of document.querySelectorAll<HTMLElement>("[data-tabs]")) {
+    const buttons = tabs.querySelectorAll<HTMLButtonElement>(".dev-tab");
+    for (const b of buttons) {
+      b.addEventListener("click", () => {
+        for (const o of buttons) o.classList.toggle("is-active", o === b);
+        for (const p of tabs.querySelectorAll<HTMLElement>(".dev-tabpanel"))
+          p.classList.toggle("is-hidden", p.dataset.panel !== b.dataset.tab);
+      });
+    }
+  }
+
+  // Copy buttons (base URL + code blocks). Each button sits in a .dev-copyable
+  // and copies that block's .dev-copy-src text.
   for (const btn of document.querySelectorAll<HTMLButtonElement>(".dev-copy-btn")) {
     btn.addEventListener("click", async () => {
       const src = btn.closest(".dev-copyable")?.querySelector(".dev-copy-src");
