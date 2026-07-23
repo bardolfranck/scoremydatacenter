@@ -90,16 +90,19 @@ build:
 	npm run build --prefix site
 	$(MAKE) prune-public-json
 
-# Anti-pillage (Franck 2026-07-22): the deployed site serves HTML, never the raw
-# data. The build already INLINES every JSON it needs into the HTML; Astro also
-# mirrors public/data/*.json into dist/ — those served copies are the bulk-scrape
-# hole (one curl on scores.json = the whole corpus). Delete them, keeping ONLY
-# the two geojson the map fetches at runtime (already reduced to the free Seau-A
-# floor). The machine door becomes the (future) authenticated API, nothing else.
+# Anti-pillage (Franck 2026-07-22, corrigé 2026-07-23): the deployed site serves
+# HTML, never the raw data. The build INLINES every JSON it needs into the HTML;
+# Astro also mirrors public/data/*.json into dist/ — those are the bulk-scrape
+# hole (one curl on scores.json = the whole corpus).
+# We do NOT delete them: a DELETED asset leaves Cloudflare's edge serving a STALE
+# cached copy for days — a 404 origin can't evict it (the cache saga of 07-22:
+# scores.json still 200/2.7 MB 20 h after the prune). Instead we OVERWRITE each
+# with a tiny no-store STUB, so the asset still EXISTS in the deployment:
+# Cloudflare then has something authoritative to serve and replaces the stale
+# corpus. Only the two geojson the map fetches at runtime keep real (Seau-A) data.
 prune-public-json:
-	@rm -rf site/dist/data/dc
-	@find site/dist/data -maxdepth 1 -type f ! -name '*.geojson' -delete
-	@echo "prune: dist/data serves only → $$(ls site/dist/data 2>/dev/null | tr '\n' ' ')"
+	@find site/dist/data -name '*.json' ! -name '*.geojson' -type f -exec sh -c 'printf "%s" "{\"gone\":true,\"note\":\"Bulk data endpoints are retired - structured access is available via the API.\"}" > "$$1"' _ {} \;
+	@echo "prune: $$(find site/dist/data -name '*.json' ! -name '*.geojson' | wc -l | tr -d ' ') data JSON replaced by no-store stub; geojson kept → $$(ls site/dist/data/*.geojson 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ')"
 
 test: headers-check
 	uv run pytest -q
