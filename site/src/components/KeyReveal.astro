@@ -23,7 +23,8 @@ const s = fr ? {
   copy: "Copier",
   copied: "Copié ✓",
   plan: "Offre",
-  quota: "Quota / jour",
+  quotaDaily: "Quota / jour",
+  quotaAnnual: "Quota / an",
   keep: "Gardez cette clé secrète — elle vaut votre abonnement. Passez-la dans l'en-tête <code>X-API-Key</code>.",
   errNotFound: "Commande introuvable ou non payée. Vérifiez le lien de retour, ou écrivez-nous.",
   errGeneric: "La révélation de clé n'est pas encore disponible. Réessayez dans un moment, ou contactez-nous.",
@@ -38,7 +39,8 @@ const s = fr ? {
   copy: "Copy",
   copied: "Copied ✓",
   plan: "Plan",
-  quota: "Quota / day",
+  quotaDaily: "Quota / day",
+  quotaAnnual: "Quota / year",
   keep: "Keep this key secret — it is your subscription. Send it in the <code>X-API-Key</code> header.",
   errNotFound: "Order not found or unpaid. Check the return link, or write to us.",
   errGeneric: "Key reveal is not available yet. Try again shortly, or contact us.",
@@ -61,7 +63,7 @@ const s = fr ? {
           <code class="dev-key-value" data-key></code>
           <button class="button button-secondary dev-copy" data-copy type="button">{s.copy}</button>
         </div>
-        <p class="dev-key-meta"><span data-plan-wrap hidden>{s.plan}: <b data-plan></b></span> <span data-quota-wrap hidden>· {s.quota}: <b data-quota></b></span></p>
+        <p class="dev-key-meta"><span data-plan-wrap hidden>{s.plan}: <b data-plan></b></span> <span data-qd-wrap hidden>· {s.quotaDaily}: <b data-qd></b></span> <span data-qa-wrap hidden>· {s.quotaAnnual}: <b data-qa></b></span></p>
         <p class="dev-key-keep" set:html={s.keep}></p>
       </div>
       <p class="dev-key-error" data-error hidden></p>
@@ -109,7 +111,9 @@ const s = fr ? {
         const data = await r.json();
         keyEl.textContent = data.api_key || "";
         if (data.plan) { root.querySelector("[data-plan]").textContent = data.plan; root.querySelector("[data-plan-wrap]").removeAttribute("hidden"); }
-        if (data.daily_quota) { root.querySelector("[data-quota]").textContent = String(data.daily_quota); root.querySelector("[data-quota-wrap]").removeAttribute("hidden"); }
+        const q = data.quota || {};
+        if (q.daily != null) { root.querySelector("[data-qd]").textContent = String(q.daily); root.querySelector("[data-qd-wrap]").removeAttribute("hidden"); }
+        if (q.annual != null) { root.querySelector("[data-qa]").textContent = String(q.annual); root.querySelector("[data-qa-wrap]").removeAttribute("hidden"); }
         btn.setAttribute("hidden", "");
         result.removeAttribute("hidden");
       } catch (e) {

@@ -1909,6 +1909,7 @@ sup a { color: var(--accent); font-weight: 750; }
 .dev-tier-feat { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: 0 10px 30px rgba(20, 30, 45, 0.07); }
 .dev-tier-name { margin: 0; font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
 .dev-tier-price { margin: 8px 0 0; font-size: 1.7rem; font-weight: 800; color: var(--ink); }
+.dev-tier-quota { margin: 6px 0 0; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; color: var(--accent); }
 .dev-tier-copy { margin: 10px 0 18px; font-size: 0.9rem; line-height: 1.55; color: var(--ink-soft); flex: 1; }
 .dev-tier .button { width: 100%; text-align: center; }
 

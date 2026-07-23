@@ -72,8 +72,8 @@ const t = fr ? {
   priceTitle: "Tarifs",
   tiers: [
     { name: "Découverte", price: "0 €", copy: "Testez la liste et les résumés, sans clé, gratuitement.", cta: null },
-    { name: "Data DC", price: "2 000 €/an", copy: "Accès complet aux fiches : notes détaillées, 5 piliers, indicateurs sourcés, synthèse.", cta: { label: "Obtenir un accès", href: dataDcHref, primary: true } },
-    { name: "Gros volume", price: "sur contact", copy: "Vous intégrez la donnée à grande échelle ? Écrivez-nous.", cta: { label: "Nous écrire", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("API ScoreMyDataCenter — gros volume")}`, primary: false } },
+    { name: "Data DC", price: "2 000 €/an", quota: "Jusqu'à 30 fiches/jour · 300/an", copy: "Accès complet aux fiches : notes détaillées, 5 piliers, indicateurs sourcés, synthèse.", cta: { label: "Obtenir un accès", href: dataDcHref, primary: true } },
+    { name: "Gros volume", price: "sur contact", copy: "Au-delà de 30/jour ou 300/an, ou pour intégrer la donnée à grande échelle ? Écrivez-nous.", cta: { label: "Nous écrire", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("API ScoreMyDataCenter — gros volume")}`, primary: false } },
   ],
   keyTitle: "Récupérer votre clé",
   keyBody: "Après paiement, revenez ici et récupérez votre clé en un clic — aucun email à attendre.",
@@ -101,8 +101,8 @@ const t = fr ? {
   priceTitle: "Pricing",
   tiers: [
     { name: "Discover", price: "€0", copy: "Try the list and summaries, no key, for free.", cta: null },
-    { name: "Data DC", price: "€2,000/yr", copy: "Full fiche access: detailed grades, 5 pillars, sourced indicators, synthesis.", cta: { label: "Get access", href: dataDcHref, primary: true } },
-    { name: "High volume", price: "contact us", copy: "Embedding the data at scale? Get in touch.", cta: { label: "Get in touch", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("ScoreMyDataCenter API — high volume")}`, primary: false } },
+    { name: "Data DC", price: "€2,000/yr", quota: "Up to 30 fiches/day · 300/year", copy: "Full fiche access: detailed grades, 5 pillars, sourced indicators, synthesis.", cta: { label: "Get access", href: dataDcHref, primary: true } },
+    { name: "High volume", price: "contact us", copy: "Above 30/day or 300/year, or embedding the data at scale? Get in touch.", cta: { label: "Get in touch", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("ScoreMyDataCenter API — high volume")}`, primary: false } },
   ],
   keyTitle: "Get your key",
   keyBody: "After payment, come back here and grab your key in one click — no email to wait for.",
@@ -182,6 +182,7 @@ const detailSample = fr ? detailCurl : detailCurlEn;
         <div class={`dev-tier${tier.cta?.primary ? " dev-tier-feat" : ""}`}>
           <p class="dev-tier-name">{tier.name}</p>
           <p class="dev-tier-price">{tier.price}</p>
+          {tier.quota && <p class="dev-tier-quota">{tier.quota}</p>}
           <p class="dev-tier-copy">{tier.copy}</p>
           {tier.cta && (
             <a class={`button ${tier.cta.primary ? "button-primary" : "button-secondary"}`} href={tier.cta.href}>{tier.cta.label}</a>
