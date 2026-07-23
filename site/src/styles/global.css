@@ -1882,6 +1882,23 @@ sup a { color: var(--accent); font-weight: 750; }
 .dev-copy-btn { flex: none; cursor: pointer; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; color: var(--accent); background: var(--paper); border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px; }
 .dev-copy-btn:hover { border-color: var(--accent); }
 
+/* Hero meta row — badges + discreet indexed counter (agent-GPT review) */
+.dev-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 0; }
+.dev-badge { font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-soft); background: var(--wash); border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; }
+.dev-indexed { font-size: 0.82rem; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* Response block — a header bar + copy, so the JSON reads as a real 200 */
+.dev-resp { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.dev-resp-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px 7px 14px; background: var(--wash); border-bottom: 1px solid var(--line); }
+.dev-resp-status { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; color: #2a7d4f; }
+.dev-code-resp { border-radius: 0; }
+/* JSON syntax tokens (dark block) */
+.dev-code-resp .tok-key { color: #7ea6ff; }
+.dev-code-resp .tok-str { color: #86e29b; }
+.dev-code-resp .tok-num { color: #e0a458; }
+.dev-code-resp .tok-bool { color: #d98cff; }
+.dev-code-resp .tok-null { color: #9aa7b5; }
+
 /* Quick start — two copyable snippets side by side */
 .dev-qs { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 6px; }
 .dev-qs > .dev-codewrap { min-width: 0; } /* let the grid cell shrink so the pre scrolls, not the page */
