@@ -1867,3 +1867,131 @@ sup a { color: var(--accent); font-weight: 750; }
 
 @media (prefers-reduced-motion: reduce) { .orbital-track { animation: none; } }
 @media (max-width: 700px) { .otile { flex: 0 0 168px; height: 112px; } .orbital { padding-top: 40px; } }
+
+/* ── Developer / API page ──────────────────────────────────────────────── */
+.dev-hero { padding: 44px clamp(20px, 5vw, 72px) 8px; }
+.dev-hero h1 { margin: 6px 0 0; font-size: clamp(2rem, 4.4vw, 3rem); line-height: 1.08; }
+.dev-usage { max-width: 60ch; margin: 14px 0 0; font-size: 1.3rem; line-height: 1.45; color: var(--ink); font-weight: 500; }
+.dev-lede { max-width: 64ch; margin: 14px 0 0; font-size: 0.98rem; line-height: 1.6; color: var(--ink-soft); }
+
+/* Base URL as a first-class copyable block (agent-GPT review) */
+.dev-base { display: flex; align-items: center; gap: 12px; margin: 24px 0 0; flex-wrap: wrap; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--wash); width: fit-content; max-width: 100%; }
+.dev-base-label { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.dev-base .dev-copy-src { font-family: var(--font-mono); font-size: 0.92rem; color: var(--ink); word-break: break-all; }
+
+.dev-copy-btn { flex: none; cursor: pointer; font-family: var(--font-mono); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.04em; color: var(--accent); background: var(--paper); border: 1px solid var(--line); border-radius: 7px; padding: 5px 10px; }
+.dev-copy-btn:hover { border-color: var(--accent); }
+
+/* Hero meta row — badges + discreet indexed counter (agent-GPT review) */
+.dev-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 16px 0 0; }
+.dev-badge { font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-soft); background: var(--wash); border: 1px solid var(--line); border-radius: 6px; padding: 3px 9px; }
+.dev-indexed { font-size: 0.82rem; color: var(--muted); margin-left: 4px; font-variant-numeric: tabular-nums; }
+
+/* Response block — a header bar + copy, so the JSON reads as a real 200 */
+.dev-resp { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.dev-resp-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px 7px 14px; background: var(--wash); border-bottom: 1px solid var(--line); }
+.dev-resp-status { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.03em; color: #2a7d4f; }
+.dev-code-resp { border-radius: 0; }
+/* JSON syntax tokens (dark block) */
+.dev-code-resp .tok-key { color: #7ea6ff; }
+.dev-code-resp .tok-str { color: #86e29b; }
+.dev-code-resp .tok-num { color: #e0a458; }
+.dev-code-resp .tok-bool { color: #d98cff; }
+.dev-code-resp .tok-null { color: #9aa7b5; }
+
+/* Quick start — two copyable snippets side by side */
+.dev-qs { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 6px; }
+.dev-qs > .dev-codewrap { min-width: 0; } /* let the grid cell shrink so the pre scrolls, not the page */
+.dev-codewrap { position: relative; }
+.dev-codewrap .dev-code { min-width: 0; }
+.dev-copy-abs { position: absolute; top: 8px; right: 8px; }
+
+/* Lightning icon on « Start in 10 seconds » */
+.dev-h2-ic { color: var(--accent); vertical-align: -3px; margin-right: 7px; }
+
+/* Quick-start tabs (curl / Python) */
+.dev-tabs { margin-top: 6px; }
+.dev-tabbar { display: flex; gap: 4px; border-bottom: 1px solid var(--line); }
+.dev-tab { cursor: pointer; font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent; padding: 8px 12px; margin-bottom: -1px; }
+.dev-tab:hover { color: var(--ink); }
+.dev-tab.is-active { color: var(--ink); border-bottom-color: var(--accent); }
+.dev-tabpanel { position: relative; min-width: 0; margin-top: 12px; }
+.dev-tabpanel.is-hidden { display: none; }
+
+/* Free vs Pro comparison */
+.dev-compare { width: 100%; border-collapse: collapse; font-size: 0.92rem; max-width: 620px; }
+.dev-compare th { text-align: left; padding: 0 16px 10px 0; border-bottom: 2px solid var(--line); font-size: 0.7rem; font-family: var(--font-mono); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.dev-compare td { padding: 10px 16px 10px 0; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.dev-cmp-cell { text-align: center; width: 90px; }
+.dev-cmp-pro { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+th.dev-cmp-pro, th.dev-cmp-free { text-align: center; color: var(--ink); }
+th.dev-cmp-pro { color: var(--accent); }
+.dev-yes { color: #2a7d4f; font-weight: 700; }
+.dev-no { color: var(--muted); }
+
+/* Use-case chips */
+.dev-usecases { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 30px; }
+.dev-uc-label { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.dev-uc-chip { font-size: 0.85rem; color: var(--ink-soft); background: var(--wash); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; }
+
+.dev-h1 { margin: 0 0 4px; }
+.dev-h2 { font-size: 1.35rem; margin: 0 0 18px; }
+.dev-body { max-width: 60ch; font-size: 0.95rem; line-height: 1.6; color: var(--ink-soft); }
+.dev-body code, .dev-ep-note code, .dev-key-keep code { font-family: var(--font-mono); font-size: 0.85em; background: var(--wash); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; }
+
+.dev-ep { border: 1px solid var(--line); border-radius: 14px; background: var(--paper); padding: 20px 22px; margin: 0 0 20px; }
+.dev-ep-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dev-verb { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; color: #fff; background: #2a7d4f; border-radius: 6px; padding: 3px 8px; }
+.dev-route { font-family: var(--font-mono); font-size: 0.92rem; font-weight: 600; color: var(--ink); }
+.dev-tag { margin-left: auto; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; border-radius: 999px; padding: 4px 11px; }
+.dev-tag-free { color: #1c6b3f; background: color-mix(in srgb, #2a7d4f 14%, transparent); }
+.dev-tag-paid { color: #8a5a10; background: color-mix(in srgb, #d98c1f 18%, transparent); }
+.dev-ep-name { margin: 14px 0 2px; font-weight: 700; color: var(--ink); }
+.dev-ep-desc { margin: 0; font-size: 0.92rem; color: var(--ink-soft); }
+.dev-ep-note { margin: 14px 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+
+.dev-code-label { margin: 16px 0 6px; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.dev-200 { color: #2a7d4f; }
+/* Request code = light « Jupyter cell » (Franck); the JSON response stays dark. */
+.dev-code { margin: 0; padding: 13px 16px; border-radius: 10px; background: #f5f6f8; border: 1px solid var(--line); overflow-x: auto; }
+.dev-code code { font-family: var(--font-mono); font-size: 0.82rem; line-height: 1.55; color: var(--ink); white-space: pre; }
+.dev-code-resp { background: #0f1721; border: none; }
+.dev-code-resp code { color: #e6edf3; }
+
+.dev-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+.dev-errors { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.dev-errors th { text-align: left; font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0 12px 8px 0; border-bottom: 1px solid var(--line); }
+.dev-errors td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--line); color: var(--ink-soft); vertical-align: top; }
+.dev-errors code { font-family: var(--font-mono); font-size: 0.82rem; color: var(--ink); }
+.dev-err-code { font-family: var(--font-mono); font-weight: 700; color: var(--ink); }
+
+.dev-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.dev-tier { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); padding: 22px; }
+.dev-tier-feat { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); box-shadow: 0 10px 30px rgba(20, 30, 45, 0.07); }
+.dev-tier-name { margin: 0; font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.dev-tier-price { margin: 8px 0 0; font-size: 1.7rem; font-weight: 800; color: var(--ink); }
+.dev-tier-quota { margin: 6px 0 0; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; color: var(--accent); }
+.dev-tier-copy { margin: 10px 0 18px; font-size: 0.9rem; line-height: 1.55; color: var(--ink-soft); flex: 1; }
+.dev-tier .button { width: 100%; text-align: center; }
+
+.dev-key-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.dev-key-cta .dev-h2 { margin-bottom: 6px; }
+
+/* Key-reveal page */
+.dev-key { max-width: 640px; }
+.dev-key-noorder, .dev-key-error { font-size: 0.95rem; line-height: 1.6; color: var(--ink-soft); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--wash); }
+.dev-key-error { color: #9a2515; border-color: color-mix(in srgb, #d0331b 40%, var(--line)); background: color-mix(in srgb, #d0331b 7%, transparent); margin-top: 14px; }
+.dev-key-result { margin-top: 18px; }
+.dev-key-row { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+.dev-key-value { flex: 1; min-width: 220px; font-family: var(--font-mono); font-size: 0.9rem; color: #e6edf3; background: #0f1721; border-radius: 10px; padding: 12px 14px; word-break: break-all; display: flex; align-items: center; }
+.dev-copy { flex: none; }
+.dev-key-meta { margin: 12px 0 0; font-size: 0.85rem; color: var(--ink-soft); }
+.dev-key-keep { margin: 12px 0 0; font-size: 0.85rem; line-height: 1.5; color: var(--ink-soft); }
+.dev-key-back { margin-top: 26px; font-size: 0.9rem; }
+
+@media (max-width: 760px) {
+  .dev-split { grid-template-columns: 1fr; gap: 30px; }
+  .dev-tiers { grid-template-columns: 1fr; }
+  .dev-qs { grid-template-columns: 1fr; }
+  .dev-usage { font-size: 1.15rem; }
+}

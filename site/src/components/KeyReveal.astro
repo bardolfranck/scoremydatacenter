@@ -1,0 +1,136 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// The ONE dynamic bit of the developer surface (brief §3): after a Lemon Squeezy
+// purchase, LS redirects to …/cle?order={ORDER_ID}; this reveals the key in one
+// click, zero email. The button POSTs {API_BASE}/v1/key/reveal {order} and shows
+// {api_key}. The endpoint itself is agent-API's next task — the contract is
+// frozen, so this is correct the day it ships; until then a failed reveal shows
+// an honest message. No key ever rides in a URL (brief §2 anti-leak rule).
+import { API_BASE } from "../config/api";
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+const fr = lang === "fr";
+
+const s = fr ? {
+  title: "Récupérer votre clé",
+  noOrder: "Cette page s'ouvre après un paiement. Aucune commande détectée dans l'adresse — si vous venez de payer, utilisez le lien de retour fourni par la page de paiement.",
+  reveal: "Révéler ma clé",
+  working: "Vérification…",
+  yourKey: "Votre clé API",
+  copy: "Copier",
+  copied: "Copié ✓",
+  plan: "Offre",
+  quotaDaily: "Quota / jour",
+  quotaAnnual: "Quota / an",
+  keep: "Gardez cette clé secrète — elle vaut votre abonnement. Passez-la dans l'en-tête <code>X-API-Key</code>.",
+  errNotFound: "Commande introuvable ou non payée. Vérifiez le lien de retour, ou écrivez-nous.",
+  errGeneric: "La révélation de clé n'est pas encore disponible. Réessayez dans un moment, ou contactez-nous.",
+  docs: "← Retour à la doc de l'API",
+  docsHref: "/fr/developpeurs",
+} : {
+  title: "Get your key",
+  noOrder: "This page opens after a payment. No order found in the address — if you just paid, use the return link from the checkout page.",
+  reveal: "Reveal my key",
+  working: "Checking…",
+  yourKey: "Your API key",
+  copy: "Copy",
+  copied: "Copied ✓",
+  plan: "Plan",
+  quotaDaily: "Quota / day",
+  quotaAnnual: "Quota / year",
+  keep: "Keep this key secret — it is your subscription. Send it in the <code>X-API-Key</code> header.",
+  errNotFound: "Order not found or unpaid. Check the return link, or write to us.",
+  errGeneric: "Key reveal is not available yet. Try again shortly, or contact us.",
+  docs: "← Back to the API docs",
+  docsHref: "/developers",
+};
+---
+
+<section class="section">
+  <div class="section-inner dev-key">
+    <h1 class="dev-h1">{s.title}</h1>
+
+    <p class="dev-key-noorder" data-noorder hidden>{s.noOrder}</p>
+
+    <div class="dev-key-panel" data-panel hidden>
+      <button class="button button-primary" data-reveal type="button">{s.reveal}</button>
+      <div class="dev-key-result" data-result hidden>
+        <p class="dev-code-label">{s.yourKey}</p>
+        <div class="dev-key-row">
+          <code class="dev-key-value" data-key></code>
+          <button class="button button-secondary dev-copy" data-copy type="button">{s.copy}</button>
+        </div>
+        <p class="dev-key-meta"><span data-plan-wrap hidden>{s.plan}: <b data-plan></b></span> <span data-qd-wrap hidden>· {s.quotaDaily}: <b data-qd></b></span> <span data-qa-wrap hidden>· {s.quotaAnnual}: <b data-qa></b></span></p>
+        <p class="dev-key-keep" set:html={s.keep}></p>
+      </div>
+      <p class="dev-key-error" data-error hidden></p>
+    </div>
+
+    <p class="dev-key-back"><a href={s.docsHref}>{s.docs}</a></p>
+  </div>
+</section>
+
+<script define:vars={{ apiBase: API_BASE, strings: { copy: s.copy, copied: s.copied, working: s.working, errNotFound: s.errNotFound, errGeneric: s.errGeneric } }}>
+  const params = new URLSearchParams(location.search);
+  const order = params.get("order");
+  const root = document.querySelector(".dev-key");
+  const panel = root?.querySelector("[data-panel]");
+  const noOrder = root?.querySelector("[data-noorder]");
+
+  if (!order) {
+    noOrder?.removeAttribute("hidden");
+  } else {
+    panel?.removeAttribute("hidden");
+    const btn = root.querySelector("[data-reveal]");
+    const result = root.querySelector("[data-result]");
+    const errEl = root.querySelector("[data-error]");
+    const keyEl = root.querySelector("[data-key]");
+    const copyBtn = root.querySelector("[data-copy]");
+
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      const label = btn.textContent;
+      btn.textContent = strings.working;
+      errEl.setAttribute("hidden", "");
+      try {
+        const r = await fetch(`${apiBase}/v1/key/reveal`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order }),
+        });
+        if (!r.ok) {
+          errEl.textContent = r.status === 404 ? strings.errNotFound : strings.errGeneric;
+          errEl.removeAttribute("hidden");
+          btn.disabled = false;
+          btn.textContent = label;
+          return;
+        }
+        const data = await r.json();
+        keyEl.textContent = data.api_key || "";
+        if (data.plan) { root.querySelector("[data-plan]").textContent = data.plan; root.querySelector("[data-plan-wrap]").removeAttribute("hidden"); }
+        const q = data.quota || {};
+        if (q.daily != null) { root.querySelector("[data-qd]").textContent = String(q.daily); root.querySelector("[data-qd-wrap]").removeAttribute("hidden"); }
+        if (q.annual != null) { root.querySelector("[data-qa]").textContent = String(q.annual); root.querySelector("[data-qa-wrap]").removeAttribute("hidden"); }
+        btn.setAttribute("hidden", "");
+        result.removeAttribute("hidden");
+      } catch (e) {
+        errEl.textContent = strings.errGeneric;
+        errEl.removeAttribute("hidden");
+        btn.disabled = false;
+        btn.textContent = label;
+      }
+    });
+
+    copyBtn?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(keyEl.textContent || "");
+        const l = copyBtn.textContent;
+        copyBtn.textContent = strings.copied;
+        setTimeout(() => { copyBtn.textContent = l; }, 1600);
+      } catch (e) { /* clipboard blocked — user can select manually */ }
+    });
+  }
+</script>

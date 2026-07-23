@@ -127,11 +127,11 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
       </div>
       {(lang === "fr" ? [
         ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Indices pays", "/fr/indices"], ["Les chiffres du parc", "/fr/chiffres"], ["Comprendre les data centers", "/fr/comprendre"]]],
-        ["Ressources", [["Méthodologie", "/fr/methodologie"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque"], ["FAQ", "/fr/#faq"]]],
+        ["Ressources", [["Méthodologie", "/fr/methodologie"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque"], ["API développeurs", "/fr/developpeurs"], ["FAQ", "/fr/#faq"]]],
         ["À propos", [["Qui sommes-nous ?", "/fr/qui-sommes-nous"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
       ] : [
         ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Country index", "/indices"], ["Fleet figures", "/figures"], ["Understanding data centers", "/understand"]]],
-        ["Resources", [["Methodology", "/methodology"], ["Open model", "/#open"], ["Library", "/intelligence"], ["FAQ", "/#faq"]]],
+        ["Resources", [["Methodology", "/methodology"], ["Open model", "/#open"], ["Library", "/intelligence"], ["Developer API", "/developers"], ["FAQ", "/#faq"]]],
         ["About", [["Who we are", "/who-we-are"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
       ]).map(([heading, links]: any) => (
         <div class="footer-col">
