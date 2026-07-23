@@ -7,7 +7,9 @@
 // agent-codeur-site owns the on-brand page, agent-API owns the contract in
 // 11-api/brief-page-dev.md + openapi.yaml). Two GET endpoints: an open Seau-A
 // list, a keyed Seau-B detail. P6: the truth is free to read on the site; the
-// API sells machine access + synthesis, never the raw fact locked away.
+// API sells machine access + synthesis. Layout follows agent-GPT's conversion
+// review (2026-07-23): usage hook first (P6 kept just under it), base URL as a
+// copyable block, a concrete quick-start, and a Free-vs-Pro table.
 import { API_BASE, CONTACT_EMAIL, LEMONSQUEEZY_CHECKOUT_URL_DATA_DC } from "../config/api";
 
 interface Props { lang: "fr" | "en"; }
@@ -17,6 +19,13 @@ const keyPath = fr ? "/fr/developpeurs/cle" : "/developers/key";
 
 // Contract-frozen code samples (brief §2). API_BASE is the single moving target.
 const listCurl = `curl "${API_BASE}/v1/datacenters?country=FR&limit=10"`;
+const listPy = `import requests
+
+r = requests.get(
+    "${API_BASE}/v1/datacenters",
+    params={"country": "FR", "limit": 10},
+)
+print(r.json()["pagination"]["total"])  # 257`;
 const listJson = `{
   "pagination": { "page": 1, "limit": 10, "total": 257 },
   "data": [
@@ -37,6 +46,7 @@ const detailCurl = `curl -H "X-API-Key: <votre_clé>" \\
   "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3"`;
 const detailCurlEn = `curl -H "X-API-Key: <your_key>" \\
   "${API_BASE}/v1/datacenters/fr-databank-fr3-gdc3"`;
+const detailSample = fr ? detailCurl : detailCurlEn;
 
 const errors = [
   ["400", "bad_id", fr ? "id malformé" : "malformed id"],
@@ -44,7 +54,7 @@ const errors = [
   ["403", "invalid_key", fr ? "clé inconnue ou révoquée" : "unknown or revoked key"],
   ["404", "not_found", fr ? "fiche inexistante" : "fiche not found"],
   ["405", "method_not_allowed", fr ? "verbe autre que GET" : "non-GET verb"],
-  ["429", "quota_exceeded", fr ? "quota journalier dépassé" : "daily quota exceeded"],
+  ["429", "quota_exceeded", fr ? "quota journalier/annuel dépassé" : "daily/annual quota exceeded"],
 ];
 
 const dataDcHref = LEMONSQUEEZY_CHECKOUT_URL_DATA_DC || `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(fr ? "API ScoreMyDataCenter — accès Data DC" : "ScoreMyDataCenter API — Data DC access")}`;
@@ -52,19 +62,34 @@ const dataDcHref = LEMONSQUEEZY_CHECKOUT_URL_DATA_DC || `mailto:${CONTACT_EMAIL}
 const t = fr ? {
   eyebrow: "API",
   title: "API développeurs",
-  lede: "ScoreMyDataCenter ouvre la vérité et vend la commodité. Les notes et les fiches sont <strong>gratuites à lire</strong> sur le site. L'API vend l'<strong>accès machine</strong> — structuré, à jour, requêtable — et la <strong>synthèse</strong>, jamais le fait brut. La liste est ouverte&nbsp;; la profondeur est derrière la clé.",
+  usage: "Interrogez les data centers européens — opérateurs, statut, position — et leurs <strong>notes d'acceptabilité indépendantes</strong>, via une API REST simple.",
+  lede: "ScoreMyDataCenter ouvre la vérité et vend la commodité : les notes sont <strong>gratuites à lire</strong> sur le site&nbsp;; l'API vend l'<strong>accès machine</strong> — structuré, à jour, requêtable — et la <strong>synthèse</strong>, jamais le fait brut. La liste est ouverte, la profondeur est derrière la clé.",
   baseLabel: "URL de base",
+  copy: "Copier", copied: "Copié ✓",
+  qsTitle: "Démarrer en 10 secondes",
+  qsNote: "La liste est ouverte — aucune clé requise.",
   epTitle: "Deux endpoints, en lecture seule",
   listTag: "Gratuit · sans clé",
   listName: "Lister les data centers",
   listDesc: "Le seau A&nbsp;: identité, note-lettre, statut, position approximative. Filtrable par pays, paginé.",
   listNote: "Corpus total <strong>1&nbsp;269</strong>. <code>limit</code> plafonné à <strong>10</strong> (même si vous demandez plus).",
-  reqLabel: "Requête",
-  respLabel: "Réponse",
+  reqLabel: "Requête", respLabel: "Réponse",
   detailTag: "Payant · clé requise",
   detailName: "Détail d'une fiche",
   detailDesc: "Le seau B&nbsp;: la fiche scorée complète — 5 piliers, indicateurs sourcés, synthèse.",
   detailNote: "Réponse <code>200</code> · <code>Cache-Control: private, no-store</code>.",
+  cmpTitle: "Gratuit vs API Pro",
+  cmpCols: ["", "Gratuit", "API Pro"],
+  cmpRows: [
+    ["Identité (nom, opérateur, pays)", true, true],
+    ["Statut du projet", true, true],
+    ["Note-lettre A–E", true, true],
+    ["Position approximative (~1 km)", true, true],
+    ["Score détaillé /100", false, true],
+    ["5 piliers notés", false, true],
+    ["Indicateurs sourcés", false, true],
+    ["Synthèse", false, true],
+  ],
   authTitle: "Authentification",
   authBody: "La clé passe dans l'en-tête <code>X-API-Key</code>, <strong>uniquement</strong>. Une clé en paramètre d'URL (<code>?api_key=</code>) n'authentifie pas et renvoie <code>401</code> — pour ne jamais laisser fuir une clé dans les logs.",
   errTitle: "Codes d'erreur",
@@ -75,25 +100,42 @@ const t = fr ? {
     { name: "Data DC", price: "2 000 €/an", quota: "Jusqu'à 30 fiches/jour · 300/an", copy: "Accès complet aux fiches : notes détaillées, 5 piliers, indicateurs sourcés, synthèse.", cta: { label: "Obtenir un accès", href: dataDcHref, primary: true } },
     { name: "Gros volume", price: "sur contact", copy: "Au-delà de 30/jour ou 300/an, ou pour intégrer la donnée à grande échelle ? Écrivez-nous.", cta: { label: "Nous écrire", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("API ScoreMyDataCenter — gros volume")}`, primary: false } },
   ],
+  useTitle: "Cas d'usage",
+  useCases: ["Reporting ESG", "Choix de site", "Recherche académique", "Intelligence de marché", "Journalisme"],
   keyTitle: "Récupérer votre clé",
   keyBody: "Après paiement, revenez ici et récupérez votre clé en un clic — aucun email à attendre.",
   keyLink: "J'ai payé, révéler ma clé →",
 } : {
   eyebrow: "API",
   title: "Developer API",
-  lede: "ScoreMyDataCenter opens the truth and sells the convenience. Grades and fiches are <strong>free to read</strong> on the site. The API sells <strong>machine access</strong> — structured, fresh, queryable — and <strong>synthesis</strong>, never the raw fact. The list is open; the depth is behind the key.",
+  usage: "Query European data centers — operators, status, location — and their <strong>independent acceptability grades</strong>, through a simple REST API.",
+  lede: "ScoreMyDataCenter opens the truth and sells the convenience: grades are <strong>free to read</strong> on the site; the API sells <strong>machine access</strong> — structured, fresh, queryable — and <strong>synthesis</strong>, never the raw fact. The list is open, the depth is behind the key.",
   baseLabel: "Base URL",
+  copy: "Copy", copied: "Copied ✓",
+  qsTitle: "Start in 10 seconds",
+  qsNote: "The list is open — no key required.",
   epTitle: "Two endpoints, read-only",
   listTag: "Free · no key",
   listName: "List data centers",
   listDesc: "Bucket A: identity, letter grade, status, approximate location. Filterable by country, paginated.",
   listNote: "Total corpus <strong>1,269</strong>. <code>limit</code> capped at <strong>10</strong> (even if you ask for more).",
-  reqLabel: "Request",
-  respLabel: "Response",
+  reqLabel: "Request", respLabel: "Response",
   detailTag: "Paid · key required",
   detailName: "Fiche detail",
   detailDesc: "Bucket B: the full scored fiche — 5 pillars, sourced indicators, synthesis.",
   detailNote: "Returns <code>200</code> · <code>Cache-Control: private, no-store</code>.",
+  cmpTitle: "Free vs API Pro",
+  cmpCols: ["", "Free", "API Pro"],
+  cmpRows: [
+    ["Identity (name, operator, country)", true, true],
+    ["Project status", true, true],
+    ["Letter grade A–E", true, true],
+    ["Approximate location (~1 km)", true, true],
+    ["Detailed score /100", false, true],
+    ["5 scored pillars", false, true],
+    ["Sourced indicators", false, true],
+    ["Synthesis", false, true],
+  ],
   authTitle: "Authentication",
   authBody: "The key goes in the <code>X-API-Key</code> header, <strong>only</strong>. A key in a URL query (<code>?api_key=</code>) does not authenticate and returns <code>401</code> — so a key never leaks into logs.",
   errTitle: "Error codes",
@@ -104,23 +146,48 @@ const t = fr ? {
     { name: "Data DC", price: "€2,000/yr", quota: "Up to 30 fiches/day · 300/year", copy: "Full fiche access: detailed grades, 5 pillars, sourced indicators, synthesis.", cta: { label: "Get access", href: dataDcHref, primary: true } },
     { name: "High volume", price: "contact us", copy: "Above 30/day or 300/year, or embedding the data at scale? Get in touch.", cta: { label: "Get in touch", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("ScoreMyDataCenter API — high volume")}`, primary: false } },
   ],
+  useTitle: "Used for",
+  useCases: ["ESG reporting", "Site selection", "Academic research", "Market intelligence", "Journalism"],
   keyTitle: "Get your key",
   keyBody: "After payment, come back here and grab your key in one click — no email to wait for.",
   keyLink: "I've paid, reveal my key →",
 };
-const detailSample = fr ? detailCurl : detailCurlEn;
 ---
 
 <section class="dev-hero">
   <div class="section-inner">
     <p class="hero-eyebrow">{t.eyebrow}</p>
     <h1>{t.title}</h1>
+    <p class="dev-usage" set:html={t.usage}></p>
     <p class="dev-lede" set:html={t.lede}></p>
-    <p class="dev-base"><span>{t.baseLabel}</span><code>{API_BASE}</code></p>
+    <div class="dev-base dev-copyable">
+      <span class="dev-base-label">{t.baseLabel}</span>
+      <code class="dev-copy-src">{API_BASE}</code>
+      <button class="dev-copy-btn" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+    </div>
   </div>
 </section>
 
 <section class="section">
+  <div class="section-inner">
+    <h2 class="dev-h2">{t.qsTitle}</h2>
+    <p class="dev-body">{t.qsNote}</p>
+    <div class="dev-qs">
+      <div class="dev-codewrap dev-copyable">
+        <p class="dev-code-label">curl</p>
+        <pre class="dev-code"><code class="dev-copy-src">{listCurl}</code></pre>
+        <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+      </div>
+      <div class="dev-codewrap dev-copyable">
+        <p class="dev-code-label">Python</p>
+        <pre class="dev-code"><code class="dev-copy-src">{listPy}</code></pre>
+        <button class="dev-copy-btn dev-copy-abs" type="button" data-copy={t.copy} data-copied={t.copied} aria-label={t.copy}>{t.copy}</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tinted">
   <div class="section-inner">
     <h2 class="dev-h2">{t.epTitle}</h2>
 
@@ -132,8 +199,6 @@ const detailSample = fr ? detailCurl : detailCurlEn;
       </header>
       <p class="dev-ep-name">{t.listName}</p>
       <p class="dev-ep-desc" set:html={t.listDesc}></p>
-      <p class="dev-code-label">{t.reqLabel}</p>
-      <pre class="dev-code"><code>{listCurl}</code></pre>
       <p class="dev-code-label">{t.respLabel} <span class="dev-200">200</span></p>
       <pre class="dev-code"><code>{listJson}</code></pre>
       <p class="dev-ep-note" set:html={t.listNote}></p>
@@ -151,6 +216,24 @@ const detailSample = fr ? detailCurl : detailCurlEn;
       <pre class="dev-code"><code>{detailSample}</code></pre>
       <p class="dev-ep-note" set:html={t.detailNote}></p>
     </article>
+  </div>
+</section>
+
+<section class="section" id="compare">
+  <div class="section-inner">
+    <h2 class="dev-h2">{t.cmpTitle}</h2>
+    <table class="dev-compare">
+      <thead><tr>{t.cmpCols.map((c, i) => <th class={i === 0 ? "" : (i === 2 ? "dev-cmp-pro" : "dev-cmp-free")}>{c}</th>)}</tr></thead>
+      <tbody>
+        {t.cmpRows.map((row: any) => (
+          <tr>
+            <td>{row[0]}</td>
+            <td class="dev-cmp-cell">{row[1] ? <span class="dev-yes">✓</span> : <span class="dev-no">—</span>}</td>
+            <td class="dev-cmp-cell dev-cmp-pro">{row[2] ? <span class="dev-yes">✓</span> : <span class="dev-no">—</span>}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </div>
 </section>
 
@@ -190,6 +273,10 @@ const detailSample = fr ? detailCurl : detailCurlEn;
         </div>
       ))}
     </div>
+    <div class="dev-usecases">
+      <span class="dev-uc-label">{t.useTitle}</span>
+      {t.useCases.map((u: string) => <span class="dev-uc-chip">{u}</span>)}
+    </div>
   </div>
 </section>
 
@@ -202,3 +289,21 @@ const detailSample = fr ? detailCurl : detailCurlEn;
     <a class="button button-secondary" href={keyPath}>{t.keyLink}</a>
   </div>
 </section>
+
+<script>
+  // Copy buttons (base URL + quick-start snippets). Each button sits in a
+  // .dev-copyable and copies that block's .dev-copy-src text.
+  for (const btn of document.querySelectorAll<HTMLButtonElement>(".dev-copy-btn")) {
+    btn.addEventListener("click", async () => {
+      const src = btn.closest(".dev-copyable")?.querySelector(".dev-copy-src");
+      if (!src) return;
+      try {
+        await navigator.clipboard.writeText(src.textContent || "");
+        const done = btn.dataset.copied || "✓";
+        const label = btn.textContent;
+        btn.textContent = done;
+        setTimeout(() => { btn.textContent = label; }, 1500);
+      } catch (e) { /* clipboard blocked — user can select manually */ }
+    });
+  }
+</script>
