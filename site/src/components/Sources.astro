@@ -1,0 +1,69 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// "Sources & licences" — the PUBLIC source register (Tier 1 of the data dictionary,
+// 2-methodo-scoring/DICTIONNAIRE-DONNEES-registre-sources.md). Lists, per pillar,
+// WHICH source feeds WHICH field/indicator and under WHICH licence. Deliberately at
+// the CATEGORY level: the value-by-value provenance of a given site (Tier 2) is the
+// operational layer, offered on request per site via the right-of-reply — never a
+// bulk dump (P6). Answers "what data do you use?" with one URL, and draws the line.
+// Shared FR/EN template (i18n §13); the register lives in each page's t.
+import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en"; t: any; nav: NavNode[];
+  altHref: string; altLabel: string;
+};
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby="src-title">
+    <div class="section-inner prose legal">
+      <h1 id="src-title">{t.h1}</h1>
+      <Fragment set:html={t.intro} />
+
+      <div class="src-boundary">
+        <p class="src-boundary-title">{t.boundaryTitle}</p>
+        <Fragment set:html={t.boundaryBody} />
+      </div>
+
+      {t.groups.map((g: any) => (
+        <>
+          <h2>{g.title}</h2>
+          <div class="fiche-ind-wrap">
+            <table class="meth-table">
+              <thead><tr><th>{t.cols.source}</th><th>{t.cols.feeds}</th><th>{t.cols.license}</th></tr></thead>
+              <tbody>
+                {g.rows.map((r: any) => (
+                  <tr>
+                    <td><strong>{r.url ? <a href={r.url} target="_blank" rel="noopener">{r.source}</a> : r.source}</strong></td>
+                    <td set:html={r.feeds} />
+                    <td set:html={r.license} />
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      ))}
+
+      <p class="meth-rule" set:html={t.closeP}></p>
+
+      <div class="meth-actions">
+        <a class="button button-primary" href={t.methodHref}>{t.ctaMethod}</a>
+      </div>
+
+      <p class="legal-back"><a href={t.backHref}>{t.backLabel}</a></p>
+    </div>
+  </section>
+</Base>
