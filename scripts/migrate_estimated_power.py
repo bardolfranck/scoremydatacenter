@@ -64,6 +64,16 @@ def _decimals(x) -> int:
     return len(s.split(".")[1].rstrip("0")) if "." in s else 0
 
 
+def _round_2sf(x: float) -> float:
+    """2 significant figures — the honest precision of a kNN estimate (« pas de précision
+    feinte », cadrage §9). 14.91441334 → 15.0, 0.518008551 → 0.52, 1400 → 1400."""
+    from math import floor, log10
+
+    if x == 0:
+        return 0.0
+    return round(x, -int(floor(log10(abs(x)))) + 1)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--newsroom", default=str(Path(__file__).resolve().parent.parent.parent
@@ -80,14 +90,28 @@ def main() -> int:
     stats = {"estimated_relabeled": 0, "carries_source_filled": 0, "dc_estimated_tagged": 0,
              "dc_announced_tagged": 0, "orphans_added": 0, "dc_missing_file": 0}
 
+    import re
+
     for dc_id, fill in fills.items():
-        is_estimate = _decimals(fill.get("power_mw", 0)) > 1
+        # `estimated: true` is the durable marker (idempotent re-runs); the >1-decimal
+        # signature only detects a first, unmigrated pass.
+        is_estimate = fill.get("estimated") is True or _decimals(fill.get("power_mw", 0)) > 1
+        mw = fill.get("power_mw")
         if is_estimate:
+            # Round AT THE SOURCE to 2 significant figures — the API must never serve
+            # 0.518008551 as an "estimated" power (faux-précis); the fiche renders "~0.52".
+            mw = _round_2sf(float(mw))
+            fill["power_mw"] = mw
+            if fill.get("population"):
+                fill["l2"] = round(mw / (fill["population"] / 1000.0), 4)
             fill["attribution"] = ESTIMATE_ATTR
             fill["estimated"] = True
             fill["model"] = "poc-mw-estimator"
             stats["estimated_relabeled"] += 1
-        elif not fill.get("primary_source"):
+        elif (not fill.get("primary_source")
+              and "DCWatch" in (fill.get("attribution") or "")):
+            # only TRUE DCWatch carries get the export permalink — an orphan (announced,
+            # fiche-sourced) keeps primary_source null with its explanatory note
             fill["primary_source"] = EXPORT_URL
             stats["carries_source_filled"] += 1
 
@@ -98,12 +122,19 @@ def main() -> int:
         dc = json.loads(p.read_text())
         dc["identity"]["power_mw_status"] = "estimated" if is_estimate else "announced"
         if is_estimate:
+            dc["identity"]["power_mw"] = mw
             for ind in dc.get("indicators", []):
-                if ind.get("id") == "L2" and ind.get("status") in ("announced", "measured"):
+                if ind.get("id") == "L2" and ind.get("status") in ("announced", "measured", "estimated"):
                     ind["status"] = "estimated"
+                    if fill.get("population") and isinstance(ind.get("value"), (int, float)):
+                        ind["value"] = round(mw / (fill["population"] / 1000.0), 4)
                     title = (ind.get("source") or {}).get("title") or ""
                     if DCWATCH_TAG in title:
-                        ind["source"]["title"] = title.replace(DCWATCH_TAG, ESTIMATE_TAG)
+                        title = title.replace(DCWATCH_TAG, ESTIMATE_TAG)
+                    # the figure in the prose follows the rounded value ("puissance ~15 MW")
+                    title = re.sub(r"puissance ~?[0-9][0-9.]* MW", f"puissance ~{mw:g} MW", title)
+                    if title:
+                        ind["source"]["title"] = title
             stats["dc_estimated_tagged"] += 1
         else:
             stats["dc_announced_tagged"] += 1
