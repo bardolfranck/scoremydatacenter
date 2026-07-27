@@ -284,24 +284,13 @@ const { variant, labels } = Astro.props;
             </div>`;
         };
 
-        // announced_project (no hard fact yet): the existing DOM 🗣️ marker.
-        // Zero entries today (US wave 1) — hide its legend line rather than advertise
-        // a marker that is nowhere on the map.
+        // announced_project (no hard fact yet): rendered as a NATIVE symbol layer
+        // (GPU-locked WITH the tiles). HTML markers "swim" during animated zoom at
+        // high latitude — the Húsavík 🗣️ drifted into the ocean at low zoom, converging
+        // back only at rest (Franck 2026-07-27). A symbol layer never drifts. Trade-off
+        // assumed: no CSS pulse ring. Mounted in onStyleReady below with the other layers.
         if (!announced.length) root.querySelector(".legend-line-announced")?.remove();
-        const announcedEls: HTMLElement[] = [];
-        for (const feature of announced) {
-          const el = document.createElement("div");
-          el.className = "watch-marker";
-          el.textContent = "🗣️";
-          el.setAttribute("role", "img");
-          el.setAttribute("aria-label", W.aria);
-          el.title = W.title;
-          new maplibregl.Marker({ element: el })
-            .setLngLat(feature.geometry.coordinates)
-            .setPopup(new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "300px" }).setHTML(watchPopupHtml(feature.properties)))
-            .addTo(map);
-          announcedEls.push(el);
-        }
+        const announcedData = { type: "FeatureCollection", features: announced };
 
         // Toggling the graded corpus on demand (Franck 2026-07-14): a kind filter
         // (Oppositions / Moratoires) HIDES the DC grade pins so the contestation layer
@@ -327,6 +316,22 @@ const { variant, labels } = Astro.props;
           };
           emojiIcon("watch-hand", "✋🏼");
           emojiIcon("watch-pause", "⏸️");
+          emojiIcon("watch-speak", "🗣️");
+
+          // Announced pins on their OWN non-clustered source + symbol layer (GPU-locked,
+          // never re-mounted by the kind filter — only toggled visible/hidden).
+          if (announced.length) {
+            map.addSource("watch-announced", { type: "geojson", data: announcedData });
+            map.addLayer({ id: "watch-announced-pins", type: "symbol", source: "watch-announced", layout: {
+              "icon-image": "watch-speak", "icon-size": 0.7, "icon-allow-overlap": true,
+            }});
+            map.on("click", "watch-announced-pins", (e: any) => {
+              new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
+                .setLngLat(e.lngLat).setHTML(watchPopupHtml(e.features[0].properties)).addTo(map);
+            });
+            map.on("mouseenter", "watch-announced-pins", () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", "watch-announced-pins", () => { map.getCanvas().style.cursor = ""; });
+          }
 
           // (Re)mount the watch source + its layers. Clustering is ON for "Tout" (the US
           // wave is 800+ points and would carpet the map) and OFF while a kind filter is
@@ -379,7 +384,7 @@ const { variant, labels } = Astro.props;
             veille = v;
             const filtered = v !== "tout";
             setDcVisible(!filtered);
-            for (const el of announcedEls) el.style.display = filtered ? "none" : "";
+            if (map.getLayer("watch-announced-pins")) map.setLayoutProperty("watch-announced-pins", "visibility", filtered ? "none" : "visible");
             mountWatch(subset(v), !filtered);
           };
           if (veille !== "tout") applyVeille(veille);
