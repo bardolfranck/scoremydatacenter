@@ -148,3 +148,26 @@ def test_gate9_lenient_on_unattributed_prose(data_copy):
     root, edit = data_copy
     edit(ALPHA, lambda d: _ind(d, "L2")["source"].update(title="Fictional census (test)"))
     assert not any("GATE 9" in p for p in run_gates(root, TODAY))
+
+
+def test_gate10_estimated_power_requires_estimated_l2(data_copy):
+    # 1c (2026-07-27): a model-derived MW must be tagged end-to-end — L2 fed by our own
+    # estimate may not be served as a fact.
+    root, edit = data_copy
+    edit(ALPHA, lambda d: d["identity"].update(power_mw_status="estimated"))
+    assert any("GATE 10" in p and "estimated" in p for p in run_gates(root, TODAY))
+
+
+def test_gate10_estimated_l2_requires_identity_marker(data_copy):
+    root, edit = data_copy
+    edit(ALPHA, lambda d: _ind(d, "L2").update(status="estimated"))
+    assert any("GATE 10" in p and "power_mw_status" in p for p in run_gates(root, TODAY))
+
+
+def test_gate10_coherent_estimated_pair_passes(data_copy):
+    root, edit = data_copy
+    def coherent(d):
+        d["identity"]["power_mw_status"] = "estimated"
+        _ind(d, "L2")["status"] = "estimated"
+    edit(ALPHA, coherent)
+    assert not any("GATE 10" in p for p in run_gates(root, TODAY))

@@ -95,7 +95,7 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
                 pillar_weights: dict[str, float], methodology: dict) -> dict:
     params = methodology["parameters"]
     tier_w = methodology["confidence"]["tier_weights"]
-    total = missing = declarative = 0.0
+    total = missing = declarative = estimated = 0.0
     for d in definitions:
         importance = pillar_weights[d["pillar"]] * d["weight_in_pillar"] * tier_w[str(d["tier"])]
         total += importance
@@ -104,9 +104,17 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
             missing += importance  # both are data gaps that dent confidence (not the substantive score)
         elif status == "announced":
             declarative += importance
+        elif status == "estimated":
+            estimated += importance  # OUR model output — a third cause, never folded into the others
     missing_share = missing / total
     declarative_share = declarative / total
-    raw = max(0.0, 1.0 - missing_share - params["declarative_confidence_penalty"] * declarative_share)
+    estimated_share = estimated / total
+    # estimated is penalized with the SAME weight as declarative (our estimate must never be
+    # treated as better-documented than an operator claim); it stays a DISTINCT cause so the
+    # two-causes discipline of the pre-mortem (never confuse why confidence is low) extends
+    # cleanly to three.
+    raw = max(0.0, 1.0 - missing_share
+              - params["declarative_confidence_penalty"] * (declarative_share + estimated_share))
     levels = params["confidence_thresholds"]
     level = "high" if raw >= levels["high"] else "medium" if raw >= levels["medium"] else "low"
     return {
@@ -115,6 +123,7 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
         "causes": {
             "missing_data": round(missing_share, 3),
             "unverifiable_declarative": round(declarative_share, 3),
+            "model_estimated": round(estimated_share, 3),
         },
     }
 

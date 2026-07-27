@@ -63,6 +63,9 @@ def _summary(dc: dict, result: dict) -> dict:
         "country": identity["country"],
         "project_status": identity["project_status"],
         "power_mw": identity.get("power_mw"),
+        # Consumer contract (agent-site): the fiche/ranking renders "~X MW · estimé" on this
+        # enum (measured | announced | estimated); null = legacy fill, undisclosed provenance.
+        "power_mw_status": identity.get("power_mw_status"),
         # commissioning year (identity.vintage) — the ranking sorts on it; null = not disclosed
         "expected_commissioning": (identity.get("vintage") or {}).get("expected_commissioning"),
         "grades": result["grades"],

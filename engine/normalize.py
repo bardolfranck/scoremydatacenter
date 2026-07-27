@@ -83,6 +83,8 @@ def normalized_score(definition: dict, entry: dict, parameters: dict) -> float |
         score = _proxy_rubric(norm, entry["proxies"], definition["id"])
     else:  # unreachable if schema validation ran
         raise GateError(f"unknown normalization type {kind!r}")
-    if entry["status"] == "announced":
+    if entry["status"] in ("announced", "estimated"):
+        # estimated (our model output) is bounded by the SAME prudent cap as an operator
+        # claim — our own estimate must never look better-documented than a declaration.
         score = min(score, float(parameters["declarative_score_cap"]))
     return score

@@ -113,8 +113,22 @@ const ppDocLabel = isNa(dc.grades.project_process)
 const confPct = Math.round((dc.confidence.score ?? 0) * 100);
 
 const commissioning = dc.vintage?.expected_commissioning;
+// Power carries its documentation status (measured>announced>estimated, A-16 v0.1.x):
+// an estimated figure is flagged « ~X MW · estimé » (prudence family), never served
+// as a bare fact. null/legacy → plain, unchanged.
+const powerEstimated = dc.power_mw && dc.power_mw_status === "estimated";
+// An estimate is a raw model float (e.g. 0.518008551) — round it for display so the
+// figure READS as approximate (precision loss is the point). Measured/announced/legacy
+// values are shown untouched.
+// 2 significant figures — aligned with the source rounding (data-pipeline 949bc49):
+// idempotent, so source ≈ display (no double-round), and defensive if a raw float slips.
+const roundEst = (v: number) => Number(v.toPrecision(2));
+const powerText = dc.power_mw
+  ? `${powerEstimated ? `~${roundEst(dc.power_mw)}` : dc.power_mw} MW`
+  : t.powerUnknown;
 const metaLine = [t.status[dc.project_status] ?? dc.project_status,
-  dc.power_mw ? `${dc.power_mw} MW` : t.powerUnknown,
+  powerText,
+  powerEstimated ? `<span class="pw-est">${t.powerEstimated}</span>` : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
 
 const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
@@ -203,7 +217,7 @@ const pillars = methodology.pillars as any[];
         <p class="fiche-kicker">{t.kicker}</p>
         <h1 class="fiche-name">{dc.name}</h1>
         <p class="fiche-place">{place}</p>
-        <p class="fiche-meta">{metaLine}</p>
+        <p class="fiche-meta" set:html={metaLine}></p>
       </div>
 
       <div class="fiche-badges">

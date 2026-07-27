@@ -57,3 +57,11 @@ def test_declarative_cap_applies_to_announced_only(methodology, parameters):
 def test_missing_returns_none(methodology, parameters):
     e4 = _definition(methodology, "E4")
     assert normalized_score(e4, {"id": "E4", "status": "missing"}, parameters) is None
+
+
+def test_estimated_capped_like_announced_never_uncapped(methodology, parameters):
+    # 1c contract (2026-07-27): our model output scores AT MOST as prudently as an operator
+    # claim — the estimate can never look better-documented than a declaration.
+    e4 = _definition(methodology, "E4")  # PUE 1.18 normalizes to 100 uncapped
+    estimated = _entry("E4", 1.18, status="estimated")
+    assert normalized_score(e4, estimated, parameters) == parameters["declarative_score_cap"]

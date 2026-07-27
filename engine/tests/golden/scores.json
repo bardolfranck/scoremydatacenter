@@ -7,6 +7,7 @@
     "country": "ZZ",
     "project_status": "permitting",
     "power_mw": 120,
+    "power_mw_status": null,
     "expected_commissioning": 2028,
     "grades": {
       "site": {
@@ -42,7 +43,8 @@
       "score": 0.944,
       "causes": {
         "missing_data": 0.008,
-        "unverifiable_declarative": 0.097
+        "unverifiable_declarative": 0.097,
+        "model_estimated": 0.0
       }
     },
     "pillars": {
@@ -131,6 +133,7 @@
     "country": "ZZ",
     "project_status": "announced",
     "power_mw": 900,
+    "power_mw_status": null,
     "expected_commissioning": 2031,
     "grades": {
       "site": {
@@ -156,7 +159,8 @@
       "score": 0.706,
       "causes": {
         "missing_data": 0.294,
-        "unverifiable_declarative": 0.0
+        "unverifiable_declarative": 0.0,
+        "model_estimated": 0.0
       }
     },
     "pillars": {

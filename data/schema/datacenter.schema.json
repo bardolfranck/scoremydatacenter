@@ -120,6 +120,14 @@
               "minLength": 1
             }
           }
+        },
+        "power_mw_status": {
+          "enum": [
+            "measured",
+            "announced",
+            "estimated"
+          ],
+          "description": "Documentation status of power_mw itself (the consumer contract for the fiche/ranking marker): measured = on record; announced = operator claim; estimated = internal model output (rendered '~X MW · estimé', never as a bare fact). Absent = legacy fill, treated as undisclosed provenance."
         }
       }
     },
@@ -334,10 +342,11 @@
           "enum": [
             "measured",
             "announced",
+            "estimated",
             "missing",
             "not_collected"
           ],
-          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); missing = we READ the public dossier and the datum is absent (verified opacity — on project/process it scores 0, may carry a read-trace source); not_collected = nobody has looked yet (transitory; excluded from the substantive score, lowers coverage; the pipelines emit this by default for uncovered project/process indicators). A 0 for something never read would be as false as an A of complacency (2026-07-09)."
+          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); estimated = OUR model-derived estimate (kNN or future ML) — value-bearing, sourced to the internal model, scored AT MOST as prudently as announced (same declarative cap) and penalized at least as much in confidence (cause: model_estimated); it re-scores the day a real value lands (a measured/announced fill replaces it — never the reverse); missing = we READ the public dossier and the datum is absent (verified opacity — on project/process it scores 0, may carry a read-trace source); not_collected = nobody has looked yet (transitory; excluded from the substantive score, lowers coverage; the pipelines emit this by default for uncovered project/process indicators). A 0 for something never read would be as false as an A of complacency (2026-07-09)."
         },
         "value": {
           "type": [
@@ -365,7 +374,8 @@
               "status": {
                 "enum": [
                   "measured",
-                  "announced"
+                  "announced",
+                  "estimated"
                 ]
               }
             }
@@ -449,7 +459,8 @@
                   "status": {
                     "enum": [
                       "measured",
-                      "announced"
+                      "announced",
+                      "estimated"
                     ]
                   }
                 }
@@ -479,7 +490,8 @@
                   "status": {
                     "enum": [
                       "measured",
-                      "announced"
+                      "announced",
+                      "estimated"
                     ]
                   }
                 }

@@ -208,6 +208,24 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                     "confidence penalty) until a regulatory register (EED) confirms it"
                 )
 
+        # Gate 10 — estimated coherence (decision Franck 2026-07-27, option 1c): a model-derived
+        # power figure must be tagged end-to-end. If identity.power_mw is our estimate, every
+        # value-bearing L2 derived from it is 'estimated' too — never served as a fact; and an
+        # L2 marked 'estimated' requires the identity marker so the fiche renders the "~ estimé"
+        # chip. One untagged side = the silent-fact leak this gate exists to kill.
+        pm_status = (dc.get("identity") or {}).get("power_mw_status")
+        l2_status = l2e.get("status")
+        if pm_status == "estimated" and l2_status in ("measured", "announced"):
+            problems.append(
+                f"GATE 10: {label}: identity.power_mw is 'estimated' but L2 is {l2_status!r} — "
+                "an indicator fed by our own model output must carry status 'estimated'"
+            )
+        if l2_status == "estimated" and pm_status != "estimated":
+            problems.append(
+                f"GATE 10: {label}: L2 is 'estimated' but identity.power_mw_status is "
+                f"{pm_status!r} — tag the identity value so the fiche renders the estimate marker"
+            )
+
         # Gate 4 removed (2026-07-15): grades publish directly — no prior-notice hold.
         # The permanent response space (publication.operator_response) is untouched.
 
