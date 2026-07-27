@@ -37,6 +37,13 @@ la couche d'assets Pages). Deux garde-fous :
   zone id. Sinon : skip avec avertissement.
 - De toute façon **auto-guérison** : l'origine renvoyant 404 + `no-store`, tout
   cache résiduel expire et **ne peut plus se re-remplir**.
+- **Secrets jamais exécutés** (#159, 2026-07-27) : `purge-cache` et `media-sat`
+  lisaient leur fichier d'env avec `. fichier` (= exécution), si bien qu'une
+  ligne « valeur nue » était lancée comme commande et **son secret imprimé dans
+  le log** (incident du 2026-07-27 : un token Cloudflare échappé en clair). Tous
+  les points de lecture d'env parsent désormais **ligne par ligne (`KEY=VALUE`
+  seulement)**, jamais de source/exécution : un fichier malformé est **inerte**,
+  jamais une fuite.
 
 ## 3. Bots & débit (activés dashboard 2026-07-22)
 
@@ -66,7 +73,12 @@ machine vers le Seau B.
 - **GA4 est aveugle aux scrapers** (pas de JS, pas de consentement) — ne pas s'y fier.
 - Logs bruts requête-par-requête = Logpush (Enterprise) — non disponible ici.
 
-## TODO
-- Révoquer le token cache-purge exposé le 2026-07-22 (format de fichier) et en
-  recréer un propre dans `~/.smdc/cloudflare.env`.
-- Le Worker/API (Seau B payant) — chantier séparé.
+## Journal
+- **2026-07-27 — token cache-purge roté.** L'ancien token (exposé le 2026-07-22
+  puis de nouveau le 2026-07-27 via un fichier mal formé) est mort ; un nouveau
+  token `Zone > Cache Purge` propre est en place dans `~/.smdc/cloudflare.env`
+  (format `KEY=VALUE` strict), purge testée en prod (`success: true`). Cause
+  racine du log-leak fermée par #159 (cf. §2).
+- **Worker/API (Seau B payant) — livré.** L'API existe (`api.scoremydatacenter.org`,
+  Cloudflare Worker) : liste Seau A sans clé, détail Seau B sous clé, fail-closed.
+  C'est désormais la seule porte machine vers le bulk riche.
