@@ -278,7 +278,10 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
    ✋🏼 = local opposition, ⏸️ = moratorium (official act). */
 .legend-emoji { display: inline-flex; align-items: center; justify-content: center; width: 20px; font-size: 14px; line-height: 1; }
 /* Shareable watch filter + view toggle, top-left of the full map */
-.map-veille-ctl { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px); box-shadow: var(--shadow); font-size: 0.78rem; font-weight: 700; }
+.map-veille-ctl { position: absolute; top: 14px; left: 14px; z-index: 2; display: flex; align-items: center; flex-wrap: wrap; gap: 2px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(6px); box-shadow: var(--shadow); font-size: 0.78rem; font-weight: 700; }
+/* Discipline juridique watchlist (avis cabinet Batch D, 2026-07-27) : Mod 1 —
+   phrase permanente « en veille = pas noté », sous la barre de filtre. */
+.veille-ctl-note { flex-basis: 100%; margin: 5px 4px 1px; max-width: 360px; font-size: 0.7rem; font-weight: 500; color: var(--ink-soft); line-height: 1.35; letter-spacing: 0; text-transform: none; }
 .veille-ctl-label { padding: 0 4px 0 6px; color: var(--muted); font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .map-veille-ctl button { border: none; background: transparent; padding: 4px 10px; border-radius: 999px; cursor: pointer; color: var(--ink-soft); font: inherit; }
 .map-veille-ctl button:hover { color: var(--accent); }
@@ -354,6 +357,8 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 }
 .watch-badge { display: inline-block; width: fit-content; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--wash); color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .watch-note { margin: 2px 0 0; color: var(--muted); font-size: 0.82rem; font-style: italic; }
+/* Mod 2 (avis cabinet Batch D) : l'observatoire n'endosse pas les sources citées. */
+.watch-ext { margin: 6px 0 0; font-size: 0.74rem; color: var(--muted); font-style: italic; }
 .watch-src { margin: 6px 0 0; font-size: 0.84rem; color: var(--ink-soft); }
 .watch-src a { color: var(--accent); }
 .watch-src .src-archived { color: var(--muted); }

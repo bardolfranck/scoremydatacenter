@@ -122,6 +122,21 @@ FORBIDDEN_PHRASES += [
     rf"derived\s+from.{{0,30}}{_SOURCE_NAMES}",
 ]
 
+# D-1 (avis cabinet Batch D, 2026-07-27) : Sahara occidental — terminologie ONU
+# EXCLUSIVE (« territoire non autonome »). Ces expressions traduisent une position
+# politique et sont bannies de TOUTE surface (l'observatoire ne qualifie pas le territoire).
+FORBIDDEN_PHRASES += [
+    r"territoires?\s+marocains?",
+    r"territoires?\s+occup[ée]s?",
+    r"territoires?\s+lib[ée]r[ée]s?",
+    r"provinces?\s+du\s+sud",
+    r"sahara\s+marocain",
+    r"moroccan\s+(?:territory|sahara)",
+    r"occupied\s+territor(?:y|ies)",
+    r"liberated\s+territor(?:y|ies)",
+    r"southern\s+provinces",
+]
+
 
 def _living_surfaces():
     """Every user-facing source: site pages/components/content + README + docs."""
