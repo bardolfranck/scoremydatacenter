@@ -118,3 +118,21 @@ def test_grade_boundary_is_inclusive(methodology, alpha):
     from engine.scoring import _grade
     assert _grade(65.0, methodology)["grade"] == "B"
     assert _grade(64.949, methodology)["grade"] == "C"  # rounds to 64.9
+
+
+def test_estimated_is_a_distinct_confidence_cause(methodology, alpha):
+    # 1c contract: estimated dents confidence with the SAME penalty weight as declarative,
+    # but stays a DISTINCT cause (the pre-mortem two-causes discipline, extended to three).
+    import copy
+    dc = copy.deepcopy(alpha)
+    e4 = next(e for e in dc["indicators"] if e["id"] == "E4")
+    assert e4["status"] == "announced"
+    baseline = score_datacenter(alpha, methodology)["confidence"]
+    e4["status"] = "estimated"
+    shifted = score_datacenter(dc, methodology)["confidence"]
+    moved = shifted["causes"]["model_estimated"]
+    assert moved > 0
+    # share moved cause, not weight (±0.0015: causes are rounded independently, plus float eps)
+    assert abs(shifted["causes"]["unverifiable_declarative"] + moved
+               - baseline["causes"]["unverifiable_declarative"]) <= 0.0015
+    assert shifted["score"] == baseline["score"]                # same penalty → same confidence

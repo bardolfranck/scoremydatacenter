@@ -2,6 +2,32 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0 (policy note) — 2026-07-27 — `estimated`: a model output is a third documentation class, never a fact
+
+- **Rule (decision Franck Bardol, option 1c, 2026-07-27)**: a value produced by OUR OWN model
+  (today the kNN power estimator, tomorrow any ML fill) enters the system as **`status:
+  estimated`** — a full-rank documentation class on the scale `measured > announced >
+  estimated`. It is value-bearing and sourced (to the internal model), but it may never be
+  served as a fact: the fiche/ranking renders it "~X MW · estimé", and the score treats it AT
+  MOST as prudently as an operator claim.
+- **Engine semantics** (existing parameters only — no weight, threshold or indicator change;
+  version stays 0.1.0): (a) normalization applies the SAME `declarative_score_cap` as
+  `announced` — our estimate can never look better-documented than a declaration; (b)
+  confidence counts it as a **distinct third cause `model_estimated`** (the pre-mortem
+  two-causes discipline extended, never folded into `unverifiable_declarative`), penalized
+  with the same `declarative_confidence_penalty`; (c) it re-scores the day a real value lands
+  (a measured/announced fill replaces it — never the reverse).
+- **Identity contract**: `identity.power_mw_status` (`measured | announced | estimated`) is
+  the consumer contract for the fiche/ranking marker; absent = legacy fill.
+- **Enforcement**: Gate 10 — an estimated `power_mw` with a value-bearing L2 not marked
+  `estimated` (or the reverse) fails the build. An untagged model output is the silent-fact
+  leak this class exists to kill.
+- **Trigger**: audit 2026-07-27 — 92 FR power fills were kNN estimates mislabeled "DCWatch
+  (Hubblo), ODbL", displayed as facts in the ranking and feeding L2 under a false attribution.
+  The corpus migration (relabel + tag, newsroom-side) applies this class to that cohort.
+- Signatory: decision Franck Bardol (option 1c, working session 2026-07-27), implemented by
+  Claude (data-pipeline); rendering follow-up owned by agent-site (« ~X MW · estimé »).
+
 ## 0.1.0 (aggregation note) — 2026-07-20 — Indice SITE par pays
 
 - **Objet** : publication d'un agrégat par pays — l'« indice SITE » — calculé par le moteur au
