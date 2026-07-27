@@ -303,12 +303,8 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-popup-link { color: var(--accent); font-size: 0.84rem; font-weight: 750; }
 .map-popup-link:hover { text-decoration: underline; }
 /* Watchlist « En veille » — distinct neutral marker, never a grade chip (A-19) */
-.watch-marker { position: relative; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: 14px; line-height: 1; border-radius: 50%; background: var(--wash); border: 2px solid #fff; box-shadow: 0 4px 12px rgba(7, 24, 47, 0.3); cursor: pointer; }
-/* "En veille" pulse (brief 2026-07-12): the one tolerated continuous motion — a slow,
-   discreet ring on the watchlist markers. Pseudo-element only: maplibre owns the
-   marker's inline transform, so the ring animates without fighting it. */
-.watch-marker::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid rgba(15, 95, 184, 0.45); animation: watch-pulse 2.6s ease-out infinite; pointer-events: none; }
-@keyframes watch-pulse { 0% { transform: scale(1); opacity: 0.8; } 70%, 100% { transform: scale(1.9); opacity: 0; } }
+/* Watchlist "announced" pins are now a NATIVE symbol layer (GPU-locked, no zoom-swim,
+   Franck 2026-07-27) — the old HTML .watch-marker + its pulse ring are retired. */
 
 /* Hero map intro (brief 2026-07-12 · one pass, load): pins drop onto their real
    coordinates (the chip animates, never the maplibre-positioned marker), then one
@@ -351,7 +347,6 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 @media (prefers-reduced-motion: reduce) {
   .map-chip.chip-drop, .map-dot.chip-drop { animation: none; }
   .map-scan { display: none; }
-  .watch-marker::after { display: none; }
   .score-demo .demo-pop, .score-demo .demo-bar i, .score-demo .demo-badge { animation: none !important; }
   .demo-replay { display: none; }
 }
