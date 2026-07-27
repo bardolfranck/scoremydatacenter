@@ -206,6 +206,10 @@ const { variant, labels } = Astro.props;
         filterLabel: "En veille :", filterAll: "Tout", filterOppositions: "Oppositions",
         filterMoratoria: "Moratoires", filterAria: "Filtrer la couche en veille",
         viewWorld: "🌍 Monde", viewEurope: "🇪🇺 Europe",
+        // Discipline juridique watchlist (avis cabinet Batch D, 2026-07-27) :
+        // Mod 1 (phrase permanente en tête) + Mod 2 (note « source documentaire »).
+        watchlistNote: "Les projets « En veille » ne sont pas notés. Cette rubrique décrit uniquement des faits publics issus de sources identifiées.",
+        extSourceNote: "Source externe citée à titre documentaire.",
         status: { announced: "Annoncé", permitting: "En instruction",
                   under_construction: "En construction", operational: "En service" },
       }, labels.watch ?? {});
@@ -216,6 +220,21 @@ const { variant, labels } = Astro.props;
         const isClusteredKind = (f: any) => f.properties.kind === "opposition" || f.properties.kind === "moratorium";
         const clusteredAll = { type: "FeatureCollection", features: watch.features.filter(isClusteredKind) };
         const announced = watch.features.filter((f: any) => !isClusteredKind(f));
+
+        // EEA watch entries belong in the DEFAULT Europe frame (Franck 2026-07-22): Iceland
+        // (GIGA-42 Bakki) et al. are European — unlike the US/Maghreb wave, which stays one
+        // "🌍 Monde" click away. The default frame is built from the graded corpus (§6), which
+        // has no Icelandic DC, so Bakki fell ~1° off the NW corner. Extend the bounds with the
+        // European watch points and re-fit, so a European "en veille" pin is never off-frame.
+        const EUROPE_ISO = new Set(["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR",
+          "HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","IS","NO",
+          "LI","CH","GB","AD","MC","SM","VA","AL","BA","ME","MK","RS","XK","MD","UA"]);
+        for (const f of watch.features) {
+          if (EUROPE_ISO.has(f.properties.country)) bounds.extend(f.geometry.coordinates);
+        }
+        if (!focusId && geo.features.length > 1) {
+          map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: 0 });
+        }
 
         // Shareable filter state, ranking-style URL: /fr/carte?veille=moratoires
         const FILTERS: Record<string, string | null> = { tout: null, oppositions: "opposition", moratoires: "moratorium" };
@@ -254,6 +273,7 @@ const { variant, labels } = Astro.props;
               <p class="watch-note">${W.note}</p>
               <p class="watch-src">${W.source} ${srcLink(src)}</p>
               ${factItems ? `<ul class="watch-facts">${factItems}</ul>` : ""}
+              <p class="watch-ext">${W.extSourceNote}</p>
             </div>`;
         };
 
@@ -369,7 +389,8 @@ const { variant, labels } = Astro.props;
             .map(([v, label]) => `<button type="button" data-veille="${v}"${v === veille ? ' class="active"' : ""}>${label}</button>`).join("") +
           `<span class="veille-ctl-sep"></span>` +
           `<button type="button" data-view="world">${W.viewWorld}</button>` +
-          `<button type="button" data-view="europe">${W.viewEurope}</button>`;
+          `<button type="button" data-view="europe">${W.viewEurope}</button>` +
+          `<p class="veille-ctl-note">${W.watchlistNote}</p>`;
         canvas.appendChild(ctl);
         ctl.addEventListener("click", (e) => {
           const btn = (e.target as HTMLElement).closest("button");
