@@ -1,0 +1,89 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// "The standards — where we sit": the intermediate rung between the citizen 101
+// (Comprendre) and our own method. It maps the EXISTING industry norms (ISO/IEC
+// 30134, Green Grid, ETSI…) and shows, by contrast, the empty seat we take.
+// Public register of the internal 2-methodo-scoring/REFERENTIEL-KPI-FILIERE doc
+// (§1–§5 only; the §6 talking points stay off the public site by design).
+// Shared FR/EN template (i18n §13); the doctrine prose lives in each page's t.
+import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en"; t: any; nav: NavNode[];
+  altHref: string; altLabel: string;
+};
+const methHref = lang === "fr" ? "/fr/methodologie" : "/methodology";
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby="norms-title">
+    <div class="section-inner prose legal">
+      <h1 id="norms-title">{t.h1}</h1>
+      <Fragment set:html={t.intro} />
+
+      <h2>{t.mapH2}</h2>
+      <Fragment set:html={t.mapIntro} />
+      <div class="fiche-ind-wrap">
+        <table class="meth-table">
+          <thead><tr><th>{t.mapCols.org}</th><th>{t.mapCols.role}</th><th>{t.mapCols.scope}</th></tr></thead>
+          <tbody>
+            {t.mapRows.map((r: any) => (
+              <tr><td><strong set:html={r.org} /></td><td set:html={r.role} /><td set:html={r.scope} /></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>{t.kpiH2}</h2>
+      <Fragment set:html={t.kpiIntro} />
+      <div class="fiche-ind-wrap">
+        <table class="meth-table">
+          <thead><tr><th>{t.kpiCols.kpi}</th><th>{t.kpiCols.norm}</th><th>{t.kpiCols.measure}</th></tr></thead>
+          <tbody>
+            {t.kpiRows.map((r: any) => (
+              <tr><td><strong set:html={r.kpi} /></td><td set:html={r.norm} /><td set:html={r.measure} /></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2>{t.lettersH2}</h2>
+      <div class="meth-example">
+        {t.lettersP.map((block: string) => <Fragment set:html={block} />)}
+      </div>
+
+      <h2>{t.situateH2}</h2>
+      <Fragment set:html={t.situateP} />
+      <div class="fiche-ind-wrap">
+        <table class="meth-table">
+          <thead><tr><th>{t.alignCols.ours}</th><th>{t.alignCols.theirs}</th></tr></thead>
+          <tbody>
+            {t.alignRows.map((r: any) => (
+              <tr><td set:html={r.ours} /><td set:html={r.theirs} /></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Fragment set:html={t.beyondP} />
+
+      <p class="meth-rule" set:html={t.closeP}></p>
+
+      <div class="meth-actions">
+        <a class="button button-primary" href={methHref}>{t.ctaMethod}</a>
+      </div>
+
+      <p class="legal-back"><a href={t.backHref}>{t.backLabel}</a></p>
+    </div>
+  </section>
+</Base>

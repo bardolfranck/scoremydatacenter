@@ -184,6 +184,18 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; letter-spacing: -0.01em; }
 .hero-accent { color: var(--grade-e); }
 .hero-lede { max-width: 600px; margin-top: 22px; color: var(--ink-soft); font-size: clamp(1.05rem, 1.8vw, 1.25rem); }
+.hero-standards {
+  max-width: 620px;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--brand, #d98c1f);
+  background: color-mix(in srgb, var(--brand, #d98c1f) 7%, transparent);
+  border-radius: 0 6px 6px 0;
+  color: var(--ink);
+  font-size: clamp(0.98rem, 1.5vw, 1.08rem);
+  line-height: 1.5;
+}
+.hero-standards strong { color: var(--ink); font-weight: 700; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
 
 .button {
@@ -818,6 +830,22 @@ sup a { color: var(--accent); font-weight: 750; }
 .meth-refs a { font-weight: 450; }
 .legal-draft { padding: 12px 16px; border-left: 3px solid var(--grade-c); background: var(--wash); border-radius: 0 var(--radius) var(--radius) 0; font-size: 0.95rem; }
 .legal-back { margin-top: 34px; }
+/* Glossary page */
+.gloss-legend { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 26px; }
+.gl-fam { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.74rem; font-weight: 700; line-height: 1.6; white-space: nowrap; }
+.gl-fam-filiere { background: #eef4fb; color: #0f5fb8; }
+.gl-fam-territoire { background: #eaf5ee; color: #0b7a4b; }
+.gl-fam-secteur { background: #f2f0f6; color: #6a5a8a; }
+.gloss { margin: 0; }
+.gloss-item { padding: 16px 0; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.gloss-item:first-of-type { border-top: none; }
+.gloss-item dt { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
+.gloss-term { font-size: 1.12rem; font-weight: 800; color: var(--ink); }
+.gloss-item dd { margin: 0; }
+.gloss-item dd p { margin: 0; }
+.gloss-more { display: inline-block; margin-top: 2px; font-weight: 650; font-size: 0.9rem; white-space: nowrap; }
+:target.gloss-item { background: color-mix(in srgb, var(--accent) 6%, transparent); border-radius: var(--radius); padding-left: 12px; padding-right: 12px; }
+
 /* Methodology page */
 .meth-nerd { margin-top: 8px; font-size: 0.9rem; color: var(--muted); }
 .meth-nerd code { font-size: 0.85em; }

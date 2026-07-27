@@ -33,7 +33,9 @@ export const FR_NAV: NavNode[] = [
   ]},
   { label: "Comprendre", children: [
     { href: "/fr/comprendre", label: "Comprendre les data centers" },
+    { href: "/fr/normes", label: "Les normes · où on se situe" },
     { href: "/fr/methodologie", label: "Méthode" },
+    { href: "/fr/glossaire", label: "Glossaire" },
     { href: "/fr/#faq", label: "FAQ" },
   ]},
   { href: "/fr/bibliotheque", label: "Bibliothèque" },
@@ -56,7 +58,9 @@ export const EN_NAV: NavNode[] = [
   ]},
   { label: "Understand", children: [
     { href: "/understand", label: "Understanding data centers" },
+    { href: "/standards", label: "The standards · where we sit" },
     { href: "/methodology", label: "Method" },
+    { href: "/glossary", label: "Glossary" },
     { href: "/#faq", label: "FAQ" },
   ]},
   { href: "/intelligence", label: "Intelligence Library" },
