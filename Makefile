@@ -126,7 +126,7 @@ methodology-doc:
 # réseau. Secret HMAC + base URL : ~/.smdc/media.env (hors repos).
 prod-artifacts:
 	uv run python scripts/build_prod_artifacts.py
-	-@if [ -f $$HOME/.smdc/media.env ]; then 	  set -a; . $$HOME/.smdc/media.env; set +a; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
+	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2
 
 # Go-live paid-API hook (Franck 2026-07-23): push the freshly built artifacts to
@@ -159,7 +159,7 @@ sync-api-r2:
 
 # Génération/upload manuel des photos satellite (mêmes règles, à la demande).
 media-sat:
-	@set -a; . $$HOME/.smdc/media.env; set +a; 	uv run python -m pipelines.media.satellite --upload
+	@while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	uv run python -m pipelines.media.satellite --upload
 
 # Deploy the built site to Cloudflare Pages (direct upload — the prod build needs
 # the private newsroom, so it happens HERE, never in a public-repo CI).
@@ -175,9 +175,12 @@ deploy: build
 # token with Zone > Cache Purge:Edit + the zone id, in ~/.smdc/cloudflare.env
 # (CF_PURGE_TOKEN=... / CF_ZONE_ID=...). Without it: skipped with a loud notice
 # (the raw files stay cache-served until a manual dashboard purge).
+# The env file is parsed line-by-line (KEY=VALUE only), NEVER sourced/executed —
+# a malformed or bare line is skipped, so a secret can never leak into the log
+# (2026-07-27 incident: a bare token line was echoed as "command not found").
 purge-cache:
 	@if [ -f $$HOME/.smdc/cloudflare.env ]; then \
-	  set -a; . $$HOME/.smdc/cloudflare.env; set +a; \
+	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/cloudflare.env; \
 	  for f in scores stats indices indices_history home_showcase methodology audit; do \
 	    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
 	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \
