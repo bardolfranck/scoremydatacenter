@@ -1,0 +1,63 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Glossary: the connective tissue of the "DC wiki" — an A–Z reference index, not a
+// re-teach. Each entry is 1–2 general-public sentences with an optional link to the
+// deep page (/normes, /methodologie). Legal discipline (Franck 2026-07-27): generic
+// definitions in OUR words (no ISO normative text reproduced), NO named third party —
+// any real example is reached via a link to a legally-vetted fiche, never characterized
+// here. Shared FR/EN template (i18n §13); the definitions live in each page's t.
+import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en"; t: any; nav: NavNode[];
+  altHref: string; altLabel: string;
+};
+
+// Alphabetical order, accent-insensitive, computed at build (locale-aware collation).
+const entries = [...t.entries].sort((a: any, b: any) =>
+  a.term.localeCompare(b.term, lang, { sensitivity: "base" }));
+const famClass: Record<string, string> = { filiere: "gl-fam-filiere", territoire: "gl-fam-territoire", secteur: "gl-fam-secteur" };
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby="gloss-title">
+    <div class="section-inner prose legal">
+      <h1 id="gloss-title">{t.h1}</h1>
+      <Fragment set:html={t.intro} />
+
+      <ul class="gloss-legend" aria-label={t.legendAria}>
+        <li><span class="gl-fam gl-fam-filiere">{t.fam.filiere}</span></li>
+        <li><span class="gl-fam gl-fam-territoire">{t.fam.territoire}</span></li>
+        <li><span class="gl-fam gl-fam-secteur">{t.fam.secteur}</span></li>
+      </ul>
+
+      <dl class="gloss">
+        {entries.map((e: any) => (
+          <div class="gloss-item" id={e.slug}>
+            <dt>
+              <span class="gloss-term" set:html={e.term}></span>
+              <span class={`gl-fam ${famClass[e.fam] ?? ""}`}>{t.fam[e.fam]}</span>
+            </dt>
+            <dd>
+              <Fragment set:html={e.def} />
+              {e.more && <> <a class="gloss-more" href={e.more.href}>{e.more.label} →</a></>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <p class="legal-back"><a href={t.backHref}>{t.backLabel}</a></p>
+    </div>
+  </section>
+</Base>

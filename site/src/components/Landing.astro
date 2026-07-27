@@ -128,6 +128,9 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       {t.heroEyebrow && <p class="hero-eyebrow">{t.heroEyebrow}</p>}
       <h1 set:html={t.heroTitle}></h1>
       <p class="hero-lede">{t.heroLede}</p>
+      {t.heroStandards && (
+        <p class="hero-standards" set:html={t.heroStandards.replace("{n}", real.length.toLocaleString(lang === "fr" ? "fr-FR" : "en-US"))}></p>
+      )}
       <ul class="hero-checks">
         {t.heroChecks.map((c: string) => <li set:html={c}></li>)}
       </ul>

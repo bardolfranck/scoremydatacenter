@@ -64,6 +64,8 @@ const refBasis = (i: any) =>
         ))}
       </div>
 
+      {t.expertCrochet && <p class="meth-rule" set:html={t.expertCrochet}></p>}
+
       <h2>{t.aProvenH2}</h2>
       <Fragment set:html={t.aProvenP} />
       <div class="meth-example">
