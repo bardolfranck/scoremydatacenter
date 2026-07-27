@@ -102,6 +102,16 @@ FORBIDDEN_PHRASES = [
     r"ne\s+pas\s+publier\s+en\s+l'état",
     r"do\s+not\s+publish\s+as-is",
     r"version\s+de\s+travail\s+—",
+    # B-1 (avis cabinet 2026-07-27) : ODbL — jamais de dépendance STRUCTURELLE à
+    # DCWatch. On écrit « contient des informations de », jamais « basé sur / issu
+    # de / construit à partir de / grâce à DCWatch » (idem EN).
+    r"bas[ée]s?\s+sur.{0,30}dcwatch",
+    r"construit.{0,30}dcwatch",
+    r"issus?\s+de\s+dcwatch",
+    r"gr[âa]ce\s+à.{0,30}dcwatch",
+    r"based\s+on.{0,30}dcwatch",
+    r"built\s+(from|on).{0,30}dcwatch",
+    r"derived\s+from.{0,30}dcwatch",
 ]
 
 

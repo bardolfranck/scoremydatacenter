@@ -76,12 +76,17 @@ const { variant, labels } = Astro.props;
 
     const geo = await (await fetch("/data/map.geojson")).json();
 
+    // B-1 (avis cabinet 2026-07-27) : attribution ODbL LOCALE là où de la donnée
+    // DCWatch s'affiche — « contient des informations de » (jamais « basé sur »).
+    const dcwatchAttr = (labels.ficheBase ?? labels.mapPath ?? "/fr").startsWith("/fr")
+      ? 'Contient des informations de <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL'
+      : 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL';
     const map = new maplibregl.Map({
       container: canvas,
       style: STYLE_URL,
       center: [2.4, 46.8],
       zoom: isFull ? 5.3 : 4.7,
-      attributionControl: { compact: true },
+      attributionControl: { compact: true, customAttribution: dcwatchAttr },
       scrollZoom: isFull,
       cooperativeGestures: isFull,
     });
