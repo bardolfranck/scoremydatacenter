@@ -1,0 +1,68 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN "Sources & licenses" : thin page, template in Sources.astro.
+import Sources from "../components/Sources.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  title: "Sources & licenses — ScoreMyDataCenter",
+  metaDescription: "Every dataset feeding our grades, fiches and country indices: the source, what it feeds, its license. Open method — the public answer to \"what data do you use?\".",
+  tagline: "Independent observatory",
+  h1: "Sources & licenses",
+  intro:
+    "<p>Our method is open. Here is <strong>every source</strong> that feeds a grade, a fiche or a country index — what it brings, and under which license. This is the public, complete answer to \"what data do you use?\".</p>",
+  boundaryTitle: "What we publish, and where the line is",
+  boundaryBody:
+    "<p>This register lists our sources at the level of each <strong>pillar and indicator</strong> — the open layer. The <strong>value-by-value provenance of a specific site</strong> (which source for which figure, measured or estimated) is our operational layer: an <strong>operator or partner can request it for a given site</strong> via our <a href=\"/contact\">contact channel</a>. Bulk compilation, export and freshness are the <strong>product</strong> (our API). We say what we don't publish — and why.</p>",
+  cols: { source: "Source", feeds: "What it feeds", license: "License" },
+  groups: [
+    { title: "Site identity & location", rows: [
+      { source: "DCWatch (Hubblo)", url: "https://dcwatch.hubblo.org", feeds: "Corpus starting point: name, operator, coordinates, announced power, project status — which our pipeline then re-derives and verifies.", license: "<strong>ODbL</strong>" },
+      { source: "geo.api.gouv.fr", url: "https://geo.api.gouv.fr", feeds: "Municipality and department (re-derived from coordinates).", license: "Licence Ouverte" },
+      { source: "OpenStreetMap · OpenFreeMap", url: "https://www.openstreetmap.org/copyright", feeds: "Base map.", license: "<strong>ODbL</strong>" },
+      { source: "Esri World Imagery", url: "https://www.esri.com", feeds: "Satellite imagery on the fiches.", license: "© Esri (credited on the image)" },
+    ]},
+    { title: "Energy pillar", rows: [
+      { source: "RTE — eCO2mix", url: "https://www.rte-france.com/eco2mix", feeds: "Carbon intensity of the regional electricity mix.", license: "Licence Ouverte" },
+      { source: "RTE — Caparéseau · S3REnR", url: "https://www.capareseau.fr", feeds: "Grid connection capacity and proximity.", license: "Licence Ouverte" },
+      { source: "RTE · ODRÉ", url: "https://odre.opendatasoft.com", feeds: "Grid congestion and connection queue.", license: "Licence Ouverte" },
+      { source: "ICPE files · press", feeds: "Announced PUE (declared, graded with caution).", license: "Public documents" },
+    ]},
+    { title: "Water pillar", rows: [
+      { source: "ZRE (prefectoral orders) · Propluvia", url: "https://propluvia.developpement-durable.gouv.fr", feeds: "Water stress and restrictions in the area.", license: "Regulatory / Licence Ouverte" },
+      { source: "Hub'Eau", url: "https://hubeau.eaufrance.fr", feeds: "Status of the water body.", license: "Licence Ouverte" },
+      { source: "BNPE · Hub'Eau", url: "https://bnpe.eaufrance.fr", feeds: "Abstraction pressure on the basin.", license: "Licence Ouverte" },
+      { source: "ICPE files", feeds: "Cooling and announced water volume.", license: "Public documents" },
+    ]},
+    { title: "Land & biodiversity pillar", rows: [
+      { source: "INPN · Natura 2000 · ZNIEFF", url: "https://inpn.mnhn.fr", feeds: "Overlap with and distance to protected areas.", license: "Licence Ouverte" },
+      { source: "Cerema · RPG", url: "https://www.cerema.fr", feeds: "Soil status (artificialized, farm, natural).", license: "Licence Ouverte" },
+      { source: "SRADDET · INPN (green & blue network)", feeds: "Ecological corridors.", license: "Public regional data" },
+      { source: "Permits · ICPE files", feeds: "Project footprint on the ground.", license: "Public documents" },
+    ]},
+    { title: "Local impact pillar", rows: [
+      { source: "INSEE", url: "https://www.insee.fr", feeds: "Socio-economic profile and absorption capacity of the town.", license: "Licence Ouverte" },
+      { source: "Géorisques", url: "https://www.georisques.gouv.fr", feeds: "Technological / Seveso hazard nearby.", license: "Licence Ouverte" },
+      { source: "Press · statements · council minutes", feeds: "Announced jobs and revenue, observed opposition, elected officials' stance — <strong>sourced facts, never the article republished</strong>.", license: "Links + short excerpts" },
+    ]},
+    { title: "Transparency & governance", rows: [
+      { source: "Public inquiries · consultation", feeds: "Consent and governance of the project.", license: "Public documents" },
+    ]},
+    { title: "Verification & coverage beyond France", rows: [
+      { source: "EED / RVO registers (Netherlands)", feeds: "Ground-truth powers and verification source (Europe's first A grades).", license: "Open registry" },
+      { source: "Eurostat (NUTS)", url: "https://ec.europa.eu/eurostat", feeds: "Income / land-use bridge for countries beyond France.", license: "Free reuse (Eurostat)" },
+      { source: "datacentertracker.org", url: "https://www.datacentertracker.org", feeds: "North-American cases.", license: "<strong>CC BY</strong>" },
+      { source: "GDELT", url: "https://www.gdeltproject.org", feeds: "Discovery net for opposition (monitoring; precision at editorial triage).", license: "Public domain" },
+    ]},
+  ],
+  closeP: "A grade rests on <strong>sourced facts</strong> only. Every value on a fiche links back to its origin; below 40% documentation coverage we write \"insufficient data\" rather than grade the unknown.",
+  methodHref: "/methodology",
+  ctaMethod: "See our method →",
+  backHref: "/",
+  backLabel: "← Back to the home page",
+};
+---
+
+<Sources lang="en" t={t} nav={EN_NAV} altHref="/fr/sources" altLabel="🇫🇷 FR" />
