@@ -168,7 +168,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                   const base = t.status[dc.project_status];
                   if (!dc.power_mw) return `${base} · ${t.powerUnknown}`;
                   const est = dc.power_mw_status === "estimated";
-                  const r = (v: number) => v >= 100 ? Math.round(v / 10) * 10 : v >= 10 ? Math.round(v) : Math.round(v * 10) / 10;
+                  const r = (v: number) => Number(v.toPrecision(2));
                   const val = est ? `~${r(dc.power_mw)}` : dc.power_mw;
                   return `${base} · ${val} MW${est ? ` · <span class="pw-est">${t.powerEstimated}</span>` : ""}`;
                 })()}></td>
