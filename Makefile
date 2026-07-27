@@ -186,7 +186,12 @@ purge-cache:
 	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \
 	      --data "{\"files\":[\"https://scoremydatacenter.org/data/$$f.json\"]}" >/dev/null; \
 	  done; \
-	  echo "purge-cache: /data/*.json purged on the edge"; \
+	  for g in map watchlist; do \
+	    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
+	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \
+	      --data "{\"files\":[\"https://scoremydatacenter.org/data/$$g.geojson\"]}" >/dev/null; \
+	  done; \
+	  echo "purge-cache: /data/*.json + map/watchlist.geojson purged on the edge"; \
 	else \
 	  echo "purge-cache: ~/.smdc/cloudflare.env absent — cache NOT purged (create a Zone>Cache Purge:Edit token, else purge /data/*.json by URL in the dashboard)"; \
 	fi
