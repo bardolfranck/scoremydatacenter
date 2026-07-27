@@ -28,7 +28,7 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
   nav={nav}
 >
   <section class="section" aria-labelledby="src-title">
-    <div class="section-inner prose legal">
+    <div class="section-inner prose legal legal-wide">
       <h1 id="src-title">{t.h1}</h1>
       <Fragment set:html={t.intro} />
 

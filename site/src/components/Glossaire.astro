@@ -32,7 +32,7 @@ const famClass: Record<string, string> = { filiere: "gl-fam-filiere", territoire
   nav={nav}
 >
   <section class="section" aria-labelledby="gloss-title">
-    <div class="section-inner prose legal">
+    <div class="section-inner prose legal legal-wide">
       <h1 id="gloss-title">{t.h1}</h1>
       <Fragment set:html={t.intro} />
 
@@ -48,6 +48,7 @@ const famClass: Record<string, string> = { filiere: "gl-fam-filiere", territoire
             <dt>
               <span class="gloss-term" set:html={e.term}></span>
               <span class={`gl-fam ${famClass[e.fam] ?? ""}`}>{t.fam[e.fam]}</span>
+              {e.dir && <span class={`gl-dir gl-dir-${e.dir}`}>{t.dir[e.dir]}</span>}
             </dt>
             <dd>
               <Fragment set:html={e.def} />
