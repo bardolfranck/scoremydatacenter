@@ -1,0 +1,20 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Révélation de clé post-paiement (la redirection Lemon Squeezy arrive ici avec ?order=).
+import Base from "../../../layouts/Base.astro";
+import KeyReveal from "../../../components/KeyReveal.astro";
+import { FR_NAV } from "../../../config/nav";
+---
+<Base
+  lang="fr"
+  title="Récupérer votre clé API — ScoreMyDataCenter"
+  description="Révélez votre clé API ScoreMyDataCenter après paiement."
+  tagline="Observatoire indépendant"
+  altHref="/developers/key"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <KeyReveal lang="fr" />
+</Base>

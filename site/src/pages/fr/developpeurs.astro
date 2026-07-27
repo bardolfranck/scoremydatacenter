@@ -1,0 +1,19 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import Base from "../../layouts/Base.astro";
+import DevelopersPage from "../../components/DevelopersPage.astro";
+import { FR_NAV } from "../../config/nav";
+---
+<Base
+  lang="fr"
+  title="API développeurs — ScoreMyDataCenter"
+  description="L'API ScoreMyDataCenter : liste ouverte (seau A), détail complet sous clé (seau B). L'accès machine aux notes d'acceptabilité des data centers — structuré, à jour, requêtable."
+  tagline="Observatoire indépendant"
+  altHref="/developers"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <DevelopersPage lang="fr" />
+</Base>
