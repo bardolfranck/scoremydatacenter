@@ -102,16 +102,24 @@ FORBIDDEN_PHRASES = [
     r"ne\s+pas\s+publier\s+en\s+l'état",
     r"do\s+not\s+publish\s+as-is",
     r"version\s+de\s+travail\s+—",
-    # B-1 (avis cabinet 2026-07-27) : ODbL — jamais de dépendance STRUCTURELLE à
-    # DCWatch. On écrit « contient des informations de », jamais « basé sur / issu
-    # de / construit à partir de / grâce à DCWatch » (idem EN).
-    r"bas[ée]s?\s+sur.{0,30}dcwatch",
-    r"construit.{0,30}dcwatch",
-    r"issus?\s+de\s+dcwatch",
-    r"gr[âa]ce\s+à.{0,30}dcwatch",
-    r"based\s+on.{0,30}dcwatch",
-    r"built\s+(from|on).{0,30}dcwatch",
-    r"derived\s+from.{0,30}dcwatch",
+]
+
+# B-1 généralisé (Franck 2026-07-27) : jamais de dépendance STRUCTURELLE à UNE SOURCE,
+# quelle qu'elle soit. On écrit « contient des informations de », jamais « basé sur /
+# issu de / construit à partir de / grâce à <source> » (idem EN). Ciblé sur un NOM DE
+# SOURCE pour ne pas casser les usages légitimes (« basé sur une méthode ouverte »).
+_SOURCE_NAMES = (
+    r"(?:dcwatch|hubblo|openstreetmap|\bosm\b|datacentertracker|eurostat|g[ée]orisques"
+    r"|vigieau|propluvia|bnpe|hub'?eau|insee|inpn|cerema|\brte\b|esri|gdelt)"
+)
+FORBIDDEN_PHRASES += [
+    rf"bas[ée]s?\s+sur.{{0,30}}{_SOURCE_NAMES}",
+    rf"construit.{{0,30}}{_SOURCE_NAMES}",
+    rf"issus?\s+de.{{0,20}}{_SOURCE_NAMES}",
+    rf"gr[âa]ce\s+à.{{0,30}}{_SOURCE_NAMES}",
+    rf"based\s+on.{{0,30}}{_SOURCE_NAMES}",
+    rf"built\s+(?:from|on).{{0,30}}{_SOURCE_NAMES}",
+    rf"derived\s+from.{{0,30}}{_SOURCE_NAMES}",
 ]
 
 
