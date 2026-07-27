@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2
 
 install:
 	uv sync
@@ -90,16 +90,19 @@ build:
 	npm run build --prefix site
 	$(MAKE) prune-public-json
 
-# Anti-pillage (Franck 2026-07-22): the deployed site serves HTML, never the raw
-# data. The build already INLINES every JSON it needs into the HTML; Astro also
-# mirrors public/data/*.json into dist/ — those served copies are the bulk-scrape
-# hole (one curl on scores.json = the whole corpus). Delete them, keeping ONLY
-# the two geojson the map fetches at runtime (already reduced to the free Seau-A
-# floor). The machine door becomes the (future) authenticated API, nothing else.
+# Anti-pillage (Franck 2026-07-22, corrigé 2026-07-23): the deployed site serves
+# HTML, never the raw data. The build INLINES every JSON it needs into the HTML;
+# Astro also mirrors public/data/*.json into dist/ — those are the bulk-scrape
+# hole (one curl on scores.json = the whole corpus).
+# We do NOT delete them: a DELETED asset leaves Cloudflare's edge serving a STALE
+# cached copy for days — a 404 origin can't evict it (the cache saga of 07-22:
+# scores.json still 200/2.7 MB 20 h after the prune). Instead we OVERWRITE each
+# with a tiny no-store STUB, so the asset still EXISTS in the deployment:
+# Cloudflare then has something authoritative to serve and replaces the stale
+# corpus. Only the two geojson the map fetches at runtime keep real (Seau-A) data.
 prune-public-json:
-	@rm -rf site/dist/data/dc
-	@find site/dist/data -maxdepth 1 -type f ! -name '*.geojson' -delete
-	@echo "prune: dist/data serves only → $$(ls site/dist/data 2>/dev/null | tr '\n' ' ')"
+	@find site/dist/data -name '*.json' ! -name '*.geojson' -type f -exec sh -c 'printf "%s" "{\"gone\":true,\"note\":\"Bulk data endpoints are retired - structured access is available via the API.\"}" > "$$1"' _ {} \;
+	@echo "prune: $$(find site/dist/data -name '*.json' ! -name '*.geojson' | wc -l | tr -d ' ') data JSON replaced by no-store stub; geojson kept → $$(ls site/dist/data/*.geojson 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ')"
 
 test: headers-check
 	uv run pytest -q
@@ -123,11 +126,40 @@ methodology-doc:
 # réseau. Secret HMAC + base URL : ~/.smdc/media.env (hors repos).
 prod-artifacts:
 	uv run python scripts/build_prod_artifacts.py
-	-@if [ -f $$HOME/.smdc/media.env ]; then 	  set -a; . $$HOME/.smdc/media.env; set +a; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
+	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
+	$(MAKE) sync-api-r2
+
+# Go-live paid-API hook (Franck 2026-07-23): push the freshly built artifacts to
+# the PRIVATE API bucket (paid Seau B) via the API repo's own sync script. It is
+# GARDÉ + NON FATAL + INERTE — it does NOTHING until BOTH exist: the committed
+# script AND its dedicated R2 creds. So a site deploy can never touch the API
+# bucket by accident, and never before the API's test key is killed + auth locked
+# (P6: the paywall must be shut before the real corpus lands in R2).
+# Contract for agent-codeur-API (the Worker lives in the PRIVATE sibling repo
+# ../smdc-api — option A, Franck 2026-07-23 — NOT inside this public repo):
+#   - script:  ../smdc-api/scripts/sync-r2.sh  (committed there; runs
+#              `aws s3 sync … --delete`, excludes zz-*, targets smdc-api-data)
+#   - creds:   ~/.smdc/r2-api.env  (KEY=VALUE — AWS_ACCESS_KEY_ID / _SECRET_ACCESS_KEY
+#              / endpoint), an S3 R2 token scoped to smdc-api-data ONLY. NOT the
+#              média-sat HMAC token (different mechanism + least privilege).
+# The script's DATA_DIR defaults to site/public/data, resolved from the make cwd
+# (this repo root), so the sibling location does not change what gets synced.
+# Env is parsed line-by-line (KEY=VALUE only) — a malformed line is skipped, never
+# executed, so a secret can never leak into the build log (cf. the cloudflare.env
+# lesson).
+SYNC_R2 ?= ../smdc-api/scripts/sync-r2.sh
+sync-api-r2:
+	-@if [ -f "$(SYNC_R2)" ] && [ -f "$$HOME/.smdc/r2-api.env" ]; then \
+	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < "$$HOME/.smdc/r2-api.env"; \
+	  echo "sync-api-r2: pushing published artifacts → smdc-api-data (R2)"; \
+	  sh "$(SYNC_R2)" || echo "sync-api-r2: non-fatal failure (see logs)"; \
+	else \
+	  echo "sync-api-r2: inert — needs $(SYNC_R2) (committed) + ~/.smdc/r2-api.env; API bucket untouched"; \
+	fi
 
 # Génération/upload manuel des photos satellite (mêmes règles, à la demande).
 media-sat:
-	@set -a; . $$HOME/.smdc/media.env; set +a; 	uv run python -m pipelines.media.satellite --upload
+	@while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	uv run python -m pipelines.media.satellite --upload
 
 # Deploy the built site to Cloudflare Pages (direct upload — the prod build needs
 # the private newsroom, so it happens HERE, never in a public-repo CI).
@@ -143,9 +175,12 @@ deploy: build
 # token with Zone > Cache Purge:Edit + the zone id, in ~/.smdc/cloudflare.env
 # (CF_PURGE_TOKEN=... / CF_ZONE_ID=...). Without it: skipped with a loud notice
 # (the raw files stay cache-served until a manual dashboard purge).
+# The env file is parsed line-by-line (KEY=VALUE only), NEVER sourced/executed —
+# a malformed or bare line is skipped, so a secret can never leak into the log
+# (2026-07-27 incident: a bare token line was echoed as "command not found").
 purge-cache:
 	@if [ -f $$HOME/.smdc/cloudflare.env ]; then \
-	  set -a; . $$HOME/.smdc/cloudflare.env; set +a; \
+	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/cloudflare.env; \
 	  for f in scores stats indices indices_history home_showcase methodology audit; do \
 	    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
 	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \

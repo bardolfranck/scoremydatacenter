@@ -25,3 +25,8 @@ site/public/data/
 # pipeline HTTP cache (local runs)
 .cache/
 .media-sat/
+
+# Paid-API Worker — private plumbing, never in the public repo (Franck 2026-07-23).
+# On disk (the Makefile sync-api-r2 hook references it by path), but its own
+# private repo; the public site repo must never track it.
+/api/

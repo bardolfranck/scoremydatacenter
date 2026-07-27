@@ -1,0 +1,19 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import Base from "../layouts/Base.astro";
+import DevelopersPage from "../components/DevelopersPage.astro";
+import { EN_NAV } from "../config/nav";
+---
+<Base
+  lang="en"
+  title="Developer API — ScoreMyDataCenter"
+  description="The ScoreMyDataCenter API: an open Seau-A list, a keyed Seau-B detail. Machine access to data-center acceptability grades — structured, fresh, queryable."
+  tagline="Independent observatory"
+  altHref="/fr/developpeurs"
+  altLabel="🇫🇷 FR"
+  nav={EN_NAV}
+>
+  <DevelopersPage lang="en" />
+</Base>

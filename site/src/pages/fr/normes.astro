@@ -1,0 +1,68 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR "Les normes — où nous nous situons" : thin page, template in Normes.astro.
+import Normes from "../../components/Normes.astro";
+import { FR_NAV } from "../../config/nav";
+
+const t = {
+  title: "Les normes — où nous nous situons — ScoreMyDataCenter",
+  metaDescription: "Ce que la filière data center mesure déjà (PUE, ISO/IEC 30134, Green Grid, ETSI) — et la case vide que nous occupons : la première note d'acceptabilité indépendante, site par site.",
+  tagline: "Observatoire indépendant",
+  h1: "Les normes. Où nous nous situons.",
+  intro:
+    "<p>Nous ne débarquons pas en terrain vierge. La filière data center mesure ses performances depuis des années, avec un vocabulaire normé et des organismes qui font autorité. Cette page cartographie <strong>l'existant</strong> — les KPI officiels, les normes ISO — pour situer, par contraste, ce que nous apportons.</p><p class=\"meth-nerd\">🤓 Plus avancé que <a href=\"/fr/comprendre\">Comprendre les data centers</a>, en amont de notre <a href=\"/fr/methodologie\">Méthode</a>. C'est la marche du milieu : le terrain de jeu existant, avant notre note.</p>",
+
+  mapH2: "La carte des normes",
+  mapIntro: "<p>Qui fait autorité, et sur quoi. L'ossature mondiale, c'est <strong>ISO/IEC 30134</strong> (via le comité SC39) ; tout le reste gravite autour.</p>",
+  mapCols: { org: "Organisme", role: "Rôle", scope: "Ce qu'il normalise" },
+  mapRows: [
+    { org: "ISO/IEC JTC1 SC39", role: "le comité international", scope: "la série <strong>ISO/IEC 30134</strong> = les KPI officiels du data center" },
+    { org: "The Green Grid", role: "consortium industriel", scope: "a <em>inventé</em> le PUE (repris par l'ISO), plus CUE, WUE, et l'indice <strong>PI</strong>" },
+    { org: "ETSI", role: "normalisation télécom (EU)", scope: "l'indice <strong>DCp</strong> (Data Center Performance), étiquette A→I" },
+    { org: "Cenelec", role: "reprise européenne", scope: "transpose les normes ISO 30134 en Europe" },
+    { org: "France Datacenter · Gimélec · AGIT", role: "filière française", scope: "le livre blanc des KPI (2017) : pédagogie, anti-greenwashing" },
+    { org: "InfraNum", role: "fédération des infrastructures", scope: "guide 2025 : data centers de proximité, souveraineté" },
+  ],
+
+  kpiH2: "Les indicateurs officiels",
+  kpiIntro: "<p>Le vocabulaire que tout le secteur partage. Presque tous mesurent une seule chose : <strong>l'efficacité de la machine</strong>.</p>",
+  kpiCols: { kpi: "Indicateur", norm: "Norme", measure: "Ce qu'il mesure" },
+  kpiRows: [
+    { kpi: "PUE", norm: "ISO/IEC 30134-2", measure: "le rendement énergétique global de l'infrastructure. <em>L'indicateur roi</em> : 2,0 = moyenne du parc français, 1,28 = les plus récents." },
+    { kpi: "REF", norm: "ISO/IEC 30134-3", measure: "la part d'énergie renouvelable consommée" },
+    { kpi: "ITEEsv", norm: "ISO/IEC 30134-4 <em>(en cours)</em>", measure: "l'efficacité énergétique du parc de serveurs" },
+    { kpi: "CUE", norm: "Green Grid", measure: "le carbone émis par unité d'énergie informatique" },
+    { kpi: "WUE", norm: "Green Grid", measure: "l'<strong>eau</strong> consommée par unité d'énergie — mais côté machine, pas côté territoire" },
+    { kpi: "ERF · COP · CER", norm: "ISO SC39 <em>(en cours)</em>", measure: "réutilisation de la chaleur, rendement du refroidissement" },
+  ],
+
+  lettersH2: "Des notes en lettres existent déjà — mais elles ne mesurent pas la même chose",
+  lettersP: [
+    "<p>La filière possède <strong>déjà</strong> des notes en lettres. Le <strong>PI</strong> (Performance Indicator, The Green Grid) classe un data center de <i class=\"gl gl-a\">A</i> à <strong>G</strong> ; le <strong>DCp</strong> (ETSI RGS/OEU-0011) le classe de <strong>A à I</strong> — comme l'étiquette énergie d'un réfrigérateur.</p>",
+    "<p><strong>Mais</strong> ces lettres mesurent l'<strong>efficacité énergétique de l'infrastructure</strong> (PUE, chaleur fatale, renouvelable) ; elles sont <strong>auto-déclarées</strong> par l'exploitant, sur une machine <strong>anonyme</strong>. Personne n'attribue une lettre à l'<strong>acceptabilité</strong> — eau, sol, territoire, gouvernance — d'un site <strong>nommé et réel</strong>, de l'<strong>extérieur</strong>.</p>",
+    "<p>Même alphabet, dimension radicalement différente. C'est exactement le vide que nous occupons.</p>",
+  ],
+
+  situateH2: "Où nous nous situons",
+  situateP: "<p>Notre pilier Énergie parle <strong>exactement</strong> le langage normé du secteur — nous nous <em>adossons</em> aux normes, nous ne les contournons pas. Le <a href=\"/fr/methodologie\"><i class=\"gl gl-a\">A</i> se prouve</a> d'ailleurs par un audit <strong>ISO/IEC 30134</strong> accrédité.</p>",
+  alignCols: { ours: "Notre indicateur", theirs: "KPI officiel correspondant" },
+  alignRows: [
+    { ours: "Énergie · <strong>PUE</strong> (déclaratif, noté avec prudence)", theirs: "PUE — <strong>ISO/IEC 30134-2</strong>" },
+    { ours: "Énergie · appro. réel (PPA, % EnR)", theirs: "REF — <strong>ISO/IEC 30134-3</strong>" },
+    { ours: "Énergie · intensité carbone (RTE eCO2mix)", theirs: "proche <strong>CUE</strong> (Green Grid)" },
+    { ours: "Eau · WUE / source d'eau réelle", theirs: "<strong>WUE</strong> (Green Grid)" },
+    { ours: "Foncier · récupération de chaleur", theirs: "proche <strong>ERF</strong>" },
+  ],
+  beyondP: "<p>Et voici la différence, par construction. Les KPI officiels sont <strong>tous</strong> des indicateurs d'efficacité de l'infrastructure. <strong>Aucun</strong> ne mesure ce que nous notons dans <strong>quatre de nos cinq piliers</strong> :</p><ul><li><strong>Eau — le stress hydrique du territoire</strong> (pas la conso de la machine, mais la tension sur la ressource locale)</li><li><strong>Foncier &amp; biodiversité</strong> — sol artificialisé, zones protégées, continuités écologiques</li><li><strong>Impact local</strong> — capacité d'absorption de la commune, aléa Seveso, contestation observée, position des élus</li><li><strong>Transparence &amp; gouvernance</strong> — concertation, consentement, enquête publique</li></ul><p>La filière optimise la <strong>machine</strong>. Nous notons son <strong>acceptabilité dans le territoire</strong>.</p>",
+
+  closeP: "La filière écrit la règle dans ses livres blancs. Nous publions le score — en public, site par site — et nous citons ses normes pour être inattaquables, pas pour être adoubés.",
+
+  ctaMethod: "Voir notre méthode →",
+  backHref: "/fr/",
+  backLabel: "← Retour à l'accueil",
+};
+---
+
+<Normes lang="fr" t={t} nav={FR_NAV} altHref="/standards" altLabel="🇬🇧 EN" />

@@ -1,0 +1,68 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN "The standards — where we sit" : thin page, template in Normes.astro.
+import Normes from "../components/Normes.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  title: "The standards — where we sit — ScoreMyDataCenter",
+  metaDescription: "What the data center industry already measures (PUE, ISO/IEC 30134, Green Grid, ETSI) — and the empty seat we take: the first independent acceptability score, site by site.",
+  tagline: "Independent observatory",
+  h1: "The standards. Where we sit.",
+  intro:
+    "<p>We are not landing on empty ground. The data center industry has measured its performance for years, with a normalized vocabulary and authoritative bodies. This page maps <strong>what already exists</strong> — the official KPIs, the ISO standards — to situate, by contrast, what we add.</p><p class=\"meth-nerd\">🤓 More advanced than <a href=\"/understand\">Understanding data centers</a>, upstream of our <a href=\"/methodology\">Method</a>. It is the middle rung: the existing playing field, before our grade.</p>",
+
+  mapH2: "The map of standards",
+  mapIntro: "<p>Who sets authority, and over what. The global backbone is <strong>ISO/IEC 30134</strong> (via the SC39 committee); everything else orbits it.</p>",
+  mapCols: { org: "Body", role: "Role", scope: "What it standardizes" },
+  mapRows: [
+    { org: "ISO/IEC JTC1 SC39", role: "the international committee", scope: "the <strong>ISO/IEC 30134</strong> series = the official data center KPIs" },
+    { org: "The Green Grid", role: "industry consortium", scope: "<em>invented</em> the PUE (later adopted by ISO), plus CUE, WUE, and the <strong>PI</strong> index" },
+    { org: "ETSI", role: "telecom standards (EU)", scope: "the <strong>DCp</strong> index (Data Center Performance), an A→I label" },
+    { org: "Cenelec", role: "European adoption", scope: "transposes the ISO 30134 standards into Europe" },
+    { org: "France Datacenter · Gimélec · AGIT", role: "French industry", scope: "the KPI white paper (2017): pedagogy, anti-greenwashing" },
+    { org: "InfraNum", role: "infrastructure federation", scope: "2025 guide: proximity data centers, sovereignty" },
+  ],
+
+  kpiH2: "The official indicators",
+  kpiIntro: "<p>The vocabulary the whole sector shares. Almost all of them measure one thing: <strong>the efficiency of the machine</strong>.</p>",
+  kpiCols: { kpi: "Indicator", norm: "Standard", measure: "What it measures" },
+  kpiRows: [
+    { kpi: "PUE", norm: "ISO/IEC 30134-2", measure: "the overall energy efficiency of the infrastructure. <em>The flagship metric</em>: 2.0 = the French average, 1.28 = the most recent sites." },
+    { kpi: "REF", norm: "ISO/IEC 30134-3", measure: "the share of renewable energy consumed" },
+    { kpi: "ITEEsv", norm: "ISO/IEC 30134-4 <em>(in progress)</em>", measure: "the energy efficiency of the server fleet" },
+    { kpi: "CUE", norm: "Green Grid", measure: "the carbon emitted per unit of IT energy" },
+    { kpi: "WUE", norm: "Green Grid", measure: "the <strong>water</strong> consumed per unit of energy — but machine-side, not territory-side" },
+    { kpi: "ERF · COP · CER", norm: "ISO SC39 <em>(in progress)</em>", measure: "waste-heat reuse, cooling efficiency" },
+  ],
+
+  lettersH2: "Letter grades already exist — but they don't measure the same thing",
+  lettersP: [
+    "<p>The industry <strong>already</strong> has letter grades. The <strong>PI</strong> (Performance Indicator, The Green Grid) rates a data center from <i class=\"gl gl-a\">A</i> to <strong>G</strong>; the <strong>DCp</strong> (ETSI RGS/OEU-0011) rates it from <strong>A to I</strong> — like the energy label on a fridge.</p>",
+    "<p><strong>But</strong> those letters measure the <strong>energy efficiency of the infrastructure</strong> (PUE, waste-heat reuse, renewables); they are <strong>self-declared</strong> by the operator, on an <strong>anonymous</strong> machine. No one puts a letter on the <strong>acceptability</strong> — water, land, territory, governance — of a <strong>named, real</strong> site, from the <strong>outside</strong>.</p>",
+    "<p>Same alphabet, radically different dimension. That is precisely the gap we fill.</p>",
+  ],
+
+  situateH2: "Where we sit",
+  situateP: "<p>Our Energy pillar speaks <strong>exactly</strong> the sector's standardized language — we <em>lean on</em> the standards, we do not bypass them. The <a href=\"/methodology\"><i class=\"gl gl-a\">A</i> is proven</a>, in fact, by an accredited <strong>ISO/IEC 30134</strong> audit.</p>",
+  alignCols: { ours: "Our indicator", theirs: "Matching official KPI" },
+  alignRows: [
+    { ours: "Energy · <strong>PUE</strong> (declared, graded with caution)", theirs: "PUE — <strong>ISO/IEC 30134-2</strong>" },
+    { ours: "Energy · real supply (PPA, % renewables)", theirs: "REF — <strong>ISO/IEC 30134-3</strong>" },
+    { ours: "Energy · carbon intensity (RTE eCO2mix)", theirs: "close to <strong>CUE</strong> (Green Grid)" },
+    { ours: "Water · WUE / real water source", theirs: "<strong>WUE</strong> (Green Grid)" },
+    { ours: "Land · waste-heat reuse", theirs: "close to <strong>ERF</strong>" },
+  ],
+  beyondP: "<p>And here is the difference, by design. The official KPIs are <strong>all</strong> infrastructure-efficiency metrics. <strong>None</strong> measures what we grade across <strong>four of our five pillars</strong>:</p><ul><li><strong>Water — the water stress of the territory</strong> (not the machine's consumption, but the strain on the local resource)</li><li><strong>Land &amp; biodiversity</strong> — artificialized soil, protected areas, ecological corridors</li><li><strong>Local impact</strong> — the town's absorption capacity, Seveso hazard, observed opposition, elected officials' stance</li><li><strong>Transparency &amp; governance</strong> — consultation, consent, public inquiry</li></ul><p>The industry optimizes the <strong>machine</strong>. We grade its <strong>acceptability within the territory</strong>.</p>",
+
+  closeP: "The industry writes the rule in its white papers. We publish the score — in public, site by site — and we cite its standards to be unassailable, not to be endorsed.",
+
+  ctaMethod: "See our method →",
+  backHref: "/",
+  backLabel: "← Back to the home page",
+};
+---
+
+<Normes lang="en" t={t} nav={EN_NAV} altHref="/fr/normes" altLabel="🇫🇷 FR" />

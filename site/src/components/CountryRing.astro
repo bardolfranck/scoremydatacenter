@@ -1,0 +1,110 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// The hero SIGNATURE (Franck 2026-07-22): the ring of country flags around
+// « N PAYS ». It is the visual statement of the observatory's reach — one flag
+// per country actually present in the corpus. NOTHING is hardcoded: the caller
+// passes the live list of ISO codes, positions are computed by trig here, and
+// the radius grows with the count, so the ring stays uncrowded as Europe fills
+// in (17 today → more, no code change). A country with no inline flag yet falls
+// back to a legible ISO chip — the ring never breaks. Each flag carries a
+// `data-country` hook for the future click-to-filter (no behaviour wired now).
+import { flagInner, COUNTRY_NAME } from "../config/flags";
+
+interface Props {
+  countries: string[];       // live ISO codes from the corpus (already de-duped)
+  lang: "fr" | "en";
+}
+const { countries, lang } = Astro.props;
+
+// Deterministic order so the ring is stable build-to-build (alpha by ISO).
+const isos = [...countries].map((c) => c.toUpperCase()).sort();
+const n = isos.length;
+
+// Geometry — the ONE place the ring's size is decided. Flags are 34×22.6.
+// Radius = max(floor, whatever keeps ~48 px of arc per flag) so N can grow
+// without flags touching. Everything downstream (box, positions) derives here.
+const FLAG_W = 34;
+const FLAG_H = Math.round((FLAG_W * 20) / 30); // 23, keep the 30×20 ratio
+const ARC_PER_FLAG = 46;                        // flag + breathing gap along the arc
+const MIN_R = 104;
+const radius = Math.max(MIN_R, Math.round((n * ARC_PER_FLAG) / (2 * Math.PI)));
+const PAD = FLAG_W / 2 + 6;                      // room so flags aren't clipped
+const box = Math.round(2 * radius + 2 * PAD);
+const c = box / 2;
+
+const label = lang === "fr" ? "pays" : "countries";
+const nameOf = (iso: string) => COUNTRY_NAME[iso]?.[lang] ?? iso;
+
+// Server-side trig: first flag at 12 o'clock, clockwise. Positioned by left/top
+// (not transform) so each flag's `transform` stays free for the upright counter-spin.
+const slots = isos.map((iso, i) => {
+  const ang = (-90 + (i * 360) / n) * (Math.PI / 180);
+  const x = radius * Math.cos(ang);
+  const y = radius * Math.sin(ang);
+  return {
+    iso,
+    inner: flagInner(iso),
+    name: nameOf(iso),
+    left: Math.round((c + x - FLAG_W / 2) * 10) / 10,
+    top: Math.round((c + y - FLAG_H / 2) * 10) / 10,
+  };
+});
+---
+
+<div
+  class="country-ring"
+  style={`--box:${box}px;--flag-w:${FLAG_W}px;--flag-h:${FLAG_H}px;--ring-r:${radius}px`}
+  data-country-ring
+  role="img"
+  aria-label={lang === "fr"
+    ? `${n} pays couverts : ${isos.map(nameOf).join(", ")}`
+    : `${n} countries covered: ${isos.map(nameOf).join(", ")}`}
+>
+  <div class="ring-rotor" aria-hidden="true">
+    <span class="ring-guide"></span>
+    {slots.map((s) => (
+      <span
+        class={`fslot${s.inner ? "" : " fslot-chip"}`}
+        style={`left:${s.left}px;top:${s.top}px`}
+        data-country={s.iso}
+        title={s.name}
+      >
+        {s.inner ? (
+          <svg viewBox="0 0 30 20" width={FLAG_W} height={FLAG_H} class="fflag">
+            <g set:html={s.inner}></g>
+            <rect x="0.4" y="0.4" width="29.2" height="19.2" rx="2.4"
+                  fill="none" stroke="rgba(0,0,0,.18)" stroke-width="0.8" />
+          </svg>
+        ) : (
+          <span class="fchip">{s.iso}</span>
+        )}
+      </span>
+    ))}
+  </div>
+  <div class="ring-core">
+    <b class="ring-n">{n}</b>
+    <span class="ring-label">{label}</span>
+  </div>
+</div>
+
+<script>
+  // Arm the slow rotation only once the signature is actually on screen — no
+  // point spinning above the fold where nobody sees it, and it keeps the first
+  // paint calm. Respect reduced-motion by never arming (CSS gates it too).
+  const ring = document.querySelector<HTMLElement>("[data-country-ring]");
+  if (ring && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) { ring.classList.add("ring-live"); io.disconnect(); }
+        }
+      }, { threshold: 0.35 });
+      io.observe(ring);
+    } else {
+      ring.classList.add("ring-live");
+    }
+  }
+</script>

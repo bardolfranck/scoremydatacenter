@@ -6,12 +6,13 @@
 // Every sort/filter/search state has a shareable URL. Rows render at build time
 // from the engine's artifacts; the client script only reorders and filters.
 import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
 import ScoreBadge from "./ScoreBadge.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
 
 const { lang, t, nav, altHref, altLabel } = Astro.props as {
-  lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
+  lang: "fr" | "en"; t: any; nav: NavNode[];
   altHref: string; altLabel: string;
 };
 

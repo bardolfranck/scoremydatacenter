@@ -7,6 +7,7 @@
 // dc/{id}.json artifact (never hand-written); a grade letter only ever appears
 // through <ScoreBadge>. Bilingual data reads label[lang]/synthesis .fr/.en.
 import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
 import ScoreBadge from "./ScoreBadge.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -25,7 +26,7 @@ import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
 
 const { dc, lang, t, nav, altHref, altLabel } = Astro.props as {
-  dc: any; lang: "fr" | "en"; t: any; nav: { href: string; label: string }[];
+  dc: any; lang: "fr" | "en"; t: any; nav: NavNode[];
   altHref: string; altLabel: string;
 };
 
