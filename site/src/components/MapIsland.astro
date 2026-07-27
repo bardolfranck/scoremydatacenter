@@ -259,8 +259,15 @@ const { variant, labels } = Astro.props;
           const facts = typeof p.facts === "string" ? JSON.parse(p.facts) : (p.facts || []);
           const src = typeof p.source === "string" && p.source.startsWith("{") ? JSON.parse(p.source) : p.source;
           const typeLabel = p.kind === "moratorium" ? W.typeMoratorium : p.kind === "opposition" ? W.typeOpposition : "";
-          const sub = [[p.municipality, p.country].filter(Boolean).join(" · "),
-            p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
+          // Never append the raw ISO country code when the place label is already a
+          // DESCRIPTIVE territory (contains an em-dash) — avis cabinet Batch D (2026-07-27,
+          // EH vs MA) : le code pays n'est jamais un élément éditorial. « Húsavík · IS »
+          // reste ; « Dakhla — Sahara occidental — territoire non autonome (ONU) » n'a
+          // pas de « · EH » accolé.
+          const loc = p.municipality && p.municipality.includes("—")
+            ? p.municipality
+            : [p.municipality, p.country].filter(Boolean).join(" · ");
+          const sub = [loc, p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
           const factItems = facts.map((f: any) =>
             `<li>${f.kind === "press" ? W.press : ""}${(f.label || {})[W.lang] ?? (f.label || {}).fr ?? ""}` +
             `${f.self_reported ? ` <span class="contestation-tag">${W.selfReported}</span>` : ""} — ${srcLink(f.source)}</li>`
