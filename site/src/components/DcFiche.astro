@@ -509,13 +509,17 @@ const pillars = methodology.pillars as any[];
         mini.style.display = "none"; // no coordinates published — no empty frame
       } else {
         const [lon, lat] = f.geometry.coordinates;
+        // B-1 (avis cabinet 2026-07-27) : attribution ODbL DCWatch locale sur la carte.
+        const dcwatchAttr = (mini.dataset.ficheBase || "/fr/dc").startsWith("/fr")
+          ? 'Contient des informations de <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL'
+          : 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL';
         const map = new maplibregl.Map({
           container: mini.querySelector<HTMLElement>(".mini-map-canvas")!,
           style: "https://tiles.openfreemap.org/styles/positron",
           center: [lon, lat],
           zoom: 8, // regional context — close enough to read the territory, not a rooftop
           cooperativeGestures: true, // pan/zoom without trapping the page scroll
-          attributionControl: { compact: true },
+          attributionControl: { compact: true, customAttribution: dcwatchAttr },
         });
         whitenBasemap(map);
         map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
