@@ -9,8 +9,8 @@
 // only names its public URL.
 
 // Staging today; flip to the custom domain once the CF route + DNS are live.
-export const API_BASE = "https://smdc-api.bardolfranck.workers.dev";
-// export const API_BASE = "https://api.scoremydatacenter.org"; // prod
+// export const API_BASE = "https://smdc-api.bardolfranck.workers.dev"; // staging
+export const API_BASE = "https://api.scoremydatacenter.org"; // prod (custom domain live 2026-07-23)
 
 export const SITE = "https://scoremydatacenter.org";
 
