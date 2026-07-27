@@ -269,6 +269,16 @@ _GDELT_THROTTLE_S = 6                       # GDELT DOC throttle: one request ev
 # never a cloned collector — the spatial pipeline's anti-clone rule (COUNTRIES.md) applied to
 # voie B. `sourcecountry` filters by OUTLET country, not project country: Canadian outlets also
 # cover US stories, so the reviewer still triages. DETECTION only, like every GDELT record.
+
+# Maghreb press is FR + AR (shared lexicon, one definition — no per-country drift). Watchlist
+# doctrine A-19 applies: these feed presence, never a score (decision Franck 2026-07-27).
+_MAGHREB_QUERIES = [
+    '("data center" OR "datacenter" OR "centre de données") (opposition OR contestation '
+    'OR moratoire OR "enquête publique" OR manifestation OR recours)',
+    '("مركز بيانات" OR "مركز البيانات" OR "مراكز البيانات") '
+    '(احتجاج OR اعتراض OR معارضة)',
+]
+
 GDELT_COUNTRY_SPECS = {
     # Canadian English writes "data centre"; Québec writes "centre de données" (BAPE = the
     # Québec public-hearing body, the CNDP analogue).
@@ -281,6 +291,9 @@ GDELT_COUNTRY_SPECS = {
             'OR "consultation publique" OR BAPE)',
         ],
     },
+    "MA": {"sourcecountry": "morocco", "queries": _MAGHREB_QUERIES},
+    "TN": {"sourcecountry": "tunisia", "queries": _MAGHREB_QUERIES},
+    "DZ": {"sourcecountry": "algeria", "queries": _MAGHREB_QUERIES},
 }
 
 

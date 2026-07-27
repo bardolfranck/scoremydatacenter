@@ -259,3 +259,18 @@ def test_gdelt_bq_operator_axis(tmp_path):
     assert recs[0]["facts"]["operators"] == ["Equinix"]
     assert "equinix" in recs[0]["facts"]["organizations"]
     assert recs[1]["facts"]["operators"] == []          # no known operator -> honest empty
+
+
+def test_maghreb_specs_carry_french_and_arabic(monkeypatch):
+    # Watchlist doctrine A-19 (Franck 2026-07-27): MA/TN/DZ press detection in BOTH local
+    # written languages — one shared lexicon, no per-country drift.
+    for iso, sc in (("MA", "morocco"), ("TN", "tunisia"), ("DZ", "algeria")):
+        spec = signal.GDELT_COUNTRY_SPECS[iso]
+        assert spec["sourcecountry"] == sc
+        joined = " ".join(spec["queries"])
+        assert "centre de données" in joined          # French
+        assert "مركز" in joined                        # Arabic (data-center stem)
+    # the three share ONE query list object — a drift in one would be a drift in all
+    assert (signal.GDELT_COUNTRY_SPECS["MA"]["queries"]
+            is signal.GDELT_COUNTRY_SPECS["TN"]["queries"]
+            is signal.GDELT_COUNTRY_SPECS["DZ"]["queries"])
