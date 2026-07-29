@@ -39,7 +39,11 @@ export const FR_NAV: NavNode[] = [
     { href: "/fr/glossaire", label: "Glossaire" },
     { href: "/fr/#faq", label: "FAQ" },
   ]},
-  { href: "/fr/bibliotheque", label: "Bibliothèque" },
+  { label: "Bibliothèque", children: [
+    { href: "/fr/rapports/big-tech", label: "Rapport Big Tech-AI" },
+    { href: "/fr/rapports/banques", label: "Rapport — Les banques" },
+    { href: "/fr/bibliotheque", label: "Toute la bibliothèque" },
+  ]},
   { label: "L'observatoire", children: [
     { href: "/fr/qui-sommes-nous", label: "Qui sommes-nous ?" },
     { href: "/fr/#open", label: "Modèle ouvert" },
@@ -65,7 +69,11 @@ export const EN_NAV: NavNode[] = [
     { href: "/glossary", label: "Glossary" },
     { href: "/#faq", label: "FAQ" },
   ]},
-  { href: "/intelligence", label: "Intelligence Library" },
+  { label: "Library", children: [
+    { href: "/reports/big-tech", label: "Big Tech-AI report" },
+    { href: "/reports/banks", label: "The banks report" },
+    { href: "/intelligence", label: "The whole library" },
+  ]},
   { label: "Observatory", children: [
     { href: "/who-we-are", label: "Who we are" },
     { href: "/#open", label: "Open model" },

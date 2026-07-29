@@ -92,9 +92,7 @@ const fmtDate = (iso: string) =>
               </span>
               <span class="lib-tag-digest">{t.digestTag}</span>
               <span class="lib-price">
-                {brief.priceFromEur
-                  ? `${t.fromLabel} ${brief.priceFromEur.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB")} €`
-                  : t.onRequest}
+                {brief.priceFromEur != null ? t.freeLabel : t.onRequest}
               </span>
             </div>
           </li>
