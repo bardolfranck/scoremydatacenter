@@ -185,7 +185,9 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
         <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()} title={`${code.toUpperCase()} — ${t.comingSoonWord}`}>{COUNTRY_FLAGS[code]}</span>
       ))}
     </p>
-    <p class="lib-index-link"><a href={t.indexHref}>{t.indexLink}</a></p>
+    <!-- Index link greyed: the full catalogue isn't live yet and an active link
+         would signal our roadmap (Franck 2026-07-29). Re-enable when it ships. -->
+    <p class="lib-index-link lib-index-soon" aria-disabled="true">{t.indexLink}</p>
   </section>
 
   <!-- Benchmark opérateur — bespoke, on request, confidential register -->
@@ -235,4 +237,5 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
   .lib-real-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
   .lib-real-sub { color: rgba(255,255,255,0.82); line-height: 1.4; font-size: 0.95rem; }
   .lib-real-cta { margin-top: 0.3rem; font-weight: 600; color: #fff; }
+  .lib-index-soon { color: #9aa4b2; opacity: 0.65; cursor: not-allowed; user-select: none; }
 </style>
