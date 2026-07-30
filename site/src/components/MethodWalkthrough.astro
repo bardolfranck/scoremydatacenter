@@ -1,0 +1,382 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// "La note, pas à pas" — a PEDAGOGICAL walkthrough of how a grade is built, on a
+// FICTIONAL toy site (zz-demo). Deliberately an EXPLAINER, never a calculator:
+// real pillar names + weights + indicator names (all public, from methodology.json),
+// but ILLUSTRATIVE values. The intuition, not the calibration. It sits next to the
+// formal /methodology page (the reference) and must not contradict it — hence the
+// real 5-pillar / 24-indicator structure. Doctrine (Franck 2026-07-30): transparent
+// about the METHOD's shape, opaque about the exact calibration and the corpus.
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+
+// Real A–E scale (methodology.json grade_thresholds): A≥80 B≥65 C≥50 D≥35 E≥0.
+// Real pillars + weights. Indicator VALUES below are illustrative; names are real.
+const PILLARS = [
+  { id: "energy", label: { fr: "Énergie", en: "Energy" }, weight: 25, open: true, sub: 48, grade: "d",
+    note: { fr: "moyenne pondérée des indicateurs", en: "weighted mean of indicators" },
+    indicators: [
+      { id: "E2", label: { fr: "Capacité de raccordement au réseau", en: "Grid connection capacity" }, live: true, w: "×60 %" },
+      { id: "E1", label: { fr: "Intensité carbone du réseau", en: "Grid carbon intensity" }, val: { fr: "80 g/kWh", en: "80 g/kWh" }, w: "×10 %", note: 85 },
+      { id: "E3", label: { fr: "File d'attente de raccordement", en: "Connection queue" }, val: { fr: "18 mois", en: "18 months" }, w: "×10 %", note: 40 },
+      { id: "E4", label: { fr: "Efficacité (PUE annoncé)", en: "Efficiency (announced PUE)" }, val: { fr: "1,3", en: "1.3" }, w: "×10 %", note: 60 },
+      { id: "E5", label: { fr: "Approvisionnement réel (PPA, % EnR)", en: "Actual supply (PPA, % renewables)" }, val: { fr: "partiel", en: "partial" }, w: "×10 %", note: 55 },
+    ] },
+  { id: "water", label: { fr: "Eau", en: "Water" }, weight: 20, sub: 47, grade: "d",
+    note: { fr: "moyenne des indicateurs", en: "mean of indicators" },
+    indicators: [
+      { id: "W1", label: { fr: "Stress hydrique de la zone", en: "Local water stress" }, val: { fr: "modéré", en: "moderate" }, w: "", note: 45 },
+      { id: "W2", label: { fr: "État de la masse d'eau", en: "Water body status" }, val: { fr: "moyen", en: "moderate" }, w: "", note: 50 },
+      { id: "W4", label: { fr: "Refroidissement + volume d'eau", en: "Cooling + water volume" }, val: { fr: "à eau", en: "water-cooled" }, w: "", note: 40 },
+      { id: "W5", label: { fr: "WUE / source d'eau (auto-déclarés)", en: "WUE / water source (self-reported)" }, val: { fr: "partiel", en: "partial" }, w: "", note: 55 },
+    ] },
+  { id: "land", label: { fr: "Foncier & biodiversité", en: "Land & biodiversity" }, weight: 20, sub: 58, grade: "c",
+    note: { fr: "moyenne des indicateurs", en: "mean of indicators" },
+    indicators: [
+      { id: "F1", label: { fr: "Distance aux zones protégées", en: "Distance to protected areas" }, val: { fr: "8 km", en: "8 km" }, w: "", note: 60 },
+      { id: "F2", label: { fr: "Statut du sol (déjà artificialisé)", en: "Soil status (already artificialized)" }, val: { fr: "réemploi", en: "reuse" }, w: "", note: 70 },
+      { id: "F3", label: { fr: "Continuités écologiques (TVB)", en: "Ecological corridors" }, val: { fr: "préservées", en: "preserved" }, w: "", note: 55 },
+      { id: "F5", label: { fr: "Mesures ERC / récupération de chaleur", en: "Avoid-reduce-offset / heat recovery" }, val: { fr: "partielles", en: "partial" }, w: "", note: 47 },
+    ] },
+  { id: "local", label: { fr: "Impact local", en: "Local impact" }, weight: 20, sub: 60, grade: "c",
+    note: { fr: "moyenne des indicateurs", en: "mean of indicators" },
+    indicators: [
+      { id: "L1", label: { fr: "Profil socio-économique de la commune", en: "Municipality socio-economic profile" }, val: { fr: "—", en: "—" }, w: "", note: 60 },
+      { id: "L3", label: { fr: "Aléa technologique (Seveso proche)", en: "Technological hazard (nearby Seveso)" }, val: { fr: "aucun", en: "none" }, w: "", note: 68 },
+      { id: "L6", label: { fr: "Niveau de contestation observé", en: "Observed level of opposition" }, val: { fr: "faible", en: "low" }, w: "", note: 65 },
+      { id: "L7", label: { fr: "Position des élus (faits votés)", en: "Elected officials' position (voted facts)" }, val: { fr: "neutre", en: "neutral" }, w: "", note: 55 },
+    ] },
+  { id: "gov", label: { fr: "Transparence & gouvernance", en: "Transparency & governance" }, weight: 15, sub: 50, grade: "c",
+    note: { fr: "moyenne des indicateurs", en: "mean of indicators" },
+    indicators: [
+      { id: "T1", label: { fr: "Concertation / consentement / gouvernance", en: "Consultation / consent / governance" }, val: { fr: "partielle", en: "partial" }, w: "", note: 45 },
+      { id: "T2", label: { fr: "Transparence documentaire / dossier", en: "Documentation transparency / file" }, val: { fr: "correcte", en: "adequate" }, w: "", note: 55 },
+    ] },
+];
+
+const T = {
+  fr: {
+    eyebrow: "Méthode · illustration",
+    h1: "La note, pas à pas",
+    dek: "Comment les faits d'un data center deviennent une lettre, de A à E. La note se fabrique en <b>deux étages</b> : des indicateurs font chaque pilier, les piliers font la note. <b>Dépliez un pilier</b> pour auditer sa note.",
+    honest: "<b>Ceci est une illustration.</b> On montre l'<b>intuition</b> du calcul — le trajet des données jusqu'à une lettre — pas ses profondeurs. Les seuils exacts, le niveau de confiance et le plafonnement « annoncé ≤ prouvé » vivent dans la <a href=\"/fr/methodologie\">méthode complète</a>. Objectif : <b>comprendre, pas reproduire</b>. Les chiffres sont volontairement simples.",
+    storeys: ["indicateurs", "piliers", "note A–E"],
+    storeysTail: " — <b>deux agrégations</b>, l'une empilée sur l'autre.",
+    s1h: "Le site-exemple", s1sub: "Un data center fictif — la matière première du calcul.",
+    toyName: "Data Center Exemple",
+    facts: ["réseau · <b>poste sous tension</b>", "carbone · <b>80 g/kWh</b>", "refroidissement · <b>à eau</b>", "foncier · <b>déjà bâti</b>", "zone protégée · <b>8 km</b>"],
+    s2h: "Étage 1 — les indicateurs font chaque pilier",
+    s2sub: "Chaque pilier agrège ses indicateurs. On en déplie <b>un seul</b> — Énergie, le plus lourd — pour voir sa note se fabriquer. <b>Le principe est le même pour les cinq</b> : dépliez-les si vous voulez.",
+    play: "▶ Le seul levier de la page — bougez la saturation, voyez l'indicateur, puis le pilier plonger, puis la note du site (barre en bas) réagir.",
+    sliderLabel: "Saturation du réseau électrique",
+    ends: ["capacité libre", "poste saturé →"],
+    weightWord: "poids", subnote: "sous-note", auditVerb: "Auditer", foldVerb: "Replier",
+    indHead: "indicateurs", combined: "Combinés", arrowTo: "sous-note",
+    youMove: "(à vous)",
+    s3h: "Étage 2 — les piliers font la note du site",
+    s3sub: "Les cinq sous-notes, chacune à son poids, se combinent en un score global — et en une lettre.",
+    contribCap: "contribution de chaque pilier",
+    finalLabel: "La note du site", scoreWord: "score global",
+    philo: "La lettre est la note publiée ; le score la sous-tend.",
+    hudLabel: "Note du site", hudScore: "score", hudHint: "bougez le curseur ↑",
+    closeK: "Ce qu'on ne montre pas ici",
+    closeH: "Voilà l'intuition. Le vrai calcul va plus loin.",
+    closeP: "Un pilier faible pèse — mais ne détruit pas : saturez le réseau à fond, l'indicateur fait plonger le pilier Énergie de A à E, mais la note du site ne perd qu'un cran. Un pilier pèse 25 %, il ne fait pas tout. Et sous le capot, la méthode ajoute :",
+    closeItems: ["Deux notes : site (subi) & projet (choisi)", "Couverture minimale d'indicateurs", "Niveau de confiance par note", "Plafonnement « annoncé ≤ prouvé »"],
+    cta: "Lire la méthode complète →", ctaHref: "/fr/methodologie",
+    foot: "Illustration pédagogique · chiffres volontairement simples sur une fixture <span class=\"mono\">zz-demo</span>. Les vrais seuils sont dans la méthode.",
+    satWords: ["capacité libre", "marge correcte", "poste sous tension", "poste saturé"],
+  },
+  en: {
+    eyebrow: "Method · illustration",
+    h1: "A grade, step by step",
+    dek: "How a data center's facts become a letter, from A to E. A grade is built in <b>two stages</b>: indicators make each pillar, pillars make the grade. <b>Expand a pillar</b> to audit its score.",
+    honest: "<b>This is an illustration.</b> It shows the <b>intuition</b> of the calculation — the path from data to a letter — not its depths. The exact thresholds, the confidence level and the “announced ≤ proven” cap live in the <a href=\"/methodology\">full method</a>. The goal: <b>understand, not reproduce</b>. The numbers are deliberately simple.",
+    storeys: ["indicators", "pillars", "grade A–E"],
+    storeysTail: " — <b>two aggregations</b>, one stacked on the other.",
+    s1h: "The example site", s1sub: "A fictional data center — the raw material of the calculation.",
+    toyName: "Example Data Center",
+    facts: ["grid · <b>under strain</b>", "carbon · <b>80 g/kWh</b>", "cooling · <b>water-cooled</b>", "land · <b>already built</b>", "protected area · <b>8 km</b>"],
+    s2h: "Stage 1 — indicators make each pillar",
+    s2sub: "Each pillar aggregates its indicators. We expand <b>just one</b> — Energy, the heaviest — to watch its score being built. <b>The principle is the same for all five</b>: expand them if you like.",
+    play: "▶ The only lever on this page — move the saturation, watch the indicator, then the pillar drop, then the site grade (bar below) react.",
+    sliderLabel: "Grid saturation",
+    ends: ["free capacity", "saturated →"],
+    weightWord: "weight", subnote: "sub-score", auditVerb: "Audit", foldVerb: "Collapse",
+    indHead: "indicators", combined: "Combined", arrowTo: "sub-score",
+    youMove: "(you)",
+    s3h: "Stage 2 — pillars make the site grade",
+    s3sub: "The five sub-scores, each at its weight, combine into a global score — and a letter.",
+    contribCap: "each pillar's contribution",
+    finalLabel: "The site grade", scoreWord: "global score",
+    philo: "The letter is the published grade; the score underpins it.",
+    hudLabel: "Site grade", hudScore: "score", hudHint: "move the slider ↑",
+    closeK: "What we don't show here",
+    closeH: "That's the intuition. The real calculation goes further.",
+    closeP: "A weak pillar weighs — but doesn't destroy: saturate the grid fully, the indicator drops the Energy pillar from A to E, yet the site grade loses only one notch. A pillar is 25 %, it isn't everything. And under the hood, the method adds:",
+    closeItems: ["Two grades: site (endured) & project (chosen)", "Minimum indicator coverage", "A confidence level per grade", "The “announced ≤ proven” cap"],
+    cta: "Read the full method →", ctaHref: "/methodology",
+    foot: "Pedagogical illustration · deliberately simple numbers on a <span class=\"mono\">zz-demo</span> fixture. The real thresholds are in the method.",
+    satWords: ["free capacity", "some margin", "under strain", "saturated"],
+  },
+};
+const t = T[lang];
+const L = (o: { fr: string; en: string }) => o[lang];
+---
+
+<section class="mw">
+  <p class="mw-eyebrow">{t.eyebrow}</p>
+  <h1 class="mw-h1">{t.h1}</h1>
+  <p class="mw-dek" set:html={t.dek}></p>
+
+  <div class="mw-honest"><span class="mw-mark" aria-hidden="true">i</span><p set:html={t.honest}></p></div>
+
+  <div class="mw-storeys">
+    <span class="mw-k">{t.storeys[0]}</span><span class="mw-ar">→</span><span class="mw-k">{t.storeys[1]}</span><span class="mw-ar">→</span><span class="mw-k">{t.storeys[2]}</span><span set:html={t.storeysTail}></span>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="mw-step" data-n="1">
+    <h2>{t.s1h}</h2><p class="mw-sub">{t.s1sub}</p>
+    <div class="mw-toy">
+      <div class="mw-toy-h"><strong>{t.toyName}</strong><span class="mw-id">fixture zz-demo</span></div>
+      <div class="mw-facts">{t.facts.map((f) => <span class="mw-fact" set:html={f} />)}</div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="mw-step" data-n="2">
+    <h2>{t.s2h}</h2><p class="mw-sub" set:html={t.s2sub}></p>
+    {PILLARS.map((p) => (
+      <details class="mw-pcard" open={p.open} data-pid={p.id}>
+        <summary class="mw-sum">
+          <span class="mw-nm">{L(p.label)}</span>
+          <span class="mw-w">{t.weightWord} {p.weight} %</span>
+          <span class="mw-pnote">{t.subnote} <b class="mw-psub" data-pid={p.id}>{p.sub}</b> · <span class={`mw-chip g-${p.grade}`} data-pchip={p.id}>{p.grade.toUpperCase()}</span></span>
+          <span class="mw-toggle" data-audit={t.auditVerb} data-fold={t.foldVerb}></span>
+        </summary>
+        <div class="mw-audit">
+          {p.indicators.some((i) => i.live) && (
+            <div class="mw-sliderbox">
+              <p class="mw-play">{t.play}</p>
+              <label><span>{t.sliderLabel}</span><span class="mw-hint" data-satlabel></span></label>
+              <input type="range" id="mw-sat" min="0" max="100" value="60" aria-label={t.sliderLabel} />
+              <div class="mw-ends"><span>{t.ends[0]}</span><span>{t.ends[1]}</span></div>
+            </div>
+          )}
+          <div class="mw-audit-cap">{p.indicators.length} {t.indHead}</div>
+          {p.indicators.map((i) => (
+            <div class="mw-ind">
+              <span class="mw-il"><span class="mw-iid">{i.id}</span> {L(i.label)}{i.val ? <> · <b>{L(i.val)}</b></> : null}{i.live ? <em> {t.youMove}</em> : null}</span>
+              <span class="mw-iw">{i.w}</span>
+              <span class="mw-inote">
+                <span class="mw-minibar"><span data-mb={i.live ? "live" : ""} style={i.live ? "" : `width:${i.note}%;background:var(--grade-${i.note >= 80 ? "a" : i.note >= 65 ? "b" : i.note >= 50 ? "c" : i.note >= 35 ? "d" : "e"})`}></span></span>
+                <span class="mw-nnum" data-nn={i.live ? "live" : ""}>{i.live ? 40 : i.note}</span>
+              </span>
+            </div>
+          ))}
+          <div class="mw-combine"><span class="mw-clbl"><b>{t.combined}</b></span><span class="mw-out">⇒ {t.arrowTo} {L(p.label)} <b class="mw-vsub" data-pid={p.id}>{p.sub}</b>/100 · <span class={`mw-chip g-${p.grade}`} data-pchip2={p.id}>{p.grade.toUpperCase()}</span></span></div>
+        </div>
+      </details>
+    ))}
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="mw-step" data-n="3">
+    <h2>{t.s3h}</h2><p class="mw-sub">{t.s3sub}</p>
+    <div class="mw-agg">
+      <div class="mw-agg-rows">
+        <div class="mw-agg-cap">{t.contribCap}</div>
+        {PILLARS.map((p) => (
+          <div class="mw-agg-line"><span class="mw-anm">{L(p.label)} <span>×{p.weight} %</span></span><span class="mw-agg-bar"><span data-aggbar={p.id} style={p.open ? "" : `width:${p.sub}%;background:var(--grade-${p.grade})`}></span></span><span class="mw-an" data-aggn={p.id}>{p.sub}</span></div>
+        ))}
+      </div>
+      <div class="mw-final">
+        <div class="mw-glabel">{t.finalLabel}</div>
+        <div class="mw-big g-c" data-final-chip>C</div>
+        <div class="mw-score">{t.scoreWord} <b data-final-score>53</b>/100</div>
+        <div class="mw-philo">{t.philo}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mw-close">
+    <p class="mw-ck">{t.closeK}</p>
+    <h3>{t.closeH}</h3>
+    <p>{t.closeP}</p>
+    <ul>{t.closeItems.map((i) => <li>{i}</li>)}</ul>
+    <a class="mw-cta" href={t.ctaHref}>{t.cta}</a>
+  </div>
+
+  <p class="mw-foot" set:html={t.foot}></p>
+</section>
+
+<div class="mw-hud" role="status">
+  <div class="mw-hud-in">
+    <span class="mw-hud-label">{t.hudLabel}</span>
+    <span class="mw-hud-chip g-c" data-hud-chip>C</span>
+    <span class="mw-hud-score">{t.hudScore} <b data-hud-score>53</b>/100</span>
+    <span class="mw-hud-hint">{t.hudHint}</span>
+  </div>
+</div>
+
+<script define:vars={{ satWords: t.satWords }}>
+  (function () {
+    const sat = document.getElementById("mw-sat");
+    if (!sat) return;
+    const q = (s) => document.querySelector(s);
+    const qa = (s) => Array.from(document.querySelectorAll(s));
+    function letter(v){ return v>=80?"a":v>=65?"b":v>=50?"c":v>=35?"d":"e"; }
+    function gvar(v){ return "var(--grade-"+letter(v)+")"; }
+    function setChip(node,l){ if(node) node.className=node.className.replace(/g-[a-e]/,"g-"+l); if(node) node.textContent=l.toUpperCase(); }
+
+    // fixed pillar sub-scores + real weights (energy is live)
+    const FIXED = { water:47, land:58, local:60, gov:50 };
+    const W = { energy:0.25, water:0.20, land:0.20, local:0.20, gov:0.15 };
+
+    const els = {
+      satLabel: q("[data-satlabel]"),
+      mbLive: q('[data-mb="live"]'), nnLive: q('[data-nn="live"]'),
+      eChips: qa('[data-pchip="energy"], [data-pchip2="energy"]'),
+      eSub: qa('.mw-psub[data-pid="energy"], .mw-vsub[data-pid="energy"]'),
+      aggBarE: q('[data-aggbar="energy"]'), aggNE: q('[data-aggn="energy"]'),
+      finalChip: q("[data-final-chip]"), finalScore: q("[data-final-score]"),
+      hudChip: q("[data-hud-chip]"), hudScore: q("[data-hud-score]"),
+    };
+    function satWord(s){ return s<25?satWords[0]:s<50?satWords[1]:s<80?satWords[2]:satWords[3]; }
+
+    let prev=null;
+    function render(){
+      const s=parseInt(sat.value,10);
+      const cap=100-s;                                  // more saturated → lower capacity note
+      const energie=Math.round(0.6*cap + 0.1*85 + 0.1*40 + 0.1*60 + 0.1*55);
+      const global=Math.round(W.energy*energie + W.water*FIXED.water + W.land*FIXED.land + W.local*FIXED.local + W.gov*FIXED.gov);
+      const lE=letter(energie), lG=letter(global);
+      if(els.satLabel) els.satLabel.textContent=satWord(s);
+      if(els.mbLive){ els.mbLive.style.width=cap+"%"; els.mbLive.style.background=gvar(cap); }
+      if(els.nnLive) els.nnLive.textContent=cap;
+      els.eChips.forEach((c)=>setChip(c,lE));
+      els.eSub.forEach((n)=>{ if(n) n.textContent=energie; });
+      if(els.aggBarE){ els.aggBarE.style.width=energie+"%"; els.aggBarE.style.background=gvar(energie); }
+      if(els.aggNE) els.aggNE.textContent=energie;
+      if(els.finalScore) els.finalScore.textContent=global;
+      if(els.hudScore) els.hudScore.textContent=global;
+      setChip(els.finalChip,lG); setChip(els.hudChip,lG);
+      if(lG!==prev){ [els.finalChip,els.hudChip].forEach((n)=>{ if(n){ n.classList.remove("mw-flash"); void n.offsetWidth; n.classList.add("mw-flash"); } }); prev=lG; }
+    }
+    sat.addEventListener("input", render);
+    render();
+
+    // Keep the sticky HUD only while the walkthrough is on screen — never cover the footer.
+    const sec=document.querySelector(".mw"), hud=document.querySelector(".mw-hud");
+    if(sec && hud && "IntersectionObserver" in window){
+      new IntersectionObserver((ents)=>{ ents.forEach((e)=>hud.classList.toggle("mw-hud--off", !e.isIntersecting)); }, { rootMargin:"0px 0px -40px 0px" }).observe(sec);
+    }
+  })();
+</script>
+
+<style>
+  .mw{ max-width:960px; margin:0 auto; padding:8px 0 40px; }
+  .mw-eyebrow{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); margin:0 0 10px; }
+  .mw-h1{ font-size:clamp(28px,5vw,42px); font-weight:800; letter-spacing:-.025em; line-height:1.05; margin:0 0 8px; }
+  .mw-dek{ font-size:clamp(15px,1.7vw,17px); color:var(--ink-soft); max-width:62ch; margin:0 0 22px; }
+  .mw-honest{ display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:start; background:#eef3fb; border:1px solid #cddcf1; border-radius:14px; padding:16px 18px; margin:0 0 20px; }
+  .mw-honest .mw-mark{ width:30px; height:30px; border-radius:8px; display:grid; place-items:center; background:var(--accent); color:#fff; font-weight:800; }
+  .mw-honest p{ margin:0; font-size:14px; line-height:1.55; color:#264a78; }
+  .mw-honest b{ color:var(--ink); } .mw-honest a{ color:var(--accent); }
+  .mw-storeys{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 32px; font-size:12.5px; color:var(--muted); }
+  .mw-storeys b{ color:var(--ink); }
+  .mw-k{ font-family:var(--font-mono); font-size:11px; background:var(--wash); border:1px solid var(--line); border-radius:6px; padding:3px 8px; color:var(--ink-soft); }
+  .mw-ar{ color:var(--accent); font-weight:800; }
+
+  .mw-step{ position:relative; padding:0 0 4px 52px; margin:0 0 30px; }
+  .mw-step::before{ content:attr(data-n); position:absolute; left:0; top:-2px; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:var(--font-mono); font-weight:700; font-size:15px; color:var(--accent); background:var(--paper); border:1.5px solid var(--line); }
+  .mw-step:not(:last-of-type)::after{ content:""; position:absolute; left:16.5px; top:36px; bottom:-30px; width:1.5px; background:linear-gradient(var(--line),transparent); }
+  .mw-step h2{ font-size:19px; font-weight:800; letter-spacing:-.01em; margin:2px 0 3px; }
+  .mw-sub{ font-size:13.5px; color:var(--muted); margin:0 0 16px; max-width:66ch; } .mw-sub b{ color:var(--ink-soft); }
+
+  .mw-toy{ background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:16px 18px; box-shadow:0 14px 34px -22px rgba(16,42,67,.35); }
+  .mw-toy-h{ display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:12px; } .mw-toy-h strong{ font-size:16px; }
+  .mw-id{ font-family:var(--font-mono); font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:5px; padding:1px 6px; }
+  .mw-facts{ display:flex; flex-wrap:wrap; gap:8px; }
+  .mw-fact{ font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); background:var(--wash); border:1px solid var(--line); border-radius:999px; padding:5px 11px; } .mw-fact b{ color:var(--ink); font-weight:700; }
+
+  .mw-pcard{ background:var(--paper); border:1px solid var(--line); border-radius:14px; margin-bottom:11px; overflow:hidden; }
+  .mw-pcard[open]{ border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 12%,transparent); }
+  .mw-sum{ list-style:none; cursor:pointer; display:grid; grid-template-columns:1fr auto auto auto; gap:12px; align-items:center; padding:14px 16px; }
+  .mw-sum::-webkit-details-marker{ display:none; }
+  .mw-nm{ font-weight:800; font-size:15.5px; }
+  .mw-w{ font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+  .mw-pnote{ font-family:var(--font-mono); font-size:11.5px; color:var(--muted); display:inline-flex; align-items:center; gap:7px; } .mw-pnote b{ color:var(--ink-soft); }
+  .mw-toggle{ font-size:12px; font-weight:700; color:var(--accent); white-space:nowrap; }
+  .mw-toggle::after{ content:attr(data-audit) " ▾"; }
+  .mw-pcard[open] .mw-toggle::after{ content:attr(data-fold) " ▴"; }
+  .mw-audit{ padding:2px 16px 16px; border-top:1px dashed var(--line); }
+  .mw-audit-cap{ font-family:var(--font-mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:12px 0 8px; }
+  .mw-ind{ display:grid; grid-template-columns:1fr auto 92px; gap:12px; align-items:center; padding:7px 0; border-bottom:1px solid var(--line); }
+  .mw-ind:last-of-type{ border-bottom:none; }
+  .mw-il{ font-size:13px; color:var(--ink-soft); } .mw-il b{ color:var(--ink); font-weight:700; } .mw-il em{ font-style:normal; color:var(--accent); font-weight:700; font-size:11.5px; }
+  .mw-iid{ font-family:var(--font-mono); font-size:10.5px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:0 4px; }
+  .mw-iw{ font-family:var(--font-mono); font-size:11px; color:var(--muted); text-align:right; }
+  .mw-inote{ display:flex; align-items:center; gap:7px; justify-content:flex-end; }
+  .mw-minibar{ width:52px; height:8px; border-radius:4px; background:var(--wash); overflow:hidden; border:1px solid var(--line); }
+  .mw-minibar span{ display:block; height:100%; border-radius:4px; }
+  .mw-nnum{ font-family:var(--font-mono); font-size:12px; color:var(--ink); min-width:20px; text-align:right; }
+  .mw-combine{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:12px; padding:11px 13px; background:var(--wash); border-radius:10px; font-size:13px; }
+  .mw-clbl{ color:var(--ink-soft); } .mw-clbl b{ color:var(--ink); }
+  .mw-out{ font-family:var(--font-mono); font-size:12px; color:var(--muted); display:inline-flex; align-items:center; gap:8px; } .mw-out b{ color:var(--ink); }
+
+  .mw-chip{ display:inline-grid; place-items:center; width:24px; height:24px; border-radius:6px; font-weight:800; font-size:13px; color:#fff; }
+  .g-a{ background:var(--grade-a); } .g-b{ background:var(--grade-b); } .g-c{ background:var(--grade-c); } .g-d{ background:var(--grade-d); } .g-e{ background:var(--grade-e); }
+
+  .mw-sliderbox{ margin:12px 0 2px; padding:12px 13px; background:color-mix(in srgb,var(--accent) 6%,transparent); border:1px solid #cddcf1; border-radius:10px; }
+  .mw-play{ font-size:12px; color:var(--accent); font-weight:700; margin:0 0 9px; }
+  .mw-sliderbox label{ display:flex; justify-content:space-between; font-size:12.5px; font-weight:700; color:var(--ink-soft); margin-bottom:7px; }
+  .mw-hint{ font-family:var(--font-mono); font-size:11px; color:var(--accent); font-weight:700; }
+  #mw-sat{ width:100%; accent-color:var(--accent); height:24px; cursor:pointer; }
+  .mw-ends{ display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-top:2px; }
+
+  .mw-agg{ background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:20px; display:grid; grid-template-columns:1fr auto; gap:24px; align-items:center; box-shadow:0 14px 34px -22px rgba(16,42,67,.35); }
+  .mw-agg-cap{ font-family:var(--font-mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+  .mw-agg-rows{ display:grid; gap:9px; }
+  .mw-agg-line{ display:grid; grid-template-columns:150px 1fr 30px; gap:12px; align-items:center; font-size:12.5px; }
+  .mw-anm{ color:var(--ink-soft); font-weight:600; } .mw-anm span{ color:var(--muted); font-family:var(--font-mono); font-size:10.5px; }
+  .mw-agg-bar{ height:11px; border-radius:6px; background:var(--wash); overflow:hidden; border:1px solid var(--line); }
+  .mw-agg-bar span{ display:block; height:100%; border-radius:6px; }
+  .mw-an{ font-family:var(--font-mono); text-align:right; color:var(--muted); }
+  .mw-final{ text-align:center; padding-left:24px; border-left:1px solid var(--line); }
+  .mw-glabel{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; margin-bottom:11px; }
+  .mw-big{ width:132px; height:132px; border-radius:28px; display:grid; place-items:center; margin:0 auto; font-size:76px; font-weight:800; color:#fff; box-shadow:0 20px 44px -22px rgba(16,42,67,.5); }
+  .mw-score{ font-size:14px; color:var(--ink-soft); margin-top:12px; font-weight:700; } .mw-score b{ font-family:var(--font-mono); color:var(--ink); font-size:16px; }
+  .mw-philo{ font-size:11px; color:var(--muted); margin:6px auto 0; max-width:24ch; line-height:1.4; font-style:italic; }
+  @keyframes mw-flash{ 0%{transform:scale(1);} 28%{transform:scale(1.09);} 100%{transform:scale(1);} }
+  .mw-flash{ animation:mw-flash .42s ease; }
+  @media(prefers-reduced-motion:reduce){ .mw-flash{ animation:none; } }
+
+  .mw-hud{ position:fixed; left:0; right:0; bottom:0; z-index:40; background:rgba(255,255,255,.94); backdrop-filter:blur(8px); border-top:1px solid var(--line); box-shadow:0 -10px 30px -18px rgba(16,42,67,.4); transition:transform .28s ease; }
+  .mw-hud.mw-hud--off{ transform:translateY(120%); }
+  .mw-hud-in{ max-width:960px; margin:0 auto; padding:9px 20px; display:flex; align-items:center; gap:14px; }
+  .mw-hud-label{ font-family:var(--font-mono); font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
+  .mw-hud-chip{ display:inline-grid; place-items:center; width:38px; height:38px; border-radius:10px; font-weight:800; font-size:22px; color:#fff; }
+  .mw-hud-score{ font-size:13.5px; color:var(--ink-soft); font-weight:600; } .mw-hud-score b{ font-family:var(--font-mono); color:var(--ink); }
+  .mw-hud-hint{ margin-left:auto; font-size:11.5px; color:var(--muted); }
+
+  .mw-close{ margin-top:38px; background:radial-gradient(130% 130% at 0 0,#16233a,#1e3a5f); color:#fff; border-radius:16px; padding:22px 24px; }
+  .mw-ck{ font-family:var(--font-mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.6); margin:0 0 8px; }
+  .mw-close h3{ margin:0 0 10px; font-size:19px; font-weight:800; }
+  .mw-close p{ margin:0 0 12px; font-size:14px; line-height:1.6; color:rgba(255,255,255,.85); max-width:70ch; }
+  .mw-close ul{ margin:0 0 14px; padding:0; list-style:none; display:flex; flex-wrap:wrap; gap:8px; }
+  .mw-close li{ font-size:12.5px; background:rgba(255,255,255,.12); border-radius:999px; padding:5px 12px; }
+  .mw-cta{ display:inline-flex; align-items:center; gap:7px; color:#fff; text-decoration:none; font-weight:700; font-size:14px; border-bottom:2px solid var(--accent); padding-bottom:2px; }
+  .mw-foot{ margin-top:22px; font-size:11.5px; color:var(--muted); text-align:center; } .mw-foot .mono{ font-family:var(--font-mono); }
+
+  @media(max-width:620px){
+    .mw-sum{ grid-template-columns:1fr auto; row-gap:6px; }
+    .mw-ind{ grid-template-columns:1fr auto; } .mw-iw{ display:none; }
+    .mw-agg{ grid-template-columns:1fr; } .mw-final{ border-left:none; border-top:1px solid var(--line); padding-left:0; padding-top:16px; }
+    .mw-agg-line{ grid-template-columns:120px 1fr 28px; }
+  }
+</style>
