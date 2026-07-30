@@ -41,6 +41,7 @@ export const FR_NAV: NavNode[] = [
   ]},
   { label: "Bibliothèque", children: [
     { href: "/fr/rapports/france", label: "Rapport — La France" },
+    { href: "/fr/rapports/nederland", label: "Rapport — Les Pays-Bas" },
     { href: "/fr/rapports/big-tech", label: "Rapport Big Tech-AI" },
     { href: "/fr/rapports/banques", label: "Rapport — Les banques" },
     { href: "/fr/bibliotheque", label: "Toute la bibliothèque" },
@@ -72,6 +73,7 @@ export const EN_NAV: NavNode[] = [
   ]},
   { label: "Library", children: [
     { href: "/reports/france", label: "France report" },
+    { href: "/reports/nederland", label: "Netherlands report" },
     { href: "/reports/big-tech", label: "Big Tech-AI report" },
     { href: "/reports/banks", label: "The banks report" },
     { href: "/intelligence", label: "The whole library" },

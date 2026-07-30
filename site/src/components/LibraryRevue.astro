@@ -42,10 +42,12 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
     <div class="lib-real-grid">
       {(lang === "fr" ? [
         { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france" },
+        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe, et les 2 seules notes A. 134 sites.", href: "/fr/rapports/nederland" },
         { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech" },
         { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques" },
       ] : [
         { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france" },
+        { title: "Netherlands", sub: "Europe's most loaded grid, and its only two A grades. 134 sites.", href: "/reports/nederland" },
         { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech" },
         { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks" },
       ]).map((r) => (

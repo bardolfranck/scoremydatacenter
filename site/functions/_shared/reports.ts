@@ -60,6 +60,25 @@ export const REPORTS: Record<string, ReportDef> = {
     filenameFr: "ScoreMyDataCenter-France-2026-FR.pdf",
     filenameEn: "ScoreMyDataCenter-France-2026-EN.pdf",
   },
+  // Country reports ship in the country's language + EN, never FR (policy Franck
+  // 2026-07-30: the national language reaches the LOCAL elected official who isn't
+  // at ease in English — and it avoids "1 report = 3 versions"). France is the sole
+  // FR edition (the country IS francophone). Nederland: NL + EN. The NL edition is
+  // HELD pending a native-Dutch review (agent-codeur-rapports) — a translated-from-
+  // English text would ring false to the very reader it exists for. So for now BOTH
+  // site languages serve the EN PDF: a FR visitor reads the English edition (the
+  // report page says so). When the NL edition passes native review, it becomes a
+  // third language here.
+  "nederland": {
+    slug: "nederland",
+    gated: true,
+    titleFr: "Les Pays-Bas, vus de leurs data centers",
+    titleEn: "The Netherlands, seen through its data centers",
+    pdfFr: "reports/nederland/ScoreMyDataCenter-Nederland-2026-EN-FIGE.pdf",
+    pdfEn: "reports/nederland/ScoreMyDataCenter-Nederland-2026-EN-FIGE.pdf",
+    filenameFr: "ScoreMyDataCenter-Nederland-2026-EN.pdf",
+    filenameEn: "ScoreMyDataCenter-Nederland-2026-EN.pdf",
+  },
 };
 
 export function getReport(slug: unknown): ReportDef | null {
