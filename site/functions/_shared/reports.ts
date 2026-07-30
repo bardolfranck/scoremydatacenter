@@ -50,6 +50,16 @@ export const REPORTS: Record<string, ReportDef> = {
     filenameFr: "ScoreMyDataCenter-Banques-2026-FR.pdf",
     filenameEn: "ScoreMyDataCenter-Banques-2026-EN.pdf",
   },
+  "france": {
+    slug: "france",
+    gated: true,
+    titleFr: "La France, vue de ses data centers",
+    titleEn: "France, seen through its data centers",
+    pdfFr: "reports/france/ScoreMyDataCenter-France-2026-FR-FIGE.pdf",
+    pdfEn: "reports/france/ScoreMyDataCenter-France-2026-EN-FIGE.pdf",
+    filenameFr: "ScoreMyDataCenter-France-2026-FR.pdf",
+    filenameEn: "ScoreMyDataCenter-France-2026-EN.pdf",
+  },
 };
 
 export function getReport(slug: unknown): ReportDef | null {

@@ -164,6 +164,40 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
       coverSub: "Your data, their address",
     },
   },
+  "france": {
+    fr: {
+      title: "La France, vue de ses data centers — ScoreMyDataCenter",
+      metaDescription: "393 data centers français passés à notre grille : l'électricité la plus décarbonée d'Europe (17,6 g/kWh), et pourtant la 12e note sur 17. Rapport gratuit, contre email.",
+      h1: "La France a décarboné son électricité. Pas ses adresses.",
+      lead: "L'électricité la plus décarbonée du continent — 17,6 g/kWh — et pourtant la 12e note sur 17. 393 sites français, premier parc suivi d'Europe.",
+      scoop: "79,6 % des 393 sites français sont sur un poste électrique <strong>saturé</strong> ; 59 % écopent d'un E au pilier Énergie. La saturation est une géographie : 41 % du parc en Île-de-France.",
+      inside: [
+        "La <strong>carte des 393 sites</strong> — premier parc suivi d'Europe (devant l'Allemagne)",
+        "Le paradoxe : électricité verte (17,6 g), mais <strong>réseau saturé</strong> et zéro note A",
+        "La saturation est une <strong>adresse</strong> : 41 % en Île-de-France, poste par poste",
+        "L'eau discrimine site par site (44,5 % en stress) — les banques en cas d'école",
+      ],
+      coverKicker: "Rapport pays · France",
+      coverTitle: "France",
+      coverSub: "Le premier parc suivi d'Europe, à l'épreuve de ses adresses",
+    },
+    en: {
+      title: "France, seen through its data centers — ScoreMyDataCenter",
+      metaDescription: "393 French data centers run through our lens: Europe's most decarbonized electricity (17.6 g/kWh), yet the 12th grade out of 17. Free report, for an email.",
+      h1: "France decarbonized its electricity. Not its addresses.",
+      lead: "The most decarbonized electricity on the continent — 17.6 g/kWh — yet the 12th grade out of 17. 393 French sites, Europe's first tracked fleet.",
+      scoop: "79.6% of the 393 French sites sit on a <strong>saturated</strong> grid substation; 59% earn an E on the Energy pillar. Saturation is a geography: 41% of the fleet in Île-de-France.",
+      inside: [
+        "The <strong>map of 393 sites</strong> — Europe's first tracked fleet (ahead of Germany)",
+        "The paradox: green electricity (17.6 g), but a <strong>saturated grid</strong> and zero A grade",
+        "Saturation is an <strong>address</strong>: 41% in Île-de-France, substation by substation",
+        "Water discriminates site by site (44.5% under stress) — banks a textbook case",
+      ],
+      coverKicker: "Country report · France",
+      coverTitle: "France",
+      coverSub: "Europe's first tracked fleet, against its addresses",
+    },
+  },
 };
 
 const rc = (REPORT_COPY[report] ?? REPORT_COPY["big-tech"])[lang];
