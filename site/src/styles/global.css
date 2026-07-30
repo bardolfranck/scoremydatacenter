@@ -264,6 +264,12 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
   transform: scale(1.4);
   box-shadow: 0 0 0 6px color-mix(in srgb, var(--dot, var(--grade-na)) 22%, transparent), 0 4px 14px rgba(7, 24, 47, 0.4);
 }
+/* Distribution-donut clusters, full map only (2026-07-30): the ring shows the REAL A→E
+   composition, the count sits at centre — never an averaged colour. Click to expand. */
+.map-donut { display: block; cursor: pointer; filter: drop-shadow(0 4px 12px rgba(7, 24, 47, 0.26)); transition: transform 0.16s ease; }
+.map-donut:hover { transform: scale(1.07); }
+.map-donut text { font-family: inherit; font-weight: 800; fill: var(--ink, #102a43); }
+.legend-donut-ico { flex: none; }
 .map-legend-grades { gap: 5px; }
 .legend-dot {
   display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%;
