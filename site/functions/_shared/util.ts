@@ -12,10 +12,13 @@ export interface Env {
   RESEND_API_KEY: string;
 }
 
-export type Lang = "fr" | "en";
+// "nl" is a report EDITION language (native country reports, policy 2026-07-30),
+// not a site UI locale — the site chrome stays fr/en. It only ever reaches here as
+// a subscriber's chosen download edition (the Nederland edition selector).
+export type Lang = "fr" | "en" | "nl";
 
 export function normLang(v: unknown): Lang {
-  return v === "fr" ? "fr" : "en";
+  return v === "fr" ? "fr" : v === "nl" ? "nl" : "en";
 }
 
 export function json(body: unknown, status = 200): Response {

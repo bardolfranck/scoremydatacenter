@@ -27,15 +27,22 @@ const { lang, nav, altHref, altLabel, report = "big-tech" } = Astro.props;
 // before page 1 — the first pages are the best advertising, they must circulate
 // freely (press citing, Google indexing). Served as a small static PDF from
 // public/reports/teasers/ (no email, no Function). The FULL report is gated.
-// The teaser PDF normally matches the site language. Country reports without a FR
-// edition (policy 2026-07-30) override this: Nederland has no FR teaser, and its NL
-// teaser is held with the NL edition (native review pending), so both FR and EN
-// pages link the ENGLISH preview.
-const TEASER_LANG: Record<string, Partial<Record<"fr" | "en", "fr" | "en" | "nl">>> = {
-  nederland: { fr: "en", en: "en" },
+// Some country reports ship in a native language BEYOND fr/en (policy 2026-07-30:
+// the national language reaches the local elected official). Those show an EDITION
+// selector — the visitor picks which language PDF to receive. The site UI stays
+// fr/en; only the download + free teaser change. Nederland: EN (default) + NL.
+const EDITIONS: Record<string, { code: "fr" | "en" | "nl"; label: string }[]> = {
+  nederland: [
+    { code: "en", label: "English" },
+    { code: "nl", label: "Nederlands" },
+  ],
 };
-const teaserLang = TEASER_LANG[report]?.[lang] ?? lang;
-const teaserHref = `/reports/teasers/${report}-${teaserLang}-2P.pdf`;
+const editions = EDITIONS[report] ?? null;
+// Default download edition: the first listed for a multi-edition report (EN), else
+// the site language (unchanged single-edition behaviour). The teaser matches it and
+// is swapped client-side when the reader flips the selector.
+const gateLang: "fr" | "en" | "nl" = editions ? editions[0].code : lang;
+const teaserHref = `/reports/teasers/${report}-${gateLang}-2P.pdf`;
 
 // Copy shared by every report (all "vous" — the site's register). Report-
 // specific copy lives in REPORT_COPY and is merged over this.
@@ -222,8 +229,7 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
         "L'eau <strong>bimodale</strong> : les 23 E au pilier Eau sont exactement les 23 sites en stress (23/23)",
         "La contre-preuve <strong>dossier ≠ rang</strong> (doc moyenne → 7e) + le polder de Google (Eemshaven E, Middenmeer D)",
       ],
-      formLead: "L'aperçu (2 pages) est libre, ci-contre. Le rapport complet — édition anglaise — vous arrive par email : un clic de confirmation, et il est à vous. (Édition néerlandaise à venir.)",
-      teaserBtn: "Lire l'aperçu (EN) — 2 pages, sans email",
+      formLead: "L'aperçu (2 pages) est libre, ci-contre. Choisissez l'édition — néerlandaise ou anglaise — donnez votre email, et le rapport complet vous arrive : un clic de confirmation, et il est à vous.",
       coverKicker: "Rapport pays · Pays-Bas",
       coverTitle: "Pays-Bas",
       coverSub: "Le réseau le plus chargé d'Europe, et ses deux seules notes A",
@@ -240,6 +246,7 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
         "Water is <strong>bimodal</strong>: the 23 E grades on Water are exactly the 23 sites under stress (23/23)",
         "The <strong>proof ≠ rank</strong> counter-case (average filing → 7th) + Google's polder (Eemshaven E, Middenmeer D)",
       ],
+      formLead: "The preview (2 pages) is free, on the left. Pick your edition — Dutch or English — drop your email, and the full report arrives: one confirmation click and it's yours.",
       coverKicker: "Country report · Netherlands",
       coverTitle: "Netherlands",
       coverSub: "Europe's most loaded grid, and its only two A grades",
@@ -308,7 +315,21 @@ const t = { ...COMMON[lang], ...rc };
           <h2 class="rd-form-title">{t.formTitle}</h2>
           <p class="rd-form-lead">{t.formLead}</p>
 
-          <form class="rd-form" data-report-form data-report={report} data-lang={lang} novalidate>
+          {editions && (
+            <div class="rd-edition" role="group" aria-label={lang === "fr" ? "Choisir l'édition du rapport" : "Choose the report edition"}>
+              <span class="rd-edition-label">{lang === "fr" ? "Édition" : "Edition"}</span>
+              <div class="rd-edition-opts">
+                {editions.map((e, i) => (
+                  <button type="button" class:list={["rd-edition-btn", { active: i === 0 }]}
+                          data-edition={e.code} data-teaser={`/reports/teasers/${report}-${e.code}-2P.pdf`}>
+                    {e.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <form class="rd-form" data-report-form data-report={report} data-lang={gateLang} novalidate>
             <label class="rd-label">
               <span>{t.emailLabel}</span>
               <input type="email" name="email" inputmode="email" autocomplete="email"
@@ -374,6 +395,19 @@ const t = { ...COMMON[lang], ...rc };
     var form = document.querySelector("form[data-report-form]");
     if (!form) return;
     var card = form.closest(".rd-card");
+
+    // Edition selector (multi-edition country reports): flip the gate's download
+    // language + swap the free teaser link. No page reload — copy stays site-lang.
+    var editionBtns = document.querySelectorAll(".rd-edition-btn");
+    var teaserLink = document.querySelector(".rd-teaser");
+    editionBtns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        editionBtns.forEach(function (x) { x.classList.remove("active"); });
+        b.classList.add("active");
+        form.setAttribute("data-lang", b.getAttribute("data-edition"));
+        if (teaserLink) teaserLink.setAttribute("href", b.getAttribute("data-teaser"));
+      });
+    });
     var btn = form.querySelector(".rd-submit");
     var errEmail = form.querySelector("[data-err-email]");
     var errConsent = form.querySelector("[data-err-consent]");
@@ -559,6 +593,35 @@ const t = { ...COMMON[lang], ...rc };
     background: var(--surface, #fff);
     box-shadow: 0 14px 40px -24px rgba(14, 22, 38, 0.45);
   }
+  /* Edition selector (native country editions) — segmented toggle at the top of the gate */
+  .rd-edition {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    margin: 0 0 1rem;
+  }
+  .rd-edition-label {
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--ink-soft, #718096);
+  }
+  .rd-edition-opts {
+    display: inline-flex; padding: 3px; gap: 2px;
+    background: var(--wash, #eef2f7); border: 1px solid var(--border, #e2e8f0);
+    border-radius: 999px;
+  }
+  .rd-edition-btn {
+    border: none; background: transparent; cursor: pointer;
+    padding: 0.34rem 0.85rem; border-radius: 999px;
+    font: inherit; font-size: 0.86rem; font-weight: 600; color: var(--ink-soft, #4a5568);
+  }
+  .rd-edition-btn:hover { color: var(--accent, #0f5fb8); }
+  .rd-edition-btn.active {
+    background: var(--surface, #fff); color: var(--ink, #16233a);
+    box-shadow: 0 1px 4px rgba(7, 24, 47, 0.16);
+  }
+  @media (prefers-color-scheme: dark) {
+    .rd-edition-opts { background: #0e131c; border-color: #2a3444; }
+    .rd-edition-btn.active { background: #1d2734; color: #e8edf5; }
+  }
+
   .rd-form-title { font-size: 1.4rem; margin: 0 0 0.3rem; }
   .rd-form-lead { color: var(--ink-soft, #4a5568); margin: 0 0 1.25rem; line-height: 1.45; }
 
