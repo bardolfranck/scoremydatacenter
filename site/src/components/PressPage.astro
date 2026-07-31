@@ -1,0 +1,181 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// Press page (self-serve) — what a local journalist FINDS when a data-center project
+// surfaces in their area. Lightest possible architecture: everything is READ FROM the
+// existing artifacts (stats.json figures + generated OG cards), zero new pipeline.
+// Two guardrails soldered in (Franck 2026-07-31): (a) LEAD with method/neutrality —
+// the antidote to the militant label; (b) the operator RIGHT-OF-REPLY visible in the
+// press material — the day a D hits a local front page, it's our protection.
+import { STATS, fmtPct, fmtInt, PHRASES } from "../config/stats.ts";
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+
+const E = STATS.perimeters.europe;
+// Curated citable figures, straight from stats.json (europe perimeter) + the neutral
+// punch phrases the /chiffres page already owns. Only render what exists.
+const KEYS = ["grid_saturated", "grid_queue_critical", "water_stress_high", "soil_artificialized", "power_disclosed"];
+const figures = KEYS
+  .filter((k) => E.stats?.[k]?.pct != null && PHRASES[k])
+  .map((k) => {
+    const pct = E.stats[k].pct;
+    const value = fmtPct(pct, lang);
+    const phrase = PHRASES[k][lang];
+    return { key: k, value, phrase, quote: `${value} ${phrase}`, og: `/og/stats/${lang}-europe-${k}.png` };
+  });
+const nSites = fmtInt(E.n_sites, lang);
+const nCountries = E.countries.length;
+
+const T = {
+  fr: {
+    eyebrow: "Espace presse",
+    h1: "Nos chiffres, à citer librement.",
+    intro: "ScoreMyDataCenter est un <b>observatoire indépendant et public</b> : nous notons l'acceptabilité territoriale des data centers de A à E, avec une <b>méthode ouverte</b> et des sources. Tout ce qui suit est <b>libre de citation</b>, avec attribution. Pas de communiqué à attendre — servez-vous.",
+    methodKicker: "Comment lire nos notes",
+    methodBody: "Nos notes ne jugent pas une intention, mais des faits. L'<b>opacité plafonne</b> une note, la <b>preuve tierce la débloque</b> : les deux seules notes A d'Europe (aux Pays-Bas) l'ont été sur vérification indépendante. Nous mesurons l'existant, pas les promesses.",
+    figuresH: "Chiffres citables",
+    figuresSub: `Parc européen suivi : ${nSites} sites dans ${nCountries} pays. Chaque chiffre est sourcé et daté ; cliquez pour copier la citation prête à coller.`,
+    copy: "Copier la citation", copied: "Copié ✓", dl: "Visuel ↓",
+    citeH: "Nous citer",
+    citeBody: "Une formulation prête à coller :",
+    citation: `Source : ScoreMyDataCenter — la note publique d'acceptabilité des data centers (observatoire indépendant, méthode ouverte). scoremydatacenter.org`,
+    replyH: "Droit de réponse des opérateurs",
+    replyBody: "Toute organisation citée peut <b>faire corriger une donnée sur preuve tierce</b> — le re-score est alors tracé au <b>journal d'audit public</b>. Une note ne bouge que parce que des faits vérifiés ont bougé, jamais sur demande ni sur paiement. Merci de le mentionner si vous reprenez une note.",
+    contactH: "Contact presse",
+    contactBody: "Une question, une interview, un chiffre à vérifier avant publication ?",
+    contactCta: "contact@scoremydatacenter.org",
+    attrib: "ScoreMyDataCenter, 2026",
+  },
+  en: {
+    eyebrow: "Press room",
+    h1: "Our figures, free to cite.",
+    intro: "ScoreMyDataCenter is an <b>independent, public observatory</b>: we grade the territorial acceptability of data centers from A to E, with an <b>open method</b> and sources. Everything below is <b>free to quote</b>, with attribution. No press release to wait for — help yourself.",
+    methodKicker: "How to read our grades",
+    methodBody: "Our grades judge facts, not intentions. <b>Opacity caps</b> a grade; <b>third-party proof unlocks</b> it: Europe's only two A grades (in the Netherlands) earned it on independent verification. We measure what exists, not what is promised.",
+    figuresH: "Citable figures",
+    figuresSub: `European fleet tracked: ${nSites} sites across ${nCountries} countries. Every figure is sourced and dated; click to copy a ready-to-paste citation.`,
+    copy: "Copy citation", copied: "Copied ✓", dl: "Visual ↓",
+    citeH: "Cite us",
+    citeBody: "A ready-to-paste wording:",
+    citation: `Source: ScoreMyDataCenter — the public acceptability grade for data centers (independent observatory, open method). scoremydatacenter.org`,
+    replyH: "Operators' right of reply",
+    replyBody: "Any organization cited can <b>have a data point corrected on third-party proof</b> — the re-grade is then logged in the <b>public audit journal</b>. A grade moves only because verified facts moved, never on request or payment. Please mention this if you reproduce a grade.",
+    contactH: "Press contact",
+    contactBody: "A question, an interview, a figure to check before publishing?",
+    contactCta: "contact@scoremydatacenter.org",
+    attrib: "ScoreMyDataCenter, 2026",
+  },
+} as const;
+const t = T[lang];
+---
+
+<section class="section press">
+  <div class="section-inner">
+    <p class="hero-eyebrow">{t.eyebrow}</p>
+    <h1 class="press-h1">{t.h1}</h1>
+    <p class="press-intro" set:html={t.intro}></p>
+
+    <!-- Guardrail (a): lead with method / neutrality -->
+    <aside class="press-method">
+      <p class="press-method-k">{t.methodKicker}</p>
+      <p set:html={t.methodBody}></p>
+    </aside>
+
+    <!-- Citable figures — from stats.json -->
+    <h2 class="press-h2">{t.figuresH}</h2>
+    <p class="press-sub">{t.figuresSub}</p>
+    <div class="press-figs">
+      {figures.map((f) => (
+        <figure class="press-fig">
+          <div class="press-fig-val">{f.value}</div>
+          <p class="press-fig-phrase">{f.phrase}</p>
+          <div class="press-fig-actions">
+            <button type="button" class="press-copy" data-quote={`« ${f.quote} » — ${t.attrib}. scoremydatacenter.org`}>
+              <span class="pc-idle">{t.copy}</span><span class="pc-done">{t.copied}</span>
+            </button>
+            <a class="press-dl" href={f.og} download>{t.dl}</a>
+          </div>
+        </figure>
+      ))}
+    </div>
+
+    <!-- Cite us -->
+    <h2 class="press-h2">{t.citeH}</h2>
+    <p class="press-sub">{t.citeBody}</p>
+    <div class="press-cite">
+      <p class="press-cite-text">{t.citation}</p>
+      <button type="button" class="press-copy press-copy-lg" data-quote={t.citation}>
+        <span class="pc-idle">{t.copy}</span><span class="pc-done">{t.copied}</span>
+      </button>
+    </div>
+
+    <!-- Guardrail (b): operator right of reply, visible -->
+    <div class="press-reply">
+      <h2 class="press-h2">{t.replyH}</h2>
+      <p set:html={t.replyBody}></p>
+    </div>
+
+    <!-- Contact -->
+    <div class="press-contact">
+      <h2 class="press-h2">{t.contactH}</h2>
+      <p class="press-sub">{t.contactBody}</p>
+      <a class="button button-primary" href={`mailto:${t.contactCta}?subject=${encodeURIComponent(lang === "fr" ? "Presse — ScoreMyDataCenter" : "Press — ScoreMyDataCenter")}`}>{t.contactCta}</a>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  document.querySelectorAll(".press-copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var text = btn.getAttribute("data-quote") || "";
+      navigator.clipboard.writeText(text).then(function () {
+        btn.classList.add("is-done");
+        setTimeout(function () { btn.classList.remove("is-done"); }, 1600);
+      });
+    });
+  });
+</script>
+
+<style>
+  .press { padding-block: clamp(1.5rem, 4vw, 3rem); }
+  .press-h1 { font-size: clamp(1.9rem, 4.5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.06; margin: 0.2em 0 0.5em; }
+  .press-intro { font-size: clamp(1.05rem, 1.6vw, 1.2rem); line-height: 1.55; color: var(--ink-soft); max-width: 62ch; margin: 0 0 1.6rem; }
+  .press-intro b, .press-method b, .press-reply b { color: var(--ink); font-weight: 700; }
+
+  .press-method { background: var(--wash); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 12px; padding: 15px 18px; margin: 0 0 2.5rem; max-width: 68ch; }
+  .press-method-k { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin: 0 0 6px; }
+  .press-method p:last-child { margin: 0; font-size: 0.98rem; line-height: 1.55; color: var(--ink-soft); }
+
+  .press-h2 { font-size: 1.3rem; font-weight: 800; margin: 2.2rem 0 0.3rem; }
+  .press-sub { font-size: 0.95rem; color: var(--muted); margin: 0 0 1.1rem; max-width: 66ch; }
+
+  .press-figs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .press-fig { margin: 0; background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 14px; padding: 16px 17px; display: flex; flex-direction: column; }
+  .press-fig-val { font-size: 2.3rem; font-weight: 800; letter-spacing: -0.02em; color: var(--ink); line-height: 1; }
+  .press-fig-phrase { font-size: 0.92rem; line-height: 1.45; color: var(--ink-soft); margin: 0.5rem 0 0.9rem; flex: 1; }
+  .press-fig-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .press-copy { cursor: pointer; border: 1px solid var(--line); background: var(--wash); color: var(--ink-soft); font: inherit; font-size: 0.82rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px; }
+  .press-copy:hover { border-color: var(--accent); color: var(--accent); }
+  .press-copy .pc-done { display: none; }
+  .press-copy.is-done { border-color: var(--grade-a); color: var(--grade-a); }
+  .press-copy.is-done .pc-idle { display: none; }
+  .press-copy.is-done .pc-done { display: inline; }
+  .press-copy::before { content: "⧉"; font-size: 0.9rem; }
+  .press-copy.is-done::before { content: ""; }
+
+  .press-dl { font-size: 0.82rem; font-weight: 600; color: var(--muted); text-decoration: none; padding: 6px 10px; border-radius: 999px; }
+  .press-dl:hover { color: var(--accent); }
+
+  .press-cite { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; max-width: 74ch; }
+  .press-cite-text { margin: 0; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; color: var(--ink); }
+  .press-copy-lg { white-space: nowrap; }
+
+  .press-reply { margin-top: 0.6rem; max-width: 70ch; }
+  .press-reply p { font-size: 0.98rem; line-height: 1.6; color: var(--ink-soft); }
+
+  .press-contact { margin-top: 0.6rem; }
+  .press-contact .button { margin-top: 0.3rem; }
+</style>

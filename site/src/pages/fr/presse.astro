@@ -1,0 +1,21 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR press page (self-serve) — component: PressPage.astro.
+import Base from "../../layouts/Base.astro";
+import PressPage from "../../components/PressPage.astro";
+import { FR_NAV } from "../../config/nav";
+---
+
+<Base
+  lang="fr"
+  title="Espace presse — ScoreMyDataCenter"
+  description="Chiffres citables, visuels réutilisables et contact pour la presse : la note publique d'acceptabilité des data centers, libre de citation avec attribution."
+  tagline="Observatoire indépendant"
+  altHref="/press"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <PressPage lang="fr" />
+</Base>
