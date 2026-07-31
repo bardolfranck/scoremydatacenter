@@ -127,6 +127,15 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
       </div>
 
       <p class="rank-ref">{t.reference.replace("{n}", String(sitePool.length)).replace("{version}", methodology.version)}</p>
+
+      {t.statusHelp && (
+        <p class="rank-status-legend">
+          <span class="rsl-label">{t.statusHelpLabel}</span>
+          {Object.entries(t.status).map(([k, label]) => (
+            <span class="rsl-item"><b>{label}</b> — {t.statusHelp[k]}</span>
+          ))}
+        </p>
+      )}
       <p class="sr-only">{t.srSummary}</p>
 
       <div class="rank-wrap">
