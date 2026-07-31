@@ -1,0 +1,62 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// "Notre raison d'être" — the mission block that OPENS the Observatory page, before
+// "Qui sommes-nous". The WHY (why we exist) precedes the WHO. Copy is deliberately
+// values-carrying without any label — we are data-for-the-common-good in substance,
+// never in slogan (Franck 2026-07-31). "raison d'être" is kept in both languages: a
+// lexicalised English loanword (rendez-vous, déjà vu, cliché) — elegant, not franglais.
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+
+const T = {
+  fr: {
+    eyebrow: "NOTRE RAISON D'ÊTRE",
+    heading: "Une donnée qui reste opaque. Un camp a tous les chiffres. Pas l'autre.",
+    p1: "Les data centers se multiplient ; ce qu'ils consomment, le sol, l'eau, le territoire où ils se posent, reste dispersé et illisible. Nous rassemblons cette donnée, la passons à une grille unique, et la rendons <b>publique, gratuite et vérifiable</b>.",
+    p2: "Puis nous la mettons <b>des deux côtés de la table</b> : une note d'acceptabilité claire, sourcée, dans la langue de qui décide localement. Indépendants et gratuits — parce qu'une donnée qui n'atteint pas ceux qu'elle concerne ne sert à rien.",
+  },
+  en: {
+    eyebrow: "OUR RAISON D'ÊTRE",
+    heading: "Data that stays opaque. One side has every figure — the other, none.",
+    p1: "Data centers are multiplying; what they consume — the soil, the water, the territory they land on — stays scattered and unreadable. We gather that data, run it through a single lens, and make it <b>public, free and verifiable</b>.",
+    p2: "Then we set it on <b>both sides of the table</b>: a clear, sourced acceptability grade, in the language of whoever decides locally. Independent and free — because data that never reaches the people it concerns is worth nothing.",
+  },
+} as const;
+const t = T[lang];
+---
+
+<section class="section rd-etre-section" aria-labelledby="raison-title">
+  <div class="section-inner">
+    <div class="rd-etre">
+      <p class="hero-eyebrow" id="raison-title">{t.eyebrow}</p>
+      <h1 class="rd-etre-h">{t.heading}</h1>
+      <p class="rd-etre-p" set:html={t.p1}></p>
+      <p class="rd-etre-p" set:html={t.p2}></p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .rd-etre-section { padding-block: clamp(2.4rem, 6vw, 4.5rem) clamp(1rem, 2.5vw, 1.75rem); }
+  .rd-etre { max-width: 60ch; }
+  .rd-etre-h {
+    font-size: clamp(1.65rem, 3.6vw, 2.65rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+    margin: 0.15em 0 0.7em;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .rd-etre-p {
+    font-size: clamp(1rem, 1.35vw, 1.15rem);
+    line-height: 1.6;
+    color: var(--ink-soft);
+    margin: 0 0 1rem;
+  }
+  .rd-etre-p:last-child { margin-bottom: 0; }
+  .rd-etre-p b { color: var(--ink); font-weight: 700; }
+</style>

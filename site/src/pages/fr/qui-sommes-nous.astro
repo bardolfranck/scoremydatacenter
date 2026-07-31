@@ -6,6 +6,7 @@
 // (composant partagé), avec title/description propres et données structurées
 // Schema.org (Person + Organization) pour le Knowledge Graph.
 import Base from "../../layouts/Base.astro";
+import RaisonDetre from "../../components/RaisonDetre.astro";
 import AboutSection from "../../components/AboutSection.astro";
 import { FR_ABOUT } from "../../config/about";
 import { FR_NAV } from "../../config/nav";
@@ -61,5 +62,6 @@ const jsonLd = {
   nav={FR_NAV}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <RaisonDetre lang="fr" />
   <AboutSection lang="fr" t={FR_ABOUT} />
 </Base>
