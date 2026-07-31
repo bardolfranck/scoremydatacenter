@@ -27,7 +27,7 @@ export const FR_ABOUT = {
   },
   teamCta: "Envie d'en être ? Contribuez sur GitHub ↗",
   teamCtaUrl: "https://github.com/bardolfranck/scoremydatacenter",
-  aboutHeadline: "Un observatoire indépendant.<br>Conçu et dirigé par un expert.",
+  aboutHeadline: "Un observatoire indépendant.",
   founderLine: "ScoreMyDataCenter est l'œuvre de <strong>Franck Bardol</strong>. À l'intersection de l'infrastructure IA, de l'éthique et de la décision publique.",
   founderHeading: "Le fondateur",
   aboutPledges: [
@@ -81,7 +81,7 @@ export const EN_ABOUT = {
   },
   teamCta: "Want in? Contribute on GitHub ↗",
   teamCtaUrl: "https://github.com/bardolfranck/scoremydatacenter",
-  aboutHeadline: "An independent observatory.<br>Designed and led by an expert.",
+  aboutHeadline: "An independent observatory.",
   founderLine: "ScoreMyDataCenter is the work of <strong>Franck Bardol</strong>. At the intersection of AI infrastructure, ethics and public decision-making.",
   founderHeading: "The founder",
   aboutPledges: [
