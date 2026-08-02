@@ -25,6 +25,7 @@ interface Props {
   documentationLabel?: string; // the coupled documentation wording ("documentation moyenne") — replaces the confidence dot line when set
   naLabel?: string; // localized "insufficient data"
   reservedLabel?: string; // A-25: localized "A réservé — se prouve en exploitation", shown when grade.reserved_from is set
+  enAttenteLabel?: string; // en-veille: localized "note en attente" (grade withheld pending publication)
 }
 const {
   label,
@@ -39,12 +40,17 @@ const {
   documentationLabel,
   naLabel = "insufficient data",
   reservedLabel,
+  enAttenteLabel,
 } = Astro.props;
 const isNa = grade.grade === "insufficient_data";
-const chipClass = isNa ? "grade-na" : `grade-${grade.grade.toLowerCase()}`;
+// En-veille sentinel: a site shown WITHOUT a published grade ("note en attente").
+// The letter is never emitted — the chip is neutral, no A–E colour.
+const isEnAttente = grade.grade === "en_attente";
+const enAttenteText = enAttenteLabel ?? "Note en attente";
+const chipClass = isNa ? "grade-na" : isEnAttente ? "grade-enveille" : `grade-${grade.grade.toLowerCase()}`;
 const sizeClass = size === "sm" ? "sm" : size === "lg" ? "lg" : "";
-const chipText = isNa ? "–" : grade.grade;
-const chipAria = isNa ? naLabel : `${label}: ${grade.grade}`;
+const chipText = isNa ? "–" : isEnAttente ? "…" : grade.grade;
+const chipAria = isNa ? naLabel : isEnAttente ? enAttenteText : `${label}: ${grade.grade}`;
 // A-25: the letter was capped from A for want of third-party operational proof.
 const reserved = !isNa && grade.reserved_from === "A" && reservedLabel;
 ---

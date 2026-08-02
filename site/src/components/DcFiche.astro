@@ -78,6 +78,12 @@ if (_idxEntry?.eligible) {
 
 const SITE_ORIGIN = "https://scoremydatacenter.org";
 const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+// En-veille: the public grade is withheld ("note en attente") — the site is
+// visible with its facts, but no letter is shown anywhere (leak-safe by data
+// scrub). For desalination-dominant countries (Israel now) we carry the
+// validated water×desalination note so the fiche isn't mute on the "why".
+const isEnAttente = dc.grades?.site?.grade === "en_attente";
+const isDesalCountry = dc.country === "IL";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
 const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
@@ -303,6 +309,22 @@ const pillars = methodology.pillars as any[];
     </aside>
 
     <div class="fiche-main">
+      {isEnAttente && (
+        <section class="fiche-enveille" aria-label={lang === "fr" ? "Note en attente" : "Grade pending"}>
+          <p class="fiche-enveille-k">{lang === "fr" ? "Note en attente" : "Grade pending"}</p>
+          <p class="fiche-enveille-lead">{lang === "fr"
+            ? "Ce site est suivi mais pas encore noté publiquement : les données de site sont trop minces pour une note nominative solide, et une note ne se publie qu'après relecture et droit de réponse. Les faits ci-dessous sont sourcés ; ils ne constituent pas un verdict."
+            : "This site is tracked but not yet publicly graded: site-level data is too thin for a robust nominative grade, and a grade is published only after review and right of reply. The facts below are sourced; they are not a verdict."}</p>
+          {isDesalCountry && (
+            <div class="fiche-enveille-note">
+              <p class="fiche-enveille-note-k">{lang === "fr" ? "Eau & dessalement — comment lire ce site" : "Water & desalination — how to read this site"}</p>
+              <p>{lang === "fr"
+                ? "Israël s'approvisionne majoritairement en eau dessalée. Le stress hydrique du bassin (WRI Aqueduct) n'est donc pas assimilé à une ponction certaine de la ressource locale par ce site. Mais l'impact n'est pas effacé, il est déplacé : le dessalement consomme beaucoup d'électricité — sur un réseau fortement carboné (gaz) — et rejette de la saumure (impact marin non encore quantifié). Aucun passe-droit : le pilier énergie tient, l'externalité est signalée. Cette lecture évoluera sur preuve de la source d'eau et du refroidissement du site."
+                : "Israel's water supply is majority desalinated. Basin water stress (WRI Aqueduct) is therefore not treated as a certain drawdown of the local resource by this site. But the impact isn't erased — it is shifted: desalination is highly electricity-intensive (on a carbon-heavy, gas-based grid) and discharges brine (marine impact not yet quantified). No free pass: the energy pillar stands, the externality is flagged. This reading will evolve on proof of the site's water source and cooling."}</p>
+            </div>
+          )}
+        </section>
+      )}
       <div class="fiche-top">
       <div class="fiche-subscores">
         <div class="fiche-subscores-head">
@@ -496,7 +518,7 @@ const pillars = methodology.pillars as any[];
                   <span class="fr-name">{r.name}</span>
                   <span class="fr-meta">
                     {[r.municipality, t.related.relation[r.relation]].filter(Boolean).join(" · ")}
-                    {r.grade ? <span class="fr-grade" data-grade={r.grade}>{r.grade}</span> : null}
+                    {r.grade && /^[A-E]$/.test(r.grade) ? <span class="fr-grade" data-grade={r.grade}>{r.grade}</span> : null}
                   </span>
                 </a>
               </li>

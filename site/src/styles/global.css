@@ -411,6 +411,8 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .gradechip.grade-d { background: var(--grade-d); color: #fff; }
 .gradechip.grade-e { background: var(--grade-e); color: #fff; }
 .gradechip.grade-na { background: var(--wash); color: var(--muted); border: 1px dashed var(--grade-na); font-size: 0.95rem; font-weight: 800; }
+/* En veille — grade withheld pending publication ("note en attente"): neutral, never an A–E colour */
+.gradechip.grade-enveille { background: var(--wash); color: var(--muted); border: 1px dashed var(--muted); font-weight: 800; letter-spacing: 0.05em; }
 
 .confidence { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 0.84rem; font-weight: 700; }
 .confidence .dot { width: 9px; height: 9px; border-radius: 50%; }
@@ -1128,6 +1130,15 @@ sup a { color: var(--accent); font-weight: 750; }
 .contestation-src { white-space: nowrap; }
 .contestation-src a { color: var(--accent); font-weight: 650; }
 .fiche-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding: 14px 32px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); }
+
+/* En veille — grade withheld ("note en attente"): visible facts, no letter */
+.fiche-enveille { margin: 0 32px 22px; padding: 16px 18px; border: 1px solid var(--line); border-left: 3px solid var(--muted); border-radius: 12px; background: var(--wash); }
+.fiche-enveille-k { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 0 0 6px; }
+.fiche-enveille-lead { margin: 0; font-size: 0.96rem; line-height: 1.55; color: var(--ink-soft); }
+.fiche-enveille-note { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.fiche-enveille-note-k { font-weight: 700; font-size: 0.9rem; color: var(--ink); margin: 0 0 4px; }
+.fiche-enveille-note p:last-child { margin: 0; font-size: 0.92rem; line-height: 1.55; color: var(--ink-soft); }
+@media (max-width: 860px) { .fiche-enveille { margin-left: 20px; margin-right: 20px; } }
 
 /* Related sites — static, crawlable fiche→fiche links (internal-linking mesh) */
 .fiche-related { padding: 22px 32px 26px; border-top: 1px solid var(--line); }
