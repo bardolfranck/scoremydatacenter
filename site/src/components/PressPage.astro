@@ -36,7 +36,7 @@ const T = {
     methodKicker: "Comment lire nos notes",
     methodBody: "Nos notes ne jugent pas une intention, mais des faits. L'<b>opacité plafonne</b> une note, la <b>preuve tierce la débloque</b> : les deux seules notes A d'Europe (aux Pays-Bas) l'ont été sur vérification indépendante. Nous mesurons l'existant, pas les promesses.",
     figuresH: "Chiffres citables",
-    figuresSub: `Parc européen suivi : ${nSites} sites dans ${nCountries} pays. Chaque chiffre est sourcé et daté ; cliquez pour copier la citation prête à coller.`,
+    figuresSub: `Parc suivi : ${nSites} sites dans ${nCountries} pays. Chaque chiffre est sourcé et daté ; cliquez pour copier la citation prête à coller.`,
     copy: "Copier la citation", copied: "Copié ✓", dl: "Visuel ↓",
     citeH: "Nous citer",
     citeBody: "Une formulation prête à coller :",
@@ -55,7 +55,7 @@ const T = {
     methodKicker: "How to read our grades",
     methodBody: "Our grades judge facts, not intentions. <b>Opacity caps</b> a grade; <b>third-party proof unlocks</b> it: Europe's only two A grades (in the Netherlands) earned it on independent verification. We measure what exists, not what is promised.",
     figuresH: "Citable figures",
-    figuresSub: `European fleet tracked: ${nSites} sites across ${nCountries} countries. Every figure is sourced and dated; click to copy a ready-to-paste citation.`,
+    figuresSub: `Fleet tracked: ${nSites} sites across ${nCountries} countries. Every figure is sourced and dated; click to copy a ready-to-paste citation.`,
     copy: "Copy citation", copied: "Copied ✓", dl: "Visual ↓",
     citeH: "Cite us",
     citeBody: "A ready-to-paste wording:",
@@ -92,7 +92,7 @@ const t = T[lang];
           <div class="press-fig-val">{f.value}</div>
           <p class="press-fig-phrase">{f.phrase}</p>
           <div class="press-fig-actions">
-            <button type="button" class="press-copy" data-quote={`« ${f.quote} » — ${t.attrib}. scoremydatacenter.org`}>
+            <button type="button" class="press-copy" data-ga-event="copy_citation" data-ga-label={f.key} data-quote={`« ${f.quote} » — ${t.attrib}. scoremydatacenter.org`}>
               <span class="pc-idle">{t.copy}</span><span class="pc-done">{t.copied}</span>
             </button>
             <a class="press-dl" href={f.og} download>{t.dl}</a>
@@ -106,7 +106,7 @@ const t = T[lang];
     <p class="press-sub">{t.citeBody}</p>
     <div class="press-cite">
       <p class="press-cite-text">{t.citation}</p>
-      <button type="button" class="press-copy press-copy-lg" data-quote={t.citation}>
+      <button type="button" class="press-copy press-copy-lg" data-ga-event="copy_citation" data-ga-label="attribution" data-quote={t.citation}>
         <span class="pc-idle">{t.copy}</span><span class="pc-done">{t.copied}</span>
       </button>
     </div>

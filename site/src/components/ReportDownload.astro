@@ -298,7 +298,8 @@ const t = { ...COMMON[lang], ...rc };
 
         <!-- Free, un-gated preview (pages 1-2). The best advertising circulates
              with no friction; the gate is only for the full report. -->
-        <a class="button button-secondary rd-teaser" href={teaserHref} download>
+        <a class="button button-secondary rd-teaser" href={teaserHref} download
+           data-ga-event="teaser_download" data-ga-report={report}>
           <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true">
             <path d="M10 3v9m0 0 3.2-3.2M10 12 6.8 8.8M4 15.5h12" fill="none"
                   stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
@@ -448,6 +449,12 @@ const t = { ...COMMON[lang], ...rc };
             form.hidden = true;
             sent.hidden = false;
             card.classList.add("is-sent");
+            // The on-site conversion that matters: a confirmed lead (the full PDF
+            // itself is delivered off-site via the double-opt-in email link).
+            if (window.smdcTrack) window.smdcTrack("lead_submit", {
+              report: form.getAttribute("data-report"),
+              lang: form.getAttribute("data-lang"),
+            });
           } else {
             errGeneric.hidden = false;
             btn.disabled = false;

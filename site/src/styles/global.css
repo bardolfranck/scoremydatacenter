@@ -1129,13 +1129,32 @@ sup a { color: var(--accent); font-weight: 750; }
 .contestation-src a { color: var(--accent); font-weight: 650; }
 .fiche-foot { display: flex; flex-wrap: wrap; gap: 8px 20px; justify-content: space-between; padding: 14px 32px; border-top: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); }
 
+/* Related sites — static, crawlable fiche→fiche links (internal-linking mesh) */
+.fiche-related { padding: 22px 32px 26px; border-top: 1px solid var(--line); }
+.fiche-related h2 { font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.fiche-related-sub { font-size: 0.86rem; color: var(--muted); margin: 0 0 14px; }
+.fiche-related ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; }
+.fiche-related li a { display: flex; flex-direction: column; gap: 3px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 10px; text-decoration: none; color: inherit; background: var(--surface, #fff); transition: border-color .12s, background .12s; }
+.fiche-related li a:hover { border-color: var(--accent); background: var(--wash); }
+.fiche-related .fr-name { font-weight: 650; font-size: 0.94rem; line-height: 1.25; color: var(--ink); }
+.fiche-related .fr-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+.fiche-related .fr-grade { margin-left: auto; font-family: var(--font-mono); font-weight: 700; font-size: 0.72rem; color: #fff; padding: 1px 7px; border-radius: 999px; background: var(--muted); }
+.fiche-related .fr-grade[data-grade="A"] { background: var(--grade-a); }
+.fiche-related .fr-grade[data-grade="B"] { background: var(--grade-b); }
+.fiche-related .fr-grade[data-grade="C"] { background: var(--grade-c); color: #1a1a1a; }
+.fiche-related .fr-grade[data-grade="D"] { background: var(--grade-d); }
+.fiche-related .fr-grade[data-grade="E"] { background: var(--grade-e); }
+.fiche-related-all { font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600; color: var(--accent); text-decoration: none; }
+.fiche-related-all:hover { text-decoration: underline; }
+@media (prefers-color-scheme: dark) { .fiche-related li a { background: #141a24; } }
+
 @media (max-width: 860px) {
   .fiche { grid-template-columns: minmax(0, 1fr); }
   .fiche-side-foot { margin-top: 8px; }
   .fiche-top { grid-template-columns: minmax(0, 1fr); }
   .fiche-top > .fiche-subscores { border-right: none; border-bottom: 1px solid var(--line); }
   .fiche-mini-map, .mini-map-canvas { min-height: 240px; }
-  .fiche-quote, .fiche-section, .fiche-cards, .fiche-history, .fiche-subscores, .fiche-synthesis, .fiche-foot, .fiche-contestation { padding-left: 20px; padding-right: 20px; margin-left: 0; margin-right: 0; }
+  .fiche-quote, .fiche-section, .fiche-cards, .fiche-history, .fiche-subscores, .fiche-synthesis, .fiche-foot, .fiche-contestation, .fiche-related { padding-left: 20px; padding-right: 20px; margin-left: 0; margin-right: 0; }
   .contestation-list li { grid-template-columns: 1fr; }
   .fiche-cards { grid-template-columns: 1fr; }
   .pillar-name { flex: 1 1 140px; }

@@ -6,16 +6,19 @@
 // this file only carries the French copy (t) and the route.
 import DcFiche from "../../../components/DcFiche.astro";
 import { FR_NAV } from "../../../config/nav";
+import { toLite, buildRelated, type Related } from "../../../config/related";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
-  return Object.values(modules).map((m: any) => {
-    const dc = m.default;
-    return { params: { id: dc.id }, props: { dc } };
-  });
+  const dcs = Object.values(modules).map((m: any) => m.default);
+  const lite = dcs.map(toLite);
+  return dcs.map((dc: any) => ({
+    params: { id: dc.id },
+    props: { dc, related: buildRelated(lite, toLite(dc)) },
+  }));
 }
 
-const { dc } = Astro.props as { dc: any };
+const { dc, related } = Astro.props as { dc: any; related: Related[] };
 
 const t = {
   tagline: "Observatoire indépendant",
@@ -114,7 +117,13 @@ const t = {
   scoredOn: "Scoré le",
   shareText: "{name} — Note du site : {grade}",
   shareSuffix: ", selon ScoreMyDataCenter",
+  related: {
+    title: "D'autres sites à comparer",
+    sub: "Même opérateur, même région, même pays — notés dans la même grille.",
+    seeAll: "Voir le classement complet →",
+    relation: { operator: "Même opérateur", region: "Même région", country: "Même pays" },
+  },
 };
 ---
 
-<DcFiche dc={dc} lang="fr" t={t} nav={FR_NAV} altHref={`/dc/${dc.id}`} altLabel="🇬🇧 EN" />
+<DcFiche dc={dc} related={related} lang="fr" t={t} nav={FR_NAV} altHref={`/dc/${dc.id}`} altLabel="🇬🇧 EN" />

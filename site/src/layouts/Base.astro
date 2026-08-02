@@ -19,6 +19,37 @@ const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = A
 const altLang = lang === "en" ? "fr" : "en";
 const home = lang === "en" ? "/" : "/fr/";
 
+// Canonical + hreflang cluster. Canonical points at the served path WITHOUT query
+// (?q=, ?dc=, ?veille=… would otherwise let Google index dozens of duplicates of
+// the same page). hreflang lists BOTH languages, self included, plus x-default
+// (the EN version = the default the search engine serves when no language fits).
+// Trailing slash matches the built canonical (…/press/), so the whole hreflang
+// cluster points at the exact canonical URLs — no redirect hop, fully reciprocal.
+const withSlash = (p: string) => (p.endsWith("/") ? p : p + "/");
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const altAbs = new URL(withSlash(altHref), Astro.site).href;
+const enAbs = lang === "en" ? canonical : altAbs;
+
+// Social card: pages may pass their own ogImage; otherwise a single on-brand
+// default so EVERY shared link (LinkedIn, X, Slack, press) carries a visual.
+const ogImageResolved = ogImage ?? new URL("/assets/hero-datacenter.png", Astro.site).href;
+
+// Sitewide identity graph — IDENTITY ONLY (name, url, logo, founder). Deliberately
+// NO Dataset/distribution node: exposing the data or its download endpoints to
+// scrapers is exactly what we don't want (anti-pillage doctrine).
+const orgLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": "https://scoremydatacenter.org/#org",
+  name: "ScoreMyDataCenter",
+  url: "https://scoremydatacenter.org",
+  logo: "https://scoremydatacenter.org/assets/smdc-logo.svg",
+  description: lang === "fr"
+    ? "Observatoire indépendant du risque d'acceptabilité des data centers."
+    : "Independent observatory of data-center acceptability risk.",
+  founder: { "@type": "Person", name: "Franck Bardol" },
+};
+
 // Mark the current section so the header shows where you are. Anchor links
 // (/#faq…) point back to a homepage section, never a standalone page, so they
 // never light up. Compare on the path only, trailing slash normalised.
@@ -38,14 +69,22 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    {ogImage && <meta property="og:image" content={ogImage} />}
-    {ogImage && <meta name="twitter:card" content="summary_large_image" />}
-    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content="ScoreMyDataCenter" />
+    <meta property="og:locale" content={lang === "fr" ? "fr_FR" : "en_GB"} />
+    <meta property="og:image" content={ogImageResolved} />
+    <meta property="og:image:alt" content={title} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogImageResolved} />
     <link rel="icon" type="image/svg+xml" href="/assets/smdc-icon.svg" />
-    <link rel="alternate" hreflang={altLang} href={altHref} />
+    <link rel="alternate" hreflang={lang} href={canonical} />
+    <link rel="alternate" hreflang={altLang} href={altAbs} />
+    <link rel="alternate" hreflang="x-default" href={enAbs} />
+    <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
   </head>
   <body>
     <header class="site-header">
@@ -176,6 +215,16 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
           window.dataLayer = window.dataLayer || [];
           window.gtag = function () { dataLayer.push(arguments); };
           gtag("js", new Date());
+          // Consent Mode v2. The tag only loads HERE, on Accept — nothing pings
+          // before consent, so the hard gate stays (CNIL-clean). Analytics is
+          // granted (the visitor just consented); every advertising signal is
+          // denied — we never run ads.
+          gtag("consent", "default", {
+            analytics_storage: "granted",
+            ad_storage: "denied",
+            ad_user_data: "denied",
+            ad_personalization: "denied",
+          });
           gtag("config", "G-L6TGP1783C");
           var el = document.createElement("script");
           el.async = true;
@@ -196,6 +245,29 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
             if (v === "granted") loadGA();
           });
         }
+      })();
+    </script>
+    <!-- Conversion events. Fire ONLY if the visitor consented (gtag present);
+         no consent → no gtag → events silently drop. Declarative: any element
+         with data-ga-event fires on click, data-ga-* attributes become params. -->
+    <script is:inline>
+      (function () {
+        window.smdcTrack = function (name, params) {
+          try { if (typeof window.gtag === "function") window.gtag("event", name, params || {}); } catch (e) {}
+        };
+        document.addEventListener("click", function (ev) {
+          var t = ev.target;
+          var el = t && t.closest ? t.closest("[data-ga-event]") : null;
+          if (!el) return;
+          var params = {};
+          for (var i = 0; i < el.attributes.length; i++) {
+            var a = el.attributes[i];
+            if (a.name.indexOf("data-ga-") === 0 && a.name !== "data-ga-event") {
+              params[a.name.slice(8).replace(/-/g, "_")] = a.value;
+            }
+          }
+          window.smdcTrack(el.getAttribute("data-ga-event"), params);
+        });
       })();
     </script>
   </body>

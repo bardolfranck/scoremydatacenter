@@ -25,9 +25,9 @@ import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
 
-const { dc, lang, t, nav, altHref, altLabel } = Astro.props as {
+const { dc, lang, t, nav, altHref, altLabel, related = [] } = Astro.props as {
   dc: any; lang: "fr" | "en"; t: any; nav: NavNode[];
-  altHref: string; altLabel: string;
+  altHref: string; altLabel: string; related?: any[];
 };
 
 // T0 « Les chiffres du parc » : la ligne contextuelle — ce site situé dans les
@@ -484,6 +484,27 @@ const pillars = methodology.pillars as any[];
           ))}
         </ul>
       </section>
+
+      {related.length > 0 && (
+        <nav class="fiche-related" aria-label={t.related.title}>
+          <h2>{t.related.title}</h2>
+          <p class="fiche-related-sub">{t.related.sub}</p>
+          <ul>
+            {related.map((r: any) => (
+              <li>
+                <a href={`${ficheBase}/${r.id}`}>
+                  <span class="fr-name">{r.name}</span>
+                  <span class="fr-meta">
+                    {[r.municipality, t.related.relation[r.relation]].filter(Boolean).join(" · ")}
+                    {r.grade ? <span class="fr-grade" data-grade={r.grade}>{r.grade}</span> : null}
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a class="fiche-related-all" href={lang === "fr" ? "/fr/classement" : "/ranking"}>{t.related.seeAll}</a>
+        </nav>
+      )}
 
       <div class="fiche-foot">
         <span>{t.methodology} {methodology.version}{lastScored ? ` · ${t.scoredOn} ${lastScored}` : ""}</span>

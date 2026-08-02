@@ -6,16 +6,19 @@
 // this file only carries the English copy (t) and the route.
 import DcFiche from "../../components/DcFiche.astro";
 import { EN_NAV } from "../../config/nav";
+import { toLite, buildRelated, type Related } from "../../config/related";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../public/data/dc/*.json", { eager: true });
-  return Object.values(modules).map((m: any) => {
-    const dc = m.default;
-    return { params: { id: dc.id }, props: { dc } };
-  });
+  const dcs = Object.values(modules).map((m: any) => m.default);
+  const lite = dcs.map(toLite);
+  return dcs.map((dc: any) => ({
+    params: { id: dc.id },
+    props: { dc, related: buildRelated(lite, toLite(dc)) },
+  }));
 }
 
-const { dc } = Astro.props as { dc: any };
+const { dc, related } = Astro.props as { dc: any; related: Related[] };
 
 const t = {
   tagline: "Independent observatory",
@@ -114,7 +117,13 @@ const t = {
   scoredOn: "Scored on",
   shareText: "{name} — Site grade: {grade}",
   shareSuffix: ", according to ScoreMyDataCenter",
+  related: {
+    title: "Other sites to compare",
+    sub: "Same operator, same region, same country — graded on the same lens.",
+    seeAll: "See the full ranking →",
+    relation: { operator: "Same operator", region: "Same region", country: "Same country" },
+  },
 };
 ---
 
-<DcFiche dc={dc} lang="en" t={t} nav={EN_NAV} altHref={`/fr/dc/${dc.id}`} altLabel="🇫🇷 FR" />
+<DcFiche dc={dc} related={related} lang="en" t={t} nav={EN_NAV} altHref={`/fr/dc/${dc.id}`} altLabel="🇫🇷 FR" />
