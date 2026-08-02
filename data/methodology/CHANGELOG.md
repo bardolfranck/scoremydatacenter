@@ -2,6 +2,22 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0 (policy note) — 2026-07-27 — world referentials: Ember (E1) and Sentinel-2 10m LULC (F2)
+
+- **Two referentials enter the citable base** (no weight, threshold or indicator change — new
+  SOURCES for existing indicators, world-coverage class like WRI Aqueduct): (1) **Ember yearly
+  electricity data** — national grid CO2 intensity, gCO2/kWh, the dataset the IEA and world
+  press cite; used where energy-charts serves no zone (any non-ENTSO-E country). A YEARLY mean
+  (coarser than the 12-month rolling energy-charts window) — same E1 normalization thresholds
+  apply. (2) **Impact Observatory/Esri Sentinel-2 10m annual land cover** (CC BY 4.0) — F2 soil
+  status at point anywhere on Earth, mapped onto the SAME category enum as Corine
+  (`artificialized | agricultural | natural_or_enaf`), cloud/nodata never guessed. Validated
+  against Corine on shared points (Bakki 'built'/'artificialized', Fouju 'crops'/agricultural).
+- **What this does NOT change**: A-19 — outside referential-rich countries these bricks feed the
+  watchlist and the world screening typology (SOM), never a letter by themselves.
+- Signatory: decision Franck Bardol (« go briques mondiales », working session 2026-07-27),
+  implemented by Claude (data-pipeline-WORLD).
+
 ## 0.1.0 (policy note) — 2026-07-27 — `estimated`: a model output is a third documentation class, never a fact
 
 - **Rule (decision Franck Bardol, option 1c, 2026-07-27)**: a value produced by OUR OWN model
