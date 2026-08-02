@@ -32,24 +32,48 @@ def _source(title: str, url: str, accessed: str) -> dict:
 
 # --- E1 · grid carbon intensity (RTE eCO2mix, national) -------------------------------------
 
+_e1_fr_cache: dict[str, dict | None] = {}
+
+
 def collect_e1(accessed: str) -> dict | None:
-    url = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-tr/records"
-    params = {"where": "taux_co2 IS NOT NULL", "order_by": "date_heure DESC", "limit": 1,
-              "select": "date_heure,taux_co2"}
+    """E1 for France: 12-month MEAN of the national grid CO2 intensity, never a snapshot
+    (COUNTRIES.md #1). The grid is national, so a real-time value only reflects WHEN it was
+    harvested — solar midday reads ~9 gCO2/kWh, an evening peak ~40+ — which fabricated a false
+    intra-FR carbon dispersion across sites collected at different times. Mirror the EU pattern:
+    average taux_co2 over the trailing year from RTE's DEFINITIVE series (eco2mix-national-cons-def;
+    the real-time -tr dataset only retains ~3 months). Memoized per window: the value is identical
+    for every French DC, so one call per run, not one per site."""
+    since = f"{int(accessed[:4]) - 1}{accessed[4:]}"
+    if since in _e1_fr_cache:
+        return _e1_fr_cache[since]
+    url = "https://odre.opendatasoft.com/api/explore/v2.1/catalog/datasets/eco2mix-national-cons-def/records"
+    params = {
+        "where": f"taux_co2 IS NOT NULL AND date_heure >= date'{since}'",
+        "select": "avg(taux_co2) as mean, count(*) as n, min(date_heure) as d0, max(date_heure) as d1",
+        "limit": 1,
+    }
     try:
         rec = get_json(url, params)["results"][0]
-    except (SourceUnavailable, KeyError, IndexError):
+        mean = round(float(rec["mean"]), 1)
+        n = int(rec["n"])
+    except (SourceUnavailable, KeyError, IndexError, TypeError, ValueError):
+        return None  # transient — not cached, so a later site retries
+    if not n:
         return None
-    return {
+    result = {
         "id": "E1",
         "status": "measured",
-        "value": float(rec["taux_co2"]),
+        "value": mean,
         # National grid intensity: France's electricity mix is managed nationally by RTE.
         "source": _source(
-            f"RTE eCO2mix — national CO2 intensity {rec['date_heure']} ({rec['taux_co2']} gCO2/kWh)",
+            f"RTE eCO2mix (données définitives) — France national CO2 intensity, 12-month mean "
+            f"{(rec.get('d0') or since)[:10]}..{(rec.get('d1') or accessed)[:10]} "
+            f"({mean} gCO2/kWh, n={n} half-hourly)",
             "https://www.rte-france.com/eco2mix/les-emissions-de-co2-par-kwh-produit-en-france",
             accessed),
     }
+    _e1_fr_cache[since] = result
+    return result
 
 
 # --- W1 · local water stress (VigiEau / Propluvia) ------------------------------------------

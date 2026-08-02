@@ -1,0 +1,21 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR "La note, pas à pas" — pedagogical walkthrough (component: MethodWalkthrough.astro).
+import Base from "../../layouts/Base.astro";
+import MethodWalkthrough from "../../components/MethodWalkthrough.astro";
+import { FR_NAV } from "../../config/nav";
+---
+
+<Base
+  lang="fr"
+  title="La note, pas à pas — ScoreMyDataCenter"
+  description="Comment une note A–E se fabrique, pas à pas, sur un data center fictif : les indicateurs font les piliers, les piliers font la note. Illustration pédagogique de la méthode."
+  tagline="Observatoire indépendant"
+  altHref="/the-grade-step-by-step"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <MethodWalkthrough lang="fr" />
+</Base>

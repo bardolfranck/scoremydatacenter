@@ -1,0 +1,706 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// Email-gated report download (lead magnet). The visitor gives an email to get
+// a free report; we DON'T hand the PDF over immediately — double opt-in: the
+// email must be confirmed by clicking a link we mail. That keeps the list real
+// (no "vatefairecuire@…" garbage) and CNIL-clean (explicit consent, stated
+// purpose, one-click unsubscribe). Backend = the Pages Function /api/report/*,
+// the address store = D1 (Franck's own exportable table). Sending = Resend
+// (from no-reply@send.scoremydatacenter.org, reply-to contact@…). Honeypot for
+// bots; no cookie, no tracker on this page.
+import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
+
+interface Props {
+  lang: "en" | "fr";
+  nav: NavNode[];
+  altHref: string;
+  altLabel: string;
+  report?: string; // report slug the Function keys on (default "big-tech")
+}
+const { lang, nav, altHref, altLabel, report = "big-tech" } = Astro.props;
+
+// Pages 1-2 are the free, un-gated teaser (Franck 2026-07-28): never a gate
+// before page 1 — the first pages are the best advertising, they must circulate
+// freely (press citing, Google indexing). Served as a small static PDF from
+// public/reports/teasers/ (no email, no Function). The FULL report is gated.
+// Some country reports ship in a native language BEYOND fr/en (policy 2026-07-30:
+// the national language reaches the local elected official). Those show an EDITION
+// selector — the visitor picks which language PDF to receive. The site UI stays
+// fr/en; only the download + free teaser change. Nederland: EN (default) + NL.
+const EDITIONS: Record<string, { code: "fr" | "en" | "nl"; label: string }[]> = {
+  nederland: [
+    { code: "en", label: "English" },
+    { code: "nl", label: "Nederlands" },
+  ],
+};
+const editions = EDITIONS[report] ?? null;
+// Default download edition: the first listed for a multi-edition report (EN), else
+// the site language (unchanged single-edition behaviour). The teaser matches it and
+// is swapped client-side when the reader flips the selector.
+const gateLang: "fr" | "en" | "nl" = editions ? editions[0].code : lang;
+const teaserHref = `/reports/teasers/${report}-${gateLang}-2P.pdf`;
+
+// Copy shared by every report (all "vous" — the site's register). Report-
+// specific copy lives in REPORT_COPY and is merged over this.
+const COMMON = {
+  fr: {
+    tagline: "Observatoire indépendant",
+    kicker: "Rapport · gratuit",
+    scoopLabel: "Le chiffre qui dérange",
+    insideTitle: "Ce qu'il y a dedans",
+    teaserBtn: "Lire l'aperçu — 2 pages, sans email",
+    teaserSub: "Téléchargement libre · citable · partageable",
+    cliff: "Les 2 premières pages posent la question. Le rapport complet y répond →",
+    formTitle: "Le rapport complet",
+    formLead: "L'aperçu (2 pages) est libre, ci-contre. Le rapport complet vous arrive par email — un clic de confirmation, et il est à vous.",
+    emailLabel: "Votre email",
+    emailPlaceholder: "prenom@organisation.fr",
+    consentLabel: "J'accepte de recevoir ce rapport par email, et ponctuellement les prochaines publications de l'observatoire.",
+    cnil: "Votre adresse sert à vous envoyer ce rapport et nos publications. Elle n'est ni vendue ni cédée. Désinscription à tout moment ; accès et suppression : <a href=\"mailto:contact@scoremydatacenter.org\">contact@scoremydatacenter.org</a>.",
+    submit: "Recevoir le rapport",
+    sending: "Envoi…",
+    sentTitle: "Vérifiez votre boîte mail 📬",
+    sentBody: "Nous venons de vous envoyer un lien de confirmation. Cliquez dessus et le rapport se télécharge aussitôt. (Pensez à regarder les spams.)",
+    errGeneric: "L'envoi a échoué. Réessayez, ou écrivez-nous : contact@scoremydatacenter.org",
+    errEmail: "Cette adresse email ne semble pas valide. Vérifiez-la.",
+    errConsent: "Cochez la case pour qu'on puisse vous envoyer le rapport.",
+    freeNote: "100 % gratuit · aucun paiement · désinscription en un clic",
+    svcKicker: "Aller plus loin",
+    svcTitle: "Ce rapport lit un secteur. On peut lire le vôtre.",
+    svcBody: "Un portefeuille de sites à évaluer, un projet à cadrer avant dépôt, un benchmark privé face à vos pairs ? On applique la même grille — sur mesure, sous confidentialité.",
+    svcItems: ["Lecture de portefeuille", "Site avant dépôt / investissement", "Benchmark privé"],
+    svcCta: "Parler d'une étude sur mesure",
+    svcSubject: "Étude sur mesure — data centers",
+  },
+  en: {
+    tagline: "Independent observatory",
+    kicker: "Report · free",
+    scoopLabel: "The awkward number",
+    insideTitle: "What's inside",
+    teaserBtn: "Read the preview — 2 pages, no email",
+    teaserSub: "Free download · citable · shareable",
+    cliff: "The first 2 pages ask the question. The full report answers it →",
+    formTitle: "The full report",
+    formLead: "The preview (2 pages) is free, on the left. The full report comes by email — one confirmation click and it's yours.",
+    emailLabel: "Your email",
+    emailPlaceholder: "name@organisation.com",
+    consentLabel: "I agree to receive this report by email, and occasionally the observatory's next publications.",
+    cnil: "Your address is used to send you this report and our publications. It is never sold or shared. Unsubscribe anytime; access and deletion: <a href=\"mailto:contact@scoremydatacenter.org\">contact@scoremydatacenter.org</a>.",
+    submit: "Get the report",
+    sending: "Sending…",
+    sentTitle: "Check your inbox 📬",
+    sentBody: "We've just sent you a confirmation link. Click it and the report downloads right away. (Do check your spam folder.)",
+    errGeneric: "Sending failed. Try again, or write to us: contact@scoremydatacenter.org",
+    errEmail: "That email address doesn't look valid. Please check it.",
+    errConsent: "Tick the box so we can send you the report.",
+    freeNote: "100% free · no payment · one-click unsubscribe",
+    svcKicker: "Go further",
+    svcTitle: "This report reads a sector. We can read yours.",
+    svcBody: "A portfolio of sites to assess, a project to scope before filing, a private benchmark against your peers? We apply the same lens — bespoke, under confidentiality.",
+    svcItems: ["Portfolio read", "Site before filing / investment", "Private benchmark"],
+    svcCta: "Talk about a bespoke study",
+    svcSubject: "Bespoke study — data centers",
+  },
+} as const;
+
+// Per-report copy. Display name only — the PDF/R2 keys keep their own names
+// (renaming the file would mean re-rendering it). Big Tech is displayed as
+// "Big Tech-AI" (the report carries the AI-proxy angle); slug stays "big-tech".
+const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
+  "big-tech": {
+    fr: {
+      title: "Rapport Big Tech-AI 2026 — ScoreMyDataCenter",
+      metaDescription: "Les géants du cloud et de l'IA passés à notre grille d'acceptabilité : 18 data centers vérifiés, dans la même grille que 1 269 sites européens. Rapport gratuit, contre email.",
+      h1: "Big Tech-AI & data centers : qui tient la note ?",
+      lead: "Ici, les géants ne sont pas notés comme des géants. Ils sont notés comme des sites — 18 data centers (AWS, Google, Meta, Microsoft), dans la même grille que 1 269 sites européens.",
+      scoop: "Equinix — le plus grand loueur de data centers du monde — note mieux que les quatre géants réunis : <strong>63,9 contre 59,2</strong>.",
+      inside: [
+        "La <strong>carte-sol des 18</strong> — où les géants construisent vraiment",
+        "Le <strong>beeswarm des 1 269 sites</strong> européens, géants surlignés",
+        "Le <strong>face-à-face géants vs loueurs</strong> (Equinix, Digital Realty, CyrusOne)",
+        "18 vues satellite notées + le tableau croisé 4 géants × 5 dimensions + le proxy IA",
+      ],
+      coverKicker: "Édition 2026 · FR",
+      coverTitle: "Big Tech-AI",
+      coverSub: "Les géants du cloud et de l'IA à l'épreuve du territoire",
+    },
+    en: {
+      title: "Big Tech-AI Report 2026 — ScoreMyDataCenter",
+      metaDescription: "The cloud & AI giants run through our acceptability lens: 18 verified data centers, in the same lens as 1,269 European sites. Free report, for an email.",
+      h1: "Big Tech-AI & data centers: who holds the grade?",
+      lead: "Here, the giants aren't graded as giants. They're graded as sites — 18 data centers (AWS, Google, Meta, Microsoft), in the same lens as 1,269 European sites.",
+      scoop: "Equinix — the world's largest data-center landlord — grades better than the four giants combined: <strong>63.9 vs 59.2</strong>.",
+      inside: [
+        "The <strong>land map of the 18</strong> — where the giants really build",
+        "The <strong>beeswarm of 1,269 sites</strong>, giants highlighted",
+        "The <strong>giants vs landlords face-off</strong> (Equinix, Digital Realty, CyrusOne)",
+        "18 graded satellite views + the 4-giants × 5-dimensions matrix + the AI proxy",
+      ],
+      coverKicker: "2026 edition · EN",
+      coverTitle: "Big Tech-AI",
+      coverSub: "The cloud & AI giants against the territory",
+    },
+  },
+  "banques": {
+    fr: {
+      title: "Les noms de chez vous — Les banques — ScoreMyDataCenter",
+      metaDescription: "Où les banques françaises gardent vos données, et pourquoi leur note tient à une adresse. 10 data centers bancaires notés. Rapport gratuit, contre email.",
+      h1: "Les banques n'ont pas choisi leur note. Elles ont hérité de leur adresse.",
+      lead: "10 data centers bancaires français passés à notre grille. Le résultat tient moins à la banque qu'à un code postal.",
+      scoop: "Quatre des sept data centers bancaires français tiennent dans un rayon de <strong>12 km</strong>, à Marne-la-Vallée (BNP Paribas ×3 + Banque de France).",
+      inside: [
+        "La <strong>carte des 10 sites</strong> bancaires — qui héberge où",
+        "Le <strong>cluster de Marne-la-Vallée</strong> : 4 data centers dans 12 km, cartographié",
+        "<strong>Banque par banque</strong> : ce que l'adresse fait à la note",
+        "« Les géants paient le champ. Les banques paient la ville. » — la démonstration",
+      ],
+      coverKicker: "Les noms de chez vous · #1",
+      coverTitle: "Les banques",
+      coverSub: "Vos données, leur adresse",
+    },
+    en: {
+      title: "Household names — The banks — ScoreMyDataCenter",
+      metaDescription: "Where French banks keep your data, and why their grade comes down to an address. 10 bank data centers graded. Free report, for an email.",
+      h1: "The banks didn't choose their grade. They inherited their address.",
+      lead: "10 French bank data centers run through our lens. The result owes less to the bank than to a postcode.",
+      scoop: "Four of the seven French bank data centers sit within a <strong>12 km</strong> radius, at Marne-la-Vallée (BNP Paribas ×3 + Banque de France).",
+      inside: [
+        "The <strong>map of the 10 sites</strong> — who hosts where",
+        "The <strong>Marne-la-Vallée cluster</strong>: 4 data centers within 12 km, mapped",
+        "<strong>Bank by bank</strong>: what the address does to the grade",
+        "“The giants pay for the field. The banks pay for the city.” — the case",
+      ],
+      coverKicker: "Household names · #1",
+      coverTitle: "The banks",
+      coverSub: "Your data, their address",
+    },
+  },
+  "france": {
+    fr: {
+      title: "La France, vue de ses data centers — ScoreMyDataCenter",
+      metaDescription: "393 data centers français passés à notre grille : l'électricité la plus décarbonée d'Europe (17,6 g/kWh), et pourtant la 12e note sur 17. Rapport gratuit, contre email.",
+      h1: "La France a décarboné son électricité. Pas ses adresses.",
+      lead: "L'électricité la plus décarbonée du continent — 17,6 g/kWh — et pourtant la 12e note sur 17. 393 sites français, premier parc suivi d'Europe.",
+      scoop: "79,6 % des 393 sites français sont sur un poste électrique <strong>saturé</strong> ; 59 % écopent d'un E au pilier Énergie. La saturation est une géographie : 41 % du parc en Île-de-France.",
+      inside: [
+        "La <strong>carte des 393 sites</strong> — premier parc suivi d'Europe (devant l'Allemagne)",
+        "Le paradoxe : électricité verte (17,6 g), mais <strong>réseau saturé</strong> et zéro note A",
+        "La saturation est une <strong>adresse</strong> : 41 % en Île-de-France, poste par poste",
+        "L'eau discrimine site par site (44,5 % en stress) — les banques en cas d'école",
+      ],
+      coverKicker: "Rapport pays · France",
+      coverTitle: "France",
+      coverSub: "Le premier parc suivi d'Europe, à l'épreuve de ses adresses",
+    },
+    en: {
+      title: "France, seen through its data centers — ScoreMyDataCenter",
+      metaDescription: "393 French data centers run through our lens: Europe's most decarbonized electricity (17.6 g/kWh), yet the 12th grade out of 17. Free report, for an email.",
+      h1: "France decarbonized its electricity. Not its addresses.",
+      lead: "The most decarbonized electricity on the continent — 17.6 g/kWh — yet the 12th grade out of 17. 393 French sites, Europe's first tracked fleet.",
+      scoop: "79.6% of the 393 French sites sit on a <strong>saturated</strong> grid substation; 59% earn an E on the Energy pillar. Saturation is a geography: 41% of the fleet in Île-de-France.",
+      inside: [
+        "The <strong>map of 393 sites</strong> — Europe's first tracked fleet (ahead of Germany)",
+        "The paradox: green electricity (17.6 g), but a <strong>saturated grid</strong> and zero A grade",
+        "Saturation is an <strong>address</strong>: 41% in Île-de-France, substation by substation",
+        "Water discriminates site by site (44.5% under stress) — banks a textbook case",
+      ],
+      coverKicker: "Country report · France",
+      coverTitle: "France",
+      coverSub: "Europe's first tracked fleet, against its addresses",
+    },
+  },
+  // Nederland — country report #2. NL + EN editions; the served PDF is the EN edition
+  // for BOTH site languages until the NL passes native review. The FR copy below
+  // describes the report in French but says the download is the English edition.
+  "nederland": {
+    fr: {
+      title: "Les Pays-Bas, vus de leurs data centers — ScoreMyDataCenter",
+      metaDescription: "134 data centers néerlandais passés à notre grille : le réseau le plus chargé de notre corpus, un courant 21× plus carboné que la France — et pourtant 85 % de A/B et les 2 seuls A d'Europe. Rapport gratuit (édition anglaise), contre email.",
+      h1: "Le réseau le plus saturé d'Europe. Et les deux seules notes A du continent.",
+      lead: "134 data centers néerlandais, un courant 21× plus carboné que la France — et pourtant 85 % de A/B. Le réseau est coupable d'un seul pilier ; le reste tient.",
+      scoop: "Les <strong>2 seuls A d'Europe</strong> sont néerlandais — Eurofiber Alblasserdam et KPN Rotterdam, 84,5/100 chacun, à 16 km l'un de l'autre, en pleine congestion de Rotterdam. Tous deux sur preuve tierce (un A se prouve).",
+      inside: [
+        "La <strong>carte des 134 sites</strong> — le parc le plus dense de notre corpus",
+        "Le réseau <strong>coupable d'un seul pilier</strong> : 105/134 sites saturés ou contraints, médiane Énergie 16,7",
+        "L'eau <strong>bimodale</strong> : les 23 E au pilier Eau sont exactement les 23 sites en stress (23/23)",
+        "La contre-preuve <strong>dossier ≠ rang</strong> (doc moyenne → 7e) + le polder de Google (Eemshaven E, Middenmeer D)",
+      ],
+      formLead: "L'aperçu (2 pages) est libre, ci-contre. Choisissez l'édition — néerlandaise ou anglaise — donnez votre email, et le rapport complet vous arrive : un clic de confirmation, et il est à vous.",
+      coverKicker: "Rapport pays · Pays-Bas",
+      coverTitle: "Pays-Bas",
+      coverSub: "Le réseau le plus chargé d'Europe, et ses deux seules notes A",
+    },
+    en: {
+      title: "The Netherlands, seen through its data centers — ScoreMyDataCenter",
+      metaDescription: "134 Dutch data centers run through our lens: the most loaded grid in our corpus, power 21× more carbon-intensive than France — yet 85% A/B and Europe's only two A grades. Free report, for an email.",
+      h1: "Europe's most saturated grid. And the continent's only two A grades.",
+      lead: "134 Dutch data centers, power 21× more carbon-intensive than France — yet 85% A/B. The grid is guilty on a single pillar; the rest holds.",
+      scoop: "The <strong>only two A grades in Europe</strong> are Dutch — Eurofiber Alblasserdam and KPN Rotterdam, 84.5/100 each, 16 km apart, in the thick of Rotterdam's congestion. Both on third-party proof (an A is proven).",
+      inside: [
+        "The <strong>map of 134 sites</strong> — the densest fleet in our corpus",
+        "The grid <strong>guilty on a single pillar</strong>: 105/134 sites saturated or constrained, Energy median 16.7",
+        "Water is <strong>bimodal</strong>: the 23 E grades on Water are exactly the 23 sites under stress (23/23)",
+        "The <strong>proof ≠ rank</strong> counter-case (average filing → 7th) + Google's polder (Eemshaven E, Middenmeer D)",
+      ],
+      formLead: "The preview (2 pages) is free, on the left. Pick your edition — Dutch or English — drop your email, and the full report arrives: one confirmation click and it's yours.",
+      coverKicker: "Country report · Netherlands",
+      coverTitle: "Netherlands",
+      coverSub: "Europe's most loaded grid, and its only two A grades",
+    },
+  },
+};
+
+const rc = (REPORT_COPY[report] ?? REPORT_COPY["big-tech"])[lang];
+const t = { ...COMMON[lang], ...rc };
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section rd-section" aria-labelledby="rd-title">
+    <div class="section-inner rd-grid">
+      <!-- Left: the pitch + cover -->
+      <div class="rd-pitch">
+        <p class="hero-eyebrow">{t.kicker}</p>
+        <h1 id="rd-title" class="rd-title">{t.h1}</h1>
+        <p class="rd-lead">{t.lead}</p>
+
+        <!-- The scoop: free, citable, on-page (SEO + press). The single number
+             that makes the report worth reading. -->
+        <figure class="rd-scoop">
+          <figcaption class="rd-scoop-label">{t.scoopLabel}</figcaption>
+          <blockquote set:html={t.scoop}></blockquote>
+        </figure>
+
+        <div class="rd-cover" aria-hidden="true">
+          <span class="rd-cover-kicker">{t.coverKicker}</span>
+          <span class="rd-cover-title">{t.coverTitle}</span>
+          <span class="rd-cover-sub">{t.coverSub}</span>
+          <span class="rd-cover-scale">
+            <i class="s-a">A</i><i class="s-b">B</i><i class="s-c">C</i><i class="s-d">D</i><i class="s-e">E</i>
+          </span>
+        </div>
+
+        <h2 class="rd-inside-title">{t.insideTitle}</h2>
+        <ul class="rd-inside">
+          {t.inside.map((li) => <li set:html={li} />)}
+        </ul>
+
+        <!-- Free, un-gated preview (pages 1-2). The best advertising circulates
+             with no friction; the gate is only for the full report. -->
+        <a class="button button-secondary rd-teaser" href={teaserHref} download>
+          <svg viewBox="0 0 20 20" width="17" height="17" aria-hidden="true">
+            <path d="M10 3v9m0 0 3.2-3.2M10 12 6.8 8.8M4 15.5h12" fill="none"
+                  stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>{t.teaserBtn}</span>
+        </a>
+        <p class="rd-teaser-sub">{t.teaserSub}</p>
+        <p class="rd-cliff">{t.cliff}</p>
+      </div>
+
+      <!-- Right: the email gate -->
+      <div class="rd-form-col">
+        <div class="rd-card">
+          <h2 class="rd-form-title">{t.formTitle}</h2>
+          <p class="rd-form-lead">{t.formLead}</p>
+
+          {editions && (
+            <div class="rd-edition" role="group" aria-label={lang === "fr" ? "Choisir l'édition du rapport" : "Choose the report edition"}>
+              <span class="rd-edition-label">{lang === "fr" ? "Édition" : "Edition"}</span>
+              <div class="rd-edition-opts">
+                {editions.map((e, i) => (
+                  <button type="button" class:list={["rd-edition-btn", { active: i === 0 }]}
+                          data-edition={e.code} data-teaser={`/reports/teasers/${report}-${e.code}-2P.pdf`}>
+                    {e.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <form class="rd-form" data-report-form data-report={report} data-lang={gateLang} novalidate>
+            <label class="rd-label">
+              <span>{t.emailLabel}</span>
+              <input type="email" name="email" inputmode="email" autocomplete="email"
+                     placeholder={t.emailPlaceholder} required />
+            </label>
+
+            <label class="rd-consent">
+              <input type="checkbox" name="consent" required />
+              <span>{t.consentLabel}</span>
+            </label>
+
+            <!-- honeypot: real visitors never fill this -->
+            <input type="text" name="company" class="rd-hp" tabindex="-1" autocomplete="off" aria-hidden="true" />
+
+            <button class="button button-primary rd-submit" type="submit">{t.submit}</button>
+            <p class="rd-free">{t.freeNote}</p>
+
+            <p class="rd-err" data-err-email hidden>{t.errEmail}</p>
+            <p class="rd-err" data-err-consent hidden>{t.errConsent}</p>
+            <p class="rd-err" data-err-generic hidden set:html={t.errGeneric}></p>
+
+            <p class="rd-cnil" set:html={t.cnil}></p>
+          </form>
+
+          <div class="rd-sent" data-sent hidden>
+            <p class="rd-sent-title">{t.sentTitle}</p>
+            <p class="rd-sent-body">{t.sentBody}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The "silent salesperson": year-1 reports are free credibility tools; the
+       revenue path is bespoke work. Every report page nudges toward it. -->
+  <section class="section rd-svc-section" aria-labelledby="rd-svc-title">
+    <div class="section-inner">
+      <div class="rd-svc">
+        <div class="rd-svc-text">
+          <p class="hero-eyebrow">{t.svcKicker}</p>
+          <h2 id="rd-svc-title" class="rd-svc-title">{t.svcTitle}</h2>
+          <p class="rd-svc-body">{t.svcBody}</p>
+          <ul class="rd-svc-items">
+            {t.svcItems.map((li) => <li>{li}</li>)}
+          </ul>
+        </div>
+        <div class="rd-svc-cta">
+          <a class="button button-primary"
+             href={`mailto:contact@scoremydatacenter.org?subject=${encodeURIComponent(t.svcSubject)}`}>
+            {t.svcCta}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script
+  define:vars={{ sendingLabel: t.sending, submitLabel: t.submit }}
+  is:inline
+>
+  (function () {
+    var form = document.querySelector("form[data-report-form]");
+    if (!form) return;
+    var card = form.closest(".rd-card");
+
+    // Edition selector (multi-edition country reports): flip the gate's download
+    // language + swap the free teaser link. No page reload — copy stays site-lang.
+    var editionBtns = document.querySelectorAll(".rd-edition-btn");
+    var teaserLink = document.querySelector(".rd-teaser");
+    editionBtns.forEach(function (b) {
+      b.addEventListener("click", function () {
+        editionBtns.forEach(function (x) { x.classList.remove("active"); });
+        b.classList.add("active");
+        form.setAttribute("data-lang", b.getAttribute("data-edition"));
+        if (teaserLink) teaserLink.setAttribute("href", b.getAttribute("data-teaser"));
+      });
+    });
+    var btn = form.querySelector(".rd-submit");
+    var errEmail = form.querySelector("[data-err-email]");
+    var errConsent = form.querySelector("[data-err-consent]");
+    var errGeneric = form.querySelector("[data-err-generic]");
+    var sent = card.querySelector("[data-sent]");
+    // A light client check only trims obvious junk; the Function re-validates
+    // (format + MX) server-side — the browser is never the gatekeeper.
+    var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    function hide(el) { if (el) el.hidden = true; }
+
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      hide(errEmail); hide(errConsent); hide(errGeneric);
+
+      if (form.company.value) return; // honeypot tripped → silently ignore (bot)
+
+      var email = (form.email.value || "").trim();
+      if (!EMAIL_RE.test(email)) { errEmail.hidden = false; form.email.focus(); return; }
+      if (!form.consent.checked) { errConsent.hidden = false; return; }
+
+      btn.disabled = true;
+      btn.textContent = sendingLabel;
+
+      fetch("/api/report/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email,
+          consent: true,
+          report: form.getAttribute("data-report"),
+          lang: form.getAttribute("data-lang"),
+        }),
+      })
+        .then(function (r) { return r.json().catch(function () { return { ok: r.ok }; }); })
+        .then(function (data) {
+          if (data && data.ok) {
+            form.hidden = true;
+            sent.hidden = false;
+            card.classList.add("is-sent");
+          } else {
+            errGeneric.hidden = false;
+            btn.disabled = false;
+            btn.textContent = submitLabel;
+          }
+        })
+        .catch(function () {
+          errGeneric.hidden = false;
+          btn.disabled = false;
+          btn.textContent = submitLabel;
+        });
+    });
+  })();
+</script>
+
+<style>
+  .rd-section { padding-block: clamp(2rem, 5vw, 4rem); }
+  .rd-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .rd-grid { grid-template-columns: 1fr; }
+  }
+
+  .rd-title {
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 0.35em 0 0.35em;
+  }
+  .rd-lead {
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    line-height: 1.5;
+    color: var(--ink-soft, #4a5568);
+    max-width: 34ch;
+  }
+
+  /* The scoop callout — the one citable number */
+  .rd-scoop {
+    margin: 1.4rem 0 0; padding: 1rem 1.2rem;
+    border-radius: 12px;
+    background: #f2f6ff; border: 1px solid #d6e2ff;
+  }
+  .rd-scoop-label {
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    color: #2f6fed; font-weight: 700; margin-bottom: 0.35rem;
+  }
+  .rd-scoop blockquote {
+    margin: 0; font-size: clamp(1.05rem, 1.7vw, 1.25rem); line-height: 1.4;
+    color: var(--ink, #2d3748);
+  }
+  @media (prefers-color-scheme: dark) {
+    .rd-scoop { background: #16213a; border-color: #2b3f66; }
+    .rd-scoop blockquote { color: #e8edf5; }
+  }
+
+  /* CSS "cover" — no image asset, so we render a document-like card */
+  .rd-cover {
+    margin: 1.75rem 0 2rem;
+    width: min(320px, 90%);
+    aspect-ratio: 3 / 4;
+    border-radius: 14px;
+    padding: 1.5rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: #fff;
+    background:
+      radial-gradient(120% 90% at 15% 10%, #1e3a5f 0%, #16233a 55%, #0e1626 100%);
+    box-shadow: 0 20px 45px -20px rgba(14, 22, 38, 0.7);
+    position: relative;
+    overflow: hidden;
+  }
+  .rd-cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 78% 78%, rgba(255,255,255,0.10) 0, rgba(255,255,255,0) 42%);
+    pointer-events: none;
+  }
+  .rd-cover-kicker {
+    font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.62);
+  }
+  .rd-cover-title {
+    font-size: 2.6rem; font-weight: 800; line-height: 0.98; letter-spacing: -0.02em;
+    margin-top: auto;
+  }
+  .rd-cover-sub { font-size: 0.98rem; color: rgba(255,255,255,0.8); line-height: 1.3; }
+  .rd-cover-scale { display: flex; gap: 5px; margin-top: 0.9rem; }
+  .rd-cover-scale i {
+    width: 26px; height: 26px; border-radius: 6px;
+    display: grid; place-items: center;
+    font-style: normal; font-weight: 700; font-size: 0.8rem; color: #0e1626;
+  }
+  .rd-cover-scale .s-a { background: #2f9e69; color: #fff; }
+  .rd-cover-scale .s-b { background: #8ac14b; }
+  .rd-cover-scale .s-c { background: #f2c14e; }
+  .rd-cover-scale .s-d { background: #e08a3c; }
+  .rd-cover-scale .s-e { background: #d1495b; color: #fff; }
+
+  .rd-inside-title { font-size: 1.15rem; margin: 0 0 0.6rem; }
+  .rd-inside {
+    list-style: none; padding: 0; margin: 0;
+    display: grid; gap: 0.6rem;
+  }
+  .rd-inside li {
+    position: relative; padding-left: 1.6rem; line-height: 1.45;
+    color: var(--ink-soft, #4a5568);
+  }
+  .rd-inside li::before {
+    content: "✓"; position: absolute; left: 0; top: 0;
+    color: #2f9e69; font-weight: 800;
+  }
+
+  /* Free preview download (un-gated) */
+  .rd-teaser {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 1.6rem;
+  }
+  .rd-teaser svg { flex: none; }
+  .rd-teaser-sub {
+    margin: 0.45rem 0 0; font-size: 0.82rem; color: var(--ink-soft, #718096);
+  }
+  .rd-cliff {
+    margin: 1.4rem 0 0; padding-left: 0.9rem;
+    border-left: 3px solid #2f6fed;
+    font-size: 1.02rem; font-style: italic; line-height: 1.45;
+    color: var(--ink, #2d3748);
+  }
+
+  /* The email gate card */
+  .rd-form-col { position: sticky; top: 1.5rem; }
+  @media (max-width: 860px) { .rd-form-col { position: static; } }
+  .rd-card {
+    border: 1px solid var(--border, #e2e8f0);
+    border-radius: 16px;
+    padding: clamp(1.4rem, 3vw, 2rem);
+    background: var(--surface, #fff);
+    box-shadow: 0 14px 40px -24px rgba(14, 22, 38, 0.45);
+  }
+  /* Edition selector (native country editions) — segmented toggle at the top of the gate */
+  .rd-edition {
+    display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    margin: 0 0 1rem;
+  }
+  .rd-edition-label {
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--ink-soft, #718096);
+  }
+  .rd-edition-opts {
+    display: inline-flex; padding: 3px; gap: 2px;
+    background: var(--wash, #eef2f7); border: 1px solid var(--border, #e2e8f0);
+    border-radius: 999px;
+  }
+  .rd-edition-btn {
+    border: none; background: transparent; cursor: pointer;
+    padding: 0.34rem 0.85rem; border-radius: 999px;
+    font: inherit; font-size: 0.86rem; font-weight: 600; color: var(--ink-soft, #4a5568);
+  }
+  .rd-edition-btn:hover { color: var(--accent, #0f5fb8); }
+  .rd-edition-btn.active {
+    background: var(--surface, #fff); color: var(--ink, #16233a);
+    box-shadow: 0 1px 4px rgba(7, 24, 47, 0.16);
+  }
+  @media (prefers-color-scheme: dark) {
+    .rd-edition-opts { background: #0e131c; border-color: #2a3444; }
+    .rd-edition-btn.active { background: #1d2734; color: #e8edf5; }
+  }
+
+  .rd-form-title { font-size: 1.4rem; margin: 0 0 0.3rem; }
+  .rd-form-lead { color: var(--ink-soft, #4a5568); margin: 0 0 1.25rem; line-height: 1.45; }
+
+  .rd-label { display: block; margin-bottom: 1rem; }
+  .rd-label > span { display: block; font-weight: 600; margin-bottom: 0.35rem; font-size: 0.95rem; }
+  .rd-label input {
+    width: 100%; box-sizing: border-box;
+    padding: 0.7rem 0.85rem; font-size: 1rem;
+    border: 1px solid var(--border, #cbd5e0); border-radius: 10px;
+    background: var(--surface, #fff); color: inherit;
+  }
+  .rd-label input:focus-visible { outline: 2px solid #2f6fed; outline-offset: 1px; border-color: #2f6fed; }
+
+  .rd-consent {
+    display: flex; gap: 0.6rem; align-items: flex-start;
+    font-size: 0.9rem; line-height: 1.4; color: var(--ink-soft, #4a5568);
+    margin-bottom: 1.1rem; cursor: pointer;
+  }
+  .rd-consent input { margin-top: 0.2rem; width: 1.05rem; height: 1.05rem; flex: none; }
+
+  .rd-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+  .rd-submit { width: 100%; justify-content: center; font-size: 1.02rem; padding-block: 0.7rem; }
+  .rd-submit[disabled] { opacity: 0.6; cursor: progress; }
+
+  .rd-free {
+    text-align: center; font-size: 0.8rem; color: var(--ink-soft, #718096);
+    margin: 0.7rem 0 0;
+  }
+
+  .rd-err {
+    margin: 0.7rem 0 0; padding: 0.55rem 0.75rem;
+    background: #fdecec; color: #a02334; border-radius: 8px;
+    font-size: 0.88rem; line-height: 1.35;
+  }
+  .rd-err a { color: inherit; text-decoration: underline; }
+
+  .rd-cnil {
+    margin: 1rem 0 0; font-size: 0.78rem; line-height: 1.45;
+    color: var(--ink-soft, #718096);
+  }
+  .rd-cnil a { color: inherit; text-decoration: underline; }
+
+  /* Confirmation state after submit */
+  .rd-sent { text-align: center; padding: 0.5rem 0.25rem; }
+  .rd-sent-title { font-size: 1.35rem; font-weight: 700; margin: 0 0 0.5rem; }
+  .rd-sent-body { color: var(--ink-soft, #4a5568); line-height: 1.5; margin: 0; }
+  .rd-card.is-sent { background: linear-gradient(180deg, #f2f9f4, #fff); border-color: #bfe4cd; }
+
+  /* Silent-salesperson band */
+  .rd-svc-section { padding-block: clamp(1.5rem, 4vw, 3rem); }
+  .rd-svc {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: center;
+    padding: clamp(1.4rem, 3vw, 2.2rem);
+    border-radius: 16px;
+    background: radial-gradient(130% 130% at 0% 0%, #16233a 0%, #1e3a5f 100%);
+    color: #fff;
+  }
+  @media (max-width: 720px) { .rd-svc { grid-template-columns: 1fr; } }
+  .rd-svc .hero-eyebrow { color: rgba(255,255,255,0.6); }
+  .rd-svc-title { font-size: clamp(1.3rem, 2.4vw, 1.75rem); margin: 0.2em 0 0.4em; line-height: 1.15; }
+  .rd-svc-body { color: rgba(255,255,255,0.85); line-height: 1.5; margin: 0 0 0.9rem; max-width: 52ch; }
+  .rd-svc-items {
+    list-style: none; padding: 0; margin: 0;
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+  }
+  .rd-svc-items li {
+    font-size: 0.85rem; padding: 0.3rem 0.7rem; border-radius: 999px;
+    background: rgba(255,255,255,0.12); color: #fff;
+  }
+  .rd-svc-cta .button { white-space: nowrap; }
+
+  @media (prefers-color-scheme: dark) {
+    .rd-card { background: #141a24; border-color: #2a3444; }
+    .rd-label input { background: #0e131c; border-color: #34404f; }
+    .rd-card.is-sent { background: linear-gradient(180deg, #12251b, #141a24); border-color: #245239; }
+    .rd-err { background: #3a1a20; color: #f3b3bd; }
+  }
+</style>

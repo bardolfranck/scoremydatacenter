@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Cloudflare Pages project config — bindings for the report email-gate Functions.
+# Declared here (version-controlled) rather than in the dashboard so every deploy
+# attaches DB + REPORTS_BUCKET deterministically. RESEND_API_KEY stays a secret
+# (set once via the dashboard / `wrangler pages secret put`), never in this file.
+name = "scoremydatacenter"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "smdc-leads"
+database_id = "de530c8a-bb62-4094-bc78-3d582a2839bc"
+
+[[r2_buckets]]
+binding = "REPORTS_BUCKET"
+bucket_name = "smdc-reports"

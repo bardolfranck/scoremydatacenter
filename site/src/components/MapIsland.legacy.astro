@@ -1,0 +1,431 @@
+---
+// ⚠️ ARCHIVE — snapshot of MapIsland.astro BEFORE the distribution-donut clustering
+// (2026-07-30). Kept verbatim as the previous version per Franck's request ("archive
+// la version précédente, ne delete pas le code existant"). NOT imported anywhere.
+// The live component is MapIsland.astro. Do not wire this file into a page.
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// The living map — fed by map.geojson (engine artifact). Markers are grade
+// chips; every popup shows both grades WITH the confidence level (the
+// ScoreBadge invariant holds in client-rendered HTML too).
+interface Props {
+  variant: "hero" | "full";
+  labels: {
+    site: string;
+    operator: string;
+    confidence: Record<string, string>;
+    insufficient: string;
+    fixture: string;
+    openMap?: string;
+    // i18n (§13): link bases + strings the client script renders. FR defaults
+    // apply when absent so existing callers keep working.
+    ficheBase?: string;   // "/fr/dc" | "/dc"
+    mapPath?: string;     // "/fr/carte" | "/map"
+    viewFiche?: string;
+    reserved?: string;
+    legendGraded?: string;
+    legendWatch?: string;
+    watch?: { badge: string; note: string; source: string; press: string; selfReported: string; aria: string; title: string; status: Record<string, string> };
+  };
+}
+const { variant, labels } = Astro.props;
+---
+
+<div class={`map-island map-${variant}`} data-variant={variant} data-labels={JSON.stringify(labels)}>
+  <div class="map-canvas"></div>
+  {variant === "hero" && labels.openMap && (
+    <a class="button button-primary map-open-link" href={labels.mapPath ?? "/fr/carte"}>{labels.openMap}</a>
+  )}
+  {variant === "full" && (
+    <div class="map-legend" aria-hidden="true">
+      <span class="map-legend-grades">
+        {["a", "b", "c", "d", "e"].map((g) => <i class={`legend-dot legend-${g}`}>{g.toUpperCase()}</i>)}
+        {labels.legendGraded ?? "notes du site"}
+      </span>
+      <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · petit point = non communiquée"}</span>
+      <span class="legend-line-announced"><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
+      <span><span class="legend-emoji">✋🏼</span>{labels.legendWatchOpp ?? "Opposition citoyenne locale"}</span>
+      <span><span class="legend-emoji">⏸️</span>{labels.legendWatchMor ?? "Moratoire (acte officiel 🏛️)"}</span>
+    </div>
+  )}
+</div>
+
+<script>
+  import maplibregl from "maplibre-gl";
+  import "maplibre-gl/dist/maplibre-gl.css";
+  import { whitenBasemap } from "../scripts/basemap";
+
+  const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
+
+  function chip(grade: string, extra = ""): string {
+    const na = grade === "insufficient_data";
+    const cls = na ? "grade-na" : `grade-${grade.toLowerCase()}`;
+    return `<span class="gradechip sm ${cls} ${extra}">${na ? "–" : grade}</span>`;
+  }
+
+  // Client-side mirror of the SourceLink component (A-20): live link + archived snapshot.
+  function srcLink(s: any): string {
+    if (!s?.url) return "—";
+    const live = `<a href="${s.url}" target="_blank" rel="noopener">${s.title}${s.accessed ? ` — consulté le ${s.accessed}` : ""}</a>`;
+    const archived = s.archived_url ? ` · <a href="${s.archived_url}" target="_blank" rel="noopener" class="src-archived">archivé</a>` : "";
+    return live + archived;
+  }
+
+  document.querySelectorAll<HTMLElement>(".map-island").forEach(async (root) => {
+    const labels = JSON.parse(root.dataset.labels || "{}");
+    const isFull = root.dataset.variant === "full";
+    const canvas = root.querySelector<HTMLElement>(".map-canvas");
+    if (!canvas) return;
+
+    const geo = await (await fetch("/data/map.geojson")).json();
+
+    // B-1 (avis cabinet 2026-07-27) : attribution ODbL LOCALE là où de la donnée
+    // DCWatch s'affiche — « contient des informations de » (jamais « basé sur »).
+    const dcwatchAttr = (labels.ficheBase ?? labels.mapPath ?? "/fr").startsWith("/fr")
+      ? 'Contient des informations de <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL'
+      : 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL';
+    const map = new maplibregl.Map({
+      container: canvas,
+      style: STYLE_URL,
+      center: [2.4, 46.8],
+      zoom: isFull ? 5.3 : 4.7,
+      attributionControl: { compact: true, customAttribution: dcwatchAttr },
+      scrollZoom: isFull,
+      cooperativeGestures: isFull,
+    });
+    whitenBasemap(map);
+    (root as any).__map = map; // test handle — verification scripts drive the view through it
+    if (isFull) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+
+    // Deep-link from the ranking: /fr/carte?dc=<id> flies to that project and opens its popup.
+    const focusId = new URLSearchParams(location.search).get("dc");
+    const markerById: Record<string, { marker: any; center: [number, number] }> = {};
+
+    // Hero intro (brief 2026-07-12): motion is the data — the pins ARE the published
+    // grades, they just drop in once. Browser-only; the artifacts never change.
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animateIntro = !isFull && !reducedMotion;
+    const DROP_WINDOW_MS = 2200; // whole cascade fits in ~2.2s whatever the pin count
+
+    const introDots: HTMLElement[] = [];
+    const bounds = new maplibregl.LngLatBounds();
+    geo.features.forEach((feature: any, idx: number) => {
+      const p = feature.properties;
+      const [lon, lat] = feature.geometry.coordinates;
+      bounds.extend([lon, lat]);
+
+      const el = document.createElement("div");
+      el.className = "map-marker";
+      // Marker size follows a COARSE tier (0 unknown · 1 small · 2 med · 3 large),
+      // computed server-side from √MW — the map keeps its power-scaled dots
+      // (Franck 2026-07-13) without the geojson ever carrying the sellable MW
+      // figure (anti-pillage 2026-07-22). Dot colour = the public site letter.
+      const tier = typeof p.size_tier === "number" ? p.size_tier : 0;
+      const size = [10, 15, 22, 32][tier] ?? 10;
+      el.style.width = el.style.height = `${size}px`;
+      const na = p.grade_site === "insufficient_data";
+      const dot = document.createElement("span");
+      dot.className = `map-dot ${na ? "dot-na" : `dot-${p.grade_site.toLowerCase()}`}${tier === 0 ? " mw-unknown" : ""}`;
+      dot.title = `${p.name}${p.operator ? ` — ${p.operator}` : ""}`;
+      el.appendChild(dot);
+      if (animateIntro) {
+        // Armed but hidden until the section scrolls into view (see below).
+        dot.classList.add("pin-armed");
+        dot.style.setProperty("--pin-delay", `${Math.round((idx / geo.features.length) * DROP_WINDOW_MS)}ms`);
+        introDots.push(dot);
+      }
+
+      const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
+      // Popup carries ONLY the free floor (name, operator, place, status, site
+      // LETTER). The depth — operator grade, per-pillar scores, the citable
+      // quote — lives on the fiche (free to read as HTML) and in the API
+      // (paid, structured). The map teases; the fiche delivers.
+      const place = [p.municipality, p.country].filter(Boolean).join(" · ");
+      const popupHtml = `
+        <div class="map-popup">
+          <strong>${p.name}</strong>
+          ${p.operator ? `<span class="map-popup-sub">${p.operator}</span>` : ""}
+          ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
+          <div class="map-popup-grades">
+            <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
+          </div>
+          ${fixtureTag}
+          <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
+        </div>`;
+
+      const marker = new maplibregl.Marker({ element: el })
+        .setLngLat([lon, lat])
+        .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "320px" }).setHTML(popupHtml))
+        .addTo(map);
+      markerById[p.id] = { marker, center: [lon, lat] };
+    });
+
+    // Play the cascade WHEN THE SECTION SCROLLS INTO VIEW, not on load (Franck
+    // 2026-07-21): since the satellite wall moved to position 2, "Explorer les
+    // scores" now sits well below the fold — a load-time animation fired unseen.
+    // Pins stay armed (hidden) until the map enters the viewport, then drop +
+    // one light sweep. Fires once; degrades to immediate play without IO.
+    if (animateIntro) {
+      const playIntro = () => {
+        for (const dot of introDots) { dot.classList.remove("pin-armed"); dot.classList.add("chip-drop"); }
+        const scan = document.createElement("div");
+        scan.className = "map-scan";
+        scan.setAttribute("aria-hidden", "true");
+        scan.style.setProperty("--scan-delay", `${DROP_WINDOW_MS + 500}ms`);
+        scan.addEventListener("animationend", () => scan.remove());
+        canvas.appendChild(scan);
+      };
+      if ("IntersectionObserver" in window) {
+        const io = new IntersectionObserver((entries) => {
+          if (entries.some((e) => e.isIntersecting)) { io.disconnect(); playIntro(); }
+        }, { threshold: 0.3 });
+        io.observe(root);
+      } else {
+        playIntro();
+      }
+    }
+
+    if (focusId && markerById[focusId]) {
+      const { marker, center } = markerById[focusId];
+      map.flyTo({ center, zoom: 9, duration: 800 });
+      marker.togglePopup();
+    } else if (geo.features.length > 1) {
+      map.fitBounds(bounds, { padding: isFull ? 120 : 90, maxZoom: 7, duration: 0 });
+    }
+
+    // Watchlist layer (A-19) — world "En veille" projects: sourced facts, NEVER a
+    // grade, a score or a confidence. Full map only. 863 entries (US wave 1) ride a
+    // clustered geojson SOURCE (DOM markers would melt the map); only the rare
+    // announced_project entries keep the DOM 🗣️ marker. Shape carries the kind —
+    // round = local opposition, square = moratorium (official act) — same neutral
+    // tint; the fine distinction lives in the popup, not in visual noise.
+    if (isFull) {
+      const W = Object.assign({
+        badge: "En veille", note: "Projet suivi ; pas encore noté.",
+        source: "Source :", press: "Presse : ", selfReported: "auto-déclaré",
+        aria: "Projet suivi — contestation", title: "Projet suivi ; pas encore noté",
+        lang: "fr",
+        typeOpposition: "Opposition locale", typeMoratorium: "Moratoire",
+        filterLabel: "En veille :", filterAll: "Tout", filterOppositions: "Oppositions",
+        filterMoratoria: "Moratoires", filterAria: "Filtrer la couche en veille",
+        viewWorld: "🌍 Monde", viewEurope: "🇪🇺 Europe",
+        // Discipline juridique watchlist (avis cabinet Batch D, 2026-07-27) :
+        // Mod 1 (phrase permanente en tête) + Mod 2 (note « source documentaire »).
+        watchlistNote: "Les projets « En veille » ne sont pas notés. Cette rubrique décrit uniquement des faits publics issus de sources identifiées.",
+        extSourceNote: "Source externe citée à titre documentaire.",
+        status: { announced: "Annoncé", permitting: "En instruction",
+                  under_construction: "En construction", operational: "En service" },
+      }, labels.watch ?? {});
+      const WATCH_STATUS: Record<string, string> = W.status;
+      const GREY = "#c3d0dc", STROKE = "#ffffff", INK = "#33475c";
+      try {
+        const watch = await (await fetch("/data/watchlist.geojson")).json();
+        const isClusteredKind = (f: any) => f.properties.kind === "opposition" || f.properties.kind === "moratorium";
+        const clusteredAll = { type: "FeatureCollection", features: watch.features.filter(isClusteredKind) };
+        const announced = watch.features.filter((f: any) => !isClusteredKind(f));
+
+        // EEA watch entries belong in the DEFAULT Europe frame (Franck 2026-07-22): Iceland
+        // (GIGA-42 Bakki) et al. are European — unlike the US/Maghreb wave, which stays one
+        // "🌍 Monde" click away. The default frame is built from the graded corpus (§6), which
+        // has no Icelandic DC, so Bakki fell ~1° off the NW corner. Extend the bounds with the
+        // European watch points and re-fit, so a European "en veille" pin is never off-frame.
+        const EUROPE_ISO = new Set(["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR",
+          "HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","IS","NO",
+          "LI","CH","GB","AD","MC","SM","VA","AL","BA","ME","MK","RS","XK","MD","UA"]);
+        for (const f of watch.features) {
+          if (EUROPE_ISO.has(f.properties.country)) bounds.extend(f.geometry.coordinates);
+        }
+        if (!focusId && geo.features.length > 1) {
+          map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: 0 });
+        }
+
+        // Shareable filter state, ranking-style URL: /fr/carte?veille=moratoires
+        const FILTERS: Record<string, string | null> = { tout: null, oppositions: "opposition", moratoires: "moratorium" };
+        let veille = new URLSearchParams(location.search).get("veille") ?? "tout";
+        if (!(veille in FILTERS)) veille = "tout";
+        const subset = (v: string) => FILTERS[v]
+          ? { type: "FeatureCollection", features: clusteredAll.features.filter((f: any) => f.properties.kind === FILTERS[v]) }
+          : clusteredAll;
+
+        const watchBounds = new maplibregl.LngLatBounds();
+        for (const f of watch.features) watchBounds.extend(f.geometry.coordinates);
+        // View doctrine (COUNTRIES.md §6): the full map keeps the EUROPE frame by
+        // default — the graded corpus is the product. Everything else is one explicit
+        // click away. The watch layer was US-only ("Monde" then overpromised); it now
+        // spans several continents (US + Maghreb…), so the toggle is honestly "🌍 Monde"
+        // and frames the whole watched world (an active ?veille= filter still auto-frames
+        // the layer it shows).
+        const fitWorld = (ms = 600) => map.fitBounds(watchBounds, { padding: 60, maxZoom: 6, duration: ms });
+        const fitEurope = (ms = 600) => map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: ms });
+
+        const watchPopupHtml = (p: any) => {
+          const facts = typeof p.facts === "string" ? JSON.parse(p.facts) : (p.facts || []);
+          const src = typeof p.source === "string" && p.source.startsWith("{") ? JSON.parse(p.source) : p.source;
+          const typeLabel = p.kind === "moratorium" ? W.typeMoratorium : p.kind === "opposition" ? W.typeOpposition : "";
+          // Never append the raw ISO country code when the place label is already a
+          // DESCRIPTIVE territory (contains an em-dash) — avis cabinet Batch D (2026-07-27,
+          // EH vs MA) : le code pays n'est jamais un élément éditorial. « Húsavík · IS »
+          // reste ; « Dakhla — Sahara occidental — territoire non autonome (ONU) » n'a
+          // pas de « · EH » accolé.
+          const loc = p.municipality && p.municipality.includes("—")
+            ? p.municipality
+            : [p.municipality, p.country].filter(Boolean).join(" · ");
+          const sub = [loc, p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
+          const factItems = facts.map((f: any) =>
+            `<li>${f.kind === "press" ? W.press : ""}${(f.label || {})[W.lang] ?? (f.label || {}).fr ?? ""}` +
+            `${f.self_reported ? ` <span class="contestation-tag">${W.selfReported}</span>` : ""} — ${srcLink(f.source)}</li>`
+          ).join("");
+          return `
+            <div class="map-popup watch-popup">
+              <span class="watch-badge">${W.badge}</span>
+              <strong>${typeLabel ? `${typeLabel} — ` : ""}${p.name}</strong>
+              ${sub ? `<span class="map-popup-sub">${sub}</span>` : ""}
+              <p class="watch-note">${W.note}</p>
+              <p class="watch-src">${W.source} ${srcLink(src)}</p>
+              ${factItems ? `<ul class="watch-facts">${factItems}</ul>` : ""}
+              <p class="watch-ext">${W.extSourceNote}</p>
+            </div>`;
+        };
+
+        // announced_project (no hard fact yet): rendered as a NATIVE symbol layer
+        // (GPU-locked WITH the tiles). HTML markers "swim" during animated zoom at
+        // high latitude — the Húsavík 🗣️ drifted into the ocean at low zoom, converging
+        // back only at rest (Franck 2026-07-27). A symbol layer never drifts. Trade-off
+        // assumed: no CSS pulse ring. Mounted in onStyleReady below with the other layers.
+        if (!announced.length) root.querySelector(".legend-line-announced")?.remove();
+        const announcedData = { type: "FeatureCollection", features: announced };
+
+        // Toggling the graded corpus on demand (Franck 2026-07-14): a kind filter
+        // (Oppositions / Moratoires) HIDES the DC grade pins so the contestation layer
+        // reads clearly; "Tout" brings them back. The DC pins are DOM markers.
+        const dcEls = Object.values(markerById).map((m) => m.marker.getElement());
+        const setDcVisible = (v: boolean) => { for (const el of dcEls) el.style.display = v ? "" : "none"; };
+
+        let applyVeille: (v: string) => void = () => {};
+        const onStyleReady = (fn: () => void) => (map.isStyleLoaded() ? fn() : map.once("load", fn));
+        onStyleReady(() => {
+          // Pictograms carry the kind (Franck 2026-07-14): ✋🏼 = local opposition (the
+          // citizens' halt — deliberately NOT 🛑, red would read as a D/E grade),
+          // ⏸️ = moratorium (the official pause). Maplibre glyphs have no emoji, so
+          // rasterise via canvas (system emoji font) into layer icons.
+          const emojiIcon = (name: string, emoji: string) => {
+            const px = 48, cv = document.createElement("canvas");
+            cv.width = cv.height = px;
+            const ctx = cv.getContext("2d")!;
+            ctx.font = "38px 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            ctx.fillText(emoji, px / 2, px / 2 + 2);
+            map.addImage(name, ctx.getImageData(0, 0, px, px), { pixelRatio: 2 });
+          };
+          emojiIcon("watch-hand", "✋🏼");
+          emojiIcon("watch-pause", "⏸️");
+          emojiIcon("watch-speak", "🗣️");
+
+          // Announced pins on their OWN non-clustered source + symbol layer (GPU-locked,
+          // never re-mounted by the kind filter — only toggled visible/hidden).
+          if (announced.length) {
+            map.addSource("watch-announced", { type: "geojson", data: announcedData });
+            map.addLayer({ id: "watch-announced-pins", type: "symbol", source: "watch-announced", layout: {
+              "icon-image": "watch-speak", "icon-size": 0.7, "icon-allow-overlap": true,
+            }});
+            map.on("click", "watch-announced-pins", (e: any) => {
+              new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
+                .setLngLat(e.lngLat).setHTML(watchPopupHtml(e.features[0].properties)).addTo(map);
+            });
+            map.on("mouseenter", "watch-announced-pins", () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", "watch-announced-pins", () => { map.getCanvas().style.cursor = ""; });
+          }
+
+          // (Re)mount the watch source + its layers. Clustering is ON for "Tout" (the US
+          // wave is 800+ points and would carpet the map) and OFF while a kind filter is
+          // active — the filtered subset is sparse, so every ✋🏼/⏸️ must show individually
+          // rather than hide inside a grey cluster at the Europe frame (Franck 2026-07-14).
+          const WATCH_LAYERS = ["watch-clusters", "watch-cluster-count", "watch-opposition", "watch-moratorium"];
+          const mountWatch = (data: any, clustered: boolean) => {
+            for (const id of WATCH_LAYERS) if (map.getLayer(id)) map.removeLayer(id);
+            if (map.getSource("watch")) map.removeSource("watch");
+            map.addSource("watch", { type: "geojson", data, cluster: clustered, clusterMaxZoom: 10, clusterRadius: 44 });
+            map.addLayer({ id: "watch-clusters", type: "circle", source: "watch", filter: ["has", "point_count"], paint: {
+              "circle-color": GREY, "circle-opacity": 0.92,
+              "circle-stroke-color": STROKE, "circle-stroke-width": 2,
+              "circle-radius": ["step", ["get", "point_count"], 11, 10, 15, 50, 20, 200, 26],
+            }});
+            map.addLayer({ id: "watch-cluster-count", type: "symbol", source: "watch", filter: ["has", "point_count"], layout: {
+              "text-field": ["get", "point_count_abbreviated"], "text-font": ["Noto Sans Bold"], "text-size": 11,
+            }, paint: { "text-color": INK }});
+            map.addLayer({ id: "watch-opposition", type: "symbol", source: "watch",
+              filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "opposition"]], layout: {
+                "icon-image": "watch-hand", "icon-size": 0.8, "icon-allow-overlap": true,
+              }});
+            map.addLayer({ id: "watch-moratorium", type: "symbol", source: "watch",
+              filter: ["all", ["!", ["has", "point_count"]], ["==", ["get", "kind"], "moratorium"]], layout: {
+                "icon-image": "watch-pause", "icon-size": 0.8, "icon-allow-overlap": true,
+              }});
+          };
+          mountWatch(subset(veille), veille === "tout");
+
+          // Handlers bind to layer ids and survive a remove/re-add, so bind once.
+          for (const layerId of ["watch-opposition", "watch-moratorium"]) {
+            map.on("click", layerId, (e: any) => {
+              new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
+                .setLngLat(e.lngLat).setHTML(watchPopupHtml(e.features[0].properties)).addTo(map);
+            });
+            map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
+            map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
+          }
+          map.on("click", "watch-clusters", async (e: any) => {
+            const cluster = e.features[0];
+            const zoom = await (map.getSource("watch") as any).getClusterExpansionZoom(cluster.properties.cluster_id);
+            map.easeTo({ center: cluster.geometry.coordinates, zoom, duration: 500 });
+          });
+          map.on("mouseenter", "watch-clusters", () => { map.getCanvas().style.cursor = "pointer"; });
+          map.on("mouseleave", "watch-clusters", () => { map.getCanvas().style.cursor = ""; });
+
+          // A kind filter hides the graded corpus + the 🗣️ announced pins so the
+          // contestation reads clean — never re-frames the map (it stays where you are).
+          applyVeille = (v: string) => {
+            veille = v;
+            const filtered = v !== "tout";
+            setDcVisible(!filtered);
+            if (map.getLayer("watch-announced-pins")) map.setLayoutProperty("watch-announced-pins", "visibility", filtered ? "none" : "visible");
+            mountWatch(subset(v), !filtered);
+          };
+          if (veille !== "tout") applyVeille(veille);
+        });
+
+        // Filter control (shareable) + view toggle — mirrors the ranking's tweetable URLs.
+        const ctl = document.createElement("div");
+        ctl.className = "map-veille-ctl";
+        ctl.setAttribute("role", "group");
+        ctl.setAttribute("aria-label", W.filterAria);
+        ctl.innerHTML =
+          `<span class="veille-ctl-label">${W.filterLabel}</span>` +
+          [["tout", W.filterAll], ["oppositions", W.filterOppositions], ["moratoires", W.filterMoratoria]]
+            .map(([v, label]) => `<button type="button" data-veille="${v}"${v === veille ? ' class="active"' : ""}>${label}</button>`).join("") +
+          `<span class="veille-ctl-sep"></span>` +
+          `<button type="button" data-view="world">${W.viewWorld}</button>` +
+          `<button type="button" data-view="europe">${W.viewEurope}</button>` +
+          `<p class="veille-ctl-note">${W.watchlistNote}</p>`;
+        canvas.appendChild(ctl);
+        ctl.addEventListener("click", (e) => {
+          const btn = (e.target as HTMLElement).closest("button");
+          if (!btn) return;
+          // Geographic view toggles: US and Europe re-frame the map (that IS their job).
+          if (btn.dataset.view === "world") return fitWorld();
+          if (btn.dataset.view === "europe") return fitEurope();
+          // Kind filters: toggle layers in place, never jump the map.
+          veille = btn.dataset.veille!;
+          applyVeille(veille);
+          ctl.querySelectorAll("[data-veille]").forEach((b) => b.classList.toggle("active", (b as HTMLElement).dataset.veille === veille));
+          const url = new URL(location.href);
+          if (veille === "tout") url.searchParams.delete("veille"); else url.searchParams.set("veille", veille);
+          history.replaceState(null, "", url);
+        });
+      } catch {
+        /* no watchlist artifact yet — the layer is optional */
+      }
+    }
+  });
+</script>

@@ -21,6 +21,7 @@ interface Props {
     viewFiche?: string;
     reserved?: string;
     legendGraded?: string;
+    legendDonut?: string;
     legendWatch?: string;
     watch?: { badge: string; note: string; source: string; press: string; selfReported: string; aria: string; title: string; status: Record<string, string> };
   };
@@ -39,6 +40,7 @@ const { variant, labels } = Astro.props;
         {["a", "b", "c", "d", "e"].map((g) => <i class={`legend-dot legend-${g}`}>{g.toUpperCase()}</i>)}
         {labels.legendGraded ?? "notes du site"}
       </span>
+      <span><svg class="legend-donut-ico" width="17" height="17" viewBox="0 0 17 17" aria-hidden="true"><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="var(--grade-c)" stroke-width="3.4"></circle><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="var(--grade-a)" stroke-width="3.4" stroke-dasharray="9 26" transform="rotate(-90 8.5 8.5)"></circle><circle cx="8.5" cy="8.5" r="5.5" fill="none" stroke="var(--grade-e)" stroke-width="3.4" stroke-dasharray="6 29" stroke-dashoffset="-9" transform="rotate(-90 8.5 8.5)"></circle></svg>{labels.legendDonut ?? "anneau = composition des notes · centre = nombre de sites"}</span>
       <span><i class="legend-dot legend-dot-mw"></i>{labels.legendPower ?? "taille = puissance (MW) · petit point = non communiquée"}</span>
       <span class="legend-line-announced"><span class="map-legend-watch">🗣️</span>{labels.legendWatch ?? "En veille — suivi, pas encore noté"}</span>
       <span><span class="legend-emoji">✋🏼</span>{labels.legendWatchOpp ?? "Opposition citoyenne locale"}</span>
@@ -98,6 +100,29 @@ const { variant, labels } = Astro.props;
     const focusId = new URLSearchParams(location.search).get("dc");
     const markerById: Record<string, { marker: any; center: [number, number] }> = {};
 
+    // Popup carries ONLY the free floor (name, operator, place, status, site LETTER).
+    // The depth lives on the fiche (free HTML) + the API (paid). Shared by the hero DOM
+    // markers AND the full map's clustered dot clicks (2026-07-30), so both read identically.
+    const sitePopupHtml = (p: any): string => {
+      const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
+      const place = [p.municipality, p.country].filter(Boolean).join(" · ");
+      return `
+        <div class="map-popup">
+          <strong>${p.name}</strong>
+          ${p.operator ? `<span class="map-popup-sub">${p.operator}</span>` : ""}
+          ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
+          <div class="map-popup-grades">
+            <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
+          </div>
+          ${fixtureTag}
+          <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
+        </div>`;
+    };
+
+    // Assigned by the full-map cluster setup; lets the watch kind-filter hide the graded
+    // corpus (dots + donuts) even though there are no per-site DOM markers to toggle.
+    let toggleClusteredSites: (visible: boolean) => void = () => {};
+
     // Hero intro (brief 2026-07-12): motion is the data — the pins ARE the published
     // grades, they just drop in once. Browser-only; the artifacts never change.
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -110,6 +135,12 @@ const { variant, labels } = Astro.props;
       const p = feature.properties;
       const [lon, lat] = feature.geometry.coordinates;
       bounds.extend([lon, lat]);
+
+      // Full map: the graded corpus rides a CLUSTERED source (distribution donuts),
+      // built after this loop. 1 405 DOM markers would both melt the map AND carpet
+      // dense regions (Paris/Benelux) into unreadable blobs — the whole reason for the
+      // donut. The hero keeps its DOM pins (the drop cascade IS its identity).
+      if (isFull) return;
 
       const el = document.createElement("div");
       el.className = "map-marker";
@@ -132,23 +163,7 @@ const { variant, labels } = Astro.props;
         introDots.push(dot);
       }
 
-      const fixtureTag = p.id.startsWith("zz-") ? `<span class="fixture-tag">${labels.fixture}</span>` : "";
-      // Popup carries ONLY the free floor (name, operator, place, status, site
-      // LETTER). The depth — operator grade, per-pillar scores, the citable
-      // quote — lives on the fiche (free to read as HTML) and in the API
-      // (paid, structured). The map teases; the fiche delivers.
-      const place = [p.municipality, p.country].filter(Boolean).join(" · ");
-      const popupHtml = `
-        <div class="map-popup">
-          <strong>${p.name}</strong>
-          ${p.operator ? `<span class="map-popup-sub">${p.operator}</span>` : ""}
-          ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
-          <div class="map-popup-grades">
-            <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
-          </div>
-          ${fixtureTag}
-          <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
-        </div>`;
+      const popupHtml = sitePopupHtml(p);
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([lon, lat])
@@ -183,11 +198,144 @@ const { variant, labels } = Astro.props;
     }
 
     if (focusId && markerById[focusId]) {
+      // Hero path: DOM marker exists — fly + open its own popup.
       const { marker, center } = markerById[focusId];
       map.flyTo({ center, zoom: 9, duration: 800 });
       marker.togglePopup();
-    } else if (geo.features.length > 1) {
+    } else if (geo.features.length > 1 && !(isFull && focusId)) {
+      // Frame the corpus — except on the full map WITH a deep-link, where the cluster
+      // setup below flies to the target site (avoids a fit→fly double-move flash).
       map.fitBounds(bounds, { padding: isFull ? 120 : 90, maxZoom: 7, duration: 0 });
+    }
+
+    // ── Full map: distribution-donut clustering for the graded corpus (2026-07-30) ──
+    // Franck's call after the mockup: legibility in dense regions WITHOUT ever averaging
+    // grades. A cluster shows the REAL A→E composition as a ring + the site count at its
+    // centre; click to expand; past clusterMaxZoom the individual saturated dots return
+    // (the vert/rouge punch comes back at street scale). Never a single averaged colour.
+    if (isFull) {
+      // "X" = insufficient_data (grey) — counted honestly so a donut never hides an NA site.
+      const RING = ["A", "B", "C", "D", "E", "X"] as const;
+      const GC: Record<string, string> = {
+        A: "#0b7a4b", B: "#6fa032", C: "#dfa918", D: "#cf6a1c", E: "#bf3b21", X: "#8fa0b3",
+      };
+      const isNA = (g: string) => g === "insufficient_data";
+      const donutMarkers: Record<number, any> = {};
+      let donutOn: Record<number, any> = {};
+      let sitesHidden = false;
+
+      const clusterCounts = Object.fromEntries(
+        RING.map((g) => [g, ["+", ["case", g === "X" ? ["==", ["get", "grade_site"], "insufficient_data"] : ["==", ["get", "grade_site"], g], 1, 0]]]),
+      );
+
+      const mountSites = () => {
+        map.addSource("sites", {
+          type: "geojson", data: geo,
+          cluster: true, clusterRadius: 46, clusterMaxZoom: 11,
+          clusterProperties: clusterCounts,
+        });
+        // Individual (unclustered) sites: colour = the public site letter, radius = the
+        // coarse power tier (keeps "taille = puissance" once you zoom past the clusters).
+        map.addLayer({
+          id: "site-dot", type: "circle", source: "sites",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": ["match", ["get", "grade_site"],
+              "A", GC.A, "B", GC.B, "C", GC.C, "D", GC.D, "E", GC.E, GC.X],
+            "circle-radius": ["interpolate", ["linear"], ["zoom"],
+              5, ["match", ["get", "size_tier"], 3, 5.5, 2, 4.5, 1, 3.6, 3],
+              11, ["match", ["get", "size_tier"], 3, 12, 2, 9, 1, 6.5, 5]],
+            "circle-stroke-width": 1.4, "circle-stroke-color": "#ffffff",
+            "circle-opacity": 0.96,
+          },
+        });
+      };
+
+      // One HTML donut marker per on-screen cluster (the classic maplibre recipe): a ring
+      // whose arcs are the REAL A→E share, the total at centre. Click → expand.
+      const donutEl = (props: any): HTMLElement => {
+        const counts = RING.map((g) => props[g] || 0);
+        const total = props.point_count as number;
+        const r = total >= 60 ? 25 : total >= 15 ? 20 : 16;
+        const w = r < 18 ? 5 : 6;
+        const cx = r + w, size = (r + w) * 2, C = 2 * Math.PI * r;
+        let offset = 0, rings = "";
+        RING.forEach((g, i) => {
+          const frac = counts[i] / total;
+          if (frac <= 0) return;
+          const len = frac * C;
+          rings += `<circle cx="${cx}" cy="${cx}" r="${r}" fill="none" stroke="${GC[g]}" stroke-width="${w}" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cx})"></circle>`;
+          offset += len;
+        });
+        const fs = total >= 60 ? 15 : total >= 15 ? 13 : 11.5;
+        const wrap = document.createElement("div");
+        wrap.innerHTML =
+          `<svg class="map-donut" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">` +
+          `<circle cx="${cx}" cy="${cx}" r="${r}" fill="#ffffff" opacity="0.95"></circle>${rings}` +
+          `<text x="${cx}" y="${cx}" text-anchor="middle" dominant-baseline="central" font-size="${fs}">${total}</text></svg>`;
+        const node = wrap.firstElementChild as HTMLElement;
+        // Native tooltip = the honest breakdown, zero popup churn.
+        node.title = RING.filter((_, i) => counts[i] > 0)
+          .map((g) => `${g === "X" ? "n/d" : g} : ${counts[RING.indexOf(g)]}`).join("   ");
+        node.addEventListener("click", () => {
+          (map.getSource("sites") as any).getClusterExpansionZoom(props.cluster_id).then((z: number) => {
+            map.easeTo({ center: props._lngLat, zoom: Math.min(z + 0.4, 15), duration: 600 });
+          });
+        });
+        return node;
+      };
+
+      const updateDonuts = () => {
+        if (sitesHidden || !map.getSource("sites")) return;
+        const newOn: Record<number, any> = {};
+        for (const f of map.querySourceFeatures("sites") as any[]) {
+          if (!f.properties.cluster) continue;
+          const id = f.properties.cluster_id;
+          let m = donutMarkers[id];
+          if (!m) {
+            const props = { ...f.properties, _lngLat: f.geometry.coordinates };
+            m = donutMarkers[id] = new maplibregl.Marker({ element: donutEl(props) }).setLngLat(f.geometry.coordinates);
+          }
+          newOn[id] = m;
+          if (!donutOn[id]) m.addTo(map);
+        }
+        for (const id in donutOn) if (!newOn[id]) donutOn[id].remove();
+        donutOn = newOn;
+      };
+
+      // Watch kind-filter hides the graded corpus: dots (layer) + donuts (markers).
+      toggleClusteredSites = (visible: boolean) => {
+        sitesHidden = !visible;
+        if (map.getLayer("site-dot")) map.setLayoutProperty("site-dot", "visibility", visible ? "visible" : "none");
+        if (visible) updateDonuts();
+        else { for (const id in donutOn) donutOn[id].remove(); donutOn = {}; }
+      };
+
+      const startClusters = () => {
+        mountSites();
+        map.on("click", "site-dot", (e: any) => {
+          new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
+            .setLngLat(e.features[0].geometry.coordinates).setHTML(sitePopupHtml(e.features[0].properties)).addTo(map);
+        });
+        map.on("mouseenter", "site-dot", () => { map.getCanvas().style.cursor = "pointer"; });
+        map.on("mouseleave", "site-dot", () => { map.getCanvas().style.cursor = ""; });
+        map.on("data", (e: any) => { if (e.sourceId === "sites" && (map.getSource("sites") as any)?.loaded()) updateDonuts(); });
+        map.on("move", updateDonuts);
+        map.on("moveend", updateDonuts);
+
+        // Deep-link (?dc=<id>): fly past the cluster zoom so the target is an individual
+        // dot, and open its popup at the coordinates.
+        if (focusId) {
+          const f = geo.features.find((ft: any) => ft.properties.id === focusId);
+          if (f) {
+            map.flyTo({ center: f.geometry.coordinates, zoom: 11.5, duration: 800 });
+            new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
+              .setLngLat(f.geometry.coordinates).setHTML(sitePopupHtml(f.properties)).addTo(map);
+          }
+        }
+        updateDonuts();
+      };
+      map.isStyleLoaded() ? startClusters() : map.once("load", startClusters);
     }
 
     // Watchlist layer (A-19) — world "En veille" projects: sourced facts, NEVER a
@@ -296,7 +444,10 @@ const { variant, labels } = Astro.props;
         // (Oppositions / Moratoires) HIDES the DC grade pins so the contestation layer
         // reads clearly; "Tout" brings them back. The DC pins are DOM markers.
         const dcEls = Object.values(markerById).map((m) => m.marker.getElement());
-        const setDcVisible = (v: boolean) => { for (const el of dcEls) el.style.display = v ? "" : "none"; };
+        const setDcVisible = (v: boolean) => {
+          for (const el of dcEls) el.style.display = v ? "" : "none";   // hero DOM pins (none on full map)
+          toggleClusteredSites(v);                                       // full map: dots layer + donuts
+        };
 
         let applyVeille: (v: string) => void = () => {};
         const onStyleReady = (fn: () => void) => (map.isStyleLoaded() ? fn() : map.once("load", fn));

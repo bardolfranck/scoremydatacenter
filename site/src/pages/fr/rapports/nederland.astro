@@ -1,0 +1,12 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR Netherlands country report download: thin page — template in ReportDownload.astro.
+// Pas d'édition FR (politique 2026-07-30) : le lecteur FR reçoit l'édition anglaise
+// (la page l'indique) ; l'édition NL arrive après relecture native.
+import ReportDownload from "../../../components/ReportDownload.astro";
+import { FR_NAV } from "../../../config/nav";
+---
+
+<ReportDownload lang="fr" nav={FR_NAV} altHref="/reports/nederland" altLabel="🇬🇧 EN" report="nederland" />

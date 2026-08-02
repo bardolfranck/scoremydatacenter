@@ -112,7 +112,20 @@ const errors = [
   ["429", "quota_exceeded", fr ? "quota journalier/annuel dépassé" : "daily/annual quota exceeded"],
 ];
 
-const dataDcHref = LEMONSQUEEZY_CHECKOUT_URL_DATA_DC || `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(fr ? "API ScoreMyDataCenter — accès Data DC" : "ScoreMyDataCenter API — Data DC access")}`;
+// Concierge onboarding (white-glove B2B, 2 000 €/an): while Lemon Squeezy
+// self-serve isn't wired, Data DC is sold hands-on — the CTA opens a guided
+// access request; we qualify, invoice, and mint the key (the customer never
+// sees the plumbing). The moment LEMONSQUEEZY_CHECKOUT_URL_DATA_DC is filled,
+// both the link and the label flip to self-serve automatically.
+const concierge = !LEMONSQUEEZY_CHECKOUT_URL_DATA_DC;
+const dataDcSubject = fr ? "API ScoreMyDataCenter — demande d'accès Data DC" : "ScoreMyDataCenter API — Data DC access request";
+const dataDcBody = fr
+  ? "Bonjour,\n\nJe souhaite un accès Data DC à l'API ScoreMyDataCenter.\n\nOrganisation : \nUsage prévu : \nVolume estimé (fiches/jour) : \n\nMerci."
+  : "Hello,\n\nI'd like Data DC access to the ScoreMyDataCenter API.\n\nOrganisation: \nIntended use: \nEstimated volume (fiches/day): \n\nThank you.";
+const dataDcHref = concierge
+  ? `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(dataDcSubject)}&body=${encodeURIComponent(dataDcBody)}`
+  : LEMONSQUEEZY_CHECKOUT_URL_DATA_DC;
+const dataDcCta = concierge ? (fr ? "Demander un accès" : "Request access") : (fr ? "Obtenir l'accès" : "Get access");
 
 const t = fr ? {
   eyebrow: "API",
@@ -155,7 +168,7 @@ const t = fr ? {
   priceTitle: "Tarifs",
   tiers: [
     { name: "Découverte", price: "0 €", copy: "Testez la liste et les résumés, sans clé, gratuitement.", cta: null },
-    { name: "Data DC", price: "2 000 €/an", quota: "Jusqu'à 30 fiches/jour · 300/an", copy: "Accès complet aux fiches : notes détaillées, 5 piliers, indicateurs sourcés, synthèse.", cta: { label: "Obtenir un accès", href: dataDcHref, primary: true } },
+    { name: "Data DC", price: "2 000 €/an", quota: "Jusqu'à 30 fiches/jour · 300/an", copy: "Accès complet aux fiches : notes détaillées, 5 piliers, indicateurs sourcés, synthèse.", cta: { label: dataDcCta, href: dataDcHref, primary: true } },
     { name: "Gros volume", price: "sur contact", copy: "Au-delà de 30/jour ou 300/an, ou pour intégrer la donnée à grande échelle ? Écrivez-nous.", cta: { label: "Nous écrire", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("API ScoreMyDataCenter — gros volume")}`, primary: false } },
   ],
   useTitle: "Cas d'usage",
@@ -204,7 +217,7 @@ const t = fr ? {
   priceTitle: "Pricing",
   tiers: [
     { name: "Discover", price: "€0", copy: "Try the list and summaries, no key, for free.", cta: null },
-    { name: "Data DC", price: "€2,000/yr", quota: "Up to 30 fiches/day · 300/year", copy: "Full fiche access: detailed grades, 5 pillars, sourced indicators, synthesis.", cta: { label: "Get access", href: dataDcHref, primary: true } },
+    { name: "Data DC", price: "€2,000/yr", quota: "Up to 30 fiches/day · 300/year", copy: "Full fiche access: detailed grades, 5 pillars, sourced indicators, synthesis.", cta: { label: dataDcCta, href: dataDcHref, primary: true } },
     { name: "High volume", price: "contact us", copy: "Above 30/day or 300/year, or embedding the data at scale? Get in touch.", cta: { label: "Get in touch", href: `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("ScoreMyDataCenter API — high volume")}`, primary: false } },
   ],
   useTitle: "Used for",

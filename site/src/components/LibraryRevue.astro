@@ -35,6 +35,32 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
   altLabel={t.altLabel}
   nav={t.nav}
 >
+  <!-- REAL reports (free, open preview). Above the mockup note so the "maquette"
+       label scopes only the placeholder briefs below. -->
+  <section class="lib-real" aria-label={lang === "fr" ? "Nos rapports" : "Our reports"}>
+    <p class="lib-section-kicker">{lang === "fr" ? "À la une · nos rapports" : "Featured · our reports"}</p>
+    <div class="lib-real-grid">
+      {(lang === "fr" ? [
+        { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france" },
+        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe, et les 2 seules notes A. 134 sites.", href: "/fr/rapports/nederland" },
+        { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech" },
+        { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques" },
+      ] : [
+        { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france" },
+        { title: "Netherlands", sub: "Europe's most loaded grid, and its only two A grades. 134 sites.", href: "/reports/nederland" },
+        { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech" },
+        { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks" },
+      ]).map((r) => (
+        <a class="lib-real-card" href={r.href}>
+          <span class="lib-real-free">{lang === "fr" ? "Gratuit · aperçu libre" : "Free · open preview"}</span>
+          <span class="lib-real-title">{r.title}</span>
+          <span class="lib-real-sub">{r.sub}</span>
+          <span class="lib-real-cta">{lang === "fr" ? "Lire →" : "Read →"}</span>
+        </a>
+      ))}
+    </div>
+  </section>
+
   <p class="lib-mock-note">{t.mockupNote}</p>
 
   <!-- Nameplate — periodical masthead, form does the register -->
@@ -163,7 +189,9 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
         <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()} title={`${code.toUpperCase()} — ${t.comingSoonWord}`}>{COUNTRY_FLAGS[code]}</span>
       ))}
     </p>
-    <p class="lib-index-link"><a href={t.indexHref}>{t.indexLink}</a></p>
+    <!-- Index link greyed: the full catalogue isn't live yet and an active link
+         would signal our roadmap (Franck 2026-07-29). Re-enable when it ships. -->
+    <p class="lib-index-link lib-index-soon" aria-disabled="true">{t.indexLink}</p>
   </section>
 
   <!-- Benchmark opérateur — bespoke, on request, confidential register -->
@@ -192,3 +220,26 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
 
   <FeedbackBand lang={lang} />
 </Base>
+
+<style>
+  .lib-real { margin: 0 0 1.6rem; }
+  .lib-real-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.6rem;
+  }
+  @media (max-width: 640px) { .lib-real-grid { grid-template-columns: 1fr; } }
+  .lib-real-card {
+    display: flex; flex-direction: column; gap: 0.35rem;
+    padding: 1.15rem 1.3rem; border-radius: 14px; text-decoration: none;
+    color: #fff; background: radial-gradient(130% 130% at 0% 0%, #16233a 0%, #1e3a5f 100%);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .lib-real-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -22px rgba(14,22,38,.6); }
+  .lib-real-free {
+    font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: #8ac14b; font-weight: 700;
+  }
+  .lib-real-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
+  .lib-real-sub { color: rgba(255,255,255,0.82); line-height: 1.4; font-size: 0.95rem; }
+  .lib-real-cta { margin-top: 0.3rem; font-weight: 600; color: #fff; }
+  .lib-index-soon { color: #9aa4b2; opacity: 0.65; cursor: not-allowed; user-select: none; }
+</style>

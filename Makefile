@@ -169,31 +169,44 @@ deploy: build
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 
-# Post-deploy cache purge (Franck 2026-07-22): a Pages deploy does NOT evict the
-# edge cache of paths it REMOVED (scores.json etc.) — "Purge Everything" misses
-# them too. So we purge the data prefix by URL explicitly. Needs a Cloudflare
-# token with Zone > Cache Purge:Edit + the zone id, in ~/.smdc/cloudflare.env
-# (CF_PURGE_TOKEN=... / CF_ZONE_ID=...). Without it: skipped with a loud notice
-# (the raw files stay cache-served until a manual dashboard purge).
+# Post-deploy cache purge (Franck 2026-07-22, durci 2026-07-28): a Pages deploy
+# does NOT evict the zone edge cache. Enumerating URLs (the old approach) was
+# fragile — it only covered /data/*.json + geojson, so any HTML page whose
+# bundle hash changed kept serving stale (the map/watchlist rendered from an old
+# JS chunk), and every NEW file was missed until someone added it to the list.
+# The durable fix is a single "purge_everything": one complete flush of the zone
+# after each deploy, immune to whatever files appeared or vanished. It is rate-
+# limited to ~1/second per zone (a non-issue for deploys) and needs the SAME
+# token as before (Zone > Cache Purge:Edit) + the zone id, in
+# ~/.smdc/cloudflare.env (CF_PURGE_TOKEN=... / CF_ZONE_ID=...). Without it:
+# skipped with a loud notice (the whole edge stays cached until a dashboard purge).
 # The env file is parsed line-by-line (KEY=VALUE only), NEVER sourced/executed —
 # a malformed or bare line is skipped, so a secret can never leak into the log
 # (2026-07-27 incident: a bare token line was echoed as "command not found").
+# Values are then whitespace-stripped: a stray trailing char on CF_ZONE_ID (a
+# CRLF file) had been silently malforming the purge URL, so EVERY make purge
+# quietly failed — the old target never checked "success", so it went unnoticed
+# and looked like recurring "stale edge cache" (root-caused 2026-07-28).
 purge-cache:
 	@if [ -f $$HOME/.smdc/cloudflare.env ]; then \
 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/cloudflare.env; \
-	  for f in scores stats indices indices_history home_showcase methodology audit; do \
-	    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
+	  CF_ZONE_ID=$$(printf '%s' "$$CF_ZONE_ID" | tr -d '[:space:]'); \
+	  CF_PURGE_TOKEN=$$(printf '%s' "$$CF_PURGE_TOKEN" | tr -d '[:space:]'); \
+	  ok=""; \
+	  for try in 1 2; do \
+	    ok=$$(curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
 	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \
-	      --data "{\"files\":[\"https://scoremydatacenter.org/data/$$f.json\"]}" >/dev/null; \
+	      --data '{"purge_everything":true}' | grep -o '"success":[a-z]*' | head -1); \
+	    [ "$$ok" = '"success":true' ] && break; \
+	    sleep 2; \
 	  done; \
-	  for g in map watchlist; do \
-	    curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$$CF_ZONE_ID/purge_cache" \
-	      -H "Authorization: Bearer $$CF_PURGE_TOKEN" -H "Content-Type: application/json" \
-	      --data "{\"files\":[\"https://scoremydatacenter.org/data/$$g.geojson\"]}" >/dev/null; \
-	  done; \
-	  echo "purge-cache: /data/*.json + map/watchlist.geojson purged on the edge"; \
+	  if [ "$$ok" = '"success":true' ]; then \
+	    echo "purge-cache: purge_everything OK — whole edge (HTML + assets + /data) flushed"; \
+	  else \
+	    echo "purge-cache: purge_everything FAILED after retry — check the token (Zone>Cache Purge:Edit) or purge from the dashboard"; \
+	  fi; \
 	else \
-	  echo "purge-cache: ~/.smdc/cloudflare.env absent — cache NOT purged (create a Zone>Cache Purge:Edit token, else purge /data/*.json by URL in the dashboard)"; \
+	  echo "purge-cache: ~/.smdc/cloudflare.env absent — cache NOT purged (create a Zone>Cache Purge:Edit token, else Purge Everything in the dashboard)"; \
 	fi
 
 # Regenerate the downloadable one-pager PDFs from the built pages.

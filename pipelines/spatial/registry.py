@@ -25,6 +25,7 @@ from .pt import PT_SPEC
 from .at import AT_SPEC
 from .dk import DK_SPEC
 from .ch import CH_SPEC
+from .il import IL_SPEC
 
 SPECS = {
     "FR": FR_SPEC,
@@ -44,6 +45,7 @@ SPECS = {
     "AT": AT_SPEC,
     "DK": DK_SPEC,
     "CH": CH_SPEC,
+    "IL": IL_SPEC,
 }
 
 

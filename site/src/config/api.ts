@@ -8,9 +8,11 @@
 // reveal-key button. The paid endpoints live in a PRIVATE Worker repo; this file
 // only names its public URL.
 
-// Staging today; flip to the custom domain once the CF route + DNS are live.
-export const API_BASE = "https://smdc-api.bardolfranck.workers.dev";
-// export const API_BASE = "https://api.scoremydatacenter.org"; // prod
+// Prod: the custom domain is live (CF route + DNS) and serves every endpoint
+// (verified /v1/datacenters → 200). Never show the personal workers.dev host on
+// a paid product page. Flip back only if the custom route breaks.
+export const API_BASE = "https://api.scoremydatacenter.org";
+// Staging fallback (personal): https://smdc-api.bardolfranck.workers.dev
 
 export const SITE = "https://scoremydatacenter.org";
 

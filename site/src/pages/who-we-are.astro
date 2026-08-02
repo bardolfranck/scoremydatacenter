@@ -6,6 +6,7 @@
 // component), with its own title/description and Schema.org structured data
 // (Person + Organization) for the Knowledge Graph. Twin of /fr/qui-sommes-nous.
 import Base from "../layouts/Base.astro";
+import RaisonDetre from "../components/RaisonDetre.astro";
 import AboutSection from "../components/AboutSection.astro";
 import { EN_ABOUT } from "../config/about";
 import { EN_NAV } from "../config/nav";
@@ -61,5 +62,6 @@ const jsonLd = {
   nav={EN_NAV}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <RaisonDetre lang="en" />
   <AboutSection lang="en" t={EN_ABOUT} />
 </Base>

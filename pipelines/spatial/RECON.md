@@ -24,7 +24,7 @@ Legend — **Clean**: one documented API, coords in → value out, no key.
 
 | Ind | Indicator | Source(s) | Probe result | Verdict |
 |-----|-----------|-----------|--------------|---------|
-| **E1** | Grid carbon intensity | RTE eCO2mix (ODRÉ `eco2mix-national-tr`, field `taux_co2`) | ✅ real-time g/kWh returned | **Clean** — national value (France grid is national); caveat recorded in provenance |
+| **E1** | Grid carbon intensity | RTE eCO2mix (ODRÉ `eco2mix-national-cons-def`, field `taux_co2`) | ✅ **12-month mean** g/kWh (never a snapshot — COUNTRIES.md #1; the real-time `-tr` set only retains ~3 months) | **Clean** — national value (France grid is national), one figure per run, memoized |
 | **E2** | Grid connection capacity | RTE Caparéseau / S3REnR | ✅ **cracked** — the Leaflet map loads a per-region substation JSON (`/medias/{uuid}`) with WGS84 coords + `values.RTE_CDR` (available MW). Discover the rotating UUID from the region page, take the nearest poste | **Scraped feed** |
 | **E3** | Grid congestion / queue | RTE Caparéseau / S3REnR | ✅ **cracked** — same feed, `values.INFO_TX` (reserved-capacity fill rate %). No API, but a clean file, not manual | **Scraped feed** |
 | **W1** | Local water stress | VigiEau `api/zones?lat&lon` (Propluvia restrictions) | ✅ `niveauGravite` (e.g. `alerte_renforcee`) + arrêté PDF | **Clean** |
