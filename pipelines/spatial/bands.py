@@ -74,6 +74,24 @@ def clc_to_category(code: str | None) -> str | None:
     return None
 
 
+# F2 (world) · Impact Observatory/Esri Sentinel-2 10m annual LULC class → the SAME category enum
+# as Corine (comparability by construction). Legend: 1 water · 2 trees · 4 flooded vegetation ·
+# 5 crops · 7 built area · 8 bare ground · 9 snow/ice · 10 clouds · 11 rangeland.
+# Clouds/nodata → None (a soil status is never guessed).
+_IO_LULC_CATEGORY = {
+    "7": "artificialized",
+    "5": "agricultural",
+    "1": "natural_or_enaf", "2": "natural_or_enaf", "4": "natural_or_enaf",
+    "8": "natural_or_enaf", "9": "natural_or_enaf", "11": "natural_or_enaf",
+}
+
+
+def io_lulc_to_category(raw_class: str | None) -> str | None:
+    if raw_class is None:
+        return None
+    return _IO_LULC_CATEGORY.get(str(raw_class))
+
+
 # L3 · Seveso proximity — sites = [{upper_tier: bool|None, dist_km: float}] within 5 km.
 # upper_tier=None means the source publishes the site but not its tier (INSPIRE-thin exports):
 # beyond 2 km the tier cannot change the band, so unknown is harmless; an unknown-tier site
