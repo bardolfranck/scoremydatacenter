@@ -50,3 +50,29 @@ challenge wall (twice) · `datastore_search` → clean JSON (L1 995 rows sampled
 no geometry) · Electricity Maps IL → 401 keyed · Ember API → keyed, but public CSV bucket → 200 ·
 Noga → 403 · govmap `ags.govmap.gov.il`/`open.govmap.gov.il` guesses → 404/HTML · Aqueduct
 Modi'in → Extremely High.
+
+
+## Addendum — deep dig + adapter build (2026-08-02, GO Franck « je veux voir des notes »)
+
+The sub-agent dig resolved what the first recon left open; `il.py` is LIVE (registry `IL`):
+
+- **Backbone (FR-grade)**: local-authority jurisdiction polygons on AGOL
+  (`GvulotShputRashuyotVaadim`, point-in-polygon, `CR_LAMAS` = CBS symbol) + CKAN population
+  join; nearest CBS settlement point only as a FLAGGED fallback. Gotcha caught live: the
+  nearest-point heuristic picked Bareqet (2 154 hab.) for a DC administratively in Shoham
+  (24 996) — nearest-point is NOT an administrative fact, hence polygon-first.
+- **F1**: INPA reserves/parks national layer via a public AGOL mirror (1 427 polygons; every
+  official state GIS backend is WAF/geo-fenced) — documented secondary provenance, Natura-ring
+  logic reused as-is.
+- **L1**: the CBS 2021 socio-economic index is SPATIALLY PUBLISHED (`SOEC_Rashut_2021`:
+  CLUSTER_2021/2019 + INDEX_VALUE + RANK, keyed by the same CBS symbol) — raw to provenance.
+  Gotcha: the welfare-ministry aschkol dataset uses a DIFFERENT authority numbering (Shoham
+  379 vs CBS 1304) — never join across those registries.
+- **L3 path confirmed open** (MoEP CKAN registry, 25 758 geolocated sites, ITM/EPSG:2039 —
+  needs reprojection, next iteration). **Noga wall re-confirmed** (WAF + geo-fence, no
+  data.gov.il fallback; Electricity Maps dropped its IL parser too).
+- **Pilot run (7 sites, seeds/sites-il.csv)**: E1/W1/F1/F2 auto-filled 7/7 from GPS alone +
+  L2 deterministic where MW+population known. Site grades: 4×D (35.1), 3×E (27.4/22.9),
+  documentation "low" (missing_data ≈ 0.74) — the honest picture of a gas-heavy grid
+  (E1 492.69 → 0 pts) in extreme baseline water stress (W1 → 0), stated with the desalination
+  caveat on every fiche. Publication remains gated by the normal machinery (A-26 contradictoire).
