@@ -80,6 +80,48 @@ def collect_e1_ember(iso3: str, accessed: str) -> dict | None:
     }
 
 
+# --- W1 × water-supply regime (exportable procedure, doctrine Franck 2026-08-01) --------------
+# W1 reads BASIN stress (Aqueduct). Where a jurisdiction's supply is predominantly desalinated/
+# reclaimed (IL, Gulf), asserting W1=0 as a certain fact on a NOMINATIVE fiche is the single most
+# attackable point ("we run on desal"). One COMMON rule, declared per jurisdiction — never a
+# per-country hack. PRESENTATION level only: the score is UNCHANGED (moving desal_dominant +
+# undisclosed from W1=0 to "unknown" is a CALIBRATION decision, Franck's, v0.1.0 freeze).
+WATER_SUPPLY_REGIMES = ("basin", "desal_dominant", "mixed")
+WATER_SOURCES = ("freshwater_basin", "desalinated", "reclaimed_wastewater",
+                 "seawater_once_through", "air_cooled_no_water", "undisclosed")
+
+
+def apply_w1_regime(frag: dict | None, prov: dict, *, regime: str, regime_source: dict,
+                    water_source: str = "undisclosed") -> dict | None:
+    """Attach the water-regime context to a W1 fragment + provenance (presentation level).
+
+    - `regime` (jurisdiction, sourced — national water authority / FAO AQUASTAT share)
+    - `water_source` (site level, ON EVIDENCE only; default undisclosed — never credited)
+    Honesty guards: desalination is NOT free (energy + brine — read through E1/site facts);
+    undisclosed stays prudent; the contradictoire lever is PRE-DECLARED (what would move the
+    reading = proof of the site's water source / cooling).
+    """
+    assert regime in WATER_SUPPLY_REGIMES and water_source in WATER_SOURCES
+    prov["w1_water_regime"] = {
+        "water_supply_regime": regime, "regime_source": regime_source,
+        "water_source": water_source,
+        "contradictoire_lever": {
+            "fr": "Ce qui ferait évoluer la lecture W1 : preuve documentée de la source d'eau "
+                  "du site (dessalée / recyclée / air-cooled / eau douce du bassin).",
+            "en": "What would move the W1 reading: documented proof of the site's water source "
+                  "(desalinated / reclaimed / air-cooled / basin freshwater).",
+        },
+    }
+    if frag is None:
+        return None
+    if regime in ("desal_dominant", "mixed") and water_source == "undisclosed":
+        frag["source"]["title"] += (
+            f" — caveat: jurisdiction supply regime is '{regime}' (predominantly desalinated/"
+            "reclaimed) and the site's own water source is undisclosed; the basin reading is "
+            "NOT asserted as a site fact (see w1_water_regime in provenance)")
+    return frag
+
+
 def lulc_class_at_point(lat: float, lon: float) -> tuple[str | None, int | None]:
     """(raw_class, year) via ArcGIS getSamples — the endpoint that works keyless."""
     geometry = ('{"x":%f,"y":%f,"spatialReference":{"wkid":4326}}' % (lon, lat))

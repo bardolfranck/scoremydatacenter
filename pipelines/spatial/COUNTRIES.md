@@ -50,9 +50,16 @@ Is it in the EU/EEA data commons (WISE + Natura + Corine + ENTSO-E)?
 │                                     • FR collect.py (10/12), BE be/ (regional ×3), NL nl.py,
 │                                       LU lu.py, DE de.py (EU-level v0), GB gb.py (Brexit)
 │
-└─ NOT in the commons (US, …) ─────▶ WATCHLIST, not a score (cadrage A-19): sourced facts, no
-                                      grade. See ../press + calibration/watchlist/. Deep scoring
-                                      only if a federal adapter is explicitly commissioned.
+└─ NOT in the commons (US, IL, …) ─▶ TWO regimes (doctrine Franck 2026-08-01):
+                                      • presence = WATCHLIST (A-19): sourced facts, no grade
+                                        (see ../press + calibration/watchlist/) — the default.
+                                      • an adapter CAN be commissioned (IL precedent, il.py):
+                                        world bricks (world.py) + a national dig. BUT weak-data
+                                        grades are NOT published nominatively — « la lettre
+                                        voyage, le caveat non » : sites surface as « EN VEILLE /
+                                        note en attente », country-level facts stated without a
+                                        site verdict, until Franck's explicit publication go
+                                        (panel strengthened + contradictoire).
 ```
 
 Then, **always the same three steps** (one way to run):
@@ -102,7 +109,7 @@ Coverage = tier-1 indicators auto-filled (of 12). All spatial-only → project/p
 | **IE** | factory `e1=False` | 4/12 | — (energy-charts 500) | WISE universal | EEA | Corine | W1 Aqueduct | grid CAPACITY is the story (EirGrid, deep) |
 | **GB** | national (own) | 3/12 | **carbonintensity.org.uk** (~106) | — (Brexit) | — (Brexit) | Corine (pre-Brexit) | W1 Aqueduct | Brexit ejected UK from the EU commons |
 | **US** | **watchlist only** | — | — | ✅ Aqueduct | — | — | — | A-19: presence, no score. But **W1 (WRI Aqueduct) is the ONE brick that survives for the US** — global, keyless (all other EU bricks fail: not in WISE/Natura/Corine/energy-charts). Added as a sourced *fact* on the US watchlist entries (Mesa = Extremely High, hard-confirming the Colorado-River water story). A future thin US score is one indicator closer; the rest needs US-federal sources (eGRID/NLCD/PAD-US, probed flaky). |
-| **IL** | national (own, `il.py`) | **5-6/12** | **Ember** (world brick, 492.69 gCO2/kWh 2025) | — (wall) | **INPA layer** (AGOL public mirror) | **S2-10m LULC** (world brick) | backbone = jurisdiction polygons (CR_LAMAS) + CKAN population ; W1 Aqueduct **+ desalination caveat** ; L1 = CBS SOEC 2021 layer RAW to provenance ; L2 deterministic where MW+pop | First scored country OUTSIDE the EU commons (GO Franck 2026-08-02). Walls: Noga grid (WAF — and grid IS the story, Ireland pattern), W2/W3, L3 (MoEP registry open but ITM coords, next iter). Pilot: 7 sites → 4×D, 3×E site grades, doc "low". See RECON-il.md |
+| **IL** | national (own, `il.py`) — grades computed, publication HELD (« en veille / note en attente », doctrine 2026-08-01) | **5-6/12** | **Ember** (world brick, 492.69 gCO2/kWh 2025) | — (wall) | **INPA layer** (AGOL public mirror) | **S2-10m LULC** (world brick) | backbone = jurisdiction polygons (CR_LAMAS) + CKAN population ; W1 Aqueduct **+ desalination caveat** ; L1 = CBS SOEC 2021 layer RAW to provenance ; L2 deterministic where MW+pop | First scored country OUTSIDE the EU commons (GO Franck 2026-08-02). Walls: Noga grid (WAF — and grid IS the story, Ireland pattern), W2/W3, L3 (MoEP registry open but ITM coords, next iter). Pilot: 7 sites → 4×D, 3×E site grades, doc "low". See RECON-il.md |
 | **CA** | **watchlist only** | — | — | ✅ Aqueduct | — | — | GDELT press spec (EN "data centre" + FR/BAPE) | A-19 like the US: presence, no score. No structured tracker exists (no fights.json equivalent) → entry point = **per-country GDELT spec** (`press/signal.py GDELT_COUNTRY_SPECS`, probed 2026-07-13: Hamilton moratorium ratified, Vancouver marches, Quinte West, Terrace zoning). A future scored adapter is *plausible* (federal open data cleaner than US: provincial grid carbon, CPCAD protected areas, federal land cover) but per-province for the grid — the DE-Länder wall. Probe only when a hot CA case justifies it. |
 | **IS** | **watchlist only** *(by choice, not by gap)* | — | — | ✅ Aqueduct | ✅ CDDA | ✅ Corine | W1 Low, F1 distant, F2 industrial-port | EEA → in the commons, and the spatial bricks WORK (recon 2026-07-27, Bakki 66.045/-17.343: W1 Aqueduct Low, F1 via CDDA, F2 Corine). A thin `make_eu_member_spec("IS", e1=False, natura=False, f1_cdda=True)` ≈3-4/12 is *one line away* — **deliberately NOT built (Franck 2026-07-27).** The available indicators (carbon ~0 hydro/geothermal, water Low, distant nature) would paint Iceland **flatteringly green**, but the real acceptability risk is the exact opposite and INVISIBLE to open bricks: grid at full capacity, Landsvirkjun curtailments to large users, ESA probe on supply refusals, Supreme-Court revocation of the Hvammsvirkjun dam licence (95 MW) with Náttúrugrið citing DC/bitcoin. E1 discriminates nothing; **E2/E3 capacity + governance is the whole story** — none of it open. A thin score would mislead. Presence lives as the GIGA-42 Bakki **watchlist** entry (`calibration/watchlist/iceland.json`, newsroom ce29310) with those hard procedural facts. Revisit as a scored adapter only when capacity/governance become captureable. |
 

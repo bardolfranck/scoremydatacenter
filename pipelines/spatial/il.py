@@ -16,11 +16,13 @@ LULC F2, Aqueduct W1) plus three national finds:
   DataStore, joined by locality symbol — RAW to provenance only (bands are a methodology-lead
   decision, the same refusal as FR/BE/NL).
 
-Walls, documented (RECON-il.md): Noga grid data (WAF → E2/E3 not_collected — and the grid IS
-the Israeli siting story, like Ireland); W2/W3 (no machine path found); L3 (the MoEP registry
-is CKAN-open but in ITM coordinates — next iteration). W1 carries an explicit desalination
-caveat: Israel is the world desalination leader, the raw basin referential overstates the
-effective constraint (§7.3 honesty).
+L3 is wired: the MoEP geolocated registry × toxics permits (join validated 500/500), plane
+distances in the registry's own ITM metric (empirical Israel-1993 datum correction, residual
+<1 m). Walls, documented (RECON-il.md): Noga grid data (WAF → E2/E3 not_collected — and the
+grid IS the Israeli siting story, like Ireland); W2/W3 (no machine path found). W1 follows
+the EXPORTABLE water-regime procedure (doctrine 2026-08-01): jurisdiction regime
+desal_dominant declared+sourced, site water_source on evidence only, caveat + pre-declared
+contradictoire lever — score untouched (calibration decision = Franck, v0.1.0 freeze).
 """
 
 import json
@@ -155,14 +157,24 @@ def soec_for_locality(code: int) -> dict | None:
     return out
 
 
+# Jurisdiction water-supply regime (exportable W1 procedure — doctrine 2026-08-01):
+# Israel's municipal/domestic supply is predominantly desalinated (5 Mediterranean plants;
+# ~80%+ of domestic consumption) — declared ONCE here, sourced; the Gulf declares its own.
+IL_WATER_REGIME = "desal_dominant"
+IL_WATER_REGIME_SOURCE = {
+    "title": "Israel Water Authority / FAO AQUASTAT — desalinated water is the dominant share "
+             "of Israel's municipal supply (~80%+ of domestic consumption)",
+    "url": "https://www.fao.org/aquastat/en/countries-and-basins/country-profiles/country/ISR",
+    "accessed": "2026-08-02",
+}
+
+
 def _w1_desal(ctx, prov):
     frag = eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])
-    if not frag:
-        return []
-    # §7.3 honesty: state the referential, state its known limit for this country.
-    frag["source"]["title"] += (" — caveat: Israel is the world desalination leader; the raw "
-                                "basin referential overstates the effective constraint")
-    return [frag]
+    frag = world.apply_w1_regime(frag, prov, regime=IL_WATER_REGIME,
+                                 regime_source=IL_WATER_REGIME_SOURCE,
+                                 water_source="undisclosed")
+    return [frag] if frag else []
 
 
 def _f1_inpa(ctx, prov):
@@ -196,6 +208,135 @@ def _l1_raw(ctx, prov):
     return []
 
 
+# --- L3 · hazardous-substance sites (MoEP registry × toxics permits) --------------------------
+# The geolocated environmental registry (25 758 sites, ITM/EPSG:2039 coordinates) joined with the
+# toxics-permit resource — join VALIDATED live 2026-08-02: Mifal_Key ↔ Mispar_Mezahe, 500/500.
+MOEP_REGISTRY_RESOURCE = "88d1883c-3b7a-4580-9be9-6d54659666c3"
+MOEP_PERMITS_RESOURCE = "e9ecedbd-8f93-437e-9a2f-4ff908daf210"
+MOEP_HUMAN_URL = "https://www.gov.il/he/departments/ministry_of_environmental_protection"
+
+# WGS84 → Israeli TM Grid (EPSG:2039) — standard Transverse Mercator forward, stdlib only.
+# Validated against the CBS settlement layer's own ITM/WGS84 coordinate pairs (see tests).
+_ITM_A = 6378137.0
+_ITM_F = 1 / 298.257222101          # GRS80
+_ITM_K0 = 1.0000067
+_ITM_LAT0 = 31.7343936111111
+_ITM_LON0 = 35.2045169444444
+_ITM_FE = 219529.584
+_ITM_FN = 626907.390
+# EPSG:2039 sits on the Israel 1993 datum, not WGS84 — the missing Helmert shift shows up as a
+# near-constant plane offset. Derived empirically against 40 CBS settlement pairs spread across
+# the country (own ITM attrs vs own WGS84 geometry): mean (-65.86, -40.33) m, stdev
+# (0.12, 0.36) m, max residual 0.8 m after correction — far inside the 2/5 km L3 bands.
+_ITM_DATUM_DX = -65.86
+_ITM_DATUM_DY = -40.33
+
+
+def _tm_meridian_arc(lat_rad: float) -> float:
+    import math
+    e2 = _ITM_F * (2 - _ITM_F)
+    return _ITM_A * ((1 - e2 / 4 - 3 * e2**2 / 64 - 5 * e2**3 / 256) * lat_rad
+                     - (3 * e2 / 8 + 3 * e2**2 / 32 + 45 * e2**3 / 1024) * math.sin(2 * lat_rad)
+                     + (15 * e2**2 / 256 + 45 * e2**3 / 1024) * math.sin(4 * lat_rad)
+                     - (35 * e2**3 / 3072) * math.sin(6 * lat_rad))
+
+
+def wgs84_to_itm(lat: float, lon: float) -> tuple[float, float]:
+    """(easting, northing) in EPSG:2039 — lets L3 distances be computed in the registry's own
+    metric plane (no inverse transform of 25k rows)."""
+    import math
+    e2 = _ITM_F * (2 - _ITM_F)
+    ep2 = e2 / (1 - e2)
+    phi = math.radians(lat)
+    lam = math.radians(lon - _ITM_LON0)
+    n = _ITM_A / math.sqrt(1 - e2 * math.sin(phi) ** 2)
+    t = math.tan(phi) ** 2
+    c = ep2 * math.cos(phi) ** 2
+    a_ = lam * math.cos(phi)
+    m = _tm_meridian_arc(phi)
+    m0 = _tm_meridian_arc(math.radians(_ITM_LAT0))
+    x = _ITM_K0 * n * (a_ + (1 - t + c) * a_**3 / 6
+                       + (5 - 18 * t + t**2 + 72 * c - 58 * ep2) * a_**5 / 120) + _ITM_FE
+    y = _ITM_K0 * (m - m0 + n * math.tan(phi) * (a_**2 / 2
+                   + (5 - t + 9 * c + 4 * c**2) * a_**4 / 24
+                   + (61 - 58 * t + t**2 + 600 * c - 330 * ep2) * a_**6 / 720)) + _ITM_FN
+    return x + _ITM_DATUM_DX, y + _ITM_DATUM_DY
+
+
+_moep_memo: list | None = None
+
+
+def moep_toxic_sites() -> list[tuple[float, float]]:
+    """ITM (x, y) of every registry site holding a toxics permit ('רעלים') — cached on disk."""
+    global _moep_memo
+    if _moep_memo is not None:
+        return _moep_memo
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    dest = CACHE_DIR / "il_moep_toxic_sites.json"
+    if dest.exists() and dest.stat().st_size > 0:
+        _moep_memo = [tuple(p) for p in json.loads(dest.read_text())]
+        return _moep_memo
+    permits = get_json(CKAN_DATASTORE.format(rid=MOEP_PERMITS_RESOURCE).replace("limit=3000", "limit=30000"))
+    if not permits.get("success"):
+        raise SourceUnavailable("MoEP permits datastore failed")
+    toxic_keys = {r.get("Mifal_Key") for r in permits["result"]["records"]
+                  if "רעלים" in (r.get("Heter_Name") or "")}
+    registry = get_json(CKAN_DATASTORE.format(rid=MOEP_REGISTRY_RESOURCE).replace("limit=3000", "limit=30000"))
+    if not registry.get("success"):
+        raise SourceUnavailable("MoEP registry datastore failed")
+    pts = []
+    for r in registry["result"]["records"]:
+        if r.get("Mispar_Mezahe") in toxic_keys:
+            x, y = r.get("Nekudat_Tsiun_X"), r.get("Nekudat_Tsiun_Y")
+            try:
+                pts.append((float(x), float(y)))
+            except (TypeError, ValueError):
+                continue
+    dest.write_text(json.dumps(pts))
+    _moep_memo = pts
+    return pts
+
+
+def _l3_moep(ctx, prov):
+    """L3 via the MoEP toxics-permit sites — plane distances in the registry's own ITM metric.
+    Permit tier is not published (upper_tier=None): the shared l3_value stays band-safe — an
+    unknown-tier site inside 2 km makes the band undecidable (pads to not_collected, we never
+    guess a hazard class)."""
+    from .bands import l3_value
+
+    try:
+        sites = moep_toxic_sites()
+    except SourceUnavailable:
+        return []
+    x0, y0 = wgs84_to_itm(ctx["lat"], ctx["lon"])
+    near = []
+    for x, y in sites:
+        d_km = ((x - x0) ** 2 + (y - y0) ** 2) ** 0.5 / 1000.0
+        if d_km <= 5.0:
+            near.append({"upper_tier": None, "dist_km": d_km})
+    value = l3_value(near)
+    # Site-level FACT either way (the doc-thinness reducer): the toxics-permit class is much
+    # broader than Seveso (labs, cosmetics…) and carries no severity tier — a count is honest
+    # context, a hazard class would be a guess.
+    prov["l3_moep_context"] = {
+        "toxics_permit_sites_within_2km": sum(1 for s in near if s["dist_km"] <= 2.0),
+        "toxics_permit_sites_within_5km": len(near),
+        "note": "MoEP toxics permits (רעלים) are far broader than the Seveso class and publish "
+                "no severity tier — counts are context, never a hazard verdict",
+        "source": {"title": "MoEP environmental registry × toxics permits (join validated)",
+                   "url": MOEP_HUMAN_URL, "accessed": ctx["accessed"]},
+    }
+    if value is None:
+        prov["l3_note"] = ("toxics-permit site within 2 km with unpublished tier — band "
+                           "undecidable, we never guess a hazard class")
+        return []
+    return [{"id": "L3", "status": "measured", "value": value,
+             "source": {"title": f"MoEP environmental registry × toxics permits ('רעלים') — "
+                                 f"{len(near)} permitted site(s) within 5 km (join "
+                                 "Mifal_Key↔Mispar_Mezahe, ITM plane distances)",
+                        "url": MOEP_HUMAN_URL, "accessed": ctx["accessed"]}}]
+
+
 IL_SPEC = {
     "iso": "IL",
     "generator": "pipelines.spatial.il v1",
@@ -212,9 +353,10 @@ IL_SPEC = {
         (("W1",), _w1_desal),
         (("F1",), _f1_inpa),
         (("F2",), world.collect_f2_global_landcover),
+        (("L3",), _l3_moep),
         ((), _l1_raw),                      # provenance-only, declares no indicator id
     ],
-    "collectable_gaps": frozenset({"E2", "E3", "W2", "W3", "L1", "L3"}),
+    "collectable_gaps": frozenset({"E2", "E3", "W2", "W3", "L1"}),
     "provenance_commune": lambda c: {"locality_symbol": c.get("code"),
                                      "locality_name_he": c.get("name_he"),
                                      "district": c.get("district"),
@@ -228,11 +370,12 @@ IL_SPEC = {
             "W2": "not_collected — no machine path found (Water Authority portal/PDF)",
             "W3": "not_collected — same",
             "L1": "not_collected — official CBS 2021 index RAW in provenance (l1_soec); bands = methodology lead",
-            "L3": "not_collected — MoEP geolocated registry is CKAN-open but in ITM coordinates; "
-                  "wire (with reprojection) next iteration",
         },
         "f2_crosscheck": prov.get("f2_crosscheck"),
         "l1_soec": prov.get("l1_soec"),
+        "w1_water_regime": prov.get("w1_water_regime"),
+        "l3_note": prov.get("l3_note"),
+        "l3_moep_context": prov.get("l3_moep_context"),
     },
-    "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W2", "W3", "L3"],
+    "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W2", "W3"],
 }

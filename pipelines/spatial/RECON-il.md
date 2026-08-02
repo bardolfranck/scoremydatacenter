@@ -76,3 +76,28 @@ The sub-agent dig resolved what the first recon left open; `il.py` is LIVE (regi
   documentation "low" (missing_data ≈ 0.74) — the honest picture of a gas-heavy grid
   (E1 492.69 → 0 pts) in extreme baseline water stress (W1 → 0), stated with the desalination
   caveat on every fiche. Publication remains gated by the normal machinery (A-26 contradictoire).
+
+
+## Addendum 2 — panel hardening (2026-08-02, GO relayé « DÉCISIONS FRANCK 2026-08-01 »)
+
+- **W1 × water regime, EXPORTABLE (presentation level)**: `world.apply_w1_regime` — the
+  jurisdiction declares `water_supply_regime` (IL: `desal_dominant`, sourced Israel Water
+  Authority / FAO AQUASTAT) and the site carries `water_source` (evidence only, default
+  `undisclosed`). desal_dominant + undisclosed → the basin reading is explicitly NOT asserted
+  as a site fact (caveat in the W1 source title) + a PRE-DECLARED contradictoire lever in
+  provenance. **Score untouched** — moving W1=0 to "unknown" is a calibration decision
+  (Franck, v0.1.0 freeze). The Gulf inherits by declaring its own regime value.
+- **ITM (EPSG:2039) wired**: stdlib Transverse Mercator + an EMPIRICAL Israel-1993 datum
+  correction derived against 40 CBS settlement pairs (mean offset −65.86/−40.33 m, stdev
+  0.12/0.36 m, residual <1 m). Never trust "GRS80 params" alone for ITM — the datum shift is
+  ~77 m.
+- **L3 finding (methodology-grade)**: the MoEP toxics-permit class (רעלים, 3 947 geolocated
+  sites via the validated Mifal_Key↔Mispar_Mezahe join) is FAR broader than Seveso — labs,
+  cosmetics plants — and publishes NO severity tier. EVERY pilot DC has a permitted site
+  within 300 m; the band-safe rule correctly refuses to guess → L3 stays `not_collected`,
+  and the honest deliverable is the CONTEXT COUNT in provenance (`l3_moep_context`:
+  sites within 2/5 km, stated as counts, never a hazard verdict). No Seveso-tier analogue
+  exists on data.gov.il (probed). The collector lights up by itself the day a tier is published.
+- **Panel: 8 sites** (+ MedOne Kfar Yona, OSM-exact building). Grades unchanged: 4×D, 4×E.
+  Publication: HELD — « en veille / note en attente » (doctrine 2026-08-01), no letters, no
+  contradictoire mailing until Franck's go.
