@@ -66,3 +66,17 @@ def test_f2_falls_back_to_previous_year_then_degrades(monkeypatch):
     ctx = {"lat": 0.0, "lon": 0.0, "accessed": "2026-07-27"}
     assert world.collect_f2_global_landcover(ctx, {}) == []   # degrades, never fabricates
     assert len(calls) == len(world._LULC_YEARS)               # tried every year window
+
+
+def test_w1_regime_mixed_keeps_caveated_fragment_and_basin_keeps_full():
+    from pipelines.spatial.world import apply_w1_regime
+
+    frag = {"id": "W1", "status": "measured", "value": "high",
+            "source": {"title": "Aqueduct", "url": "u", "accessed": "d"}}
+    prov = {}
+    out = apply_w1_regime(dict(frag, source=dict(frag["source"])), prov,
+                          regime="mixed", regime_source={"title": "t", "url": "u", "accessed": "d"})
+    assert out is not None and "caveat" in out["source"]["title"]   # mixed: caveat, still scored
+    out = apply_w1_regime(dict(frag, source=dict(frag["source"])), {},
+                          regime="basin", regime_source={"title": "t", "url": "u", "accessed": "d"})
+    assert out["source"]["title"] == "Aqueduct"                     # basin: Aqueduct in full

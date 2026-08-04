@@ -93,13 +93,24 @@ WATER_SOURCES = ("freshwater_basin", "desalinated", "reclaimed_wastewater",
 
 def apply_w1_regime(frag: dict | None, prov: dict, *, regime: str, regime_source: dict,
                     water_source: str = "undisclosed") -> dict | None:
-    """Attach the water-regime context to a W1 fragment + provenance (presentation level).
+    """Apply the water-regime rule to a W1 fragment + provenance.
 
     - `regime` (jurisdiction, sourced — national water authority / FAO AQUASTAT share)
     - `water_source` (site level, ON EVIDENCE only; default undisclosed — never credited)
+
+    CALIBRATION RULE (« W1 option b », decision Franck Bardol 2026-08-02 — the "we do not grade
+    the unknown" doctrine applied to W1): in a `desal_dominant` jurisdiction with the site's
+    water source `undisclosed`, the basin stress is NOT assertable as the site's water reality —
+    W1 returns **no fragment** (base padding → excluded from the score, renormalized, and the
+    gap dents confidence via missing_data). The Aqueduct basin reading is kept in provenance as
+    CONTEXT (`basin_reading`), never as a scored site fact. `mixed` keeps the caveat-only
+    treatment (basin freshwater still material); `basin` keeps Aqueduct in full.
+
     Honesty guards: desalination is NOT free (energy + brine — read through E1/site facts);
-    undisclosed stays prudent; the contradictoire lever is PRE-DECLARED (what would move the
-    reading = proof of the site's water source / cooling).
+    undisclosed stays prudent (this rule removes a false assertion, it never credits absence of
+    data); the contradictoire lever is PRE-DECLARED (what would move the reading = proof of the
+    site's water source / cooling). A documented favorable `water_source` mapping (air-cooled…)
+    is deliberately NOT implemented until the first real evidence arrives — calibration then.
     """
     assert regime in WATER_SUPPLY_REGIMES and water_source in WATER_SOURCES
     prov["w1_water_regime"] = {
@@ -114,11 +125,19 @@ def apply_w1_regime(frag: dict | None, prov: dict, *, regime: str, regime_source
     }
     if frag is None:
         return None
-    if regime in ("desal_dominant", "mixed") and water_source == "undisclosed":
+    if regime == "desal_dominant" and water_source == "undisclosed":
+        # W1 option b: unknown, not zero — the basin reading becomes displayable CONTEXT.
+        prov["w1_water_regime"]["basin_reading"] = {
+            "value": frag.get("value"), "source": frag.get("source"),
+            "note": "basin stress kept as context only — not asserted as a site fact "
+                    "(W1 excluded from the score until the site's water source is documented)",
+        }
+        return None
+    if regime == "mixed" and water_source == "undisclosed":
         frag["source"]["title"] += (
-            f" — caveat: jurisdiction supply regime is '{regime}' (predominantly desalinated/"
-            "reclaimed) and the site's own water source is undisclosed; the basin reading is "
-            "NOT asserted as a site fact (see w1_water_regime in provenance)")
+            " — caveat: jurisdiction supply regime is 'mixed' (significant desalinated/"
+            "reclaimed share) and the site's own water source is undisclosed; read with "
+            "the w1_water_regime provenance block")
     return frag
 
 

@@ -2,6 +2,33 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.1.0 (policy note) — 2026-08-02 — « W1 option b » : the basin reading is not the site's water fact in desal-dominant jurisdictions
+
+- **Rule (decision Franck Bardol, « W1 option b », 2026-08-02)**: in a jurisdiction whose water
+  supply is predominantly desalinated/reclaimed (`water_supply_regime: desal_dominant` —
+  declared once per jurisdiction, sourced to the national water authority / FAO AQUASTAT), and
+  while the site's own `water_source` is `undisclosed`, the WRI Aqueduct basin stress is **not
+  assertable as the site's water reality**: W1 becomes **unknown** — excluded from the score and
+  renormalized (base-block semantics), the gap denting confidence (cause `missing_data`). The
+  basin reading is kept in provenance as displayable CONTEXT (`w1_water_regime.basin_reading`),
+  never as a scored site fact. This is the « on ne note pas l'inconnu » doctrine applied to W1
+  (same family as `not_collected`, 2026-07-09).
+- **What it does NOT do**: it never credits absence of data — no favorable mapping exists for a
+  documented water source yet (deliberately deferred to the first real evidence); `mixed`
+  jurisdictions keep the caveated Aqueduct reading (basin freshwater still material); `basin`
+  jurisdictions are untouched. Desalination's own costs (energy, brine) are read through
+  E1/site facts, not erased.
+- **Mechanism**: `world.apply_w1_regime` (exportable — the Gulf inherits by declaring its
+  regime value); procedure spec: `1-cadrage/procedure-W1-dessalement-exportable.md`. The
+  pre-declared contradictoire lever stays on every fiche (what would move the reading = proof
+  of the site's water source).
+- **Effect**: no weight/threshold change; version stays 0.1.0 (engine-semantics policy note,
+  precedent: L2-prudence 2026-07-19). Applies today to the UNPUBLISHED IL pilot panel (8 sites,
+  en veille): W1 leaves the aggregate, site letters move accordingly — recorded before any
+  publication, so no published grade moves silently.
+- Signatory: decision Franck Bardol (« W1 option b », working session 2026-08-02), implemented
+  by Claude (data-pipeline-WORLD).
+
 ## 0.1.0 (policy note) — 2026-07-27 — world referentials: Ember (E1) and Sentinel-2 10m LULC (F2)
 
 - **Two referentials enter the citable base** (no weight, threshold or indicator change — new

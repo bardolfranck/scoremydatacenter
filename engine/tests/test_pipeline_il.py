@@ -87,16 +87,18 @@ def test_l3_low_within_5km_and_none(monkeypatch):
     assert frags[0]["value"] == "none_within_5km"
 
 
-def test_w1_regime_caveats_undisclosed_desal_and_declares_lever(monkeypatch):
+def test_w1_option_b_desal_undisclosed_is_unknown_not_zero(monkeypatch):
+    # CALIBRATION « W1 option b » (Franck 2026-08-02): desal_dominant + undisclosed → W1 is
+    # UNKNOWN (no fragment; base padding excludes+renormalizes and dents confidence), and the
+    # Aqueduct basin reading survives as displayable CONTEXT, never as a site fact.
     monkeypatch.setattr(il.eu, "collect_w1_aqueduct", lambda lat, lon, acc: {
         "id": "W1", "status": "measured", "value": "zre_or_crisis",
         "source": {"title": "WRI Aqueduct at point", "url": "u", "accessed": acc}})
     prov = {}
     frags = il._w1_desal({"lat": 32.0, "lon": 34.9, "accessed": "2026-08-02"}, prov)
-    assert "NOT asserted as a site fact" in frags[0]["source"]["title"]
+    assert frags == []                                        # unknown, not zero
     wr = prov["w1_water_regime"]
     assert wr["water_supply_regime"] == "desal_dominant"
-    assert wr["water_source"] == "undisclosed"
-    assert "preuve" in wr["contradictoire_lever"]["fr"]     # the lever is PRE-declared
-    # the VALUE is untouched — the score level is a calibration decision (Franck, v0.1.0)
-    assert frags[0]["value"] == "zre_or_crisis"
+    assert wr["basin_reading"]["value"] == "zre_or_crisis"     # context kept, displayable
+    assert "not asserted as a site fact" in wr["basin_reading"]["note"]
+    assert "preuve" in wr["contradictoire_lever"]["fr"]        # the lever stays PRE-declared
