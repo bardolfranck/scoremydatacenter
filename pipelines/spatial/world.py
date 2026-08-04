@@ -124,6 +124,13 @@ def apply_w1_regime(frag: dict | None, prov: dict, *, regime: str, regime_source
         },
     }
     if frag is None:
+        # honesty: distinguish "suppressed by the option-b rule (basin says X)" from
+        # "referential unreachable at collection" — a refresh run can fill the context later.
+        prov["w1_water_regime"]["basin_reading"] = {
+            "value": None,
+            "note": "Aqueduct unreachable at collection time — basin context missing, "
+                    "not suppressed; re-run collect to fill",
+        }
         return None
     if regime == "desal_dominant" and water_source == "undisclosed":
         # W1 option b: unknown, not zero — the basin reading becomes displayable CONTEXT.
