@@ -129,6 +129,28 @@ def build(accessed: str, corpus: list[dict], *, timespan: str, limit: int | None
     return cands
 
 
+# The ONLY fields that travel from an ACCEPTED candidate to the site-render path (agent-codeur-site
+# signed this subset). detection/tier1_preview are digest-only. provenance TRAVELS — it carries the
+# publishable flag the render gate reads.
+PROMOTE_FIELDS = ("id", "name", "operator", "municipality", "country", "project_status",
+                  "coordinates", "source", "facts", "provenance")
+
+
+def promote_subset(candidates: list[dict]) -> list[dict]:
+    """Accepted candidates reduced to the render-ready subset — the FIRST anti-leak lock.
+
+    A `publishable:false` lead (a commercial source not re-verified in the open) is EXCLUDED here,
+    before it can reach any promote-to-render path — it never becomes a served artifact from our
+    side. (agent-codeur-site's build-time render gate is the second lock, pending Franck's go.)
+    """
+    out = []
+    for c in candidates:
+        if not (c.get("provenance") or {}).get("publishable"):
+            continue                                  # non-publishable never travels to render
+        out.append({k: c[k] for k in PROMOTE_FIELDS if k in c})
+    return out
+
+
 def run(out_root: Path, *, art_dir: Path, accessed: str | None = None,
         timespan: str = "1w", limit: int | None = None) -> dict:
     """Full daily pass: detect → drafts → digest.html + manifest.json in newsroom/veille/<date>/.
