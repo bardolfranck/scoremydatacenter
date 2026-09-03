@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr
 
 install:
 	uv sync
@@ -217,3 +217,15 @@ onepager:
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-fr.pdf" "http://localhost:4399/fr/comprendre/one-pager"
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-en.pdf" "http://localhost:4399/understand/one-pager"
 	lsof -ti :4399 | xargs kill 2>/dev/null || true
+
+# Daily veille — detect new FR data-center projects → candidate drafts → digest in the PRIVATE
+# newsroom (veille/<date>/). NEVER deploys, NEVER publishes a grade, NEVER sends mail (the send
+# leg is CF-side, agent-codeur-site). No LLM needed → a plain daily scheduler runs this directly
+# (see pipelines/veille/README.md for the launchd/cron snippet). Commits only the veille/ tree.
+VEILLE_OUT ?= ../smdc-newsroom/veille
+VEILLE_TIMESPAN ?= 1w
+veille-fr:
+	uv run python -m pipelines.veille.fr --out $(VEILLE_OUT) --timespan $(VEILLE_TIMESPAN)
+	@cd $(VEILLE_OUT)/.. && git add veille && \
+	  if git diff --cached --quiet; then echo "veille-fr: rien de neuf"; \
+	  else git commit -q -m "veille: digest $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-fr: digest poussé au newsroom" || echo "veille-fr: commit local (push différé — offline?)"); fi
