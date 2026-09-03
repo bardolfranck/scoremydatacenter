@@ -294,6 +294,19 @@ GDELT_COUNTRY_SPECS = {
     "MA": {"sourcecountry": "morocco", "queries": _MAGHREB_QUERIES},
     "TN": {"sourcecountry": "tunisia", "queries": _MAGHREB_QUERIES},
     "DZ": {"sourcecountry": "algeria", "queries": _MAGHREB_QUERIES},
+    # FR is the ONE ANNOUNCE-intent spec: it discovers NEW-project announcements for the daily
+    # veille (pipelines/veille/fr.py), not contestation like the specs above. Doctrinally it feeds
+    # the WATCHLIST as a sourced fact (A-19: an announced project justifies an "En veille" entry),
+    # NEVER a score input. `intent` is documentation (the fetch ignores it) — it keeps the two GDELT
+    # uses legible so an announce flux is never mistaken for a contestation flux.
+    "FR": {
+        "intent": "announce",
+        "sourcecountry": "france",
+        "queries": [
+            '("data center" OR "datacenter" OR "centre de données") '
+            '(projet OR construction OR implantation OR investissement OR hyperscale OR inauguration)',
+        ],
+    },
 }
 
 
