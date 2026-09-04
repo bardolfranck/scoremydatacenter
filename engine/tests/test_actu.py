@@ -104,6 +104,54 @@ def test_linked_dc_carries_no_grade():
     assert set(link) == {"id"}          # only the id travels — never a grade/score into the actu card
 
 
+_ALLOW = {"lemonde.fr", "reuters.com"}
+
+
+def _gitem(**over):
+    it = {"topic": "marche", "publishable": True, "source": {"publisher": "lemonde.fr"},
+          "_gate": {"confidence": "high", "person_named": False}}
+    it.update(over)
+    return it
+
+
+def test_gate_green_all_conditions():
+    assert actu.gate(_gitem(), _ALLOW) is True
+
+
+def test_gate_red_project_topic():
+    assert actu.gate(_gitem(topic="projet"), _ALLOW) is False   # a project → human eye mandatory
+
+
+def test_gate_red_named_person():
+    assert actu.gate(_gitem(_gate={"confidence": "high", "person_named": True}), _ALLOW) is False
+
+
+def test_gate_red_low_confidence():
+    assert actu.gate(_gitem(_gate={"confidence": "medium", "person_named": False}), _ALLOW) is False
+
+
+def test_gate_red_source_not_allowlisted():
+    assert actu.gate(_gitem(source={"publisher": "randomblog.example"}), _ALLOW) is False
+
+
+def test_gate_red_activism_and_debate():
+    assert actu.gate(_gitem(topic="activisme"), _ALLOW) is False
+    assert actu.gate(_gitem(topic="debat"), _ALLOW) is False
+    assert actu.gate(_gitem(topic="moratoire"), _ALLOW) is False   # sensitive → not green
+
+
+def test_domain_ok_handles_www_and_subdomain():
+    assert actu._domain_ok("www.lemonde.fr", _ALLOW) is True
+    assert actu._domain_ok("live.reuters.com", _ALLOW) is True
+    assert actu._domain_ok("notlemonde.fr", _ALLOW) is False
+
+
+def test_allowlist_loads_and_excludes_dcmag():
+    dom = actu.load_allowlist()
+    assert "lemonde.fr" in dom and "reuters.com" in dom
+    assert not any("dcmag" in d or "datacenter-magazine" in d for d in dom)   # commercial, excluded
+
+
 def test_promote_sets_approved_and_writes_latest(tmp_path):
     date = "2026-09-04"
     nr = tmp_path / "newsroom"

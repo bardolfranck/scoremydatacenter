@@ -53,7 +53,9 @@ Renvoie :
  "lang": "fr"|"en",
  "summary": "<TON résumé neutre, factuel, ≤30 mots, DANS TES MOTS — jamais une copie du titre ni de
              l'article. Zéro militantisme : « opposition citoyenne signalée à X », jamais « scandale ».>",
- "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>", "act": "<permis|chantier|inauguration|investissement|annonce|null>"}}
+ "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>", "act": "<permis|chantier|inauguration|investissement|annonce|null>"}},
+ "person_named": true|false,    // une PERSONNE PHYSIQUE nommée (élu, militant, dirigeant…) ? (risque diffamation)
+ "confidence": "high|medium|low" // ta confiance dans CE classement (topic + pertinence)
 }}
 RÈGLES : neutralité absolue (on mesure, on ne milite pas). Résumé abstractif, jamais d'extraction.
 Si non pertinent, relevant=false (le reste peut être approximatif). JSON valide STRICT."""
@@ -111,7 +113,9 @@ def classify(record: dict, llm) -> dict | None:
                    "published_at": meta.get("seendate"), "accessed": record.get("retrieved")},
         "entities": {k: (ent.get(k) or None) for k in ("operator", "location", "act")},
         "publishable": True,                         # open press → licence OK (lock: LICENCE)
-        "approved": False,                           # HUMAN GATE — only promote() sets this true
+        "approved": False,                           # set by the gate: GREEN lane auto, RED lane by Franck
+        # transient gating signals (stripped before persist — never public, never a "score" leak):
+        "_gate": {"confidence": got.get("confidence") or "low", "person_named": bool(got.get("person_named"))},
     }
 
 
@@ -141,6 +145,43 @@ def link_to_corpus(item: dict, corpus: list[dict]) -> dict | None:
     return None
 
 
+# --- the standing gate: GREEN auto-publishes, RED waits for Franck (2026-09-04) ---------------
+
+GREEN_TOPICS = {"marche", "reglementation", "souverainete"}
+_ALLOWLIST = Path(__file__).with_name("allowlist.json")
+
+
+def load_allowlist() -> set[str]:
+    """Trusted publisher domains (pipelines/veille/allowlist.json). Empty on any read error →
+    fail CLOSED (nothing is green without a real allowlist, never fail-open to auto-publish)."""
+    try:
+        return {d.strip().lower() for d in json.loads(_ALLOWLIST.read_text()).get("domains", []) if d.strip()}
+    except Exception:
+        return set()
+
+
+def _domain_ok(publisher: str, allowlist: set[str]) -> bool:
+    p = (publisher or "").strip().lower()
+    p = p[4:] if p.startswith("www.") else p
+    return any(p == d or p.endswith("." + d) for d in allowlist)
+
+
+def gate(item: dict, allowlist: set[str]) -> bool:
+    """Franck's standing rule: return True (→ approved AUTO, GREEN lane) ONLY if ALL hold — an
+    allowlisted source, a NEUTRAL topic (marché/réglementation/souveraineté, so never projet /
+    débat / activisme / moratoire), NO named person (defamation), publishable, and HIGH confidence.
+    Any miss → False (RED lane: waits for Franck's explicit OK via promote). No 'silence = publish':
+    the default is RED, never flipped."""
+    g = item.get("_gate") or {}
+    return bool(
+        item.get("publishable") is True
+        and item.get("topic") in GREEN_TOPICS
+        and not g.get("person_named")
+        and g.get("confidence") == "high"
+        and _domain_ok((item.get("source") or {}).get("publisher"), allowlist)
+    )
+
+
 def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]:
     """Harvest GDELT-FR → classify each headline → relevant items (news + project leads)."""
     records = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=min(limit or 50, 250))
@@ -168,22 +209,27 @@ def _public_latest(items: list[dict]) -> dict:
 
 def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = None,
         timespan: str = "1w", limit: int | None = None) -> dict:
-    """Full pass: harvest → classify → write the PRIVATE archive + refresh the DEPLOYED latest.json.
+    """Full pass: harvest → classify → GATE → PRIVATE archive + DEPLOYED latest.json.
 
-    The archive holds every relevant item (approved:false until the gate). latest.json is rebuilt
-    from the union of what was ALREADY approved (kept across days) and today's archive — today's
-    fresh items start unapproved, so they do NOT appear publicly until Franck approves via promote().
+    The gate (Franck 2026-09-04) sets `approved`: GREEN items (allowlisted source, neutral topic,
+    no named person, not a project, high confidence) auto-publish; RED items stay approved:false in
+    the archive until Franck approves them via promote(). latest.json = previously-approved ∪ today's
+    GREEN — never a RED item, no 'silence = publish'. The digest becomes a SURVEILLANCE tool, not a
+    mandatory passage; only the red lane needs Franck's eye.
     """
     accessed = accessed or datetime.now(timezone.utc).date().isoformat()
     items = build(accessed, llm, timespan=timespan, limit=limit)
 
-    # Link each item to an already-scored fiche when its operator matches our corpus (Franck
-    # 2026-09-04): a news on a DC we've assessed becomes a showcase, not a hidden duplicate.
     corpus = load_corpus(public_data)
+    allowlist = load_allowlist()
     for it in items:
+        # Showcase link to an already-scored fiche (Franck 2026-09-04) — a strength, not a duplicate.
         link = link_to_corpus(it, corpus)
         if link:
             it["linked_dc"] = link
+        # The STANDING GATE: GREEN → approved auto; RED → stays False, waits for Franck (promote).
+        it["approved"] = gate(it, allowlist)
+        it.pop("_gate", None)                        # transient gating signals never persist anywhere
 
     day_dir = newsroom_root / "actu" / accessed
     day_dir.mkdir(parents=True, exist_ok=True)
@@ -191,21 +237,28 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
         json.dumps({"date": accessed, "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     "items": items}, ensure_ascii=False, indent=2) + "\n")
 
-    # Deployed latest.json: preserve already-approved items, never auto-approve today's.
+    # Deployed latest.json = previously-approved (kept across days) ∪ today's GREEN (auto-approved).
+    # RED items are archive-only until Franck approves them via promote(). Approved-only, always valid.
     latest_path = public_data / "actu" / "latest.json"
     latest_path.parent.mkdir(parents=True, exist_ok=True)
-    already = []
+    merged = {}
     if latest_path.is_file():
         try:
-            already = json.loads(latest_path.read_text()).get("items", [])
+            merged = {i["id"]: i for i in json.loads(latest_path.read_text()).get("items", []) if i.get("approved")}
         except Exception:
-            already = []
-    latest_path.write_text(json.dumps(_public_latest(already), ensure_ascii=False, indent=2) + "\n")
+            merged = {}
+    for it in items:
+        if it["approved"]:
+            merged[it["id"]] = it
+    latest_path.write_text(json.dumps(
+        {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "items": list(merged.values())},
+        ensure_ascii=False, indent=2) + "\n")
 
+    green = [i for i in items if i["approved"]]
     projects = [i for i in items if i["topic"] == "projet"]
-    return {"date": accessed, "items": len(items), "projects": len(projects),
-            "news": len(items) - len(projects), "approved_public": len(_public_latest(already)["items"]),
-            "archive": str(day_dir / "actu.json")}
+    return {"date": accessed, "items": len(items), "green_auto_published": len(green),
+            "red_pending_gate": len(items) - len(green), "projects": len(projects),
+            "public_total": len(merged), "archive": str(day_dir / "actu.json")}
 
 
 def promote(approved_ids: list[str], *, newsroom_root: Path, public_data: Path, date: str) -> dict:
