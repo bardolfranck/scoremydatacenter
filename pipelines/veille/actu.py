@@ -261,23 +261,67 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
             "public_total": len(merged), "archive": str(day_dir / "actu.json")}
 
 
-def promote(approved_ids: list[str], *, newsroom_root: Path, public_data: Path, date: str) -> dict:
-    """THE HUMAN GATE materialised: Franck approved these ids → set approved:true, rewrite latest.json.
+def _parse_dt(s):
+    """Parse GDELT seendate ('20260904T000000Z') or an ISO date; None if absent/unparseable."""
+    if not s:
+        return None
+    s = str(s)
+    try:
+        if len(s) >= 15 and s[8:9] == "T":
+            return datetime.strptime(s[:15], "%Y%m%dT%H%M%S").replace(tzinfo=timezone.utc)
+        return datetime.fromisoformat(s.replace("Z", "+00:00"))
+    except Exception:
+        return None
 
-    Reads the day's archive, keeps the approved ids (merged with previously-approved items), and
-    writes the DEPLOYED latest.json = approved-only. Nothing else can set `approved`.
+
+def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: int = 30) -> dict:
+    """DEPLOY-SIDE generator: rebuild site/public/data/actu/latest.json from the COMMITTED newsroom
+    archives. The CI run's public/data is ephemeral, so the newsroom is the single source of truth;
+    the build calls this. approved-only (lock 1, data level), windowed to the last `days`, newest
+    first, capped at `cap`, transient `_gate` stripped (never public). Always a valid object.
     """
-    archive = json.loads((newsroom_root / "actu" / date / "actu.json").read_text())["items"]
-    latest_path = public_data / "actu" / "latest.json"
-    kept = {i["id"]: i for i in (json.loads(latest_path.read_text()).get("items", []) if latest_path.is_file() else [])}
-    for item in archive:
+    now = datetime.now(timezone.utc)
+    by_id: dict = {}
+    for f in sorted((newsroom_root / "actu").glob("*/actu.json")):   # chronological → later day wins
+        try:
+            items = json.loads(f.read_text()).get("items", [])
+        except Exception:
+            continue
+        for it in items:
+            if it.get("approved") is not True:
+                continue
+            by_id[it["id"]] = {k: v for k, v in it.items() if k != "_gate"}   # strip transient signals
+    kept = []
+    for it in by_id.values():
+        d = _parse_dt((it.get("source") or {}).get("published_at"))
+        if d is None or (now - d).days <= days:        # keep undated (rare) rather than silently drop
+            kept.append(it)
+    kept.sort(key=lambda it: _parse_dt((it.get("source") or {}).get("published_at")) or now, reverse=True)
+    kept = kept[:cap]
+    out = public_data / "actu" / "latest.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps({"generated_at": now.isoformat(timespec="seconds"), "items": kept},
+                              ensure_ascii=False, indent=2) + "\n")
+    return {"published": len(kept), "path": str(out)}
+
+
+def promote(approved_ids: list[str], *, newsroom_root: Path, public_data: Path, date: str) -> dict:
+    """THE HUMAN GATE materialised: Franck approved these ids → set approved:true IN THE NEWSROOM
+    ARCHIVE (the source of truth), then regenerate the deployed latest.json from all archives.
+
+    Persisting to the archive (not just latest.json) is what lets the deploy-side actu_latest() —
+    which the CI/build calls — see the approval. `publishable:false` can never be approved.
+    """
+    arch_path = newsroom_root / "actu" / date / "actu.json"
+    archive = json.loads(arch_path.read_text())
+    n = 0
+    for item in archive["items"]:
         if item["id"] in approved_ids and item.get("publishable"):
-            kept[item["id"]] = {**item, "approved": True}
-    latest_path.parent.mkdir(parents=True, exist_ok=True)
-    payload = {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-               "items": list(kept.values())}
-    latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-    return {"approved_now": len(approved_ids), "public_total": len(payload["items"])}
+            item["approved"] = True
+            n += 1
+    arch_path.write_text(json.dumps(archive, ensure_ascii=False, indent=2) + "\n")   # persist approval
+    res = actu_latest(newsroom_root, public_data)                                    # regen from truth
+    return {"approved_now": n, "public_total": res["published"]}
 
 
 def main(argv=None) -> int:
@@ -287,10 +331,16 @@ def main(argv=None) -> int:
     ap.add_argument("--timespan", default="1w")
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--date", default=None)
+    ap.add_argument("--regen-latest", action="store_true",
+                    help="DEPLOY side: only rebuild public/data/actu/latest.json from the newsroom "
+                         "archives (approved-only). No harvest, no LLM. This is `make actu-latest`.")
     args = ap.parse_args(argv)
-    from ..llm_client import anthropic_llm
-    result = run(args.newsroom, llm=anthropic_llm(), public_data=args.public_data,
-                 accessed=args.date, timespan=args.timespan, limit=args.limit)
+    if args.regen_latest:
+        result = actu_latest(args.newsroom, args.public_data)   # no network, no key
+    else:
+        from ..llm_client import anthropic_llm
+        result = run(args.newsroom, llm=anthropic_llm(), public_data=args.public_data,
+                     accessed=args.date, timespan=args.timespan, limit=args.limit)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 
