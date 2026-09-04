@@ -14,6 +14,11 @@ interface Source { publisher: string; url: string; published_at?: string; access
 interface Item {
   id: string; lang: string; topic: string; headline: string; summary: string;
   source: Source; entities?: Record<string, string>; publishable?: boolean; approved?: boolean;
+  // AI translation, opt-in (from the classifier's single call). Keyed by page
+  // language. When the item's own `lang` differs from the page, we lead with the
+  // translated title and keep the original as a muted VO line, plus a 🌐 marker.
+  // A same-language item needs none of it. Absent → original text, no marker.
+  headline_i18n?: { fr?: string; en?: string }; summary_i18n?: { fr?: string; en?: string };
   // Set when the news is about a project we already scored → a showcase link to
   // its fiche. Only the id travels; the LETTER never appears in the actu card.
   linked_dc?: { id: string };
@@ -42,6 +47,14 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
     {visible.map((it) => {
       const isProjet = it.topic === "projet";
       const cls = badgeClass[it.topic] ?? "";
+      // Translation apparatus shows ONLY when the item's own language differs from
+      // the page AND we actually have a translation (else graceful fallback to the
+      // original text, no VO line, no marker).
+      const native = it.lang === lang;
+      const titleTranslated = native ? undefined : it.headline_i18n?.[lang];
+      const summary = it.summary_i18n?.[lang] ?? it.summary;
+      const isTranslated = !native && (!!titleTranslated || !!it.summary_i18n?.[lang]);
+      const headlineText = titleTranslated ?? it.headline;
       return (
         <article class:list={["actu-item", { projet: isProjet }]}>
           <div class="actu-item-top">
@@ -49,12 +62,16 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
             {it.source?.published_at && <span class="actu-when">{fmtDate(it.source.published_at)}</span>}
           </div>
           <div class="actu-headline">
-            <a href={it.source?.url} target="_blank" rel="noopener nofollow">{it.headline}</a>
+            <a href={it.source?.url} target="_blank" rel="noopener nofollow">{headlineText}</a>
           </div>
-          <p class="actu-summary">{it.summary}</p>
+          {titleTranslated && (
+            <p class="actu-vo"><span class="actu-vo-tag">{t.originalTitle}</span> « {it.headline} »</p>
+          )}
+          <p class="actu-summary">{summary}</p>
           <p class="actu-src">
             {it.source?.publisher && <b>{it.source.publisher}</b>}
             <span class="actu-ext">{t.externalSource} ↗</span>
+            {isTranslated && <span class="actu-mt">🌐 {t.machineTranslated}</span>}
           </p>
           {it.linked_dc?.id && (
             <a class="actu-linked" href={`${lang === "fr" ? "/fr/dc" : "/dc"}/${it.linked_dc.id}`}>{t.linkedDc}</a>
@@ -105,6 +122,16 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
   .actu-headline { font-size: 1.05rem; font-weight: 650; line-height: 1.3; }
   .actu-headline a { color: var(--ink); text-decoration: none; }
   .actu-headline a:hover { color: var(--accent, #0f5fb8); text-decoration: underline; }
+  .actu-vo { font-size: 0.82rem; color: var(--muted); font-style: italic; margin: -3px 0 0; line-height: 1.35; }
+  .actu-vo-tag {
+    font-style: normal; font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.06em;
+    text-transform: uppercase; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px;
+    margin-right: 6px; color: var(--muted); vertical-align: middle;
+  }
+  .actu-mt {
+    font-family: var(--font-mono); font-size: 0.62rem; border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 6px; margin-left: 6px; color: var(--muted); white-space: nowrap;
+  }
   .actu-summary { color: var(--ink-soft); font-size: 0.95rem; margin: 0; }
   .actu-src { font-size: 0.8rem; color: var(--muted); margin: 0; }
   .actu-src b { color: var(--ink-soft); font-weight: 600; }
