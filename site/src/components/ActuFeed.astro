@@ -13,6 +13,9 @@ interface Source { publisher: string; url: string; published_at?: string; access
 interface Item {
   id: string; lang: string; topic: string; headline: string; summary: string;
   source: Source; entities?: Record<string, string>; publishable?: boolean; approved?: boolean;
+  // Set when the news is about a project we already scored → a showcase link to
+  // its fiche. Only the id travels; the LETTER never appears in the actu card.
+  linked_dc?: { id: string };
 }
 interface Props { lang: "fr" | "en"; t: any; items: Item[]; }
 const { lang, t, items } = Astro.props;
@@ -52,6 +55,9 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
             {it.source?.publisher && <b>{it.source.publisher}</b>}
             <span class="actu-ext">{t.externalSource} ↗</span>
           </p>
+          {it.linked_dc?.id && (
+            <a class="actu-linked" href={`${lang === "fr" ? "/fr/dc" : "/dc"}/${it.linked_dc.id}`}>{t.linkedDc}</a>
+          )}
         </article>
       );
     })}
@@ -105,6 +111,12 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
     font-family: var(--font-mono); font-size: 0.64rem; border: 1px solid var(--line);
     border-radius: 5px; padding: 1px 6px; margin-left: 6px; color: var(--muted);
   }
+  .actu-linked {
+    justify-self: start; display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 2px; font-size: 0.85rem; font-weight: 600; color: var(--accent, #0f5fb8);
+    text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 3px 11px;
+  }
+  .actu-linked:hover { background: var(--wash); border-color: var(--accent, #0f5fb8); }
   .actu-empty { color: var(--muted); padding: 24px 0; }
   @media (prefers-color-scheme: dark) {
     .actu-item { background: #141a24; }
