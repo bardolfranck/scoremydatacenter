@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu
 
 install:
 	uv sync
@@ -229,3 +229,15 @@ veille-fr:
 	@cd $(VEILLE_OUT)/.. && git add veille && \
 	  if git diff --cached --quiet; then echo "veille-fr: rien de neuf"; \
 	  else git commit -q -m "veille: digest $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-fr: digest poussé au newsroom" || echo "veille-fr: commit local (push différé — offline?)"); fi
+
+# Daily ACTU — GDELT harvest → Sonnet classifier (news/projet/bruit) → actu.json. Writes the PRIVATE
+# archive (newsroom/actu/<date>/, ALL items) + refreshes the DEPLOYED site/public/data/actu/latest.json
+# (approved-only — today's items start UNAPPROVED, so nothing new goes public until Franck approves via
+# `promote`). Needs the Sonnet key (~/.smdc/llm.env). NEVER deploys/publishes/sends. Commits actu/ only.
+NEWSROOM ?= ../smdc-newsroom
+ACTU_TIMESPAN ?= 1w
+veille-actu:
+	uv run python -m pipelines.veille.actu --newsroom $(NEWSROOM) --public-data site/public/data --timespan $(ACTU_TIMESPAN)
+	@cd $(NEWSROOM) && git add actu && \
+	  if git diff --cached --quiet; then echo "veille-actu: rien de neuf"; \
+	  else git commit -q -m "actu: archive $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-actu: archive poussée au newsroom" || echo "veille-actu: commit local (push différé — offline?)"); fi
