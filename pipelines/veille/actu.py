@@ -32,6 +32,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ..press import signal
+from .fr import operators_in, load_corpus, _norm
 
 TOPICS = {"projet", "debat", "activisme", "souverainete", "moratoire", "reglementation", "marche"}
 _MAXW = 30  # summary hard cap (words)
@@ -114,6 +115,32 @@ def classify(record: dict, llm) -> dict | None:
     }
 
 
+def link_to_corpus(item: dict, corpus: list[dict]) -> dict | None:
+    """If the item names an operator we ALREADY score, return `{id}` of the matching fiche.
+
+    Franck 2026-09-04: a NEWS about a project we've already assessed is a STRENGTH (« on l'a mesuré,
+    voici notre fiche »), not a duplicate to hide → the actu card gets a direct link to /dc/<id>.
+    NEVER a grade in the payload — the fiche page carries the letter, the news card only links to it
+    (keeps the actu section note-free, same invariant as the rest of the lane). Ambiguous (several
+    sites for the operator, no location tiebreak) → no link: we never guess a wrong fiche.
+    """
+    ent = item.get("entities") or {}
+    ops = set(operators_in((ent.get("operator") or "") + " " + (item.get("headline") or "")))
+    if not ops:
+        return None
+    cands = [d for d in corpus if set(operators_in(d.get("operator") or "")) & ops]
+    if len(cands) == 1:
+        return {"id": cands[0]["id"]}
+    if len(cands) > 1:                                # disambiguate by location, else don't guess
+        loc = _norm(ent.get("location") or "")
+        if loc:
+            narrowed = [d for d in cands if _norm(d.get("municipality") or "")
+                        and (_norm(d["municipality"]) in loc or loc in _norm(d["municipality"]))]
+            if len(narrowed) == 1:
+                return {"id": narrowed[0]["id"]}
+    return None
+
+
 def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]:
     """Harvest GDELT-FR → classify each headline → relevant items (news + project leads)."""
     records = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=min(limit or 50, 250))
@@ -149,6 +176,14 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
     """
     accessed = accessed or datetime.now(timezone.utc).date().isoformat()
     items = build(accessed, llm, timespan=timespan, limit=limit)
+
+    # Link each item to an already-scored fiche when its operator matches our corpus (Franck
+    # 2026-09-04): a news on a DC we've assessed becomes a showcase, not a hidden duplicate.
+    corpus = load_corpus(public_data)
+    for it in items:
+        link = link_to_corpus(it, corpus)
+        if link:
+            it["linked_dc"] = link
 
     day_dir = newsroom_root / "actu" / accessed
     day_dir.mkdir(parents=True, exist_ok=True)

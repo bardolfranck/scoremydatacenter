@@ -70,6 +70,40 @@ def test_public_latest_excludes_unapproved():
     assert [i["id"] for i in out["items"]] == ["a"]     # only approved:true travels to the deployed file
 
 
+_CORPUS = [
+    {"id": "fr-microsoft", "operator": "Microsoft", "municipality": "Petit-Landau"},
+    {"id": "fr-segro", "operator": "Segro", "municipality": "Le Bourget"},
+    {"id": "fr-segro-marseille", "operator": "Segro", "municipality": "Marseille"},
+]
+
+
+def test_linked_dc_single_operator_match():
+    item = {"headline": "Microsoft Haut-Rhin feu vert", "entities": {"operator": "Microsoft", "location": "Haut-Rhin"}}
+    assert actu.link_to_corpus(item, _CORPUS) == {"id": "fr-microsoft"}
+
+
+def test_linked_dc_disambiguates_by_location():
+    item = {"headline": "Segro à Marseille", "entities": {"operator": "Segro", "location": "Marseille"}}
+    assert actu.link_to_corpus(item, _CORPUS) == {"id": "fr-segro-marseille"}
+
+
+def test_linked_dc_ambiguous_returns_none():
+    # Two Segro sites, location too vague to disambiguate → never guess a wrong fiche
+    item = {"headline": "Segro coentreprise Pure DC", "entities": {"operator": "Segro", "location": "France"}}
+    assert actu.link_to_corpus(item, _CORPUS) is None
+
+
+def test_linked_dc_no_match_returns_none():
+    item = {"headline": "Un opérateur inconnu ouvre un site", "entities": {"operator": "Zzz Corp", "location": "Lyon"}}
+    assert actu.link_to_corpus(item, _CORPUS) is None
+
+
+def test_linked_dc_carries_no_grade():
+    item = {"headline": "Microsoft", "entities": {"operator": "Microsoft"}}
+    link = actu.link_to_corpus(item, _CORPUS)
+    assert set(link) == {"id"}          # only the id travels — never a grade/score into the actu card
+
+
 def test_promote_sets_approved_and_writes_latest(tmp_path):
     date = "2026-09-04"
     nr = tmp_path / "newsroom"
