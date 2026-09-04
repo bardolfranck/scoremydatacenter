@@ -1,0 +1,30 @@
+{
+  "_note": "Trusted publisher DOMAINS for the ACTU green lane (Franck 2026-09-04). A news whose source domain is on this list AND whose topic is neutral (marche/reglementation/souverainete) AND names no private person AND is not a project AND is high-confidence auto-publishes (approved=true) WITHOUT the human gate. Everything else waits for Franck. This list GATES auto-publication, so every change is a reviewable PR. DCMag (commercial) is deliberately EXCLUDED — it is a lead-to-verify, never an auto-published source.",
+  "domains": [
+    "lemonde.fr",
+    "lesechos.fr",
+    "lefigaro.fr",
+    "latribune.fr",
+    "liberation.fr",
+    "ouest-france.fr",
+    "letelegramme.fr",
+    "sudouest.fr",
+    "ladepeche.fr",
+    "dna.fr",
+    "lalsace.fr",
+    "actu-environnement.com",
+    "usine-digitale.fr",
+    "datacenterdynamics.com",
+    "datacenterknowledge.com",
+    "theregister.com",
+    "zdnet.fr",
+    "silicon.fr",
+    "lemondeinformatique.fr",
+    "reuters.com",
+    "apnews.com",
+    "bloomberg.com",
+    "ft.com",
+    "bbc.com",
+    "bbc.co.uk"
+  ]
+}
