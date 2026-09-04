@@ -51,8 +51,8 @@ Renvoie :
  "is_project": true|false,      // un PROJET concret (site + opérateur + acte : permis, chantier,
                                 //   inauguration, investissement) ? sinon c'est de la news de secteur.
  "lang": "fr"|"en",            // langue RÉELLE dans laquelle le TITRE ci-dessus est écrit (détecte-la, ne devine pas)
- "headline_fr": "<le titre en FRANÇAIS : si lang=fr, le titre ORIGINAL verbatim ; sinon ta traduction FIDÈLE et COURTE>",
- "headline_en": "<the title in ENGLISH: if lang=en, the ORIGINAL title verbatim; otherwise your FAITHFUL SHORT translation>",
+ "headline_fr": "<le titre en FRANÇAIS. Si lang=fr : le titre original NETTOYÉ (corrige la tokenisation GDELT — « Haut - Rhin »→« Haut-Rhin », « Bruyères - le - Châtel »→« Bruyères-le-Châtel », retire une troncature « ... » en complétant si évident, retire un nom de domaine collé en fin comme « Gide »), fidèle au sens, jamais le corps de l'article. Sinon : ta traduction FIDÈLE et COURTE.>",
+ "headline_en": "<the title in ENGLISH. If lang=en: the original title CLEANED (fix GDELT tokenisation — spaces around punctuation, drop a trailing appended domain name, complete an obvious truncation), faithful, never the article body. Otherwise: your FAITHFUL SHORT translation.>",
  "summary_fr": "<TON résumé neutre ≤30 mots EN FRANÇAIS, dans tes mots — jamais une copie du titre ni de l'article ; zéro militantisme (« opposition citoyenne signalée à X », jamais « scandale »)>",
  "summary_en": "<the same neutral summary ≤30 words IN ENGLISH — your words, never the article>",
  "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>", "act": "<permis|chantier|inauguration|investissement|annonce|null>"}},
@@ -109,18 +109,19 @@ def classify(record: dict, llm) -> dict | None:
 
     summary_i18n = {"fr": _cap(got.get("summary_fr")), "en": _cap(got.get("summary_en"))}
     native_summary = summary_i18n[lang]
-    if not native_summary or native_summary.strip().lower() == title.strip().lower():
+    # The VO shown to users is the CLEANED original title (GDELT tokenisation de-mangled by the model),
+    # not the raw feed title; fall back to the raw title if the model returned nothing.
+    hl_native = (got.get(f"headline_{lang}") or "").strip() or title
+    if not native_summary or native_summary.strip().lower() in (title.strip().lower(), hl_native.strip().lower()):
         return None                                  # empty or a copy of the headline → refuse (A-20)
-    # The ORIGINAL title is the source of truth (VO): headline_i18n[lang] is the raw title verbatim,
-    # the other language is the model's short faithful translation (auxiliary, never the article).
-    headline_i18n = {lang: title, other: (got.get(f"headline_{other}") or "").strip() or title}
+    headline_i18n = {lang: hl_native, other: (got.get(f"headline_{other}") or "").strip() or hl_native}
     ent = got.get("entities") or {}
     return {
-        "id": _slug(url, title),
+        "id": _slug(url, title),                     # id from the RAW title/url → stable across regens
         "lang": lang,                                # REAL language of the source title
         "topic": topic,
-        "headline": title,                           # original verbatim = VO, link label + attribution
-        "headline_i18n": headline_i18n,              # {lang: original, other: AI translation}
+        "headline": hl_native,                       # CLEANED original = VO shown + link label
+        "headline_i18n": headline_i18n,              # {lang: cleaned original, other: AI translation}
         "summary": native_summary,                   # back-compat fallback = native-language summary
         "summary_i18n": summary_i18n,                # OUR neutral ≤30-word summary in BOTH languages
         "source": {"publisher": domain or "presse", "url": url,
