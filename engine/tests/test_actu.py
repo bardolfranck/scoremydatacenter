@@ -32,34 +32,42 @@ def test_offtopic_is_dropped():
 def test_summary_copy_of_headline_refused():
     title = "Microsoft obtient un feu vert pour son datacenter"
     llm = _llm({"relevant": True, "topic": "projet", "is_project": True, "lang": "fr",
-                "summary": title, "entities": {"operator": "Microsoft"}})
-    assert actu.classify(_rec(title), llm) is None      # summary == headline → A-20 refusal
+                "summary_fr": title, "summary_en": "x", "entities": {"operator": "Microsoft"}})
+    assert actu.classify(_rec(title), llm) is None      # native (fr) summary == headline → A-20 refusal
 
 
 def test_summary_capped_at_30_words():
     long = " ".join(["mot"] * 50)
     llm = _llm({"relevant": True, "topic": "debat", "is_project": False, "lang": "fr",
-                "summary": long, "entities": {}})
+                "summary_fr": long, "summary_en": long, "entities": {}})
     item = actu.classify(_rec("Un titre distinct du résumé"), llm)
     assert item is not None
-    assert len(item["summary"].split()) <= actu._MAXW + 1   # +1 for the trailing ellipsis token
+    assert len(item["summary_i18n"]["fr"].split()) <= actu._MAXW + 1   # +1 for the trailing ellipsis token
+    assert len(item["summary_i18n"]["en"].split()) <= actu._MAXW + 1
 
 
-def test_valid_item_shape_and_flags():
-    llm = _llm({"relevant": True, "topic": "projet", "is_project": True, "lang": "fr",
-                "summary": "Microsoft obtient une autorisation pour un centre de données dans le Haut-Rhin.",
+def test_valid_item_shape_and_i18n():
+    llm = _llm({"relevant": True, "topic": "projet", "is_project": True, "lang": "en",
+                "headline_fr": "Feu vert pour le datacenter Microsoft dans le Haut-Rhin",
+                "headline_en": "Microsoft data center gets green light in Haut-Rhin",
+                "summary_fr": "Microsoft obtient une autorisation pour un centre de données dans le Haut-Rhin.",
+                "summary_en": "Microsoft secures a permit for a data center in the Haut-Rhin.",
                 "entities": {"operator": "Microsoft", "location": "Haut-Rhin", "act": "permis"}})
-    item = actu.classify(_rec("Feu vert Microsoft Haut-Rhin"), llm)
+    item = actu.classify(_rec("Microsoft data center gets green light in Haut-Rhin", lang="English"), llm)
     assert item["topic"] == "projet"
-    assert item["publishable"] is True          # LICENCE (open press)
-    assert item["approved"] is False            # HUMAN GATE — never set by the model
-    assert item["entities"]["operator"] == "Microsoft"
-    assert item["headline"] == "Feu vert Microsoft Haut-Rhin"   # verbatim link label
+    assert item["publishable"] is True and item["approved"] is False
+    assert item["lang"] == "en"                                  # REAL source language
+    assert item["headline"] == "Microsoft data center gets green light in Haut-Rhin"  # VO verbatim
+    assert item["headline_i18n"]["en"] == item["headline"]       # original in its own lang
+    assert "datacenter" in item["headline_i18n"]["fr"].lower()   # the other lang = AI translation
+    assert set(item["summary_i18n"]) == {"fr", "en"}             # our summary in BOTH languages
+    assert item["summary"] == item["summary_i18n"]["en"]         # back-compat = native-language summary
 
 
 def test_unknown_topic_falls_back():
     llm = _llm({"relevant": True, "topic": "n_importe_quoi", "is_project": False, "lang": "fr",
-                "summary": "Un résumé neutre distinct du titre source.", "entities": {}})
+                "summary_fr": "Un résumé neutre distinct du titre source.",
+                "summary_en": "A neutral summary distinct from the source title.", "entities": {}})
     item = actu.classify(_rec("Titre"), llm)
     assert item["topic"] in actu.TOPICS         # coerced into the signed enum
 

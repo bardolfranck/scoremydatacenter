@@ -50,15 +50,18 @@ Renvoie :
  "topic": "projet|debat|activisme|souverainete|moratoire|reglementation|marche",
  "is_project": true|false,      // un PROJET concret (site + opérateur + acte : permis, chantier,
                                 //   inauguration, investissement) ? sinon c'est de la news de secteur.
- "lang": "fr"|"en",
- "summary": "<TON résumé neutre, factuel, ≤30 mots, DANS TES MOTS — jamais une copie du titre ni de
-             l'article. Zéro militantisme : « opposition citoyenne signalée à X », jamais « scandale ».>",
+ "lang": "fr"|"en",            // langue RÉELLE dans laquelle le TITRE ci-dessus est écrit (détecte-la, ne devine pas)
+ "headline_fr": "<le titre en FRANÇAIS : si lang=fr, le titre ORIGINAL verbatim ; sinon ta traduction FIDÈLE et COURTE>",
+ "headline_en": "<the title in ENGLISH: if lang=en, the ORIGINAL title verbatim; otherwise your FAITHFUL SHORT translation>",
+ "summary_fr": "<TON résumé neutre ≤30 mots EN FRANÇAIS, dans tes mots — jamais une copie du titre ni de l'article ; zéro militantisme (« opposition citoyenne signalée à X », jamais « scandale »)>",
+ "summary_en": "<the same neutral summary ≤30 words IN ENGLISH — your words, never the article>",
  "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>", "act": "<permis|chantier|inauguration|investissement|annonce|null>"}},
  "person_named": true|false,    // une PERSONNE PHYSIQUE nommée (élu, militant, dirigeant…) ? (risque diffamation)
  "confidence": "high|medium|low" // ta confiance dans CE classement (topic + pertinence)
 }}
-RÈGLES : neutralité absolue (on mesure, on ne milite pas). Résumé abstractif, jamais d'extraction.
-Si non pertinent, relevant=false (le reste peut être approximatif). JSON valide STRICT."""
+RÈGLES : neutralité absolue (on mesure, on ne milite pas). Résumés abstractifs (jamais d'extraction),
+un dans CHAQUE langue (l'un fidèle traduction de l'autre). Traduction de titre = courte et fidèle,
+jamais le corps de l'article (A-20). Si non pertinent, relevant=false. JSON valide STRICT."""
 
 
 def _slug(url: str, title: str) -> str:
@@ -96,19 +99,30 @@ def classify(record: dict, llm) -> dict | None:
         return None                                  # off-topic → dropped (not even archived)
 
     topic = got.get("topic") if got.get("topic") in TOPICS else ("projet" if got.get("is_project") else "marche")
-    summary = " ".join((got.get("summary") or "").split())
-    if not summary or summary.strip().lower() == title.strip().lower():
+    lang = "en" if got.get("lang") == "en" else "fr"
+    other = "en" if lang == "fr" else "fr"
+
+    def _cap(s):
+        s = " ".join((s or "").split())
+        w = s.split()
+        return (" ".join(w[:_MAXW]).rstrip(".,;:") + "…") if len(w) > _MAXW else s
+
+    summary_i18n = {"fr": _cap(got.get("summary_fr")), "en": _cap(got.get("summary_en"))}
+    native_summary = summary_i18n[lang]
+    if not native_summary or native_summary.strip().lower() == title.strip().lower():
         return None                                  # empty or a copy of the headline → refuse (A-20)
-    words = summary.split()
-    if len(words) > _MAXW:                            # hard cap, never the article
-        summary = " ".join(words[:_MAXW]).rstrip(".,;:") + "…"
+    # The ORIGINAL title is the source of truth (VO): headline_i18n[lang] is the raw title verbatim,
+    # the other language is the model's short faithful translation (auxiliary, never the article).
+    headline_i18n = {lang: title, other: (got.get(f"headline_{other}") or "").strip() or title}
     ent = got.get("entities") or {}
     return {
         "id": _slug(url, title),
-        "lang": "en" if got.get("lang") == "en" else "fr",
+        "lang": lang,                                # REAL language of the source title
         "topic": topic,
-        "headline": title,                           # verbatim = link label + attribution
-        "summary": summary,                          # OUR neutral words, ≤30
+        "headline": title,                           # original verbatim = VO, link label + attribution
+        "headline_i18n": headline_i18n,              # {lang: original, other: AI translation}
+        "summary": native_summary,                   # back-compat fallback = native-language summary
+        "summary_i18n": summary_i18n,                # OUR neutral ≤30-word summary in BOTH languages
         "source": {"publisher": domain or "presse", "url": url,
                    "published_at": meta.get("seendate"), "accessed": record.get("retrieved")},
         "entities": {k: (ent.get(k) or None) for k in ("operator", "location", "act")},
