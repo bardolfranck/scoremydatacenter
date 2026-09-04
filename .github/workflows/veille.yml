@@ -1,0 +1,60 @@
+name: Veille quotidienne
+
+# Daily veille in the CLOUD (Franck 2026-09-04) — runs regardless of anyone's laptop, unlike the
+# local launchd version it replaces. DETECT + ENRICH + COMMIT to the private newsroom. It NEVER
+# deploys, NEVER publishes a grade, NEVER sends mail — the supervisor pre-approved "a scheduled GH
+# Action that commits to the private newsroom = OK, it is not a deploy". The deployed
+# site/public/data/actu/latest.json is regenerated from the committed newsroom archive on the
+# DEPLOY side (agent-codeur-site); the email send is a separate CF-side leg.
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 06:00 UTC ≈ 08:00 Europe/Paris — one query/day, no bursts (GDELT-friendly)
+  workflow_dispatch: {}    # manual run button
+
+concurrency:
+  group: veille            # never two veille runs at once (newsroom push races)
+  cancel-in-progress: false
+
+jobs:
+  veille:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (public)
+        uses: actions/checkout@v4
+        with:
+          path: scoremydatacenter
+
+      - name: Checkout newsroom (private — needs NEWSROOM_TOKEN)
+        uses: actions/checkout@v4
+        with:
+          repository: bardolfranck/smdc-newsroom
+          token: ${{ secrets.NEWSROOM_TOKEN }}
+          path: smdc-newsroom      # sibling of scoremydatacenter → ../smdc-newsroom resolves
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deps
+        working-directory: scoremydatacenter
+        run: uv sync
+
+      - name: Git identity (for the newsroom commits)
+        run: |
+          git config --global user.name  "smdc-veille-bot"
+          git config --global user.email "veille@scoremydatacenter.org"
+
+      - name: Build corpus (scores.json only — needed for actu linked_dc; ephemeral, no deploy)
+        working-directory: scoremydatacenter
+        run: uv run python scripts/build_prod_artifacts.py   # no media.env in CI → no R2, no media-sat
+
+      - name: Veille FR — digest → newsroom
+        working-directory: scoremydatacenter
+        run: make veille-fr        # detection only, no LLM key needed
+
+      - name: Actu — classify (Sonnet) + gate → newsroom archive
+        working-directory: scoremydatacenter
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: make veille-actu      # GREEN auto-approved in the archive; RED awaits Franck. NEVER deploys.
