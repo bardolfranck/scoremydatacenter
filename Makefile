@@ -87,6 +87,7 @@ rescore:
 # newsroom (CI, external cloners), it falls back to `score` as before.
 build:
 	@if [ -d ../smdc-newsroom/calibration ]; then $(MAKE) prod-artifacts; else $(MAKE) score; fi
+	$(MAKE) actu-latest   # site's Actu page build-imports public/data/actu/latest.json → always emit it (empty if no newsroom), else the astro build can't resolve the import
 	npm run build --prefix site
 	$(MAKE) prune-public-json
 
