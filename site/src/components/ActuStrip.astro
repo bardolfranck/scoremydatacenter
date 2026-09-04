@@ -1,0 +1,58 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+//
+// Compact "latest sector news" strip for the home page — a freshness/SEO cue that
+// the site is alive, without turning the home into a feed. 3 latest PUBLISHABLE
+// items, dated, projects flagged; links out to the source, "see all" → /actu.
+import actu from "../../public/data/actu/latest.json";
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+
+const items = (actu.items ?? []).filter((i: any) => i.publishable === true).slice(0, 3);
+if (items.length === 0) return; // no strip when there is nothing fresh
+
+const L = lang === "fr"
+  ? { heading: "Dernières actus du secteur", seeAll: "Voir toute l'actu →", href: "/fr/actu", projet: "Projet" }
+  : { heading: "Latest sector news", seeAll: "See all news →", href: "/news", projet: "Project" };
+
+const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" });
+const fmt = (s?: string) => { if (!s) return ""; const d = new Date(s); return isNaN(+d) ? s : dtf.format(d); };
+---
+
+<section class="section actu-strip-section">
+  <div class="section-inner">
+    <div class="actu-strip">
+      <div class="actu-strip-head">
+        <h2>{L.heading}</h2>
+        <a href={L.href}>{L.seeAll}</a>
+      </div>
+      <ul>
+        {items.map((it: any) => (
+          <li>
+            <span class="ast-when">{fmt(it.source?.published_at)}</span>
+            {it.topic === "projet" && <span class="ast-badge">{L.projet}</span>}
+            <a class="ast-t" href={it.source?.url} target="_blank" rel="noopener nofollow">{it.headline}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .actu-strip-section { padding-block: clamp(1rem, 3vw, 2rem); }
+  .actu-strip { background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+  .actu-strip-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .actu-strip-head h2 { margin: 0; font-size: 1rem; }
+  .actu-strip-head a { margin-left: auto; font-size: 0.82rem; color: var(--accent, #0f5fb8); text-decoration: none; font-weight: 600; }
+  .actu-strip-head a:hover { text-decoration: underline; }
+  .actu-strip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .actu-strip li { display: flex; gap: 10px; align-items: baseline; font-size: 0.9rem; padding: 6px 0; border-top: 1px solid var(--line); }
+  .actu-strip li:first-child { border-top: none; }
+  .ast-when { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); white-space: nowrap; min-width: 46px; }
+  .ast-badge { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; font-weight: 700; padding: 2px 6px; border-radius: 5px; background: var(--accent, #0f5fb8); color: #fff; }
+  .ast-t { color: var(--ink); text-decoration: none; }
+  .ast-t:hover { color: var(--accent, #0f5fb8); text-decoration: underline; }
+  @media (prefers-color-scheme: dark) { .actu-strip { background: #141a24; } }
+</style>

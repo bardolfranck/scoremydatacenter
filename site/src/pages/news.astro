@@ -1,0 +1,44 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// EN "News" — sector radar. Twin of /fr/actu. External news, never a grade.
+import Base from "../layouts/Base.astro";
+import ActuFeed from "../components/ActuFeed.astro";
+import { EN_NAV } from "../config/nav";
+import actu from "../../public/data/actu/latest.json";
+
+const t = {
+  title: "News — data centers, projects and debates | ScoreMyDataCenter",
+  description: "The daily radar of the data-center sector: new projects, local debates, regulation, market. Sourced, neutral, no agenda.",
+  h1: "News — the data-center sector, day by day",
+  lead: "What's moving on data centers: new projects, local debates, regulation, market. A daily radar — sourced, neutral, no agenda.",
+  frame: "<b>How to read this page.</b> These are <b>external news items</b>, each linking to its source. We <b>summarise them in one neutral line</b> — we do not reproduce the articles and <b>we do not grade this news</b>. A detected project is flagged <span class='badge-inline'>Project</span>; it enters the observatory \"on watch\" only after verification.",
+  topics: { projet: "Project", debat: "Debate", activisme: "Debate", souverainete: "Sovereignty", moratoire: "Moratorium", reglementation: "Regulation", marche: "Market" },
+  externalSource: "source",
+  empty: "No news yet — the radar runs every day.",
+};
+---
+
+<Base
+  lang="en"
+  title={t.title}
+  description={t.description}
+  tagline="Independent observatory"
+  altHref="/fr/actu"
+  altLabel="🇫🇷 FR"
+  nav={EN_NAV}
+>
+  <section class="section">
+    <div class="section-inner">
+      <p class="hero-eyebrow">Independent observatory</p>
+      <h1 class="actu-h1">{t.h1}</h1>
+      <p class="actu-lead">{t.lead}</p>
+      <ActuFeed lang="en" t={t} items={actu.items} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .actu-h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); letter-spacing: -0.02em; margin: 0.25em 0 0.3em; line-height: 1.08; }
+  .actu-lead { color: var(--ink-soft); font-size: 1.08rem; max-width: 64ch; margin: 0 0 8px; }
+</style>

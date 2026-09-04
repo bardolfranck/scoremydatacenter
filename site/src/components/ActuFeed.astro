@@ -1,0 +1,114 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+//
+// "Actu / News" — the sector radar. Renders EXTERNAL news items: headline (links
+// to the source), OUR one-line neutral summary (never the article, A-20 +
+// copyright), source attribution, date, a topic badge. Detected PROJECTS are
+// badged inline (not a separate empty section) until v2 gives real volume.
+// Hard rules: only `publishable` items render; NO grade/score anywhere; a news
+// item is never a verdict. The item summaries come pre-written and neutral from
+// the classifier; this component only lays them out.
+interface Source { publisher: string; url: string; published_at?: string; accessed?: string; }
+interface Item {
+  id: string; lang: string; topic: string; headline: string; summary: string;
+  source: Source; entities?: Record<string, string>; publishable?: boolean;
+}
+interface Props { lang: "fr" | "en"; t: any; items: Item[]; }
+const { lang, t, items } = Astro.props;
+
+// Only what passed the human gate. A missing flag is treated as NOT publishable.
+const visible = (items ?? []).filter((i) => i.publishable === true);
+
+const badgeClass: Record<string, string> = {
+  projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
+  moratoire: "moratoire", reglementation: "regl", marche: "marche",
+};
+const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
+const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); return isNaN(+d) ? s : dtf.format(d); };
+---
+
+<section class="actu">
+  <p class="actu-frame" set:html={t.frame}></p>
+
+  <div class="actu-feed">
+    {visible.map((it) => {
+      const isProjet = it.topic === "projet";
+      const cls = badgeClass[it.topic] ?? "";
+      return (
+        <article class:list={["actu-item", { projet: isProjet }]}>
+          <div class="actu-item-top">
+            <span class:list={["actu-badge", cls]}>{t.topics?.[it.topic] ?? it.topic}</span>
+            {it.source?.published_at && <span class="actu-when">{fmtDate(it.source.published_at)}</span>}
+          </div>
+          <div class="actu-headline">
+            <a href={it.source?.url} target="_blank" rel="noopener nofollow">{it.headline}</a>
+          </div>
+          <p class="actu-summary">{it.summary}</p>
+          <p class="actu-src">
+            {it.source?.publisher && <b>{it.source.publisher}</b>}
+            <span class="actu-ext">{t.externalSource} ↗</span>
+          </p>
+        </article>
+      );
+    })}
+  </div>
+
+  {visible.length === 0 && <p class="actu-empty">{t.empty}</p>}
+</section>
+
+<style>
+  .actu { max-width: 1000px; }
+  .actu-frame {
+    margin: 4px 0 24px; padding: 11px 15px; background: var(--wash);
+    border: 1px solid var(--line); border-left: 3px solid var(--muted);
+    border-radius: 10px; font-size: 0.88rem; line-height: 1.55; color: var(--ink-soft);
+  }
+  .actu-frame :global(b) { color: var(--ink); }
+  .actu-frame :global(.badge-inline) {
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.08em;
+    text-transform: uppercase; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+    background: var(--accent, #0f5fb8); color: #fff; vertical-align: middle;
+  }
+  .actu-feed { display: grid; gap: 14px; }
+  .actu-item {
+    background: var(--surface, #fff); border: 1px solid var(--line);
+    border-radius: 14px; padding: 16px 18px; display: grid; gap: 7px;
+  }
+  .actu-item.projet {
+    border-left: 4px solid var(--accent, #0f5fb8);
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent, #0f5fb8) 6%, transparent), var(--surface, #fff) 14%);
+  }
+  .actu-item-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .actu-badge {
+    font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.08em;
+    text-transform: uppercase; font-weight: 700; padding: 3px 9px; border-radius: 6px;
+    background: var(--wash); color: var(--muted);
+  }
+  .actu-badge.projet { background: var(--accent, #0f5fb8); color: #fff; }
+  .actu-badge.debat { background: #fdecec; color: #a02334; }
+  .actu-badge.moratoire { background: #efe7fb; color: #5b3ba6; }
+  .actu-badge.souv { background: #e7f3ee; color: #0b7a4b; }
+  .actu-badge.regl { background: #eef2f7; color: #2f6fed; }
+  .actu-badge.marche { background: #fff4e0; color: #9a5b00; }
+  .actu-when { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+  .actu-headline { font-size: 1.05rem; font-weight: 650; line-height: 1.3; }
+  .actu-headline a { color: var(--ink); text-decoration: none; }
+  .actu-headline a:hover { color: var(--accent, #0f5fb8); text-decoration: underline; }
+  .actu-summary { color: var(--ink-soft); font-size: 0.95rem; margin: 0; }
+  .actu-src { font-size: 0.8rem; color: var(--muted); margin: 0; }
+  .actu-src b { color: var(--ink-soft); font-weight: 600; }
+  .actu-ext {
+    font-family: var(--font-mono); font-size: 0.64rem; border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 6px; margin-left: 6px; color: var(--muted);
+  }
+  .actu-empty { color: var(--muted); padding: 24px 0; }
+  @media (prefers-color-scheme: dark) {
+    .actu-item { background: #141a24; }
+    .actu-badge.debat { background: #3a1a20; color: #f3b3bd; }
+    .actu-badge.moratoire { background: #241a3a; color: #cdb8f3; }
+    .actu-badge.souv { background: #12251b; color: #8fe0b0; }
+    .actu-badge.regl { background: #16213a; color: #a9c3f0; }
+    .actu-badge.marche { background: #2a2113; color: #e6c58a; }
+  }
+</style>

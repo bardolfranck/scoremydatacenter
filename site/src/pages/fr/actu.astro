@@ -1,0 +1,45 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// FR "Actu" — sector radar. Reads public/data/actu/latest.json (fixture until the
+// veille classifier feeds it), renders via ActuFeed. External news, never a grade.
+import Base from "../../layouts/Base.astro";
+import ActuFeed from "../../components/ActuFeed.astro";
+import { FR_NAV } from "../../config/nav";
+import actu from "../../../public/data/actu/latest.json";
+
+const t = {
+  title: "Actu — data centers, projets et débats | ScoreMyDataCenter",
+  description: "Le radar quotidien du secteur des data centers en France : nouveaux projets, débats locaux, réglementation, marché. Sourcé, neutre, sans parti pris.",
+  h1: "Actu — le secteur des data centers, jour après jour",
+  lead: "Ce qui bouge sur les data centers : nouveaux projets, débats locaux, réglementation, marché. Un radar quotidien, sourcé, sans parti pris.",
+  frame: "<b>Comment lire cette page.</b> Ce sont des <b>actualités externes</b>, chacune renvoyant à sa source. Nous les <b>résumons en une ligne neutre</b> — nous ne reproduisons pas les articles et <b>nous ne notons pas ces actualités</b>. Un projet détecté est signalé <span class='badge-inline'>Projet</span> ; il entre « en veille » dans l'observatoire seulement après vérification.",
+  topics: { projet: "Projet", debat: "Débat", activisme: "Débat", souverainete: "Souveraineté", moratoire: "Moratoire", reglementation: "Réglementation", marche: "Marché" },
+  externalSource: "source",
+  empty: "Pas d'actualité pour le moment — le radar tourne chaque jour.",
+};
+---
+
+<Base
+  lang="fr"
+  title={t.title}
+  description={t.description}
+  tagline="Observatoire indépendant"
+  altHref="/news"
+  altLabel="🇬🇧 EN"
+  nav={FR_NAV}
+>
+  <section class="section">
+    <div class="section-inner">
+      <p class="hero-eyebrow">Observatoire indépendant</p>
+      <h1 class="actu-h1">{t.h1}</h1>
+      <p class="actu-lead">{t.lead}</p>
+      <ActuFeed lang="fr" t={t} items={actu.items} />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .actu-h1 { font-size: clamp(1.7rem, 3.5vw, 2.5rem); letter-spacing: -0.02em; margin: 0.25em 0 0.3em; line-height: 1.08; }
+  .actu-lead { color: var(--ink-soft); font-size: 1.08rem; max-width: 64ch; margin: 0 0 8px; }
+</style>

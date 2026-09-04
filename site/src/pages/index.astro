@@ -3,6 +3,7 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import Landing from "../components/Landing.astro";
+import ActuStrip from "../components/ActuStrip.astro";
 import { EN_NAV } from "../config/nav";
 import { EN_ABOUT } from "../config/about";
 import { STATS, statView, fmtInt } from "../config/stats";
@@ -234,3 +235,4 @@ const t = {
 ---
 
 <Landing lang="en" t={t} />
+<ActuStrip lang="en" />
