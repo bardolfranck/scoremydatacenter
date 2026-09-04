@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest
 
 install:
 	uv sync
@@ -241,3 +241,10 @@ veille-actu:
 	@cd $(NEWSROOM) && git add actu && \
 	  if git diff --cached --quiet; then echo "veille-actu: rien de neuf"; \
 	  else git commit -q -m "actu: archive $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-actu: archive poussée au newsroom" || echo "veille-actu: commit local (push différé — offline?)"); fi
+
+# DEPLOY side: regenerate the deployed site/public/data/actu/latest.json from the COMMITTED newsroom
+# archives (approved-only, windowed, transient _gate stripped). The CI run's public/data is
+# ephemeral → the newsroom is the source of truth. Call this in the site build BEFORE astro build.
+# No network, no LLM key. (agent-codeur-site 2026-09-04)
+actu-latest:
+	uv run python -m pipelines.veille.actu --regen-latest --newsroom $(NEWSROOM) --public-data site/public/data

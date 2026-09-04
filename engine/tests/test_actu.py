@@ -152,6 +152,40 @@ def test_allowlist_loads_and_excludes_dcmag():
     assert not any("dcmag" in d or "datacenter-magazine" in d for d in dom)   # commercial, excluded
 
 
+def _recent():
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+
+
+def test_actu_latest_approved_windowed_and_stripped(tmp_path):
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    d = nr / "actu" / "2026-09-04"; d.mkdir(parents=True)
+    items = [
+        {"id": "g", "approved": True, "topic": "marche", "source": {"published_at": _recent()}, "_gate": {"confidence": "high"}},
+        {"id": "r", "approved": False, "topic": "debat", "source": {"published_at": _recent()}},
+        {"id": "old", "approved": True, "topic": "marche", "source": {"published_at": "20200101T000000Z"}},
+    ]
+    (d / "actu.json").write_text(json.dumps({"items": items}))
+    actu.actu_latest(nr, pub, days=14)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == ["g"]   # approved+fresh only (r unapproved, old out of window)
+    assert "_gate" not in latest["items"][0]             # transient signal never public
+
+
+def test_promote_persists_approval_to_archive(tmp_path):
+    nr, pub, date = tmp_path / "newsroom", tmp_path / "public", "2026-09-04"
+    d = nr / "actu" / date; d.mkdir(parents=True)
+    (d / "actu.json").write_text(json.dumps({"items": [
+        {"id": "keep", "topic": "projet", "publishable": True, "approved": False, "source": {"published_at": _recent()}},
+        {"id": "skip", "topic": "news", "publishable": True, "approved": False, "source": {"published_at": _recent()}},
+    ]}))
+    actu.promote(["keep"], newsroom_root=nr, public_data=pub, date=date)
+    arch = {i["id"]: i for i in json.loads((d / "actu.json").read_text())["items"]}
+    assert arch["keep"]["approved"] is True and arch["skip"]["approved"] is False   # persisted in the archive
+    latest = json.loads((pub / "actu" / "latest.json").read_text())["items"]
+    assert [i["id"] for i in latest] == ["keep"]         # regenerated approved-only from the archive
+
+
 def test_promote_sets_approved_and_writes_latest(tmp_path):
     date = "2026-09-04"
     nr = tmp_path / "newsroom"
