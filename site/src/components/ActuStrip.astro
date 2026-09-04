@@ -9,7 +9,7 @@ import actu from "../../public/data/actu/latest.json";
 interface Props { lang: "fr" | "en"; }
 const { lang } = Astro.props;
 
-const items = (actu.items ?? []).filter((i: any) => i.publishable === true).slice(0, 3);
+const items = (actu.items ?? []).filter((i: any) => i.approved === true).slice(0, 3);
 if (items.length === 0) return; // no strip when there is nothing fresh
 
 const L = lang === "fr"

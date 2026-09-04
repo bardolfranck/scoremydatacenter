@@ -12,13 +12,16 @@
 interface Source { publisher: string; url: string; published_at?: string; accessed?: string; }
 interface Item {
   id: string; lang: string; topic: string; headline: string; summary: string;
-  source: Source; entities?: Record<string, string>; publishable?: boolean;
+  source: Source; entities?: Record<string, string>; publishable?: boolean; approved?: boolean;
 }
 interface Props { lang: "fr" | "en"; t: any; items: Item[]; }
 const { lang, t, items } = Astro.props;
 
-// Only what passed the human gate. A missing flag is treated as NOT publishable.
-const visible = (items ?? []).filter((i) => i.publishable === true);
+// Lock 2 (defense in depth). The DEPLOYED data already carries only human-gate-
+// approved items (lock 1, pipeline side) — we re-filter here so nothing without
+// `approved` can ever render. `approved` = Franck said yes; distinct from
+// `publishable` (license allows it). A missing flag is treated as NOT approved.
+const visible = (items ?? []).filter((i) => i.approved === true);
 
 const badgeClass: Record<string, string> = {
   projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
