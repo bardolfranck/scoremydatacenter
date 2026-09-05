@@ -25,6 +25,12 @@ const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
+// Anti-pillage (Franck 2026-09-05): the bulk ranking table must NOT emit the exact
+// /100 score per cell (a scrapable dump of the whole scored corpus). It sorts by
+// the LETTER instead — enough to rank/browse; the exact /100 stays in the fiche
+// (human) and the API (machine, gated). Letter → ordinal so parseFloat sort holds.
+const LETTER_RANK: Record<string, number> = { A: 5, B: 4, C: 3, D: 2, E: 1 };
+const gradeRank = (graded: any) => (graded && typeof graded.grade === "string" && LETTER_RANK[graded.grade] ? LETTER_RANK[graded.grade] : -1);
 
 // Percentile-context register (brief 2026-07-12 · A-27): we SITUATE, we never judge.
 // A presentation-only derived field, computed at build from the frozen published
@@ -158,12 +164,12 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                 data-status={dc.project_status}
                 data-country={dc.country}
                 data-search={haystack(dc)}
-                data-k-site={sortValue(dc.grades.site)}
-                data-k-operator={sortValue(dc.grades.project_process)}
+                data-k-site={gradeRank(dc.grades.site)}
+                data-k-operator={gradeRank(dc.grades.project_process)}
                 data-k-confidence={confidenceRank[dc.confidence.level]}
                 data-k-power={dc.power_mw ?? -1}
                 data-k-year={dc.expected_commissioning ?? -1}
-                {...Object.fromEntries(pillars.map((p) => [`data-k-${p.id}`, sortValue(dc.pillars[p.id])]))}
+                {...Object.fromEntries(pillars.map((p) => [`data-k-${p.id}`, gradeRank(dc.pillars[p.id])]))}
               >
                 <td class="rank-index"></td>
                 <td class="rank-project">
@@ -183,7 +189,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                 })()}></td>
                 <td class="rank-rails">
                   {(() => { const p = pctInfo(sitePool, dc.grades.site, dc, "site"); return (
-                  <div class="rail" title={typeof dc.grades.site.score === "number" ? `${dc.grades.site.score.toFixed(1)}/100` : undefined}>
+                  <div class="rail">
                     <span class="rail-axis">{t.railSite}</span>
                     <ScoreBadge
                       label={t.thSite}
@@ -201,7 +207,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{t.naLabel}</span></Fragment>}
                   </div> ); })()}
                   {(() => { const p = pctInfo(ppPool, dc.grades.project_process, dc, "operator"); return (
-                  <div class="rail" title={typeof dc.grades.project_process.score === "number" ? `${dc.grades.project_process.score.toFixed(1)}/100` : undefined}>
+                  <div class="rail">
                     <span class="rail-axis">{t.railOperator}</span>
                     <ScoreBadge
                       label={t.thOperator}
