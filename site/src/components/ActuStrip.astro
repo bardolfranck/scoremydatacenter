@@ -33,7 +33,7 @@ const fmt = (s?: string) => { if (!s) return ""; const d = new Date(s); return i
           <li>
             <span class="ast-when">{fmt(it.source?.published_at)}</span>
             {it.topic === "projet" && <span class="ast-badge">{L.projet}</span>}
-            <a class="ast-t" href={it.source?.url} target="_blank" rel="noopener nofollow">{it.headline}</a>
+            <a class="ast-t" href={it.source?.url} target="_blank" rel="noopener nofollow">{it.headline_i18n?.[lang] ?? it.headline}</a>
           </li>
         ))}
       </ul>

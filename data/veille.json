@@ -1,0 +1,4 @@
+{
+  "note": "Single source of truth for the 'en veille' scope (A-26): sites shown WITHOUT a published grade. Consumed by engine/stats.py (named counts) and site/scripts/scrub-enveille.mjs (grade scrub). Editing this file is a publication decision - Franck signs.",
+  "countries": ["IL"]
+}
