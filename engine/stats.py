@@ -23,6 +23,18 @@ bonus/friction editorial rule live site-side (i18n), never here.
 
 from collections import Counter
 
+def load_veille(data_dir=None) -> set[str]:
+    """The 'en veille' country scope (A-26) — single source: data/veille.json.
+    Consumed here for the named counts and by site/scripts/scrub-enveille.mjs for
+    the grade scrub; a missing file means an empty scope (nothing withheld)."""
+    from .core import DATA_DIR
+    import json as _json
+    path = (data_dir or DATA_DIR) / "veille.json"
+    if not path.exists():
+        return set()
+    return set(_json.loads(path.read_text()).get("countries", []))
+
+
 # Below this many assessed sites a percentage is noise, not a fact.
 # 5, pas 10 (Franck, 2026-07-16) : une part sur 8 sites se publie — avec son n
 # affiché, le lecteur juge. Sous 5, c'est une anecdote déguisée en moyenne.
@@ -323,7 +335,8 @@ def _coverage_mean_pct(sites: list[dict], mvp_ids: list[str]) -> float:
 
 
 def _perimeter(sites: list[dict], watchlist: list[dict], mvp_ids: list[str],
-               results: dict[str, dict] | None = None) -> dict:
+               results: dict[str, dict] | None = None,
+               veille_countries: set[str] | None = None) -> dict:
     countries = sorted({dc["identity"]["country"] for dc in sites})
     stats: dict[str, dict] = {}
     gated: dict[str, int] = {}
@@ -341,8 +354,14 @@ def _perimeter(sites: list[dict], watchlist: list[dict], mvp_ids: list[str],
         stats["pipeline"] = pipe
     if (watch := _watchlist_stat(watchlist, set(countries))) is not None:
         stats["oppositions"] = watch
+    # Named counts (coherence brief 2026-09-05): the reader never does the subtraction.
+    veille_countries = veille_countries or set()
+    n_veille = sum(1 for dc in sites if dc["identity"].get("country") in veille_countries)
     peri = {
         "n_sites": len(sites),
+        "n_published": len(sites),
+        "n_en_veille": n_veille,
+        "n_scored_excl_enveille": len(sites) - n_veille,
         "countries": countries,
         "coverage_mean_pct": _coverage_mean_pct(sites, mvp_ids),
         "by_status": dict(sorted(Counter(dc["identity"]["project_status"] for dc in sites).items())),
@@ -360,6 +379,7 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
                 results: dict[str, dict] | None = None) -> dict:
     """Compute the full stats.json payload (see module docstring for the contract)."""
     watchlist = watchlist or []
+    veille_countries = load_veille()
     sites = [dc for dc_id, dc in sorted(datacenters.items()) if not dc_id.startswith("zz-")]
     mvp_ids = [i["id"] for i in methodology["indicators"] if i.get("mvp")]
 
@@ -371,10 +391,10 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
                  if isinstance((src := entry.get("source")), dict) and src.get("accessed")]
     corpus_date = max(dates) if dates else None
 
-    perimeters: dict[str, dict] = {"europe": _perimeter(sites, watchlist, mvp_ids, results)}
+    perimeters: dict[str, dict] = {"europe": _perimeter(sites, watchlist, mvp_ids, results, veille_countries)}
     for country in sorted({dc["identity"]["country"] for dc in sites}):
         c_sites = [dc for dc in sites if dc["identity"]["country"] == country]
-        peri = _perimeter(c_sites, watchlist, mvp_ids, results)
+        peri = _perimeter(c_sites, watchlist, mvp_ids, results, veille_countries)
         regions: dict[str, dict] = {}
         for slug in sorted({r for dc in c_sites if (r := _region(dc))}):
             r_sites = [dc for dc in c_sites if _region(dc) == slug]

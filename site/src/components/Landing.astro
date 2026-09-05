@@ -16,6 +16,7 @@ import methodologyData from "../../public/data/methodology.json";
 import indicesData from "../../public/data/indices.json";
 import showcaseData from "../../public/data/home_showcase.json";
 import SatelliteWall from "./SatelliteWall.astro";
+import ActuStrip from "./ActuStrip.astro";
 import CountryRing from "./CountryRing.astro";
 import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
 
@@ -167,6 +168,10 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       2026-07-20): the hero states the number, the wall shows those sites —
       the strongest one-two on the page, and its motion is the scroll magnet. */}
   <SatelliteWall lang={lang} dcById={dcById} />
+
+  {/* Light "the site follows the sector" cue — a dynamic strip, not a news feed
+      (Franck 2026-09-04). Self-hides when there is nothing fresh/approved. */}
+  <ActuStrip lang={lang} />
 
   <section class="manifesto" aria-label={t.manifesto.aria}>
     <div class="manifesto-inner">

@@ -7,6 +7,9 @@
   "perimeters": {
     "europe": {
       "n_sites": 0,
+      "n_published": 0,
+      "n_en_veille": 0,
+      "n_scored_excl_enveille": 0,
       "countries": [],
       "coverage_mean_pct": 0.0,
       "by_status": {},

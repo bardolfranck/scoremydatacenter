@@ -26,7 +26,14 @@ const SENTINEL = "en_attente";
 // it) — it is NOT the discriminant. Until the pipeline emits a dedicated flag,
 // en-veille = a whitelisted country (Israel now; Gulf next). Prefer an explicit
 // per-site flag when the pipeline provides one.
-const EN_VEILLE_COUNTRIES = new Set(["IL"]);
+// Single source of truth: data/veille.json (also read by engine/stats.py for the
+// named counts). Fallback to the historical constant if the file is absent.
+let veilleCountries = ["IL"];
+try {
+  const veilleCfg = JSON.parse(readFileSync(join(HERE, "..", "..", "data", "veille.json"), "utf8"));
+  if (Array.isArray(veilleCfg.countries)) veilleCountries = veilleCfg.countries;
+} catch { /* keep fallback */ }
+const EN_VEILLE_COUNTRIES = new Set(veilleCountries);
 const isEnVeille = (o) =>
   o?.en_veille === true ||
   o?.publication_status === "en_veille" ||
