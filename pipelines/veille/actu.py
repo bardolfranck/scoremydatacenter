@@ -197,9 +197,30 @@ def gate(item: dict, allowlist: set[str]) -> bool:
     )
 
 
+def _interleave(*lists: list[dict]) -> list[dict]:
+    """Round-robin merge: one from each list in turn, so no single source starves the classify
+    budget (the `limit` cap below stops after N relevant items; without interleaving, whichever
+    harvest came first would eat the whole budget and the other feed would never be classified)."""
+    out, i = [], 0
+    while any(i < len(lst) for lst in lists):
+        for lst in lists:
+            if i < len(lst):
+                out.append(lst[i])
+        i += 1
+    return out
+
+
 def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]:
-    """Harvest GDELT-FR → classify each headline → relevant items (news + project leads)."""
-    records = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=min(limit or 50, 250))
+    """Harvest GDELT FR + EN-world → classify each headline → relevant items (news + project leads).
+
+    FR = French outlets (sourcecountry:france); EN = anglophone DC news worldwide (sourcelang, no
+    country) — the world lane Franck asked for 2026-09-05. Both are DETECTION only. The two feeds
+    are interleaved so the `limit` classify-budget covers both, then deduped by URL below.
+    """
+    cap = min(limit or 50, 250)
+    fr = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=cap)
+    en = signal.fetch_gdelt_country("EN", accessed, timespan=timespan, maxrecords=cap)
+    records = _interleave(fr, en)
     seen, items = set(), []
     for rec in records:
         url = (rec.get("sources") or [None])[0]

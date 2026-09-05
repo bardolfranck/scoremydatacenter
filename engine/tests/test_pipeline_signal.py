@@ -131,6 +131,18 @@ def test_gdelt_country_prefixes_sourcecountry_dedupes_and_throttles(monkeypatch)
     assert "data centre" in joined and "centre de données" in joined
 
 
+def test_gdelt_en_spec_scopes_by_language_not_country(monkeypatch):
+    # The EN/world spec (Franck 2026-09-05) reaches anglophone DC news EVERYWHERE: it must scope
+    # by sourcelang and carry NO sourcecountry filter (that filter was what starved EN coverage).
+    seen = []
+    monkeypatch.setattr(signal, "_gdelt_fetch_raw",
+                        lambda query, **kw: seen.append(query) or {"articles": []})
+    signal.fetch_gdelt_country("EN", "2026-09-05", sleep=lambda s: None)
+    assert seen and all(q.startswith("sourcelang:eng ") for q in seen)
+    assert not any("sourcecountry:" in q for q in seen)     # global, never country-filtered
+    assert "data center" in " ".join(seen)
+
+
 def test_gdelt_country_retries_a_slow_walked_query_then_succeeds(monkeypatch):
     # GDELT punishes bursts by slow-walking past the timeout (SourceUnavailable), not by a clean
     # 429 — the harvest must retry with backoff instead of silently losing the country.
