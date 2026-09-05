@@ -307,6 +307,21 @@ GDELT_COUNTRY_SPECS = {
             '(projet OR construction OR implantation OR investissement OR hyperscale OR inauguration)',
         ],
     },
+    # EN is the WORLD ANNOUNCE spec (decision Franck 2026-09-05): anglophone DC news everywhere.
+    # NO sourcecountry (global) + sourcelang scopes to English outlets. Feeds the ACTU/news lane
+    # only (actu.py), not the FR watchlist (fr.py). Same doctrine as FR: DETECTION, never a score.
+    # NOTE (live-verify at deploy): confirm the GDELT DOC `sourcelang` token on the first spaced
+    # request — if the language filter comes back empty, the English query terms below still carry
+    # the selection (drop the sourcelang line rather than shipping an empty EN feed).
+    "EN": {
+        "intent": "announce",
+        "sourcelang": "eng",
+        "queries": [
+            '("data center" OR "datacenter" OR "data centre") '
+            '(project OR construction OR hyperscale OR "artificial intelligence" OR gigawatt '
+            'OR investment OR permit OR opposition OR moratorium)',
+        ],
+    },
 }
 
 
@@ -334,7 +349,11 @@ def fetch_gdelt_country(iso: str, accessed: str, *, timespan: str = "6m", maxrec
     for i, q in enumerate(spec["queries"]):
         if i:
             sleep(_GDELT_THROTTLE_S)
-        full = f'sourcecountry:{spec["sourcecountry"]} {q}'
+        # A spec scopes by OUTLET country and/or language; both are optional. The EN/world spec
+        # sets sourcelang (no sourcecountry) to reach anglophone DC news everywhere — the FR-only
+        # sourcecountry filter was what starved the EN coverage (diag 2026-09-05, decision Franck).
+        prefix = " ".join(f"{k}:{spec[k]}" for k in ("sourcecountry", "sourcelang") if spec.get(k))
+        full = f"{prefix} {q}".strip()
         data = None
         for attempt in range(retries):
             try:

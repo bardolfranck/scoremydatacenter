@@ -1,5 +1,5 @@
 {
-  "_note": "Trusted publisher DOMAINS for the ACTU green lane (Franck 2026-09-04). A news whose source domain is on this list AND whose topic is neutral (marche/reglementation/souverainete) AND names no private person AND is not a project AND is high-confidence auto-publishes (approved=true) WITHOUT the human gate. Everything else waits for Franck. This list GATES auto-publication, so every change is a reviewable PR. DCMag (commercial) is deliberately EXCLUDED — it is a lead-to-verify, never an auto-published source.",
+  "_note": "Trusted publisher DOMAINS for the ACTU green lane (Franck 2026-09-04; EN-world tier added 2026-09-05 when the actu lane opened to global anglophone DC news). A news whose source domain is on this list AND whose topic is neutral (marche/reglementation/souverainete) AND names no private person AND is not a project AND is high-confidence auto-publishes (approved=true) WITHOUT the human gate. Everything else waits for Franck. This list GATES auto-publication, so every change is a reviewable PR. DCMag family (datacenter-magazine.fr, dcmag.fr) is deliberately EXCLUDED — commercial lead-to-verify, never auto-published; datacentremagazine.com (BizClik) is likewise excluded (commercial + name-collision).",
   "domains": [
     "lemonde.fr",
     "lesechos.fr",
@@ -25,6 +25,21 @@
     "bloomberg.com",
     "ft.com",
     "bbc.com",
-    "bbc.co.uk"
+    "bbc.co.uk",
+    "nytimes.com",
+    "wsj.com",
+    "theguardian.com",
+    "afp.com",
+    "datacenterfrontier.com",
+    "lightreading.com",
+    "capacitymedia.com",
+    "uptimeinstitute.com",
+    "sdxcentral.com",
+    "utilitydive.com",
+    "canarymedia.com",
+    "latitudemedia.com",
+    "heatmap.news",
+    "arstechnica.com",
+    "theverge.com"
   ]
 }
