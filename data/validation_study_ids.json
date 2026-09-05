@@ -1,0 +1,4 @@
+{
+  "note": "A-19 firewall: ids of the INTERNAL precursor-validation study cohort. Their PUBLIC status stays 'en veille' — their study site grade is held privately and must NEVER be SERVED as an A-E letter. Empty today; every id added here is asserted grade-scrubbed ('en_attente') in the served artifacts by test_study_firewall.py. Editing = a study-scope decision.",
+  "ids": []
+}
