@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
+"""Phase-1 en-veille onboarding — the load-bearing invariants (no network).
+
+An announced project reaches the PUBLIC lane ONLY as « en veille »: a sourced fact, NO grade
+(A-19, structurally impossible in the watchlist schema). The named-operator gate, the pipeline-
+status gate, and the served/watchlist dedup are pinned here so a regression can't leak a graded
+or low-quality fiche to the public surface.
+"""
+import json
+
+from pipelines.veille import onboard
+
+
+_GEO = lambda lat, lon: {"country": "FR" if lat < 49 else "DE", "municipality": "Ville"}  # noqa: E731
+
+
+def _rows():
+    return [
+        {"name": "Equinix PA12", "operator": "Equinix", "lat": 48.90, "lon": 2.30,
+         "project_status": "under_construction", "source_url": "https://www.openstreetmap.org/way/111"},
+        {"name": "unnamed", "operator": "UNKNOWN — to fill", "lat": 50.0, "lon": 8.6,
+         "project_status": "announced", "source_url": "https://www.openstreetmap.org/way/222"},
+        {"name": "Old DC", "operator": "Colt", "lat": 45.0, "lon": 9.0,
+         "project_status": "operational", "source_url": "https://www.openstreetmap.org/way/333"},
+        {"name": "Vantage X", "operator": "Vantage", "lat": 51.0, "lon": 7.0,
+         "project_status": "announced", "source_url": "https://www.openstreetmap.org/way/444"},
+    ]
+
+
+def _no_served(monkeypatch):
+    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+
+
+def test_gates_named_and_pipeline_only(monkeypatch):
+    _no_served(monkeypatch)
+    cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
+    assert rep["candidates"] == 2                       # Equinix + Vantage
+    assert rep["dropped"]["unnamed"] == 1               # UNKNOWN operator dropped
+    assert rep["dropped"]["status"] == 1                # operational dropped (pipeline only)
+    ids = {c["id"] for c in cand}
+    assert ids == {"fr-equinix-ville-111", "de-vantage-ville-444"}
+
+
+def test_entries_carry_no_grade_and_validate(monkeypatch):
+    _no_served(monkeypatch)
+    cand, _ = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
+    assert onboard._validate(cand) == []               # schema-valid en-veille
+    for c in cand:
+        assert c["facts"] == []                         # bare announced project, no fabricated fact
+        assert "grade" not in json.dumps(c).lower()     # A-19: a grade is impossible here
+        assert set(c["source"]) == {"title", "url", "accessed"}
+
+
+def test_dedup_against_served_drops_public_site(monkeypatch):
+    # Equinix at the same 2 dp cell as a served Equinix → already public → not re-listed.
+    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {(48.90, 2.30): {"equinix"}})
+    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
+    assert rep["dropped"]["served_dup"] == 1
+    assert {c["operator"] for c in cand} == {"Vantage"}   # Equinix deduped out
+
+
+def test_dedup_against_existing_watchlist(monkeypatch):
+    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {(51.0, 7.0): {"vantage"}})
+    cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
+    assert rep["dropped"]["watchlist_dup"] == 1
+    assert {c["operator"] for c in cand} == {"Equinix"}
