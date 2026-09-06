@@ -193,3 +193,67 @@ thin foreign corpus never shows a false A.
 **US and any non-EU-commons country → the watchlist, not a score** (cadrage A-19). Sourced facts,
 no letter, no contradictoire: drop a `calibration/watchlist/<country>.json` array (same shape as
 `fr-oppositions.json`); `make prod-artifacts` renders the "En veille" markers.
+
+---
+
+## État des lieux collecte → notation → affichage (2026-09-06) — la rationalisation
+
+*Gravé sur demande directe de Franck : rationaliser la stack de collecte/notation/insertion site.
+Décidé côté idées, pas encore côté code. Vision + estimation, pour caler l'équipe.*
+
+### Le constat : 4 familles de collecte, une seule arrive jusqu'au site
+
+| Famille | Ce qu'elle récolte | Où ça atterrit aujourd'hui |
+|---|---|---|
+| **① `spatial/`** (~30 fichiers, par pays) | structurel + coordonnées | **moteur → 1412 scorés → SITE** ✅ (la seule boucle complète) |
+| **② `press/`** (GDELT signal) | ~4000 détections presse | **cul-de-sac** : niveau *article* (titre, pas de coords, pas d'entité projet) → non rattachable ✗ |
+| **③ `veille/`** (radar quotidien) | ~10 candidats / passage | **fil Actu** = rappel visuel, puis meurt ✗ |
+| **④ proposeurs** (`dcwatch/`, `eed/`, `seed/`) | candidats de sources ciblées | triage manuel → s'évapore ✗ |
+
+**Chiffres clés** : sur 1404 sites notés, **1355 sont opérationnels** (96 %) ; seulement **57 sont
+pipeline** (announced 49 / permitting 6 / construction 2). La contestation, elle, vit sur les
+**annoncés** — qu'on ne score quasiment pas. D'où le double symptôme : un instantané figé
+d'opérationnels + un ticker d'actu qui **ne renourrit jamais les scores**.
+
+**Pourquoi ②③④ meurent** : le moteur a été bâti pour des sites opérationnels avec data spatiale
+complète. Les signaux presse/veille sont au niveau article → **il manque un maillon
+« signal → projet géolocalisé + dédupliqué » avant le moteur.** Preuve que c'est faisable : le
+collecteur d'étude `press/osm_projects.py` (nuit 2026-09-06) a géolocalisé + scoré 34 projets
+annoncés (cohorte T0b). C'est le **premier morceau** du maillon manquant.
+
+### La cible : UN tapis roulant
+
+```
+DÉTECTER              RELIER + NETTOYER          SCORER            PUBLIER
+②③④ + OSM        →   signal → projet         →  moteur        →  bandeau home
+(presse/GDELT/OSM)    géolocalisé, dédupliqué,    existant          « derniers projets
+                      entité + niveau opposition  (inchangé)         scorés » + flux API
+                      ▲ LE CHAÎNON MANQUANT
+```
+
+Effet : le site passe de **« one-shot best-effort qui meurt lentement »** à **observatoire vivant**
+(nouveaux scorés en tête de home chaque semaine, sans intervention) ; la **data fraîche devient un
+vecteur d'appétence API** ; le même tapis fait grossir la **cohorte de validation** (N↑ → le pari
+« précurseur » devient testable) et peut alimenter la **watchlist publique** en auto.
+
+### Estimation du chantier (effort / difficulté, phasé)
+
+| Phase | Contenu | Difficulté | Durée indicative | Risque principal |
+|---|---|---|---|---|
+| **1 — Quick win visible** | promouvoir `osm_projects.py` (déjà écrit) d'étude→onboarding PUBLIC des projets annoncés EU (gate voie-verte/voie-rouge) + bandeau home « derniers projets scorés » (comme le strip Actu déjà bâti) | **Faible-Moyenne** | **~1 semaine** | faux projets auto-onboardés → le gate humain existe déjà (A-22) |
+| **2 — Le vrai maillon** | extracteur **presse → projet** : titre GDELT → géocode + entité + niveau opposition + dédup ; débloque les ~4000 détections ET la quantification de contestation (PQR/moratoire) | **Moyenne-Haute** | **~2-4 semaines** | qualité/coût LLM d'extraction ; géocodage titre→lieu ; dédup |
+| **3 — Unifier + continu** | tout faire déboucher sur `orchestrate.py` (un seul run), cron continu, surface « flux frais » pour l'API | **Moyenne** | **~1 semaine** | câblage de pièces existantes, peu de risque neuf |
+
+**Total ≈ 5-7 semaines** pour l'« observatoire vivant » complet, **mais un premier résultat visible
+en ~1 semaine** (phase 1, sur l'acquis de la nuit). **Difficulté globale : MOYENNE** — ce n'est pas
+de la recherche : moteur + affichage existent déjà, un seul composant est réellement délicat
+(l'extracteur presse, phase 2). Le gros du reste = du **câblage** de briques qui existent.
+
+**Principe directeur** (même doctrine que « one way to run », cf. `spatial/COUNTRIES.md`) : UN seul
+chemin de run, pas de driver maison par source ; chaque famille de collecte se branche sur le
+**même** maillon « relier+nettoyer » puis le **même** moteur. On ne multiplie pas les tapis, on en
+fait converger un.
+
+> **Le « PUBLIER » du tapis (où sort le score : public vs API payante) est une décision PRODUIT, pas
+> dev.** Cadrage + pre-mortem = `1-cadrage`/`11-API/cadrage-API.md` §2bis (paywall par cycle de vie :
+> note provisoire en plage → API, note définitive → public à la livraison). Ne pas dupliquer ici.
