@@ -199,6 +199,11 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "country": e["country"],
             "project_status": e.get("project_status"),
             "watchlist_status": "en_veille",
+            # Detection date = when the project was first sourced/listed (entry-level source).
+            # Powers the « derniers projets repérés » banner (Phase-1 site vivant): the served
+            # projection had no date, so sorting « latest » was impossible. This is a FACT date,
+            # never a grade date (A-19: an en-veille entry is never graded).
+            "detected_at": (e.get("source") or {}).get("accessed"),
             # Derived marker kind so the map can style flat (styling on the nested facts[]
             # array is impractical in MapLibre expressions). A moratorium is an OFFICIAL act —
             # it outranks an opposition signal when an entry carries both. Never a grade.
