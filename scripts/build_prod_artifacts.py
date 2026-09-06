@@ -70,7 +70,11 @@ def main() -> int:
     # The zz- fixtures NEVER ship to production (Franck 2026-07-17): they are
     # internal plumbing for CI and the public clone (`make score`), not
     # something visitors should meet. Prod = the real corpus only.
-    dcs = {k: v for k, v in dcs.items() if not k.startswith("zz-")}
+    # `study-` is the A-19 firewall belt-and-suspenders (R&D, 2026-09-06): the internal
+    # precursor-validation cohort lives in a SEPARATE corpus (validation/, never read here) —
+    # this prefix drop is the second lock, so a study fiche mistakenly copied into a
+    # datacenters* panel still can NEVER be served with a real grade.
+    dcs = {k: v for k, v in dcs.items() if not k.startswith(("zz-", "study-"))}
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
     results = build_artifacts(dcs, load_methodology(), out_dir=ARTIFACTS_DIR, watchlist=watchlist)
     # Purge stale per-DC artifacts (build_artifacts writes, never deletes):
