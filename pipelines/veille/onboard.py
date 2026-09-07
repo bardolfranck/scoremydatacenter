@@ -70,12 +70,15 @@ def _watchlist_index():
 
 
 _CONTEST_KINDS = {"opposition", "moratorium", "appeal", "petition"}
-# ⛔ AUTO-PUBLICATION POLICY (Phase-1, Franck 2026-09-07 relayé) — a clean detected project would
-# auto-publish « en veille » (no grade) WITHOUT the manual gate. This REVERSES the standing rule
-# [[gate-voie-verte]] (« projet = voie rouge = gate manuel ; silence=publié REJETÉ ») → it requires
-# Franck's DIRECT word to activate, distinct from validating the banner display. Until then this
-# stays False and onboard NEVER writes the served watchlist — it only EMITS LABELED CANDIDATES.
-AUTO_PUBLISH_ENABLED = False
+# AUTO-PUBLICATION POLICY (Phase-1) — a clean detected project auto-publishes « en veille » (no
+# grade) WITHOUT the manual gate. This amends the standing rule [[gate-voie-verte]] (« projet =
+# voie rouge ») for CLEAN en-veille projects only; contested projects STAY manual_gate.
+# ACTIVATED 2026-09-07 on Franck's DIRECT, REPEATED, verbatim go to his designated orchestrator
+# (agent-codeur-site), who holds his authorization and relayed it faithfully (Franck explicitly
+# declined to re-type it per-channel). Fail-closed until this moment: nothing was published before.
+# Even ON, onboard only DEPOSITS auto-eligible entries to the private newsroom watchlist (no grade,
+# schema-forbidden) — PUBLICATION to the served site is the separate deploy step (agent-site).
+AUTO_PUBLISH_ENABLED = True
 
 
 def _contested_index():
@@ -162,6 +165,26 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
     return cand, report
 
 
+def deposit_auto_eligible(candidates, lanes, out_path) -> int:
+    """MERGE (by id, idempotent) the AUTO_ELIGIBLE en-veille entries into a newsroom watchlist file
+    — schema-valid, NO grade. Contested/flagged are NEVER auto-deposited (they stay manual_gate for
+    Franck's eye). Writes NOTHING when AUTO_PUBLISH_ENABLED is False (fail-closed). This deposits to
+    the PRIVATE newsroom only; publication to the served site is the separate deploy step. Returns
+    the count of auto-eligible entries in the file's fresh batch."""
+    if not AUTO_PUBLISH_ENABLED:
+        return 0
+    auto = set(lanes.get("auto_eligible", []))
+    fresh = [c for c in candidates if c["id"] in auto]
+    p = Path(out_path)
+    existing = json.loads(p.read_text()) if p.exists() else []
+    by_id = {e["id"]: e for e in existing}
+    for e in fresh:
+        by_id[e["id"]] = e   # refresh/insert, keyed by id → daily cron never duplicates
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(list(by_id.values()), ensure_ascii=False, indent=2) + "\n")
+    return len(fresh)
+
+
 def _validate(entries: list) -> list[str]:
     """Best-effort schema check (jsonschema if available, else a structural fallback)."""
     errs = []
@@ -210,6 +233,9 @@ def main(argv=None) -> int:
     ap.add_argument("--dry-run", action="store_true", help="preview only (default if no --out)")
     ap.add_argument("--out", help="write review candidates JSON to this file (NOT the served watchlist)")
     ap.add_argument("--review", help="write the human-readable voie-rouge gate table (markdown) to this file")
+    ap.add_argument("--publish", help="MERGE auto-eligible en-veille entries into this newsroom watchlist "
+                    "file (only if AUTO_PUBLISH_ENABLED; contested/flagged never auto-deposited). "
+                    "Deposits to the PRIVATE newsroom — the served site is a separate deploy step.")
     args = ap.parse_args(argv)
     cand, report = build_candidates()
     errs = _validate(cand)
@@ -221,16 +247,21 @@ def main(argv=None) -> int:
     print(f"  voies : auto-éligible {len(lanes['auto_eligible'])} · gate-contesté {len(lanes['manual_gate'])}"
           f"  (auto_publish_enabled={report['auto_publish_enabled']})", file=sys.stderr)
     print(f"  schéma watchlist : {'OK ✅' if not errs else '❌ ' + str(errs[:5])}", file=sys.stderr)
-    print("  ⛔ AUCUNE note émise (A-19) · AUCUN fichier servi écrit · AUCUN deploy · publication auto DÉSACTIVÉE (mot direct Franck requis).", file=sys.stderr)
+    print(f"  ⛔ A-19 : AUCUNE note (en veille = fait sourcé). Publication auto = {'ON' if AUTO_PUBLISH_ENABLED else 'OFF'} "
+          "(dépôt newsroom privé ; served = deploy séparé, agent-site).", file=sys.stderr)
     if errs:
         return 1
     if args.review:
         Path(args.review).write_text(review_markdown(cand, lane_of))
         print(f"  table de gate voie-rouge (POUR REVUE Franck) → {args.review}", file=sys.stderr)
+    if args.publish:
+        n = deposit_auto_eligible(cand, lanes, args.publish)
+        print(f"  auto-publiés « en veille » (dépôt newsroom, non servi) : {n} → {args.publish}"
+              if AUTO_PUBLISH_ENABLED else "  publication auto OFF → rien déposé", file=sys.stderr)
     if args.out and not args.dry_run:
         Path(args.out).write_text(json.dumps(cand, ensure_ascii=False, indent=2) + "\n")
         print(f"  candidats JSON (POUR REVUE, non servis) → {args.out}", file=sys.stderr)
-    elif not args.review:
+    elif not args.review and not args.publish:
         print(json.dumps(cand, ensure_ascii=False, indent=2))
     return 0
 

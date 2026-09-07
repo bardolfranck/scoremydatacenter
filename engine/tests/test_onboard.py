@@ -103,9 +103,38 @@ def test_lane_classification_contested_vs_auto(monkeypatch):
     # Vantage cell is a CONTESTED watchlist site → its candidate must route to manual_gate.
     monkeypatch.setattr(onboard, "_contested_index", lambda: {(51.0, 7.0): [("w1", "Vantage")]})
     cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
-    assert rep["auto_publish_enabled"] is False               # fail-closed: never auto-publishes
+    assert rep["auto_publish_enabled"] is True                # activé 2026-09-07 (go direct Franck via orchestrateur)
     assert rep["lanes"]["manual_gate"] == ["de-vantage-ville-444"]   # contested → Franck's eye
     assert rep["lanes"]["auto_eligible"] == ["fr-equinix-ville-111"] # clean → auto-eligible (label only)
     # the entries themselves stay schema-clean (no lane field stored)
     assert onboard._validate(cand) == []
     assert all("lane" not in c for c in cand)
+
+
+def test_deposit_auto_eligible_writes_only_auto_and_is_idempotent(tmp_path, monkeypatch):
+    monkeypatch.setattr(onboard, "AUTO_PUBLISH_ENABLED", True)
+    cand = [
+        {"id": "fr-a", "name": "A", "operator": "Equinix", "country": "FR",
+         "coordinates": {"lat": 48.8, "lon": 2.3}, "project_status": "announced",
+         "source": {"title": "OSM", "url": "https://www.openstreetmap.org/way/1", "accessed": "2026-09-07"}, "facts": []},
+        {"id": "fr-b", "name": "B", "operator": "Vantage", "country": "FR",
+         "coordinates": {"lat": 49.0, "lon": 2.0}, "project_status": "announced",
+         "source": {"title": "OSM", "url": "https://www.openstreetmap.org/way/2", "accessed": "2026-09-07"}, "facts": []},
+    ]
+    lanes = {"auto_eligible": ["fr-a"], "manual_gate": ["fr-b"]}   # fr-b contested → NEVER auto
+    out = tmp_path / "eu-projects-auto.json"
+    import json
+    n = onboard.deposit_auto_eligible(cand, lanes, out)
+    written = json.loads(out.read_text())
+    assert n == 1 and [e["id"] for e in written] == ["fr-a"]        # only auto_eligible, not fr-b
+    assert "grade" not in json.dumps(written).lower()               # A-19: en-veille, no grade
+    onboard.deposit_auto_eligible(cand, lanes, out)                 # re-run (daily cron) → no dup
+    assert [e["id"] for e in json.loads(out.read_text())] == ["fr-a"]
+
+
+def test_deposit_noop_when_flag_off(tmp_path, monkeypatch):
+    monkeypatch.setattr(onboard, "AUTO_PUBLISH_ENABLED", False)
+    out = tmp_path / "x.json"
+    n = onboard.deposit_auto_eligible([{"id": "z", "coordinates": {"lat": 1, "lon": 1}}],
+                                      {"auto_eligible": ["z"]}, out)
+    assert n == 0 and not out.exists()                              # fail-closed: nothing written
