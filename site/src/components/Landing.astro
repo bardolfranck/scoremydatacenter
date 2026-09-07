@@ -165,18 +165,16 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
     </aside>
   </section>
 
-  {/* The corpus seen from space, promoted to first-class citizen (Franck
-      2026-07-20): the hero states the number, the wall shows those sites —
-      the strongest one-two on the page, and its motion is the scroll magnet. */}
-  <SatelliteWall lang={lang} dcById={dcById} />
-
-  {/* Living-observatory cue (Franck 2026-09-07): newly flagged PIPELINE projects, "en veille"
-      (no note here — the provisional band/loupe lives on each fiche). Self-hides when empty. */}
+  {/* Living-observatory block — moved UP under the hero/A–E line (Franck 2026-09-07: fill the
+      empty space there, and let the strips lead over the big satellite wall). Newly flagged
+      PIPELINE projects "en veille" (link to the map; no note here — the band/loupe lives on
+      scored fiches) + latest sector news. Both self-hide when empty. */}
   <ProjectsStrip lang={lang} />
-
-  {/* Light "the site follows the sector" cue — a dynamic strip, not a news feed
-      (Franck 2026-09-04). Self-hides when there is nothing fresh/approved. */}
   <ActuStrip lang={lang} />
+
+  {/* The corpus seen from space (Franck 2026-07-20) — now BELOW the living strips
+      (Franck 2026-09-07: the rotating hero ring + this wall took too much room up top). */}
+  <SatelliteWall lang={lang} dcById={dcById} />
 
   <section class="manifesto" aria-label={t.manifesto.aria}>
     <div class="manifesto-inner">

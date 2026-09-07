@@ -26,10 +26,11 @@ const n = isos.length;
 // Geometry — the ONE place the ring's size is decided. Flags are 34×22.6.
 // Radius = max(floor, whatever keeps ~48 px of arc per flag) so N can grow
 // without flags touching. Everything downstream (box, positions) derives here.
-const FLAG_W = 34;
-const FLAG_H = Math.round((FLAG_W * 20) / 30); // 23, keep the 30×20 ratio
-const ARC_PER_FLAG = 46;                        // flag + breathing gap along the arc
-const MIN_R = 104;
+// Reduced ~20% (Franck 2026-09-07: the rotating hero ring took too much room). Fine-tune here.
+const FLAG_W = 27;
+const FLAG_H = Math.round((FLAG_W * 20) / 30); // keep the 30×20 ratio
+const ARC_PER_FLAG = 37;                        // flag + breathing gap along the arc
+const MIN_R = 84;
 const radius = Math.max(MIN_R, Math.round((n * ARC_PER_FLAG) / (2 * Math.PI)));
 const PAD = FLAG_W / 2 + 6;                      // room so flags aren't clipped
 const box = Math.round(2 * radius + 2 * PAD);
