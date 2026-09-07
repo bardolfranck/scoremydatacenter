@@ -1,0 +1,73 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// "Newly flagged projects" strip — the living-observatory cue on the home. Shows the
+// most recently detected PIPELINE projects onboarded "en veille" (no note here; the
+// provisional band/loupe lives on each fiche). Neutral entries only — contestation
+// entries (opposition/moratorium) are NOT shown here (that is the watchlist, a
+// different object). Reads the served watchlist.geojson at build time.
+import fs from "node:fs";
+interface Props { lang: "fr" | "en"; }
+const { lang } = Astro.props;
+
+let feats: any[] = [];
+try {
+  const raw = fs.readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf-8");
+  const gj = JSON.parse(raw);
+  feats = (gj.features ?? [])
+    .map((f: any) => f.properties ?? {})
+    // en-veille neutral PROJECT detections only — never the contestation entries
+    .filter((p: any) => p.watchlist_status === "en_veille" && !["opposition", "moratorium"].includes(p.kind));
+  // newest first (detected_at is ISO; missing sorts last)
+  feats.sort((a: any, b: any) => String(b.detected_at ?? "").localeCompare(String(a.detected_at ?? "")));
+} catch { feats = []; }
+
+const items = feats.slice(0, 8);
+if (items.length === 0) return; // nothing fresh → no strip
+
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const L = lang === "fr"
+  ? { heading: "Nouveaux projets repérés", seeAll: "Voir la veille →", href: "/fr/carte", veille: "en veille" }
+  : { heading: "Newly flagged projects", seeAll: "See the watch →", href: "/map", veille: "watching" };
+const place = (p: any) => [p.municipality, p.country].filter(Boolean).join(" · ");
+---
+
+<section class="section np-strip-section">
+  <div class="section-inner">
+    <div class="np-strip">
+      <div class="np-strip-head">
+        <h2><span class="np-live"></span>{L.heading}</h2>
+        <a href={L.href}>{L.seeAll}</a>
+      </div>
+      <ul>
+        {items.map((p: any) => (
+          <li>
+            <a class="np-t" href={`${ficheBase}/${p.id}`}>{p.name}</a>
+            {place(p) && <span class="np-mu">{place(p)}</span>}
+            <span class="np-veille">{L.veille}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .np-strip-section { padding-block: clamp(1rem, 3vw, 2rem); }
+  .np-strip { background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; }
+  .np-strip-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+  .np-strip-head h2 { margin: 0; font-size: 1rem; display: inline-flex; align-items: center; gap: 8px; }
+  .np-live { width: 8px; height: 8px; border-radius: 50%; background: var(--grade-a, #0b7a4b); display: inline-block; }
+  .np-strip-head a { margin-left: auto; font-size: 0.82rem; color: var(--accent, #0f5fb8); text-decoration: none; font-weight: 600; }
+  .np-strip-head a:hover { text-decoration: underline; }
+  .np-strip ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .np-strip li { display: flex; gap: 10px; align-items: baseline; font-size: 0.9rem; padding: 6px 0; border-top: 1px solid var(--line); }
+  .np-strip li:first-child { border-top: none; }
+  .np-t { color: var(--ink); text-decoration: none; font-weight: 600; }
+  .np-t:hover { color: var(--accent, #0f5fb8); text-decoration: underline; }
+  .np-mu { color: var(--muted); font-size: 0.8rem; }
+  .np-veille { margin-left: auto; font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; padding: 2px 7px; border-radius: 999px; background: var(--wash, #f1efe8); color: var(--muted); border: 1px dashed var(--muted); white-space: nowrap; }
+  @media (prefers-color-scheme: dark) { .np-strip { background: #141a24; } }
+</style>
