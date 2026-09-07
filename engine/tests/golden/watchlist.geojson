@@ -19,6 +19,7 @@
         "country": "ZZ",
         "project_status": "permitting",
         "watchlist_status": "en_veille",
+        "detected_at": "2026-07-08",
         "kind": "opposition",
         "source": {
           "title": "Annonce du projet (test)",
@@ -73,6 +74,7 @@
         "country": "ZZ",
         "project_status": "announced",
         "watchlist_status": "en_veille",
+        "detected_at": "2026-07-03",
         "kind": "moratorium",
         "source": {
           "title": "Communiqué du comté (test)",
@@ -114,6 +116,7 @@
         "country": "ZZ",
         "project_status": "under_construction",
         "watchlist_status": "en_veille",
+        "detected_at": "2026-07-04",
         "kind": "opposition",
         "source": {
           "title": "Dossier de presse (test)",
@@ -154,6 +157,7 @@
         "country": "ZZ",
         "project_status": "announced",
         "watchlist_status": "en_veille",
+        "detected_at": "2026-07-08",
         "kind": "announced_project",
         "source": {
           "title": "Annonce officielle (test)",
