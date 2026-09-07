@@ -114,6 +114,20 @@ def match_served(cand_lat, cand_lon, cand_op, idx):
     return flag
 
 
+def dedup_vs_served(items, served):
+    """BATCH over match_served (the per-item primitive) → (clean, hard, soft). study_review imports
+    THIS (its current shape is already clean/hard/soft); onboard uses the primitive per-item in its
+    own loop. Each item carries coords (top-level lat/lon OR coordinates{}) + operator.
+      hard = ('exclude') already-public (auto-drop) · soft = ('flag') coincidence (human review) ·
+      clean = None. ONE source of truth for both callers."""
+    clean, hard, soft = [], [], []
+    for it in items:
+        lat, lon = _coords(it)
+        m = match_served(lat, lon, it.get("operator"), served)
+        (hard if m and m[0] == "exclude" else soft if m and m[0] == "flag" else clean).append(it)
+    return clean, hard, soft
+
+
 def dedup_internal(candidates, meters=250):
     """Candidate-vs-candidate: 2 OSM ways of one project (same operator, <= meters) → keep first.
     Returns (kept, merged) where merged = [(dropped_id, kept_id)]."""

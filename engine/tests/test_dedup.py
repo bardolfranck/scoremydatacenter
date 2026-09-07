@@ -51,3 +51,16 @@ def test_internal_dedup_merges_close_same_operator_both_shapes():
          {"id": "y", "operator": "DR", "coordinates": {"lat": 50.0650, "lon": 8.4875}}]
     kept2, merged2 = dedup.dedup_internal(n)
     assert [k["id"] for k in kept2] == ["x"] and merged2 == [("y", "x")]
+
+
+def test_dedup_vs_served_batch_clean_hard_soft():
+    idx = _served((8.49, 50.06, "Digital Realty"), (2.35, 48.85, "NTT"))
+    items = [
+        {"id": "hard", "operator": "Digital Realty", "lat": 50.061, "lon": 8.491},   # exact → hard
+        {"id": "soft", "operator": "Global Realty", "lat": 50.061, "lon": 8.491},     # cell DR + overlap 'realty' non-1er → soft
+        {"id": "clean", "operator": "OVHcloud", "coordinates": {"lat": 43.6, "lon": 1.4}},  # nested shape, no cell
+    ]
+    clean, hard, soft = dedup.dedup_vs_served(items, idx)
+    assert [i["id"] for i in hard] == ["hard"]
+    assert [i["id"] for i in soft] == ["soft"]
+    assert [i["id"] for i in clean] == ["clean"]
