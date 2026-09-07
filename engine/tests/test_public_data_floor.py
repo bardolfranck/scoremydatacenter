@@ -17,6 +17,7 @@ from engine.core import load_datacenters, load_methodology
 SEAU_A_KEYS = {
     "id", "name", "operator", "municipality", "country",
     "grade_site", "project_status", "size_tier", "reserved_site",
+    "first_seen",  # Phase-1: first-recorded date for the « derniers scorés » banner (free, benign; SIGN-OFF codeur-API)
 }
 # Fields that are worth money (Seau B) and must stay OUT of the public geojson.
 FORBIDDEN = {

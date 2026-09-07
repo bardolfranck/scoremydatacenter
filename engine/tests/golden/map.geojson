@@ -19,7 +19,8 @@
         "country": "ZZ",
         "grade_site": "B",
         "project_status": "permitting",
-        "size_tier": 3
+        "size_tier": 3,
+        "first_seen": null
       }
     },
     {
@@ -39,7 +40,8 @@
         "country": "ZZ",
         "grade_site": "E",
         "project_status": "announced",
-        "size_tier": 3
+        "size_tier": 3,
+        "first_seen": null
       }
     }
   ]
