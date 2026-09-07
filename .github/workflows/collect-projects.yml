@@ -1,0 +1,49 @@
+name: Collecte projets (OSM pipeline EU)
+
+# Phase-1 « site vivant » (Franck 2026-09-07) — daily OSM pipeline-DC discovery in the CLOUD.
+# DETECT + COMMIT to the private newsroom. NEVER deploys, NEVER publishes, NEVER a grade.
+# One OSM Overpass query/day (no bursts, Overpass-friendly). The « nouveaux projets » banner is
+# fed downstream from the committed newsroom deposit — publication stays gated (voie rouge / the
+# auto-en-veille policy awaits Franck's DIRECT go; this job only DETECTS).
+
+on:
+  schedule:
+    - cron: "0 5 * * *"    # 05:00 UTC — offset 1 h before the veille job (no newsroom push race)
+  workflow_dispatch: {}     # manual run button
+
+concurrency:
+  group: collect-projects   # never two collection runs at once (newsroom push races)
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (public)
+        uses: actions/checkout@v4
+        with:
+          path: scoremydatacenter
+
+      - name: Checkout newsroom (private — needs NEWSROOM_TOKEN)
+        uses: actions/checkout@v4
+        with:
+          repository: bardolfranck/smdc-newsroom
+          token: ${{ secrets.NEWSROOM_TOKEN }}
+          path: smdc-newsroom       # sibling of scoremydatacenter → ../smdc-newsroom resolves
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deps
+        working-directory: scoremydatacenter
+        run: uv sync
+
+      - name: Git identity (for the newsroom commits)
+        run: |
+          git config --global user.name  "smdc-projects-bot"
+          git config --global user.email "projects@scoremydatacenter.org"
+
+      - name: Collect OSM pipeline projects → newsroom (detection only, no deploy)
+        working-directory: scoremydatacenter
+        run: make collect-projects

@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects
 
 install:
 	uv sync
@@ -242,6 +242,16 @@ veille-actu:
 	@cd $(NEWSROOM) && git add actu && \
 	  if git diff --cached --quiet; then echo "veille-actu: rien de neuf"; \
 	  else git commit -q -m "actu: archive $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-actu: archive poussée au newsroom" || echo "veille-actu: commit local (push différé — offline?)"); fi
+
+# Phase-1 « site vivant » — daily OSM pipeline-project collection → newsroom deposit. DETECTION only
+# (like veille-fr): NEVER deploys, NEVER a grade. Feeds the « nouveaux projets » banner downstream.
+PROJECTS_OUT ?= ../smdc-newsroom/projects
+collect-projects:
+	@mkdir -p "$(PROJECTS_OUT)/$$(date +%F)"
+	uv run python -m pipelines.press.osm_projects --out "$(PROJECTS_OUT)/$$(date +%F)/osm-pipeline-eu.csv"
+	@cd $(PROJECTS_OUT)/.. && git add projects && \
+	  if git diff --cached --quiet; then echo "collect-projects: rien de neuf"; \
+	  else git commit -q -m "projects: collecte OSM pipeline EU $$(date +%F)" && (git push -q 2>/dev/null && echo "collect-projects: poussé au newsroom" || echo "collect-projects: commit local (push différé — offline?)"); fi
 
 # DEPLOY side: regenerate the deployed site/public/data/actu/latest.json from the COMMITTED newsroom
 # archives (approved-only, windowed, transient _gate stripped). The CI run's public/data is
