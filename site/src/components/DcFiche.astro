@@ -83,6 +83,11 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 // scrub). For desalination-dominant countries (Israel now) we carry the
 // validated water×desalination note so the fiche isn't mute on the "why".
 const isEnAttente = dc.grades?.site?.grade === "en_attente";
+// Loupe — provisional coverage band on a PIPELINE project (R&D servable_band → dc/{id}.json.provisional_band).
+// Credible → big central + small adjacent letter (loupe); non-credible → the neutral en_attente chip (existing path).
+const pband = (dc as any).provisional_band;
+const hasLoupe = pband?.kind === "provisional_band" && typeof pband.central === "string";
+const provLabel = lang === "fr" ? "provisoire · s'affine avec la donnée" : "provisional · narrows as data lands";
 const isDesalCountry = dc.country === "IL";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
@@ -227,17 +232,31 @@ const pillars = methodology.pillars as any[];
       </div>
 
       <div class="fiche-badges">
-        <ScoreBadge
-          label={t.siteScore}
-          grade={dc.grades.site}
-          confidence={dc.confidence.level}
-          confidenceLabel={t.confidence[dc.confidence.level]}
-          documentationLabel={siteDocLabel}
-          reservedLabel={t.reserved}
-          size="lg"
-          layout="lead"
-          naLabel={t.naLabel}
-        />
+        {hasLoupe ? (
+          <ScoreBadge
+            label={t.siteScore}
+            grade={dc.grades.site}
+            band={{ central: pband.central, adjacent: pband.adjacent ?? null, a_reserved: pband.a_reserved }}
+            provisionalLabel={provLabel}
+            confidence={pband.confidence ?? dc.confidence.level}
+            confidenceLabel={t.confidence[pband.confidence ?? dc.confidence.level]}
+            reservedLabel={t.reserved}
+            size="lg"
+            naLabel={t.naLabel}
+          />
+        ) : (
+          <ScoreBadge
+            label={t.siteScore}
+            grade={dc.grades.site}
+            confidence={dc.confidence.level}
+            confidenceLabel={t.confidence[dc.confidence.level]}
+            documentationLabel={siteDocLabel}
+            reservedLabel={t.reserved}
+            size="lg"
+            layout="lead"
+            naLabel={t.naLabel}
+          />
+        )}
         <hr />
         <ScoreBadge
           label={t.ppScore}
