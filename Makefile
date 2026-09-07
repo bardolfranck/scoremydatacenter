@@ -246,12 +246,16 @@ veille-actu:
 # Phase-1 « site vivant » — daily OSM pipeline-project collection → newsroom deposit. DETECTION only
 # (like veille-fr): NEVER deploys, NEVER a grade. Feeds the « nouveaux projets » banner downstream.
 PROJECTS_OUT ?= ../smdc-newsroom/projects
+# Auto-published « en veille » deposit — DEDICATED file, separate from the hand-curated watchlist
+# entries (it IS Franck's weekly curation list; remove a line = un-publish at next build). NO grade.
+AUTO_WATCHLIST ?= ../smdc-newsroom/calibration/watchlist/eu-projects-auto.json
 collect-projects:
 	@mkdir -p "$(PROJECTS_OUT)/$$(date +%F)"
-	uv run python -m pipelines.press.osm_projects --out "$(PROJECTS_OUT)/$$(date +%F)/osm-pipeline-eu.csv"
-	@cd $(PROJECTS_OUT)/.. && git add projects && \
+	uv run python -m pipelines.press.osm_projects --out "$(PROJECTS_OUT)/$$(date +%F)/osm-pipeline-eu.csv"   # raw detection archive
+	uv run python -m pipelines.veille.onboard --publish "$(AUTO_WATCHLIST)"   # auto-deposit clean en-veille (dedup vs served needs a built map.geojson upstream)
+	@cd $(PROJECTS_OUT)/.. && git add projects calibration/watchlist && \
 	  if git diff --cached --quiet; then echo "collect-projects: rien de neuf"; \
-	  else git commit -q -m "projects: collecte OSM pipeline EU $$(date +%F)" && (git push -q 2>/dev/null && echo "collect-projects: poussé au newsroom" || echo "collect-projects: commit local (push différé — offline?)"); fi
+	  else git commit -q -m "projects: collecte OSM + auto-dépôt en-veille $$(date +%F)" && (git push -q 2>/dev/null && echo "collect-projects: poussé au newsroom" || echo "collect-projects: commit local (push différé — offline?)"); fi
 
 # DEPLOY side: regenerate the deployed site/public/data/actu/latest.json from the COMMITTED newsroom
 # archives (approved-only, windowed, transient _gate stripped). The CI run's public/data is

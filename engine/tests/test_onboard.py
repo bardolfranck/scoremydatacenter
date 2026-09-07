@@ -138,3 +138,26 @@ def test_deposit_noop_when_flag_off(tmp_path, monkeypatch):
     n = onboard.deposit_auto_eligible([{"id": "z", "coordinates": {"lat": 1, "lon": 1}}],
                                       {"auto_eligible": ["z"]}, out)
     assert n == 0 and not out.exists()                              # fail-closed: nothing written
+
+
+def test_iceland_forced_to_manual_gate(monkeypatch):
+    monkeypatch.setattr(onboard, "_served_index", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_index", lambda: {})
+    monkeypatch.setattr(onboard, "_contested_index", lambda: {})
+    rows = [{"name": "atNorth M24", "operator": "atNorth", "lat": 63.98, "lon": -22.6,
+             "project_status": "under_construction", "source_url": "https://www.openstreetmap.org/way/9"}]
+    geo = lambda lat, lon: {"country": "IS", "municipality": "Reykjanesbaer"}  # noqa: E731
+    cand, rep = onboard.build_candidates(rows, today="2026-09-07", geocode=geo)
+    # IS is Franck-sensitive → manual_gate, NEVER auto (even clean/en-veille)
+    assert rep["lanes"]["manual_gate"] and not rep["lanes"]["auto_eligible"]
+
+
+def test_deposit_respects_suppression(tmp_path, monkeypatch):
+    monkeypatch.setattr(onboard, "AUTO_PUBLISH_ENABLED", True)
+    cand = [{"id": "fr-a", "operator": "Equinix", "coordinates": {"lat": 48.8, "lon": 2.3},
+             "name": "A", "country": "FR", "project_status": "announced",
+             "source": {"title": "OSM", "url": "u", "accessed": "2026-09-07"}, "facts": []}]
+    out = tmp_path / "auto.json"
+    import json
+    onboard.deposit_auto_eligible(cand, {"auto_eligible": ["fr-a"]}, out, suppressed={"fr-a"})
+    assert json.loads(out.read_text()) == []      # Franck curated it out → stays un-published

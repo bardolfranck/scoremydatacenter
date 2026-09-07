@@ -70,6 +70,10 @@ def _watchlist_index():
 
 
 _CONTEST_KINDS = {"opposition", "moratorium", "appeal", "petition"}
+# Franck-sensitive territories → ALWAYS manual_gate (never auto-published), even clean/en-veille.
+# Iceland ([[islande-watchlist-par-choix]]) : « IS = mon territoire, escalade » — the EU bbox catches
+# IS projects, but any IS onboarding is Franck's call, not auto. Add a country here to force his eye.
+_MANUAL_COUNTRIES = {"IS"}
 # AUTO-PUBLICATION POLICY (Phase-1) — a clean detected project auto-publishes « en veille » (no
 # grade) WITHOUT the manual gate. This amends the standing rule [[gate-voie-verte]] (« projet =
 # voie rouge ») for CLEAN en-veille projects only; contested projects STAY manual_gate.
@@ -104,13 +108,23 @@ def _slug(*parts: str) -> str:
     return re.sub(r"-{2,}", "-", s) or "site"
 
 
+def _clean_name(raw: str | None, operator: str, municipality: str | None) -> str:
+    """Public-facing name. The collector appends « OSM <type> <id> » to raw for id-uniqueness, but
+    the entry id is already unique (via _slug + the OSM element id), so strip that suffix here. A
+    generic/empty result falls back to operator (+ commune) — no ugly « data center OSM way 123 »."""
+    name = re.sub(r"\s*OSM (node|way|relation)\s+\d+\s*$", "", (raw or "").strip()).strip()
+    if not name or name.lower() in {"data center", "data centre", "datacenter"}:
+        return f"{operator} — {municipality}" if municipality else f"{operator} data center"
+    return name
+
+
 def _entry(row: dict, geo: dict, today: str) -> dict:
     """A schema-valid « en veille » entry: sourced FACT, NO grade (structurally impossible)."""
     iso = (geo.get("country") or "").upper()
     entry = {
         "id": _slug(iso.lower() or "eu", row["operator"], geo.get("municipality") or "",
                     str(row.get("source_url", "")).rsplit("/", 1)[-1]),
-        "name": row.get("name") or f"{row['operator']} data center",
+        "name": _clean_name(row.get("name"), row["operator"], geo.get("municipality")),
         "operator": row["operator"],
         "country": iso if re.fullmatch(r"[A-Z]{2}", iso) else "",
         "coordinates": {"lat": float(row["lat"]), "lon": float(row["lon"])},
@@ -158,30 +172,31 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
     contested = _contested_index()
     lanes = {"auto_eligible": [], "manual_gate": []}
     for e in cand:
-        lane = "manual_gate" if (e["id"] in flagged or _lane(e, contested) == "manual_gate") else "auto_eligible"
-        lanes[lane].append(e["id"])
+        manual = (e["id"] in flagged or e.get("country") in _MANUAL_COUNTRIES
+                  or _lane(e, contested) == "manual_gate")
+        lanes["manual_gate" if manual else "auto_eligible"].append(e["id"])
     report = {"candidates": len(cand), "dropped": dropped, "input": len(rows),
               "lanes": lanes, "auto_publish_enabled": AUTO_PUBLISH_ENABLED}
     return cand, report
 
 
-def deposit_auto_eligible(candidates, lanes, out_path) -> int:
-    """MERGE (by id, idempotent) the AUTO_ELIGIBLE en-veille entries into a newsroom watchlist file
-    — schema-valid, NO grade. Contested/flagged are NEVER auto-deposited (they stay manual_gate for
-    Franck's eye). Writes NOTHING when AUTO_PUBLISH_ENABLED is False (fail-closed). This deposits to
-    the PRIVATE newsroom only; publication to the served site is the separate deploy step. Returns
-    the count of auto-eligible entries in the file's fresh batch."""
+def deposit_auto_eligible(candidates, lanes, out_path, suppressed=None) -> int:
+    """RECONCILE the AUTO-managed newsroom watchlist file to the CURRENT auto-eligible set —
+    schema-valid, NO grade. This file is auto-managed (deterministic overwrite), so a project that
+    leaves detection disappears and the daily cron never duplicates. Contested/flagged/IS are NEVER
+    here (they are manual_gate). Writes NOTHING when AUTO_PUBLISH_ENABLED is False (fail-closed).
+    Deposits to the PRIVATE newsroom only; publication to the served site is the separate deploy step.
+
+    `suppressed` = ids Franck has curated OUT (his weekly best-effort list) — they stay un-published
+    even if still detected. Curating by DELETING a line here would be undone by the next reconcile;
+    the durable curation is this suppression set (a small follow-up to wire Franck's list into)."""
     if not AUTO_PUBLISH_ENABLED:
         return 0
-    auto = set(lanes.get("auto_eligible", []))
+    auto = set(lanes.get("auto_eligible", [])) - set(suppressed or ())
     fresh = [c for c in candidates if c["id"] in auto]
     p = Path(out_path)
-    existing = json.loads(p.read_text()) if p.exists() else []
-    by_id = {e["id"]: e for e in existing}
-    for e in fresh:
-        by_id[e["id"]] = e   # refresh/insert, keyed by id → daily cron never duplicates
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_text(json.dumps(list(by_id.values()), ensure_ascii=False, indent=2) + "\n")
+    p.write_text(json.dumps(fresh, ensure_ascii=False, indent=2) + "\n")
     return len(fresh)
 
 

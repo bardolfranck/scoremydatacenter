@@ -44,6 +44,10 @@ jobs:
           git config --global user.name  "smdc-projects-bot"
           git config --global user.email "projects@scoremydatacenter.org"
 
-      - name: Collect OSM pipeline projects → newsroom (detection only, no deploy)
+      - name: Build corpus (map.geojson — needed for the served dedup; ephemeral, no deploy, no R2)
+        working-directory: scoremydatacenter
+        run: uv run python scripts/build_prod_artifacts.py
+
+      - name: Collect OSM + auto-deposit clean en-veille → newsroom (NO deploy, NO grade)
         working-directory: scoremydatacenter
         run: make collect-projects
