@@ -180,21 +180,45 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
     return cand, report
 
 
-def deposit_auto_eligible(candidates, lanes, out_path, suppressed=None) -> int:
-    """RECONCILE the AUTO-managed newsroom watchlist file to the CURRENT auto-eligible set —
-    schema-valid, NO grade. This file is auto-managed (deterministic overwrite), so a project that
-    leaves detection disappears and the daily cron never duplicates. Contested/flagged/IS are NEVER
-    here (they are manual_gate). Writes NOTHING when AUTO_PUBLISH_ENABLED is False (fail-closed).
-    Deposits to the PRIVATE newsroom only; publication to the served site is the separate deploy step.
+_SUPPRESS_BASENAME = "eu-projects-suppress.json"
 
-    `suppressed` = ids Franck has curated OUT (his weekly best-effort list) — they stay un-published
-    even if still detected. Curating by DELETING a line here would be undone by the next reconcile;
-    the durable curation is this suppression set (a small follow-up to wire Franck's list into)."""
+
+def _suppress_path_for(watchlist_out) -> Path:
+    """Franck's suppression list, co-located in calibration/ — NOT calibration/watchlist/ (the build
+    globs watchlist/*.json as watchlist SOURCES; a suppress file there would be mis-read + break)."""
+    return Path(watchlist_out).parent.parent / _SUPPRESS_BASENAME
+
+
+def _suppressed_ids(path) -> set:
+    """Ids Franck curated OUT → NEVER (re)deposited (durable un-publish). Empty/absent = none."""
+    try:
+        return set(json.loads(Path(path).read_text())) if Path(path).exists() else set()
+    except (json.JSONDecodeError, OSError, TypeError):
+        return set()
+
+
+def deposit_auto_eligible(candidates, lanes, out_path, suppressed=None) -> int:
+    """RECONCILE the AUTO-managed newsroom watchlist file to the CURRENT auto-eligible set MINUS
+    the suppression list — schema-valid, NO grade. Auto-managed (deterministic overwrite): a project
+    that leaves detection OR that Franck suppressed disappears, and the daily cron never duplicates.
+    Contested/flagged/IS are NEVER here (manual_gate). Writes NOTHING if AUTO_PUBLISH_ENABLED is
+    False (fail-closed). Deposits to the PRIVATE newsroom only; the served site is the deploy step.
+
+    Fix A (durable curation): `suppressed` defaults to the on-disk suppress list next to out_path —
+    Franck adds an id there and it stays un-published even if still detected (a hand-delete of a line
+    here would be undone by the next reconcile; the suppress list is the durable lever he required).
+    Fix B (anti-fat-finger): REFUSES to write a served artifact — the deposit only targets a source
+    watchlist file, never map.geojson/scores.json/etc."""
     if not AUTO_PUBLISH_ENABLED:
         return 0
-    auto = set(lanes.get("auto_eligible", [])) - set(suppressed or ())
-    fresh = [c for c in candidates if c["id"] in auto]
     p = Path(out_path)
+    if "site/public/data" in p.as_posix() or p.name in {"map.geojson", "scores.json",
+                                                        "stats.json", "watchlist.geojson", "home_showcase.json"}:
+        raise SystemExit(f"REFUS dépôt : {p} est un artefact SERVI — le dépôt ne va que dans une watchlist source.")
+    if suppressed is None:
+        suppressed = _suppressed_ids(_suppress_path_for(p))
+    auto = set(lanes.get("auto_eligible", [])) - set(suppressed)
+    fresh = [c for c in candidates if c["id"] in auto]
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(json.dumps(fresh, ensure_ascii=False, indent=2) + "\n")
     return len(fresh)

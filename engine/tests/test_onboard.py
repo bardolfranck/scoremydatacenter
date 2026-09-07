@@ -161,3 +161,34 @@ def test_deposit_respects_suppression(tmp_path, monkeypatch):
     import json
     onboard.deposit_auto_eligible(cand, {"auto_eligible": ["fr-a"]}, out, suppressed={"fr-a"})
     assert json.loads(out.read_text()) == []      # Franck curated it out → stays un-published
+
+
+def test_suppressed_never_redeposited(tmp_path, monkeypatch):
+    # Fix A durable un-publish: an id in the ON-DISK suppress list (read by default, no explicit
+    # arg) is never (re)deposited AND an already-present copy is purged by the reconcile overwrite.
+    monkeypatch.setattr(onboard, "AUTO_PUBLISH_ENABLED", True)
+    import json
+    (tmp_path / onboard._SUPPRESS_BASENAME).write_text(json.dumps(["fr-a"]))  # calibration/eu-projects-suppress.json
+    wl = tmp_path / "watchlist"
+    wl.mkdir()
+    out = wl / "eu-projects-auto.json"
+    out.write_text(json.dumps([{"id": "fr-a", "stale": True}]))               # a stale copy already published
+    cand = [{"id": "fr-a", "operator": "Equinix", "coordinates": {"lat": 48.8, "lon": 2.3},
+             "name": "A", "country": "FR", "project_status": "announced",
+             "source": {"title": "OSM", "url": "u", "accessed": "2026-09-07"}, "facts": []},
+            {"id": "fr-b", "operator": "Vantage", "coordinates": {"lat": 49.0, "lon": 2.0},
+             "name": "B", "country": "FR", "project_status": "announced",
+             "source": {"title": "OSM", "url": "u2", "accessed": "2026-09-07"}, "facts": []}]
+    n = onboard.deposit_auto_eligible(cand, {"auto_eligible": ["fr-a", "fr-b"]}, out)  # no explicit suppressed
+    assert n == 1 and [e["id"] for e in json.loads(out.read_text())] == ["fr-b"]   # fr-a suppressed + purged
+
+
+def test_deposit_refuses_served_path(tmp_path, monkeypatch):
+    # Fix B anti-fat-finger: the deposit only targets a source watchlist, never a SERVED artifact.
+    import pytest
+    monkeypatch.setattr(onboard, "AUTO_PUBLISH_ENABLED", True)
+    for name in ("map.geojson", "scores.json", "stats.json", "watchlist.geojson"):
+        with pytest.raises(SystemExit):
+            onboard.deposit_auto_eligible([], {"auto_eligible": []}, tmp_path / name)
+    with pytest.raises(SystemExit):
+        onboard.deposit_auto_eligible([], {"auto_eligible": []}, tmp_path / "site" / "public" / "data" / "x.json")
