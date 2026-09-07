@@ -27,7 +27,9 @@ try {
 const items = feats.slice(0, 8);
 if (items.length === 0) return; // nothing fresh → no strip
 
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+// En-veille projects have NO fiche page (A-19: no note → no /dc/{id}). Link to the MAP
+// where they appear in context — never to a non-existent fiche (that was a 404 bug).
+const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const L = lang === "fr"
   ? { heading: "Nouveaux projets repérés", seeAll: "Voir la veille →", href: "/fr/carte", veille: "en veille" }
   : { heading: "Newly flagged projects", seeAll: "See the watch →", href: "/map", veille: "watching" };
@@ -44,7 +46,7 @@ const place = (p: any) => [p.municipality, p.country].filter(Boolean).join(" · 
       <ul>
         {items.map((p: any) => (
           <li>
-            <a class="np-t" href={`${ficheBase}/${p.id}`}>{p.name}</a>
+            <a class="np-t" href={mapPath}>{p.name}</a>
             {place(p) && <span class="np-mu">{place(p)}</span>}
             <span class="np-veille">{L.veille}</span>
           </li>
