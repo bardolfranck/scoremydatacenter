@@ -78,3 +78,20 @@ def test_review_markdown_lists_all_and_no_grade():
     md = onboard.review_markdown(cand)
     assert "X — Ville" in md and "| FR |" in md and "grade" not in md.lower()
     assert md.count("openstreetmap.org") == 1   # one row per candidate
+
+
+def test_internal_dedup_merges_two_osm_ways_of_one_project(monkeypatch):
+    # DR Hattersheim 484/485 shape: 2 candidates, same operator, ~75 m apart → one project.
+    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    rows = [
+        {"name": "DR a", "operator": "Digital Realty", "lat": 50.0644712, "lon": 8.4869027,
+         "project_status": "under_construction", "source_url": "https://www.openstreetmap.org/way/484"},
+        {"name": "DR b", "operator": "Digital Realty", "lat": 50.065011, "lon": 8.4875253,
+         "project_status": "under_construction", "source_url": "https://www.openstreetmap.org/way/485"},
+        {"name": "Far", "operator": "Digital Realty", "lat": 48.0, "lon": 2.0,
+         "project_status": "announced", "source_url": "https://www.openstreetmap.org/way/999"},
+    ]
+    cand, rep = onboard.build_candidates(rows, today="2026-09-07", geocode=_GEO)
+    assert rep["dropped"]["internal_merged"] == 1       # the 75 m pair collapses to one
+    assert rep["candidates"] == 2                        # merged pair + the far one

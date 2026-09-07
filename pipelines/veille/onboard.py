@@ -59,6 +59,35 @@ def _cell(lat, lon):
         return None
 
 
+def _haversine_m(a_lat, a_lon, b_lat, b_lon) -> float:
+    from math import radians, sin, cos, asin, sqrt
+    dl, do = radians(b_lat - a_lat), radians(b_lon - a_lon)
+    x = sin(dl / 2) ** 2 + cos(radians(a_lat)) * cos(radians(b_lat)) * sin(do / 2) ** 2
+    return 2 * 6371000 * asin(sqrt(x))
+
+
+_INTERNAL_DEDUP_M = 250  # two candidates within 250 m + same operator = the same project (2 OSM ways)
+
+
+def _dedup_internal(cands: list[dict]) -> tuple[list[dict], int]:
+    """Candidate-vs-candidate dedup: 2 OSM ways of one project (e.g. DR Hattersheim 484/485, 75 m)
+    survive the vs-served cell pass but are the SAME project. Merge by proximity + same operator,
+    keeping the first (stable order). Returns (kept, n_merged)."""
+    kept, merged = [], 0
+    for c in cands:
+        op = _norm_op(c.get("operator"))
+        cc = c["coordinates"]
+        dup = next((k for k in kept if _norm_op(k.get("operator")) == op
+                    and _haversine_m(float(cc["lat"]), float(cc["lon"]),
+                                     float(k["coordinates"]["lat"]), float(k["coordinates"]["lon"])) <= _INTERNAL_DEDUP_M),
+                   None)
+        if dup is None:
+            kept.append(c)
+        else:
+            merged += 1
+    return kept, merged
+
+
 def _reverse_geocode(lat: float, lon: float, *, sleep=time.sleep) -> dict:
     """Nominatim reverse → {country (ISO2 upper), municipality}. Empty on miss (never raises)."""
     sleep(1.1)  # Nominatim policy: 1 req/s
@@ -147,6 +176,8 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
         if not e["country"]:
             dropped["no_country"] += 1; continue
         cand.append(e)
+    cand, internal_merged = _dedup_internal(cand)   # candidate-vs-candidate (2 OSM ways of one project)
+    dropped["internal_merged"] = internal_merged
     report = {"candidates": len(cand), "dropped": dropped, "input": len(rows)}
     return cand, report
 
