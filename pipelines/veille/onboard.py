@@ -170,10 +170,28 @@ def _validate(entries: list) -> list[str]:
     return errs
 
 
+def review_markdown(candidates: list) -> str:
+    """A human-readable one-per-row table for Franck's VOIE ROUGE gate: he validates/rejects each
+    candidate before ANY publication. Facts only (operator, place, status, source) — no grade."""
+    head = (f"# Gate voie-rouge — {len(candidates)} projets « en veille » candidats (à valider un par un)\n\n"
+            "> Aucune note. Chaque ligne = un projet annoncé détecté (OSM). Valider = publier « en veille » ; "
+            "rejeter = écarter. Rien n'est publié sans ta validation.\n\n"
+            "| # | Projet | Opérateur | Pays | Statut | Source (OSM) |\n"
+            "|---|--------|-----------|------|--------|--------------|\n")
+    rows = []
+    for i, c in enumerate(candidates, 1):
+        muni = c.get("municipality") or ""
+        name = f"{c['name']}" + (f" — {muni}" if muni else "")
+        rows.append(f"| {i} | {name} | {c.get('operator','')} | {c['country']} | "
+                    f"{c.get('project_status','')} | {c['source']['url']} |")
+    return head + "\n".join(rows) + "\n"
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Phase-1 en-veille onboarding — candidates only, never served.")
     ap.add_argument("--dry-run", action="store_true", help="preview only (default if no --out)")
-    ap.add_argument("--out", help="write review candidates to this file (NOT the served watchlist)")
+    ap.add_argument("--out", help="write review candidates JSON to this file (NOT the served watchlist)")
+    ap.add_argument("--review", help="write the human-readable voie-rouge gate table (markdown) to this file")
     args = ap.parse_args(argv)
     cand, report = build_candidates()
     errs = _validate(cand)
@@ -183,10 +201,13 @@ def main(argv=None) -> int:
     print("  ⛔ AUCUNE note émise (A-19) · AUCUN fichier servi écrit · AUCUN deploy · voie ROUGE (revue humaine).", file=sys.stderr)
     if errs:
         return 1
+    if args.review:
+        Path(args.review).write_text(review_markdown(cand))
+        print(f"  table de gate voie-rouge (POUR REVUE Franck) → {args.review}", file=sys.stderr)
     if args.out and not args.dry_run:
         Path(args.out).write_text(json.dumps(cand, ensure_ascii=False, indent=2) + "\n")
-        print(f"  candidats (POUR REVUE, non servis) → {args.out}", file=sys.stderr)
-    else:
+        print(f"  candidats JSON (POUR REVUE, non servis) → {args.out}", file=sys.stderr)
+    elif not args.review:
         print(json.dumps(cand, ensure_ascii=False, indent=2))
     return 0
 

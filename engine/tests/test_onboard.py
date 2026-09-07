@@ -69,3 +69,12 @@ def test_dedup_against_existing_watchlist(monkeypatch):
     cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
     assert rep["dropped"]["watchlist_dup"] == 1
     assert {c["operator"] for c in cand} == {"Equinix"}
+
+
+def test_review_markdown_lists_all_and_no_grade():
+    from pipelines.veille import onboard
+    cand = [{"name": "X", "operator": "Op", "country": "FR", "project_status": "announced",
+             "municipality": "Ville", "source": {"url": "https://www.openstreetmap.org/way/1"}, "facts": []}]
+    md = onboard.review_markdown(cand)
+    assert "X — Ville" in md and "| FR |" in md and "grade" not in md.lower()
+    assert md.count("openstreetmap.org") == 1   # one row per candidate
