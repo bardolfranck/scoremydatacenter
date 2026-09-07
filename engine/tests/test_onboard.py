@@ -30,8 +30,8 @@ def _rows():
 
 
 def _no_served(monkeypatch):
-    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
-    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_served_index", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_index", lambda: {})
 
 
 def test_gates_named_and_pipeline_only(monkeypatch):
@@ -56,16 +56,16 @@ def test_entries_carry_no_grade_and_validate(monkeypatch):
 
 def test_dedup_against_served_drops_public_site(monkeypatch):
     # Equinix at the same 2 dp cell as a served Equinix → already public → not re-listed.
-    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {(48.90, 2.30): {"equinix"}})
-    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_served_index", lambda: {(48.90, 2.30): [("srv-eq", "Equinix")]})
+    monkeypatch.setattr(onboard, "_watchlist_index", lambda: {})
     cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
     assert rep["dropped"]["served_dup"] == 1
     assert {c["operator"] for c in cand} == {"Vantage"}   # Equinix deduped out
 
 
 def test_dedup_against_existing_watchlist(monkeypatch):
-    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
-    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {(51.0, 7.0): {"vantage"}})
+    monkeypatch.setattr(onboard, "_served_index", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_index", lambda: {(51.0, 7.0): [("w1", "Vantage")]})
     cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
     assert rep["dropped"]["watchlist_dup"] == 1
     assert {c["operator"] for c in cand} == {"Equinix"}
@@ -82,8 +82,8 @@ def test_review_markdown_lists_all_and_no_grade():
 
 def test_internal_dedup_merges_two_osm_ways_of_one_project(monkeypatch):
     # DR Hattersheim 484/485 shape: 2 candidates, same operator, ~75 m apart → one project.
-    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
-    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_served_index", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_index", lambda: {})
     rows = [
         {"name": "DR a", "operator": "Digital Realty", "lat": 50.0644712, "lon": 8.4869027,
          "project_status": "under_construction", "source_url": "https://www.openstreetmap.org/way/484"},
@@ -98,10 +98,10 @@ def test_internal_dedup_merges_two_osm_ways_of_one_project(monkeypatch):
 
 
 def test_lane_classification_contested_vs_auto(monkeypatch):
-    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
-    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_served_index", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_index", lambda: {})
     # Vantage cell is a CONTESTED watchlist site → its candidate must route to manual_gate.
-    monkeypatch.setattr(onboard, "_contested_cells_ops", lambda: {(51.0, 7.0): {"vantage"}})
+    monkeypatch.setattr(onboard, "_contested_index", lambda: {(51.0, 7.0): [("w1", "Vantage")]})
     cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
     assert rep["auto_publish_enabled"] is False               # fail-closed: never auto-publishes
     assert rep["lanes"]["manual_gate"] == ["de-vantage-ville-444"]   # contested → Franck's eye

@@ -34,58 +34,14 @@ from pathlib import Path
 
 from engine.core import ARTIFACTS_DIR, load_watchlist
 from pipelines.press import osm_projects
+from pipelines.veille import dedup   # ONE source of truth for norm_op / cell / match_served / dedup_internal
 
 _NOMINATIM = "https://nominatim.openstreetmap.org/reverse"
-_CELL_DP = 2  # served map.geojson coords are 2 dp (~1.1 km) — dedup at the served resolution
-_LEGAL = {"gmbh", "oy", "oyj", "ab", "ltd", "limited", "sa", "sas", "sarl", "bv", "ag",
-          "plc", "llc", "inc", "srl", "spa", "as", "nv", "kg", "kgaa", "se", "corp", "co"}
 _PUBLISHABLE_STATUS = {"announced", "under_construction"}
 
 
-def _norm_op(op: str | None) -> str:
-    toks = [t for t in re.split(r"[^a-z0-9]+", (op or "").lower()) if t and t not in _LEGAL]
-    s = "".join(toks)
-    return s if s and not s.startswith("unknown") else ""
-
-
 def _is_named(op: str | None) -> bool:
-    return bool(_norm_op(op))
-
-
-def _cell(lat, lon):
-    try:
-        return (round(float(lat), _CELL_DP), round(float(lon), _CELL_DP))
-    except (TypeError, ValueError):
-        return None
-
-
-def _haversine_m(a_lat, a_lon, b_lat, b_lon) -> float:
-    from math import radians, sin, cos, asin, sqrt
-    dl, do = radians(b_lat - a_lat), radians(b_lon - a_lon)
-    x = sin(dl / 2) ** 2 + cos(radians(a_lat)) * cos(radians(b_lat)) * sin(do / 2) ** 2
-    return 2 * 6371000 * asin(sqrt(x))
-
-
-_INTERNAL_DEDUP_M = 250  # two candidates within 250 m + same operator = the same project (2 OSM ways)
-
-
-def _dedup_internal(cands: list[dict]) -> tuple[list[dict], int]:
-    """Candidate-vs-candidate dedup: 2 OSM ways of one project (e.g. DR Hattersheim 484/485, 75 m)
-    survive the vs-served cell pass but are the SAME project. Merge by proximity + same operator,
-    keeping the first (stable order). Returns (kept, n_merged)."""
-    kept, merged = [], 0
-    for c in cands:
-        op = _norm_op(c.get("operator"))
-        cc = c["coordinates"]
-        dup = next((k for k in kept if _norm_op(k.get("operator")) == op
-                    and _haversine_m(float(cc["lat"]), float(cc["lon"]),
-                                     float(k["coordinates"]["lat"]), float(k["coordinates"]["lon"])) <= _INTERNAL_DEDUP_M),
-                   None)
-        if dup is None:
-            kept.append(c)
-        else:
-            merged += 1
-    return kept, merged
+    return bool(dedup.norm_op(op))
 
 
 def _reverse_geocode(lat: float, lon: float, *, sleep=time.sleep) -> dict:
@@ -103,27 +59,14 @@ def _reverse_geocode(lat: float, lon: float, *, sleep=time.sleep) -> dict:
     return {"country": (addr.get("country_code") or "").upper(), "municipality": muni}
 
 
-def _served_cells_ops():
-    """{cell: {operator_key,…}} from the served map.geojson (the only served surface with coords)."""
+def _served_index():
+    """Served map.geojson → dedup index {cell: [(id, operator)]} (the shared-util shape)."""
     mp = ARTIFACTS_DIR / "map.geojson"
-    by_cell: dict = {}
-    if mp.exists():
-        for f in json.loads(mp.read_text()).get("features", []):
-            lon, lat = (f.get("geometry", {}).get("coordinates") or [None, None])[:2]
-            c = _cell(lat, lon)
-            if c:
-                by_cell.setdefault(c, set()).add(_norm_op(f.get("properties", {}).get("operator")))
-    return by_cell
+    return dedup.served_index(json.loads(mp.read_text()).get("features", []) if mp.exists() else [])
 
 
-def _watchlist_cells_ops():
-    by_cell: dict = {}
-    for e in load_watchlist():
-        c = e.get("coordinates") or {}
-        cell = _cell(c.get("lat"), c.get("lon"))
-        if cell:
-            by_cell.setdefault(cell, set()).add(_norm_op(e.get("operator")))
-    return by_cell
+def _watchlist_index():
+    return dedup.index_from_entries(load_watchlist())
 
 
 _CONTEST_KINDS = {"opposition", "moratorium", "appeal", "petition"}
@@ -135,29 +78,21 @@ _CONTEST_KINDS = {"opposition", "moratorium", "appeal", "petition"}
 AUTO_PUBLISH_ENABLED = False
 
 
-def _contested_cells_ops():
-    """{cell: {operator_key}} of watchlist entries carrying a CONTESTATION fact (opposition/
-    moratorium/appeal/petition) → a candidate matching one is litigious → manual gate, never auto."""
-    by_cell: dict = {}
-    for e in load_watchlist():
-        kinds = {f.get("kind") for f in (e.get("facts") or [])}
-        if not (kinds & _CONTEST_KINDS):
-            continue
-        c = e.get("coordinates") or {}
-        cell = _cell(c.get("lat"), c.get("lon"))
-        if cell:
-            by_cell.setdefault(cell, set()).add(_norm_op(e.get("operator")))
-    return by_cell
+def _contested_index():
+    """dedup index {cell:[(id,op)]} of watchlist entries carrying a CONTESTATION fact — a candidate
+    matching one (exact/brand, via dedup.match_served) is litigious → manual gate, never auto."""
+    contested = [e for e in load_watchlist()
+                 if {f.get("kind") for f in (e.get("facts") or [])} & _CONTEST_KINDS]
+    return dedup.index_from_entries(contested)
 
 
-def _lane(entry: dict, contested: dict) -> str:
-    """Routing lane for a clean candidate (schema forbids storing it IN the entry):
-    'manual_gate' if it collides with a contested watchlist site (litigious → Franck's eye),
-    else 'auto_eligible' (named + recognized source + dedup-clean — would auto-publish en-veille
-    ONLY if AUTO_PUBLISH_ENABLED and Franck has signed off the policy). Never a grade either way."""
+def _lane(entry: dict, contested_idx: dict) -> str:
+    """Routing lane (schema forbids storing it IN the entry): 'manual_gate' if the candidate
+    collides (exact op or brand) with a CONTESTED watchlist site — litigious, Franck's eye — else
+    'auto_eligible' (would auto-publish en-veille ONLY if AUTO_PUBLISH_ENABLED + Franck's sign-off).
+    Never a grade either way."""
     cc = entry["coordinates"]
-    cell, op = _cell(cc["lat"], cc["lon"]), _norm_op(entry.get("operator"))
-    return "manual_gate" if op in contested.get(cell, set()) else "auto_eligible"
+    return "manual_gate" if dedup.match_served(cc["lat"], cc["lon"], entry.get("operator"), contested_idx) else "auto_eligible"
 
 
 def _slug(*parts: str) -> str:
@@ -193,29 +128,35 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
     """Detected pipeline projects → « en veille » candidates + a stats/report dict. Writes nothing."""
     today = today or date.today().isoformat()
     rows = rows if rows is not None else osm_projects.collect()
-    served, watch = _served_cells_ops(), _watchlist_cells_ops()
-    cand, dropped = [], {"unnamed": 0, "status": 0, "served_dup": 0, "watchlist_dup": 0, "no_country": 0}
+    served, watch = _served_index(), _watchlist_index()
+    cand, flagged, dropped = [], set(), {"unnamed": 0, "status": 0, "served_dup": 0,
+                                         "watchlist_dup": 0, "no_country": 0}
     for r in rows:
         if r.get("project_status") not in _PUBLISHABLE_STATUS:
             dropped["status"] += 1; continue
         if not _is_named(r.get("operator")):
             dropped["unnamed"] += 1; continue
-        cell, op = _cell(r["lat"], r["lon"]), _norm_op(r.get("operator"))
-        if op in served.get(cell, set()):
+        lat, lon, op = float(r["lat"]), float(r["lon"]), r.get("operator")
+        sm = dedup.match_served(lat, lon, op, served)
+        if sm and sm[0] == "exclude":       # already public (exact/brand) → not re-listed
             dropped["served_dup"] += 1; continue
-        if op in watch.get(cell, set()):
+        wm = dedup.match_served(lat, lon, op, watch)
+        if wm and wm[0] == "exclude":        # already watched → not re-listed
             dropped["watchlist_dup"] += 1; continue
-        geo = geocode(float(r["lat"]), float(r["lon"]))
+        geo = geocode(lat, lon)
         e = _entry(r, geo, today)
         if not e["country"]:
             dropped["no_country"] += 1; continue
         cand.append(e)
-    cand, internal_merged = _dedup_internal(cand)   # candidate-vs-candidate (2 OSM ways of one project)
-    dropped["internal_merged"] = internal_merged
-    contested = _contested_cells_ops()
+        if (sm and sm[0] == "flag") or (wm and wm[0] == "flag"):
+            flagged.add(e["id"])             # dense-cluster coincidence → human review, not auto
+    cand, merged = dedup.dedup_internal(cand)   # candidate-vs-candidate (2 OSM ways of one project)
+    dropped["internal_merged"] = len(merged)
+    contested = _contested_index()
     lanes = {"auto_eligible": [], "manual_gate": []}
     for e in cand:
-        lanes[_lane(e, contested)].append(e["id"])
+        lane = "manual_gate" if (e["id"] in flagged or _lane(e, contested) == "manual_gate") else "auto_eligible"
+        lanes[lane].append(e["id"])
     report = {"candidates": len(cand), "dropped": dropped, "input": len(rows),
               "lanes": lanes, "auto_publish_enabled": AUTO_PUBLISH_ENABLED}
     return cand, report
