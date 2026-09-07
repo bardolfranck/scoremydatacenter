@@ -126,6 +126,40 @@ def _watchlist_cells_ops():
     return by_cell
 
 
+_CONTEST_KINDS = {"opposition", "moratorium", "appeal", "petition"}
+# ⛔ AUTO-PUBLICATION POLICY (Phase-1, Franck 2026-09-07 relayé) — a clean detected project would
+# auto-publish « en veille » (no grade) WITHOUT the manual gate. This REVERSES the standing rule
+# [[gate-voie-verte]] (« projet = voie rouge = gate manuel ; silence=publié REJETÉ ») → it requires
+# Franck's DIRECT word to activate, distinct from validating the banner display. Until then this
+# stays False and onboard NEVER writes the served watchlist — it only EMITS LABELED CANDIDATES.
+AUTO_PUBLISH_ENABLED = False
+
+
+def _contested_cells_ops():
+    """{cell: {operator_key}} of watchlist entries carrying a CONTESTATION fact (opposition/
+    moratorium/appeal/petition) → a candidate matching one is litigious → manual gate, never auto."""
+    by_cell: dict = {}
+    for e in load_watchlist():
+        kinds = {f.get("kind") for f in (e.get("facts") or [])}
+        if not (kinds & _CONTEST_KINDS):
+            continue
+        c = e.get("coordinates") or {}
+        cell = _cell(c.get("lat"), c.get("lon"))
+        if cell:
+            by_cell.setdefault(cell, set()).add(_norm_op(e.get("operator")))
+    return by_cell
+
+
+def _lane(entry: dict, contested: dict) -> str:
+    """Routing lane for a clean candidate (schema forbids storing it IN the entry):
+    'manual_gate' if it collides with a contested watchlist site (litigious → Franck's eye),
+    else 'auto_eligible' (named + recognized source + dedup-clean — would auto-publish en-veille
+    ONLY if AUTO_PUBLISH_ENABLED and Franck has signed off the policy). Never a grade either way."""
+    cc = entry["coordinates"]
+    cell, op = _cell(cc["lat"], cc["lon"]), _norm_op(entry.get("operator"))
+    return "manual_gate" if op in contested.get(cell, set()) else "auto_eligible"
+
+
 def _slug(*parts: str) -> str:
     s = "-".join(p for p in parts if p)
     s = re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")
@@ -178,7 +212,12 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
         cand.append(e)
     cand, internal_merged = _dedup_internal(cand)   # candidate-vs-candidate (2 OSM ways of one project)
     dropped["internal_merged"] = internal_merged
-    report = {"candidates": len(cand), "dropped": dropped, "input": len(rows)}
+    contested = _contested_cells_ops()
+    lanes = {"auto_eligible": [], "manual_gate": []}
+    for e in cand:
+        lanes[_lane(e, contested)].append(e["id"])
+    report = {"candidates": len(cand), "dropped": dropped, "input": len(rows),
+              "lanes": lanes, "auto_publish_enabled": AUTO_PUBLISH_ENABLED}
     return cand, report
 
 
@@ -201,20 +240,27 @@ def _validate(entries: list) -> list[str]:
     return errs
 
 
-def review_markdown(candidates: list) -> str:
-    """A human-readable one-per-row table for Franck's VOIE ROUGE gate: he validates/rejects each
-    candidate before ANY publication. Facts only (operator, place, status, source) — no grade."""
-    head = (f"# Gate voie-rouge — {len(candidates)} projets « en veille » candidats (à valider un par un)\n\n"
-            "> Aucune note. Chaque ligne = un projet annoncé détecté (OSM). Valider = publier « en veille » ; "
-            "rejeter = écarter. Rien n'est publié sans ta validation.\n\n"
-            "| # | Projet | Opérateur | Pays | Statut | Source (OSM) |\n"
-            "|---|--------|-----------|------|--------|--------------|\n")
+def review_markdown(candidates: list, lane_of: dict | None = None) -> str:
+    """A human-readable one-per-row table for Franck's gate: he validates/rejects each candidate
+    before ANY publication. Facts only (operator, place, status, source) — no grade. The « Voie »
+    column shows the routing (auto-éligible vs gate-contesté) so Franck sees at a glance what the
+    auto-en-veille policy WOULD publish vs what needs his eye — but nothing publishes without him."""
+    lane_of = lane_of or {}
+    head = (f"# Gate — {len(candidates)} projets « en veille » candidats (à valider un par un)\n\n"
+            "> Aucune note. Chaque ligne = un projet annoncé détecté (OSM). « Voie » = routage proposé "
+            "(auto-éligible = nommé+source+dédup-propre ; gate-contesté = litige, ton œil requis). "
+            "Rien n'est publié sans ta validation tant que la politique auto n'est pas activée.\n\n"
+            "| # | Projet | Opérateur | Pays | Statut | Voie | Source (OSM) |\n"
+            "|---|--------|-----------|------|--------|------|--------------|\n")
     rows = []
     for i, c in enumerate(candidates, 1):
         muni = c.get("municipality") or ""
         name = f"{c['name']}" + (f" — {muni}" if muni else "")
+        lane = lane_of.get(c.get("id"))
+        voie = "🟢 auto-éligible" if lane == "auto_eligible" else (
+            "🔴 gate-contesté" if lane == "manual_gate" else "—")
         rows.append(f"| {i} | {name} | {c.get('operator','')} | {c['country']} | "
-                    f"{c.get('project_status','')} | {c['source']['url']} |")
+                    f"{c.get('project_status','')} | {voie} | {c['source']['url']} |")
     return head + "\n".join(rows) + "\n"
 
 
@@ -226,14 +272,19 @@ def main(argv=None) -> int:
     args = ap.parse_args(argv)
     cand, report = build_candidates()
     errs = _validate(cand)
+    lanes = report["lanes"]
+    lane_of = {i: "auto_eligible" for i in lanes["auto_eligible"]}
+    lane_of.update({i: "manual_gate" for i in lanes["manual_gate"]})
     print(f"onboard: {report['input']} détectés → {report['candidates']} candidats « en veille »", file=sys.stderr)
     print(f"  écartés : {report['dropped']}", file=sys.stderr)
+    print(f"  voies : auto-éligible {len(lanes['auto_eligible'])} · gate-contesté {len(lanes['manual_gate'])}"
+          f"  (auto_publish_enabled={report['auto_publish_enabled']})", file=sys.stderr)
     print(f"  schéma watchlist : {'OK ✅' if not errs else '❌ ' + str(errs[:5])}", file=sys.stderr)
-    print("  ⛔ AUCUNE note émise (A-19) · AUCUN fichier servi écrit · AUCUN deploy · voie ROUGE (revue humaine).", file=sys.stderr)
+    print("  ⛔ AUCUNE note émise (A-19) · AUCUN fichier servi écrit · AUCUN deploy · publication auto DÉSACTIVÉE (mot direct Franck requis).", file=sys.stderr)
     if errs:
         return 1
     if args.review:
-        Path(args.review).write_text(review_markdown(cand))
+        Path(args.review).write_text(review_markdown(cand, lane_of))
         print(f"  table de gate voie-rouge (POUR REVUE Franck) → {args.review}", file=sys.stderr)
     if args.out and not args.dry_run:
         Path(args.out).write_text(json.dumps(cand, ensure_ascii=False, indent=2) + "\n")

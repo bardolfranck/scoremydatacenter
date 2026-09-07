@@ -95,3 +95,17 @@ def test_internal_dedup_merges_two_osm_ways_of_one_project(monkeypatch):
     cand, rep = onboard.build_candidates(rows, today="2026-09-07", geocode=_GEO)
     assert rep["dropped"]["internal_merged"] == 1       # the 75 m pair collapses to one
     assert rep["candidates"] == 2                        # merged pair + the far one
+
+
+def test_lane_classification_contested_vs_auto(monkeypatch):
+    monkeypatch.setattr(onboard, "_served_cells_ops", lambda: {})
+    monkeypatch.setattr(onboard, "_watchlist_cells_ops", lambda: {})
+    # Vantage cell is a CONTESTED watchlist site → its candidate must route to manual_gate.
+    monkeypatch.setattr(onboard, "_contested_cells_ops", lambda: {(51.0, 7.0): {"vantage"}})
+    cand, rep = onboard.build_candidates(_rows(), today="2026-09-07", geocode=_GEO)
+    assert rep["auto_publish_enabled"] is False               # fail-closed: never auto-publishes
+    assert rep["lanes"]["manual_gate"] == ["de-vantage-ville-444"]   # contested → Franck's eye
+    assert rep["lanes"]["auto_eligible"] == ["fr-equinix-ville-111"] # clean → auto-eligible (label only)
+    # the entries themselves stay schema-clean (no lane field stored)
+    assert onboard._validate(cand) == []
+    assert all("lane" not in c for c in cand)
