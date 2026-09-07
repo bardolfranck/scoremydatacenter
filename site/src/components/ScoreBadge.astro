@@ -26,6 +26,8 @@ interface Props {
   naLabel?: string; // localized "insufficient data"
   reservedLabel?: string; // A-25: localized "A réservé — se prouve en exploitation", shown when grade.reserved_from is set
   enAttenteLabel?: string; // en-veille: localized "note en attente" (grade withheld pending publication)
+  band?: { central: string; adjacent?: string | null; a_reserved?: boolean } | null; // loupe: provisional coverage band on a PIPELINE project (central = big letter, adjacent = small). Same invariant: never rendered without its confidence/provisional coupling.
+  provisionalLabel?: string; // localized "provisoire · se resserre" shown under the loupe
 }
 const {
   label,
@@ -41,6 +43,8 @@ const {
   naLabel = "insufficient data",
   reservedLabel,
   enAttenteLabel,
+  band = null,
+  provisionalLabel,
 } = Astro.props;
 const isNa = grade.grade === "insufficient_data";
 // En-veille sentinel: a site shown WITHOUT a published grade ("note en attente").
@@ -53,9 +57,32 @@ const chipText = isNa ? "–" : isEnAttente ? "…" : grade.grade;
 const chipAria = isNa ? naLabel : isEnAttente ? enAttenteText : `${label}: ${grade.grade}`;
 // A-25: the letter was capped from A for want of third-party operational proof.
 const reserved = !isNa && grade.reserved_from === "A" && reservedLabel;
+// Loupe (provisional coverage band on a pipeline project): big central letter + small adjacent.
+// Bound by the same invariant as every letter here — it carries its confidence + "provisoire" coupling.
+const bandAria = band
+  ? `${label}: ${band.central}${band.adjacent ? `–${band.adjacent}` : ""}${band.a_reserved ? " (A réservé)" : ""}`
+  : "";
 ---
 
-{layout === "lead" ? (
+{band ? (
+  <div class="scorebadge scorebadge-band">
+    <span class="gradechip-loupe" role="img" aria-label={bandAria}>
+      <span class={`gradechip lg grade-${band.central.toLowerCase()}`} aria-hidden="true">{band.central}</span>
+      {band.adjacent && <span class={`gradechip sm grade-${band.adjacent.toLowerCase()} gc-adjacent`} aria-hidden="true">{band.adjacent}</span>}
+    </span>
+    <span class="scorebadge-lead-text">
+      <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
+      {provisionalLabel && <span class="scorebadge-prov">{provisionalLabel}</span>}
+      {band.a_reserved && reservedLabel && <span class="scorebadge-reserved">{reservedLabel}</span>}
+      {renderConfidence && (
+        <span class={`confidence ${confidence}`}>
+          <span class="dot" aria-hidden="true"></span>
+          {confidenceLabel}
+        </span>
+      )}
+    </span>
+  </div>
+) : layout === "lead" ? (
   <div class="scorebadge scorebadge-lead">
     <span class={`gradechip ${sizeClass} ${chipClass}`} title={isNa ? naLabel : undefined} aria-label={chipAria}>{chipText}</span>
     <span class="scorebadge-lead-text">

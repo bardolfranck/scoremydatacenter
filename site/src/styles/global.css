@@ -414,6 +414,14 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 /* En veille — grade withheld pending publication ("note en attente"): neutral, never an A–E colour */
 .gradechip.grade-enveille { background: var(--wash); color: var(--muted); border: 1px dashed var(--muted); font-weight: 800; letter-spacing: 0.05em; }
 
+/* Loupe — provisional coverage band on a PIPELINE project: big central letter + small adjacent
+   (the plage's other edge). Same colours/coupling as any grade; the small chip is dimmed and tucked. */
+.scorebadge-band { display: flex; align-items: center; gap: 14px; }
+.gradechip-loupe { display: inline-flex; align-items: flex-start; }
+.gradechip-loupe .gc-adjacent { margin-left: -8px; margin-top: -5px; transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 3px var(--surface, #fff); }
+.scorebadge-prov { color: var(--muted); font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; }
+@media (prefers-color-scheme: dark) { .gradechip-loupe .gc-adjacent { box-shadow: 0 0 0 3px #141a24; } }
+
 .confidence { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 0.84rem; font-weight: 700; }
 .confidence .dot { width: 9px; height: 9px; border-radius: 50%; }
 .confidence.high .dot { background: var(--grade-a); }
