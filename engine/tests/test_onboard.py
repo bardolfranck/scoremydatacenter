@@ -157,7 +157,7 @@ def test_deposit_respects_suppression(tmp_path, monkeypatch):
     cand = [{"id": "fr-a", "operator": "Equinix", "coordinates": {"lat": 48.8, "lon": 2.3},
              "name": "A", "country": "FR", "project_status": "announced",
              "source": {"title": "OSM", "url": "u", "accessed": "2026-09-07"}, "facts": []}]
-    out = tmp_path / "auto.json"
+    out = tmp_path / "eu-projects-auto.json"
     import json
     onboard.deposit_auto_eligible(cand, {"auto_eligible": ["fr-a"]}, out, suppressed={"fr-a"})
     assert json.loads(out.read_text()) == []      # Franck curated it out → stays un-published
@@ -184,11 +184,16 @@ def test_suppressed_never_redeposited(tmp_path, monkeypatch):
 
 
 def test_deposit_refuses_served_path(tmp_path, monkeypatch):
-    # Fix B anti-fat-finger: the deposit only targets a source watchlist, never a SERVED artifact.
+    # Fix B allowlist: RECONCILE overwrites, so the deposit accepts ONLY the dedicated auto file.
     import pytest
     monkeypatch.setattr(onboard, "AUTO_PUBLISH_ENABLED", True)
-    for name in ("map.geojson", "scores.json", "stats.json", "watchlist.geojson"):
+    # served artifacts + a CURATED sibling watchlist (the RECONCILE-erases-manual-oppositions danger)
+    for target in ("map.geojson", "scores.json", "stats.json", "watchlist.geojson",
+                   "fr-oppositions.json", "eu-projects-auto.json.bak"):
         with pytest.raises(SystemExit):
-            onboard.deposit_auto_eligible([], {"auto_eligible": []}, tmp_path / name)
+            onboard.deposit_auto_eligible([], {"auto_eligible": []}, tmp_path / target)
     with pytest.raises(SystemExit):
         onboard.deposit_auto_eligible([], {"auto_eligible": []}, tmp_path / "site" / "public" / "data" / "x.json")
+    # the dedicated file is the one legal target
+    ok = tmp_path / onboard._AUTO_BASENAME
+    assert onboard.deposit_auto_eligible([], {"auto_eligible": []}, ok) == 0 and ok.exists()

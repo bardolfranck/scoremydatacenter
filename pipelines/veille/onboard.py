@@ -181,6 +181,7 @@ def build_candidates(rows=None, *, today=None, geocode=_reverse_geocode) -> tupl
 
 
 _SUPPRESS_BASENAME = "eu-projects-suppress.json"
+_AUTO_BASENAME = "eu-projects-auto.json"   # the ONE auto-managed deposit target (allowlisted below)
 
 
 def _suppress_path_for(watchlist_out) -> Path:
@@ -207,14 +208,16 @@ def deposit_auto_eligible(candidates, lanes, out_path, suppressed=None) -> int:
     Fix A (durable curation): `suppressed` defaults to the on-disk suppress list next to out_path —
     Franck adds an id there and it stays un-published even if still detected (a hand-delete of a line
     here would be undone by the next reconcile; the suppress list is the durable lever he required).
-    Fix B (anti-fat-finger): REFUSES to write a served artifact — the deposit only targets a source
-    watchlist file, never map.geojson/scores.json/etc."""
+    Fix B (anti-fat-finger): ALLOWLIST — the ONLY legal target is the dedicated auto-managed file
+    (eu-projects-auto.json). RECONCILE OVERWRITES its target, so aiming --publish at any other file
+    (a curated watchlist like fr-oppositions.json, or a served artifact) would ERASE it → refuse."""
     if not AUTO_PUBLISH_ENABLED:
         return 0
     p = Path(out_path)
-    if "site/public/data" in p.as_posix() or p.name in {"map.geojson", "scores.json",
-                                                        "stats.json", "watchlist.geojson", "home_showcase.json"}:
-        raise SystemExit(f"REFUS dépôt : {p} est un artefact SERVI — le dépôt ne va que dans une watchlist source.")
+    if p.name != _AUTO_BASENAME:
+        raise SystemExit(f"REFUS dépôt : {p} n'est pas le fichier auto-géré dédié ({_AUTO_BASENAME}). "
+                         "RECONCILE écrase la cible — viser une autre watchlist curée ou un artefact "
+                         "servi l'effacerait.")
     if suppressed is None:
         suppressed = _suppressed_ids(_suppress_path_for(p))
     auto = set(lanes.get("auto_eligible", [])) - set(suppressed)
