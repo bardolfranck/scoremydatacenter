@@ -6,6 +6,7 @@
   "municipality": "Betaburg",
   "country": "ZZ",
   "project_status": "announced",
+  "first_seen": null,
   "power_mw": 900,
   "power_mw_status": null,
   "expected_commissioning": 2031,

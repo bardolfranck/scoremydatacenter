@@ -62,6 +62,9 @@ def _summary(dc: dict, result: dict) -> dict:
         "municipality": identity["municipality"],
         "country": identity["country"],
         "project_status": identity["project_status"],
+        # First-recorded date (git first-commit of the newsroom fiche; null until backfilled).
+        # Powers a « derniers scorés » banner; a date, never a grade date.
+        "first_seen": identity.get("first_seen"),
         "power_mw": identity.get("power_mw"),
         # Consumer contract (agent-site): the fiche/ranking renders "~X MW · estimé" on this
         # enum (measured | announced | estimated); null = legacy fill, undisclosed provenance.
@@ -143,6 +146,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
                 **({"reserved_site": True} if result["grades"]["site"].get("reserved_from") == "A" else {}),
                 "project_status": dc["identity"]["project_status"],
                 "size_tier": size_tier,
+                # First-recorded date (identity.first_seen) so a « derniers SCORÉS » banner can sort
+                # by recency (Phase-1). A DATE, never a grade date; null until backfilled (git first-
+                # commit of the newsroom fiche — see scripts/backfill_first_seen.py, gated on Franck).
+                "first_seen": dc["identity"].get("first_seen"),
             },
         })
 

@@ -6,6 +6,7 @@
   "municipality": "Alphaville",
   "country": "ZZ",
   "project_status": "permitting",
+  "first_seen": null,
   "power_mw": 120,
   "power_mw_status": null,
   "expected_commissioning": 2028,
