@@ -125,6 +125,24 @@
     "en": "Rated B on site, C on project & process."
   },
   "publication_status": "published",
+  "provisional_band": {
+    "kind": "provisional_band",
+    "provisional": true,
+    "central": "B",
+    "adjacent": null,
+    "a_reserved": true,
+    "confidence": "high",
+    "band": "B",
+    "worst": 71.7,
+    "best": 83.7,
+    "span": 0,
+    "n_present": 14,
+    "n_base": 14,
+    "label": {
+      "fr": "note provisoire (plage) — se resserre à la livraison",
+      "en": "provisional grade (range) — narrows at delivery"
+    }
+  },
   "summary": {
     "fr": "Fixture de test (fictive) : campus moyen bien documenté — étages 1 et 2 renseignés, cas nominal du pipeline.",
     "en": "Test fixture (fictional): well-documented mid-size campus — tiers 1 and 2 filled, nominal pipeline case."

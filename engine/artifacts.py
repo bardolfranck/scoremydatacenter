@@ -20,6 +20,11 @@ from .scoring import score_datacenter
 from .stats import build_stats
 from .indices import build_indices, update_history
 from .showcase import build_showcase
+# Provisional coverage band for PIPELINE fiches (product: announced/permitting/under_construction
+# -> band « en veille, provisoire » ; operational -> definitive letter, no band). servable_band is
+# the ONE gate (firewall test_plage_bands_firewall): operational -> None, so a band can never touch
+# an operational fiche's definitive grade. Written to a SEPARATE `provisional_band` field, never grades.
+from .plage_bands import build_reference_pool, servable_band, base_definitions
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -111,11 +116,34 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
         )
     results = {dc_id: score_datacenter(dc, methodology) for dc_id, dc in sorted(datacenters.items())}
 
+    # Provisional coverage bands (deterministic): reference pool = every scored fiche's present
+    # BASE sub-scores; the band tightens against it. servable_band gates it to pipeline fiches only.
+    base_ids = [d["id"] for d in base_definitions(methodology)]
+
+    def _present(dc_id: str) -> dict:
+        ind = results[dc_id]["indicators"]
+        return {i: ind[i] for i in base_ids if ind.get(i) is not None}
+
+    band_pool = build_reference_pool(
+        {"country": dc["identity"]["country"], "present": _present(dc_id)}
+        for dc_id, dc in sorted(datacenters.items())
+    )
+
+    def _provisional_band(dc_id: str, dc: dict):
+        return servable_band(
+            dc["identity"]["project_status"], _present(dc_id), dc["identity"]["country"],
+            methodology, band_pool, confidence=results[dc_id]["confidence"]["level"],
+        )
+
     labels = {i["id"]: i["label"] for i in methodology["indicators"]}
     scores, features, audit = [], [], []
 
     for dc_id, dc in sorted(datacenters.items()):
         result = results[dc_id]
+        band = _provisional_band(dc_id, dc)  # None for operational fiches (never a band)
+        band_field = {"provisional_band": band} if band else {}
+        # scores.json is a leaderboard array consumed by strict readers — the band lives on
+        # the per-fiche dc/{id}.json (the loupe's source), not here, until asked otherwise.
         scores.append(_summary(dc, result))
 
         # ── Anti-pillage (Franck 2026-07-22): map.geojson is the ONE data file
@@ -175,6 +203,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
         write_json(out_dir / "dc" / f"{dc_id}.json", {
             "credit": CREDIT,
             **_summary(dc, result),
+            # Provisional coverage band — present ONLY on pipeline fiches, in its own field,
+            # never inside `grades`. Its `central`/`adjacent` letters are a provisional RANGE,
+            # not a definitive grade (loupe display contract; ScoreBadge reads this).
+            **band_field,
             "summary": dc["identity"]["summary"],
             "vintage": dc["identity"].get("vintage"),
             "admin_area": dc["identity"].get("admin_area"),
