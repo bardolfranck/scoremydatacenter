@@ -36,6 +36,9 @@ from .fr import operators_in, load_corpus, _norm
 
 TOPICS = {"projet", "debat", "activisme", "souverainete", "moratoire", "reglementation", "marche"}
 _MAXW = 30  # summary hard cap (words)
+# A curated source is trusted but must NOT turn the radar into a mirror of its feed: cap how many
+# of its items auto-publish in one run (newest first); the surplus is deferred, never a red item.
+CURATED_DAILY_CAP = 20
 
 _PROMPT = """Tu es l'assistant de veille d'un observatoire INDÉPENDANT des data centers. On te donne un
 TITRE de presse (+ domaine, langue). Tu réponds UNIQUEMENT par un objet JSON, rien autour.
@@ -57,11 +60,22 @@ Renvoie :
  "summary_en": "<the same neutral summary ≤30 words IN ENGLISH — your words, never the article>",
  "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>", "act": "<permis|chantier|inauguration|investissement|annonce|null>"}},
  "person_named": true|false,    // une PERSONNE PHYSIQUE nommée (élu, militant, dirigeant…) ? (risque diffamation)
- "confidence": "high|medium|low" // ta confiance dans CE classement (topic + pertinence)
+ "confidence": "high|medium|low", // ta confiance dans CE classement (topic + pertinence)
+ "interesting": true|false,     // INTÉRÊT ÉDITORIAL pour un observatoire d'ACCEPTABILITÉ des data centers.
+                                //   GARDER (true) : un data center concret (projet/site/inauguration/extension),
+                                //     capacité/puissance, énergie ou eau, foncier/artificialisation,
+                                //     opposition/débat/riverains, réglementation, moratoire, souveraineté à ANGLE
+                                //     TERRITORIAL. Une inauguration de DC = INTÉRESSANT (c'est notre cœur).
+                                //   JETER (false) : lancement de PRODUIT/service, partenariat commercial vendeur,
+                                //     nomination/RH, PR marché générique SANS angle territoire ni acceptabilité.
+ "drop_reason": "<si interesting=false : 2-4 mots ('lancement produit'|'nomination RH'|'PR vendeur'|'marché générique'); sinon null>"
 }}
 RÈGLES : neutralité absolue (on mesure, on ne milite pas). Résumés abstractifs (jamais d'extraction),
 un dans CHAQUE langue (l'un fidèle traduction de l'autre). Traduction de titre = courte et fidèle,
-jamais le corps de l'article (A-20). Si non pertinent, relevant=false. JSON valide STRICT."""
+jamais le corps de l'article (A-20). Une contestation qui nomme une personne en conflit (« riverains
+contre X », « le maire Y dénonce ») reste INTÉRESSANTE : on la cite de façon NEUTRE et ATTRIBUÉE
+(« opposition signalée à X selon [source] »), jamais militante. Si non pertinent, relevant=false.
+JSON valide STRICT."""
 
 
 def _slug(url: str, title: str) -> str:
@@ -129,6 +143,10 @@ def classify(record: dict, llm) -> dict | None:
         "entities": {k: (ent.get(k) or None) for k in ("operator", "location", "act")},
         "publishable": True,                         # open press → licence OK (lock: LICENCE)
         "approved": False,                           # set by the gate: GREEN lane auto, RED lane by Franck
+        "curated": bool(meta.get("curated")),        # vetted editorial source → interest filter, not confidence gate
+        # editorial-interest verdict — decisive ONLY for curated sources (Franck 2026-09-08). Persisted
+        # to the PRIVATE archive so a drop is auditable; stripped from the PUBLIC payload.
+        "interest": {"interesting": bool(got.get("interesting", True)), "drop_reason": got.get("drop_reason") or None},
         # transient gating signals (stripped before persist — never public, never a "score" leak):
         "_gate": {"confidence": got.get("confidence") or "low", "person_named": bool(got.get("person_named"))},
     }
@@ -213,18 +231,29 @@ def _domain_ok(publisher: str, allowlist: set[str]) -> bool:
 
 
 def gate(item: dict, allowlist: set[str]) -> bool:
-    """Franck's standing rule: return True (→ approved AUTO, GREEN lane) ONLY if ALL hold — an
-    allowlisted source, a NEUTRAL topic (marché/réglementation/souveraineté, so never projet /
-    débat / activisme / moratoire), NO named person (defamation), publishable, and HIGH confidence.
-    Any miss → False (RED lane: waits for Franck's explicit OK via promote). No 'silence = publish':
-    the default is RED, never flipped."""
+    """Set approved for one item. TWO regimes (Franck 2026-09-08):
+
+    CURATED source (a vetted DC newsroom, `curated:true`) → the trust is acquired, so there is no
+    confidence gate and NO red lane: the question is EDITORIAL. Publish iff the source is allowlisted,
+    publishable, and the item is INTERESTING (a real DC / capacity / energy-water / land / opposition
+    / regulation / sovereignty-with-territory). A product launch, vendor PR or RH note is not
+    "red" — it is simply DROPPED (dropped_curated), which is what keeps us from mirroring the feed.
+    A named person in conflict does NOT block here: we cite licensed press neutrally and attributed
+    (A-21), we do not militate. GDELT (a raw firehose) keeps its stricter regime below.
+
+    GDELT source (uncurated) → return True (GREEN, approved auto) ONLY if ALL hold: allowlisted,
+    NEUTRAL topic, NO named person, publishable, HIGH confidence. Any miss → False (RED lane: waits
+    for Franck via promote). No 'silence = publish': the default is RED, never flipped."""
+    if not (item.get("publishable") is True
+            and _domain_ok((item.get("source") or {}).get("publisher"), allowlist)):
+        return False
+    if item.get("curated"):
+        return bool((item.get("interest") or {}).get("interesting"))   # editorial interest filter
     g = item.get("_gate") or {}
     return bool(
-        item.get("publishable") is True
-        and item.get("topic") in GREEN_TOPICS
+        item.get("topic") in GREEN_TOPICS
         and not g.get("person_named")
         and g.get("confidence") == "high"
-        and _domain_ok((item.get("source") or {}).get("publisher"), allowlist)
     )
 
 
@@ -270,12 +299,21 @@ def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]
 
 # --- the two deposits + the human gate --------------------------------------------------------
 
+_PRIVATE_ITEM_KEYS = ("_gate", "interest")   # editorial/gating signals: archive-only, never public
+
+
+def _public_item(it: dict) -> dict:
+    """An item stripped of private editorial/gating signals for the public payload — the interest
+    verdict and its drop_reason stay in the private archive (audit), never in the served file."""
+    return {k: v for k, v in it.items() if k not in _PRIVATE_ITEM_KEYS}
+
+
 def _public_latest(items: list[dict]) -> dict:
     """The DEPLOYED payload: ONLY approved items (lock 1, data level), MINUS the take-down list
     (lock 2, take-down). Always a valid object."""
     suppress = load_suppress()
     return {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "items": [i for i in items
+            "items": [_public_item(i) for i in items
                       if i.get("approved") is True and not _is_suppressed(i, suppress)]}
 
 
@@ -299,9 +337,18 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
         link = link_to_corpus(it, corpus)
         if link:
             it["linked_dc"] = link
-        # The STANDING GATE: GREEN → approved auto; RED → stays False, waits for Franck (promote).
+        # THE GATE: curated → editorial-interest filter (no red lane); GDELT → GREEN/RED confidence gate.
         it["approved"] = gate(it, allowlist)
         it.pop("_gate", None)                        # transient gating signals never persist anywhere
+
+    # Anti-mirror cap: keep only the newest CURATED_DAILY_CAP auto-approved curated items this run;
+    # the surplus is deferred (approved=False), never surfaced. Uncurated items are unaffected.
+    curated_ok = sorted((it for it in items if it["approved"] and it.get("curated")),
+                        key=lambda it: _parse_dt((it.get("source") or {}).get("published_at")) or datetime.min.replace(tzinfo=timezone.utc),
+                        reverse=True)
+    for it in curated_ok[CURATED_DAILY_CAP:]:
+        it["approved"] = False
+        it["interest"] = {**(it.get("interest") or {}), "drop_reason": "daily cap"}
 
     day_dir = newsroom_root / "actu" / accessed
     day_dir.mkdir(parents=True, exist_ok=True)
@@ -322,7 +369,7 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
             merged = {}
     for it in items:
         if it["approved"]:
-            merged[it["id"]] = it
+            merged[it["id"]] = _public_item(it)
     # Lock 2 (take-down): a suppressed item never reaches the public file, even if approved and even
     # if it was already published on a prior day (drop it from the carried-over set too). Durable.
     merged = {k: v for k, v in merged.items() if not _is_suppressed(v, suppress)}
@@ -331,10 +378,12 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
         ensure_ascii=False, indent=2) + "\n")
 
     green = [i for i in items if i["approved"]]
+    curated_dropped = [i for i in items if i.get("curated") and not i["approved"]]   # filtered, not red
+    red = [i for i in items if not i.get("curated") and not i["approved"]]           # GDELT red lane only
     projects = [i for i in items if i["topic"] == "projet"]
     return {"date": accessed, "items": len(items), "green_auto_published": len(green),
-            "red_pending_gate": len(items) - len(green), "projects": len(projects),
-            "public_total": len(merged), "archive": str(day_dir / "actu.json")}
+            "red_pending_gate": len(red), "curated_dropped": len(curated_dropped),
+            "projects": len(projects), "public_total": len(merged), "archive": str(day_dir / "actu.json")}
 
 
 def _parse_dt(s):
@@ -367,7 +416,7 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
         for it in items:
             if it.get("approved") is not True or _is_suppressed(it, suppress):
                 continue                                              # lock 2: take-down wins over approval
-            by_id[it["id"]] = {k: v for k, v in it.items() if k != "_gate"}   # strip transient signals
+            by_id[it["id"]] = _public_item(it)   # strip private editorial/gating signals
     kept = []
     for it in by_id.values():
         d = _parse_dt((it.get("source") or {}).get("published_at"))

@@ -148,6 +148,54 @@ def test_gate_red_activism_and_debate():
     assert actu.gate(_gitem(topic="moratoire"), _ALLOW) is False   # sensitive → not green
 
 
+def _citem(interesting=True, **over):
+    """A CURATED-source item (vetted DC newsroom): interest filter, not confidence gate."""
+    it = {"topic": "projet", "publishable": True, "curated": True,
+          "source": {"publisher": "datacenter-actu.fr"},
+          "interest": {"interesting": interesting, "drop_reason": None},
+          "_gate": {"confidence": "low", "person_named": True}}   # would be RED under the GDELT gate
+    it.update(over)
+    return it
+
+
+_ALLOW_CUR = {"datacenter-actu.fr"}
+
+
+def test_gate_curated_publishes_project_despite_low_conf_and_named_person():
+    # Telehouse-style: a real DC (topic=projet), named person, low confidence — the GDELT gate would
+    # reject all three, but a curated source is trusted: interesting → PUBLISH.
+    assert actu.gate(_citem(interesting=True), _ALLOW_CUR) is True
+
+
+def test_gate_curated_drops_uninteresting_product_launch():
+    # Equinix-Fabric-One-style: not interesting (product launch) → DROPPED (not red, just filtered).
+    assert actu.gate(_citem(interesting=False), _ALLOW_CUR) is False
+
+
+def test_gate_curated_still_requires_allowlisted_and_publishable():
+    assert actu.gate(_citem(source={"publisher": "randomblog.example"}), _ALLOW_CUR) is False
+    assert actu.gate(_citem(publishable=False), _ALLOW_CUR) is False
+
+
+def test_gate_curated_contestation_with_named_person_publishes():
+    # Franck 2026-09-08: "on cite de la presse licenciée, on ne milite pas" — a named person in a
+    # contestation does not block a curated item (neutrality is enforced by the summary, A-21).
+    it = _citem(interesting=True, topic="debat",
+                _gate={"confidence": "low", "person_named": True})
+    assert actu.gate(it, _ALLOW_CUR) is True
+
+
+def test_public_item_strips_private_editorial_signals():
+    it = actu._public_item(_citem(interesting=True))
+    assert "interest" not in it and "_gate" not in it     # drop_reason/interest never served publicly
+    assert it["curated"] is True                           # the curated flag itself may stay
+
+
+def test_gate_uncurated_regime_unchanged():
+    # An item without curated stays under the strict GDELT gate.
+    assert actu.gate(_gitem(topic="projet"), _ALLOW) is False
+
+
 def test_domain_ok_handles_www_and_subdomain():
     assert actu._domain_ok("www.lemonde.fr", _ALLOW) is True
     assert actu._domain_ok("live.reuters.com", _ALLOW) is True

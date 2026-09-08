@@ -498,7 +498,9 @@ def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutof
         out.append(_record(
             "rss", link, _RSS_LICENSE, "article",
             name=title, country=None,
-            facts={"domain": domain, "seendate": seendate, "language": language},
+            # curated=True marks a vetted editorial source (a DC newsroom): downstream the gate
+            # trusts it and filters on EDITORIAL INTEREST, not on a GDELT-style confidence score.
+            facts={"domain": domain, "seendate": seendate, "language": language, "curated": True},
             sources=[link], retrieved=accessed))
     return out
 
