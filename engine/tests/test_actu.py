@@ -222,3 +222,37 @@ def test_promote_sets_approved_and_writes_latest(tmp_path):
     assert "keep" in ids and ids["keep"]["approved"] is True   # approved by the gate
     assert "skip" not in ids                                   # never approved → never public
     assert res["public_total"] == 1
+
+
+# --- take-down / suppress list (2026-09-08: courtesy valve promised to publishers) -------------
+
+def test_suppress_config_parses_and_predicate_matches_id_and_url():
+    assert isinstance(actu.load_suppress(), set)         # real file parses (empty by default)
+    sup = {"the-id", "https://pub.fr/x"}
+    assert actu._is_suppressed({"id": "the-id", "source": {"url": "https://pub.fr/other"}}, sup)   # by id
+    assert actu._is_suppressed({"id": "z", "source": {"url": "https://pub.fr/x"}}, sup)            # by url
+    assert not actu._is_suppressed({"id": "z", "source": {"url": "https://pub.fr/keep"}}, sup)
+    assert not actu._is_suppressed({"id": "the-id"}, set())    # empty list suppresses nothing
+
+
+def test_public_latest_drops_suppressed_even_if_approved(monkeypatch):
+    monkeypatch.setattr(actu, "load_suppress", lambda: {"bad"})
+    items = [{"id": "ok", "approved": True}, {"id": "bad", "approved": True}]
+    out = actu._public_latest(items)
+    assert [i["id"] for i in out["items"]] == ["ok"]      # suppressed item withheld despite approved
+
+
+def test_actu_latest_drops_suppressed_across_regen(monkeypatch, tmp_path):
+    # A previously-approved, in-window item is pulled once its URL is on the take-down list, and
+    # STAYS gone every regeneration from the durable newsroom archive.
+    monkeypatch.setattr(actu, "load_suppress", lambda: {"https://pub.fr/pull"})
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    d = nr / "actu" / "2026-09-08"; d.mkdir(parents=True)
+    items = [
+        {"id": "keep", "approved": True, "topic": "marche", "source": {"published_at": _recent(), "url": "https://pub.fr/keep"}},
+        {"id": "pull", "approved": True, "topic": "marche", "source": {"published_at": _recent(), "url": "https://pub.fr/pull"}},
+    ]
+    (d / "actu.json").write_text(json.dumps({"items": items}))
+    actu.actu_latest(nr, pub, days=14)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == ["keep"]     # suppressed item never regenerated

@@ -165,6 +165,7 @@ def link_to_corpus(item: dict, corpus: list[dict]) -> dict | None:
 GREEN_TOPICS = {"marche", "reglementation", "souverainete"}
 _ALLOWLIST = Path(__file__).with_name("allowlist.json")
 _RSS_SOURCES = Path(__file__).with_name("rss_sources.json")
+_ACTU_SUPPRESS = Path(__file__).with_name("actu-suppress.json")
 
 
 def load_allowlist() -> set[str]:
@@ -184,6 +185,25 @@ def load_rss_feeds() -> list[dict]:
         return [f for f in json.loads(_RSS_SOURCES.read_text()).get("feeds", []) if f.get("feed")]
     except Exception:
         return []
+
+
+def load_suppress() -> set[str]:
+    """Actu take-down list (pipelines/veille/actu-suppress.json) — a flat array of item ids AND/OR
+    source URLs a publisher (or Franck) asked us to pull. A suppressed item NEVER reaches the public
+    payload, even if already approved, and it stays gone across regenerations (durable un-publish,
+    like eu-projects-suppress for the watchlist). Absent/empty/malformed → nothing suppressed."""
+    try:
+        return {str(x).strip() for x in json.loads(_ACTU_SUPPRESS.read_text()) if str(x).strip()}
+    except Exception:
+        return set()
+
+
+def _is_suppressed(item: dict, suppress: set[str]) -> bool:
+    """True if this item's id OR its source URL is on the take-down list."""
+    if not suppress:
+        return False
+    return (item.get("id") in suppress
+            or ((item.get("source") or {}).get("url") in suppress))
 
 
 def _domain_ok(publisher: str, allowlist: set[str]) -> bool:
@@ -251,9 +271,12 @@ def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]
 # --- the two deposits + the human gate --------------------------------------------------------
 
 def _public_latest(items: list[dict]) -> dict:
-    """The DEPLOYED payload: ONLY approved items (lock 1, data level). Always a valid object."""
+    """The DEPLOYED payload: ONLY approved items (lock 1, data level), MINUS the take-down list
+    (lock 2, take-down). Always a valid object."""
+    suppress = load_suppress()
     return {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "items": [i for i in items if i.get("approved") is True]}
+            "items": [i for i in items
+                      if i.get("approved") is True and not _is_suppressed(i, suppress)]}
 
 
 def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = None,
@@ -290,6 +313,7 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
     # RED items are archive-only until Franck approves them via promote(). Approved-only, always valid.
     latest_path = public_data / "actu" / "latest.json"
     latest_path.parent.mkdir(parents=True, exist_ok=True)
+    suppress = load_suppress()
     merged = {}
     if latest_path.is_file():
         try:
@@ -299,6 +323,9 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
     for it in items:
         if it["approved"]:
             merged[it["id"]] = it
+    # Lock 2 (take-down): a suppressed item never reaches the public file, even if approved and even
+    # if it was already published on a prior day (drop it from the carried-over set too). Durable.
+    merged = {k: v for k, v in merged.items() if not _is_suppressed(v, suppress)}
     latest_path.write_text(json.dumps(
         {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "items": list(merged.values())},
         ensure_ascii=False, indent=2) + "\n")
@@ -330,6 +357,7 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
     first, capped at `cap`, transient `_gate` stripped (never public). Always a valid object.
     """
     now = datetime.now(timezone.utc)
+    suppress = load_suppress()
     by_id: dict = {}
     for f in sorted((newsroom_root / "actu").glob("*/actu.json")):   # chronological → later day wins
         try:
@@ -337,8 +365,8 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
         except Exception:
             continue
         for it in items:
-            if it.get("approved") is not True:
-                continue
+            if it.get("approved") is not True or _is_suppressed(it, suppress):
+                continue                                              # lock 2: take-down wins over approval
             by_id[it["id"]] = {k: v for k, v in it.items() if k != "_gate"}   # strip transient signals
     kept = []
     for it in by_id.values():
