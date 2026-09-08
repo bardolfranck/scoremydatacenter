@@ -164,6 +164,7 @@ def link_to_corpus(item: dict, corpus: list[dict]) -> dict | None:
 
 GREEN_TOPICS = {"marche", "reglementation", "souverainete"}
 _ALLOWLIST = Path(__file__).with_name("allowlist.json")
+_RSS_SOURCES = Path(__file__).with_name("rss_sources.json")
 
 
 def load_allowlist() -> set[str]:
@@ -173,6 +174,16 @@ def load_allowlist() -> set[str]:
         return {d.strip().lower() for d in json.loads(_ALLOWLIST.read_text()).get("domains", []) if d.strip()}
     except Exception:
         return set()
+
+
+def load_rss_feeds() -> list[dict]:
+    """Direct-source RSS feeds (pipelines/veille/rss_sources.json). Empty on any read error → the
+    RSS lane simply contributes nothing (never crashes the harvest). A feed here is NOT auto-trusted
+    for publication — items still pass the standing gate against the allowlist."""
+    try:
+        return [f for f in json.loads(_RSS_SOURCES.read_text()).get("feeds", []) if f.get("feed")]
+    except Exception:
+        return []
 
 
 def _domain_ok(publisher: str, allowlist: set[str]) -> bool:
@@ -214,13 +225,15 @@ def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]
     """Harvest GDELT FR + EN-world → classify each headline → relevant items (news + project leads).
 
     FR = French outlets (sourcecountry:france); EN = anglophone DC news worldwide (sourcelang, no
-    country) — the world lane Franck asked for 2026-09-05. Both are DETECTION only. The two feeds
-    are interleaved so the `limit` classify-budget covers both, then deduped by URL below.
+    country) — the world lane Franck asked for 2026-09-05. RSS = vetted trade-press feeds GDELT does
+    not index (added 2026-09-08 after the radar ran dry). All three are DETECTION only. The feeds are
+    interleaved so the `limit` classify-budget covers each, then deduped by URL below.
     """
     cap = min(limit or 50, 250)
     fr = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=cap)
     en = signal.fetch_gdelt_country("EN", accessed, timespan=timespan, maxrecords=cap)
-    records = _interleave(fr, en)
+    rss = signal.fetch_rss(load_rss_feeds(), accessed, timespan=timespan)
+    records = _interleave(fr, en, rss)
     seen, items = set(), []
     for rec in records:
         url = (rec.get("sources") or [None])[0]

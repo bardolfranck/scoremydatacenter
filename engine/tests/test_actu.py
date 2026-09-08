@@ -160,6 +160,18 @@ def test_allowlist_loads_and_excludes_dcmag():
     assert not any("dcmag" in d or "datacenter-magazine" in d for d in dom)   # commercial, excluded
 
 
+def test_rss_sources_config_loads_and_domain_is_allowlisted():
+    """The direct-source RSS lane (2026-09-08): its config parses, and its trade-press domain is
+    on the allowlist so its neutral items can reach the green lane (curation Franck 2026-09-08)."""
+    feeds = actu.load_rss_feeds()
+    assert feeds and all(f.get("feed") for f in feeds)                         # config valid
+    domains = {f.get("domain") for f in feeds}
+    assert "datacenter-actu.fr" in domains
+    assert actu._domain_ok("datacenter-actu.fr", actu.load_allowlist())        # green-lane precondition
+    # but the RSS config does NOT itself grant publication — that stays the allowlist's job
+    assert not actu._domain_ok("dcmag.fr", actu.load_allowlist())
+
+
 def _recent():
     from datetime import datetime, timezone
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")

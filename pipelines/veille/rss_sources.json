@@ -1,0 +1,6 @@
+{
+  "_note": "Direct-source RSS feeds for the ACTU radar — vetted trade press that GDELT does NOT index (which starved the daily radar 05-07 Sep 2026). Each feed is read for title+link+date only (press review, A-20); classify() writes our neutral summary and links back. A feed here is NOT auto-trusted for publication: its items still pass the standing gate, and only a domain ALSO present in allowlist.json auto-publishes on the green lane. Adding a feed is a reviewable PR; keep the list small and original-press only (no aggregators, no observatory competitors).",
+  "feeds": [
+    {"domain": "datacenter-actu.fr", "feed": "https://datacenter-actu.fr/feed/", "language": "fr"}
+  ]
+}

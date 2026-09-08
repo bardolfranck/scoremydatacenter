@@ -286,3 +286,61 @@ def test_maghreb_specs_carry_french_and_arabic(monkeypatch):
     assert (signal.GDELT_COUNTRY_SPECS["MA"]["queries"]
             is signal.GDELT_COUNTRY_SPECS["TN"]["queries"]
             is signal.GDELT_COUNTRY_SPECS["DZ"]["queries"])
+
+
+# --- feed 5 · direct-source RSS (offline; monkeypatch get_text + robots) ----------------------
+
+def _rss_xml(items):
+    """Minimal RSS 2.0 document from (title, link, pubDate) triples (pubDate may be '')."""
+    body = "".join(
+        f"<item><title>{t}</title><link>{l}</link>"
+        + (f"<pubDate>{d}</pubDate>" if d else "") + "</item>"
+        for t, l, d in items)
+    return f'<?xml version="1.0"?><rss version="2.0"><channel>{body}</channel></rss>'
+
+
+def test_fetch_rss_windows_and_emits_canonical_record(monkeypatch):
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(days=2)).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    old = (now - timedelta(days=400)).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    xml = _rss_xml([("Fresh news", "https://pub.fr/a", recent),
+                    ("Stale news", "https://pub.fr/old", old),
+                    ("Undated", "https://pub.fr/nodate", "")])
+    monkeypatch.setattr(signal, "_rss_allowed_by_robots", lambda url: True)
+    monkeypatch.setattr(signal, "get_text", lambda url: xml)
+    recs = signal.fetch_rss([{"domain": "pub.fr", "feed": "https://pub.fr/feed/"}],
+                            "2026-09-08", timespan="1w")
+    urls = {r["source_url"] for r in recs}
+    assert "https://pub.fr/a" in urls          # in-window kept
+    assert "https://pub.fr/old" not in urls     # outside window dropped
+    assert "https://pub.fr/nodate" in urls      # undated kept (never silently lost)
+    r = next(r for r in recs if r["source_url"] == "https://pub.fr/a")
+    assert r["source"] == "rss" and r["kind"] == "article"        # same canonical shape as GDELT
+    assert r["facts"]["domain"] == "pub.fr" and r["facts"]["language"] == "fr"
+    assert r["facts"]["seendate"].endswith("Z") and r["name"] == "Fresh news"
+    # A-21 contract: never a grade/letter/confidence anywhere in the record
+    assert not ({"grade", "letter", "score", "confidence"} & set(r))
+
+
+def test_fetch_rss_fails_closed(monkeypatch):
+    # Robots disallow → that feed contributes nothing.
+    monkeypatch.setattr(signal, "_rss_allowed_by_robots", lambda url: False)
+    monkeypatch.setattr(signal, "get_text", lambda url: (_ for _ in ()).throw(AssertionError("must not fetch")))
+    assert signal.fetch_rss([{"domain": "pub.fr", "feed": "https://pub.fr/feed/"}], "2026-09-08") == []
+    # Unreachable feed → [] (never raises, never crashes the batch).
+    monkeypatch.setattr(signal, "_rss_allowed_by_robots", lambda url: True)
+    monkeypatch.setattr(signal, "get_text",
+                        lambda url: (_ for _ in ()).throw(signal.SourceUnavailable("down")))
+    assert signal.fetch_rss([{"feed": "https://pub.fr/feed/"}], "2026-09-08") == []
+
+
+def test_fetch_rss_dedupes_across_feeds(monkeypatch):
+    from datetime import datetime, timezone
+    d = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    xml = _rss_xml([("Same story", "https://pub.fr/x", d)])
+    monkeypatch.setattr(signal, "_rss_allowed_by_robots", lambda url: True)
+    monkeypatch.setattr(signal, "get_text", lambda url: xml)
+    recs = signal.fetch_rss([{"domain": "pub.fr", "feed": "https://pub.fr/1"},
+                             {"domain": "pub.fr", "feed": "https://pub.fr/2"}], "2026-09-08")
+    assert len(recs) == 1               # syndicated URL lands once

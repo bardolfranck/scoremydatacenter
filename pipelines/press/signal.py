@@ -398,6 +398,149 @@ def _gdelt_records(data: dict, accessed: str) -> list[dict]:
     return out
 
 
+# --- feed 5 · direct-source RSS (trade press GDELT does not index) ----------------------------
+# GDELT does not index French DC trade press, so the daily radar went dry (0 candidates 05-07 Sep
+# 2026 while Vertiv/Telehouse/Equinix news ran). This lane reads a SMALL set of vetted publisher
+# feeds directly and emits the SAME canonical _record as GDELT, so it traverses the identical
+# classify()→gate→deposit downstream with no special-casing. Press REVIEW, not scraping (A-20):
+# only title + link + date are read; classify() writes OUR neutral ≤30-word summary and the item
+# links back to the publisher. Fail-closed everywhere: an unreachable or disallowed feed yields [].
+
+_RSS_LICENSE = "press headline via publisher RSS — title/link/date only, attributed review (A-20)"
+
+
+def _timespan_delta(timespan: str):
+    """GDELT-style timespan ('3d','1w','1m','6m','1y') → timedelta. Unknown → 7 days (a week)."""
+    from datetime import timedelta
+    m = re.fullmatch(r"\s*(\d+)\s*([dwmy])\s*", (timespan or "").lower())
+    if not m:
+        return timedelta(weeks=1)
+    n, unit = int(m.group(1)), m.group(2)
+    return timedelta(days=n * {"d": 1, "w": 7, "m": 30, "y": 365}[unit])
+
+
+def _rss_pubdate(text: str):
+    """Parse an RSS/Atom date (RFC-822 pubDate or ISO-8601) → aware datetime, or None."""
+    from datetime import datetime, timezone
+    text = (text or "").strip()
+    if not text:
+        return None
+    try:  # RFC-822: "Mon, 08 Sep 2026 14:30:00 +0000"
+        from email.utils import parsedate_to_datetime
+        dt = parsedate_to_datetime(text)
+        if dt is not None:
+            return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        pass
+    try:  # ISO-8601 (Atom)
+        dt = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+
+
+def _rss_allowed_by_robots(feed_url: str) -> bool:
+    """Honour the publisher's robots.txt for our honest user-agent. Robots unreachable/absent →
+    allowed (the web default); an explicit Disallow on the feed path → skip (fail-closed)."""
+    import urllib.parse
+    import urllib.robotparser
+    try:
+        parts = urllib.parse.urlparse(feed_url)
+        rp = urllib.robotparser.RobotFileParser()
+        rp.set_url(f"{parts.scheme}://{parts.netloc}/robots.txt")
+        rp.read()
+        return rp.can_fetch(USER_AGENT, feed_url)
+    except Exception:
+        return True  # robots itself failed → default-allow, do not fail-closed on infra noise
+
+
+def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutoff) -> list[dict]:
+    """Parse one feed's XML (RSS or Atom) → canonical article records, windowed to `cutoff`."""
+    import xml.etree.ElementTree as ET
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return []
+
+    def _text(el):
+        return (el.text or "").strip() if el is not None else ""
+
+    def _localname(tag):
+        return tag.rsplit("}", 1)[-1]
+
+    out, seen = [], set()
+    # RSS <item> and Atom <entry> both handled by matching on local names (namespace-agnostic).
+    for node in root.iter():
+        if _localname(node.tag) not in ("item", "entry"):
+            continue
+        title = link = pub = ""
+        for child in node:
+            ln = _localname(child.tag)
+            if ln == "title" and not title:
+                title = _text(child)
+            elif ln == "link":
+                # RSS: text is the URL. Atom: the href attribute (prefer rel=alternate).
+                href = child.get("href")
+                if href and (child.get("rel") in (None, "alternate")):
+                    link = href
+                elif not link:
+                    link = _text(child) or href or ""
+            elif ln in ("pubDate", "published", "updated", "date") and not pub:
+                pub = _text(child)
+        link = link.strip()
+        if not link or link in seen:
+            continue
+        dt = _rss_pubdate(pub)
+        if dt is not None and cutoff is not None and dt < cutoff:
+            continue  # outside the window; undated items are kept (a fresh feed rarely dates None)
+        seen.add(link)
+        seendate = dt.strftime("%Y%m%dT%H%M%SZ") if dt is not None else None
+        out.append(_record(
+            "rss", link, _RSS_LICENSE, "article",
+            name=title, country=None,
+            facts={"domain": domain, "seendate": seendate, "language": language},
+            sources=[link], retrieved=accessed))
+    return out
+
+
+def fetch_rss(feeds, accessed: str, *, timespan: str = "1w") -> list[dict]:
+    """Read vetted publisher RSS/Atom feeds → canonical article records (title+link+date only).
+
+    `feeds` = iterable of {"domain","feed"[,"language"]} (or a bare feed-URL string). Each feed is
+    windowed to `timespan` from now. DETECTION only, like GDELT: no score, no letter (A-19/A-21).
+    Every failure mode degrades to [] for that feed — it proposes, never fabricates, never crashes
+    the batch. URL-deduped across all feeds so a story syndicated on two feeds lands once."""
+    from datetime import datetime, timezone
+    cutoff = datetime.now(timezone.utc) - _timespan_delta(timespan)
+    seen, out = set(), []
+    for f in feeds or []:
+        if isinstance(f, str):
+            feed_url, domain, language = f, None, "fr"
+        elif isinstance(f, dict):
+            feed_url = f.get("feed") or f.get("url")
+            domain = f.get("domain")
+            language = f.get("language") or "fr"
+        else:
+            continue
+        if not feed_url:
+            continue
+        if not domain:
+            import urllib.parse
+            domain = urllib.parse.urlparse(feed_url).netloc.lower().removeprefix("www.")
+        if not _rss_allowed_by_robots(feed_url):
+            continue
+        try:
+            xml_text = get_text(feed_url)
+        except SourceUnavailable:
+            continue
+        for rec in _rss_records(xml_text, domain, language, accessed, cutoff):
+            if rec["source_url"] in seen:
+                continue
+            seen.add(rec["source_url"])
+            out.append(rec)
+    return out
+
+
 _GKG_FIPS_TO_ISO = {  # V2Locations carries FIPS 10-4 country codes, not ISO
     "FR": "FR", "BE": "BE", "SZ": "CH", "LU": "LU", "GM": "DE", "NL": "NL", "EI": "IE",
     "UK": "GB", "SP": "ES", "IT": "IT", "PO": "PT", "AU": "AT", "DA": "DK", "SW": "SE",
