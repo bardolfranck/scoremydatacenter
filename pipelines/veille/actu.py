@@ -414,9 +414,18 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
         except Exception:
             continue
         for it in items:
-            if it.get("approved") is not True or _is_suppressed(it, suppress):
-                continue                                              # lock 2: take-down wins over approval
-            by_id[it["id"]] = _public_item(it)   # strip private editorial/gating signals
+            iid = it["id"]
+            if _is_suppressed(it, suppress):
+                by_id.pop(iid, None)             # lock 2: take-down wins over any approval, past or present
+                continue
+            if it.get("approved") is True:
+                by_id[iid] = _public_item(it)    # strip private editorial/gating signals
+            elif it.get("curated"):
+                # A CURATED source is auto-gated every run, so a later DROP is authoritative: it RETRACTS
+                # an earlier auto-approve of the same id (last verdict wins — makes the interest filter
+                # retroactive). GDELT approval is a HUMAN promote(), never retracted by a re-harvest that
+                # merely failed to auto-approve → left sticky below (no pop).
+                by_id.pop(iid, None)
     kept = []
     for it in by_id.values():
         d = _parse_dt((it.get("source") or {}).get("published_at"))
