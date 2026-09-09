@@ -344,3 +344,36 @@ def test_fetch_rss_dedupes_across_feeds(monkeypatch):
     recs = signal.fetch_rss([{"domain": "pub.fr", "feed": "https://pub.fr/1"},
                              {"domain": "pub.fr", "feed": "https://pub.fr/2"}], "2026-09-08")
     assert len(recs) == 1               # syndicated URL lands once
+
+
+def test_fetch_rss_curated_flag_is_per_feed(monkeypatch):
+    from datetime import datetime, timezone
+    d = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    xml = _rss_xml([("Story", "https://x.fr/a", d)])
+    monkeypatch.setattr(signal, "_rss_allowed_by_robots", lambda url: True)
+    monkeypatch.setattr(signal, "get_text", lambda url: xml)
+    cur = signal.fetch_rss([{"domain": "dc-newsroom.fr", "feed": "https://x.fr/f", "curated": True}], "2026-09-09")
+    gen = signal.fetch_rss([{"domain": "general.fr", "feed": "https://x.fr/f", "curated": False}], "2026-09-09")
+    bare = signal.fetch_rss(["https://x.fr/f"], "2026-09-09")       # bare URL → conservative default
+    assert cur and cur[0]["facts"]["curated"] is True               # vetted DC newsroom → interest filter
+    assert gen and gen[0]["facts"]["curated"] is False              # general outlet → GDELT gate
+    assert bare and bare[0]["facts"]["curated"] is False            # default is the safe one
+
+
+def test_gdelt_cafr_spec_targets_francophone_canada():
+    spec = signal.GDELT_COUNTRY_SPECS["CAFR"]
+    assert spec["sourcecountry"] == "canada" and spec["sourcelang"] == "fre"   # Québec blind spot
+    assert spec["intent"] == "announce"
+    assert "centre de données" in spec["queries"][0]
+
+
+def test_fetch_rss_video_feed_stamps_media(monkeypatch):
+    from datetime import datetime, timezone
+    d = datetime.now(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S +0000")
+    xml = _rss_xml([("Une vidéo", "https://youtube.com/watch?v=abc", d)])
+    monkeypatch.setattr(signal, "_rss_allowed_by_robots", lambda url: True)
+    monkeypatch.setattr(signal, "get_text", lambda url: xml)
+    vid = signal.fetch_rss([{"domain": "youtube.com/X", "feed": "https://y/f", "type": "video"}], "2026-09-09")
+    art = signal.fetch_rss([{"domain": "x.fr", "feed": "https://y/f"}], "2026-09-09")
+    assert vid[0]["facts"]["media"] == "video"          # video feed → badge signal for the site
+    assert "media" not in art[0]["facts"]               # article feed → no media key (absent == article)

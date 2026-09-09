@@ -141,6 +141,7 @@ def classify(record: dict, llm) -> dict | None:
         "source": {"publisher": domain or "presse", "url": url,
                    "published_at": meta.get("seendate"), "accessed": record.get("retrieved")},
         "entities": {k: (ent.get(k) or None) for k in ("operator", "location", "act")},
+        "media": meta.get("media") or "article",     # "video" for a video feed → site badges it; link back, A-20
         "publishable": True,                         # open press → licence OK (lock: LICENCE)
         "approved": False,                           # set by the gate: GREEN lane auto, RED lane by Franck
         "curated": bool(meta.get("curated")),        # vetted editorial source → interest filter, not confidence gate
@@ -281,8 +282,9 @@ def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]
     cap = min(limit or 50, 250)
     fr = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=cap)
     en = signal.fetch_gdelt_country("EN", accessed, timespan=timespan, maxrecords=cap)
+    cafr = signal.fetch_gdelt_country("CAFR", accessed, timespan=timespan, maxrecords=cap)  # Québec blind spot
     rss = signal.fetch_rss(load_rss_feeds(), accessed, timespan=timespan)
-    records = _interleave(fr, en, rss)
+    records = _interleave(fr, en, cafr, rss)
     seen, items = set(), []
     for rec in records:
         url = (rec.get("sources") or [None])[0]

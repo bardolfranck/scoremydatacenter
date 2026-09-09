@@ -64,6 +64,18 @@ def test_valid_item_shape_and_i18n():
     assert item["summary"] == item["summary_i18n"]["en"]         # back-compat = native-language summary
 
 
+def test_classify_carries_media_video_and_defaults_article():
+    payload = {"relevant": True, "topic": "projet", "is_project": True, "lang": "fr",
+               "summary_fr": "Un reportage vidéo neutre sur un projet de centre de données.",
+               "summary_en": "A neutral video report on a data center project.", "entities": {}}
+    vrec = _rec("Vidéo : un datacenter conteste à X")
+    vrec["facts"]["media"] = "video"
+    vitem = actu.classify(vrec, _llm(payload))
+    assert vitem["media"] == "video"                         # carried from the feed → site badges ▶
+    aitem = actu.classify(_rec("Un datacenter à Y"), _llm(payload))
+    assert aitem["media"] == "article"                       # default when the feed stamps nothing
+
+
 def test_unknown_topic_falls_back():
     llm = _llm({"relevant": True, "topic": "n_importe_quoi", "is_project": False, "lang": "fr",
                 "summary_fr": "Un résumé neutre distinct du titre source.",
