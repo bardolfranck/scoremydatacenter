@@ -128,10 +128,30 @@ _ALLOW = {"lemonde.fr", "reuters.com"}
 
 
 def _gitem(**over):
+    # A real GDELT item always carries an interest verdict now (the filter applies to ALL sources,
+    # Franck 2026-09-09); default interesting=True so these cases exercise the CONFIDENCE gate.
     it = {"topic": "marche", "publishable": True, "source": {"publisher": "lemonde.fr"},
+          "interest": {"interesting": True, "drop_reason": None},
           "_gate": {"confidence": "high", "person_named": False}}
     it.update(over)
     return it
+
+
+def test_gate_uncurated_drops_uninteresting_finance():
+    # The 2026-09-08 hole: a neutral, high-confidence, allowlisted finance item (M&A) USED to auto-
+    # publish. Now the interest filter runs first for ALL sources → DROP (not green, not red).
+    assert actu.route(_gitem(interest={"interesting": False, "drop_reason": "finance/M&A"}), _ALLOW) == "drop"
+    assert actu.gate(_gitem(interest={"interesting": False, "drop_reason": "finance/M&A"}), _ALLOW) is False
+
+
+def test_route_uncurated_interesting_but_project_is_red_not_drop():
+    # An interesting DC project from a general outlet → RED (Franck's eye), never auto-green, never dropped.
+    assert actu.route(_gitem(topic="projet"), _ALLOW) == "red"
+
+
+def test_route_uncurated_interesting_named_person_is_red():
+    # person_named relaxation is RESERVED to curated: a general-outlet item naming a person → red.
+    assert actu.route(_gitem(_gate={"confidence": "high", "person_named": True}), _ALLOW) == "red"
 
 
 def test_gate_green_all_conditions():
@@ -264,6 +284,35 @@ def test_actu_latest_curated_drop_retracts_earlier_approve(tmp_path):
     actu.actu_latest(nr, pub, days=3650)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == []   # curated drop retracts the earlier approve
+
+
+def test_actu_latest_auto_green_retracted_when_rejudged(tmp_path):
+    # An AUTO-green item (approved_by="auto") re-judged non-green in a later archive → retracted,
+    # no manual suppress (the finance-item case once the interest filter is extended).
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    for day, appr, by in (("2026-09-08", True, "auto"), ("2026-09-09", False, None)):
+        d = nr / "actu" / day; d.mkdir(parents=True)
+        it = {"id": "fin", "approved": appr, "topic": "marche", "source": {"published_at": _recent()}}
+        if by:
+            it["approved_by"] = by
+        (d / "actu.json").write_text(json.dumps({"items": [it]}))
+    actu.actu_latest(nr, pub, days=3650)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == []       # auto-green retracted on re-judgement
+
+
+def test_actu_latest_human_promote_sticky_with_flag(tmp_path):
+    # approved_by="human" is NEVER retracted by a later auto-false re-harvest.
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    for day, appr, by in (("2026-09-08", True, "human"), ("2026-09-09", False, None)):
+        d = nr / "actu" / day; d.mkdir(parents=True)
+        it = {"id": "promoted", "approved": appr, "topic": "projet", "source": {"published_at": _recent()}}
+        if by:
+            it["approved_by"] = by
+        (d / "actu.json").write_text(json.dumps({"items": [it]}))
+    actu.actu_latest(nr, pub, days=3650)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == ["promoted"]   # human decision survives
 
 
 def test_actu_latest_human_promote_not_retracted_by_reharvest(tmp_path):
