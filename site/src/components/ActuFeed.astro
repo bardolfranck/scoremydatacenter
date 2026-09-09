@@ -14,6 +14,9 @@ interface Source { publisher: string; url: string; published_at?: string; access
 interface Item {
   id: string; lang: string; topic: string; headline: string; summary: string;
   source: Source; entities?: Record<string, string>; publishable?: boolean; approved?: boolean;
+  // Media type of the external item. "video" (e.g. a monitored YouTube channel) gets a ▶ marker
+  // so the reader knows the link opens a video, not an article. Absent/"article" → plain news.
+  media?: string;
   // AI translation, opt-in (from the classifier's single call). Keyed by page
   // language. When the item's own `lang` differs from the page, we lead with the
   // translated title and keep the original as a muted VO line, plus a 🌐 marker.
@@ -55,10 +58,12 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
       const summary = it.summary_i18n?.[lang] ?? it.summary;
       const isTranslated = !native && (!!titleTranslated || !!it.summary_i18n?.[lang]);
       const headlineText = titleTranslated ?? it.headline;
+      const isVideo = it.media === "video";
       return (
-        <article class:list={["actu-item", { projet: isProjet }]}>
+        <article class:list={["actu-item", { projet: isProjet, video: isVideo }]}>
           <div class="actu-item-top">
             <span class:list={["actu-badge", cls]}>{t.topics?.[it.topic] ?? it.topic}</span>
+            {isVideo && <span class="actu-media">▶ {t.video ?? (lang === "fr" ? "Vidéo" : "Video")}</span>}
             {it.source?.published_at && <span class="actu-when">{fmtDate(it.source.published_at)}</span>}
           </div>
           <div class="actu-headline">
@@ -118,6 +123,11 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
   .actu-badge.souv { background: #e7f3ee; color: #0b7a4b; }
   .actu-badge.regl { background: #eef2f7; color: #2f6fed; }
   .actu-badge.marche { background: #fff4e0; color: #9a5b00; }
+  .actu-media {
+    font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.06em;
+    text-transform: uppercase; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+    background: #fbeaec; color: #b0202f; display: inline-flex; align-items: center; gap: 4px;
+  }
   .actu-when { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
   .actu-headline { font-size: 1.05rem; font-weight: 650; line-height: 1.3; }
   .actu-headline a { color: var(--ink); text-decoration: none; }
@@ -153,5 +163,6 @@ const fmtDate = (s?: string) => { if (!s) return ""; const d = new Date(s); retu
     .actu-badge.souv { background: #12251b; color: #8fe0b0; }
     .actu-badge.regl { background: #16213a; color: #a9c3f0; }
     .actu-badge.marche { background: #2a2113; color: #e6c58a; }
+    .actu-media { background: #331519; color: #f3aab2; }
   }
 </style>
