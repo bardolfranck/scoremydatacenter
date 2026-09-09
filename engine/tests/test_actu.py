@@ -240,6 +240,34 @@ def test_actu_latest_approved_windowed_and_stripped(tmp_path):
     assert "_gate" not in latest["items"][0]             # transient signal never public
 
 
+def test_actu_latest_curated_drop_retracts_earlier_approve(tmp_path):
+    # A curated item auto-approved day J, then re-harvested and DROPPED day J+1 (interest filter) →
+    # the later verdict is authoritative → it must NOT survive in latest.json (no manual suppress).
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    for day, approved in (("2026-09-08", True), ("2026-09-09", False)):
+        d = nr / "actu" / day; d.mkdir(parents=True)
+        (d / "actu.json").write_text(json.dumps({"items": [
+            {"id": "sante", "approved": approved, "curated": True, "topic": "marche",
+             "source": {"published_at": _recent()}}]}))
+    actu.actu_latest(nr, pub, days=3650)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == []   # curated drop retracts the earlier approve
+
+
+def test_actu_latest_human_promote_not_retracted_by_reharvest(tmp_path):
+    # GDELT (uncurated) approval is a HUMAN promote(); a later auto-harvest that merely failed to
+    # auto-approve the same id must NOT retract it (approval stays sticky — no regression).
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    for day, approved in (("2026-09-08", True), ("2026-09-09", False)):
+        d = nr / "actu" / day; d.mkdir(parents=True)
+        (d / "actu.json").write_text(json.dumps({"items": [
+            {"id": "gdelt1", "approved": approved, "topic": "marche",   # no `curated` flag → GDELT lane
+             "source": {"published_at": _recent()}}]}))
+    actu.actu_latest(nr, pub, days=3650)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == ["gdelt1"]   # human promote survives a later auto-false
+
+
 def test_promote_persists_approval_to_archive(tmp_path):
     nr, pub, date = tmp_path / "newsroom", tmp_path / "public", "2026-09-04"
     d = nr / "actu" / date; d.mkdir(parents=True)
