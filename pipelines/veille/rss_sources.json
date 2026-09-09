@@ -1,6 +1,9 @@
 {
-  "_note": "Direct-source RSS feeds for the ACTU radar — vetted trade press that GDELT does NOT index (which starved the daily radar 05-07 Sep 2026). Each feed is read for title+link+date only (press review, A-20); classify() writes our neutral summary and links back. A feed here is NOT auto-trusted for publication: its items still pass the standing gate, and only a domain ALSO present in allowlist.json auto-publishes on the green lane. Adding a feed is a reviewable PR; keep the list small and original-press only (no aggregators, no observatory competitors).",
+  "_note": "Direct-source RSS/Atom feeds for the ACTU radar — trade/general press that GDELT does not index well (which starved the daily radar 05-07 Sep 2026). Each feed is read for title+link+date only (press review, A-20); classify() writes our neutral summary and links back. `curated` is declared PER FEED and true ONLY for a vetted DC NEWSROOM (every article is DC-relevant): such a feed is trusted and gated on EDITORIAL INTEREST (no confidence gate, a named person does not block). A general outlet keeps curated:false → its items pass the SAME GDELT-style confidence gate (neutral topic, no named person, high confidence, not a project), just over an RSS transport; this still needs the domain in allowlist.json to auto-publish. Keep the list small; prefer a DC/tech/pro SECTION feed over a general one. Adding a feed is a reviewable PR.",
   "feeds": [
-    {"domain": "datacenter-actu.fr", "feed": "https://datacenter-actu.fr/feed/", "language": "fr"}
+    {"domain": "datacenter-actu.fr", "feed": "https://datacenter-actu.fr/feed/", "language": "fr", "curated": true},
+    {"domain": "clubic.com", "feed": "https://www.clubic.com/feed/pro/rss", "language": "fr", "curated": false},
+    {"domain": "usine-digitale.fr", "feed": "https://www.usine-digitale.fr/rss/", "language": "fr", "curated": false},
+    {"domain": "youtube.com/LeHuffPost", "feed": "https://www.youtube.com/feeds/videos.xml?channel_id=UCYpRDnhk5H8h16jpS84uqsA", "language": "fr", "curated": false, "type": "video"}
   ]
 }

@@ -322,6 +322,20 @@ GDELT_COUNTRY_SPECS = {
             'OR investment OR permit OR opposition OR moratorium)',
         ],
     },
+    # CAFR = francophone Canada (Québec). The FR spec's sourcecountry:france STRUCTURALLY misses
+    # Québec francophone DC news (e.g. latribune.ca) — the "GDELT-only-FR" blind spot Franck flagged
+    # 2026-09-09. sourcecountry:canada + sourcelang:fre targets it without flooding with France
+    # (already covered by FR; any overlap is URL-deduped). DETECTION only, never a score.
+    "CAFR": {
+        "intent": "announce",
+        "sourcecountry": "canada",
+        "sourcelang": "fre",
+        "queries": [
+            '("centre de données" OR "data center" OR "datacenter") '
+            '(projet OR construction OR implantation OR investissement OR hyperscale '
+            'OR inauguration OR opposition OR moratoire OR électricité)',
+        ],
+    },
 }
 
 
@@ -454,8 +468,11 @@ def _rss_allowed_by_robots(feed_url: str) -> bool:
         return True  # robots itself failed → default-allow, do not fail-closed on infra noise
 
 
-def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutoff) -> list[dict]:
-    """Parse one feed's XML (RSS or Atom) → canonical article records, windowed to `cutoff`."""
+def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutoff,
+                 curated: bool = False, media: str | None = None) -> list[dict]:
+    """Parse one feed's XML (RSS or Atom) → canonical article records, windowed to `cutoff`.
+    `media` (e.g. "video" for a YouTube Atom feed) is stamped on each record's facts for the site
+    to badge it; absent means a normal article."""
     import xml.etree.ElementTree as ET
     try:
         root = ET.fromstring(xml_text)
@@ -498,9 +515,12 @@ def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutof
         out.append(_record(
             "rss", link, _RSS_LICENSE, "article",
             name=title, country=None,
-            # curated=True marks a vetted editorial source (a DC newsroom): downstream the gate
-            # trusts it and filters on EDITORIAL INTEREST, not on a GDELT-style confidence score.
-            facts={"domain": domain, "seendate": seendate, "language": language, "curated": True},
+            # curated is declared PER FEED (rss_sources.json). true ONLY for a vetted DC newsroom:
+            # downstream the gate then trusts it and filters on EDITORIAL INTEREST (no confidence
+            # gate, named person does not block). A general outlet's feed stays curated=false → it
+            # goes through the same GDELT-style confidence gate, just over an RSS transport.
+            facts={"domain": domain, "seendate": seendate, "language": language,
+                   "curated": curated, **({"media": media} if media else {})},
             sources=[link], retrieved=accessed))
     return out
 
@@ -517,11 +537,13 @@ def fetch_rss(feeds, accessed: str, *, timespan: str = "1w") -> list[dict]:
     seen, out = set(), []
     for f in feeds or []:
         if isinstance(f, str):
-            feed_url, domain, language = f, None, "fr"
+            feed_url, domain, language, curated, media = f, None, "fr", False, None
         elif isinstance(f, dict):
             feed_url = f.get("feed") or f.get("url")
             domain = f.get("domain")
             language = f.get("language") or "fr"
+            curated = bool(f.get("curated"))    # per-feed: true ONLY for a vetted DC newsroom
+            media = "video" if f.get("type") == "video" else None
         else:
             continue
         if not feed_url:
@@ -535,7 +557,7 @@ def fetch_rss(feeds, accessed: str, *, timespan: str = "1w") -> list[dict]:
             xml_text = get_text(feed_url)
         except SourceUnavailable:
             continue
-        for rec in _rss_records(xml_text, domain, language, accessed, cutoff):
+        for rec in _rss_records(xml_text, domain, language, accessed, cutoff, curated, media):
             if rec["source_url"] in seen:
                 continue
             seen.add(rec["source_url"])
