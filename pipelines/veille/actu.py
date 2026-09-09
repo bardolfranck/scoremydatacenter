@@ -66,9 +66,12 @@ Renvoie :
                                 //     capacité/puissance, énergie ou eau, foncier/artificialisation,
                                 //     opposition/débat/riverains, réglementation, moratoire, souveraineté à ANGLE
                                 //     TERRITORIAL. Une inauguration de DC = INTÉRESSANT (c'est notre cœur).
-                                //   JETER (false) : lancement de PRODUIT/service, partenariat commercial vendeur,
-                                //     nomination/RH, PR marché générique SANS angle territoire ni acceptabilité.
- "drop_reason": "<si interesting=false : 2-4 mots ('lancement produit'|'nomination RH'|'PR vendeur'|'marché générique'); sinon null>"
+                                //   JETER (false) : FINANCE / fusion-acquisition / rachat / levée de fonds /
+                                //     résultats / valorisation, lancement de PRODUIT ou service, partenariat
+                                //     commercial vendeur, nomination/RH, PR marché générique SANS angle
+                                //     territoire ni acceptabilité. (Un rachat de data centers = FINANCE → jeter,
+                                //     SAUF s'il porte un angle territorial/énergie/opposition explicite.)
+ "drop_reason": "<si interesting=false : 2-4 mots ('finance/M&A'|'levée de fonds'|'lancement produit'|'nomination RH'|'PR vendeur'|'marché générique'); sinon null>"
 }}
 RÈGLES : neutralité absolue (on mesure, on ne milite pas). Résumés abstractifs (jamais d'extraction),
 un dans CHAQUE langue (l'un fidèle traduction de l'autre). Traduction de titre = courte et fidèle,
@@ -231,31 +234,39 @@ def _domain_ok(publisher: str, allowlist: set[str]) -> bool:
     return any(p == d or p.endswith("." + d) for d in allowlist)
 
 
-def gate(item: dict, allowlist: set[str]) -> bool:
-    """Set approved for one item. TWO regimes (Franck 2026-09-08):
+def route(item: dict, allowlist: set[str]) -> str:
+    """Route one item → "green" (auto-publish) | "red" (waits for Franck) | "drop" (discarded).
 
-    CURATED source (a vetted DC newsroom, `curated:true`) → the trust is acquired, so there is no
-    confidence gate and NO red lane: the question is EDITORIAL. Publish iff the source is allowlisted,
-    publishable, and the item is INTERESTING (a real DC / capacity / energy-water / land / opposition
-    / regulation / sovereignty-with-territory). A product launch, vendor PR or RH note is not
-    "red" — it is simply DROPPED (dropped_curated), which is what keeps us from mirroring the feed.
-    A named person in conflict does NOT block here: we cite licensed press neutrally and attributed
-    (A-21), we do not militate. GDELT (a raw firehose) keeps its stricter regime below.
+    INTEREST FILTER FIRST, for ALL sources (Franck 2026-09-09): an observatory of ACCEPTABILITY
+    keeps projet/site, capacity, energy-water, land, opposition-débat, regulation, moratorium,
+    territorial sovereignty — and DROPS finance/M&A, fundraising, product launches, vendor PR, RH,
+    generic market PR. Not interesting → "drop" (never "red"): that is what stops the radar being a
+    mirror, and it was the hole that auto-published two finance items on 2026-09-08.
 
-    GDELT source (uncurated) → return True (GREEN, approved auto) ONLY if ALL hold: allowlisted,
-    NEUTRAL topic, NO named person, publishable, HIGH confidence. Any miss → False (RED lane: waits
-    for Franck via promote). No 'silence = publish': the default is RED, never flipped."""
-    if not (item.get("publishable") is True
-            and _domain_ok((item.get("source") or {}).get("publisher"), allowlist)):
-        return False
+    Then the trust regime:
+    - CURATED (a vetted DC newsroom) → interesting + allowlisted + publishable = green. A named person
+      does NOT block (we cite licensed press neutrally and attributed, A-21).
+    - UNCURATED (GDELT / general outlet over RSS) → the interest filter ADDS to the confidence gate:
+      green needs interesting AND neutral topic AND no named person AND high confidence AND allowlisted;
+      interesting but not confident / named-person / off-allowlist → "red" (Franck's eye). The
+      person-named relaxation stays RESERVED to curated sources (Franck's standing rule)."""
+    if (item.get("interest") or {}).get("interesting") is not True:
+        return "drop"                                  # not acceptability-relevant → discard
+    if item.get("publishable") is not True:
+        return "drop"                                  # licence fail → cannot publish at all
+    domain_ok = _domain_ok((item.get("source") or {}).get("publisher"), allowlist)
     if item.get("curated"):
-        return bool((item.get("interest") or {}).get("interesting"))   # editorial interest filter
+        return "green" if domain_ok else "red"
     g = item.get("_gate") or {}
-    return bool(
-        item.get("topic") in GREEN_TOPICS
-        and not g.get("person_named")
-        and g.get("confidence") == "high"
-    )
+    if (domain_ok and item.get("topic") in GREEN_TOPICS
+            and not g.get("person_named") and g.get("confidence") == "high"):
+        return "green"
+    return "red"                                       # interesting, but needs the human gate
+
+
+def gate(item: dict, allowlist: set[str]) -> bool:
+    """True iff the item auto-publishes (GREEN). Thin wrapper over route() — see it for the regimes."""
+    return route(item, allowlist) == "green"
 
 
 def _interleave(*lists: list[dict]) -> list[dict]:
@@ -301,7 +312,7 @@ def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]
 
 # --- the two deposits + the human gate --------------------------------------------------------
 
-_PRIVATE_ITEM_KEYS = ("_gate", "interest")   # editorial/gating signals: archive-only, never public
+_PRIVATE_ITEM_KEYS = ("_gate", "_route", "interest")   # editorial/gating signals: archive-only, never public
 
 
 def _public_item(it: dict) -> dict:
@@ -339,18 +350,31 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
         link = link_to_corpus(it, corpus)
         if link:
             it["linked_dc"] = link
-        # THE GATE: curated → editorial-interest filter (no red lane); GDELT → GREEN/RED confidence gate.
-        it["approved"] = gate(it, allowlist)
+        # THE ROUTE: interest filter (all sources) → green/red/drop; curated relaxes person_named.
+        r = route(it, allowlist)
         it.pop("_gate", None)                        # transient gating signals never persist anywhere
+        it["approved"] = (r == "green")
+        if it["approved"]:
+            it["approved_by"] = "auto"               # auto-green → retractable if later re-judged
+        it["_route"] = r                             # transient: counts + cap below, stripped before persist
 
     # Anti-mirror cap: keep only the newest CURATED_DAILY_CAP auto-approved curated items this run;
     # the surplus is deferred (approved=False), never surfaced. Uncurated items are unaffected.
-    curated_ok = sorted((it for it in items if it["approved"] and it.get("curated")),
+    curated_ok = sorted((it for it in items if it["_route"] == "green" and it.get("curated")),
                         key=lambda it: _parse_dt((it.get("source") or {}).get("published_at")) or datetime.min.replace(tzinfo=timezone.utc),
                         reverse=True)
     for it in curated_ok[CURATED_DAILY_CAP:]:
         it["approved"] = False
+        it["_route"] = "capped"
+        it.pop("approved_by", None)
         it["interest"] = {**(it.get("interest") or {}), "drop_reason": "daily cap"}
+
+    green = [i for i in items if i["_route"] == "green"]
+    dropped = [i for i in items if i["_route"] == "drop"]             # not interesting → discarded
+    red = [i for i in items if i["_route"] == "red"]                  # interesting, waits for Franck
+    projects = [i for i in items if i["topic"] == "projet"]
+    for it in items:
+        it.pop("_route", None)                                       # transient, never persisted
 
     day_dir = newsroom_root / "actu" / accessed
     day_dir.mkdir(parents=True, exist_ok=True)
@@ -379,12 +403,8 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
         {"generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"), "items": list(merged.values())},
         ensure_ascii=False, indent=2) + "\n")
 
-    green = [i for i in items if i["approved"]]
-    curated_dropped = [i for i in items if i.get("curated") and not i["approved"]]   # filtered, not red
-    red = [i for i in items if not i.get("curated") and not i["approved"]]           # GDELT red lane only
-    projects = [i for i in items if i["topic"] == "projet"]
     return {"date": accessed, "items": len(items), "green_auto_published": len(green),
-            "red_pending_gate": len(red), "curated_dropped": len(curated_dropped),
+            "red_pending_gate": len(red), "dropped_uninteresting": len(dropped),
             "projects": len(projects), "public_total": len(merged), "archive": str(day_dir / "actu.json")}
 
 
@@ -422,12 +442,16 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
                 continue
             if it.get("approved") is True:
                 by_id[iid] = _public_item(it)    # strip private editorial/gating signals
-            elif it.get("curated"):
-                # A CURATED source is auto-gated every run, so a later DROP is authoritative: it RETRACTS
-                # an earlier auto-approve of the same id (last verdict wins — makes the interest filter
-                # retroactive). GDELT approval is a HUMAN promote(), never retracted by a re-harvest that
-                # merely failed to auto-approve → left sticky below (no pop).
-                by_id.pop(iid, None)
+            else:
+                # A later non-approved verdict RETRACTS an earlier approve ONLY when that earlier one
+                # was AUTO (approved_by="auto") — so the extended interest filter is retroactive and a
+                # re-judged auto-green (e.g. a finance item) stops being served without a manual
+                # suppress. A HUMAN promote (approved_by="human") is NEVER retracted. Fallback for
+                # pre-`approved_by` archives: retract a curated residue (the #193 behaviour), which
+                # leaves old human-promoted GDELT items (non-curated, no flag) safely sticky.
+                prev = by_id.get(iid)
+                if prev is not None and (prev.get("approved_by") == "auto" or prev.get("curated") is True):
+                    by_id.pop(iid, None)
     kept = []
     for it in by_id.values():
         d = _parse_dt((it.get("source") or {}).get("published_at"))
@@ -455,6 +479,7 @@ def promote(approved_ids: list[str], *, newsroom_root: Path, public_data: Path, 
     for item in archive["items"]:
         if item["id"] in approved_ids and item.get("publishable"):
             item["approved"] = True
+            item["approved_by"] = "human"     # a human promote is STICKY — never retracted by a re-harvest
             n += 1
     arch_path.write_text(json.dumps(archive, ensure_ascii=False, indent=2) + "\n")   # persist approval
     res = actu_latest(newsroom_root, public_data)                                    # regen from truth
