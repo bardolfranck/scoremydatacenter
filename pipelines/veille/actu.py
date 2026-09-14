@@ -450,7 +450,12 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
                 # pre-`approved_by` archives: retract a curated residue (the #193 behaviour), which
                 # leaves old human-promoted GDELT items (non-curated, no flag) safely sticky.
                 prev = by_id.get(iid)
-                if prev is not None and (prev.get("approved_by") == "auto" or prev.get("curated") is True):
+                # A HUMAN promote is NEVER retracted (even for a curated source): guard it explicitly,
+                # otherwise the curated-residue fallback below would pop a human-approved curated item
+                # the next time the daily harvest re-judges it as an auto-drop (bug: Franck 2026-09-14,
+                # 2 promoted datacenter-actu items vanished after the 09-14 cron re-dropped them).
+                if (prev is not None and prev.get("approved_by") != "human"
+                        and (prev.get("approved_by") == "auto" or prev.get("curated") is True)):
                     by_id.pop(iid, None)
     kept = []
     for it in by_id.values():

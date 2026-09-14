@@ -315,6 +315,24 @@ def test_actu_latest_human_promote_sticky_with_flag(tmp_path):
     assert [i["id"] for i in latest["items"]] == ["promoted"]   # human decision survives
 
 
+def test_actu_latest_human_promote_sticky_even_when_curated(tmp_path):
+    # Regression (Franck 2026-09-14): a HUMAN-promoted CURATED item (e.g. a datacenter-actu piece the
+    # interest filter had dropped, then Franck validated) must survive the next day's harvest that
+    # re-drops the same id as an auto/non-approved CURATED verdict. The curated-residue fallback must
+    # NOT override an explicit human promote.
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    for day, appr, by in (("2026-09-13", True, "human"), ("2026-09-14", False, None)):
+        d = nr / "actu" / day; d.mkdir(parents=True)
+        it = {"id": "curated-promoted", "approved": appr, "curated": True, "topic": "marche",
+              "source": {"published_at": _recent()}}
+        if by:
+            it["approved_by"] = by
+        (d / "actu.json").write_text(json.dumps({"items": [it]}))
+    actu.actu_latest(nr, pub, days=3650)
+    latest = json.loads((pub / "actu" / "latest.json").read_text())
+    assert [i["id"] for i in latest["items"]] == ["curated-promoted"]   # human wins over curated fallback
+
+
 def test_actu_latest_human_promote_not_retracted_by_reharvest(tmp_path):
     # GDELT (uncurated) approval is a HUMAN promote(); a later auto-harvest that merely failed to
     # auto-approve the same id must NOT retract it (approval stays sticky — no regression).
