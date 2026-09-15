@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Precursor-validation GDELT pilot — pure-logic tests (no network). Pins the query construction,
 the ratio floor, and the load-bearing NOTE-BLIND invariant (no grade anywhere)."""
 import json
