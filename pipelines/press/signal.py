@@ -389,11 +389,22 @@ def fetch_gdelt_country(iso: str, accessed: str, *, timespan: str = "6m", maxrec
     return out
 
 
-def _gdelt_fetch_raw(query: str, *, timespan: str, maxrecords: int) -> dict:
+def _gdelt_fetch_raw(query: str, *, timespan: str | None = None, maxrecords: int,
+                     startdatetime: str | None = None, enddatetime: str | None = None) -> dict:
     """One GDELT DOC request. Raises on failure so callers can tell 'failed' from 'no articles'
-    (a 429 returns a plain-text notice → JSONDecodeError; a slow-walked burst → SourceUnavailable)."""
-    params = {"query": query, "mode": "artlist", "format": "json",
-              "maxrecords": min(maxrecords, 250), "timespan": timespan}
+    (a 429 returns a plain-text notice → JSONDecodeError; a slow-walked burst → SourceUnavailable).
+
+    Window: pass `timespan` (recent window, e.g. '6m') OR an explicit `startdatetime`
+    (YYYYMMDDHHMMSS, optionally with `enddatetime`) for a RETROSPECTIVE range GDELT's timespan
+    can't reach — used by the precursor-validation pilot. Exactly one window form applies;
+    startdatetime wins if both are given."""
+    params = {"query": query, "mode": "artlist", "format": "json", "maxrecords": min(maxrecords, 250)}
+    if startdatetime:
+        from datetime import datetime, timezone
+        params["startdatetime"] = startdatetime
+        params["enddatetime"] = enddatetime or datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S")
+    else:
+        params["timespan"] = timespan
     return json.loads(get_text(_GDELT + "?" + _urlencode(params)))
 
 
