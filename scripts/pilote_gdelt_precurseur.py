@@ -26,6 +26,8 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root, so `pipelines` imports when run as a file
+
 from pipelines.press import signal
 
 # 15 anchor sites (note-blind: operator + commune only, NO grade). `group` = the chief's a-priori
