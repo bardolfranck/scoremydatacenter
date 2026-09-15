@@ -10,9 +10,9 @@ on:
   workflow_dispatch:
     inputs:
       start:
-        description: "GDELT startdatetime (YYYYMMDDHHMMSS)"
+        description: "GDELT startdatetime (YYYYMMDDHHMMSS) — default = GDELT DOC 2.0 floor 2017-01-01"
         required: false
-        default: "20230101000000"
+        default: "20170101000000"
 
 concurrency:
   group: pilote-gdelt        # never two pilot runs at once (newsroom push races)

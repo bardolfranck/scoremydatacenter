@@ -10,9 +10,12 @@ import scripts.pilote_gdelt_precurseur as P
 
 def test_queries_total_and_contestation():
     total, contest = P._queries({"operator": "Google", "commune": "Étrechet"})
-    assert total == '"Google" "Étrechet" ("data center" OR datacenter OR "centre de données" OR Rechenzentrum)'
+    assert total == ('"Google" "Étrechet" ("data center" OR datacenter OR "centre de données" '
+                     'OR Rechenzentrum OR datacentrum)')
     assert contest.startswith(total)                 # contestation = TOTAL + terms
     assert "opposition OR recours" in contest and "bezwaar" in contest
+    for term in ("moratorium", "référendum", "Widerspruch", "verzet"):   # R&D language-gap additions
+        assert term in contest
 
 
 def _fake_fetch(total_n, contest_n):

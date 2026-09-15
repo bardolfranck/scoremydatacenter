@@ -49,10 +49,10 @@ SITES = [
     {"id": "fr-dc2scale-velizy-latecoere", "operator": "dc2scale", "commune": "Vélizy-Villacoublay", "group": "background"},
 ]
 
-DC_CONTEXT = '("data center" OR datacenter OR "centre de données" OR Rechenzentrum)'
-CONTESTATION_TERMS = ('(opposition OR recours OR moratoire OR pétition OR manifestation OR contestation '
-                      'OR "enquête publique" OR protest OR lawsuit OR referendum OR Klage '
-                      'OR Bürgerinitiative OR bezwaar)')
+DC_CONTEXT = '("data center" OR datacenter OR "centre de données" OR Rechenzentrum OR datacentrum)'
+CONTESTATION_TERMS = ('(opposition OR recours OR moratoire OR moratorium OR pétition OR manifestation '
+                      'OR contestation OR "enquête publique" OR protest OR lawsuit OR referendum '
+                      'OR référendum OR Klage OR Widerspruch OR Bürgerinitiative OR bezwaar OR verzet)')
 RATIO_FLOOR = 5          # ratio is NA below this many total articles (R&D floor — thin denominator)
 SAMPLE_N = 12            # contestation items shown per site for the manual precision read
 MAXRECORDS = 250        # GDELT DOC cap (a site above this is flagged: total capped → ratio distorted)
@@ -125,7 +125,9 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Retrospective GDELT contestation-intensity pilot (note-blind).")
     ap.add_argument("--out", type=Path, default=Path("../smdc-newsroom"),
                     help="newsroom root; result → <out>/validation/pilote-gdelt-<date>.json")
-    ap.add_argument("--start", default="20230101000000", help="GDELT startdatetime YYYYMMDDHHMMSS")
+    ap.add_argument("--start", default="20170101000000",
+                    help="GDELT startdatetime YYYYMMDDHHMMSS (default = GDELT DOC 2.0 floor 2017-01-01, "
+                         "the deepest retrospective the API reaches — avoids left-truncation)")
     args = ap.parse_args(argv)
     payload = run(args.start)
     day = datetime.now(timezone.utc).date().isoformat()
