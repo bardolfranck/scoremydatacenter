@@ -411,3 +411,15 @@ def test_actu_latest_drops_suppressed_across_regen(monkeypatch, tmp_path):
     actu.actu_latest(nr, pub, days=14)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == ["keep"]     # suppressed item never regenerated
+
+
+def test_entities_act_positive_agrement_passes_through():
+    """entities.act carries the positive-agrément acts the precursor registry keys on
+    (permis/autorisation/vote_favorable/inauguration), not just project acts — Franck 2026-09-15."""
+    for act in ("autorisation", "vote_favorable", "inauguration", "permis"):
+        llm = _llm({"relevant": True, "topic": "projet", "is_project": True, "lang": "fr",
+                    "summary_fr": "Le conseil se prononce sur un centre de données local aujourd'hui.",
+                    "summary_en": "The council rules on a local data center today.",
+                    "entities": {"operator": "X", "location": "Y", "act": act}})
+        item = actu.classify(_rec("Un titre distinct du résumé"), llm)
+        assert item["entities"]["act"] == act        # act passes through untouched → registry positive face

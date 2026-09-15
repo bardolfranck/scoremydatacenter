@@ -58,7 +58,8 @@ Renvoie :
  "headline_en": "<the title in ENGLISH. If lang=en: the original title CLEANED (fix GDELT tokenisation — spaces around punctuation, drop a trailing appended domain name, complete an obvious truncation), faithful, never the article body. Otherwise: your FAITHFUL SHORT translation.>",
  "summary_fr": "<TON résumé neutre ≤30 mots EN FRANÇAIS, dans tes mots — jamais une copie du titre ni de l'article ; zéro militantisme (« opposition citoyenne signalée à X », jamais « scandale »)>",
  "summary_en": "<the same neutral summary ≤30 words IN ENGLISH — your words, never the article>",
- "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>", "act": "<permis|chantier|inauguration|investissement|annonce|null>"}},
+ "entities": {{"operator": "<si identifiable, sinon null>", "location": "<commune/région FR si citée, sinon null>",
+             "act": "<l'ACTE administratif/de projet décrit, s'il y en a un — sinon null. AGRÉMENTS (feu vert) : 'permis' (permis de construire accordé), 'autorisation' (autorisation environnementale/préfectorale), 'vote_favorable' (délibération/vote favorable d'un conseil), 'inauguration' (mise en service). Autres : 'chantier' (début des travaux), 'investissement' (annonce d'investissement chiffré), 'annonce' (simple annonce). REMPLIS ce champ dès que l'article décrit un tel acte — c'est un signal-clé ; null seulement si aucun acte concret n'est mentionné.>"}},
  "person_named": true|false,    // une PERSONNE PHYSIQUE nommée (élu, militant, dirigeant…) ? (risque diffamation)
  "confidence": "high|medium|low", // ta confiance dans CE classement (topic + pertinence)
  "interesting": true|false,     // INTÉRÊT ÉDITORIAL pour un observatoire d'ACCEPTABILITÉ des data centers.
