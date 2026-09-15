@@ -1,0 +1,56 @@
+name: Pilote GDELT rétrospectif (validation précurseur)
+
+# One-off, on-demand pilot (Franck's dynamic precursor validation). Retrospective GDELT contestation
+# intensity for 15 anchor sites → committed to the private newsroom for R&D to judge precision.
+# NOTE-BLIND: no grade is read or written; nothing here touches the scoring path. NEVER deploys,
+# NEVER publishes. Runs in the CLOUD because GDELT hard-429s a laptop IP (the daily veille job talks
+# to GDELT from this same runner without issue).
+
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "GDELT startdatetime (YYYYMMDDHHMMSS) — default = GDELT DOC 2.0 floor 2017-01-01"
+        required: false
+        default: "20170101000000"
+
+concurrency:
+  group: pilote-gdelt        # never two pilot runs at once (newsroom push races)
+  cancel-in-progress: false
+
+jobs:
+  pilote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (public)
+        uses: actions/checkout@v4
+        with:
+          path: scoremydatacenter
+
+      - name: Checkout newsroom (private — needs NEWSROOM_TOKEN)
+        uses: actions/checkout@v4
+        with:
+          repository: bardolfranck/smdc-newsroom
+          token: ${{ secrets.NEWSROOM_TOKEN }}
+          path: smdc-newsroom       # sibling of scoremydatacenter → ../smdc-newsroom resolves
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deps
+        working-directory: scoremydatacenter
+        run: uv sync
+
+      - name: Run pilot (retrospective GDELT, note-blind) → newsroom validation/
+        working-directory: scoremydatacenter
+        run: uv run python scripts/pilote_gdelt_precurseur.py --out ../smdc-newsroom --start "${{ inputs.start }}"
+
+      - name: Commit result to the private newsroom
+        working-directory: smdc-newsroom
+        run: |
+          git config user.name  "smdc-pilote-bot"
+          git config user.email "pilote@scoremydatacenter.org"
+          git add validation/pilote-gdelt-*.json
+          git commit -m "validation: retrospective GDELT precursor pilot (note-blind, 15 sites)" || echo "nothing to commit"
+          git push
