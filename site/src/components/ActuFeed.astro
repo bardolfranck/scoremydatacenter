@@ -33,13 +33,8 @@ const { lang, t, items } = Astro.props;
 // approved items (lock 1, pipeline side) — we re-filter here so nothing without
 // `approved` can ever render. `approved` = Franck said yes; distinct from
 // `publishable` (license allows it). A missing flag is treated as NOT approved.
-const visible = (items ?? []).filter((i) => i.approved === true);
+const approvedItems = (items ?? []).filter((i) => i.approved === true);
 
-const badgeClass: Record<string, string> = {
-  projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
-  moratoire: "moratoire", reglementation: "regl", marche: "marche",
-};
-const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 // The feed carries GDELT/RSS compact seendate ("YYYYMMDDTHHMMSSZ", or "YYYYMMDD") which JS Date()
 // cannot parse — so we parse it ourselves and render DAY precision (no HH:MM:SS, Franck 2026-09-09).
 const parseWhen = (s?: string): Date | null => {
@@ -49,6 +44,21 @@ const parseWhen = (s?: string): Date | null => {
   const d = new Date(s);
   return isNaN(+d) ? null : d;
 };
+// Freshest news on top (Franck 2026-09-16). Order by the item's PUBLICATION date, falling back to
+// our access date when a source carries none, so an item without `published_at` still sorts by when
+// we saw it rather than sinking to the bottom. Undated items go last; the sort is stable, so within
+// an equal date the pipeline's incoming order is preserved.
+const when = (i: Item): number => {
+  const d = parseWhen(i.source?.published_at) ?? parseWhen(i.source?.accessed);
+  return d ? +d : -Infinity;
+};
+const visible = [...approvedItems].sort((a, b) => when(b) - when(a));
+
+const badgeClass: Record<string, string> = {
+  projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
+  moratoire: "moratoire", reglementation: "regl", marche: "marche",
+};
+const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(d) : (s ?? ""); };
 ---
 
@@ -68,12 +78,25 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
       const isTranslated = !native && (!!titleTranslated || !!it.summary_i18n?.[lang]);
       const headlineText = titleTranslated ?? it.headline;
       const isVideo = it.media === "video";
+      // Date badge: the source's PUBLICATION date when it has one, otherwise our ACCESS date as a
+      // fallback (Franck 2026-09-16) — flagged "consulté / seen" + a tooltip so it never reads as a
+      // publication date we don't have. Absent both → no badge.
+      const dateShown = it.source?.published_at ?? it.source?.accessed;
+      const dateIsAccess = !it.source?.published_at && !!it.source?.accessed;
+      const accessLabel = lang === "fr" ? "consulté" : "seen";
+      const accessTitle = lang === "fr"
+        ? "Date de consultation (publication non datée)"
+        : "Date accessed (no publication date)";
       return (
         <article class:list={["actu-item", { projet: isProjet, video: isVideo }]}>
           <div class="actu-item-top">
             <span class:list={["actu-badge", cls]}>{t.topics?.[it.topic] ?? it.topic}</span>
             {isVideo && <span class="actu-media">▶ {t.video ?? (lang === "fr" ? "Vidéo" : "Video")}</span>}
-            {it.source?.published_at && <span class="actu-when">{fmtDate(it.source.published_at)}</span>}
+            {dateShown && (
+              <span class:list={["actu-when", { approx: dateIsAccess }]} title={dateIsAccess ? accessTitle : undefined}>
+                {dateIsAccess && <span class="actu-when-tag">{accessLabel}</span>}{fmtDate(dateShown)}
+              </span>
+            )}
           </div>
           <div class="actu-headline">
             <a href={it.source?.url} target="_blank" rel="noopener nofollow">{headlineText}</a>
@@ -138,6 +161,12 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
     background: #fbeaec; color: #b0202f; display: inline-flex; align-items: center; gap: 4px;
   }
   .actu-when { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+  .actu-when.approx { font-style: italic; }
+  .actu-when-tag {
+    font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.05em;
+    text-transform: uppercase; font-style: normal; border: 1px solid var(--line);
+    border-radius: 4px; padding: 0 5px; margin-right: 5px; color: var(--muted); vertical-align: middle;
+  }
   .actu-headline { font-size: 1.05rem; font-weight: 650; line-height: 1.3; }
   .actu-headline a { color: var(--ink); text-decoration: none; }
   .actu-headline a:hover { color: var(--accent, #0f5fb8); text-decoration: underline; }
