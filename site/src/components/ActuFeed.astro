@@ -33,13 +33,8 @@ const { lang, t, items } = Astro.props;
 // approved items (lock 1, pipeline side) — we re-filter here so nothing without
 // `approved` can ever render. `approved` = Franck said yes; distinct from
 // `publishable` (license allows it). A missing flag is treated as NOT approved.
-const visible = (items ?? []).filter((i) => i.approved === true);
+const approvedItems = (items ?? []).filter((i) => i.approved === true);
 
-const badgeClass: Record<string, string> = {
-  projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
-  moratoire: "moratoire", reglementation: "regl", marche: "marche",
-};
-const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 // The feed carries GDELT/RSS compact seendate ("YYYYMMDDTHHMMSSZ", or "YYYYMMDD") which JS Date()
 // cannot parse — so we parse it ourselves and render DAY precision (no HH:MM:SS, Franck 2026-09-09).
 const parseWhen = (s?: string): Date | null => {
@@ -49,6 +44,21 @@ const parseWhen = (s?: string): Date | null => {
   const d = new Date(s);
   return isNaN(+d) ? null : d;
 };
+// Freshest news on top (Franck 2026-09-16). Order by the item's PUBLICATION date, falling back to
+// our access date when a source carries none, so an item without `published_at` still sorts by when
+// we saw it rather than sinking to the bottom. Undated items go last; the sort is stable, so within
+// an equal date the pipeline's incoming order is preserved.
+const when = (i: Item): number => {
+  const d = parseWhen(i.source?.published_at) ?? parseWhen(i.source?.accessed);
+  return d ? +d : -Infinity;
+};
+const visible = [...approvedItems].sort((a, b) => when(b) - when(a));
+
+const badgeClass: Record<string, string> = {
+  projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
+  moratoire: "moratoire", reglementation: "regl", marche: "marche",
+};
+const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(d) : (s ?? ""); };
 ---
 
