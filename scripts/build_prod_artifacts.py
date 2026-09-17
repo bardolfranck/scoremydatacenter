@@ -63,12 +63,29 @@ def patch_satellite_images() -> int:
     return patched
 
 
-def display_name(name: str) -> str:
+_ASCII = str.maketrans("àáâäãåçèéêëìíîïñòóôöõùúûüýÿ", "aaaaaaceeeeiiiinooooouuuuyy")
+
+
+def _ascii_lower(s: str) -> str:
+    """Accent-folded lowercase, SAME LENGTH as the input (so spans map back to the original)."""
+    return s.lower().translate(_ASCII)
+
+
+def display_name(name: str, municipality: str | None = None) -> str:
     """Rule (Franck 2026-07-24, applied 2026-09-17): a seed name like « ADISTA_-_AIX_EN_PROVENCE »
-    is shown « ADISTA - AIX EN PROVENCE ». Underscore → space, spaces collapsed. Casing is left as
-    is — never an automatic .title() (it breaks OVH, GDC, DC); real casing is a reviewed fix."""
+    is shown « ADISTA - Aix-en-Provence ». Underscores become spaces, spaces collapse, and where the
+    name carries the fiche's commune the commune's REAL spelling is restored — French place names are
+    hyphenated (Aix-en-Provence, Saint-Germain), and a blind underscore→space loses that. Casing is
+    otherwise untouched: never an automatic .title() (it would break OVH, GDC, TDF)."""
     import re
-    return re.sub(r"\s+", " ", (name or "").replace("_", " ")).strip()
+    out = re.sub(r"\s+", " ", (name or "").replace("_", " ")).strip()
+    toks = [t for t in re.split(r"[\s-]+", (municipality or "").strip()) if t]
+    if not toks:
+        return out
+    # the commune may appear spaced or hyphenated in the seed name — match either, accent-blind
+    pattern = r"\b" + r"[\s-]+".join(re.escape(_ascii_lower(t)) for t in toks) + r"\b"
+    m = re.search(pattern, _ascii_lower(out))
+    return out[:m.start()] + municipality.strip() + out[m.end():] if m else out
 
 
 def registry_display_name(denomination: str) -> str:
@@ -159,9 +176,9 @@ def main() -> int:
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
     operator_sources = apply_operator_identity(dcs)
     for dc in dcs.values():
-        dc["identity"]["name"] = display_name(dc["identity"]["name"])
+        dc["identity"]["name"] = display_name(dc["identity"]["name"], dc["identity"].get("municipality"))
     for e in watchlist:
-        e["name"] = display_name(e.get("name"))
+        e["name"] = display_name(e.get("name"), e.get("municipality"))
     results = build_artifacts(dcs, load_methodology(), out_dir=ARTIFACTS_DIR, watchlist=watchlist)
     # Purge stale per-DC artifacts (build_artifacts writes, never deletes):
     # anything on disk that is not in this corpus would silently resurrect
