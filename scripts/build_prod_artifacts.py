@@ -63,6 +63,35 @@ def patch_satellite_images() -> int:
     return patched
 
 
+def patch_status_check() -> int:
+    """Status proof (Franck 2026-09-17): every OPERATIONAL fiche artifact gets its
+    status_check {verified, checked_at, evidence?} from the weekly sidecar written by
+    `make status-proof`. Only the public verdict travels — the internal live_signal /
+    demote candidates never reach a served file. No sidecar → nothing added (the fiche
+    shows no status label rather than a wrong one)."""
+    sidecar = CAL / "status-proof" / "status_check.json"
+    if not sidecar.is_file():
+        return 0
+    from engine.core import write_json
+    checks = json.loads(sidecar.read_text()).get("fiches", {})
+    patched = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        c = checks.get(d["id"])
+        if d.get("project_status") != "operational" or not c or c.get("verdict") not in ("verified", "unverified"):
+            d.pop("status_check", None)
+        else:
+            d["status_check"] = {
+                "verified": c["verdict"] == "verified",
+                "checked_at": c.get("checked_at"),
+                **({"evidence": {k: c["evidence"][k] for k in ("source", "url", "networks")}}
+                   if c["verdict"] == "verified" and c.get("evidence") else {}),
+            }
+            patched += 1
+        write_json(f, d)
+    return patched
+
+
 def main() -> int:
     if not (CAL / "datacenters").is_dir():
         raise SystemExit(f"newsroom calibration not found at {CAL} — clone smdc-newsroom or set NEWSROOM_CAL")
@@ -89,6 +118,9 @@ def main() -> int:
                 if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"})
     print(f"prod-artifacts: {len(dcs)} DC + {len(watchlist)} watchlist entries → {ARTIFACTS_DIR}")
     print(f"prod-artifacts: exposure — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
+    checked = patch_status_check()
+    print(f"prod-artifacts: status_check on {checked} operational fiches"
+          if checked else "prod-artifacts: status_check skipped (no status-proof sidecar — run make status-proof)")
     patched = patch_satellite_images()
     if patched:
         print(f"prod-artifacts: satellite_image patched on {patched} fiches (media env configured)")

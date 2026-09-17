@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof
 
 install:
 	uv sync
@@ -263,3 +263,13 @@ collect-projects:
 # No network, no LLM key. (agent-codeur-site 2026-09-04)
 actu-latest:
 	uv run python -m pipelines.veille.actu --regen-latest --newsroom $(NEWSROOM) --public-data site/public/data
+
+# Weekly status proof (Franck 2026-09-17): PeeringDB → label model → newsroom sidecar
+# calibration/status-proof/status_check.json. The next `make prod-artifacts` puts « statut
+# vérifié / non vérifié » on every operational fiche. Never edits a fiche, never flips a status,
+# never deploys. Refuses to overwrite if the verified count collapses (bad-week guard).
+status-proof:
+	uv run python -m pipelines.status_proof.run --cal $(NEWSROOM)/calibration
+	@cd $(NEWSROOM) && git add calibration/status-proof && \
+	  if git diff --cached --quiet; then echo "status-proof: rien de neuf"; \
+	  else git commit -q -m "status-proof: vérification hebdo $$(date +%F)" && (git push -q 2>/dev/null && echo "status-proof: poussé au newsroom" || echo "status-proof: commit local (push différé — offline?)"); fi
