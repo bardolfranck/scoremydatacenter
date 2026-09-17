@@ -1107,6 +1107,7 @@ sup a { color: var(--accent); font-weight: 750; }
    not verified = muted, never alarming — it says « not yet proven », not « wrong ». */
 .st-ok { color: #7ed6a4; font-weight: 700; text-decoration: none; }  /* sits on the navy fiche sidebar */
 .st-ok:hover { text-decoration: underline; }
+.op-src { color: inherit; text-decoration: underline dotted; }
 .st-unv { color: var(--sidebar-muted); font-style: italic; }
 .ind-source a { color: var(--accent); font-weight: 650; }
 .ind-source span { color: var(--muted); }

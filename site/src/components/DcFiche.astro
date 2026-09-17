@@ -153,6 +153,8 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   powerEstimated ? `<span class="pw-est">${t.powerEstimated}</span>` : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
 
+// Operator (Franck 2026-09-17): shown when known; a register-resolved one links to its SIRENE entry.
+const hasOperator = !!dc.operator && !["unknown", "none", ""].includes(String(dc.operator).trim().toLowerCase());
 const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
   + (dc.country ? ` · ${dc.country}` : "");
 
@@ -239,6 +241,13 @@ const pillars = methodology.pillars as any[];
         <p class="fiche-kicker">{t.kicker}</p>
         <h1 class="fiche-name">{dc.name}</h1>
         <p class="fiche-place">{place}</p>
+        {hasOperator && (
+          <p class="fiche-meta fiche-operator">
+            {t.operatorLabel} {dc.operator_source
+              ? <a class="op-src" href={dc.operator_source.url} target="_blank" rel="noopener" title={t.operatorFromRegister}>{dc.operator}</a>
+              : dc.operator}
+          </p>
+        )}
         <p class="fiche-meta" set:html={metaLine}></p>
       </div>
 

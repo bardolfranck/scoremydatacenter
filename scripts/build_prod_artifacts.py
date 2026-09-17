@@ -63,6 +63,50 @@ def patch_satellite_images() -> int:
     return patched
 
 
+def registry_display_name(denomination: str) -> str:
+    """« T D F (TDF) » → « TDF », « BLUE (BLUE) » → « BLUE », « DATAONE FRANCE SAS » → « DATAONE FRANCE »:
+    the register's legal denomination, made readable without inventing anything."""
+    import re
+    parts = [x.strip() for x in re.findall(r"\(([^)]*)\)", denomination)]
+    main = re.sub(r"\s*\([^)]*\)", "", denomination).strip()
+    if parts and re.fullmatch(r"(?:\S )+\S", main):   # spaced initials → use the sigle
+        main = parts[0]
+    return re.sub(r"\s+(SAS|SASU|SA|SARL|EURL)$", "", main).strip()
+
+
+def apply_operator_identity(dcs: dict) -> dict:
+    """Operator-fill (Franck go 2026-09-17): a fiche whose operator is unknown takes the company the
+    French register resolves with CONFIDENCE (weekly job, pipelines/status_proof/siren.py). Only the
+    `confident` tier; developer candidates / lower tiers never fill. Returns {id: source} for the
+    fiche artifact's provenance link."""
+    sidecar = CAL / "status-proof" / "operator_identity.json"
+    if not sidecar.is_file():
+        return {}
+    sources = {}
+    for dc_id, e in json.loads(sidecar.read_text()).get("fiches", {}).items():
+        dc = dcs.get(dc_id)
+        if not dc or e.get("emit_tier") != "confident" or not (e.get("resolved") or {}).get("denomination"):
+            continue
+        if str(dc["identity"].get("operator") or "").strip().lower() not in ("", "unknown", "none"):
+            continue
+        siren_id = e["resolved"]["siren"]
+        dc["identity"]["operator"] = registry_display_name(e["resolved"]["denomination"])
+        sources[dc_id] = {"source": "SIRENE", "siren": siren_id,
+                          "url": f"https://annuaire-entreprises.data.gouv.fr/entreprise/{siren_id}",
+                          "checked_at": e.get("checked_at")}
+    return sources
+
+
+def patch_operator_source(sources: dict) -> None:
+    from engine.core import write_json
+    for dc_id, src in sources.items():
+        f = ARTIFACTS_DIR / "dc" / f"{dc_id}.json"
+        if f.is_file():
+            d = json.loads(f.read_text())
+            d["operator_source"] = src
+            write_json(f, d)
+
+
 def patch_status_check() -> int:
     """Status proof (Franck 2026-09-17): every OPERATIONAL fiche artifact gets its
     status_check {verified, checked_at, evidence?} from the weekly sidecar written by
@@ -105,6 +149,7 @@ def main() -> int:
     # datacenters* panel still can NEVER be served with a real grade.
     dcs = {k: v for k, v in dcs.items() if not k.startswith(("zz-", "study-"))}
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
+    operator_sources = apply_operator_identity(dcs)
     results = build_artifacts(dcs, load_methodology(), out_dir=ARTIFACTS_DIR, watchlist=watchlist)
     # Purge stale per-DC artifacts (build_artifacts writes, never deletes):
     # anything on disk that is not in this corpus would silently resurrect
@@ -118,6 +163,8 @@ def main() -> int:
                 if {r["grades"]["site"]["grade"], r["grades"]["project_process"]["grade"]} & {"D", "E"})
     print(f"prod-artifacts: {len(dcs)} DC + {len(watchlist)} watchlist entries → {ARTIFACTS_DIR}")
     print(f"prod-artifacts: exposure — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
+    patch_operator_source(operator_sources)
+    print(f"prod-artifacts: operator filled from the company register on {len(operator_sources)} fiches")
     checked = patch_status_check()
     print(f"prod-artifacts: status_check on {checked} operational fiches"
           if checked else "prod-artifacts: status_check skipped (no status-proof sidecar — run make status-proof)")
