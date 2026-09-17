@@ -63,6 +63,14 @@ def patch_satellite_images() -> int:
     return patched
 
 
+def display_name(name: str) -> str:
+    """Rule (Franck 2026-07-24, applied 2026-09-17): a seed name like « ADISTA_-_AIX_EN_PROVENCE »
+    is shown « ADISTA - AIX EN PROVENCE ». Underscore → space, spaces collapsed. Casing is left as
+    is — never an automatic .title() (it breaks OVH, GDC, DC); real casing is a reviewed fix."""
+    import re
+    return re.sub(r"\s+", " ", (name or "").replace("_", " ")).strip()
+
+
 def registry_display_name(denomination: str) -> str:
     """« T D F (TDF) » → « TDF », « BLUE (BLUE) » → « BLUE », « DATAONE FRANCE SAS » → « DATAONE FRANCE »:
     the register's legal denomination, made readable without inventing anything."""
@@ -150,6 +158,10 @@ def main() -> int:
     dcs = {k: v for k, v in dcs.items() if not k.startswith(("zz-", "study-"))}
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
     operator_sources = apply_operator_identity(dcs)
+    for dc in dcs.values():
+        dc["identity"]["name"] = display_name(dc["identity"]["name"])
+    for e in watchlist:
+        e["name"] = display_name(e.get("name"))
     results = build_artifacts(dcs, load_methodology(), out_dir=ARTIFACTS_DIR, watchlist=watchlist)
     # Purge stale per-DC artifacts (build_artifacts writes, never deletes):
     # anything on disk that is not in this corpus would silently resurrect
