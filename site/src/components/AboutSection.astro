@@ -63,6 +63,11 @@ const chainIcon = (name: string, size = 22) =>
               <li><span class="fact-ic" aria-hidden="true" set:html={chainIcon(f.icon, 18)}></span><span set:html={f.text}></span></li>
             ))}
           </ul>
+          {t.founderProfile && (
+            <p class="founder-profile">
+              <a href={t.founderProfile.url} target="_blank" rel="noopener">{t.founderProfile.label} →</a>
+            </p>
+          )}
         </aside>
       </div>
       {t.ia && (

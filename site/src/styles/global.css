@@ -1657,6 +1657,9 @@ sup a { color: var(--accent); font-weight: 750; }
 .founder-facts li { display: flex; gap: 11px; align-items: flex-start; font-size: 0.87rem; line-height: 1.5; color: var(--ink-soft); }
 .fact-ic { flex: none; width: 28px; height: 28px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); display: grid; place-items: center; color: var(--accent); margin-top: 1px; }
 .founder-facts a { color: var(--accent); font-weight: 650; }
+/* « Profil complet » : ligne détachée, alignée sur la marge gauche de la carte (pas d'icône). */
+.founder-profile { margin: 14px 0 0; font-size: 0.87rem; }
+.founder-profile a { color: var(--accent); font-weight: 650; }
 .about-bottom { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(24px, 4vw, 48px); margin-top: 32px; align-items: start; }
 .expertise-list { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
 .expertise-list li { display: flex; gap: 14px; align-items: flex-start; font-size: 0.9rem; }
