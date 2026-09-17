@@ -1103,6 +1103,11 @@ sup a { color: var(--accent); font-weight: 750; }
    as « annoncé » — flagged, never served as a bare fact (measured>announced>estimated). */
 .pw-est { color: #8a6708; font-weight: 650; }
 .status-missing { color: var(--muted); }
+/* Status proof on the fiche meta line: confirmed = measured green (links to its source);
+   not verified = muted, never alarming — it says « not yet proven », not « wrong ». */
+.st-ok { color: #7ed6a4; font-weight: 700; text-decoration: none; }  /* sits on the navy fiche sidebar */
+.st-ok:hover { text-decoration: underline; }
+.st-unv { color: var(--sidebar-muted); font-style: italic; }
 .ind-source a { color: var(--accent); font-weight: 650; }
 .ind-source span { color: var(--muted); }
 

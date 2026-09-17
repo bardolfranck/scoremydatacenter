@@ -137,7 +137,18 @@ const roundEst = (v: number) => Number(v.toPrecision(2));
 const powerText = dc.power_mw
   ? `${powerEstimated ? `~${roundEst(dc.power_mw)}` : dc.power_mw} MW`
   : t.powerUnknown;
+// Status proof (Franck 2026-09-17): an operational fiche says whether its « en service » is
+// independently confirmed (weekly job, PeeringDB) or not yet — never silent, never guessed.
+const sc = dc.project_status === "operational" ? dc.status_check : null;
+const scDate = sc?.checked_at
+  ? new Date(sc.checked_at + "T00:00:00Z").toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+  : "";
+const statusCheck = !sc ? null
+  : sc.verified
+    ? `<a class="st-ok" href="${sc.evidence?.url ?? "#"}" target="_blank" rel="noopener" title="${t.statusCheck.verifiedTip.replace("{date}", scDate).replace("{n}", String(sc.evidence?.networks ?? ""))}">✓ ${t.statusCheck.verified}</a>`
+    : `<span class="st-unv" title="${t.statusCheck.unverifiedTip}">${t.statusCheck.unverified}</span>`;
 const metaLine = [t.status[dc.project_status] ?? dc.project_status,
+  statusCheck,
   powerText,
   powerEstimated ? `<span class="pw-est">${t.powerEstimated}</span>` : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");

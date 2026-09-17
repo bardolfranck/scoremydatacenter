@@ -1,0 +1,48 @@
+name: Preuve de statut (hebdo)
+
+# Franck 2026-09-17: the « en service » status of every fiche is re-checked automatically each
+# week — no manual relaunch. PeeringDB (public API) → calibrated label model → newsroom sidecar.
+# NEVER deploys, NEVER edits a fiche, NEVER flips a status, NEVER touches a grade: the next
+# site build reads the sidecar and shows « statut vérifié / non vérifié ».
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"    # Mondays 04:00 UTC — before the 05:00 projects job (no newsroom push race)
+  workflow_dispatch: {}
+
+concurrency:
+  group: status-proof
+  cancel-in-progress: false
+
+jobs:
+  status-proof:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (public)
+        uses: actions/checkout@v4
+        with:
+          path: scoremydatacenter
+
+      - name: Checkout newsroom (private — needs NEWSROOM_TOKEN)
+        uses: actions/checkout@v4
+        with:
+          repository: bardolfranck/smdc-newsroom
+          token: ${{ secrets.NEWSROOM_TOKEN }}
+          path: smdc-newsroom
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deps
+        working-directory: scoremydatacenter
+        run: uv sync
+
+      - name: Git identity (for the newsroom commit)
+        run: |
+          git config --global user.name  "smdc-status-bot"
+          git config --global user.email "status@scoremydatacenter.org"
+
+      - name: Status proof → newsroom sidecar (NO deploy)
+        working-directory: scoremydatacenter
+        run: make status-proof
