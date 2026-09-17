@@ -61,3 +61,37 @@ def test_bad_week_guard_keeps_previous_sidecar(tmp_path, monkeypatch):
     monkeypatch.setattr(peeringdb, "fetch_facilities", lambda: {})  # outage-like: nothing binds
     assert run.main(["--cal", str(cal)]) == 2
     assert json.loads((cal / "status-proof" / "status_check.json").read_text()) == prev
+
+
+def test_operator_identity_internal_and_outage_keeps_previous():
+    fiches = [fiche("fr-a", "D-LAKE", "unknown"), fiche("fr-b", "Known DC", "Equinix"),
+              fiche("fr-c", "TAS Group", "unknown"), fiche("fr-d", "Down DC", "unknown"),
+              fiche("de-e", "X", "unknown", country="DE")]
+
+    def fake_match(fi):
+        if fi["id"] == "fr-a":
+            return {"emit_tier": "confident", "operator_type": "operator", "resolved": {"siren": "1"}, "provenance": {}}
+        if fi["id"] == "fr-c":
+            return {"emit_tier": "developer_needs_confirm", "operator_type": "developer", "resolved": {"siren": "2"}}
+        raise run.siren.SirenFetchError("down")
+
+    prev = {"fr-d": {"emit_tier": "confident", "resolved": {"siren": "9"}}}
+    out, failures = run.resolve_operators(fiches, prev, "2026-09-17", match=fake_match, pause=0)
+    assert set(out) == {"fr-a", "fr-c", "fr-d"}          # known operator and non-FR skipped
+    assert out["fr-a"]["resolved"]["siren"] == "1"
+    assert out["fr-c"]["operator_type"] == "developer"
+    assert out["fr-d"] == prev["fr-d"] and failures == 1  # outage keeps last week's identity
+
+
+def test_operator_identity_reuses_recent_results():
+    calls = []
+    prev = {"fr-a": {"emit_tier": "confident", "checked_at": "2026-09-01"},
+            "fr-b": {"emit_tier": "unknown", "checked_at": "2026-01-01"}}
+    fiches = [fiche("fr-a", "A", "unknown"), fiche("fr-b", "B", "unknown")]
+
+    def fake_match(fi):
+        calls.append(fi["id"])
+        return {"emit_tier": "unknown", "operator_type": "unknown"}
+
+    out, _ = run.resolve_operators(fiches, prev, "2026-09-17", match=fake_match, pause=0)
+    assert calls == ["fr-b"] and out["fr-a"] == prev["fr-a"]   # recent kept, stale re-queried

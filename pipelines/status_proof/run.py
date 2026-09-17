@@ -26,9 +26,11 @@ from pathlib import Path
 
 from engine.core import load_datacenters
 from engine.score import _newsroom_calibration
-from pipelines.status_proof import label_model, peeringdb
+from pipelines.status_proof import label_model, peeringdb, siren
 
 SIDECAR = Path("status-proof") / "status_check.json"
+SIREN_SIDECAR = Path("status-proof") / "operator_identity.json"
+RECHECK_DAYS = 90  # re-query a known register identity once a quarter (the API rate-limits hard)
 MAX_DROP = 0.30   # refuse to publish if verified falls by more than 30 % vs the previous run
 
 
@@ -86,6 +88,38 @@ def build(fiches, facilities_by_country, today):
     return result, counts
 
 
+def resolve_operators(fiches, previous, today, match=siren.match, pause=0.3):
+    """French register lookup for FR fiches whose operator is unknown. INTERNAL: only the
+    `confident` tier is kept as a usable identity; developer candidates are recorded but feed
+    no demote (R&D adjudicates); nothing here is displayed until Franck's go. A register outage
+    keeps the previous week's identity for that fiche — it never erases a known result."""
+    import time
+    out, failures = {}, 0
+    for fi in fiches:
+        if fi["country"] != "FR" or fi["operator"].strip().lower() not in ("", "unknown", "none"):
+            continue
+        prev = previous.get(fi["id"])
+        if prev and prev.get("checked_at") and (
+                dt.date.fromisoformat(today) - dt.date.fromisoformat(prev["checked_at"])).days < RECHECK_DAYS:
+            out[fi["id"]] = prev   # register identities barely move: re-query only new or stale fiches
+            continue
+        try:
+            row = match(fi)
+        except siren.SirenFetchError as e:
+            failures += 1
+            print(f"status-proof: siren {fi['id']}: {e}", file=sys.stderr)
+            if fi["id"] in previous:
+                out[fi["id"]] = previous[fi["id"]]
+            continue
+        entry = {"emit_tier": row["emit_tier"], "operator_type": row["operator_type"], "checked_at": today}
+        if row["emit_tier"] in ("confident", "developer_needs_confirm") and row.get("resolved"):
+            entry["resolved"] = row["resolved"]
+            entry["provenance"] = row.get("provenance")
+        out[fi["id"]] = entry
+        time.sleep(pause)  # recherche-entreprises: stay well under its rate limit
+    return out, failures
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--cal", type=Path, default=None, help="newsroom calibration dir")
@@ -114,6 +148,17 @@ def main(argv=None):
         "counts": counts,
         "fiches": fiche_map,
     }, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+    ids_out = cal / SIREN_SIDECAR
+    prev_ids = json.loads(ids_out.read_text()).get("fiches", {}) if ids_out.is_file() else {}
+    identities, failures = resolve_operators(fiches, prev_ids, today)
+    tiers = {}
+    for e in identities.values():
+        tiers[e["emit_tier"]] = tiers.get(e["emit_tier"], 0) + 1
+    ids_out.write_text(json.dumps({
+        "generated_at": today, "source": "recherche-entreprises.api.gouv.fr", "scope": "FR, operator=unknown",
+        "published": False, "counts": tiers, "fetch_failures": failures, "fiches": identities,
+    }, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+    print(f"status-proof: operator identity (internal) {tiers} · fetch failures {failures} → {ids_out}")
     print(f"status-proof: {len(fiches)} fiches · facilities {sum(map(len, facilities.values()))} "
           f"· {counts} → {out}")
     return 0
