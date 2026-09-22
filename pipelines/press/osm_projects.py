@@ -194,7 +194,14 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="Collect EU pipeline DC projects from OSM (unbiased frame).")
     ap.add_argument("--out", default="sites-eu-pipeline.csv", help="CSV (batch input) or .json")
     args = ap.parse_args(argv)
-    rows = collect()
+    try:
+        rows = collect()
+    except RuntimeError as exc:  # Overpass unreachable on all mirrors — transient upstream outage
+        # A daily cron must NOT hard-fail (red run + alert email) on a transient OSM outage.
+        # Skip gracefully: write NO output → the downstream onboard step sees no input and skips
+        # its deposit, so the auto-watchlist is left untouched (never reconciled to empty).
+        print(f"osm_projects: SKIP — {exc}. Aucune collecte aujourd'hui (Overpass indisponible).", file=sys.stderr)
+        return 0
     _write(rows, args.out)
     by_src = {}
     for r in rows:

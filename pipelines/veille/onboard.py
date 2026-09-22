@@ -279,7 +279,13 @@ def main(argv=None) -> int:
                     "file (only if AUTO_PUBLISH_ENABLED; contested/flagged never auto-deposited). "
                     "Deposits to the PRIVATE newsroom — the served site is a separate deploy step.")
     args = ap.parse_args(argv)
-    cand, report = build_candidates()
+    try:
+        cand, report = build_candidates()
+    except RuntimeError as exc:  # Overpass unreachable — transient upstream outage
+        # Fail-safe: SKIP without depositing. Never let a transient outage reach deposit_auto_eligible
+        # (RECONCILE would overwrite the auto-watchlist to empty = mass un-publish). Green exit.
+        print(f"onboard: SKIP — {exc}. Dépôt inchangé (Overpass indisponible).", file=sys.stderr)
+        return 0
     errs = _validate(cand)
     lanes = report["lanes"]
     lane_of = {i: "auto_eligible" for i in lanes["auto_eligible"]}
