@@ -49,3 +49,25 @@ def test_overpass_outage_keeps_the_previous_fact():
     rows, failures = distance.resolve([{"id": "a", "lat": 48.8, "lon": 2.3}], prev, "2026-09-21",
                                       fetch=boom, pause=0)
     assert rows["a"] == prev["a"] and failures == 1
+
+
+def test_gives_up_when_overpass_is_down_and_keeps_what_was_measured():
+    """Une panne Overpass ne doit pas marteler le service ni perdre les relevés déjà faits."""
+    saved = []
+
+    def fetch(q):
+        raise RuntimeError("overpass down")
+
+    fiches = [{"id": f"x{i}", "lat": 48.8, "lon": 2.3} for i in range(50)]
+    rows, failures = distance.resolve(fiches, {}, "2026-09-22", fetch=fetch, pause=0,
+                                      checkpoint=saved.append, give_up_after=5)
+    assert failures == 5 and rows == {}          # arrêt net après 5 échecs d'affilée
+
+
+def test_checkpoint_saves_before_the_end():
+    ok = {"elements": [{"lat": 48.80, "lon": 2.30, "tags": {"building": "house"}}]}
+    saved = []
+    fiches = [{"id": f"x{i}", "lat": 48.8, "lon": 2.31} for i in range(6)]
+    rows, _ = distance.resolve(fiches, {}, "2026-09-22", fetch=lambda q: ok, pause=0,
+                               checkpoint=saved.append, checkpoint_every=2)
+    assert len(saved) >= 3 and len(rows) == 6    # sauvegardé en cours de route, pas qu'à la fin
