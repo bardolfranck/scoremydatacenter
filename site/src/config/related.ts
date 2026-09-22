@@ -57,8 +57,15 @@ export function buildRelated(all: DcLite[], current: DcLite, max = 6): Related[]
 
   if (current.operator)
     take(others.filter((d) => d.operator && d.operator === current.operator), "operator", 3);
-  if (current.admin_area)
-    take(others.filter((d) => d.admin_area && d.admin_area === current.admin_area), "region", 3);
+  // « Même région » se compare TOUJOURS à pays égal : les codes d'aire administrative se
+  // télescopent d'un pays à l'autre (bug 2026-09-22 — l'Indre « 36 » appariait Châteauroux à
+  // des sites italiens dont la province porte aussi le code « 36 »). Sans pays connu des deux
+  // côtés, on ne peut pas affirmer « même région » : on n'en propose aucune.
+  if (current.admin_area && current.country)
+    take(
+      others.filter((d) => d.admin_area === current.admin_area && d.country === current.country),
+      "region", 3,
+    );
   if (current.country)
     take(others.filter((d) => d.country && d.country === current.country), "country", max);
 
