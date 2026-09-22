@@ -143,6 +143,29 @@ def test_gdelt_en_spec_scopes_by_language_not_country(monkeypatch):
     assert "data center" in " ".join(seen)
 
 
+def test_rss_aggregator_uses_real_source_and_drops_militant():
+    # A Google-News-style feed carries the REAL outlet in <source url>. We attribute to that outlet,
+    # and we DROP a militant/petition source structurally (Franck 2026-09-22 neutrality rule).
+    xml = """<rss><channel>
+      <item><title>Fronde locale contre un data center</title>
+        <link>https://news.google.com/rss/articles/AAA</link>
+        <pubDate>Wed, 17 Sep 2026 08:00:00 GMT</pubDate>
+        <source url="https://www.lanouvellerepublique.fr">La Nouvelle République</source></item>
+      <item><title>Signez la pétition contre le data center</title>
+        <link>https://news.google.com/rss/articles/BBB</link>
+        <pubDate>Wed, 17 Sep 2026 09:00:00 GMT</pubDate>
+        <source url="https://agir.greenvoice.fr">GreenVoice</source></item>
+      <item><title>Référé suspension</title>
+        <link>https://news.google.com/rss/articles/CCC</link>
+        <pubDate>Wed, 17 Sep 2026 10:00:00 GMT</pubDate>
+        <source url="https://reporterre.net">Reporterre</source></item>
+    </channel></rss>"""
+    recs = signal._rss_records(xml, "news.google.com", "fr", "2026-09-22", cutoff=None)
+    doms = [(r["facts"]["domain"]) for r in recs]
+    assert doms == ["lanouvellerepublique.fr"]                 # factual outlet kept, real domain attributed
+    assert "greenvoice.fr" not in doms and "reporterre.net" not in doms   # petition + militant dropped
+
+
 def test_gdelt_frc_spec_is_french_contestation_not_announce(monkeypatch):
     # FRC (added 2026-09-22) fills the gap the FR announce spec left: French CONTESTATION news.
     # It must keep the sourcecountry:france filter AND carry the fronde lexicon the FR spec lacks.
