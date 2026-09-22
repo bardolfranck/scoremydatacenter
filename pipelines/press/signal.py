@@ -307,6 +307,21 @@ GDELT_COUNTRY_SPECS = {
             '(projet OR construction OR implantation OR investissement OR hyperscale OR inauguration)',
         ],
     },
+    # FRC = French CONTESTATION (the fronde), a DELIBERATELY SEPARATE spec so the FR announce flux above
+    # stays announce-only for the watchlist (fr.py). The FR announce query structurally MISSED French
+    # contestation news — opposition, suspension judiciaire, recours, enquête publique — which the EN
+    # and CAFR specs already catch for their regions (gap found 2026-09-22: Rovaltain, Le Bourget,
+    # Étrechet, Petit-Landau were surfaced by hand, not by the radar). ACTU lane only (actu.py), never
+    # the watchlist, never a score.
+    "FRC": {
+        "intent": "contestation",
+        "sourcecountry": "france",
+        "queries": [
+            '("data center" OR "datacenter" OR "centre de données") '
+            '(opposition OR contestation OR moratoire OR recours OR manifestation '
+            'OR "enquête publique" OR référendum OR pétition OR collectif OR suspension OR abandon)',
+        ],
+    },
     # EN is the WORLD ANNOUNCE spec (decision Franck 2026-09-05): anglophone DC news everywhere.
     # NO sourcecountry (global) + sourcelang scopes to English outlets. Feeds the ACTU/news lane
     # only (actu.py), not the FR watchlist (fr.py). Same doctrine as FR: DETECTION, never a score.

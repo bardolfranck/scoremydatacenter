@@ -286,17 +286,20 @@ def _interleave(*lists: list[dict]) -> list[dict]:
 def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]:
     """Harvest GDELT FR + EN-world → classify each headline → relevant items (news + project leads).
 
-    FR = French outlets (sourcecountry:france); EN = anglophone DC news worldwide (sourcelang, no
-    country) — the world lane Franck asked for 2026-09-05. RSS = vetted trade-press feeds GDELT does
-    not index (added 2026-09-08 after the radar ran dry). All three are DETECTION only. The feeds are
-    interleaved so the `limit` classify-budget covers each, then deduped by URL below.
+    FR = French announce outlets (sourcecountry:france); FRC = French CONTESTATION/fronde (added
+    2026-09-22 — the FR announce query structurally missed opposition/suspension/recours news);
+    EN = anglophone DC news worldwide (sourcelang, no country) — the world lane Franck asked for
+    2026-09-05. RSS = vetted trade-press feeds GDELT does not index (added 2026-09-08 after the radar
+    ran dry). All are DETECTION only. The feeds are interleaved so the `limit` classify-budget covers
+    each, then deduped by URL below.
     """
     cap = min(limit or 50, 250)
     fr = signal.fetch_gdelt_country("FR", accessed, timespan=timespan, maxrecords=cap)
+    frc = signal.fetch_gdelt_country("FRC", accessed, timespan=timespan, maxrecords=cap)  # FR contestation (fronde)
     en = signal.fetch_gdelt_country("EN", accessed, timespan=timespan, maxrecords=cap)
     cafr = signal.fetch_gdelt_country("CAFR", accessed, timespan=timespan, maxrecords=cap)  # Québec blind spot
     rss = signal.fetch_rss(load_rss_feeds(), accessed, timespan=timespan)
-    records = _interleave(fr, en, cafr, rss)
+    records = _interleave(fr, frc, en, cafr, rss)
     seen, items = set(), []
     for rec in records:
         url = (rec.get("sources") or [None])[0]
