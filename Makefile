@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations
 
 install:
 	uv sync
@@ -273,3 +273,12 @@ status-proof:
 	@cd $(NEWSROOM) && git add calibration/status-proof && \
 	  if git diff --cached --quiet; then echo "status-proof: rien de neuf"; \
 	  else git commit -q -m "status-proof: vérification hebdo $$(date +%F)" && (git push -q 2>/dev/null && echo "status-proof: poussé au newsroom" || echo "status-proof: commit local (push différé — offline?)"); fi
+
+# Distance aux premières habitations (OSM) — un FAIT publié à côté de la note, jamais dedans
+# (Franck 2026-09-21 : on ne mesure pas les dB, on mesure l'exposition). Calcule seulement ce qui
+# manque (le bâti bouge lentement), écrit le sidecar newsroom et le commit. Ne déploie pas.
+habitations:
+	uv run python -m pipelines.habitations.run --cal $(NEWSROOM)/calibration $(if $(LIMIT),--limit $(LIMIT),)
+	@cd $(NEWSROOM) && git add calibration/habitations && \
+	  if git diff --cached --quiet; then echo "habitations: rien de neuf"; \
+	  else git commit -q -m "habitations: distance aux premières habitations $$(date +%F)" && (git push -q 2>/dev/null && echo "habitations: poussé au newsroom" || echo "habitations: commit local (push différé)"); fi
