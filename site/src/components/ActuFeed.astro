@@ -58,6 +58,19 @@ const badgeClass: Record<string, string> = {
   projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
   moratoire: "moratoire", reglementation: "regl", marche: "marche",
 };
+// Contestation label (Franck 2026-09-22): when the classifier extracted a CONTESTATION act, show the
+// PRECISE type (option 2) on a SINGLE shared colour for the whole family — no rainbow of topic colours.
+// The badge REPLACES the topic badge for these items. Labels are procedural/neutral, never militant.
+const CONTEST_LABEL: Record<string, { fr: string; en: string }> = {
+  opposition: { fr: "Opposition", en: "Opposition" },
+  recours: { fr: "Recours", en: "Legal appeal" },
+  enquete_publique: { fr: "Enquête publique", en: "Public inquiry" },
+  moratoire: { fr: "Moratoire", en: "Moratorium" },
+  referendum: { fr: "Référendum", en: "Referendum" },
+  petition: { fr: "Pétition", en: "Petition" },
+  suspension: { fr: "Suspension", en: "Suspension" },
+  abandon: { fr: "Abandon", en: "Withdrawal" },
+};
 const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short", year: "numeric" });
 const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(d) : (s ?? ""); };
 ---
@@ -78,6 +91,8 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
       const isTranslated = !native && (!!titleTranslated || !!it.summary_i18n?.[lang]);
       const headlineText = titleTranslated ?? it.headline;
       const isVideo = it.media === "video";
+      // A contestation act → the precise-type badge (single colour), shown INSTEAD of the topic badge.
+      const contest = it.entities?.act ? CONTEST_LABEL[it.entities.act] : undefined;
       // Date badge: the source's PUBLICATION date when it has one, otherwise our ACCESS date as a
       // fallback (Franck 2026-09-16) — flagged "consulté / seen" + a tooltip so it never reads as a
       // publication date we don't have. Absent both → no badge.
@@ -90,7 +105,9 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
       return (
         <article class:list={["actu-item", { projet: isProjet, video: isVideo }]}>
           <div class="actu-item-top">
-            <span class:list={["actu-badge", cls]}>{t.topics?.[it.topic] ?? it.topic}</span>
+            {contest
+              ? <span class="actu-badge contestation">{contest[lang]}</span>
+              : <span class:list={["actu-badge", cls]}>{t.topics?.[it.topic] ?? it.topic}</span>}
             {isVideo && <span class="actu-media">▶ {t.video ?? (lang === "fr" ? "Vidéo" : "Video")}</span>}
             {dateShown && (
               <span class:list={["actu-when", { approx: dateIsAccess }]} title={dateIsAccess ? accessTitle : undefined}>
@@ -150,6 +167,8 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
     background: var(--wash); color: var(--muted);
   }
   .actu-badge.projet { background: var(--accent, #0f5fb8); color: #fff; }
+  /* Contestation family — ONE colour for every type (opposition/recours/moratoire/… ), sober, neutral. */
+  .actu-badge.contestation { background: #f3e6e8; color: #8c2f3e; }
   .actu-badge.debat { background: #fdecec; color: #a02334; }
   .actu-badge.moratoire { background: #efe7fb; color: #5b3ba6; }
   .actu-badge.souv { background: #e7f3ee; color: #0b7a4b; }
@@ -197,6 +216,7 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
   @media (prefers-color-scheme: dark) {
     .actu-item { background: #141a24; }
     .actu-badge.debat { background: #3a1a20; color: #f3b3bd; }
+    .actu-badge.contestation { background: #2e181c; color: #e6a9b3; }
     .actu-badge.moratoire { background: #241a3a; color: #cdb8f3; }
     .actu-badge.souv { background: #12251b; color: #8fe0b0; }
     .actu-badge.regl { background: #16213a; color: #a9c3f0; }
