@@ -143,6 +143,21 @@ def test_gdelt_en_spec_scopes_by_language_not_country(monkeypatch):
     assert "data center" in " ".join(seen)
 
 
+def test_gdelt_frc_spec_is_french_contestation_not_announce(monkeypatch):
+    # FRC (added 2026-09-22) fills the gap the FR announce spec left: French CONTESTATION news.
+    # It must keep the sourcecountry:france filter AND carry the fronde lexicon the FR spec lacks.
+    seen = []
+    monkeypatch.setattr(signal, "_gdelt_fetch_raw",
+                        lambda query, **kw: seen.append(query) or {"articles": []})
+    signal.fetch_gdelt_country("FRC", "2026-09-22", sleep=lambda s: None)
+    assert seen and all(q.startswith("sourcecountry:france ") for q in seen)
+    joined = " ".join(seen)
+    for term in ("opposition", "moratoire", "recours", "enquête publique", "référendum", "suspension"):
+        assert term in joined                                  # the fronde vocabulary the FR spec missed
+    fr_announce = " ".join(signal.GDELT_COUNTRY_SPECS["FR"]["queries"])
+    assert "opposition" not in fr_announce                     # FR stays announce-only (watchlist doctrine)
+
+
 def test_gdelt_country_retries_a_slow_walked_query_then_succeeds(monkeypatch):
     # GDELT punishes bursts by slow-walking past the timeout (SourceUnavailable), not by a clean
     # 429 — the harvest must retry with backoff instead of silently losing the country.
