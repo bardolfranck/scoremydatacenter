@@ -438,6 +438,32 @@ def _gdelt_records(data: dict, accessed: str) -> list[dict]:
     return out
 
 
+# Militant/activist outlets we NEVER source (Franck 2026-09-22, existential): the observatory reports
+# facts, it does not campaign — citing a campaigning outlet makes us read as a party, not a measurer.
+# A fact they broke (e.g. a court suspension) is sourced via the RULING itself or a factual PQR/agency
+# pickup, never their communiqué. Enforced structurally at ingestion, all lanes.
+EXCLUDED_SOURCE_DOMAINS = {
+    # militant/activist newsrooms & collectives
+    "reporterre.net", "basta.media", "bastamag.net", "ricochets.cc", "amisdelaterre.org",
+    "multinationales.org", "rapportsdeforce.fr", "lundi.am", "terrestres.org",
+    "mrmondialisation.org", "lesoulevementsdelaterre.org", "attac.org",
+    # petition / campaign platforms (a call to sign is not a report of a fact)
+    "greenvoice.fr", "change.org", "mesopinions.com", "cyberacteurs.org", "petitions.fr",
+}
+
+
+def domain_of(url: str) -> str:
+    """Bare registrable-ish domain from a URL ('https://www.x.fr/a' → 'x.fr'), for attribution/filtering."""
+    import urllib.parse
+    net = urllib.parse.urlparse(url or "").netloc.lower().split(":")[0]
+    return net[4:] if net.startswith("www.") else net
+
+
+def is_excluded_domain(domain: str | None) -> bool:
+    d = (domain or "").lower()
+    return any(d == x or d.endswith("." + x) for x in EXCLUDED_SOURCE_DOMAINS)
+
+
 # --- feed 5 · direct-source RSS (trade press GDELT does not index) ----------------------------
 # GDELT does not index French DC trade press, so the daily radar went dry (0 candidates 05-07 Sep
 # 2026 while Vertiv/Telehouse/Equinix news ran). This lane reads a SMALL set of vetted publisher
@@ -517,6 +543,7 @@ def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutof
         if _localname(node.tag) not in ("item", "entry"):
             continue
         title = link = pub = ""
+        src_url = None
         for child in node:
             ln = _localname(child.tag)
             if ln == "title" and not title:
@@ -528,11 +555,19 @@ def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutof
                     link = href
                 elif not link:
                     link = _text(child) or href or ""
+            elif ln == "source":
+                # Aggregator feeds (Google News) carry the REAL outlet in <source url="…">; use it for
+                # attribution/allowlist/exclusion instead of the aggregator's own domain.
+                src_url = child.get("url") or src_url
             elif ln in ("pubDate", "published", "updated", "date") and not pub:
                 pub = _text(child)
         link = link.strip()
         if not link or link in seen:
             continue
+        # effective outlet = the per-item <source> (aggregator) else the feed's declared domain.
+        eff_domain = domain_of(src_url) if src_url else domain
+        if is_excluded_domain(eff_domain):
+            continue  # militant/activist outlet — never sourced (Franck 2026-09-22)
         dt = _rss_pubdate(pub)
         if dt is not None and cutoff is not None and dt < cutoff:
             continue  # outside the window; undated items are kept (a fresh feed rarely dates None)
@@ -545,7 +580,7 @@ def _rss_records(xml_text: str, domain: str, language: str, accessed: str, cutof
             # downstream the gate then trusts it and filters on EDITORIAL INTEREST (no confidence
             # gate, named person does not block). A general outlet's feed stays curated=false → it
             # goes through the same GDELT-style confidence gate, just over an RSS transport.
-            facts={"domain": domain, "seendate": seendate, "language": language,
+            facts={"domain": eff_domain, "seendate": seendate, "language": language,
                    "curated": curated, **({"media": media} if media else {})},
             sources=[link], retrieved=accessed))
     return out

@@ -300,6 +300,9 @@ def build(accessed: str, llm, *, timespan: str, limit: int | None) -> list[dict]
     cafr = signal.fetch_gdelt_country("CAFR", accessed, timespan=timespan, maxrecords=cap)  # Québec blind spot
     rss = signal.fetch_rss(load_rss_feeds(), accessed, timespan=timespan)
     records = _interleave(fr, frc, en, cafr, rss)
+    # Militant/activist outlets are never sourced (Franck 2026-09-22) — enforce on EVERY lane, incl.
+    # GDELT, not just RSS: a campaigning outlet can surface in a country query too.
+    records = [r for r in records if not signal.is_excluded_domain((r.get("facts") or {}).get("domain"))]
     seen, items = set(), []
     for rec in records:
         url = (rec.get("sources") or [None])[0]
