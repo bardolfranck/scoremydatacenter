@@ -155,6 +155,10 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
 
 // Operator (Franck 2026-09-17): shown when known; a register-resolved one links to its SIRENE entry.
 const hasOperator = !!dc.operator && !["unknown", "none", ""].includes(String(dc.operator).trim().toLowerCase());
+// Distance aux premières habitations (Franck 2026-09-21) : un FAIT à côté de la note, jamais dedans.
+// « environ », car la mesure vise le centre de l'objet OSM ; une zone résidentielle (bâti non tagué,
+// fréquent en rural) est dite comme telle, jamais présentée comme une maison.
+const dwell = dc.nearest_dwelling;
 const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
   + (dc.country ? ` · ${dc.country}` : "");
 
@@ -241,6 +245,13 @@ const pillars = methodology.pillars as any[];
         <p class="fiche-kicker">{t.kicker}</p>
         <h1 class="fiche-name">{dc.name}</h1>
         <p class="fiche-place">{place}</p>
+        {dwell && (
+          <p class="fiche-meta fiche-dwell">
+            {t.dwellLabel} <strong>~{dwell.distance_m} m</strong>
+            <span class="dwell-src" title={dwell.kind === "landuse" ? t.dwellLanduse : t.dwellBuilding}>
+              · {dwell.kind === "landuse" ? t.dwellLanduseShort : t.dwellBuildingShort}</span>
+          </p>
+        )}
         {hasOperator && (
           <p class="fiche-meta fiche-operator">
             {t.operatorLabel} {dc.operator_source

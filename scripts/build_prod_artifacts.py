@@ -132,6 +132,30 @@ def patch_operator_source(sources: dict) -> None:
             write_json(f, d)
 
 
+def patch_nearest_dwelling() -> int:
+    """Distance aux premières habitations (Franck 2026-09-21) : un FAIT sourcé posé à côté de la
+    note — il n'entre dans aucun indicateur ni aucune lettre. Seuls les relevés aboutis voyagent ;
+    un site sans réponse OSM n'affiche rien plutôt qu'un chiffre inventé."""
+    sidecar = CAL / "habitations" / "distance.json"
+    if not sidecar.is_file():
+        return 0
+    from engine.core import write_json
+    rows = json.loads(sidecar.read_text()).get("fiches", {})
+    patched = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        r = rows.get(d["id"])
+        if not r or not r.get("found"):
+            d.pop("nearest_dwelling", None)
+        else:
+            d["nearest_dwelling"] = {"distance_m": r["distance_m"], "kind": r["kind"],
+                                     "source": r.get("source", "OpenStreetMap"),
+                                     "checked_at": r.get("checked_at")}
+            patched += 1
+        write_json(f, d)
+    return patched
+
+
 def patch_status_check() -> int:
     """Status proof (Franck 2026-09-17): every OPERATIONAL fiche artifact gets its
     status_check {verified, checked_at, evidence?} from the weekly sidecar written by
@@ -194,6 +218,9 @@ def main() -> int:
     print(f"prod-artifacts: exposure — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
     patch_operator_source(operator_sources)
     print(f"prod-artifacts: operator filled from the company register on {len(operator_sources)} fiches")
+    dwell = patch_nearest_dwelling()
+    print(f"prod-artifacts: nearest_dwelling on {dwell} fiches" if dwell
+          else "prod-artifacts: nearest_dwelling skipped (no habitations sidecar — run make habitations)")
     checked = patch_status_check()
     print(f"prod-artifacts: status_check on {checked} operational fiches"
           if checked else "prod-artifacts: status_check skipped (no status-proof sidecar — run make status-proof)")
