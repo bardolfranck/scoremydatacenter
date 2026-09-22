@@ -21,6 +21,7 @@ Aucune valeur n'est inventée : pas de réponse OSM → pas de champ.
 import json
 import sys
 import time
+import urllib.request
 
 from pipelines.press.osm_projects import _fetch_overpass
 from pipelines.veille.dedup import haversine_m
@@ -60,12 +61,31 @@ def nearest(lat, lon, *, fetch=_fetch_overpass, radius=RADIUS_M):
     return None, None
 
 
-def resolve(fiches, previous, today, *, fetch=_fetch_overpass, pause=2.0, recheck_days=365):
+def fetch_fast(query, *, timeout=45, endpoints=("https://overpass-api.de/api/interpreter",
+                                                "https://overpass.kumi.systems/api/interpreter")):
+    """Un seul essai par miroir, délai COURT. Overpass public peut rester injoignable des heures :
+    avec le client long (200 s × reprises × miroirs) un seul site coûtait jusqu'à 13 min de mur.
+    Ici un site coûte au pire ~90 s, et l'appelant le reprendra au prochain run."""
+    last = None
+    for endpoint in endpoints:
+        try:
+            req = urllib.request.Request(endpoint, data=query.encode("utf-8"),
+                                         headers={"User-Agent": "scoremydatacenter-habitations/1.0"})
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                return json.loads(resp.read().decode("utf-8"))
+        except Exception as exc:  # noqa: BLE001 — réseau/HTTP/JSON : on tente le miroir suivant
+            last = exc
+    raise RuntimeError(f"Overpass injoignable sur tous les miroirs: {last}")
+
+
+def resolve(fiches, previous, today, *, fetch=fetch_fast, pause=1.0, recheck_days=365,
+            checkpoint=None, checkpoint_every=25, give_up_after=40):
     """Calcule le manquant, réutilise l'existant (le bâti bouge lentement, Overpass est partagé).
     Une panne Overpass conserve la valeur précédente — elle n'efface jamais un fait déjà publié."""
     import datetime as dt
-    out, failures = {}, 0
-    for fi in fiches:
+    out, failures, done, consecutive = {}, 0, 0, 0
+    total = len(fiches)
+    for n, fi in enumerate(fiches, 1):
         prev = previous.get(fi["id"])
         if prev and prev.get("checked_at") and (
                 dt.date.fromisoformat(today) - dt.date.fromisoformat(prev["checked_at"])).days < recheck_days:
@@ -75,14 +95,27 @@ def resolve(fiches, previous, today, *, fetch=_fetch_overpass, pause=2.0, rechec
             d, kind = nearest(fi["lat"], fi["lon"], fetch=fetch)
         except Exception as e:  # noqa: BLE001 — Overpass down/429: on gardera l'ancienne valeur
             failures += 1
+            consecutive += 1
             print(f"habitations: {fi['id']}: {e}", file=sys.stderr)
             if prev:
                 out[fi["id"]] = prev
+            if consecutive >= give_up_after:
+                # Overpass est down, pas lent : s'acharner ne sert qu'à marteler un service public.
+                print(f"habitations: ARRÊT — {consecutive} échecs d'affilée, Overpass indisponible. "
+                      f"{done} relevés obtenus, reprise au prochain run.", file=sys.stderr)
+                break
             continue
+        consecutive = 0
         if d is None:
             out[fi["id"]] = {"checked_at": today, "found": False}
         else:
             out[fi["id"]] = {"distance_m": d, "kind": kind, "checked_at": today, "found": True,
                              "source": "OpenStreetMap", "license": LICENSE, "radius_m": RADIUS_M}
+        done += 1
+        if checkpoint and done % checkpoint_every == 0:
+            checkpoint(out)      # on n'attend pas la fin : un run interrompu garde ses relevés
+            print(f"habitations: {n}/{total} · {done} nouveaux relevés · {failures} échecs", flush=True)
         time.sleep(pause)   # Overpass est un service public partagé
+    if checkpoint and done:
+        checkpoint(out)
     return out, failures

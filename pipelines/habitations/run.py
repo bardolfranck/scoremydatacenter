@@ -48,20 +48,30 @@ def main(argv=None):
         fiches = [f for f in fiches if f["id"] in prev] + todo[:args.limit]
 
     today = dt.date.today().isoformat()
-    rows, failures = distance.resolve(fiches, prev, today)
+
+    def write(rows):
+        """Écriture atomique du sidecar — appelée en cours de route (checkpoint) ET à la fin :
+        un run coupé par une panne Overpass garde tout ce qu'il a déjà relevé."""
+        found = sorted(r["distance_m"] for r in rows.values() if r.get("found"))
+        stats = {"fiches": len(rows), "found": len(found), "no_result": len(rows) - len(found),
+                 "median_m": found[len(found) // 2] if found else None,
+                 "under_300m": sum(1 for d in found if d < 300)}
+        out.parent.mkdir(parents=True, exist_ok=True)
+        tmp = out.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps({
+            "generated_at": today, "source": "OpenStreetMap (Overpass)", "license": distance.LICENSE,
+            "method": ("distance au centre de l'objet OSM résidentiel le plus proche dans un rayon de "
+                       f"{distance.RADIUS_M} m ; un bâtiment tagué résidentiel prime sur une zone "
+                       "landuse=residential, moins précise"),
+            "in_score": False, "counts": stats, "fiches": rows,
+        }, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+        tmp.replace(out)
+        return stats
+
+    rows, failures = distance.resolve(fiches, prev, today, checkpoint=write)
     found = [r["distance_m"] for r in rows.values() if r.get("found")]
     found.sort()
-    stats = {"fiches": len(rows), "found": len(found), "no_result": len(rows) - len(found),
-             "median_m": found[len(found) // 2] if found else None,
-             "under_300m": sum(1 for d in found if d < 300)}
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({
-        "generated_at": today, "source": "OpenStreetMap (Overpass)", "license": distance.LICENSE,
-        "method": ("distance au centre de l'objet OSM résidentiel le plus proche dans un rayon de "
-                   f"{distance.RADIUS_M} m ; un bâtiment tagué résidentiel prime sur une zone "
-                   "landuse=residential, moins précise"),
-        "in_score": False, "counts": stats, "fetch_failures": failures, "fiches": rows,
-    }, ensure_ascii=False, indent=1, sort_keys=True) + "\n")
+    stats = write(rows)
     print(f"habitations: {stats} · échecs réseau {failures} · restant {max(0, len(todo) - (args.limit or len(todo)))} → {out}")
     return 0
 
