@@ -6,15 +6,18 @@
 // this file only carries the English copy (t) and the route.
 import DcFiche from "../../components/DcFiche.astro";
 import { EN_NAV } from "../../config/nav";
-import { toLite, buildRelated, type Related } from "../../config/related";
+import { toLite, buildRelated, coordsFromGeojson, type Related } from "../../config/related";
+import fs from "node:fs";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../public/data/dc/*.json", { eager: true });
   const dcs = Object.values(modules).map((m: any) => m.default);
-  const lite = dcs.map(toLite);
+  // map.geojson est lu au build (JSON brut, pas un module) — coords publiques arrondies ~1 km
+  const coords = coordsFromGeojson(JSON.parse(fs.readFileSync("public/data/map.geojson", "utf-8")));
+  const lite = dcs.map((d: any) => toLite(d, coords));
   return dcs.map((dc: any) => ({
     params: { id: dc.id },
-    props: { dc, related: buildRelated(lite, toLite(dc)) },
+    props: { dc, related: buildRelated(lite, toLite(dc, coords)) },
   }));
 }
 
@@ -132,9 +135,9 @@ const t = {
   shareSuffix: ", according to ScoreMyDataCenter",
   related: {
     title: "Other sites to compare",
-    sub: "Same operator, same region, same country — graded on the same lens.",
+    sub: "Same operator, same region, or simply the closest — scored on the same grid.",
     seeAll: "See the full ranking →",
-    relation: { operator: "Same operator", region: "Same region", country: "Same country" },
+    relation: { operator: "same operator:", region: "same region", nearby: "{km} km away" },
   },
 };
 ---
