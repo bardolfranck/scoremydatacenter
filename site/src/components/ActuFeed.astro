@@ -116,7 +116,7 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
             )}
           </div>
           <div class="actu-headline">
-            <a href={it.source?.url} target="_blank" rel="noopener nofollow">{headlineText}</a>
+            <a href={it.source?.url} target="_blank" rel="noopener">{headlineText}</a>
           </div>
           {titleTranslated && (
             <p class="actu-vo"><span class="actu-vo-tag">{t.originalTitle}</span> « {it.headline} »</p>
