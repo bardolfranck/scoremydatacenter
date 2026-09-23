@@ -572,7 +572,7 @@ const pillars = methodology.pillars as any[];
                         ? (r.km == null ? null : t.related.relation.nearby.replace("{km}", r.km < 10 ? r.km.toFixed(1) : String(Math.round(r.km))))
                         : r.relation === "operator"
                           ? `${t.related.relation.operator} ${r.operator}`
-                          : t.related.relation.region,
+                          : (dc.country === "FR" ? t.related.relation.regionFR : t.related.relation.region),
                     ].filter(Boolean).join(" · ")}
                     {r.grade && /^[A-E]$/.test(r.grade) ? <span class="fr-grade" data-grade={r.grade}>{r.grade}</span> : null}
                   </span>
