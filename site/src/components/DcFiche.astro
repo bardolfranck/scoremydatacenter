@@ -567,7 +567,13 @@ const pillars = methodology.pillars as any[];
                 <a href={`${ficheBase}/${r.id}`}>
                   <span class="fr-name">{r.name}</span>
                   <span class="fr-meta">
-                    {[r.municipality, t.related.relation[r.relation]].filter(Boolean).join(" · ")}
+                    {[r.municipality,
+                      r.relation === "nearby"
+                        ? (r.km == null ? null : t.related.relation.nearby.replace("{km}", r.km < 10 ? r.km.toFixed(1) : String(Math.round(r.km))))
+                        : r.relation === "operator"
+                          ? `${t.related.relation.operator} ${r.operator}`
+                          : (dc.country === "FR" ? t.related.relation.regionFR : t.related.relation.region),
+                    ].filter(Boolean).join(" · ")}
                     {r.grade && /^[A-E]$/.test(r.grade) ? <span class="fr-grade" data-grade={r.grade}>{r.grade}</span> : null}
                   </span>
                 </a>
