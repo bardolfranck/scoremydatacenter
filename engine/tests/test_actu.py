@@ -423,3 +423,27 @@ def test_entities_act_positive_agrement_passes_through():
                     "entities": {"operator": "X", "location": "Y", "act": act}})
         item = actu.classify(_rec("Un titre distinct du résumé"), llm)
         assert item["entities"]["act"] == act        # act passes through untouched → registry positive face
+
+
+def test_latest_orders_a_dated_item_above_undated_ones(tmp_path):
+    """Un article daté doit passer DEVANT des items sans date (bug 2026-09-23 : La Tribune du
+    19 sept se retrouvait sous des items sans published_at, traités comme « maintenant »)."""
+    import json as _json
+    from pipelines.veille import actu as _actu
+
+    room = tmp_path / "newsroom"
+    for day, items in [
+        ("2026-09-12", [{"id": "vieux-sans-date", "approved": True, "approved_by": "human",
+                         "headline": "Sans date", "source": {"url": "https://x/1"}}]),
+        ("2026-09-19", [{"id": "date-19", "approved": True, "approved_by": "human",
+                         "headline": "Daté du 19", "source": {"url": "https://x/2",
+                                                              "published_at": "20260919T155002Z"}}]),
+    ]:
+        d = room / "actu" / day
+        d.mkdir(parents=True)
+        (d / "actu.json").write_text(_json.dumps({"items": items}))
+
+    public = tmp_path / "public"
+    _actu.actu_latest(room, public)
+    served = _json.loads((public / "actu" / "latest.json").read_text())["items"]
+    assert [i["id"] for i in served] == ["date-19", "vieux-sans-date"]
