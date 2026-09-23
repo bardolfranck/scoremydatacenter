@@ -437,6 +437,10 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
     now = datetime.now(timezone.utc)
     suppress = load_suppress()
     by_id: dict = {}
+    # Date de repli = le JOUR D'ARCHIVE du dépôt (nom du dossier). Sans elle, un item sans
+    # published_at était trié comme s'il datait de « maintenant » et passait DEVANT un article
+    # daté du jour même (bug 2026-09-23 : La Tribune du 19 sept enterré sous des items sans date).
+    fallback_day: dict = {}
     for f in sorted((newsroom_root / "actu").glob("*/actu.json")):   # chronological → later day wins
         try:
             items = json.loads(f.read_text()).get("items", [])
@@ -449,6 +453,7 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
                 continue
             if it.get("approved") is True:
                 by_id[iid] = _public_item(it)    # strip private editorial/gating signals
+                fallback_day[iid] = _parse_dt(f.parent.name + "T00:00:00Z")   # toujours en UTC
             else:
                 # A later non-approved verdict RETRACTS an earlier approve ONLY when that earlier one
                 # was AUTO (approved_by="auto") — so the extended interest filter is retroactive and a
@@ -464,12 +469,17 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
                 if (prev is not None and prev.get("approved_by") != "human"
                         and (prev.get("approved_by") == "auto" or prev.get("curated") is True)):
                     by_id.pop(iid, None)
+    def when(it):
+        """Date de l'item : celle de l'article, sinon le jour où on l'a archivé — jamais « maintenant »."""
+        return (_parse_dt((it.get("source") or {}).get("published_at"))
+                or fallback_day.get(it["id"]) or now)
+
     kept = []
     for it in by_id.values():
         d = _parse_dt((it.get("source") or {}).get("published_at"))
         if d is None or (now - d).days <= days:        # keep undated (rare) rather than silently drop
             kept.append(it)
-    kept.sort(key=lambda it: _parse_dt((it.get("source") or {}).get("published_at")) or now, reverse=True)
+    kept.sort(key=when, reverse=True)
     kept = kept[:cap]
     out = public_data / "actu" / "latest.json"
     out.parent.mkdir(parents=True, exist_ok=True)
