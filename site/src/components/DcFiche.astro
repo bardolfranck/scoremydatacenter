@@ -257,6 +257,11 @@ const pillars = methodology.pillars as any[];
             {t.operatorLabel} {dc.operator_source
               ? <a class="op-src" href={dc.operator_source.url} target="_blank" rel="noopener" title={t.operatorFromRegister}>{dc.operator}</a>
               : dc.operator}
+            {/* Developer-when-known (Franck 2026-09-25): a SOURCED register fact, never our verdict —
+                the declared NAF activity + register link. Only present when R&D signed the case. */}
+            {dc.developer_source && (
+              <span class="fiche-dev"> — {t.developerDeclared} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{lang === "fr" ? dc.developer_source.activity_fr : dc.developer_source.activity_en}</a> <span class="dev-reg">({t.developerRegister})</span></span>
+            )}
           </p>
         )}
         <p class="fiche-meta" set:html={metaLine}></p>

@@ -132,6 +132,58 @@ def patch_operator_source(sources: dict) -> None:
             write_json(f, d)
 
 
+# NAF codes we publish as a real-estate DEVELOPMENT activity (an opposable register fact), with a
+# short FR/EN label. Restricted to promotion/construction — never the ambiguous 68.10Z (marchand de
+# biens) or a rental code, which are not "a developer" on their own.
+NAF_DEVELOPER_PUBLISH = {
+    "41.10A": ("promotion immobilière", "real-estate development"),
+    "41.10B": ("promotion immobilière", "real-estate development"),
+    "41.10C": ("promotion immobilière", "real-estate development"),
+    "41.20A": ("construction de bâtiments", "building construction"),
+    "41.20B": ("construction de bâtiments", "building construction"),
+}
+
+
+def apply_developer_identity(dcs: dict) -> dict:
+    """Developer-when-known (Franck go 2026-09-25). We do NOT publish our own "developer" verdict — we
+    publish a SOURCED, opposable FACT: the company's declared register activity (NAF) + its register
+    link. Gate is strict, because name-matching produced homonyms (the COLT lesson): a case is
+    published ONLY when R&D has SIGNED it (emit_tier "developer_confirmed", never the raw
+    "developer_needs_confirm") AND its NAF is a real-estate development code. Fills the operator name
+    if unknown. Zero signed cases → nothing published, which is an acceptable outcome."""
+    sidecar = CAL / "status-proof" / "operator_identity.json"
+    if not sidecar.is_file():
+        return {}
+    sources = {}
+    for dc_id, e in json.loads(sidecar.read_text()).get("fiches", {}).items():
+        dc = dcs.get(dc_id)
+        r = e.get("resolved") or {}
+        naf = r.get("naf")
+        if not dc or e.get("emit_tier") != "developer_confirmed" or naf not in NAF_DEVELOPER_PUBLISH:
+            continue
+        if not r.get("denomination") or not r.get("siren"):
+            continue
+        siren_id = r["siren"]
+        if str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none"):
+            dc["identity"]["operator"] = registry_display_name(r["denomination"])
+        activity_fr, activity_en = NAF_DEVELOPER_PUBLISH[naf]
+        sources[dc_id] = {"source": "SIRENE", "siren": siren_id, "naf": naf,
+                          "activity_fr": activity_fr, "activity_en": activity_en,
+                          "url": f"https://annuaire-entreprises.data.gouv.fr/entreprise/{siren_id}",
+                          "checked_at": e.get("checked_at")}
+    return sources
+
+
+def patch_developer_source(sources: dict) -> None:
+    from engine.core import write_json
+    for dc_id, src in sources.items():
+        f = ARTIFACTS_DIR / "dc" / f"{dc_id}.json"
+        if f.is_file():
+            d = json.loads(f.read_text())
+            d["developer_source"] = src
+            write_json(f, d)
+
+
 def patch_nearest_dwelling() -> int:
     """Distance aux premières habitations (Franck 2026-09-21) : un FAIT sourcé posé à côté de la
     note — il n'entre dans aucun indicateur ni aucune lettre. Seuls les relevés aboutis voyagent ;
@@ -199,6 +251,7 @@ def main() -> int:
     dcs = {k: v for k, v in dcs.items() if not k.startswith(("zz-", "study-"))}
     watchlist = load_watchlist(CAL)      # "En veille" 🗣️ layer
     operator_sources = apply_operator_identity(dcs)
+    developer_sources = apply_developer_identity(dcs)
     for dc in dcs.values():
         dc["identity"]["name"] = display_name(dc["identity"]["name"], dc["identity"].get("municipality"))
     for e in watchlist:
@@ -218,6 +271,8 @@ def main() -> int:
     print(f"prod-artifacts: exposure — {len(de)} DC(s) at D/E: " + (", ".join(de) if de else "none"))
     patch_operator_source(operator_sources)
     print(f"prod-artifacts: operator filled from the company register on {len(operator_sources)} fiches")
+    patch_developer_source(developer_sources)
+    print(f"prod-artifacts: developer register-fact on {len(developer_sources)} fiches (R&D-signed only)")
     dwell = patch_nearest_dwelling()
     print(f"prod-artifacts: nearest_dwelling on {dwell} fiches" if dwell
           else "prod-artifacts: nearest_dwelling skipped (no habitations sidecar — run make habitations)")
