@@ -143,9 +143,16 @@ const sc = dc.project_status === "operational" ? dc.status_check : null;
 const scDate = sc?.checked_at
   ? new Date(sc.checked_at + "T00:00:00Z").toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
   : "";
+// Make the interconnected-network count READABLE (not just in the tooltip), Franck 2026-09-25.
+// A NEUTRAL fact: shown only when > 0 — a private enterprise DC legitimately has zero networks, and
+// zero is never implied to be worse (no count shown, no superlative for a high count).
+const nNets = sc?.verified ? Number(sc.evidence?.networks ?? 0) : 0;
+const netLabel = nNets > 0
+  ? ` · ${nNets} ${nNets > 1 ? t.statusCheck.networksPlural : t.statusCheck.networksSingular}`
+  : "";
 const statusCheck = !sc ? null
   : sc.verified
-    ? `<a class="st-ok" href="${sc.evidence?.url ?? "#"}" target="_blank" rel="noopener" title="${t.statusCheck.verifiedTip.replace("{date}", scDate).replace("{n}", String(sc.evidence?.networks ?? ""))}">✓ ${t.statusCheck.verified}</a>`
+    ? `<a class="st-ok" href="${sc.evidence?.url ?? "#"}" target="_blank" rel="noopener" title="${t.statusCheck.verifiedTip.replace("{date}", scDate).replace("{n}", String(sc.evidence?.networks ?? ""))}">✓ ${t.statusCheck.verified}${netLabel}</a>`
     : `<span class="st-unv" title="${t.statusCheck.unverifiedTip}">${t.statusCheck.unverified}</span>`;
 const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   statusCheck,
