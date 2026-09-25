@@ -20,6 +20,13 @@
       "curated": false
     },
     {
+      "domain": "actuia.com",
+      "feed": "https://www.actuia.com/feed/",
+      "language": "fr",
+      "curated": false,
+      "_intent": "FR AI trade press — occasional DC/compute-market/regulation signals (allow-listed, Franck 2026-09-25)"
+    },
+    {
       "domain": "news.google.com",
       "feed": "https://news.google.com/rss/search?q=%28%22data+center%22+OR+%22centre+de+donn%C3%A9es%22+OR+datacenter%29+%28opposition+OR+moratoire+OR+recours+OR+%22enqu%C3%AAte+publique%22+OR+r%C3%A9f%C3%A9rendum+OR+suspension+OR+contestation+OR+p%C3%A9tition%29&hl=fr&gl=FR&ceid=FR:fr",
       "language": "fr",

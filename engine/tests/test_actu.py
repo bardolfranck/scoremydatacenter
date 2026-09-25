@@ -272,6 +272,22 @@ def test_actu_latest_approved_windowed_and_stripped(tmp_path):
     assert "_gate" not in latest["items"][0]             # transient signal never public
 
 
+def test_actu_latest_human_pick_bypasses_age_window(tmp_path):
+    # A HUMAN editorial pick (approved_by="human") is never age-windowed — Franck chose it on purpose,
+    # so it stays at its real (old) date even past `days`. An auto/old item still drops.
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    d = nr / "actu" / "2026-07-03"; d.mkdir(parents=True)
+    (d / "actu.json").write_text(json.dumps({"items": [
+        {"id": "edito", "approved": True, "approved_by": "human", "topic": "marche",
+         "source": {"published_at": "20260703T000000Z"}},                       # 80+ days old, human → KEPT
+        {"id": "auto-old", "approved": True, "approved_by": "auto", "topic": "marche",
+         "source": {"published_at": "20260703T000000Z"}},                       # old auto → dropped
+    ]}))
+    actu.actu_latest(nr, pub, days=14)
+    ids = [i["id"] for i in json.loads((pub / "actu" / "latest.json").read_text())["items"]]
+    assert "edito" in ids and "auto-old" not in ids
+
+
 def test_actu_latest_curated_drop_retracts_earlier_approve(tmp_path):
     # A curated item auto-approved day J, then re-harvested and DROPPED day J+1 (interest filter) →
     # the later verdict is authoritative → it must NOT survive in latest.json (no manual suppress).

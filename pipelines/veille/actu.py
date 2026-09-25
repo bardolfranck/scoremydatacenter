@@ -477,7 +477,9 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
     kept = []
     for it in by_id.values():
         d = _parse_dt((it.get("source") or {}).get("published_at"))
-        if d is None or (now - d).days <= days:        # keep undated (rare) rather than silently drop
+        # A HUMAN editorial pick is never age-windowed — Franck chose it on purpose, so it persists at
+        # its real date even past `days` (the window only prunes the auto-radar). Undated items are kept.
+        if d is None or (now - d).days <= days or it.get("approved_by") == "human":
             kept.append(it)
     kept.sort(key=when, reverse=True)
     kept = kept[:cap]
