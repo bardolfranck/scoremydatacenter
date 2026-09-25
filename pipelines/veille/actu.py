@@ -482,7 +482,13 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
         if d is None or (now - d).days <= days or it.get("approved_by") == "human":
             kept.append(it)
     kept.sort(key=when, reverse=True)
-    kept = kept[:cap]
+    # The `cap` prunes the auto-radar tail, but a HUMAN editorial pick is never dropped — an older pick
+    # (e.g. a strategic-signal article) sorts low by its real date yet must still be served, so it is
+    # kept even beyond the cap (the cap then applies to the non-human remainder).
+    if len(kept) > cap:
+        humans = [it for it in kept if it.get("approved_by") == "human"]
+        others = [it for it in kept if it.get("approved_by") != "human"][:max(0, cap - len(humans))]
+        kept = sorted(humans + others, key=when, reverse=True)
     out = public_data / "actu" / "latest.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"generated_at": now.isoformat(timespec="seconds"), "items": kept},
