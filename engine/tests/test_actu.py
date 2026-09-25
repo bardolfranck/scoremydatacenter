@@ -288,6 +288,21 @@ def test_actu_latest_human_pick_bypasses_age_window(tmp_path):
     assert "edito" in ids and "auto-old" not in ids
 
 
+def test_actu_latest_human_pick_survives_the_cap(tmp_path):
+    # An old human pick sorts last by its real date; it must still be served even past `cap` (the cap
+    # prunes only the auto-radar remainder). Here cap=2 with 2 fresh auto items + 1 old human pick.
+    nr, pub = tmp_path / "newsroom", tmp_path / "public"
+    d = nr / "actu" / "2026-09-20"; d.mkdir(parents=True)
+    (d / "actu.json").write_text(json.dumps({"items": [
+        {"id": "a1", "approved": True, "approved_by": "auto", "topic": "marche", "source": {"published_at": _recent()}},
+        {"id": "a2", "approved": True, "approved_by": "auto", "topic": "marche", "source": {"published_at": _recent()}},
+        {"id": "edito", "approved": True, "approved_by": "human", "topic": "marche", "source": {"published_at": "20260703T000000Z"}},
+    ]}))
+    actu.actu_latest(nr, pub, days=3650, cap=2)
+    ids = [i["id"] for i in json.loads((pub / "actu" / "latest.json").read_text())["items"]]
+    assert "edito" in ids and ids[-1] == "edito"      # kept despite cap, and last (oldest, real date)
+
+
 def test_actu_latest_curated_drop_retracts_earlier_approve(tmp_path):
     # A curated item auto-approved day J, then re-harvested and DROPPED day J+1 (interest filter) →
     # the later verdict is authoritative → it must NOT survive in latest.json (no manual suppress).
