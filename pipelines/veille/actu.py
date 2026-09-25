@@ -428,7 +428,7 @@ def _parse_dt(s):
         return None
 
 
-def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: int = 30) -> dict:
+def actu_latest(newsroom_root: Path, public_data: Path, *, cap: int = 400) -> dict:
     """DEPLOY-SIDE generator: rebuild site/public/data/actu/latest.json from the COMMITTED newsroom
     archives. The CI run's public/data is ephemeral, so the newsroom is the single source of truth;
     the build calls this. approved-only (lock 1, data level), windowed to the last `days`, newest
@@ -474,21 +474,12 @@ def actu_latest(newsroom_root: Path, public_data: Path, *, days: int = 14, cap: 
         return (_parse_dt((it.get("source") or {}).get("published_at"))
                 or fallback_day.get(it["id"]) or now)
 
-    kept = []
-    for it in by_id.values():
-        d = _parse_dt((it.get("source") or {}).get("published_at"))
-        # A HUMAN editorial pick is never age-windowed — Franck chose it on purpose, so it persists at
-        # its real date even past `days` (the window only prunes the auto-radar). Undated items are kept.
-        if d is None or (now - d).days <= days or it.get("approved_by") == "human":
-            kept.append(it)
-    kept.sort(key=when, reverse=True)
-    # The `cap` prunes the auto-radar tail, but a HUMAN editorial pick is never dropped — an older pick
-    # (e.g. a strategic-signal article) sorts low by its real date yet must still be served, so it is
-    # kept even beyond the cap (the cap then applies to the non-human remainder).
-    if len(kept) > cap:
-        humans = [it for it in kept if it.get("approved_by") == "human"]
-        others = [it for it in kept if it.get("approved_by") != "human"][:max(0, cap - len(humans))]
-        kept = sorted(humans + others, key=when, reverse=True)
+    # Règle Franck 2026-09-25 : AUCUNE fenêtre d'âge, AUCUN traitement spécial « human ».
+    # On sert tout ce qui est approuvé, trié par DATE DE PUBLICATION de l'article — le mur en affiche
+    # une partie et révèle la suite au défilement. Les règles d'exception (bypass de fenêtre et de
+    # plafond pour les choix éditoriaux) avaient fini par figer 26 items sur 30 ; elles disparaissent.
+    # Le `cap` ne reste qu'un garde-fou de poids de page, très au-dessus du volume réel.
+    kept = sorted(by_id.values(), key=when, reverse=True)[:cap]
     out = public_data / "actu" / "latest.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"generated_at": now.isoformat(timespec="seconds"), "items": kept},

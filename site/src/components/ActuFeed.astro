@@ -53,6 +53,10 @@ const when = (i: Item): number => {
   return d ? +d : -Infinity;
 };
 const visible = [...approvedItems].sort((a, b) => when(b) - when(a));
+// Affichage progressif (Franck 2026-09-25) : tout est rendu dans le HTML — donc lisible par Google et
+// sans JS — mais seuls les FIRST_BATCH premiers sont montrés ; la suite se révèle au défilement.
+// Remplace l'ancienne fenêtre d'âge : plus besoin de jeter un article pour faire de la place.
+const FIRST_BATCH = 12;
 
 const badgeClass: Record<string, string> = {
   projet: "projet", debat: "debat", activisme: "debat", souverainete: "souv",
@@ -79,7 +83,7 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
   <p class="actu-frame" set:html={t.frame}></p>
 
   <div class="actu-feed">
-    {visible.map((it) => {
+    {visible.map((it, idx) => {
       const isProjet = it.topic === "projet";
       const cls = badgeClass[it.topic] ?? "";
       // Translation apparatus shows ONLY when the item's own language differs from
@@ -103,7 +107,7 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
         ? "Date de consultation (publication non datée)"
         : "Date accessed (no publication date)";
       return (
-        <article class:list={["actu-item", { projet: isProjet, video: isVideo }]}>
+        <article class:list={["actu-item", { projet: isProjet, video: isVideo, "actu-more": idx >= FIRST_BATCH }]}>
           <div class="actu-item-top">
             {contest
               ? <span class="actu-badge contestation">{contest[lang]}</span>
@@ -135,8 +139,31 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
     })}
   </div>
 
+  {visible.length > FIRST_BATCH && (
+    <p class="actu-more-cta"><button type="button" id="actu-more-btn">{t.more ?? (lang === "fr" ? "Voir plus d'actualités" : "Show more news")}</button></p>
+  )}
+
   {visible.length === 0 && <p class="actu-empty">{t.empty}</p>}
 </section>
+
+<script>
+  // Révélation au défilement : on dévoile par paquets quand le bas du mur approche. Le bouton reste
+  // la solution de repli (clavier, lecteurs d'écran, JS désactivé → tout est déjà dans le HTML).
+  const STEP = 12;
+  const hidden = () => Array.from(document.querySelectorAll<HTMLElement>(".actu-item.actu-more"));
+  const btn = document.getElementById("actu-more-btn");
+  const reveal = () => {
+    hidden().slice(0, STEP).forEach((el) => el.classList.remove("actu-more"));
+    if (btn && hidden().length === 0) btn.remove();
+  };
+  btn?.addEventListener("click", reveal);
+  const sentinel = document.querySelector(".actu-more-cta");
+  if (sentinel && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) reveal();
+    }, { rootMargin: "300px" }).observe(sentinel);
+  }
+</script>
 
 <style>
   .actu { max-width: 1000px; }
