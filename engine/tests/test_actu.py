@@ -257,40 +257,26 @@ def _recent():
     return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
 
 
-def test_actu_latest_approved_windowed_and_stripped(tmp_path):
+def test_actu_latest_serves_every_approved_item_by_publication_date(tmp_path):
+    """Règle Franck 2026-09-25 : aucune fenêtre d'âge, aucun statut spécial — on sert tout ce qui est
+    approuvé, trié par date de publication de l'article (le mur révèle la suite au défilement)."""
     nr, pub = tmp_path / "newsroom", tmp_path / "public"
     d = nr / "actu" / "2026-09-04"; d.mkdir(parents=True)
     items = [
         {"id": "g", "approved": True, "topic": "marche", "source": {"published_at": _recent()}, "_gate": {"confidence": "high"}},
         {"id": "r", "approved": False, "topic": "debat", "source": {"published_at": _recent()}},
-        {"id": "old", "approved": True, "topic": "marche", "source": {"published_at": "20200101T000000Z"}},
+        {"id": "old", "approved": True, "approved_by": "auto", "topic": "marche", "source": {"published_at": "20200101T000000Z"}},
     ]
     (d / "actu.json").write_text(json.dumps({"items": items}))
-    actu.actu_latest(nr, pub, days=14)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
-    assert [i["id"] for i in latest["items"]] == ["g"]   # approved+fresh only (r unapproved, old out of window)
-    assert "_gate" not in latest["items"][0]             # transient signal never public
+    assert [i["id"] for i in latest["items"]] == ["g", "old"]   # le vieux est SERVI, simplement plus bas
+    assert "r" not in [i["id"] for i in latest["items"]]        # non approuvé → jamais servi
+    assert "_gate" not in latest["items"][0]                    # signal interne jamais public
 
 
-def test_actu_latest_human_pick_bypasses_age_window(tmp_path):
-    # A HUMAN editorial pick (approved_by="human") is never age-windowed — Franck chose it on purpose,
-    # so it stays at its real (old) date even past `days`. An auto/old item still drops.
-    nr, pub = tmp_path / "newsroom", tmp_path / "public"
-    d = nr / "actu" / "2026-07-03"; d.mkdir(parents=True)
-    (d / "actu.json").write_text(json.dumps({"items": [
-        {"id": "edito", "approved": True, "approved_by": "human", "topic": "marche",
-         "source": {"published_at": "20260703T000000Z"}},                       # 80+ days old, human → KEPT
-        {"id": "auto-old", "approved": True, "approved_by": "auto", "topic": "marche",
-         "source": {"published_at": "20260703T000000Z"}},                       # old auto → dropped
-    ]}))
-    actu.actu_latest(nr, pub, days=14)
-    ids = [i["id"] for i in json.loads((pub / "actu" / "latest.json").read_text())["items"]]
-    assert "edito" in ids and "auto-old" not in ids
-
-
-def test_actu_latest_human_pick_survives_the_cap(tmp_path):
-    # An old human pick sorts last by its real date; it must still be served even past `cap` (the cap
-    # prunes only the auto-radar remainder). Here cap=2 with 2 fresh auto items + 1 old human pick.
+def test_actu_latest_cap_is_only_a_page_weight_guard(tmp_path):
+    """Le plafond ne privilégie plus personne : il coupe simplement la queue la plus ancienne."""
     nr, pub = tmp_path / "newsroom", tmp_path / "public"
     d = nr / "actu" / "2026-09-20"; d.mkdir(parents=True)
     (d / "actu.json").write_text(json.dumps({"items": [
@@ -298,9 +284,9 @@ def test_actu_latest_human_pick_survives_the_cap(tmp_path):
         {"id": "a2", "approved": True, "approved_by": "auto", "topic": "marche", "source": {"published_at": _recent()}},
         {"id": "edito", "approved": True, "approved_by": "human", "topic": "marche", "source": {"published_at": "20260703T000000Z"}},
     ]}))
-    actu.actu_latest(nr, pub, days=3650, cap=2)
+    actu.actu_latest(nr, pub, cap=2)
     ids = [i["id"] for i in json.loads((pub / "actu" / "latest.json").read_text())["items"]]
-    assert "edito" in ids and ids[-1] == "edito"      # kept despite cap, and last (oldest, real date)
+    assert ids == ["a1", "a2"] and "edito" not in ids   # aucun passe-droit, y compris pour un choix humain
 
 
 def test_actu_latest_curated_drop_retracts_earlier_approve(tmp_path):
@@ -312,7 +298,7 @@ def test_actu_latest_curated_drop_retracts_earlier_approve(tmp_path):
         (d / "actu.json").write_text(json.dumps({"items": [
             {"id": "sante", "approved": approved, "curated": True, "topic": "marche",
              "source": {"published_at": _recent()}}]}))
-    actu.actu_latest(nr, pub, days=3650)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == []   # curated drop retracts the earlier approve
 
@@ -327,7 +313,7 @@ def test_actu_latest_auto_green_retracted_when_rejudged(tmp_path):
         if by:
             it["approved_by"] = by
         (d / "actu.json").write_text(json.dumps({"items": [it]}))
-    actu.actu_latest(nr, pub, days=3650)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == []       # auto-green retracted on re-judgement
 
@@ -341,7 +327,7 @@ def test_actu_latest_human_promote_sticky_with_flag(tmp_path):
         if by:
             it["approved_by"] = by
         (d / "actu.json").write_text(json.dumps({"items": [it]}))
-    actu.actu_latest(nr, pub, days=3650)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == ["promoted"]   # human decision survives
 
@@ -359,7 +345,7 @@ def test_actu_latest_human_promote_sticky_even_when_curated(tmp_path):
         if by:
             it["approved_by"] = by
         (d / "actu.json").write_text(json.dumps({"items": [it]}))
-    actu.actu_latest(nr, pub, days=3650)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == ["curated-promoted"]   # human wins over curated fallback
 
@@ -373,7 +359,7 @@ def test_actu_latest_human_promote_not_retracted_by_reharvest(tmp_path):
         (d / "actu.json").write_text(json.dumps({"items": [
             {"id": "gdelt1", "approved": approved, "topic": "marche",   # no `curated` flag → GDELT lane
              "source": {"published_at": _recent()}}]}))
-    actu.actu_latest(nr, pub, days=3650)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == ["gdelt1"]   # human promote survives a later auto-false
 
@@ -439,7 +425,7 @@ def test_actu_latest_drops_suppressed_across_regen(monkeypatch, tmp_path):
         {"id": "pull", "approved": True, "topic": "marche", "source": {"published_at": _recent(), "url": "https://pub.fr/pull"}},
     ]
     (d / "actu.json").write_text(json.dumps({"items": items}))
-    actu.actu_latest(nr, pub, days=14)
+    actu.actu_latest(nr, pub)
     latest = json.loads((pub / "actu" / "latest.json").read_text())
     assert [i["id"] for i in latest["items"]] == ["keep"]     # suppressed item never regenerated
 
