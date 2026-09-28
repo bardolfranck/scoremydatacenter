@@ -55,6 +55,19 @@ POWER = (255, 190, 70)
 DWELL = (255, 150, 120)
 SITE = (255, 255, 255)
 
+CAVEAT_SHORT = ("distances à vol d'oiseau depuis la coordonnée de référence · "
+                "les anneaux sont des tampons de distance, non un zonage réglementaire")
+
+CAVEAT_FULL = (
+    "Les distances sont mesurées à vol d'oiseau depuis la coordonnée de référence du site. "
+    "Les objets localisés — cours d'eau, postes électriques, bâtiments — proviennent "
+    "d'OpenStreetMap, dont la complétude varie d'un territoire à l'autre : la mention "
+    "« aucun dans 750 m » signale une absence de DONNÉE, pas nécessairement une absence "
+    "d'objet. Les anneaux sont des tampons de distance, non un zonage réglementaire. "
+    "L'état de la masse d'eau est rapporté à l'échelle de la masse d'eau au titre de la "
+    "directive-cadre européenne, et non au point."
+)
+
 RESIDENTIAL = {"residential", "apartments", "house", "detached", "semidetached_house", "terrace", "dormitory"}
 
 
@@ -252,13 +265,14 @@ def render(dc_id: str) -> Path:
     foot = [f"scoremydatacenter.org · {served['name']} · {served.get('municipality')} · "
             f"note {served['grades']['site']['grade']} · relevé du {served.get('vintage') or '2026'}",
             "imagerie Esri, Maxar, Earthstar Geographics · objets OpenStreetMap (ODbL) · "
-            "état des eaux : directive-cadre européenne"]
+            "état des eaux : directive-cadre européenne",
+            CAVEAT_SHORT]
     f_foot = ImageFont.truetype(str(FONT_PATH), 14)
-    strip = Image.new("RGBA", (W, 48), SHADE + (210,))
-    img.paste(strip, (0, H - 48), strip)
+    strip = Image.new("RGBA", (W, 67), SHADE + (210,))
+    img.paste(strip, (0, H - 67), strip)
     d2 = ImageDraw.Draw(img)
     for i, line in enumerate(foot):
-        d2.text((12, H - 42 + i * 19), line, font=f_foot, fill=INK)
+        d2.text((12, H - 61 + i * 19), line, font=f_foot, fill=INK)
 
     OUT_DIR.mkdir(exist_ok=True)
     out = OUT_DIR / f"context-{dc_id}.png"
