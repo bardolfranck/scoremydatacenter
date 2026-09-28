@@ -140,17 +140,19 @@ def label(img: Image.Image, draw: ImageDraw.ImageDraw, xy, num: str, text: str, 
     draw.text((x + pad, y + pad - box[1]), full, font=font, fill=INK)
 
 
-def marker(draw: ImageDraw.ImageDraw, xy, num: str, colour, font, zone: bool = False) -> None:
+def marker(draw: ImageDraw.ImageDraw, xy, num: str, colour, font) -> None:
     """Pastille numérotée : on POINTE l'objet, on ne le repeint pas.
 
     La photo montre déjà la rivière, le poste et les maisons. Redessiner par-dessus
     ajouterait une couche de nous entre le lecteur et la réalité — exactement ce que
     la photo est censée éviter. On se contente donc de désigner et de mesurer.
+
+    Pas de cercle de zone autour d'une pastille non plus (Franck 2026-09-28) : les anneaux
+    de distance délimitent DÉJÀ les zones. En ajouter un second, plus petit et sans échelle
+    déclarée, inventerait une zone qui ne veut rien dire.
     """
     x, y = xy
     r = 15
-    if zone:
-        draw.ellipse([x - 46, y - 46, x + 46, y + 46], outline=colour + (170,), width=3)
     draw.ellipse([x - r, y - r, x + r, y + r], fill=SHADE + (205,), outline=colour + (255,), width=3)
     box = draw.textbbox((0, 0), num, font=font)
     draw.text((x - (box[2] - box[0]) / 2, y - (box[3] - box[1]) / 2 - box[1]), num, font=font, fill=colour)
@@ -244,7 +246,7 @@ def render(dc_id: str) -> Path:
         if anchor and num != "1":
             ax, ay = anchor
             marker(draw, (min(max(ax, 56), W - 56), min(max(ay, 56), H - 110)),
-                   num, colour, f_lab, zone=(num == "4"))
+                   num, colour, f_lab)
     marker(draw, (cx, cy + 46), "1", SITE, f_lab)
 
     foot = [f"scoremydatacenter.org · {served['name']} · {served.get('municipality')} · "
