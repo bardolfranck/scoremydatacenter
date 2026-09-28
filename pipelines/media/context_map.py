@@ -71,6 +71,41 @@ CAVEAT_FULL = (
 RESIDENTIAL = {"residential", "apartments", "house", "detached", "semidetached_house", "terrace", "dormitory"}
 
 
+def fr_number(x: float) -> str:
+    """1400.0 -> « 1 400 » ; 1.4 -> « 1,4 » — séparateur de milliers espace, virgule décimale."""
+    if abs(x - round(x)) < 0.05:
+        return f"{int(round(x)):,}".replace(",", " ")
+    return f"{x:.1f}".replace(".", ",")
+
+
+def scale_line(served: dict, ind: dict) -> str | None:
+    """« 1 400 MW déclarés — commune de 650 habitants ».
+
+    Par défaut sur TOUTES les fiches, pas seulement les projets en terrain nu
+    (arbitrage Franck 2026-09-28) : le rapport entre la puissance et la taille de la
+    commune intéresse autant un site urbain qu'un greenfield. Omise quand la puissance
+    est inconnue, ce qui est le cas de beaucoup de projets — on ne comble pas un trou.
+
+    La population n'est pas stockée : elle se déduit de L2, qui est la puissance pour
+    1 000 habitants. Vérifié sur trois cas connus — Fouju 650, Étrechet 998, Auxerre
+    35 100. Le qualificatif suit le statut de la puissance : « déclarés » quand elle est
+    annoncée, « estimés » quand nous l'avons reconstituée. Ne jamais écrire « déclarés »
+    sur une estimation maison.
+    """
+    mw = served.get("power_mw")
+    if mw in (None, 0):
+        return None
+    qualifier = {"announced": "déclarés", "declared": "déclarés",
+                 "estimated": "estimés"}.get(served.get("power_mw_status"), "")
+    head = f"{fr_number(mw)} MW {qualifier}".rstrip()
+    l2 = ind.get("L2")
+    if not l2:
+        return head
+    pop = mw / l2 * 1000
+    pop = round(pop) if pop < 1000 else round(pop / 100) * 100
+    return f"{head} — commune de {fr_number(pop)} habitants"
+
+
 def metres(a: tuple[float, float], b: tuple[float, float]) -> float:
     r = math.pi / 180
     dlat, dlon = (b[0] - a[0]) * r, (b[1] - a[1]) * r
@@ -252,6 +287,9 @@ def render(dc_id: str) -> Path:
             ("3", power_txt, POWER, nearest_px(feat["power"]) if feat["power"] else None),
             ("4", f"{dwell_txt} · {feat['buildings']} bâtiments dans 750 m", DWELL,
              nearest_px(feat["dwelling"]) if feat["dwelling"] else None)]
+    scale = scale_line(served, ind)
+    if scale:
+        rows.append(("5", scale, INK, None))
     y = 36
     for num, text, colour, anchor in rows:
         label(img, draw, (36, y), num, text, f_lab)
