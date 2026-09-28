@@ -78,32 +78,61 @@ def fr_number(x: float) -> str:
     return f"{x:.1f}".replace(".", ",")
 
 
+def commune_population(served: dict, ind: dict) -> tuple[int | None, str]:
+    """Population de la commune, par déduction si possible, sinon par appel à la source.
+
+    Voie 1, la source fait foi : geo.api.gouv.fr, déjà la source du pipeline spatial
+    français. Le champ `commune_population` existe dans la spec de collecte FR mais n'est
+    persisté que sur 1 fiche de provenance sur 1 059 — il faut donc le redemander.
+
+    Voie 2, déduction de repli : L2 est la puissance pour 1 000 habitants, donc la
+    population s'en déduit dès qu'on a la puissance. Vérifiée sur trois cas connus — Fouju
+    650, Étrechet 998, Auxerre 35 100. Arrondie à la centaine au-dessus de 1 000, parce
+    qu'elle est approchée — contrairement à la voie 1, qui est exacte.
+
+    HORS DE FRANCE il n'y a pas d'équivalent ici : la population devra venir de la spec du
+    pays. Sans elle, la ligne n'affiche que la puissance.
+    """
+    if served.get("country") == "FR":
+        try:
+            from pipelines.spatial import sources
+            pop = sources.fetch_commune(served["_lat"], served["_lon"]).get("population")
+            if pop:
+                return int(pop), "geo.api.gouv.fr"
+        except Exception:
+            pass  # la source fait foi quand elle répond ; sinon on retombe sur la déduction
+    mw, l2 = served.get("power_mw"), ind.get("L2")
+    if mw and l2:
+        pop = mw / l2 * 1000
+        return (round(pop) if pop < 1000 else round(pop / 100) * 100), "déduite de L2"
+    return None, "hors France : à fournir par la spec du pays"
+
+
 def scale_line(served: dict, ind: dict) -> str | None:
     """« 1 400 MW déclarés — commune de 650 habitants ».
 
-    Par défaut sur TOUTES les fiches, pas seulement les projets en terrain nu
-    (arbitrage Franck 2026-09-28) : le rapport entre la puissance et la taille de la
-    commune intéresse autant un site urbain qu'un greenfield. Omise quand la puissance
-    est inconnue, ce qui est le cas de beaucoup de projets — on ne comble pas un trou.
+    Par défaut sur TOUTES les fiches (arbitrage Franck 2026-09-28) : le rapport entre la
+    puissance et la taille de la commune intéresse autant un site urbain qu'un greenfield.
 
-    La population n'est pas stockée : elle se déduit de L2, qui est la puissance pour
-    1 000 habitants. Vérifié sur trois cas connus — Fouju 650, Étrechet 998, Auxerre
-    35 100. Le qualificatif suit le statut de la puissance : « déclarés » quand elle est
-    annoncée, « estimés » quand nous l'avons reconstituée. Ne jamais écrire « déclarés »
-    sur une estimation maison.
+    Quand la puissance manque — le cas de beaucoup de projets — la ligne ne disparaît PAS :
+    le nombre d'habitants reste une information utile, et l'ignorance de la puissance est
+    elle-même un fait à publier. On écrit alors « puissance déclarée inconnue ».
+
+    Le qualificatif suit power_mw_status : « déclarés » quand l'exploitant l'annonce,
+    « estimés » quand nous l'avons reconstituée. Ne jamais écrire « déclarés » sur une
+    estimation maison : ce serait lui attribuer un chiffre qui est le nôtre.
     """
     mw = served.get("power_mw")
-    if mw in (None, 0):
-        return None
-    qualifier = {"announced": "déclarés", "declared": "déclarés",
-                 "estimated": "estimés"}.get(served.get("power_mw_status"), "")
-    head = f"{fr_number(mw)} MW {qualifier}".rstrip()
-    l2 = ind.get("L2")
-    if not l2:
-        return head
-    pop = mw / l2 * 1000
-    pop = round(pop) if pop < 1000 else round(pop / 100) * 100
-    return f"{head} — commune de {fr_number(pop)} habitants"
+    pop, _ = commune_population(served, ind)
+    if mw:
+        qualifier = {"announced": "déclarés", "declared": "déclarés",
+                     "estimated": "estimés"}.get(served.get("power_mw_status"), "")
+        head = f"{fr_number(mw)} MW {qualifier}".rstrip()
+    else:
+        head = "Puissance déclarée inconnue"
+    if pop:
+        return f"{head} — commune de {fr_number(pop)} habitants"
+    return head if mw else None
 
 
 def metres(a: tuple[float, float], b: tuple[float, float]) -> float:
@@ -214,6 +243,7 @@ def render(dc_id: str) -> Path:
     served = json.loads((REPO / "site/public/data/dc" / f"{dc_id}.json").read_text())
     ind = {i.get("id"): i.get("value") for i in served.get("indicators", [])}
 
+    served["_lat"], served["_lon"] = lat, lon
     feat = features(lat, lon, osm_around(lat, lon))
     img, mpp = base_image(lat, lon)
     img = img.convert("RGB")
@@ -248,9 +278,11 @@ def render(dc_id: str) -> Path:
     for end in (bx, bx + bar_m / mpp):
         draw.line([(end, by - 8), (end, by + 8)], fill=INK, width=3)
     draw.text((bx, by - 30), f"{bar_m} m", font=f_lab, fill=INK)
-    draw.line([(W - 60, 96), (W - 60, 44)], fill=INK, width=3)
-    draw.polygon([(W - 60, 38), (W - 67, 54), (W - 53, 54)], fill=INK)
-    draw.text((W - 72, 100), "nord", font=f_small, fill=INK)
+    nplate = Image.new("RGBA", (74, 96), SHADE + (170,))
+    img.paste(nplate, (W - 97, 28), nplate)
+    draw.line([(W - 60, 96), (W - 60, 50)], fill=INK, width=3)
+    draw.polygon([(W - 60, 42), (W - 68, 60), (W - 52, 60)], fill=INK)
+    draw.text((W - 76, 100), "nord", font=f_small, fill=INK)
 
     power_txt = "Poste électrique : aucun dans 750 m"
     if feat["power"]:
