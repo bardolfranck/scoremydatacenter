@@ -480,9 +480,13 @@ def render(dc_id: str) -> Path:
     for i, line in enumerate(foot):
         d2.text((12, H - 61 + i * 19), line, font=f_foot, fill=INK)
 
+    # WEBP comme la vignette satellite, PAS PNG : sur de l'imagerie aérienne, un PNG
+    # 1200 × 900 pèse ~1,9 Mo contre ~210 Ko en WebP qualité 82 — neuf fois plus lourd pour
+    # une image destinée à s'afficher sur CHAQUE fiche. À l'échelle du corpus c'est 2,3 Go
+    # au lieu de 260 Mo, et un temps de chargement qui rendrait la carte inutilisable.
     OUT_DIR.mkdir(exist_ok=True)
-    out = OUT_DIR / f"context-{dc_id}.png"
-    img.save(out)
+    out = OUT_DIR / f"context-{dc_id}.webp"
+    img.save(out, "WEBP", quality=82)
     # Stats sidecar (additif — n'altère pas l'image) : signaux pour le rapport d'industrialisation
     # (poste sans tension, annotations vides), sans re-fetch OSM côté wrapper.
     pv = feat["power"]["tags"].get("voltage") if feat["power"] else None
