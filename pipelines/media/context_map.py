@@ -32,6 +32,7 @@ from __future__ import annotations
 import json
 import math
 import sys
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -79,7 +80,50 @@ def fr_number(x: float) -> str:
     return f"{x:.1f}".replace(".", ",")
 
 
+_POP_CACHE_PATH = OUT_DIR / "pop-cache.json"
+_POP_CACHE: dict | None = None
+
+
+def _pop_cache() -> dict:
+    global _POP_CACHE
+    if _POP_CACHE is None:
+        try:
+            _POP_CACHE = json.loads(_POP_CACHE_PATH.read_text())
+        except (OSError, json.JSONDecodeError):
+            _POP_CACHE = {}
+    return _POP_CACHE
+
+
+def _pop_cache_key(served: dict) -> str:
+    """Cache PAR COMMUNE (pas par fiche) : nos fiches se concentrent sur quelques agglomérations
+    (Francfort en porte des dizaines) → divise les appels Nominatim (1 req/s, banni sur du volume).
+    Clé = pays|commune ; repli sur une cellule de coord ~1 km si la commune manque."""
+    cc = (served.get("country") or "").upper()
+    muni = (served.get("municipality") or "").strip().lower()
+    if muni:
+        return f"{cc}|{muni}"
+    return f"{cc}|cell:{round(served.get('_lat', 0), 2)},{round(served.get('_lon', 0), 2)}"
+
+
 def commune_population(served: dict, ind: dict) -> tuple[int | None, str]:
+    """Population de la commune — partout en Europe et dans le monde, sans clé.
+    Cache disque PAR COMMUNE (voir _pop_cache_key) : une seule requête Nominatim par agglomération."""
+    cache = _pop_cache()
+    key = _pop_cache_key(served)
+    if key in cache:
+        c = cache[key]
+        return (c[0], c[1]) if c else (None, "non récupérée")
+    pop, source = _commune_population_uncached(served, ind)
+    cache[key] = [pop, source] if pop else None
+    try:
+        _POP_CACHE_PATH.parent.mkdir(exist_ok=True)
+        _POP_CACHE_PATH.write_text(json.dumps(cache, ensure_ascii=False))
+    except OSError:
+        pass
+    return pop, source
+
+
+def _commune_population_uncached(served: dict, ind: dict) -> tuple[int | None, str]:
     """Population de la commune — partout en Europe et dans le monde, sans clé.
 
     Nominatim en géocodage inverse avec `extratags=1` rend la population de la commune,
@@ -150,9 +194,12 @@ def scale_line(served: dict, ind: dict) -> str | None:
     mw = served.get("power_mw")
     pop, _ = commune_population(served, ind)
     if mw:
+        # 39 fiches du corpus portent une puissance sans statut : on nomme le trou plutôt
+        # que d'écrire un chiffre nu, qui se lirait comme une donnée vérifiée.
         qualifier = {"announced": "déclarés", "declared": "déclarés",
-                     "estimated": "estimés"}.get(served.get("power_mw_status"), "")
-        head = f"{fr_number(mw)} MW {qualifier}".rstrip()
+                     "estimated": "estimés"}.get(served.get("power_mw_status"), "source non consignée")
+        head = (f"{fr_number(mw)} MW {qualifier}" if qualifier.endswith("és")
+                else f"{fr_number(mw)} MW, {qualifier}")
     else:
         head = "Puissance déclarée inconnue"
     if pop:
@@ -167,13 +214,63 @@ def metres(a: tuple[float, float], b: tuple[float, float]) -> float:
     return 2 * 6_371_000 * math.asin(math.sqrt(h))
 
 
+_OSM_FALLBACK_USED = False  # set per call; render() records it in the stats sidecar
+
+_OVERPASS = "https://overpass-api.de/api/interpreter"
+
+
+def _overpass_around(w: float, s: float, e: float, n: float) -> dict:
+    """FALLBACK for dense bboxes only. OSM /map returns 400 above ~50 000 nodes (cities); a FILTERED
+    Overpass query (buildings + substations/transformers + named rivers/canals) stays well under the
+    cap. Same bbox → same 750 m radius → annotation text UNCHANGED. Returns the /map element shape
+    (ways with node refs + tags, nodes with lat/lon) so features() is untouched."""
+    bbox = f"{s:.6f},{w:.6f},{n:.6f},{e:.6f}"
+    # `out geom` (not `>;out body`) — inline way geometry, no node-recurse: far lighter, avoids the
+    # 504 that the recurse triggers on dense city bboxes. We then rebuild the /map element shape
+    # (way.nodes refs + node lat/lon) so features() is untouched.
+    q = (f'[out:json][timeout:120];'
+         f'(way["building"]({bbox});node["building"]({bbox});'
+         f'way["power"~"substation|transformer"]({bbox});node["power"~"substation|transformer"]({bbox});'
+         f'way["waterway"~"river|canal"]["name"]({bbox}););out tags geom;')
+    data = urllib.parse.urlencode({"data": q}).encode()
+    req = urllib.request.Request(_OVERPASS, data=data, headers=UA)
+    with urllib.request.urlopen(req, timeout=180) as resp:
+        raw = json.loads(resp.read())
+    # Normalise to the OSM /map shape: nodes carry (id,lat,lon); ways carry nodes=[ids]+tags.
+    elements, nid = [], -1
+    for el in raw.get("elements", []):
+        if el["type"] == "node":
+            elements.append({"type": "node", "id": el["id"], "lat": el["lat"], "lon": el["lon"],
+                             "tags": el.get("tags", {})})
+        elif el["type"] == "way":
+            refs = []
+            for pt in el.get("geometry") or []:
+                if pt is None:
+                    continue
+                elements.append({"type": "node", "id": nid, "lat": pt["lat"], "lon": pt["lon"]})
+                refs.append(nid); nid -= 1
+            elements.append({"type": "way", "id": el["id"], "nodes": refs, "tags": el.get("tags", {})})
+    return {"elements": elements}
+
+
 def osm_around(lat: float, lon: float, half_km: float = 0.75) -> dict:
-    """Une seule requête bbox sur l'API principale d'OSM — PAS Overpass, qui est en panne."""
+    """Objets dans un rayon de 750 m. OSM /map d'abord (a encaissé 1430 fiches sans erreur, pas de
+    politique de volume) ; sur HTTP 400 (bbox trop dense, plafond 50k nœuds) SEULEMENT → repli
+    Overpass filtré, même rayon. Repli compté (stats) — au-delà de ~10 %, à re-signaler."""
+    global _OSM_FALLBACK_USED
+    _OSM_FALLBACK_USED = False
     dlat = half_km / 111.32
     dlon = dlat / max(math.cos(math.radians(lat)), 0.2)
-    url = OSM_MAP.format(w=lon - dlon, s=lat - dlat, e=lon + dlon, n=lat + dlat)
-    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=90) as resp:
-        return json.loads(resp.read())
+    w, s, e, n = lon - dlon, lat - dlat, lon + dlon, lat + dlat
+    url = OSM_MAP.format(w=w, s=s, e=e, n=n)
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=90) as resp:
+            return json.loads(resp.read())
+    except urllib.error.HTTPError as exc:
+        if exc.code != 400:
+            raise
+        _OSM_FALLBACK_USED = True
+        return _overpass_around(w, s, e, n)
 
 
 def features(lat: float, lon: float, data: dict) -> dict:
@@ -283,7 +380,10 @@ def render(dc_id: str) -> Path:
         draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=INK + (110,), width=2)
         draw.text((cx + r * 0.7071 + 4, cy - r * 0.7071 - 22), f"{ring} m", font=f_small, fill=INK + (200,))
 
-    if feat["site"]:
+    if feat["site"] and not (
+            served.get("project_status") in ("announced", "permitting", "under_construction")
+            and not (feat["site"]["tags"].get("building") == "data_center"
+                     or feat["site"]["tags"].get("telecom") == "data_center")):
         pts = [to_px(p) for p in feat["site"]["geom"]]
         if len(pts) > 2:
             draw.line(pts + [pts[0]], fill=SITE + (255,), width=4, joint="curve")
@@ -324,7 +424,18 @@ def render(dc_id: str) -> Path:
     if feat["water"]:
         water_txt = f"{feat['water']['tags']['name']} — {feat['water']['d']:.0f} m — {w2}"
 
-    site_txt = "Emprise : aucun bâtiment cartographié"
+    # Sur une fiche PROJET, ne JAMAIS cerner un bâtiment qui n'est pas tagué data center :
+    # le site n'est pas construit, donc le « bâtiment le plus proche » est celui de
+    # quelqu'un d'autre — une ferme voisine cernée et légendée « emprise » ferait croire
+    # que le data center est déjà là, et le ferait croire sur le bien d'un tiers.
+    is_project = served.get("project_status") in ("announced", "permitting", "under_construction")
+    site_tagged = bool(feat["site"]) and (
+        feat["site"]["tags"].get("building") == "data_center"
+        or feat["site"]["tags"].get("telecom") == "data_center")
+    if is_project and not site_tagged:
+        feat["site"] = None
+
+    site_txt = "Projet — aucune emprise bâtie à ce jour" if is_project else "Emprise : aucun bâtiment cartographié"
     if feat["site"]:
         g = feat["site"]["geom"]
         lats, lons = [p[0] for p in g], [p[1] for p in g]
@@ -372,6 +483,22 @@ def render(dc_id: str) -> Path:
     OUT_DIR.mkdir(exist_ok=True)
     out = OUT_DIR / f"context-{dc_id}.png"
     img.save(out)
+    # Stats sidecar (additif — n'altère pas l'image) : signaux pour le rapport d'industrialisation
+    # (poste sans tension, annotations vides), sans re-fetch OSM côté wrapper.
+    pv = feat["power"]["tags"].get("voltage") if feat["power"] else None
+    pv_ok = bool(pv) and all(v.isdigit() for v in pv.split(";")) if pv else False
+    try:
+        (OUT_DIR / f"context-{dc_id}.stats.json").write_text(json.dumps({
+            "power_present": bool(feat["power"]),
+            "power_voltage_missing": bool(feat["power"]) and not pv_ok,
+            "water_present": bool(feat["water"]),
+            "dwelling_present": bool(feat["dwelling"]),
+            "site_present": bool(feat["site"]),
+            "buildings_750m": feat["buildings"],
+            "osm_fallback": _OSM_FALLBACK_USED,
+        }, ensure_ascii=False))
+    except OSError:
+        pass
     return out
 
 
