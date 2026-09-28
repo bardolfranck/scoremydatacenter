@@ -140,7 +140,7 @@ def label(img: Image.Image, draw: ImageDraw.ImageDraw, xy, num: str, text: str, 
     draw.text((x + pad, y + pad - box[1]), full, font=font, fill=INK)
 
 
-def marker(draw: ImageDraw.ImageDraw, xy, num: str, colour, font) -> None:
+def marker(draw: ImageDraw.ImageDraw, xy, num: str, colour, font, zone: bool = False) -> None:
     """Pastille numérotée : on POINTE l'objet, on ne le repeint pas.
 
     La photo montre déjà la rivière, le poste et les maisons. Redessiner par-dessus
@@ -149,6 +149,8 @@ def marker(draw: ImageDraw.ImageDraw, xy, num: str, colour, font) -> None:
     """
     x, y = xy
     r = 15
+    if zone:
+        draw.ellipse([x - 46, y - 46, x + 46, y + 46], outline=colour + (170,), width=3)
     draw.ellipse([x - r, y - r, x + r, y + r], fill=SHADE + (205,), outline=colour + (255,), width=3)
     box = draw.textbbox((0, 0), num, font=font)
     draw.text((x - (box[2] - box[0]) / 2, y - (box[3] - box[1]) / 2 - box[1]), num, font=font, fill=colour)
@@ -189,11 +191,13 @@ def render(dc_id: str) -> Path:
         return to_px(best)
 
     bar_m = 200
-    bx, by = 40, H - 60
+    bx, by = 40, H - 86
+    plate = Image.new("RGBA", (int(bar_m / mpp) + 24, 54), SHADE + (170,))
+    img.paste(plate, (bx - 12, by - 34), plate)
     draw.line([(bx, by), (bx + bar_m / mpp, by)], fill=INK, width=3)
     for end in (bx, bx + bar_m / mpp):
-        draw.line([(end, by - 7), (end, by + 7)], fill=INK, width=3)
-    draw.text((bx, by + 12), f"{bar_m} m", font=f_small, fill=INK)
+        draw.line([(end, by - 8), (end, by + 8)], fill=INK, width=3)
+    draw.text((bx, by - 30), f"{bar_m} m", font=f_lab, fill=INK)
     draw.line([(W - 60, 96), (W - 60, 44)], fill=INK, width=3)
     draw.polygon([(W - 60, 38), (W - 67, 54), (W - 53, 54)], fill=INK)
     draw.text((W - 72, 100), "nord", font=f_small, fill=INK)
@@ -219,11 +223,14 @@ def render(dc_id: str) -> Path:
         lats, lons = [p[0] for p in g], [p[1] for p in g]
         wm = (max(lons) - min(lons)) * 111_320 * math.cos(math.radians(lat))
         hm = (max(lats) - min(lats)) * 111_320
+        # Confirmation POSITIVE seulement. Écrire « non identifié comme data center » sur
+        # l'image installait un doute sans rien apprendre au lecteur (Franck 2026-09-28) :
+        # l'incertitude d'appariement appartient à la provenance de la fiche, pas au visuel.
         tagged = feat["site"]["tags"].get("building") == "data_center" or feat["site"]["tags"].get("telecom") == "data_center"
-        site_txt = (f"Bâtiment {wm:.0f} × {hm:.0f} m à {feat['site']['d']:.0f} m du point"
-                    + ("" if tagged else " — non identifié comme data center"))
-    dwell_txt = f"Logement le plus proche — {feat['dwelling']['d']:.0f} m" if feat["dwelling"] \
-        else "Logement : aucun dans 750 m"
+        site_txt = (f"Emprise du bâtiment — {wm:.0f} × {hm:.0f} m — à {feat['site']['d']:.0f} m du point"
+                    + (" — identifié comme data center" if tagged else ""))
+    dwell_txt = f"Zone des logements les plus proches — {feat['dwelling']['d']:.0f} m" if feat["dwelling"] \
+        else "Logements : aucun dans 750 m"
 
     rows = [("1", site_txt, SITE, (cx, cy)),
             ("2", water_txt, WATER, nearest_px(feat["water"]) if feat["water"] else None),
@@ -236,7 +243,8 @@ def render(dc_id: str) -> Path:
         y += 46
         if anchor and num != "1":
             ax, ay = anchor
-            marker(draw, (min(max(ax, 24), W - 24), min(max(ay, 24), H - 60)), num, colour, f_lab)
+            marker(draw, (min(max(ax, 56), W - 56), min(max(ay, 56), H - 110)),
+                   num, colour, f_lab, zone=(num == "4"))
     marker(draw, (cx, cy + 46), "1", SITE, f_lab)
 
     foot = [f"scoremydatacenter.org · {served['name']} · {served.get('municipality')} · "
