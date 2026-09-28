@@ -40,6 +40,25 @@ source de vérité du corpus (dont le champ `dc.synthesis`) est
 `../smdc-newsroom` — **committe ton travail là**, et il passera en ligne au
 prochain `make deploy` local qui le relit.
 
+## Le piège branche : `make deploy` depuis une branche ne va PAS en prod
+
+Cloudflare Pages décide **production ou préversion d'après la branche git courante**.
+Depuis une branche autre que `main`, `make deploy` réussit, affiche « Deployment
+complete », purge le cache — et n'a rien mis en ligne. Le seul indice est une ligne
+`Deployment alias URL: https://<nom-de-branche>.scoremydatacenter.pages.dev` au milieu
+de la sortie, facile à manquer.
+
+**Donc : `git branch --show-current` avant tout `make deploy`, et `main` ou rien.**
+Puis vérifier sur le domaine réel, jamais sur l'URL rendue par wrangler :
+
+```
+curl -s -o /dev/null -w '%{http_code}\n' https://scoremydatacenter.org/fr/dc/<une-fiche-du-lot>/
+```
+
+Incident du 2026-09-28 : lot de 16 fiches déployé depuis `geo-audit-probe`, annoncé
+« complet » par wrangler, et 404 en production. Rattrapé avant d'être rapporté, parce
+que la vérification sur le domaine réel faisait partie de la procédure.
+
 ## Prérequis machine (celle qui déploie)
 
 - `../smdc-newsroom` monté (corpus + calibration).
