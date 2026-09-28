@@ -32,6 +32,7 @@ from __future__ import annotations
 import json
 import math
 import sys
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -79,33 +80,57 @@ def fr_number(x: float) -> str:
 
 
 def commune_population(served: dict, ind: dict) -> tuple[int | None, str]:
-    """Population de la commune, par déduction si possible, sinon par appel à la source.
+    """Population de la commune — partout en Europe et dans le monde, sans clé.
 
-    Voie 1, la source fait foi : geo.api.gouv.fr, déjà la source du pipeline spatial
-    français. Le champ `commune_population` existe dans la spec de collecte FR mais n'est
-    persisté que sur 1 fiche de provenance sur 1 059 — il faut donc le redemander.
+    Nominatim en géocodage inverse avec `extratags=1` rend la population de la commune,
+    et à défaut son identifiant Wikidata d'où la propriété P1082 la donne. Vérifié sur
+    Francfort 756 021, Amsterdam 881 933, Varsovie 1 863 845, Beringen 4 118, Tuusula
+    42 521. En France, geo.api.gouv.fr reste prioritaire : c'est l'INSEE, déjà la source
+    du pipeline spatial, et elle est plus à jour.
 
-    Voie 2, déduction de repli : L2 est la puissance pour 1 000 habitants, donc la
-    population s'en déduit dès qu'on a la puissance. Vérifiée sur trois cas connus — Fouju
-    650, Étrechet 998, Auxerre 35 100. Arrondie à la centaine au-dessus de 1 000, parce
-    qu'elle est approchée — contrairement à la voie 1, qui est exacte.
-
-    HORS DE FRANCE il n'y a pas d'équivalent ici : la population devra venir de la spec du
-    pays. Sans elle, la ligne n'affiche que la puissance.
+    Repli de dernier recours : L2 est la puissance pour 1 000 habitants, donc la population
+    s'en déduit quand on a la puissance — approchée, donc arrondie à la centaine.
     """
+    lat, lon = served["_lat"], served["_lon"]
     if served.get("country") == "FR":
         try:
             from pipelines.spatial import sources
-            pop = sources.fetch_commune(served["_lat"], served["_lon"]).get("population")
+            pop = sources.fetch_commune(lat, lon).get("population")
             if pop:
-                return int(pop), "geo.api.gouv.fr"
+                return int(pop), "geo.api.gouv.fr (INSEE)"
         except Exception:
-            pass  # la source fait foi quand elle répond ; sinon on retombe sur la déduction
+            pass
+    try:
+        pop, source = _nominatim_population(lat, lon)
+        if pop:
+            return pop, source
+    except Exception:
+        pass
     mw, l2 = served.get("power_mw"), ind.get("L2")
     if mw and l2:
         pop = mw / l2 * 1000
         return (round(pop) if pop < 1000 else round(pop / 100) * 100), "déduite de L2"
-    return None, "hors France : à fournir par la spec du pays"
+    return None, "non récupérée"
+
+
+def _nominatim_population(lat: float, lon: float) -> tuple[int | None, str]:
+    query = urllib.parse.urlencode({"lat": lat, "lon": lon, "format": "jsonv2",
+                                    "extratags": 1, "zoom": 10})
+    url = f"https://nominatim.openstreetmap.org/reverse?{query}"
+    with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as resp:
+        extra = (json.loads(resp.read()).get("extratags") or {})
+    if str(extra.get("population", "")).isdigit():
+        return int(extra["population"]), "OpenStreetMap (Nominatim)"
+    qid = extra.get("wikidata")
+    if not qid:
+        return None, ""
+    wd = f"https://www.wikidata.org/w/api.php?action=wbgetclaims&entity={qid}&property=P1082&format=json"
+    with urllib.request.urlopen(urllib.request.Request(wd, headers=UA), timeout=30) as resp:
+        claims = json.loads(resp.read()).get("claims", {}).get("P1082", [])
+    if claims:
+        amount = claims[-1]["mainsnak"]["datavalue"]["value"]["amount"]
+        return int(float(amount)), f"Wikidata {qid}"
+    return None, ""
 
 
 def scale_line(served: dict, ind: dict) -> str | None:
