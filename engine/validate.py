@@ -82,11 +82,10 @@ GEO_WAIVERS = {
     # Dérogations EXPLICITES, datées et motivées. Une dérogation n'est pas une exception
     # silencieuse : elle est listée ici, le gate l'imprime à chaque passage, et elle doit
     # disparaître. Toute fiche ajoutée ici sans motif ni date est un aveu d'échec.
-    "fr-cloudhq": "2026-09-29 — géo fabriquée détectée, recherche du vrai site en cours",
-    "fr-communaute-d-agglomeration-cannes-pays-de-lerins-cacpl": "2026-09-29 — idem",
-    "fr-digital-realty": "2026-09-29 — idem",
-    "fr-gazel-energie": "2026-09-29 — idem",
-    "fr-microsoft": "2026-09-29 — idem, coordonnée attendue au permis d'octobre",
+    # fr-cloudhq / fr-digital-realty / fr-gazel-energie : CORRIGÉES 2026-09-29 (vrai site localisé,
+    # détecteur 2-oracles + test bâtiment passés) — sorties des dérogations.
+    "fr-communaute-d-agglomeration-cannes-pays-de-lerins-cacpl": "2026-09-29 — micro-DC PoliCloud décentralisé, pas d'emprise unique ; attente arbitrage Franck (suppression ou veille)",
+    "fr-microsoft": "2026-09-29 — Petit-Landau : greenfield agricole ~36 ha le long du Rhin, site réel non localisé (permis suspendus MRAe) ; coordonnée au niveau commune, indicateurs de point en not_collected ; déblocage = plan cadastral du dossier d'enquête",
     "ch-green-datacenter-zurich-metro": "2026-09-29 — périmètre EU, correction à cadrer",
     "ch-stack-infrastucture-zur01": "2026-09-29 — périmètre EU, correction à cadrer",
     "ch-stack-infrastucture-zurl1": "2026-09-29 — périmètre EU, correction à cadrer",
