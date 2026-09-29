@@ -324,7 +324,7 @@ const pillars = methodology.pillars as any[];
           before the share block — geography is context, not content; the prime
           spot belongs to the written synthesis. */}
       <div class="fiche-side-map">
-        {dc.satellite_image && (
+        {!dc.context_map && dc.satellite_image && (
           <figure class="fiche-sat">
             <a href={dc.satellite_image.url} target="_blank" rel="noopener">
               <img src={dc.satellite_image.thumb} alt={(t as any).satAlt?.replace("{name}", dc.name) ?? dc.name}
@@ -371,6 +371,21 @@ const pillars = methodology.pillars as any[];
     </aside>
 
     <div class="fiche-main">
+      {dc.context_map && (
+        <figure class="fiche-ctx">
+          <a href={dc.context_map.url} target="_blank" rel="noopener"
+             aria-label={lang === "fr" ? "Ouvrir la carte de contexte en grand" : "Open the context map full size"}>
+            <img src={dc.context_map.url} alt={lang === "fr"
+              ? `Vue aérienne annotée de ${dc.name} à ${dc.municipality ?? ""} : emprise, cours d'eau, poste électrique et logements les plus proches, avec les distances mesurées.`
+              : `Annotated aerial view of ${dc.name} in ${dc.municipality ?? ""}: footprint, watercourse, substation and nearest dwellings, with measured distances.`}
+              width="1200" height="900" loading="lazy" />
+          </a>
+          <figcaption>
+            {lang === "fr" ? dc.context_map.caveat?.fr : dc.context_map.caveat?.en}
+            {" "}{dc.context_map.credit}
+          </figcaption>
+        </figure>
+      )}
       {isEnAttente && (
         <section class="fiche-enveille" aria-label={lang === "fr" ? "Note en attente" : "Grade pending"}>
           <p class="fiche-enveille-k">{lang === "fr" ? "Note en attente" : "Grade pending"}</p>

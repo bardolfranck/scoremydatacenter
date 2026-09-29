@@ -31,10 +31,12 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import date
 from pathlib import Path
 
 import requests
@@ -207,6 +209,75 @@ def scale_line(served: dict, ind: dict) -> str | None:
     return head if mw else None
 
 
+COUNTRY_FR = {"FR": "France", "DE": "Allemagne", "NL": "Pays-Bas", "BE": "Belgique",
+              "ES": "Espagne", "IT": "Italie", "PL": "Pologne", "GB": "Royaume-Uni",
+              "IE": "Irlande", "CH": "Suisse", "AT": "Autriche", "SE": "Suède",
+              "NO": "Norvège", "DK": "Danemark", "FI": "Finlande", "PT": "Portugal",
+              "LU": "Luxembourg", "CZ": "Tchéquie", "IL": "Israël"}
+
+
+def grade_line(served: dict) -> str:
+    """La note telle qu'on la PUBLIE, jamais plus ferme que ça.
+
+    L'image est faite pour être partagée hors de son contexte : elle doit donc dire la
+    même chose que la fiche. Graver « note D » sur un projet dont on publie une fourchette
+    provisoire affirmerait une fermeté qu'on n'a pas, et c'est exactement ce qu'on nous
+    opposerait. Une bande « en attente » se dit « note en attente », pas une lettre.
+    """
+    band = served.get("provisional_band") or {}
+    if band.get("kind") == "en_attente":
+        return "note en attente"
+    if band.get("kind") == "provisional_band" and band.get("band"):
+        return f"note provisoire {band['band']}"
+    grade = (served.get("grades") or {}).get("site", {}).get("grade")
+    return f"note {grade}" if grade else "note non publiée"
+
+
+GRID_RE = re.compile(r"poste ([A-ZÉÈÀÂÔÛÎa-z0-9 ._'\-]+?) at ([\d.]+) km: ([\d.]+) MW")
+FILL_RE = re.compile(r"([\d.]+)% reserved-capacity fill rate")
+TRANSMISSION_V = 63_000  # HTB : en deçà on est en distribution, sans intérêt pour un data center
+
+
+def grid_line(served: dict, feat: dict) -> str:
+    """Le poste de RACCORDEMENT, celui dont parle la note — pas le transformateur de rue.
+
+    Défaut relevé par Franck le 2026-09-29 : la carte annonçait « poste Enedis 20 kV / 400 V
+    à 334 m » quand la fiche disait « le poste voisin, à 1,1 km, ne dispose que de 7,9 MW ».
+    Les deux étaient vrais et se contredisaient, parce qu'ils ne désignaient pas le même
+    objet : le premier est un transformateur de distribution posé au coin d'une rue, sans
+    aucun rapport avec le raccordement d'un data center ; le second est le poste HTB de
+    Caparéseau, celui qui conditionne le projet et qui fait la note E2/E3.
+
+    Une page qui se contredit elle-même perd plus qu'elle ne gagne. On prend donc la MÊME
+    source que la note : le poste Caparéseau, avec sa capacité d'accueil et son taux de
+    réservation. Il est presque toujours hors du cadre — 1,3 à 4 km en général — donc on
+    l'écrit sans poser de pastille : l'annotation porte le fait, la pastille n'est qu'un
+    bonus. Hors de France, faute de Caparéseau, on n'accepte qu'un poste de TRANSPORT
+    (≥ 63 kV) ; en dessous, on écrit que le poste de raccordement n'est pas déterminé
+    plutôt que de désigner un transformateur de quartier.
+    """
+    ind = {i.get("id"): i for i in served.get("indicators", [])}
+    title = ((ind.get("E2") or {}).get("source") or {}).get("title") or ""
+    m = GRID_RE.search(title)
+    if m and "Caparéseau" in title:
+        name, km_, mw = m.group(1).strip(), float(m.group(2)), float(m.group(3))
+        fill = FILL_RE.search(((ind.get("E3") or {}).get("source") or {}).get("title") or "")
+        tail = f" — réservé à {float(fill.group(1)):.0f} %" if fill else ""
+        return (f"Poste de raccordement {name} — {km_:.1f} km (hors cadre) — "
+                f"{mw:.1f} MW disponibles{tail}")
+
+    best = None
+    for cand in feat.get("power_all", []):
+        volts = [int(v) for v in (cand["tags"].get("voltage") or "").split(";") if v.isdigit()]
+        if cand["tags"].get("power") == "substation" and volts and max(volts) >= TRANSMISSION_V:
+            if best is None or cand["d"] < best["d"]:
+                best = cand
+    if best:
+        kv = max(int(v) for v in best["tags"]["voltage"].split(";") if v.isdigit()) // 1000
+        return f"Poste de transport — {kv} kV — {best['d']:.0f} m"
+    return "Poste de raccordement : non déterminé"
+
+
 def metres(a: tuple[float, float], b: tuple[float, float]) -> float:
     r = math.pi / 180
     dlat, dlon = (b[0] - a[0]) * r, (b[1] - a[1]) * r
@@ -277,7 +348,8 @@ def features(lat: float, lon: float, data: dict) -> dict:
     """Les objets utiles, avec leur géométrie RÉELLE — jamais de direction inventée."""
     nodes = {e["id"]: (e["lat"], e["lon"]) for e in data["elements"] if e["type"] == "node"}
     here = (lat, lon)
-    out: dict = {"site": None, "water": None, "power": None, "dwelling": None, "buildings": 0}
+    out: dict = {"site": None, "water": None, "power": None, "dwelling": None,
+                 "buildings": 0, "power_all": []}
 
     for e in data["elements"]:
         tags = e.get("tags") or {}
@@ -294,6 +366,7 @@ def features(lat: float, lon: float, data: dict) -> dict:
             if tags.get("building") in RESIDENTIAL and (out["dwelling"] is None or d < out["dwelling"]["d"]):
                 out["dwelling"] = {"d": d, "geom": pts, "tags": tags}
         if tags.get("power") in ("substation", "transformer"):
+            out["power_all"].append({"d": d, "geom": pts, "tags": tags})
             if out["power"] is None or d < out["power"]["d"]:
                 out["power"] = {"d": d, "geom": pts, "tags": tags}
         if tags.get("waterway") in ("river", "canal") and tags.get("name"):
@@ -409,13 +482,13 @@ def render(dc_id: str) -> Path:
     draw.polygon([(W - 60, 42), (W - 68, 60), (W - 52, 60)], fill=INK)
     draw.text((W - 76, 100), "nord", font=f_small, fill=INK)
 
-    power_txt = "Poste électrique : aucun dans 750 m"
-    if feat["power"]:
-        volts = feat["power"]["tags"].get("voltage")
-        kv = " / ".join(f"{int(v) // 1000} kV" if int(v) >= 1000 else f"{v} V" for v in volts.split(";")) \
-            if volts and all(v.isdigit() for v in volts.split(";")) else "tension non renseignée"
-        op = feat["power"]["tags"].get("operator") or "exploitant non renseigné"
-        power_txt = f"Poste {op} — {kv} — {feat['power']['d']:.0f} m"
+    # Le poste de RACCORDEMENT vient de la même source que la note, pas du plus proche
+    # transformateur de rue — voir grid_line().
+    power_txt = grid_line(served, feat)
+    power_anchor = next((c for c in feat["power_all"]
+                         if c["tags"].get("power") == "substation"
+                         and any(v.isdigit() and int(v) >= TRANSMISSION_V
+                                 for v in (c["tags"].get("voltage") or "").split(";"))), None)
 
     w2 = {"poor": "masse d'eau en état médiocre", "bad": "masse d'eau en mauvais état",
           "moderate": "masse d'eau en état moyen", "good": "masse d'eau en bon état"}.get(
@@ -452,7 +525,7 @@ def render(dc_id: str) -> Path:
 
     rows = [("1", site_txt, SITE, (cx, cy)),
             ("2", water_txt, WATER, nearest_px(feat["water"]) if feat["water"] else None),
-            ("3", power_txt, POWER, nearest_px(feat["power"]) if feat["power"] else None),
+            ("3", power_txt, POWER, nearest_px(power_anchor) if power_anchor else None),
             ("4", f"{dwell_txt} · {feat['buildings']} bâtiments dans 750 m", DWELL,
              nearest_px(feat["dwelling"]) if feat["dwelling"] else None)]
     scale = scale_line(served, ind)
@@ -468,8 +541,9 @@ def render(dc_id: str) -> Path:
                    num, colour, f_lab)
     marker(draw, (cx, cy + 46), "1", SITE, f_lab)
 
-    foot = [f"scoremydatacenter.org · {served['name']} · {served.get('municipality')} · "
-            f"note {served['grades']['site']['grade']} · relevé du {served.get('vintage') or '2026'}",
+    foot = [f"scoremydatacenter.org · {served['name']} · {served.get('municipality')}, "
+            f"{COUNTRY_FR.get(served.get('country'), served.get('country') or '')} · "
+            f"{grade_line(served)} · annotations du {date.today().strftime('%d/%m/%Y')}",
             "imagerie Esri, Maxar, Earthstar Geographics · objets OpenStreetMap (ODbL) · "
             "état des eaux : directive-cadre européenne",
             CAVEAT_SHORT]

@@ -2112,3 +2112,14 @@ th.dev-cmp-pro { color: var(--accent); }
   .dev-qs { grid-template-columns: 1fr; }
   .dev-usage { font-size: 1.15rem; }
 }
+
+/* Carte de contexte — photo satellite ANNOTÉE. Elle REMPLACE la vignette à l'affichage
+   (Franck 2026-09-28 : « c'est LE produit ») et passe en pleine largeur de la colonne
+   principale : à 400 px dans la colonne latérale, le texte gravé à 20 px tombait à 7 px,
+   donc illisible — la lisibilité des annotations dicte la taille du bloc. Cliquable vers
+   l'image native, qui est autonome (nom du site, commune, pays, note telle que publiée,
+   sources, mention méthodologique) donc partageable et imprimable telle quelle. */
+.fiche-ctx { margin: 0 0 22px; }
+.fiche-ctx a { display: block; }
+.fiche-ctx img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); }
+.fiche-ctx figcaption { margin-top: 6px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); line-height: 1.5; }
