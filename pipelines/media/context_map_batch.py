@@ -9,7 +9,7 @@ NOT re-implemented here). This module adds the batch machinery, mirroring satell
     (<=25 m) get a context map; off_building (>25 m) and no_building keep the raw vignette.
   · idempotent + resumable: an already-staged PNG is skipped (manifest + file check).
   · per-commune population cache lives in context_map (Nominatim is 1 req/s, banned on volume).
-  · R2 upload OPTIONAL (--upload): ctx/{id}-{hmac8}.png, same non-enumerable scheme as sat/ but a
+  · R2 upload OPTIONAL (--upload): ctx/{id}-{hmac8}.webp, same non-enumerable scheme as sat/ but a
     DISTINCT prefix — the raw sat/ vignette is kept untouched next to it (Franck 2026-09-28).
     Needs SMDC_MEDIA_SECRET + wrangler auth (deploy env); generation runs without them.
 
@@ -38,11 +38,18 @@ SERVED_DC = REPO / "site" / "public" / "data" / "dc"
 OUT_DIR = REPO / ".media-sat"
 MANIFEST = OUT_DIR / "context-uploaded.txt"   # R2 keys confirmed uploaded
 GATE_OK = {"on_building", "near_building"}
+# Un PROJET non construit passe le gate quel que soit son verdict d'audit : le test
+# sur-bâtiment ne dit rien de la qualité d'une coordonnée quand il n'y a pas encore de
+# bâtiment à toucher. Ce qui garantit leur géo est plus fort — la règle 1 du PLAN
+# pipeline-projets exige des coordonnées de niveau bâtiment à l'ingestion. Sans cette
+# ouverture, on écarterait nos rendus les plus parlants : Sesterce Grand Est (600 MW,
+# commune de 52 habitants), Google Étrechet, Prologis.
+PROJECT_STATUSES = {"announced", "permitting", "under_construction"}
 
 
 def ctx_key(dc_id: str, secret: str) -> str:
     digest = hmac.new(secret.encode(), dc_id.encode(), hashlib.sha256).hexdigest()[:8]
-    return f"ctx/{dc_id}-{digest}.png"
+    return f"ctx/{dc_id}-{digest}.webp"
 
 
 def eligible(scope: str) -> tuple[list[str], dict]:
@@ -55,11 +62,13 @@ def eligible(scope: str) -> tuple[list[str], dict]:
             continue
         if scope == "fr" and cc != "fr":
             continue
-        if v.get("verdict") not in GATE_OK:
-            skip[f"gate:{v.get('verdict')}"] += 1
-            continue
-        if not (SERVED_DC / f"{fid}.json").is_file():
+        served = SERVED_DC / f"{fid}.json"
+        if not served.is_file():
             skip["no_served_dc_json"] += 1
+            continue
+        is_project = json.loads(served.read_text()).get("project_status") in PROJECT_STATUSES
+        if v.get("verdict") not in GATE_OK and not is_project:
+            skip[f"gate:{v.get('verdict')}"] += 1
             continue
         ids.append(fid)
     return ids, dict(skip)
@@ -71,7 +80,7 @@ def _manifest() -> set[str]:
 
 def _r2_put(key: str, path: Path) -> bool:
     p = subprocess.run(["npx", "wrangler", "r2", "object", "put", f"{BUCKET}/{key}",
-                        "--file", str(path), "--content-type", "image/png", "--remote"],
+                        "--file", str(path), "--content-type", "image/webp", "--remote"],
                        cwd=REPO / "site", capture_output=True, text=True)
     if p.returncode != 0:
         print(f"  R2 put failed {key}: {(p.stderr or p.stdout).strip().splitlines()[-1:]}", file=sys.stderr)
@@ -98,8 +107,8 @@ def main(argv=None) -> int:
     done, errors, rendered = [], [], 0
     percountry = collections.Counter()
     for fid in ids:
-        png = OUT_DIR / f"context-{fid}.png"
-        if png.is_file() and not args.force:
+        webp = OUT_DIR / f"context-{fid}.webp"
+        if webp.is_file() and not args.force:
             done.append(fid)
         else:
             try:
@@ -116,7 +125,7 @@ def main(argv=None) -> int:
             key = ctx_key(fid, secret)
             if key in uploaded:
                 continue
-            if _r2_put(key, png):
+            if _r2_put(key, webp):
                 with MANIFEST.open("a") as f:
                     f.write(key + "\n")
 
