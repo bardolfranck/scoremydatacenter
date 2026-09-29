@@ -140,6 +140,72 @@ The letter stays in the badge; the prose carries the *why*, for every country pa
 - **Nominative output stays private**; the orchestrator code is de-nominalized (public data-source
   endpoints only — no operator/project/collective names).
 
+## Stage 4 — la carte de contexte (photo satellite ANNOTÉE) — NATIVE depuis 2026-09-29
+
+**Toute fiche nouvelle naît avec sa carte de contexte.** Ce n'est plus un enrichissement
+optionnel : c'est la photo par défaut de la fiche, elle remplace la vignette brute à
+l'affichage (la vignette reste stockée et sert de repli). Arbitrage Franck du 2026-09-29.
+
+```
+uv run python -m pipelines.media.context_map_batch --scope fr  --upload
+uv run python -m pipelines.media.context_map_batch --scope non-fr --upload
+```
+
+Le rendu est dans `pipelines/media/context_map.py`, le pilote dans `context_map_batch.py`.
+Sortie R2 sous `ctx/{id}-{hmac8}.webp`, clé non énumérable comme `sat/` (A-28). Le build ne
+publie l'URL **que si la clé est au manifeste** : pas de manifeste, pas de carte, jamais
+d'URL devinée — toutes les fiches n'ont pas de carte, contrairement à la vignette.
+
+**Qui y a droit.** Coordonnée vérifiée — sur un bâtiment ou à ≤ 25 m d'après
+`calibration/geo-audit/on-building.json` — **plus toute fiche de projet** quel que soit son
+verdict : sur un site non construit, le test bâtiment ne dit rien de la coordonnée. Les
+fiches écartées gardent leur vignette brute.
+
+**Les cinq annotations, et leurs règles.** Chacune porte le quoi, le combien et le
+qualificatif, et **écrit son absence** au lieu de disparaître.
+
+1. **Emprise** — le bâtiment apparié, tracé. Sur une fiche PROJET, aucun tracé sauf si OSM
+   tague l'objet `data_center` : le bâtiment le plus proche d'un site non construit est
+   celui d'un TIERS, et le cerner en le légendant « emprise » serait faux et dommageable.
+2. **Cours d'eau NOMMÉ** le plus proche + l'état de sa masse d'eau (directive-cadre). Les
+   cours d'eau sans nom sont du bruit — Étrechet en a 42 dans 1,5 km.
+3. **Poste de RACCORDEMENT**, depuis la MÊME source que la note : Caparéseau en France, avec
+   capacité d'accueil et taux de réservation. **Jamais le transformateur de rue le plus
+   proche** — il contredirait la fiche (défaut du 2026-09-29 : carte « poste 20 kV à 334 m »
+   contre fiche « poste à 1,1 km, 7,9 MW, réservé à 80 % »). Il est presque toujours hors
+   cadre (1,3 à 4 km) : on l'écrit sans pastille. Hors FR, uniquement un poste de transport
+   ≥ 63 kV, sinon « non déterminé ».
+4. **Zone des logements** les plus proches + nombre de bâtiments dans 750 m. Zone, pas
+   objet : le tagging résidentiel d'OSM est trop inégal pour désigner UN logement.
+5. **Puissance contre taille de la commune** — « 1 400 MW déclarés — commune de 655
+   habitants ». Par défaut sur toutes les fiches. Sans puissance, la ligne reste et dit
+   « puissance déclarée inconnue ». Le qualificatif suit `power_mw_status` : jamais
+   « déclarés » sur une estimation maison.
+
+**L'image doit être auto-suffisante**, parce qu'elle voyage seule : nom du site, commune,
+**pays**, note **telle qu'on la publie** (« note provisoire E–D », « note en attente » —
+jamais une lettre ferme là où on publie une fourchette), date des annotations, crédits, et
+la mention « les anneaux sont des tampons de distance, non un zonage réglementaire ». Cette
+mention est **gravée dans l'image et nulle part ailleurs** : la répéter sous l'image sur la
+fiche est une redondance qui trahit le principe.
+
+**On POINTE, on ne repeint pas.** La photo montre déjà la rivière, le poste et les maisons.
+Pastilles numérotées, distances mesurées, anneaux 100/300 m, échelle, nord. Pas de cercle de
+zone autour d'une pastille : les anneaux font les zones. Azimuts réels — un schéma aux
+directions inventées serait de la géo fabriquée.
+
+**Données** : `api.openstreetmap.org` `map.json?bbox=` d'abord, **Overpass filtré en repli sur
+le HTTP 400** (plafond de 50 000 objets en zone dense). Population : geo.api.gouv.fr en
+France, Nominatim puis Wikidata P1082 ailleurs, **cache par commune** (Nominatim est à
+1 req/s). WebP qualité 82 — un PNG pèse neuf fois plus pour la même image.
+
+**Avant de rendre, la géo doit être propre.** Deux contrôles, tous deux nés du cas Fouju :
+`pipelines/geo_audit/probe.py` (la coordonnée tombe-t-elle sur un bâtiment) et le détecteur
+de centroïde (la coordonnée est-elle le centre administratif de sa commune). Le second doit
+passer au **gate d'ingestion** : Fouju était publié, noté et faux, et ni l'audit bâtiment ni
+le registre de provenance ne le voyaient. Critère fiable = **près d'un oracle géocodeur ET
+pas sur un bâtiment** ; le seuil seul sur-signale.
+
 ## Run it end to end on a fictional DC (recipe for a successor)
 
 ```

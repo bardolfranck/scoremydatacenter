@@ -380,10 +380,6 @@ const pillars = methodology.pillars as any[];
               : `Annotated aerial view of ${dc.name} in ${dc.municipality ?? ""}: footprint, watercourse, substation and nearest dwellings, with measured distances.`}
               width="1200" height="900" loading="lazy" />
           </a>
-          <figcaption>
-            {lang === "fr" ? dc.context_map.caveat?.fr : dc.context_map.caveat?.en}
-            {" "}{dc.context_map.credit}
-          </figcaption>
         </figure>
       )}
       {isEnAttente && (
