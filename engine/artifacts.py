@@ -226,6 +226,11 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
 
     # Watchlist (A-19): world "En veille" projects — sourced facts, NO grade.
     # The engine never scores these; it only passes the facts through to the map.
+    # Un fait suivi n'a pas toujours un LIEU. Cas fondateur : le cloud fédéré de Cannes —
+    # capacité répartie, aucune installation à pointer. Lui inventer un point l'aurait
+    # épinglé sur la carte à un endroit qui n'existe pas, soit exactement le défaut qu'on
+    # corrige ailleurs. Une entrée sans coordonnées reste donc suivie, mais n'entre pas
+    # dans la couche cartographique.
     watch_features = [{
         "type": "Feature",
         # Coords rounded to ~1 km like the graded layer (no precise GPS in a public file).
@@ -250,7 +255,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "source": e["source"],
             "facts": e.get("facts") or [],
         },
-    } for e in watchlist]
+    } for e in watchlist if e.get("coordinates")]
 
     write_json(out_dir / "scores.json", scores)
     # T0 « Les chiffres du parc » — corpus aggregates, one file per build
