@@ -33,6 +33,7 @@ import json
 import math
 import re
 import sys
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -43,6 +44,9 @@ import requests
 from PIL import Image, ImageDraw, ImageFont
 
 from pipelines.media.satellite import REPO, fetch_tile, world_pixel
+
+SATURATED = {429, 500, 502, 503, 504, 509}
+BACKOFF_S = (20, 60, 180, 420)
 
 OSM_MAP = "https://api.openstreetmap.org/api/0.6/map.json?bbox={w:.6f},{s:.6f},{e:.6f},{n:.6f}"
 UA = {"User-Agent": "ScoreMyDataCenter-context/1.0 (contact@scoremydatacenter.org)"}
@@ -327,23 +331,56 @@ def _overpass_around(w: float, s: float, e: float, n: float) -> dict:
 
 
 def osm_around(lat: float, lon: float, half_km: float = 0.75) -> dict:
-    """Objets dans un rayon de 750 m. OSM /map d'abord (a encaissé 1430 fiches sans erreur, pas de
-    politique de volume) ; sur HTTP 400 (bbox trop dense, plafond 50k nœuds) SEULEMENT → repli
-    Overpass filtré, même rayon. Repli compté (stats) — au-delà de ~10 %, à re-signaler."""
+    """Objets dans un rayon de 750 m, avec deux sources et de la patience.
+
+    Les deux API que nous interrogeons sont de l'infrastructure communautaire partagée, et
+    aucune n'est faite pour qu'on la martèle. Le 2026-09-29 nous avons pris un **509
+    Bandwidth Limit Exceeded** sur api.openstreetmap.org après l'audit géo (1 430 requêtes)
+    plus plusieurs relances média dans la même journée ; le même jour Overpass alternait
+    entre 200 et 504. Le vrai correctif est ailleurs — voir la note en bas — mais le rendu
+    ne doit plus mourir sur un hoquet d'infrastructure.
+
+    Donc : `/map` d'abord, puis, dans l'ordre, repli Overpass sur un 400 (bbox trop dense,
+    plafond 50 000 objets), et **réessais espacés sur les codes de saturation** — 429, 502,
+    503, 504, 509 — en tentant l'autre source entre deux essais. Une saturation n'est pas
+    une erreur de requête : elle se traite par l'attente, pas par l'abandon.
+
+    Note pour qui reprendra : à notre volume, la bonne réponse n'est ni l'une ni l'autre de
+    ces API. Les politiques d'usage d'OSM excluent l'extraction en masse, et 1 430 fiches en
+    est une. Le chemin durable est un extrait national (.osm.pbf) traité en local — il
+    supprime cette classe de panne, débloque aussi les distances aux habitations, et ne
+    dépend plus de la patience d'un service gratuit.
+    """
     global _OSM_FALLBACK_USED
     _OSM_FALLBACK_USED = False
     dlat = half_km / 111.32
     dlon = dlat / max(math.cos(math.radians(lat)), 0.2)
     w, s, e, n = lon - dlon, lat - dlat, lon + dlon, lat + dlat
     url = OSM_MAP.format(w=w, s=s, e=e, n=n)
-    try:
-        with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=90) as resp:
-            return json.loads(resp.read())
-    except urllib.error.HTTPError as exc:
-        if exc.code != 400:
-            raise
-        _OSM_FALLBACK_USED = True
-        return _overpass_around(w, s, e, n)
+    last: Exception | None = None
+
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=90) as resp:
+                return json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            last = exc
+            if exc.code == 400:  # bbox trop dense : seul Overpass sait répondre
+                _OSM_FALLBACK_USED = True
+                return _overpass_around(w, s, e, n)
+            if exc.code not in SATURATED:
+                raise
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            last = exc
+        # saturation ou réseau : on tente l'autre source, puis on patiente
+        try:
+            _OSM_FALLBACK_USED = True
+            return _overpass_around(w, s, e, n)
+        except Exception:
+            _OSM_FALLBACK_USED = False
+        time.sleep(BACKOFF_S[min(attempt, len(BACKOFF_S) - 1)])
+
+    raise RuntimeError(f"OSM et Overpass indisponibles après 4 essais ({last})")
 
 
 def features(lat: float, lon: float, data: dict) -> dict:
