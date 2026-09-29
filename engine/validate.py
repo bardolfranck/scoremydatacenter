@@ -28,6 +28,7 @@ Journal gate: every score_history entry after the first carries a rationale.
 """
 
 import re
+import os
 import sys
 from datetime import date
 from pathlib import Path
@@ -75,6 +76,69 @@ def _schema_errors(instance, schema, label: str) -> list[str]:
         f"GATE 1: {label}: {'/'.join(map(str, e.absolute_path)) or '<root>'}: {e.message}"
         for e in sorted(validator.iter_errors(instance), key=str)
     ]
+
+
+GEO_WAIVERS = {
+    # Dérogations EXPLICITES, datées et motivées. Une dérogation n'est pas une exception
+    # silencieuse : elle est listée ici, le gate l'imprime à chaque passage, et elle doit
+    # disparaître. Toute fiche ajoutée ici sans motif ni date est un aveu d'échec.
+    "fr-cloudhq": "2026-09-29 — géo fabriquée détectée, recherche du vrai site en cours",
+    "fr-communaute-d-agglomeration-cannes-pays-de-lerins-cacpl": "2026-09-29 — idem",
+    "fr-digital-realty": "2026-09-29 — idem",
+    "fr-gazel-energie": "2026-09-29 — idem",
+    "fr-microsoft": "2026-09-29 — idem, coordonnée attendue au permis d'octobre",
+    "ch-green-datacenter-zurich-metro": "2026-09-29 — périmètre EU, correction à cadrer",
+    "ch-stack-infrastucture-zur01": "2026-09-29 — périmètre EU, correction à cadrer",
+    "ch-stack-infrastucture-zurl1": "2026-09-29 — périmètre EU, correction à cadrer",
+    "es-aws-aragon-villanueva-de-gallego": "2026-09-29 — périmètre EU, correction à cadrer",
+    "es-aws-aragon-el-burgo-de-ebro": "2026-09-29 — périmètre EU, correction à cadrer",
+    "es-meta-talavera-de-la-reina": "2026-09-29 — périmètre EU, correction à cadrer",
+}
+
+
+def _geo_gate(data_dir: Path) -> list[str]:
+    """GATE GÉO — une coordonnée fabriquée ne doit pas pouvoir entrer dans le corpus.
+
+    Pourquoi ce gate est ICI et pas dans une consigne envoyée à un agent (Franck, 2026-09-29,
+    « les gates sont dans le WORKFLOW, pas distribués au bon vouloir de x ou y ») : une règle
+    qui vit dans un message se perd au prochain agent, au prochain contexte, au prochain mois.
+    Celle-ci a coûté cher — 6 fiches publiques et notées sur des coordonnées de géocodeur,
+    dont le plus gros projet de France.
+
+    La MESURE est hors-ligne (elle interroge deux géocodeurs, donc du réseau, ce que le build
+    déterministe ne fait pas) : c'est `pipelines.geo_audit.centroid_check`, qui écrit le
+    sidecar. Le GATE, lui, est déterministe : il lit le sidecar et refuse. Mesure dehors,
+    décision dedans.
+
+    Deux refus : une fiche classée « géo fabriquée probable » sans dérogation explicite, et
+    une fiche du corpus ABSENTE du sidecar — sinon il suffirait de ne pas lancer la mesure
+    pour passer le gate.
+    """
+    # Le sidecar vit dans le newsroom PRIVÉ, que data_dir pointe dessus ou non.
+    newsroom = Path(os.environ.get("NEWSROOM_CAL",
+                                   Path(__file__).resolve().parents[2] / "smdc-newsroom" / "calibration"))
+    sidecar = next((c for c in (data_dir / "geo-audit" / "centroid-check.json",
+                                newsroom / "geo-audit" / "centroid-check.json") if c.is_file()), None)
+    if sidecar is None:
+        return ["GATE GÉO: sidecar centroid-check.json absent — lancer "
+                "`python -m pipelines.geo_audit.centroid_check` avant d'onboarder"]
+    report = load_json(sidecar)
+    flagged = {e["id"] for e in report.get("fabriquees_probables", [])}
+    out: list[str] = []
+    for fid in sorted(flagged - set(GEO_WAIVERS)):
+        out.append(f"GATE GÉO: {fid!r} a une coordonnée de géocodeur (centre de commune) — "
+                   f"localiser le site réel, ou inscrire une dérogation motivée et datée")
+    # Couverture : le sidecar ne liste que les cas remarquables, pas les fiches saines. On
+    # vérifie donc que la MESURE a bien porté sur tout le corpus — sinon il suffirait de ne
+    # pas relancer le détecteur après un onboarding pour passer le gate sans être vu.
+    covered = ((report.get("meta") or {}).get("counts") or {}).get("testées")
+    corpus = len(datacenter_paths(data_dir))
+    if covered is None:
+        out.append("GATE GÉO: le sidecar ne dit pas combien de fiches ont été testées")
+    elif covered < corpus:
+        out.append(f"GATE GÉO: détecteur de centroïde périmé — {covered} fiches testées pour "
+                   f"{corpus} au corpus ; relancer avant d'onboarder")
+    return out
 
 
 def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]:
@@ -269,6 +333,8 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
             if entry["id"] in seen_watch_ids:
                 problems.append(f"GATE 1: {label}: duplicate watchlist id {entry['id']!r}")
             seen_watch_ids.add(entry["id"])
+
+    problems += _geo_gate(data_dir)
 
     return problems
 

@@ -9,6 +9,39 @@ this file is how they **chain**. Orchestrator: `pipelines/orchestrate.py`.
 
 ---
 
+## 🚧 GATE GÉO — il passe AVANT tout onboarding, et il est dans la machine
+
+**Une coordonnée fabriquée ne doit pas pouvoir entrer dans le corpus.** Ce gate n'est pas une
+consigne qu'on rappelle à un agent : c'est un refus de `engine.validate`, donc il s'applique à
+qui que ce soit, sans qu'on ait à y penser.
+
+```
+uv run python -m pipelines.geo_audit.centroid_check     # la MESURE (réseau, hors build)
+uv run python -m engine.validate                        # le GATE (déterministe, refuse)
+```
+
+**Mesure dehors, décision dedans.** Le détecteur interroge deux géocodeurs, donc du réseau,
+que le build déterministe ne fait pas ; il écrit `calibration/geo-audit/centroid-check.json`.
+`engine.validate` lit ce sidecar et refuse dans deux cas : une fiche classée « géo fabriquée
+probable » sans dérogation, et un sidecar qui couvre moins de fiches que le corpus — sinon il
+suffirait de ne pas relancer la mesure pour passer sans être vu.
+
+**Le critère** : proche d'un oracle géocodeur (≤ 150 m) **ET** pas sur un bâtiment. Deux
+oracles obligatoires — `geo.api.gouv.fr` (INSEE) **et** Nominatim, match sur l'un ou l'autre.
+Un seul oracle ne suffit pas : cinq fiches FR déclarées propres par l'INSEE seul matchaient
+Nominatim à 0 m, parce que la coordonnée venait d'un géocodeur tiers et non du nôtre. Le test
+bâtiment élimine le bruit (47 faux positifs sur 58 signalements).
+
+**Les dérogations sont dans `engine/validate.py`, `GEO_WAIVERS`**, datées et motivées. Une
+dérogation n'est pas une exception silencieuse : elle est écrite, elle se voit en revue, et
+elle doit disparaître. Une entrée sans motif ni date est un aveu d'échec.
+
+**Ce que ce gate a coûté avant d'exister** : 6 fiches françaises publiques et notées portaient
+une coordonnée de géocodeur, dont `fr-campus-ia-fouju` — 1 400 MW, le plus gros projet du
+corpus — dont la coordonnée était le centroïde EXACT de sa commune. Corrigée vers la ZAC des
+Bordes, sa note est passée de E à D : on publiait qu'elle bétonnait des terres agricoles, et
+c'était faux. 4 des 6 venaient de `carte.dcmag.fr`, qui géocode des noms de commune.
+
 ## Flow A — onboard a data center to score
 
 ```
