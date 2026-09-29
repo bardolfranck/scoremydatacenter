@@ -63,6 +63,50 @@ def patch_satellite_images() -> int:
     return patched
 
 
+def patch_context_maps() -> int:
+    """La carte de contexte — photo satellite ANNOTÉE — quand elle existe sur R2.
+
+    Décision Franck 2026-09-28 : elle devient la photo par défaut de la fiche et REMPLACE
+    la vignette à l'affichage, sans la supprimer du stockage — `satellite_image` reste
+    servi et sert de repli.
+
+    À la différence de la vignette, toutes les fiches n'en ont PAS : le rendu est réservé
+    aux coordonnées vérifiées (sur un bâtiment ou à ≤25 m) plus les projets. On ne devine
+    donc pas l'URL comme pour `sat/` — on lit le manifeste des clés confirmées sur R2,
+    sinon la fiche pointerait un 404. Pas de manifeste = pas de carte, jamais d'URL
+    inventée.
+    """
+    secret = os.environ.get("SMDC_MEDIA_SECRET")
+    base = (os.environ.get("SMDC_MEDIA_BASE") or "").rstrip("/")
+    manifest = Path(__file__).resolve().parent.parent / ".media-sat" / "context-uploaded.txt"
+    if not secret or not base or not manifest.is_file():
+        return 0
+    from engine.core import write_json
+    from pipelines.media.satellite import media_key
+    confirmed = set(manifest.read_text().split())
+    patched = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        key = media_key(d["id"], secret).replace("sat/", "ctx/")
+        if key not in confirmed:
+            continue
+        thumb = key.replace(".webp", "-thumb.webp")
+        d["context_map"] = {
+            "url": f"{base}/{key}",
+            **({"thumb": f"{base}/{thumb}"} if thumb in confirmed else {}),
+            "credit": "Esri, Maxar, Earthstar Geographics · OpenStreetMap (ODbL)",
+            "caveat": {
+                "fr": "Distances à vol d'oiseau depuis la coordonnée de référence. "
+                      "Les anneaux sont des tampons de distance, non un zonage réglementaire.",
+                "en": "Straight-line distances from the reference coordinate. "
+                      "The rings are distance buffers, not statutory zoning.",
+            },
+        }
+        write_json(f, d)
+        patched += 1
+    return patched
+
+
 _ASCII = str.maketrans("àáâäãåçèéêëìíîïñòóôöõùúûüýÿ", "aaaaaaceeeeiiiinooooouuuuyy")
 
 
@@ -284,6 +328,9 @@ def main() -> int:
         print(f"prod-artifacts: satellite_image patched on {patched} fiches (media env configured)")
     else:
         print("prod-artifacts: satellite_image skipped (SMDC_MEDIA_SECRET/BASE not set — see ~/.smdc/media.env)")
+    ctx = patch_context_maps()
+    print(f"prod-artifacts: context_map on {ctx} fiches (photo satellite annotée)" if ctx
+          else "prod-artifacts: context_map skipped (aucune clé confirmée sur R2)")
     return 0
 
 
