@@ -143,8 +143,16 @@ The letter stays in the badge; the prose carries the *why*, for every country pa
 ## Stage 4 — la carte de contexte (photo satellite ANNOTÉE) — NATIVE depuis 2026-09-29
 
 **Toute fiche nouvelle naît avec sa carte de contexte.** Ce n'est plus un enrichissement
-optionnel : c'est la photo par défaut de la fiche, elle remplace la vignette brute à
-l'affichage (la vignette reste stockée et sert de repli). Arbitrage Franck du 2026-09-29.
+optionnel : c'est la photo par défaut de la fiche. Arbitrage Franck du 2026-09-29.
+
+**Deux versions de la photo satellite coexistent, et c'est voulu — ne pas « harmoniser ».**
+La version ANNOTÉE (`context_map`) est pour la FICHE, où elle remplace la vignette à
+l'affichage. La version BRUTE non annotée (`satellite_image`) reste servie : elle alimente
+le bandeau défilant de la home et les listes, et sert de repli sur les fiches sans carte.
+Le bandeau garde les vignettes brutes **tant que le rendu de vignette annotée n'existe pas**
+— à 400 px, un texte gravé à 20 px tombe à 7 px, donc une simple réduction serait illisible.
+Une vignette annotée demanderait un rendu DISTINCT portant une seule annotation en gros ;
+chantier non ouvert (Franck : « on ne fait pas les chantiers en même temps »).
 
 ```
 uv run python -m pipelines.media.context_map_batch --scope fr  --upload
