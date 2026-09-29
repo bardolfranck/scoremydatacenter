@@ -34,6 +34,7 @@ from pipelines.media.satellite import REPO, BUCKET
 
 NEWSROOM = REPO.parent / "smdc-newsroom"
 GATE = NEWSROOM / "calibration" / "geo-audit" / "on-building.json"
+CENTROID = NEWSROOM / "calibration" / "geo-audit" / "centroid-check.json"
 SERVED_DC = REPO / "site" / "public" / "data" / "dc"
 OUT_DIR = REPO / ".media-sat"
 MANIFEST = OUT_DIR / "context-uploaded.txt"   # R2 keys confirmed uploaded
@@ -55,8 +56,17 @@ def ctx_key(dc_id: str, secret: str) -> str:
 def eligible(scope: str) -> tuple[list[str], dict]:
     """Return (ids to render, skip-report). scope 'non-fr' = everything except FR and IL (Franck)."""
     gate = json.loads(GATE.read_text())["fiches"]
+    # Géo FABRIQUÉE (coordonnée = géocodage du nom de commune, classe Fouju) : ne JAMAIS rendre —
+    # une photo aérienne annotée sur une coordonnée inventée désignerait le mauvais endroit. Ces
+    # fiches retombent sur la vignette brute tant que la coordonnée n'est pas corrigée à la main.
+    fabricated = set()
+    if CENTROID.is_file():
+        fabricated = {e["id"] for e in json.loads(CENTROID.read_text()).get("fabriquees_probables", [])}
     ids, skip = [], collections.Counter()
     for fid, v in gate.items():
+        if fid in fabricated:
+            skip["fabricated_geo"] += 1
+            continue
         cc = fid.split("-", 1)[0]
         if scope == "non-fr" and cc in ("fr", "il"):
             continue
