@@ -63,6 +63,63 @@ def patch_satellite_images() -> int:
     return patched
 
 
+LASTMOD_STATE = Path(__file__).resolve().parent.parent / ".lastmod.json"
+
+
+def patch_updated_at() -> int:
+    """Date de mise à jour, sur TOUTES les fiches, sans exception.
+
+    Règle Franck (SEO, 2026-09-29) : le titre porte « — au {date} » partout, « pas
+    d'exceptions qui pourrissent le code ». La date rend bénigne une SERP en retard sur un
+    changement de note — cas vécu le matin même, Fouju passée de E à D pendant que Google
+    servait encore l'ancienne.
+
+    C'est la date du BUILD, et c'est le bon sens : le corpus entier est recalculé à chaque
+    build depuis la source, donc chaque fiche est bien vérifiée à cette date. Ce n'est pas
+    la date du dernier changement de la fiche, et le titre ne le prétend pas — il dit « au »,
+    pas « modifié le ».
+    """
+    import hashlib
+    from datetime import date
+    from engine.core import write_json
+    today = date.today().isoformat()
+
+    # `content_changed_at` n'est PAS la date du build : c'est la date du dernier build où le
+    # CONTENU de la fiche a bougé, repérée par empreinte. Elle alimente le lastmod du
+    # sitemap, et c'est pour ça qu'elle doit être honnête — un lastmod qui change à chaque
+    # build annoncerait 1 438 pages modifiées tous les jours, ce que Google finit par
+    # ignorer. On perdrait exactement ce qu'on cherche : déclencher un recrawl quand une
+    # note bouge vraiment.
+    state = json.loads(LASTMOD_STATE.read_text()) if LASTMOD_STATE.is_file() else {}
+    fresh: dict[str, list[str]] = {}
+    n = moved = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        # Empreinte sur un SOUS-ENSEMBLE stable et éditorial : ce qu'un lecteur voit changer.
+        # Hacher la fiche entière rendait l'empreinte instable, parce que les champs média
+        # (vignette, carte de contexte) s'ajoutent APRÈS ce passage et varient au fil de la
+        # production. Un lastmod ne doit pas bouger parce qu'une image a été générée.
+        core = {k: d.get(k) for k in ("name", "municipality", "admin_area", "country",
+                                      "operator", "project_status", "power_mw", "grades",
+                                      "provisional_band", "indicators", "synthesis",
+                                      "confidence", "contestation")}
+        digest = hashlib.sha256(
+            json.dumps(core, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:16]
+        prev = state.get(d["id"])
+        if not prev or prev[0] != digest:
+            changed, moved = today, moved + 1
+        else:
+            changed = prev[1]
+        fresh[d["id"]] = [digest, changed]
+        d["updated_at"] = today
+        d["content_changed_at"] = changed
+        write_json(f, d)
+        n += 1
+    LASTMOD_STATE.write_text(json.dumps(fresh, ensure_ascii=False))
+    print(f"prod-artifacts: content changed on {moved} fiches since last build")
+    return n
+
+
 def patch_context_maps() -> int:
     """La carte de contexte — photo satellite ANNOTÉE — quand elle existe sur R2.
 
@@ -328,6 +385,8 @@ def main() -> int:
         print(f"prod-artifacts: satellite_image patched on {patched} fiches (media env configured)")
     else:
         print("prod-artifacts: satellite_image skipped (SMDC_MEDIA_SECRET/BASE not set — see ~/.smdc/media.env)")
+    stamped = patch_updated_at()
+    print(f"prod-artifacts: updated_at on {stamped} fiches")
     ctx = patch_context_maps()
     print(f"prod-artifacts: context_map on {ctx} fiches (photo satellite annotée)" if ctx
           else "prod-artifacts: context_map skipped (aucune clé confirmée sur R2)")

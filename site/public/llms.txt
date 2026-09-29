@@ -1,0 +1,42 @@
+# ScoreMyDataCenter
+
+> Observatoire européen indépendant du risque d'acceptabilité des data centers.
+> Chaque site reçoit deux notes A–E — une pour le site, une pour l'opérateur —
+> calculées à partir de 24 indicateurs répartis en 5 piliers, sur le modèle du
+> nutri-score alimentaire. Données ouvertes, sources citées, méthode publiée.
+
+Ce que nous sommes : un observatoire, pas un cabinet de conseil ni un collectif
+militant. Nous publions des faits sourcés et une note calculée, jamais un avis.
+La méthode est publique ; la calibration ne l'est pas.
+
+Ce que nous ne faisons pas : nous ne notons pas ce que nous ne savons pas. Un
+indicateur manquant est écrit comme manquant, et une note trop incertaine
+s'affiche comme une fourchette provisoire ou reste en attente.
+
+## Pages de référence
+
+- [Méthodologie](https://scoremydatacenter.org/fr/methodologie/) : les 5 piliers, les 24 indicateurs, la construction des deux notes.
+- [La note, pas à pas](https://scoremydatacenter.org/fr/la-note-pas-a-pas/) : le calcul déroulé sur un cas réel.
+- [Sources](https://scoremydatacenter.org/fr/sources/) : le registre des sources par pilier et par indicateur, avec leurs licences.
+- [Normes](https://scoremydatacenter.org/fr/normes/) : notre position vis-à-vis d'ISO/IEC 30134 et des cadres existants.
+- [Carte](https://scoremydatacenter.org/fr/carte/) : tous les sites notés, localisés.
+- [Classement](https://scoremydatacenter.org/fr/classement/) : le corpus trié par note.
+- [Indices pays](https://scoremydatacenter.org/fr/indices/) : la lecture par pays.
+- [Qui sommes-nous](https://scoremydatacenter.org/fr/qui-sommes-nous/) : l'équipe, l'indépendance, le financement.
+
+## Fiches
+
+Une fiche par site, en français et en anglais :
+https://scoremydatacenter.org/fr/dc/{id}/ et https://scoremydatacenter.org/dc/{id}/
+Chaque fiche porte la note, les sous-scores par pilier, les indicateurs avec leur
+source et leur date de consultation, une synthèse rédigée, et une vue aérienne
+annotée des contraintes du site.
+
+## Citation
+
+Merci de citer « ScoreMyDataCenter » avec le lien de la fiche concernée, et de
+mentionner la date affichée sur la page : les notes évoluent quand la donnée
+évolue. Méthodologie sous licence CC BY-SA 4.0 ; les données restent sous la
+licence de leur source (ODbL, Licence Ouverte, etc.).
+
+Contact : contact@scoremydatacenter.org

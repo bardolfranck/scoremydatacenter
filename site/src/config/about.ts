@@ -11,7 +11,7 @@ export const FR_ABOUT = {
   aboutLinkedinUrl: "https://www.linkedin.com/in/franckbardol/",
   ia: {
     heading: "L'IA au service de la méthode, pas à la place de l'humain.",
-    sub: "Parce que <strong class=\"hero-red\">noter tous les data centers d'Europe ne s'improvise pas</strong>. Une architecture d'agents spécialisés pour traiter des dizaines de milliers de sources afin de noter chaque data center avec rigueur — sous contrôle humain.",
+    sub: "Parce que <strong class=\"hero-red\">calculer un nutri-score pour tous les data centers d'Europe ne s'improvise pas</strong>. Une architecture d'agents spécialisés pour traiter des dizaines de milliers de sources afin de noter chaque data center avec rigueur — sous contrôle humain.",
     steps: [
       { icon: "collect", title: "Collecter", body: "Les agents repèrent les sources publiques utiles : dossiers réglementaires, données institutionnelles, documents opérateurs, cartes, décisions locales et articles de presse." },
       { icon: "structure", title: "Structurer", body: "Ils transforment ces sources hétérogènes en données comparables : puissance, eau, foncier, réseau, concertation, transparence, statut du projet." },
@@ -66,7 +66,7 @@ export const EN_ABOUT = {
   aboutLinkedinUrl: "https://www.linkedin.com/in/franckbardol/",
   ia: {
     heading: "AI in service of the method, not in place of the human.",
-    sub: "Because <strong class=\"hero-red\">grading every data center in Europe is not something you improvise</strong>. An architecture of specialised agents processes tens of thousands of sources to grade each data center rigorously — under human control.",
+    sub: "Because <strong class=\"hero-red\">computing a Nutri-Score for every data center in Europe is not something you improvise</strong>. An architecture of specialised agents processes tens of thousands of sources to grade each data center rigorously — under human control.",
     steps: [
       { icon: "collect", title: "Collect", body: "The agents locate the useful public sources: regulatory files, institutional data, operator documents, maps, local decisions and press articles." },
       { icon: "structure", title: "Structure", body: "They turn these heterogeneous sources into comparable data: power, water, land, grid, consultation, transparency, project status." },

@@ -234,18 +234,72 @@ const shareLinks = {
 };
 
 const pillars = methodology.pillars as any[];
+
+// --- JSON-LD : dire la fiche aux machines, sans prétendre plus que la page ---------------
+// Pas de balisage Rating pour l'instant : c'est un test à mener (éligibilité Google, mapping
+// A=5…E=1), pas un go ferme, et un balisage d'avis sur une entreprise nommée se relit deux
+// fois avant d'être posé. On décrit donc le LIEU et la page, pas un verdict.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Place",
+  name: dc.name,
+  url: `${SITE_ORIGIN}${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/`,
+  ...(dc.operator && dc.operator !== "unknown"
+    ? { additionalProperty: [{ "@type": "PropertyValue", name: lang === "fr" ? "Opérateur" : "Operator", value: dc.operator }] }
+    : {}),
+  address: {
+    "@type": "PostalAddress",
+    ...(dc.municipality ? { addressLocality: dc.municipality } : {}),
+    ...(dc.admin_area ? { addressRegion: String(dc.admin_area) } : {}),
+    ...(dc.country ? { addressCountry: dc.country } : {}),
+  },
+  ...(dc.content_changed_at ? { dateModified: dc.content_changed_at } : {}),
+  isPartOf: { "@type": "WebSite", name: "ScoreMyDataCenter", url: SITE_ORIGIN },
+};
+
+// --- SEO : titre daté, sur TOUTES les fiches (Franck 2026-09-29) -------------------------
+// Motif : la date rend bénigne une SERP en retard sur un changement de note — cas vécu avec
+// Fouju passée de E à D pendant que Google servait encore l'ancienne. « Pas d'exceptions qui
+// pourrissent le code » : aucune variante sans date, y compris pour les notes provisoires.
+// La note affichée est celle qu'on PUBLIE — fourchette provisoire ou « en attente », jamais
+// une lettre ferme là où on publie une plage : un titre de SERP est lu comme un verdict.
+const seoBand = dc.provisional_band ?? {};
+const seoGrade = seoBand.kind === "en_attente"
+  ? (lang === "fr" ? "note en attente" : "grade pending")
+  : seoBand.kind === "provisional_band" && seoBand.band
+    ? (lang === "fr" ? `note provisoire ${seoBand.band}` : `provisional grade ${seoBand.band}`)
+    : (lang === "fr" ? `note ${dc.grades.site.grade}` : `grade ${dc.grades.site.grade}`);
+const seoPlaceRaw = dc.municipality ?? dc.admin_area ?? dc.country ?? "";
+// « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
+// est du bruit qui mange la largeur utile du titre en SERP.
+const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceRaw).toLowerCase())
+  ? seoPlaceRaw : "";
+const seoDate = dc.updated_at
+  ? new Date(dc.updated_at).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB",
+      { day: "numeric", month: "long", year: "numeric" })
+  : null;
+const seoTitle = `${dc.name}${seoPlace ? ` (${seoPlace})` : ""} : ${seoGrade}`
+  + (seoDate ? (lang === "fr" ? ` — au ${seoDate}` : ` — as of ${seoDate}`) : "");
+// La meta reprend l'accroche générée du contrat d'artefact plutôt qu'un gabarit : c'est une
+// phrase écrite pour CE site, donc un extrait SERP qui dit quelque chose.
+const seoLead = dc.synthesis?.site?.lead?.[lang];
+const seoDesc = seoLead
+  ? `${seoLead} — ${dc.name}${seoPlace ? `, ${seoPlace}` : ""}. ${seoGrade.charAt(0).toUpperCase()}${seoGrade.slice(1)}, `
+    + (lang === "fr" ? "indicateurs sourcés, observatoire indépendant." : "sourced indicators, independent observatory.")
+  : t.metaDescription.replace("{name}", dc.name).replace("{municipality}", dc.municipality);
 ---
 
 <Base
   lang={lang}
-  title={`${dc.name} — ScoreMyDataCenter`}
-  description={t.metaDescription.replace("{name}", dc.name).replace("{municipality}", dc.municipality)}
+  title={seoTitle}
+  description={seoDesc}
   tagline={t.tagline}
   altHref={altHref}
   altLabel={altLabel}
   nav={nav}
   ogImage={`${SITE_ORIGIN}/og/dc/${dc.id}.png`}
 >
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
   <article class="fiche">
     <aside class="fiche-side">
       <div>

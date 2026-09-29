@@ -30,3 +30,4 @@ site/public/data/
 # On disk (the Makefile sync-api-r2 hook references it by path), but its own
 # private repo; the public site repo must never track it.
 /api/
+.lastmod.json
