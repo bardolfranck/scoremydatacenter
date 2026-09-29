@@ -263,8 +263,10 @@ def grid_line(served: dict, feat: dict) -> str:
         name, km_, mw = m.group(1).strip(), float(m.group(2)), float(m.group(3))
         fill = FILL_RE.search(((ind.get("E3") or {}).get("source") or {}).get("title") or "")
         tail = f" — réservé à {float(fill.group(1)):.0f} %" if fill else ""
-        return (f"Poste de raccordement {name} — {km_:.1f} km (hors cadre) — "
-                f"{mw:.1f} MW disponibles{tail}")
+        # Virgule décimale : le produit est francophone, « 1.2 km » est un anglicisme
+        # qu'un lecteur attentif relève, et cette image est faite pour être partagée.
+        return (f"Poste de raccordement {name} — {km_:.1f} km (hors cadre) — ".replace(".", ",", 1)
+                + f"{mw:.1f} MW disponibles{tail}".replace(".", ",", 1))
 
     best = None
     for cand in feat.get("power_all", []):
