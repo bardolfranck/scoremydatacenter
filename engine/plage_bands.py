@@ -267,17 +267,31 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
       - status NOT pipeline (operational, decommissioned, …) -> None.
         An operational fiche keeps its DEFINITIVE letter from score_datacenter; a coverage
         band must never replace or shadow it. This is the hard firewall.
-      - pipeline + band NOT credible (> 2 adjacent letters) -> `{"kind": "en_attente"}`
+      - pipeline + plage WIDER than the status floor -> `{"kind": "en_attente"}`
         (données insuffisantes) — the neutral chip ScoreBadge already renders, NO letter.
-      - pipeline + credible band (<= 2 adjacent letters) -> a provisional object carrying:
+      - pipeline + plage at the floor -> a provisional object carrying:
           central   : the letter of the renorm POINT (the BIG letter in the loupe)
-          adjacent  : the OTHER letter the plage touches (the small one), or None if the
-                      plage is a single letter
+          edges     : the endpoint letters OTHER than central, worst first (the small chips)
+          adjacent  : edges[0] when there is exactly one, else None (kept for readers that
+                      predate 3-letter plages; `edges` is the general form)
           provisional: True
           confidence: "low" | "medium" | "high" (the fiche's engine confidence if passed,
                       else a structural-coverage proxy)
         It carries NO bare `grade`/`grade_site` key, so it can never be slotted into
         `grades.site.grade`. It belongs in a SEPARATE served field (e.g. `provisional_band`).
+
+    WHY THE CRITERION IS THE WIDTH AND NOT THE LETTER COUNT (Franck, 2026-09-30, « règle C »).
+    The first version withheld the band when the plage straddled more than two letters. But a
+    provisional plage is almost always exactly STATUS_FLOOR wide — an irreducible convention,
+    not a measurement — so counting the letters it straddles measures WHERE the window happens
+    to fall against the grade thresholds, not what we know. Measured on the live corpus: 60
+    fiches displaying a band had exactly the same width as the 9 that were being blanked. Worse,
+    ADDING a measured fact could blank a fiche: E6 moved Étrechet by 2.3 points, the same 18.0-pt
+    window then overhung the E threshold by 1.4 pt, and the most-watched page in the corpus lost
+    its note, its <title> and its OG card over that 1.4 pt.
+    So: « en attente » now means the plage is WIDER than the irreducible floor — we really do not
+    know enough. At the floor, the plage is as tight as this lifecycle stage can ever be, and the
+    honest display is the point letter plus its edges, never a blank.
     """
     if status not in PIPELINE_STATUSES:
         return None
@@ -296,18 +310,31 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
     worst_letter = reserved_letter(kw)      # low end (severe letter, e.g. E)
     best_letter = reserved_letter(kb)       # high end, capped at B
     span = abs(GRADE_ORDER.index(worst_letter) - GRADE_ORDER.index(best_letter))
-    if span > 1:  # not credible after A-25 → the neutral chip ScoreBadge already renders
-        return {"kind": "en_attente", "reason": "donnees_insuffisantes", "span": span}
+
+    # « En attente » = the plage is WIDER than the irreducible floor for this lifecycle stage,
+    # i.e. a real gap in what we know. `coverage_plage` has already widened any narrower plage
+    # UP to the floor, so width >= floor by construction and `> floor` is exactly "wider than
+    # irreducible". Never the letter count — see the docstring.
+    floor = STATUS_FLOOR.get(status, _DEFAULT_FLOOR)
+    if (kb - kw) > floor + 1e-6:
+        return {"kind": "en_attente", "reason": "donnees_insuffisantes",
+                "span": span, "width": round(kb - kw, 1), "floor": floor}
 
     central = reserved_letter(site_score_from_subscores(present, methodology))
-    others = [g for g in {worst_letter, best_letter} if g != central]
-    adjacent = others[0] if others else None
-    plage = central if adjacent is None else f"{max(central, adjacent)}–{min(central, adjacent)}"
+    # Endpoint letters other than the central one, WORST FIRST. Deterministic: a set literal
+    # was iterated here before, which only stayed stable because a 2-letter plage can have at
+    # most one such letter. A 3-letter plage has two, so the order has to be defined.
+    edges = sorted({g for g in (worst_letter, best_letter) if g != central},
+                   key=GRADE_ORDER.index, reverse=True)
+    adjacent = edges[0] if len(edges) == 1 else None
+    letters = sorted({central, *edges}, key=GRADE_ORDER.index, reverse=True)
+    plage = letters[0] if len(letters) == 1 else f"{letters[0]}–{letters[-1]}"
     return {
         "kind": "provisional_band",
         "provisional": True,
         "central": central,          # renorm-point letter — the BIG letter in the loupe
-        "adjacent": adjacent,        # the other letter the plage touches — the small one (or None)
+        "edges": edges,              # the other endpoint letters, worst first — the small chips
+        "adjacent": adjacent,        # edges[0] when there is exactly one (legacy readers)
         "a_reserved": a_reserved,    # True → the top of the band is an A held reserved (show "A réservé")
         "confidence": confidence or _coverage_confidence(band["n_present"], methodology),
         "band": plage,               # e.g. "C–B" — a RANGE (or a single letter), never a grade field

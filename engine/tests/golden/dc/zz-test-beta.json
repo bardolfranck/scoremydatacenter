@@ -109,6 +109,9 @@
     "kind": "provisional_band",
     "provisional": true,
     "central": "E",
+    "edges": [
+      "D"
+    ],
     "adjacent": "D",
     "a_reserved": false,
     "confidence": "medium",

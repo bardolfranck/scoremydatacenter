@@ -129,6 +129,7 @@
     "kind": "provisional_band",
     "provisional": true,
     "central": "B",
+    "edges": [],
     "adjacent": null,
     "a_reserved": true,
     "confidence": "high",

@@ -333,7 +333,8 @@ const seoDesc = seoLead
           <ScoreBadge
             label={t.siteScore}
             grade={dc.grades.site}
-            band={{ central: pband.central, adjacent: pband.adjacent ?? null, a_reserved: pband.a_reserved }}
+            band={{ central: pband.central, edges: pband.edges ?? null,
+                    adjacent: pband.adjacent ?? null, a_reserved: pband.a_reserved }}
             provisionalLabel={provLabel}
             confidence={pband.confidence ?? dc.confidence.level}
             confidenceLabel={t.confidence[pband.confidence ?? dc.confidence.level]}

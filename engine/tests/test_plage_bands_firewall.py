@@ -64,10 +64,16 @@ def test_definitive_grade_path_never_imports_plage_bands():
 # (B) The serving gate behaviour — the contract the artifact builder relies on.
 _METHO = load_methodology()
 
-# A rich present-set (structural gaps small) → a credible band.
-_RICH = {"E1": 30.0, "E2": 70.0, "E3": 65.0, "W1": 60.0, "W2": 80.0, "W3": 65.0,
+# A rich present-set (structural gaps small) → a plage at the irreducible floor, i.e. servable.
+# E6 joined the base block with méthodo v0.2.0 (chaleur fatale split out of F5); a fixture that
+# still omitted it carried one gap too many and drifted to « en attente » — the fixture had not
+# followed the base set, the rule had not changed.
+_RICH = {"E1": 30.0, "E2": 70.0, "E3": 65.0, "E6": 50.0, "W1": 60.0, "W2": 80.0, "W3": 65.0,
          "F1": 70.0, "F2": 100.0, "L1": 60.0, "L3": 100.0}
-# A thin present-set (many structural gaps) → a wide, non-credible band.
+# The SAME knowledge, 10 points lower: same plage width (the floor), but the window now sits
+# across THREE letters instead of two. See test_same_width_same_treatment_wherever_it_sits.
+_RICH_SHIFTED = {i: v - 10.0 for i, v in _RICH.items()}
+# A thin present-set (many structural gaps) → a plage WIDER than the floor: we really don't know.
 _THIN = {"E1": 30.0, "W1": 60.0}
 
 
@@ -88,10 +94,15 @@ def test_pipeline_credible_returns_a_provisional_object_without_a_grade_key():
         "a provisional band must not carry a definitive-grade key — it could be published "
         "as a real letter."
     )
-    # loupe display contract: central (big) + adjacent (small) letters
+    # loupe display contract: central (big) + the endpoint letters around it (small)
     assert out["central"] in {"A", "B", "C", "D", "E"}, "central must be a letter"
-    assert out["adjacent"] is None or out["adjacent"] in {"A", "B", "C", "D", "E"}
-    assert out["adjacent"] != out["central"], "adjacent must differ from central (or be None)"
+    assert all(g in {"A", "B", "C", "D", "E"} for g in out["edges"]), "edges must be letters"
+    assert out["central"] not in out["edges"], "edges are the letters OTHER than central"
+    assert out["edges"] == sorted(set(out["edges"]), key="ABCDE".index, reverse=True), (
+        "edges must be ordered worst-first and deduplicated — a set literal was iterated here "
+        "once, which only stayed stable while a plage could touch at most two letters."
+    )
+    assert out["adjacent"] == (out["edges"][0] if len(out["edges"]) == 1 else None)
     assert out["confidence"] in {"low", "medium", "high"}
     assert "–" in out["band"], "a band is a RANGE (e.g. B–C), never a single letter"
 
@@ -99,6 +110,32 @@ def test_pipeline_credible_returns_a_provisional_object_without_a_grade_key():
 def test_confidence_passthrough_wins_over_the_coverage_proxy():
     out = servable_band("announced", _RICH, "FR", _METHO, None, confidence="high")
     assert out["confidence"] == "high"
+
+
+def test_same_width_same_treatment_wherever_it_sits():
+    """Deux fiches qui en savent AUTANT sont traitées pareil, où que tombe leur fenêtre.
+
+    Le défaut réparé le 2026-09-30 : le critère d'affichage comptait les LETTRES que la plage
+    chevauche. Comme une plage provisoire fait presque toujours exactement STATUS_FLOOR de large
+    — une convention, pas une mesure — ce critère mesurait la POSITION de la fenêtre contre les
+    seuils, pas ce qu'on sait. Conséquence vécue : ajouter un fait MESURÉ (E6) déplaçait Étrechet
+    de 2,3 points, la même fenêtre de 18,0 points débordait alors le seuil du E de 1,4 point, et
+    la fiche la plus consultée du corpus perdait sa note, son titre et sa carte de partage.
+
+    Ici les deux jeux portent la même information à 10 points près : même largeur, mais l'un
+    tient sur deux lettres et l'autre sur trois. Les deux doivent être servis.
+    """
+    wide, shifted = (servable_band("announced", p, "FR", _METHO, None)
+                     for p in (_RICH, _RICH_SHIFTED))
+    assert wide["kind"] == "provisional_band"
+    assert shifted["kind"] == "provisional_band", (
+        "same plage width, merely sitting across three letters instead of two, and the band was "
+        "withheld — the criterion is measuring position again, not knowledge."
+    )
+    assert (wide["best"] - wide["worst"]) == (shifted["best"] - shifted["worst"]), (
+        "the two fixtures must have the SAME width for this test to mean anything"
+    )
+    assert len(shifted["edges"]) == 2, "the shifted window is expected to touch three letters"
 
 
 def test_pipeline_noncredible_returns_en_attente_not_a_letter():
