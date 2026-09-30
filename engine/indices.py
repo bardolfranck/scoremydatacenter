@@ -82,6 +82,49 @@ def _country_has_verification(sites: list[dict]) -> bool:
                for dc in sites for entry in dc["indicators"])
 
 
+# --- Porte 1 : dire CE QU'ON A MESURÉ, jamais CE QUE ÇA A NOTÉ -------------------------
+# Constat qui a rendu ceci nécessaire : notre classement pénalisait les pays qui DOCUMENTENT.
+# La France a Caparéseau, donc elle est notée sur la saturation de son réseau — 325 sites sur
+# 407 sur un poste saturé, score médian 0 — pendant que l'Allemagne, faute de source
+# équivalente, y échappe. Résultat : la France, meilleur mix carbone d'Europe (E1 = 100),
+# était classée sous l'Allemagne (E1 = 30). On publiait un classement qui punit la
+# transparence.
+#
+# La couverture s'affiche donc en BANDES de quatre niveaux, jamais en fraction ni en score :
+# grossier EXPRÈS, pour rester non inversible (une bande + le grade public + les poids
+# publics ne permettent pas de remonter aux sous-scores). L6/L7 sont exclus de la base —
+# jamais peuplés, et les compter rendrait la mesure circulaire.
+CONTESTATION_EXCLUDED = ("L6", "L7")   # contestation & élus : jamais peuplés, et circulaires
+_COVERAGE_BANDS = ((0.85, "complet"), (0.5, "partiel"), (0.0, "mince"))
+
+
+def _base_by_pillar(methodology: dict) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    for ind in methodology.get("indicators") or []:
+        if ind.get("block") == "base" and ind["id"] not in CONTESTATION_EXCLUDED:
+            out.setdefault(ind["pillar"], []).append(ind["id"])
+    return out
+
+
+def _coverage_by_pillar(sites: list[dict], methodology: dict) -> dict[str, str | None]:
+    """Part moyenne des indicateurs de BASE renseignés, par pilier, rendue en bande."""
+    base = _base_by_pillar(methodology)
+    out: dict[str, str | None] = {}
+    for pillar in (p["id"] for p in methodology.get("pillars") or []):
+        ids = base.get(pillar)
+        if not ids:            # pilier sans socle mesurable (transparence = project)
+            out[pillar] = None
+            continue
+        ratios = []
+        for dc in sites:
+            present = {i["id"] for i in dc["indicators"] if i.get("value") is not None}
+            ratios.append(sum(1 for k in ids if k in present) / len(ids))
+        mean = sum(ratios) / len(ratios) if ratios else 0.0
+        out[pillar] = next((label for floor, label in _COVERAGE_BANDS if mean >= floor and mean > 0),
+                           "absent")
+    return out
+
+
 def build_indices(datacenters: dict[str, dict], methodology: dict,
                   results: dict[str, dict]) -> dict:
     """The site_index artifact — computed by the ENGINE at build, never front-side."""
@@ -123,6 +166,7 @@ def build_indices(datacenters: dict[str, dict], methodology: dict,
             "grade": grade,
             "reserved_from": reserved_from,
             "documentation": {"median": doc_median, "band": _doc_band(doc_median)},
+            "coverage_by_pillar": _coverage_by_pillar([dc for dc, _ in published], methodology),
             "eligible": True,
             "n_operational": statuses.get("operational", 0),
             "n_announced": sum(statuses.get(s, 0) for s in _PIPELINE_STATUSES),
