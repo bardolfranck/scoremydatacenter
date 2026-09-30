@@ -1,7 +1,7 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "status": "draft",
-  "published_at": "2026-07-14",
+  "published_at": "2026-09-30",
   "pillars": [
     {
       "id": "energy",
@@ -56,7 +56,7 @@
         "en": "How much CO₂ is emitted to produce the electricity the site will consume, based on the regional grid."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.15,
+      "weight_in_pillar": 0.12,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -106,7 +106,7 @@
         "en": "How easily the site can be connected to the power grid: available capacity and distance to the nearest substation."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.35,
+      "weight_in_pillar": 0.28,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -143,7 +143,7 @@
         "en": "How congested the local grid is: the more saturated, the more the connection competes with other users."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.25,
+      "weight_in_pillar": 0.16,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
@@ -179,7 +179,7 @@
         "en": "The announced energy efficiency: total electricity used versus what actually powers computing. Closer to 1 is better."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.15,
+      "weight_in_pillar": 0.13,
       "block": "project",
       "tier": 2,
       "nature": "declarative",
@@ -228,7 +228,7 @@
         "en": "The share of electricity genuinely from renewables, through verifiable purchase contracts (not mere claims)."
       },
       "pillar": "energy",
-      "weight_in_pillar": 0.1,
+      "weight_in_pillar": 0.07,
       "block": "project",
       "tier": 3,
       "nature": "declarative",
@@ -246,6 +246,82 @@
       "threshold_basis": {
         "type": "editorial_choice",
         "rationale": "PROVISIONAL — out of MVP scope (tier 3); linear 0-100% placeholder."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "E6",
+      "label": {
+        "fr": "Raccordabilité à un réseau de chaleur",
+        "en": "Heat-network connectability"
+      },
+      "description": {
+        "fr": "Possibilité pour le site de valoriser sa chaleur fatale via un réseau de chaleur urbain : distance au réseau le plus proche et présence d'une obligation de raccordement (périmètre de développement prioritaire). Répond à la doctrine de l'autorité environnementale (récupération de la chaleur fatale, loi du 15/11/2021).",
+        "en": "Whether the site can valorise its waste heat via a district-heating network: distance to the nearest network and presence of a connection obligation (priority development perimeter)."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.14,
+      "block": "base",
+      "tier": 2,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "France Chaleur Urbaine (data.gouv, Licence Ouverte v2)"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "raccordable": 100,
+          "proche": 50,
+          "eloigne": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "Raccordable = ≤300 m d'un tracé OU dans un périmètre de développement prioritaire (PDP) ; proche = ≤1000 m ; sinon éloigné. Source France Chaleur Urbaine.",
+        "url": "https://www.data.gouv.fr/datasets/traces-des-reseaux-de-chaleur-et-de-froid"
+      },
+      "calibration_status": "calibrated",
+      "calibration_note": "Scope FR (FCU FR-only) ; hors FR = non collecté (pas non-applicable : le chauffage urbain est paneuropéen). Distance point→segment, Lambert 93. 'Réseau classé' non replié dans raccordable en v1 (périmètre légal non disponible en géométrie ; PDP capture l'obligation)."
+    },
+    {
+      "id": "E7",
+      "label": {
+        "fr": "Récupération de la chaleur fatale — engagement",
+        "en": "Waste-heat recovery — commitment"
+      },
+      "description": {
+        "fr": "Degré d'engagement de l'opérateur à valoriser la chaleur fatale du site (réalisé / contrat signé / étude / intention / aucun). Distingue l'intention non concrétisée de l'engagement réel, conformément aux avis de l'autorité environnementale.",
+        "en": "Operator commitment level to valorise the site's waste heat (delivered / signed contract / study / intention / none)."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.1,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "operator",
+        "permitting file"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "realise": 100,
+          "contrat_signe": 75,
+          "etude": 40,
+          "intention": 20,
+          "aucun": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "ISO/IEC 30134-6 — Energy Reuse Factor (ERF)",
+        "url": "https://www.iso.org/standard/79095.html"
       },
       "calibration_status": "calibrated"
     },
@@ -614,12 +690,12 @@
     {
       "id": "F5",
       "label": {
-        "fr": "Mesures ERC / récupération de chaleur",
-        "en": "Avoid-reduce-offset measures / heat recovery"
+        "fr": "Mesures ERC (éviter-réduire-compenser)",
+        "en": "Avoid-reduce-offset (ERC) measures"
       },
       "description": {
-        "fr": "Les mesures prises pour éviter, réduire ou compenser les dégâts, et pour réutiliser la chaleur produite.",
-        "en": "Measures to avoid, reduce or offset harm, and to reuse the heat produced."
+        "fr": "Les mesures prises pour éviter, réduire ou compenser les atteintes à l'artificialisation et à la biodiversité. (La récupération de chaleur fatale a été déplacée en E6/E7, pilier Énergie.)",
+        "en": "Measures to avoid, reduce or offset harm to soil artificialisation and biodiversity. (Heat recovery moved to E6/E7, Energy pillar.)"
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.1,
@@ -636,15 +712,14 @@
       "normalization": {
         "type": "categorical",
         "categories": {
-          "heat_recovery_and_erc": 100,
-          "partial": 50,
-          "none": 0
+          "erc_complet": 100,
+          "partiel": 50,
+          "aucun": 0
         }
       },
       "threshold_basis": {
         "type": "reference",
-        "reference": "ISO/IEC 30134-6 — Energy Reuse Factor (ERF), le référentiel international de la réutilisation de la chaleur fatale des data centers",
-        "url": "https://www.iso.org/standard/79095.html"
+        "reference": "Séquence Éviter-Réduire-Compenser (code de l'environnement, art. L110-1)"
       },
       "calibration_status": "calibrated"
     },

@@ -16,7 +16,7 @@
       "score": 30.0,
       "documentation": {
         "level": "high",
-        "score": 0.93,
+        "score": 0.89,
         "dots": 4,
         "label": {
           "fr": "documentation solide",
@@ -31,9 +31,9 @@
   },
   "confidence": {
     "level": "medium",
-    "score": 0.706,
+    "score": 0.664,
     "causes": {
-      "missing_data": 0.294,
+      "missing_data": 0.336,
       "unverifiable_declarative": 0.0,
       "model_estimated": 0.0
     }
@@ -41,15 +41,15 @@
   "pillars": {
     "energy": {
       "grade": "E",
-      "score": 26.9,
-      "coverage": 0.833,
+      "score": 23.0,
+      "coverage": 0.602,
       "documentation": {
-        "level": "high",
-        "score": 0.893,
-        "dots": 4,
+        "level": "medium",
+        "score": 0.745,
+        "dots": 3,
         "label": {
-          "fr": "documentation solide",
-          "en": "well documented"
+          "fr": "documentation moyenne",
+          "en": "moderately documented"
         }
       }
     },
@@ -113,11 +113,11 @@
     "a_reserved": false,
     "confidence": "medium",
     "band": "E–D",
-    "worst": 21.0,
-    "best": 39.0,
+    "worst": 22.1,
+    "best": 40.1,
     "span": 1,
     "n_present": 12,
-    "n_base": 14,
+    "n_base": 15,
     "label": {
       "fr": "note provisoire (plage) — se resserre à la livraison",
       "en": "provisional grade (range) — narrows at delivery"
@@ -195,6 +195,36 @@
       "label": {
         "fr": "PUE (efficacité énergétique annoncée)",
         "en": "PUE (announced energy efficiency)"
+      },
+      "pillar": "energy",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "E6",
+      "label": {
+        "fr": "Raccordabilité à un réseau de chaleur",
+        "en": "Heat-network connectability"
+      },
+      "pillar": "energy",
+      "block": "base",
+      "status": "not_collected",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": null,
+      "verification_source": null
+    },
+    {
+      "id": "E7",
+      "label": {
+        "fr": "Récupération de la chaleur fatale — engagement",
+        "en": "Waste-heat recovery — commitment"
       },
       "pillar": "energy",
       "block": "project",
@@ -352,8 +382,8 @@
     {
       "id": "F5",
       "label": {
-        "fr": "Mesures ERC / récupération de chaleur",
-        "en": "Avoid-reduce-offset measures / heat recovery"
+        "fr": "Mesures ERC (éviter-réduire-compenser)",
+        "en": "Avoid-reduce-offset (ERC) measures"
       },
       "pillar": "land_biodiversity",
       "block": "project",
@@ -519,7 +549,7 @@
   "score_history": [
     {
       "date": "2026-07-05",
-      "methodology_version": "0.1.0",
+      "methodology_version": "0.2.0",
       "grades": {
         "site": "D",
         "project_process": "insufficient_data"
@@ -530,7 +560,7 @@
     },
     {
       "date": "2026-07-09",
-      "methodology_version": "0.1.0",
+      "methodology_version": "0.2.0",
       "grades": {
         "site": "E",
         "project_process": "insufficient_data"

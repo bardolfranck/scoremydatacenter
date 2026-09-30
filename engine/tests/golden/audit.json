@@ -3,7 +3,7 @@
     "dc_id": "zz-test-alpha",
     "dc_name": "Alpha Test Campus",
     "date": "2026-07-05",
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "grades": {
       "site": "B",
       "project_process": "C"
@@ -16,7 +16,7 @@
     "dc_id": "zz-test-beta",
     "dc_name": "Beta Test Hyperscale",
     "date": "2026-07-05",
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "grades": {
       "site": "D",
       "project_process": "insufficient_data"
@@ -29,7 +29,7 @@
     "dc_id": "zz-test-beta",
     "dc_name": "Beta Test Hyperscale",
     "date": "2026-07-09",
-    "methodology_version": "0.1.0",
+    "methodology_version": "0.2.0",
     "grades": {
       "site": "E",
       "project_process": "insufficient_data"

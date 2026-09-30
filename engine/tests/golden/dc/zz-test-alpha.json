@@ -13,7 +13,7 @@
   "grades": {
     "site": {
       "grade": "B",
-      "score": 77.7,
+      "score": 79.3,
       "documentation": {
         "level": "high",
         "score": 1.0,
@@ -26,36 +26,36 @@
     },
     "project_process": {
       "grade": "C",
-      "score": 57.1,
-      "coverage": 0.939,
+      "score": 50.6,
+      "coverage": 0.871,
       "documentation": {
-        "level": "high",
-        "score": 0.768,
+        "level": "medium",
+        "score": 0.742,
         "dots": 3,
         "label": {
-          "fr": "documentation solide",
-          "en": "well documented"
+          "fr": "documentation moyenne",
+          "en": "moderately documented"
         }
       }
     }
   },
   "confidence": {
     "level": "high",
-    "score": 0.944,
+    "score": 0.935,
     "causes": {
-      "missing_data": 0.008,
-      "unverifiable_declarative": 0.097,
+      "missing_data": 0.018,
+      "unverifiable_declarative": 0.096,
       "model_estimated": 0.0
     }
   },
   "pillars": {
     "energy": {
       "grade": "B",
-      "score": 71.9,
-      "coverage": 1.0,
+      "score": 68.6,
+      "coverage": 0.892,
       "documentation": {
         "level": "high",
-        "score": 0.946,
+        "score": 0.908,
         "dots": 4,
         "label": {
           "fr": "documentation solide",
@@ -133,11 +133,11 @@
     "a_reserved": true,
     "confidence": "high",
     "band": "B",
-    "worst": 71.7,
-    "best": 83.7,
+    "worst": 73.3,
+    "best": 85.3,
     "span": 0,
-    "n_present": 14,
-    "n_base": 14,
+    "n_present": 15,
+    "n_base": 15,
     "label": {
       "fr": "note provisoire (plage) — se resserre à la livraison",
       "en": "provisional grade (range) — narrows at delivery"
@@ -226,6 +226,44 @@
       "source": {
         "title": "Fictional permitting file, energy section (test)",
         "url": "https://example.org/zz/e4",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "E6",
+      "label": {
+        "fr": "Raccordabilité à un réseau de chaleur",
+        "en": "Heat-network connectability"
+      },
+      "pillar": "energy",
+      "block": "base",
+      "status": "measured",
+      "value": "raccordable",
+      "proxies": null,
+      "score": 100.0,
+      "source": {
+        "title": "Fictional France Chaleur Urbaine (test) — heat network ≤300 m",
+        "url": "https://example.org/zz/e6",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": null
+    },
+    {
+      "id": "E7",
+      "label": {
+        "fr": "Récupération de la chaleur fatale — engagement",
+        "en": "Waste-heat recovery — commitment"
+      },
+      "pillar": "energy",
+      "block": "project",
+      "status": "missing",
+      "value": null,
+      "proxies": null,
+      "score": null,
+      "source": {
+        "title": "Fictional ICPE dossier read — no waste-heat recovery (ERF) commitment found (test read-trace)",
+        "url": "https://example.org/zz/e7-dossier",
         "accessed": "2026-07-01"
       },
       "verification_source": null
@@ -385,8 +423,8 @@
     {
       "id": "F5",
       "label": {
-        "fr": "Mesures ERC / récupération de chaleur",
-        "en": "Avoid-reduce-offset measures / heat recovery"
+        "fr": "Mesures ERC (éviter-réduire-compenser)",
+        "en": "Avoid-reduce-offset (ERC) measures"
       },
       "pillar": "land_biodiversity",
       "block": "project",
@@ -395,7 +433,7 @@
       "proxies": null,
       "score": null,
       "source": {
-        "title": "Fictional ICPE dossier read — no heat-recovery/ERC commitment found (test read-trace)",
+        "title": "Fictional ICPE dossier read — no avoid-reduce-offset (ERC) measure found (test read-trace)",
         "url": "https://example.org/zz/f5-dossier",
         "accessed": "2026-07-01"
       },
@@ -590,7 +628,7 @@
   "score_history": [
     {
       "date": "2026-07-05",
-      "methodology_version": "0.1.0",
+      "methodology_version": "0.2.0",
       "grades": {
         "site": "B",
         "project_process": "C"

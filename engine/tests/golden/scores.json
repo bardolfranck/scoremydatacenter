@@ -13,7 +13,7 @@
     "grades": {
       "site": {
         "grade": "B",
-        "score": 77.7,
+        "score": 79.3,
         "documentation": {
           "level": "high",
           "score": 1.0,
@@ -26,36 +26,36 @@
       },
       "project_process": {
         "grade": "C",
-        "score": 57.1,
-        "coverage": 0.939,
+        "score": 50.6,
+        "coverage": 0.871,
         "documentation": {
-          "level": "high",
-          "score": 0.768,
+          "level": "medium",
+          "score": 0.742,
           "dots": 3,
           "label": {
-            "fr": "documentation solide",
-            "en": "well documented"
+            "fr": "documentation moyenne",
+            "en": "moderately documented"
           }
         }
       }
     },
     "confidence": {
       "level": "high",
-      "score": 0.944,
+      "score": 0.935,
       "causes": {
-        "missing_data": 0.008,
-        "unverifiable_declarative": 0.097,
+        "missing_data": 0.018,
+        "unverifiable_declarative": 0.096,
         "model_estimated": 0.0
       }
     },
     "pillars": {
       "energy": {
         "grade": "B",
-        "score": 71.9,
-        "coverage": 1.0,
+        "score": 68.6,
+        "coverage": 0.892,
         "documentation": {
           "level": "high",
-          "score": 0.946,
+          "score": 0.908,
           "dots": 4,
           "label": {
             "fr": "documentation solide",
@@ -143,7 +143,7 @@
         "score": 30.0,
         "documentation": {
           "level": "high",
-          "score": 0.93,
+          "score": 0.89,
           "dots": 4,
           "label": {
             "fr": "documentation solide",
@@ -158,9 +158,9 @@
     },
     "confidence": {
       "level": "medium",
-      "score": 0.706,
+      "score": 0.664,
       "causes": {
-        "missing_data": 0.294,
+        "missing_data": 0.336,
         "unverifiable_declarative": 0.0,
         "model_estimated": 0.0
       }
@@ -168,15 +168,15 @@
     "pillars": {
       "energy": {
         "grade": "E",
-        "score": 26.9,
-        "coverage": 0.833,
+        "score": 23.0,
+        "coverage": 0.602,
         "documentation": {
-          "level": "high",
-          "score": 0.893,
-          "dots": 4,
+          "level": "medium",
+          "score": 0.745,
+          "dots": 3,
           "label": {
-            "fr": "documentation solide",
-            "en": "well documented"
+            "fr": "documentation moyenne",
+            "en": "moderately documented"
           }
         }
       },
