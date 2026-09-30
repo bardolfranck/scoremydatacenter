@@ -272,6 +272,26 @@ def apply_developer_identity(dcs: dict) -> dict:
                           "activity_fr": activity_fr, "activity_en": activity_en,
                           "url": f"https://annuaire-entreprises.data.gouv.fr/entreprise/{siren_id}",
                           "checked_at": e.get("checked_at")}
+    # Second chemin, plus fort que le registre des entreprises : le fait déclaré DANS la fiche,
+    # quand il vient d'un acte administratif nommant le pétitionnaire de CETTE installation.
+    # Le rapprochement par nom au registre des entreprises produit des homonymes (leçon COLT,
+    # et Goodman tenu en réserve des semaines pour ça) ; un registre d'évaluation
+    # environnementale, lui, ne rapproche pas des noms — il dit qui a déposé le dossier, pour
+    # cette commune et cette procédure. Aucune signature R&D requise, parce qu'il n'y a pas
+    # d'appariement à valider : la source EST l'appariement.
+    for dc_id, dc in dcs.items():
+        dev = (dc.get("identity") or {}).get("developer")
+        if not dev or not isinstance(dev, dict) or dc_id in sources:
+            continue
+        if not dev.get("name") or not (dev.get("source") or {}).get("url"):
+            continue
+        sources[dc_id] = {"source": dev["source"].get("title") or "acte administratif",
+                          "activity_fr": dev.get("activity_fr") or "pétitionnaire du dossier",
+                          "activity_en": dev.get("activity_en") or "applicant on the case file",
+                          "url": dev["source"]["url"],
+                          "checked_at": dev["source"].get("accessed")}
+        if str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none"):
+            dc["identity"]["operator"] = dev["name"]
     return sources
 
 
@@ -373,7 +393,7 @@ def main() -> int:
     patch_operator_source(operator_sources)
     print(f"prod-artifacts: operator filled from the company register on {len(operator_sources)} fiches")
     patch_developer_source(developer_sources)
-    print(f"prod-artifacts: developer register-fact on {len(developer_sources)} fiches (R&D-signed only)")
+    print(f"prod-artifacts: developer fact on {len(developer_sources)} fiches (registre entreprises signé R&D, ou acte administratif)")
     dwell = patch_nearest_dwelling()
     print(f"prod-artifacts: nearest_dwelling on {dwell} fiches" if dwell
           else "prod-artifacts: nearest_dwelling skipped (no habitations sidecar — run make habitations)")
