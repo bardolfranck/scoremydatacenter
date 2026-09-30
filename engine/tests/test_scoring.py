@@ -11,23 +11,22 @@ def test_alpha_dual_grades(methodology, alpha):
     r = score_datacenter(alpha, methodology)
     site = r["grades"]["site"]
     # no editorial gloss: the letter and the one-decimal score, nothing else
-    assert (site["grade"], site["score"]) == ("B", 77.7)
+    assert (site["grade"], site["score"]) == ("B", 79.3)
     assert "close_to" not in site
     pp = r["grades"]["project_process"]
-    # F5 (heat recovery) entered MVP in 0.1.0-draft (f); alpha does not disclose it,
-    # so one project indicator is now missing → coverage 0.939 (was 1.0) and F5=0
-    # drags the project/process score 62.3 → 57.1.
-    assert (pp["grade"], pp["score"], pp["coverage"]) == ("C", 57.1, 0.939)
+    # v0.2.0: heat recovery split out of F5 → E7 (project) entered MVP; alpha discloses no
+    # E7 commitment (missing) → project coverage 0.871 and the project/process score 50.6
+    # under the reweighted Energy grid.
+    assert (pp["grade"], pp["score"], pp["coverage"]) == ("C", 50.6, 0.871)
 
 
 def test_alpha_confidence_two_causes(methodology, alpha):
     c = score_datacenter(alpha, methodology)["confidence"]
     assert c["level"] == "high"
-    # F5 now MVP but undisclosed by alpha → a sliver of missing_data (was 0.0); the
-    # unverifiable_declarative share (E4+W4+L4+L5) renormalizes over the larger
-    # importance pool: 0.098 → 0.097.
-    assert c["causes"]["missing_data"] == 0.008
-    assert c["causes"]["unverifiable_declarative"] == 0.097
+    # v0.2.0: E7 (heat-recovery commitment) undisclosed by alpha → a sliver of missing_data;
+    # the unverifiable_declarative share renormalizes over the reweighted importance pool.
+    assert c["causes"]["missing_data"] == 0.018
+    assert c["causes"]["unverifiable_declarative"] == 0.096
 
 
 def test_beta_site_grade_on_rounded_score(methodology, beta):
@@ -46,9 +45,9 @@ def test_beta_project_process_insufficient_data(methodology, beta):
 def test_beta_confidence_missing_cause(methodology, beta):
     c = score_datacenter(beta, methodology)["confidence"]
     assert c["level"] == "medium"
-    # F5 entered MVP (0.1.0-draft (f)); beta discloses no project data, so the extra
-    # missing indicator nudges missing_data 0.289 → 0.294.
-    assert c["causes"]["missing_data"] == 0.294
+    # v0.2.0: E6/E7 entered MVP; beta discloses no project data and its heat-network E6 is
+    # not collected, nudging missing_data up to 0.336.
+    assert c["causes"]["missing_data"] == 0.336
     assert c["causes"]["unverifiable_declarative"] == 0.0
 
 
@@ -56,8 +55,8 @@ def test_insufficient_data_cascades_to_pillar_subscores(methodology, beta):
     pillars = score_datacenter(beta, methodology)["pillars"]
     # a pillar below the coverage floor is never given a punitive letter drawn from unknowns
     assert pillars["transparency_governance"] == {"grade": "insufficient_data", "coverage": 0.0}
-    assert pillars["energy"]["grade"] == "E"  # known and bad is still graded (coverage 0.833)
-    assert pillars["energy"]["coverage"] == 0.833
+    assert pillars["energy"]["grade"] == "E"  # known and bad is still graded (coverage 0.602)
+    assert pillars["energy"]["coverage"] == 0.602
     assert pillars["local_impact"]["coverage"] == 0.4  # exactly at the floor: graded
 
 

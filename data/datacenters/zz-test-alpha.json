@@ -156,7 +156,7 @@
       "id": "F5",
       "status": "missing",
       "source": {
-        "title": "Fictional ICPE dossier read — no heat-recovery/ERC commitment found (test read-trace)",
+        "title": "Fictional ICPE dossier read — no avoid-reduce-offset (ERC) measure found (test read-trace)",
         "url": "https://example.org/zz/f5-dossier",
         "accessed": "2026-07-01"
       }
@@ -256,6 +256,25 @@
         "url": "https://example.org/zz/t2",
         "accessed": "2026-07-01"
       }
+    },
+    {
+      "id": "E6",
+      "status": "measured",
+      "value": "raccordable",
+      "source": {
+        "title": "Fictional France Chaleur Urbaine (test) — heat network ≤300 m",
+        "url": "https://example.org/zz/e6",
+        "accessed": "2026-07-01"
+      }
+    },
+    {
+      "id": "E7",
+      "status": "missing",
+      "source": {
+        "title": "Fictional ICPE dossier read — no waste-heat recovery (ERF) commitment found (test read-trace)",
+        "url": "https://example.org/zz/e7-dossier",
+        "accessed": "2026-07-01"
+      }
     }
   ],
   "publication": {
@@ -269,7 +288,7 @@
   "score_history": [
     {
       "date": "2026-07-05",
-      "methodology_version": "0.1.0",
+      "methodology_version": "0.2.0",
       "grades": {
         "site": "B",
         "project_process": "C"

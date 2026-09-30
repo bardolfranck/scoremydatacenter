@@ -55,7 +55,7 @@ et la distinction est **déclarée** :
 
 **Règle : maximiser le référentiel, minimiser l'éditorial — et le déclarer.**
 
-## 5. La grille — les 24 indicateurs
+## 5. La grille — les 26 indicateurs
 
 ### Énergie — 25 %
 

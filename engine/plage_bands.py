@@ -242,14 +242,20 @@ def coverage_plage(present: dict, country: str, status: str, methodology: dict,
 # The single decision point for what a PUBLIC artifact may show as a provisional band.
 # `build_prod_artifacts` calls THIS (never coverage_plage directly) so the project-only /
 # credible-only / never-operational rules live in one place and are enforced by one test.
-_STRUCTURAL_BASE = 12  # collectable base indicators (14 minus L6/L7, never populated)
+def _structural_base(methodology: dict) -> int:
+    """Collectable base indicators = base block minus contestation-adjacent (never populated).
+    DERIVED from the methodology so it can't silently drift when the base set changes (it was
+    hardcoded 12 = 14 minus L6/L7; adding E6 makes it 13). Global on purpose: E6 is a
+    *not-collected* indicator outside France, not a *non-applicable* one, so it belongs to the
+    collectable base everywhere (see _not_applicable / the applicability primitive)."""
+    return sum(1 for d in base_definitions(methodology) if d["id"] not in CONTESTATION_ADJACENT)
 
 
-def _coverage_confidence(n_present: int) -> str:
+def _coverage_confidence(n_present: int, methodology: dict) -> str:
     """Fallback confidence when the caller doesn't pass the fiche's engine confidence:
-    a proxy on STRUCTURAL coverage (present / 12 collectable base). Documented as a proxy —
+    a proxy on STRUCTURAL coverage (present / collectable base). Documented as a proxy —
     prefer the engine's own confidence.level, passed via `confidence`."""
-    ratio = n_present / _STRUCTURAL_BASE
+    ratio = n_present / _structural_base(methodology)
     return "high" if ratio >= 0.75 else "medium" if ratio >= 0.5 else "low"
 
 
@@ -303,7 +309,7 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
         "central": central,          # renorm-point letter — the BIG letter in the loupe
         "adjacent": adjacent,        # the other letter the plage touches — the small one (or None)
         "a_reserved": a_reserved,    # True → the top of the band is an A held reserved (show "A réservé")
-        "confidence": confidence or _coverage_confidence(band["n_present"]),
+        "confidence": confidence or _coverage_confidence(band["n_present"], methodology),
         "band": plage,               # e.g. "C–B" — a RANGE (or a single letter), never a grade field
         "worst": round(kw, 1), "best": round(kb, 1), "span": span,
         "n_present": band["n_present"], "n_base": band["n_base"],

@@ -144,7 +144,7 @@
         {
           "id": "F5",
           "status": "announced",
-          "value": "heat_recovery_and_erc",
+          "value": "erc_complet",
           "source": {
             "title": "public source pinned in the private newsroom corpus (A-11)",
             "url": "https://example.org/pinned-in-newsroom",
@@ -214,6 +214,20 @@
             "url": "https://example.org/pinned-in-newsroom",
             "accessed": "2026-07-09"
           }
+        },
+        {
+          "id": "E6",
+          "status": "measured",
+          "value": "eloigne",
+          "source": {
+            "title": "public source pinned in the private newsroom corpus (A-11) — farmland, no district-heating network in range",
+            "url": "https://example.org/pinned-in-newsroom",
+            "accessed": "2026-07-09"
+          }
+        },
+        {
+          "id": "E7",
+          "status": "not_collected"
         }
       ],
       "target": {
@@ -336,7 +350,16 @@
         {
           "id": "F5",
           "status": "announced",
-          "value": "heat_recovery_and_erc"
+          "value": "erc_complet"
+        },
+        {
+          "id": "E6",
+          "status": "not_collected"
+        },
+        {
+          "id": "E7",
+          "status": "announced",
+          "value": "realise"
         }
       ],
       "target": {
@@ -458,6 +481,14 @@
         {
           "id": "T2",
           "status": "not_collected"
+        },
+        {
+          "id": "E6",
+          "status": "not_collected"
+        },
+        {
+          "id": "E7",
+          "status": "not_collected"
         }
       ],
       "target": {
@@ -548,7 +579,7 @@
         {
           "id": "F5",
           "status": "announced",
-          "value": "heat_recovery_and_erc"
+          "value": "erc_complet"
         },
         {
           "id": "L2",
@@ -586,6 +617,14 @@
           "id": "T2",
           "status": "measured",
           "value": "full_dossier_online"
+        },
+        {
+          "id": "E6",
+          "status": "not_collected"
+        },
+        {
+          "id": "E7",
+          "status": "not_collected"
         }
       ],
       "target": {

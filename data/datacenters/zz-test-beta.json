@@ -190,6 +190,14 @@
     {
       "id": "T2",
       "status": "missing"
+    },
+    {
+      "id": "E6",
+      "status": "not_collected"
+    },
+    {
+      "id": "E7",
+      "status": "missing"
     }
   ],
   "publication": {
@@ -199,7 +207,7 @@
   "score_history": [
     {
       "date": "2026-07-05",
-      "methodology_version": "0.1.0",
+      "methodology_version": "0.2.0",
       "grades": {
         "site": "D",
         "project_process": "insufficient_data"
@@ -210,7 +218,7 @@
     },
     {
       "date": "2026-07-09",
-      "methodology_version": "0.1.0",
+      "methodology_version": "0.2.0",
       "grades": {
         "site": "E",
         "project_process": "insufficient_data"
