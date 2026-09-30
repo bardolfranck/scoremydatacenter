@@ -82,11 +82,16 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 // visible with its facts, but no letter is shown anywhere (leak-safe by data
 // scrub). For desalination-dominant countries (Israel now) we carry the
 // validated water×desalination note so the fiche isn't mute on the "why".
-const isEnAttente = dc.grades?.site?.grade === "en_attente";
-// Loupe — provisional coverage band on a PIPELINE project (R&D servable_band → dc/{id}.json.provisional_band).
-// Credible → big central + small adjacent letter (loupe); non-credible → the neutral en_attente chip (existing path).
+// Loupe — provisional coverage band on a PIPELINE project (servable_band → dc/{id}.json.provisional_band).
+// Servable → big central letter + a small chip per edge; band withheld → the neutral en_attente chip.
 const pband = (dc as any).provisional_band;
 const hasLoupe = pband?.kind === "provisional_band" && typeof pband.central === "string";
+// A withheld band is « en attente » on the PAGE too, not just in the <title>. Without the second
+// clause the badge fell back to the definitive letter from grades.site: the SERP announced « note
+// en attente » while the page showed a firm D — the site contradicting itself on the one thing it
+// sells, on 15 pipeline fiches (constaté le 2026-09-30, antérieur à la règle C). An operational
+// fiche has no band at all, so it keeps its definitive letter untouched.
+const isEnAttente = dc.grades?.site?.grade === "en_attente" || pband?.kind === "en_attente";
 const provLabel = lang === "fr" ? "provisoire · s'affine avec la donnée" : "provisional · narrows as data lands";
 const isDesalCountry = dc.country === "IL";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
@@ -345,7 +350,8 @@ const seoDesc = seoLead
         ) : (
           <ScoreBadge
             label={t.siteScore}
-            grade={dc.grades.site}
+            grade={pband?.kind === "en_attente" ? { ...dc.grades.site, grade: "en_attente" } : dc.grades.site}
+            enAttenteLabel={lang === "fr" ? "Note en attente" : "Grade pending"}
             confidence={dc.confidence.level}
             confidenceLabel={t.confidence[dc.confidence.level]}
             documentationLabel={siteDocLabel}
