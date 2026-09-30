@@ -70,10 +70,12 @@ REGIONS: dict[str, RegionSpec] = {
         code="PACA",
         label="DREAL Provence-Alpes-Côte d'Azur",
         mapfile="/opt/data/stack/mapfiles/1.4/org_38174/03f86b13-46c1-4a94-98fd-0060f3ebf4d6.internet.map",
-        typename="ms:L_AE_PR_S_R93",
+        typename="ms:Avis_Projet_commune",
+        # Le plus pauvre des quatre : ni pétitionnaire, ni INSEE, ni procédure. C'est LE
+        # dénominateur commun mesuré — commune + intitulé + date + lien PDF — et rien de plus.
         fields={
             "PROJET": "intitule", "LOCALITE": "commune",
-            "DATE_PUBLI": "date_avis", "LIEN_AVIS": "doc_url",
+            "DATE_PUBLI": "date_avis", "LIEN_AVIS": "doc_url", "id": "numero_avis",
         },
         search_field="PROJET",
     ),
@@ -81,10 +83,24 @@ REGIONS: dict[str, RegionSpec] = {
         code="GE",
         label="DREAL Grand Est",
         mapfile="/opt/data/stack/mapfiles/1.4/org_5443264/2f20595a-e699-4701-af4b-0f35a8f5fa5d.internet.map",
-        typename="ms:L_AE_PR_S_R44",
+        typename="ms:LocalisantAvisAeProjet_P_R44",
         fields={
-            "intitule": "intitule", "commune": "commune", "insee_com": "insee",
-            "petition": "petitionnaire", "lien_pdf": "doc_url",
+            "intitule": "intitule", "nom_com": "commune", "insee_com": "insee",
+            "dept": "departement", "petition": "petitionnaire", "categorie": "procedure",
+            "statut": "statut", "date_final": "date_avis", "numero": "numero_avis",
+            "lien_pdf": "doc_url",
+        },
+        search_field="intitule",
+    ),
+    "NORM": RegionSpec(
+        code="NORM",
+        label="DREAL Normandie",
+        mapfile="/opt/data/stack/mapfiles/1.4/org_4930752/40a3a8bb-7675-4795-9e02-f1b37d8f5347.internet.map",
+        typename="ms:drealnorm_aepr_s_r28",
+        fields={
+            "intitule": "intitule", "petit": "petitionnaire", "statut": "statut",
+            "categorie": "procedure", "date_lim": "date_reception",
+            "cd_garance": "numero_avis", "url_avis": "doc_url",
         },
         search_field="intitule",
     ),
@@ -96,12 +112,20 @@ REGIONS: dict[str, RegionSpec] = {
 DC_PATTERNS = ("*data*", "*données*", "*donnees*")
 # … et on retire ce que ces racines ramassent à tort (« données » est un mot courant).
 NOT_A_DC = re.compile(r"traitement des donn[ée]es personnelles|base de donn[ée]es (?:publique|nationale)", re.I)
-IS_A_DC = re.compile(r"data\s*cent|datacent|centre[s]?\s+(?:d'h[ée]bergement\s+)?de\s+donn[ée]es|"
-                     r"h[ée]bergement\s+de\s+donn[ée]es|big\s*data", re.I)
+# Le trait d'union compte : « DATA-CENTER » est l'orthographe habituelle en PACA, et un motif
+# qui ne tolère que l'espace écartait silencieusement trois dossiers sur cinq (calibration).
+IS_A_DC = re.compile(r"data[\s\-–]*cent|datacent|centre[s]?\s+(?:d['’]h[ée]bergement\s+)?de\s+donn[ée]es|"
+                     r"h[ée]bergement\s+de\s+donn[ée]es|big[\s\-]*data", re.I)
 
 
 def _like(field_name: str, pattern: str) -> str:
-    return ('<PropertyIsLike wildCard="*" singleChar="." escapeChar="!">'
+    # matchCase="false" est INDISPENSABLE et c'est un piège silencieux : le filtre est
+    # sensible à la casse par défaut, et PACA saisit ses intitulés en CAPITALES
+    # (« PROJET DE CONSTRUCTION D'UN DATA-CENTER … »). Sans cet attribut, la requête
+    # réussit et rend ZÉRO résultat — une région entière disparaît sans la moindre erreur.
+    # Constaté à la calibration : 0 dossier en PACA, Grand Est et Normandie ; 5 en PACA
+    # une fois l'attribut posé.
+    return ('<PropertyIsLike wildCard="*" singleChar="." escapeChar="!" matchCase="false">'
             f"<PropertyName>{field_name}</PropertyName><Literal>{pattern}</Literal>"
             "</PropertyIsLike>")
 

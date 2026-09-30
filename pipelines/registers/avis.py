@@ -286,7 +286,17 @@ FIELDS: tuple[Field, ...] = (
           r"emplois?|effectif\s+sur\s+site|salariés?|\bETP\b", kind="text"),
 )
 
-RECO = re.compile(r"L['’]\s*Autorité\s+environnementale\s+recommande[^.]{10,400}\.", re.I)
+# La formule change de région en région : « L'Autorité environnementale recommande »,
+# « La MRAe recommande », « l'Ae recommande ». Un motif calé sur la seule tournure
+# francilienne rendait ZÉRO recommandation en PACA et en Normandie — et zéro se lit comme
+# « l'autorité n'a rien à redire », ce qui est le contraire de la vérité.
+RECO = re.compile(
+    r"(?:L['’]\s*Autorité\s+environnementale|La\s+MRAe|L['’]\s*(?:Ae|MRAe)|"
+    r"La\s+mission\s+régionale\s+d['’]autorité\s+environnementale)\s+recommande[^.]{10,400}\.",
+    re.I)
+TYPOGRAPHIC_RECO = re.compile(
+    r"recommandations\s+sont\s+portées\s+en\s+(?:italique|gras)|"
+    r"recommandations\s+(?:figurent|apparaissent)\s+en\s+(?:italique|gras)", re.I)
 
 
 @dataclass
@@ -408,6 +418,14 @@ def extract(pdf: bytes, doc_url: str) -> Avis:
                         avis.facts.append(Fact(spec.id, spec.label, spec.theme, val, spec.unit, s, pno))
 
     full = " ".join(pages)
+    # La Normandie n'introduit pas ses recommandations par un verbe : elle les porte « en
+    # italique gras ». La couche texte perd la mise en forme, donc un extracteur lexical en
+    # trouve ZÉRO — et zéro se lit comme « l'autorité n'a rien à redire ». On le dit.
+    if TYPOGRAPHIC_RECO.search(full):
+        avis.warnings.append(
+            "recommandations signalées par la MISE EN FORME (italique gras) et non par une "
+            "tournure : leur nombre ici n'est pas le nombre réel. Les extraire demande la "
+            "police des caractères, pas une expression régulière.")
     for m in RECO.finditer(full):
         txt = re.sub(r"\s+", " ", m.group(0)).strip()
         page = next((i for i, p in enumerate(pages, 1) if txt[:60] in re.sub(r"\s+", " ", p)), None)
@@ -415,7 +433,28 @@ def extract(pdf: bytes, doc_url: str) -> Avis:
     return avis
 
 
+class NotADocument(RuntimeError):
+    """Le lien du registre ne mène pas à un document."""
+
+
 def fetch_pdf(url: str) -> bytes:
+    """Télécharge et VÉRIFIE que c'est bien un PDF.
+
+    Le Grand Est ne met pas un document dans `lien_pdf` : il met la page HTML de l'année
+    (« avis de l'Ae 2016 sur les projets dans le Bas-Rhin »), qui liste des dizaines d'avis.
+    Sans cette vérification, pypdf lève un `PdfStreamError` opaque au milieu d'un lot et on
+    croit à un document corrompu, alors que le registre est simplement construit autrement
+    dans cette région. L'erreur doit nommer ce qu'on a reçu — c'est ce qui rend la panne
+    réparable au lieu d'être mise sur le compte du hasard.
+    """
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
-        return r.read()
+        ctype = (r.headers.get("Content-Type") or "").split(";")[0].strip()
+        blob = r.read()
+    if not blob.startswith(b"%PDF"):
+        head = blob[:80].decode("utf-8", "replace").strip().replace("\n", " ")
+        kind = "page HTML" if b"<html" in blob[:400].lower() else f"type {ctype or 'inconnu'}"
+        raise NotADocument(
+            f"le lien du registre ne rend pas un PDF mais une {kind} — début : {head!r}. "
+            "Ce n'est pas un document corrompu : cette région publie un lien de page, pas de fichier.")
+    return blob
