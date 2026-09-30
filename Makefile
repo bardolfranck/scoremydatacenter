@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations
+.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations validate-corpus
 
 install:
 	uv sync
@@ -125,7 +125,7 @@ methodology-doc:
 # satellite AUTOMATIQUEMENT au build de prod — génération idempotente (skip si
 # déjà sur R2), non fatale (le build n'échoue jamais pour une image), politesse
 # réseau. Secret HMAC + base URL : ~/.smdc/media.env (hors repos).
-prod-artifacts:
+prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py
 	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2
@@ -282,3 +282,16 @@ habitations:
 	@cd $(NEWSROOM) && git add calibration/habitations && \
 	  if git diff --cached --quiet; then echo "habitations: rien de neuf"; \
 	  else git commit -q -m "habitations: distance aux premières habitations $$(date +%F)" && (git push -q 2>/dev/null && echo "habitations: poussé au newsroom" || echo "habitations: commit local (push différé)"); fi
+
+# GATE de deploy : valide le CORPUS RÉEL du newsroom (pas les 2 fixtures). Échoue en sortie non-nulle.
+#
+# Câblé en prérequis de `prod-artifacts`, et pas de `build` : `build` retombe sur `score`
+# (fixtures) quand le newsroom n'est pas monté, et le gate refuse par construction un corpus
+# tronqué — il bloquerait alors un build légitime. `prod-artifacts` ne tourne QUE avec le
+# newsroom, donc c'est là que le gate a un sens.
+#
+# Il passe aussi AVANT `sync-api-r2` : `prod-artifacts` publie les artefacts dans le bucket
+# API au passage, donc « builder pour voir » expose déjà les données. Rien ne doit partir
+# vers R2 sans que le corpus réel soit validé (constaté le 2026-09-30).
+validate-corpus:
+	uv run python scripts/validate_corpus.py
