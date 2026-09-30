@@ -52,6 +52,37 @@ _DEFAULT_FLOOR = 12.0
 CONTESTATION_ADJACENT = frozenset({"L6", "L7"})
 
 
+# ------------------------------------------------- applicabilité PAR PAYS (primitive)
+# Généralisation de l'aveuglement L6/L7 ci-dessus. Un indicateur peut être NON APPLICABLE
+# dans un pays — pas « pas encore collecté », mais « il n'existe aucune donnée à collecter
+# ici ». Exemple fondateur : la raccordabilité à un réseau de chaleur (E6) se dérive d'un
+# jeu national français ; hors de France, il n'y a rien à mesurer, et il n'y aura rien tant
+# qu'un équivalent n'existe pas.
+#
+# La distinction est décisive pour la BANDE, et seulement pour elle :
+#   · NON APPLICABLE  → renormalisé, exactement comme L6/L7. Ce n'est pas une incertitude.
+#   · APPLICABLE mais non collecté → continue de swinguer. C'est un vrai trou, et la plage
+#     doit s'élargir : on ne sait pas, et on le dit.
+# Confondre les deux ferait porter à l'Allemagne une incertitude qu'elle ne pourra JAMAIS
+# combler, donc une plage large à perpétuité — le défaut qu'on a failli introduire.
+#
+# CONTESTATION_ADJACENT devient un cas particulier : non applicable PARTOUT, pour
+# non-circularité. Un seul mécanisme, un seul invariant.
+#
+# La carte est DÉCLARATIVE (méthodologie, jamais déduite des données) : un indicateur
+# absent du corpus d'un pays ne doit pas devenir « non applicable » tout seul, sinon on
+# blanchirait nos propres trous de collecte en les rebaptisant. Tenue par R&D.
+def _not_applicable(country: str | None, methodology: dict) -> frozenset[str]:
+    """Indicateurs de base non applicables dans ce pays — renormalisés, jamais swingués."""
+    declared = (methodology.get("applicability") or {})
+    out = set(CONTESTATION_ADJACENT)
+    for iid, spec in declared.items():
+        only = spec.get("countries_only") if isinstance(spec, dict) else None
+        if only and country not in only:
+            out.add(iid)
+    return frozenset(out)
+
+
 # ---------------------------------------------------------------- methodology helpers
 def base_definitions(methodology: dict) -> list[dict]:
     """The MVP BASE-block indicator definitions (the site-grade inputs)."""
@@ -164,7 +195,8 @@ def coverage_plage(present: dict, country: str, status: str, methodology: dict,
     # Only STRUCTURAL gaps widen the band; contestation-adjacent gaps (L6/L7) are
     # renormalized away, exactly as the published L6/L7-blind site grade does. This is
     # what keeps the band structural and non-circular (see CONTESTATION_ADJACENT).
-    swing = [iid for iid in missing if iid not in CONTESTATION_ADJACENT]
+    blind = _not_applicable(country, methodology)
+    swing = [iid for iid in missing if iid not in blind]
 
     def fill(mode: str, use_knn: bool) -> float:
         scored = dict(present)  # missing L6/L7 stay absent -> renormalized away by the aggregate
