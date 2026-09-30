@@ -385,7 +385,22 @@ def run(newsroom_root: Path, *, llm, public_data: Path, accessed: str | None = N
 
     day_dir = newsroom_root / "actu" / accessed
     day_dir.mkdir(parents=True, exist_ok=True)
-    (day_dir / "actu.json").write_text(
+    # PRÉSERVATION DES PICKS HUMAINS : un re-harvest du même jour NE DOIT PAS écraser les items
+    # approuvés à la main (approved_by="human") qui ne viennent pas des flux (choix presse de Franck,
+    # promotes). Sans ça, le cron quotidien efface les picks du jour (incident 2026-09-29 : 6 news
+    # de Franck perdues). On reporte donc les items humains de l'archive existante absents du harvest.
+    archive_path = day_dir / "actu.json"
+    if archive_path.exists():
+        try:
+            prev_items = json.loads(archive_path.read_text()).get("items", [])
+        except (json.JSONDecodeError, OSError):
+            prev_items = []
+        have = {it["id"] for it in items}
+        for it in prev_items:
+            if it.get("approved_by") == "human" and it["id"] not in have:
+                it.pop("_route", None); it.pop("_gate", None)
+                items.append(it)                         # pick humain sticky, jamais écrasé par le harvest
+    archive_path.write_text(
         json.dumps({"date": accessed, "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                     "items": items}, ensure_ascii=False, indent=2) + "\n")
 
