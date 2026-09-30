@@ -125,7 +125,12 @@ def e6_at(lat: float, lon: float, fcu: dict, accessed: str) -> dict:
     px, py = to_l93(lat, lon)
     dist_m, classe = _nearest(px, py, fcu["nets"])
     in_pdp = _in_pdp(px, py, fcu["polys"])
-    if dist_m <= RACCORDABLE_M or in_pdp or (classe and dist_m <= PROCHE_M):
+    # Option A (R&D 2026-09-30) : raccordable=100 repose sur une PREUVE géométrique — proximité
+    # physique (≤300 m) OU polygone d'obligation réel (PDP). Le drapeau « réseau classé » N'entre
+    # PAS : il crée une obligation dans un PÉRIMÈTRE de classement dont on n'a pas la géométrie ;
+    # l'approximer (≤1 km) sur-revendiquerait le score max sur preuve mince. Flag conservé en
+    # provenance — le jour où on a la géométrie du périmètre, on le traitera comme un PDP.
+    if dist_m <= RACCORDABLE_M or in_pdp:
         cat = "raccordable"
     elif dist_m <= PROCHE_M:
         cat = "proche"
@@ -133,7 +138,6 @@ def e6_at(lat: float, lon: float, fcu: dict, accessed: str) -> dict:
         cat = "eloigne"
     trig = ("≤300 m" if dist_m <= RACCORDABLE_M else
             "dans un PDP" if in_pdp else
-            "réseau classé ≤1 km" if (classe and dist_m <= PROCHE_M) else
             "≤1000 m" if dist_m <= PROCHE_M else ">1000 m")
     # Au-delà du pré-filtre bbox (~1,5 km), la distance exacte n'est pas calculée : la catégorie
     # est de toute façon « eloigne ». On l'écrit honnêtement plutôt qu'une sentinelle.
