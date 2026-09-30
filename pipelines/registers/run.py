@@ -16,6 +16,7 @@ font 1 à 3 Mo et le service qui les sert n'est pas rapide.
 from __future__ import annotations
 
 import argparse
+import collections
 import hashlib
 import json
 import re
@@ -71,6 +72,7 @@ def one(region: str, d: I.Dossier, out_dir: Path, force: bool) -> dict:
     path.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
     row["statut"] = "extrait" if av.has_text_layer else "sans couche texte"
     row["faits"] = sum(len(v) for v in doc["installation"]["faits"].values())
+    row["champs"] = sorted({f["indicateur"] for fs in doc["installation"]["faits"].values() for f in fs})
     row["recommandations"] = len(doc["installation"]["recommandations_autorite"])
     row["pages"] = av.n_pages
     if av.warnings:
@@ -115,16 +117,58 @@ def one_national(doc, out_dir: Path, force: bool) -> dict:
         row["raison"] = "« data center » n'est pas le sujet des deux premières pages"
         row["pages"] = len(pages)
         return row
-    av = A.extract_from_pages(pages, doc.doc_url)
+    av = A.extract_from_pages(pages, doc.doc_url, sha256=digest)
     d = F.build_national(doc, av)
+    d["source"]["region_detectee"] = M.region_of(pages)
     path.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
     row["statut"] = "extrait" if av.has_text_layer else "sans couche texte"
+    row["region"] = d["source"]["region_detectee"] or "?"
     row["faits"] = sum(len(v) for v in d["installation"]["faits"].values())
+    row["champs"] = sorted({f["indicateur"] for fs in d["installation"]["faits"].values() for f in fs})
     row["recommandations"] = len(d["installation"]["recommandations_autorite"])
     row["pages"] = av.n_pages
     if av.warnings:
         row["avertissements"] = av.warnings
     return row
+
+
+def couverture(rows: list[dict]) -> dict:
+    """La COMPTABILITÉ du lot : ce que les documents ont, et ce qu'ils n'ont pas.
+
+    C'est le livrable, pas un sous-produit de l'extraction. Trois tableaux :
+
+    · CHAMP × nombre d'avis qui le portent. La question produit : quels faits sont
+      collectables À L'ÉCHELLE et lesquels sont anecdotiques. Un champ présent dans 8 avis
+      sur 400 ne deviendra jamais un indicateur, quelle que soit son importance apparente.
+    · RÉGION × nombre d'avis. Ce qui remplace « le Grand Est n'a rien » — une présomption
+      tirée de noms de fichiers — par une mesure.
+    · MOTIF DE REJET × nombre de documents. Le plus important pour nous : si le filtre se
+      trompe, c'est là que ça se verra. Compter seulement ce qui passe revient à noter sa
+      propre copie.
+    """
+    champs: collections.Counter = collections.Counter()
+    regions: collections.Counter = collections.Counter()
+    rejets: collections.Counter = collections.Counter()
+    retenus = 0
+    for r in rows:
+        if r["statut"] in ("extrait", "déjà extrait"):
+            retenus += 1
+            champs.update(r.get("champs", []))
+            regions[r.get("region") or "?"] += 1
+        else:
+            rejets[r["statut"]] += 1
+    return {
+        "schema": "smdc.registre-ae.couverture/1",
+        "genere_le": time.strftime("%Y-%m-%d"),
+        "documents_examines": len(rows),
+        "avis_retenus": retenus,
+        "champs": {"note": "nombre d'avis portant le champ, sur les avis retenus",
+                   "sur": retenus,
+                   "valeurs": dict(champs.most_common())},
+        "regions": dict(regions.most_common()),
+        "rejets": {"note": "pourquoi un document examiné n'a pas produit de fiche",
+                   "valeurs": dict(rejets.most_common())},
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -133,7 +177,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--regions", default=",".join(I.REGIONS))
     ap.add_argument("--national", action="store_true",
                     help="ajouter l'index documentaire national (site MRAe) aux registres WFS")
-    ap.add_argument("--query", default="data center")
+    ap.add_argument("--query", default=",".join(M.QUERIES),
+                    help="requêtes séparées par des virgules ; leur UNION est passée")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--workers", type=int, default=4)
     a = ap.parse_args(argv)
@@ -154,11 +199,23 @@ def main(argv: list[str] | None = None) -> int:
         rows = list(ex.map(lambda j: one(j[0], j[1], a.out, a.force), jobs))
 
     if a.national:
-        try:
-            docs = M.search(a.query)
-        except Exception as e:  # noqa: BLE001
-            print(f"site MRAe injoignable — {type(e).__name__}: {e}", file=sys.stderr)
-            docs = []
+        docs, vus = [], set()
+        for q in [x.strip() for x in a.query.split(",") if x.strip()]:
+            try:
+                found = M.search(q)
+            except M.SearchUnavailable as e:
+                # On ARRÊTE le passage national : continuer produirait un index qui affirme
+                # « rien trouvé » pour les requêtes suivantes alors que le service ne cherche
+                # plus. Mieux vaut un lot partiel qui le dit qu'un lot complet qui ment.
+                print(f"ARRÊT du passage national — {e}", file=sys.stderr)
+                break
+            except Exception as e:  # noqa: BLE001
+                print(f"site MRAe, requête {q!r} — {type(e).__name__}: {e}", file=sys.stderr)
+                continue
+            neuf = [d for d in found if d.doc_url not in vus]
+            vus.update(d.doc_url for d in found)
+            docs += neuf
+            print(f"  {q:34s} {len(found):4d} candidats, {len(neuf):4d} inédits", file=sys.stderr)
         # Les registres ont déjà servi ces PDF pour certaines régions : on ne les repasse pas.
         already = {r["doc_url"] for r in rows if r.get("doc_url")}
         docs = [d for d in docs if d.doc_url not in already]
@@ -171,6 +228,8 @@ def main(argv: list[str] | None = None) -> int:
              "regions_outillees": sorted(I.REGIONS),
              "dossiers": rows}
     (a.out / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+    (a.out / "couverture.json").write_text(
+        json.dumps(couverture(rows), ensure_ascii=False, indent=2), encoding="utf-8")
 
     by = {}
     for r in rows:

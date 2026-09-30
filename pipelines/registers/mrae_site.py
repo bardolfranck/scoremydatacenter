@@ -71,6 +71,42 @@ def _page(query: str, start: int) -> str:
 
 DC_MENTION = re.compile(r"data[\s\-]*cent|centre[s]?\s+de\s+donn[ée]es|h[ée]bergement\s+de\s+donn[ée]es", re.I)
 
+# Le même avis se cherche sous six noms. « data center » seul rend 117 candidats ; l'union des
+# six en rend 391. Ce n'est pas un raffinement : c'est le tiers du gisement qui manquait.
+QUERIES = ("data center", "centre de données", "datacenter",
+           "centre de donnees informatiques", "hébergement de données", "data-center")
+
+# La région n'est PAS dans l'index : ni dans l'URL, ni dans le titre. Elle est en revanche
+# toujours dans l'en-tête de l'avis, qui nomme la MRAe qui l'a délibéré. Sans cette lecture,
+# « le Grand Est n'a rien » reste une présomption tirée de noms de fichiers.
+REGIONS_FR = (
+    "Île-de-France", "Auvergne-Rhône-Alpes", "Bourgogne-Franche-Comté", "Bretagne",
+    "Centre-Val de Loire", "Corse", "Grand Est", "Hauts-de-France", "Normandie",
+    "Nouvelle-Aquitaine", "Occitanie", "Pays de la Loire",
+    "Provence-Alpes-Côte d'Azur", "Guadeloupe", "Guyane", "Martinique",
+    "La Réunion", "Mayotte",
+)
+
+
+def _region_pattern(name: str) -> re.Pattern:
+    # tolère les variantes d'accent, d'apostrophe et de césure rencontrées dans les PDF
+    body = re.escape(name)
+    body = body.replace("Île", "[IÎ]le").replace("é", "[ée]").replace("è", "[èe]")
+    body = body.replace("\\'", "['’]").replace("\\-", "[\\s\\-]")
+    return re.compile(body.replace("\\ ", r"[\s\-]+"), re.I)
+
+
+_REGION_PATTERNS = tuple((n, _region_pattern(n)) for n in REGIONS_FR)
+
+
+def region_of(pages: list[str], head: int = 2) -> str | None:
+    """La région qui a délibéré l'avis, lue dans son en-tête. None si elle n'y figure pas."""
+    txt = " ".join(pages[:head])
+    for name, pat in _REGION_PATTERNS:
+        if pat.search(txt):
+            return name
+    return None
+
 
 def confirms_datacenter(pages: list[str], head: int = 2, minimum: int = 2) -> bool:
     """Le document a-t-il un data center pour SUJET, ou le mentionne-t-il en passant ?
@@ -89,7 +125,14 @@ def confirms_datacenter(pages: list[str], head: int = 2, minimum: int = 2) -> bo
     return len(DC_MENTION.findall(" ".join(pages[:head]))) >= minimum
 
 
-def search(query: str = "data center", max_pages: int = 25, pause: float = 0.4) -> list[Document]:
+RESULT_COUNT = re.compile(r"(\d+)\s+r[ée]sultats?")
+
+
+class SearchUnavailable(RuntimeError):
+    """La recherche a répondu, mais elle n'a pas cherché."""
+
+
+def search(query: str = "data center", max_pages: int = 25, pause: float = 1.5) -> list[Document]:
     """Les avis PDF que la recherche nationale rend pour `query`, dédupliqués par URL.
 
     S'arrête dès qu'une page ne rend plus rien de neuf : le moteur boucle sur la dernière
@@ -104,6 +147,18 @@ def search(query: str = "data center", max_pages: int = 25, pause: float = 0.4) 
             break
         cards = CARD.findall(t)
         if not cards:
+            # ZÉRO CARTE N'EST PAS ZÉRO RÉSULTAT. Après quelques centaines de requêtes, ce
+            # service rend une page de recherche parfaitement valide — même gabarit, HTTP 200,
+            # 27 ko — mais SANS le compteur « N résultats » et sans aucune carte. Un appelant
+            # naïf conclut « ce terme ne donne rien » et, pire, « cette région n'a pas d'avis ».
+            # C'est exactement le faux silencieux qu'on traque partout ailleurs, subi cette
+            # fois de l'autre côté. Distinguer les deux cas est la seule façon de ne pas
+            # publier une absence qui n'existe pas.
+            if start == 0 and not RESULT_COUNT.search(t):
+                raise SearchUnavailable(
+                    f"la recherche MRAe a répondu sans compteur de résultats ni carte pour "
+                    f"{query!r} : service indisponible ou requêtes limitées, PAS une absence "
+                    f"de résultats. Réessayer plus tard, plus lentement.")
             break
         dates = DATE.findall(t)
         before = len(out)
