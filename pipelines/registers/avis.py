@@ -30,6 +30,7 @@ l'avis, pas l'installation.
 
 from __future__ import annotations
 
+import hashlib
 import re
 import unicodedata
 import urllib.request
@@ -90,6 +91,12 @@ class Field:
     # Sans ce garde-fou, les deux sortaient en tant que fait du projet.
     reject: str | None = None
     as_text: bool = False       # number : rendre la valeur en chaîne (rubrique ICPE, pas un flottant)
+    # Bornes de PLAUSIBILITÉ physique. Elles n'existent que parce que le passage à l'échelle
+    # les a rendues nécessaires : sur 49 avis, une « cuve » de 120 000 m³ (c'était un volume
+    # de terrassement) et un « niveau sonore » de 2,5 dB(A) (c'était une émergence) sont
+    # sortis sans que rien ne les arrête. Une valeur hors bornes est ÉCARTÉE, pas corrigée :
+    # on ne devine pas ce que l'avis voulait dire.
+    bounds: tuple[float, float] | None = None
 
 
 # ─────────────────────────────────────────────────────────────────────────────────────────
@@ -101,7 +108,7 @@ FIELDS: tuple[Field, ...] = (
     # ── Énergie ──────────────────────────────────────────────────────────────────────────
     Field("puissance_it_mw", "Puissance des salles informatiques", "energie", "MW",
           r"salles?\s+informatiques?.{0,80}puissance|puissance\s+(?:prévue|informatique|des\s+salles)",
-          rf"puissance[^.]{{0,60}}?({NUM})\s*MW"),
+          rf"puissance[^.]{{0,60}}?({NUM})\s*MW", bounds=(0.1, 2000.0)),
     Field("puissance_site_mw", "Puissance totale appelée du site", "energie", "MW",
           r"puissance\s+(?:totale|appelée|souscrite|maximale)\s+(?:du\s+site|appelée|raccordée)",
           rf"({NUM})\s*MW", reject=r"groupes?\s+électrogènes?"),
@@ -119,7 +126,7 @@ FIELDS: tuple[Field, ...] = (
     # ── Le « caché » : secours au fioul ───────────────────────────────────────────────────
     Field("groupes_nombre", "Groupes électrogènes (nombre)", "secours", "groupes",
           r"groupes?\s+électrogènes?",
-          rf"(?:au\s+nombre\s+de\s+({NUM})|({NUM}|{WORD_RE})\s+groupes?\s+électrogènes?)"),
+          rf"(?:au\s+nombre\s+de\s+({NUM})|({NUM}|{WORD_RE})\s+groupes?\s+électrogènes?)", bounds=(1.0, 400.0)),
     Field("groupes_puissance_unitaire_mw", "Puissance unitaire d'un groupe", "secours", "MW",
           r"groupes?\s+électrogènes?[^.]{0,80}puissance\s+unitaire|puissance\s+unitaire[^.]{0,60}groupe",
           rf"unitaire\s+de\s+({NUM})\s*MW"),
@@ -135,18 +142,18 @@ FIELDS: tuple[Field, ...] = (
                    (r"\bgazole\b|\bfioul\b", "fioul/gazole"))),
     Field("cuves_nombre", "Cuves de carburant (nombre)", "secours", "cuves",
           r"cuves?[^.]{0,80}(?:stocker|carburant|fioul|gazole|enterrées?|aériennes?)",
-          rf"({NUM}|{WORD_RE})\s+cuves?"),
+          rf"({NUM}|{WORD_RE})\s+cuves?", bounds=(1.0, 400.0)),
     Field("cuves_volume_unitaire_m3", "Volume unitaire d'une cuve", "secours", "m³",
           r"cuves?[^.]{0,60}(?:de|chacune)",
-          rf"({NUM})\s*(?:{M3})\s*chacune|cuves?\s+(?:enterrées?\s+|aériennes?\s+)?de\s+({NUM})\s*(?:{M3})"),
+          rf"({NUM})\s*(?:{M3})\s*chacune|cuves?\s+(?:enterrées?\s+|aériennes?\s+)?de\s+({NUM})\s*(?:{M3})", bounds=(1.0, 2000.0)),
     Field("cuves_volume_total_m3", "Volume total de carburant stocké", "secours", "m³",
           r"volume\s+total|capacité\s+(?:totale\s+)?de\s+stockage|stockage\s+total",
-          rf"({NUM})\s*(?:{M3})"),
+          rf"({NUM})\s*(?:{M3})", bounds=(1.0, 50000.0)),
     Field("cuves_enterrees", "Cuves enterrées", "secours", None,
           r"cuves?\s+enterrées?", kind="text"),
     Field("autonomie_heures", "Autonomie en secours", "secours", "h",
           r"autonomie|fonctionnement\s+pendant|assurer\s+le\s+fonctionnement",
-          rf"pendant\s+({NUM})\s*(?:heures?|h\b)|autonomie[^.]{{0,40}}?({NUM})\s*(?:heures?|h\b)"),
+          rf"pendant\s+({NUM})\s*(?:heures?|h\b)|autonomie[^.]{{0,40}}?({NUM})\s*(?:heures?|h\b)", bounds=(1.0, 720.0)),
     Field("essais_groupes", "Essais périodiques des groupes", "secours", None,
           r"essais?[^.]{0,60}groupes?\s+électrogènes?|groupes?[^.]{0,60}essais?\s+(?:périodiques|mensuels|de\s+maintenance)",
           kind="text"),
@@ -158,15 +165,22 @@ FIELDS: tuple[Field, ...] = (
     # vérités — « 62 dB(A) la nuit » alors que l'avis écrit « entre 59,5 et 62 dB(A) ».
     Field("bruit_niveau_dba", "Niveaux sonores relevés", "bruit", "dB(A)",
           r"niveaux?\s+(?:sonores?|acoustiques?|de\s+bruit)|bruit\s+(?:ambiant|résiduel)|émergence|\bLAeq\b",
-          rf"({NUM})\s*dB\s*\(?A\)?", multiple=True),
+          rf"({NUM})\s*dB\s*\(?A\)?", multiple=True, bounds=(25.0, 120.0)),
     # Le niveau de nuit est souvent écrit SANS son unité, adossé au niveau de jour :
     # « 60,5 dB(A) et 54,5 en période nocturne ». Un motif qui exige l'unité le perd.
     # On refuse en revanche les phrases à fourchette : une borne n'est pas une valeur.
     Field("bruit_nuit_dba", "Niveau sonore nocturne (valeur ferme)", "bruit", "dB(A)",
           r"(?:nocturne|de\s+nuit|période\s+nuit)",
           rf"({NUM})\s*(?:dB\s*\(?A\)?\s*)?(?:en\s+période\s+nocturne|de\s+nuit|la\s+nuit)",
-          reject=r"\bentre\b[^.]{0,60}\bet\b|oscillent"),
-    Field("bruit_emergence", "Émergence réglementaire", "bruit", None,
+          reject=r"\bentre\b[^.]{0,60}\bet\b|oscillent", bounds=(25.0, 120.0)),
+    # L'ÉMERGENCE n'est pas un niveau sonore : c'est l'écart entre le bruit avec et sans
+    # l'installation (3 à 6 dB(A) selon l'heure). Mélangée aux niveaux, elle tirait la série
+    # vers un « minimum » de 2,5 dB(A) qui ne veut rien dire. Champ distinct, borné en écart.
+    Field("bruit_emergence_dba", "Émergence sonore", "bruit", "dB(A)",
+          r"émergence",
+          rf"émergence[^.]{{0,60}}?({NUM})\s*dB|({NUM})\s*dB[^.]{{0,40}}?d['’]émergence",
+          bounds=(0.5, 15.0)),
+    Field("bruit_emergence", "Émergence réglementaire (mention)", "bruit", None,
           r"émergence", kind="text"),
     Field("bruit_point_mesure", "Points de mesure du bruit", "bruit", None,
           r"point\s+de\s+mesure|points?\s+de\s+mesures?\s+(?:situés?|placés?)", kind="text"),
@@ -180,9 +194,14 @@ FIELDS: tuple[Field, ...] = (
     Field("chaleur_valorisation", "Valorisation de la chaleur", "chaleur", None,
           r"chaleur\s+fatale|récupération\s+de\s+(?:la\s+)?chaleur|réseau\s+de\s+chaleur",
           kind="enum",
-          choices=((r"contrat|convention\s+(?:signée|de\s+raccordement)|raccordé\s+au\s+réseau", "contrat/raccordement"),
-                   (r"étude|à\s+l['’]étude|envisagé|potentiel", "étude"),
-                   (r"n['’]est\s+pas\s+(?:prévue|envisagée)|aucune\s+valorisation", "aucune"))),
+          # « étude » ne peut PAS s'attraper par le mot « étude » : « étude d'impact » est dans
+          # chaque avis, et le champ sortait « étude » sur 35 fiches sur 35 — une uniformité qui
+          # n'était pas un résultat mais un faux. On exige une tournure qui porte sur la CHALEUR.
+          choices=((r"contrat|convention\s+(?:signée|de\s+raccordement)|raccordé[e]?\s+au\s+réseau\s+de\s+chaleur", "contrat/raccordement"),
+                   (r"(?:à\s+l['’]étude|envisagée?|potentielle?|projet\s+de\s+valorisation|"
+                    r"étude\s+de\s+(?:faisabilité|valorisation|raccordement))", "étude"),
+                   (r"n['’]est\s+pas\s+(?:prévue|envisagée|valorisée)|aucune\s+valorisation|"
+                    r"pas\s+de\s+(?:valorisation|récupération)", "aucune"))),
     Field("reseau_chaleur_distance", "Distance au réseau de chaleur", "chaleur", "m",
           r"réseau\s+de\s+chaleur[^.]{0,80}(?:distance|situé|éloigné|à)",
           rf"({NUM})\s*(?:m|mètres|km)\b"),
@@ -205,7 +224,7 @@ FIELDS: tuple[Field, ...] = (
     # ── Emprise et sols ──────────────────────────────────────────────────────────────────
     Field("parcelle_ha", "Superficie de la parcelle", "foncier", "ha",
           r"parcelle|terrain\s+d['’]assiette|s['’]implante\s+sur|superficie",
-          rf"({NUM})\s*(?:hectares?|ha)\b"),
+          rf"({NUM})\s*(?:hectares?|ha)\b", bounds=(0.01, 1000.0)),
     # « Les salles informatiques représentent 9 781 m2 d'emprise au sol » n'est PAS l'emprise
     # au sol du projet : c'est celle d'un local. Sans ce rejet, les deux champs sortaient la
     # même valeur et l'un des deux mentait.
@@ -249,7 +268,7 @@ FIELDS: tuple[Field, ...] = (
     # ── Voisinage : ce que l'élu regarde en premier ───────────────────────────────────────
     Field("habitations_distance_m", "Distance aux premières habitations", "voisinage", "m",
           r"habitations?\s+les\s+plus\s+proches|premières?\s+habitations?|zone\s+résidentielle[^.]{0,40}proche",
-          rf"({NUM})\s*(?:m|mètres|km)\b"),
+          rf"({NUM})\s*(?:m|mètres|km)\b", bounds=(1.0, 20000.0)),
     Field("etablissements_sensibles", "Établissements sensibles à proximité", "voisinage", None,
           r"école|crèche|hôpital|collège|lycée|EHPAD|établissements?\s+sensibles?", kind="text"),
     Field("trafic_pl", "Trafic poids lourds", "voisinage", None,
@@ -281,9 +300,13 @@ FIELDS: tuple[Field, ...] = (
     Field("emplois_effectif", "Effectif sur site annoncé", "emploi", "personnes",
           r"effectif\s+sur\s+site|emplois?\s+(?:créés?|directs?|attendus?)|"
           r"(?:environ|estimé à)\s+\d[\d  ]*\s*(?:personnes|salariés|emplois|ETP)",
-          rf"({NUM})\s*(?:personnes|salariés|emplois|ETP)"),
+          rf"({NUM})\s*(?:personnes|salariés|emplois|ETP)", bounds=(1.0, 20000.0)),
+    # « emploi » au sens juridique — « fabrication, EMPLOI ou stockage de gaz fluorés » — n'a
+    # rien à voir avec l'emploi salarié. Le motif nu remontait des nomenclatures ICPE.
     Field("emplois_mention", "Mention de l'emploi", "emploi", None,
-          r"emplois?|effectif\s+sur\s+site|salariés?|\bETP\b", kind="text"),
+          r"emplois?\s+(?:créés?|directs?|indirects?|locaux|attendus?|permanents?)|"
+          r"créations?\s+d['’]emplois?|effectif\s+sur\s+site|salariés?|\bETP\b", kind="text",
+          reject=r"emploi\s+ou\s+stockage|fabrication,?\s+emploi"),
 )
 
 # La formule change de région en région : « L'Autorité environnementale recommande »,
@@ -322,6 +345,7 @@ class Avis:
     doc_url: str
     n_pages: int = 0
     n_chars: int = 0
+    sha256: str = ""
     has_text_layer: bool = True
     facts: list[Fact] = field(default_factory=list)
     recommandations: list[dict] = field(default_factory=list)
@@ -332,9 +356,12 @@ class Avis:
         for f in self.facts:
             by_theme.setdefault(f.theme, []).append(f.as_dict())
         return {
+            # `sha256` identifie le DOCUMENT, pas son adresse : le même avis est servi par le
+            # registre régional et par le site national sous deux URL différentes, et sans
+            # cette empreinte le jeu contenait deux fiches pour un seul avis.
             "source": {"doc_url": self.doc_url, "pages": self.n_pages,
-                       "caracteres": self.n_chars, "couche_texte": self.has_text_layer,
-                       "ocr": False},
+                       "caracteres": self.n_chars, "sha256": self.sha256,
+                       "couche_texte": self.has_text_layer, "ocr": False},
             "faits": by_theme,
             "recommandations_autorite": self.recommandations,
             "avertissements": self.warnings,
@@ -361,8 +388,18 @@ def _asserts(sentence: str) -> bool:
 
 
 def extract(pdf: bytes, doc_url: str) -> Avis:
-    pages = pages_of(pdf)
-    avis = Avis(doc_url=doc_url, n_pages=len(pages), n_chars=sum(len(p) for p in pages))
+    return extract_from_pages(pages_of(pdf), doc_url, sha256=hashlib.sha256(pdf).hexdigest())
+
+
+def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis:
+    """Variante pour les appelants qui ont DÉJÀ les pages.
+
+    La source nationale doit lire les deux premières pages pour savoir si le document a bien
+    un data center pour sujet, avant de décider de l'extraire. Sans cette entrée, il faudrait
+    analyser le PDF deux fois — et sur 117 documents, ce genre de gaspillage finit par être
+    « optimisé » en sautant la vérification.
+    """
+    avis = Avis(doc_url=doc_url, n_pages=len(pages), n_chars=sum(len(p) for p in pages), sha256=sha256)
     if avis.n_chars < 500 * max(1, len(pages)) // 10:
         avis.has_text_layer = False
         avis.warnings.append(
@@ -411,6 +448,8 @@ def extract(pdf: bytes, doc_url: str) -> Avis:
                                 val = _n(raw)
                             except ValueError:
                                 continue
+                            if spec.bounds and not (spec.bounds[0] <= val <= spec.bounds[1]):
+                                continue  # hors plausibilité physique : écartée, jamais corrigée
                         key = f"{spec.id}={val}" if spec.multiple else spec.id
                         if key in seen:
                             continue

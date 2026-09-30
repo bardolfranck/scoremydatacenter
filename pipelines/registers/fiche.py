@@ -33,6 +33,31 @@ CREDIT = ("Registre : avis de l'autorité environnementale, DREAL/DRIEAT, Licenc
           "Avis : document public, lié et non réhébergé. Extraction ScoreMyDataCenter.")
 
 
+def build_national(doc, avis: Avis) -> dict:
+    """Même schéma, mais depuis l'INDEX DOCUMENTAIRE national (site des MRAe).
+
+    `procedure` est volontairement maigre : le site ne publie ni pétitionnaire, ni INSEE, ni
+    géométrie, ni statut. Le champ `origine` porte la différence, et il est obligatoire — un
+    lecteur doit pouvoir dire, sans enquêter, si la fiche vient d'un acte administratif
+    indexé ou d'un document trouvé par un moteur de recherche.
+    """
+    inst = avis.as_dict()
+    pdf_meta = inst.pop("source")
+    pdf_meta.pop("doc_url", None)
+    return {
+        "schema": "smdc.registre-ae/1",
+        "source": {
+            "doc_url": doc.doc_url,
+            "origine": doc.origine,
+            "registre": None,
+            "pdf": pdf_meta,
+        },
+        "procedure": {"intitule": doc.titre, "date_avis": doc.date},
+        "installation": inst,
+        "credit": CREDIT,
+    }
+
+
 def build(dossier: Dossier, avis: Avis) -> dict:
     proc = dossier.as_dict()
     inst = avis.as_dict()
