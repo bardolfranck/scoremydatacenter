@@ -2123,3 +2123,21 @@ th.dev-cmp-pro { color: var(--accent); }
 .fiche-ctx a { display: block; }
 .fiche-ctx img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); }
 .fiche-ctx figcaption { margin-top: 6px; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); line-height: 1.5; }
+
+/* Indices pays — PROFILS, pas palmarès (Franck 2026-09-30). Le bandeau de comparabilité
+   passe AVANT le tableau parce qu'il conditionne sa lecture : les pays ne sont pas mesurés
+   sur la même base (France ~88 % du modèle, Allemagne ~44 %, la plupart sous la moitié). */
+.idx-comparability { margin: 0 0 22px; padding: 1rem 1.15rem; border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid var(--line); }
+.idx-comparability p { margin: 0 0 8px; font-size: 0.92rem; line-height: 1.6; }
+.idx-comparability p:last-child { margin-bottom: 0; }
+.idx-cmp-k { font-weight: 600; color: var(--hero-red, #e0564a); }
+.idx-cmp-why { color: var(--muted); font-size: 0.86rem !important; }
+.idx-cov { min-width: 210px; }
+.idx-cov-chip { display: inline-block; margin: 2px 4px 2px 0; padding: 2px 7px; border-radius: 6px;
+  font-family: var(--font-mono); font-size: 0.66rem; white-space: nowrap; border: 1px solid var(--line); }
+.idx-cov-chip i { font-style: normal; opacity: 0.75; }
+.idx-cov-complet { border-color: rgba(120, 200, 140, 0.55); }
+.idx-cov-partiel { border-color: rgba(220, 190, 110, 0.5); }
+.idx-cov-mince   { border-color: rgba(224, 140, 90, 0.5); }
+.idx-cov-absent  { border-color: rgba(224, 86, 74, 0.6); opacity: 0.9; }

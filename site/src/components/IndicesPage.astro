@@ -34,7 +34,14 @@ const T = {
     tagline: "Observatoire indépendant",
     lede: "La moyenne équipondérée des notes de SITES publiées, pays par pays — le contexte que les projets subissent (réseau, eau, foncier, risques).",
     tableTitle: "Le classement (vue table)",
-    th: { country: "Pays", index: "Indice", score: "Score", n: "n sites", doc: "Documentation", denom: "En service / annoncés", last: "Dernière évolution" },
+    th: { country: "Pays", index: "Indice", score: "Score", n: "n sites", doc: "Documentation", cov: "Ce qu'on a mesuré", denom: "En service / annoncés", last: "Dernière évolution" },
+    comparability: {
+      title: "Ces pays ne sont pas mesurés sur la même base",
+      body: "Nos indicateurs dépendent des sources ouvertes de chaque pays, et elles sont très inégales. La France dispose d'un registre public de capacité du réseau électrique (Caparéseau) : ses sites sont donc notés sur la saturation du raccordement. L'Allemagne, l'Italie, l'Espagne ou la Suisse n'ont pas d'équivalent — cette dimension n'y est pas mesurée du tout. Il en va de même du profil des communes d'accueil, renseigné en France et presque nulle part ailleurs.",
+      consequence: "Conséquence : un pays richement documenté est noté sur ce qu'il révèle, y compris ses points faibles, quand un pays sans données y échappe. Ces indices se lisent donc comme des PROFILS, pas comme un classement — et la colonne « ce qu'on a mesuré » dit, pilier par pilier, sur quelle base chacun est noté.",
+      why: "Pourquoi on le publie quand même : la couverture est elle-même une information. Un pilier « absent » ne dit pas qu'un pays va bien, il dit qu'on ne sait pas.",
+    },
+    covPillars: { energy: "Énergie", water: "Eau", land_biodiversity: "Foncier", local_impact: "Impact local" },
     veilleRow: "en veille — moyenne non calculée",
     reserved: "· A réservé",
     docBands: { solide: "solide", moyenne: "moyenne", faible: "faible" },
@@ -59,7 +66,14 @@ const T = {
     tagline: "Independent observatory",
     lede: "The equal-weighted mean of published SITE grades, country by country — the context projects endure (grid, water, land, hazards).",
     tableTitle: "The ranking (table view)",
-    th: { country: "Country", index: "Index", score: "Score", n: "n sites", doc: "Documentation", denom: "Operational / announced", last: "Last change" },
+    th: { country: "Country", index: "Index", score: "Score", n: "n sites", doc: "Documentation", cov: "What we measured", denom: "Operational / announced", last: "Last change" },
+    comparability: {
+      title: "These countries are not measured on the same basis",
+      body: "Our indicators depend on each country's open data, and it is deeply uneven. France publishes a grid hosting-capacity register (Caparéseau), so its sites are graded on connection saturation. Germany, Italy, Spain and Switzerland have no equivalent — that dimension is simply not measured there. The same holds for the profile of host municipalities: recorded in France, almost nowhere else.",
+      consequence: "The consequence: a richly documented country is graded on what it discloses, weaknesses included, while a country without data escapes it. These indices therefore read as PROFILES, not as a ranking — and the « what we measured » column states, pillar by pillar, the basis each one is graded on.",
+      why: "Why we publish them anyway: coverage is itself information. A pillar marked « none » does not say a country is doing well — it says we do not know.",
+    },
+    covPillars: { energy: "Energy", water: "Water", land_biodiversity: "Land", local_impact: "Local impact" },
     veilleRow: "on watch — no mean computed",
     reserved: "· A reserved",
     docBands: { solide: "solid", moyenne: "medium", faible: "weak" },
@@ -86,18 +100,31 @@ const dateFmt = (iso: string | null) => {
   return lang === "fr" ? `${d}/${m}/${y}` : `${y}-${m}-${d}`;
 };
 
+const name = (iso: string) => (COUNTRY_NAMES as any)[iso]?.[lang] ?? iso;
 const lastEventByCountry: Record<string, any> = {};
 for (const ev of HISTORY) lastEventByCountry[ev.country] = ev;
 
+// PROFILS, PAS PALMARÈS (Franck 2026-09-30). Le tri était par score décroissant, ce qui
+// faisait un classement — or les pays ne sont pas notés sur la même base : la France est
+// mesurée sur ~88 % de son modèle, l'Allemagne sur ~44 %, la majorité sous la moitié.
+// Ordonner par score revenait à publier un palmarès de la COUVERTURE DE DONNÉES en le
+// présentant comme un palmarès de performance. L'ordre alphabétique retire cette lecture.
 const countries = Object.entries(INDICES.countries as Record<string, any>)
-  .sort(([, a], [, b]) => {
+  .sort(([isoA, a], [isoB, b]) => {
     if (a.eligible !== b.eligible) return a.eligible ? -1 : 1;
-    return (b.score ?? -1) - (a.score ?? -1);
+    return name(isoA).localeCompare(name(isoB), lang);
   });
+
+const COV_LABEL: Record<string, Record<string, string>> = {
+  complet: { fr: "complet", en: "full" },
+  partiel: { fr: "partiel", en: "partial" },
+  mince:   { fr: "mince",   en: "thin" },
+  absent:  { fr: "absent",  en: "none" },
+};
+const COV_PILLARS = ["energy", "water", "land_biodiversity", "local_impact"];
 
 const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
 const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
-const name = (iso: string) => (COUNTRY_NAMES as any)[iso]?.[lang] ?? iso;
 const flag = (iso: string) => (COUNTRY_FLAGS_ISO as any)[iso] ?? "";
 // Page-level OG = the top-ranked eligible country's card (the ranking's own
 // headline; per-country cards live at /og/indices/{lang}-{cc}.png for shares).
@@ -125,13 +152,20 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
 
     <IndicesMap lang={lang} />
 
+    <aside class="idx-comparability">
+      <p class="idx-cmp-k">{(T as any).comparability.title}</p>
+      <p>{(T as any).comparability.body}</p>
+      <p>{(T as any).comparability.consequence}</p>
+      <p class="idx-cmp-why">{(T as any).comparability.why}</p>
+    </aside>
+
     <h2 class="idx-h2">{T.tableTitle}</h2>
     <div class="idx-tablewrap">
       <table class="idx-table">
         <thead>
           <tr>
             <th>{T.th.country}</th><th>{T.th.index}</th><th>{T.th.score}</th><th>{T.th.n}</th>
-            <th>{T.th.doc}</th><th>{T.th.denom}</th><th>{T.th.last}</th>
+            <th>{T.th.doc}</th><th>{(T as any).th.cov}</th><th>{T.th.denom}</th><th>{T.th.last}</th>
           </tr>
         </thead>
         <tbody>
@@ -146,12 +180,22 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
                     <td class="idx-num">{fmtScore(e.score)}</td>
                     <td class="idx-num">{e.n}</td>
                     <td>{DOTS[e.documentation.band]} {(T.docBands as any)[e.documentation.band]}</td>
+                    <td class="idx-cov">
+                      {COV_PILLARS.map((pil) => {
+                        const b = e.coverage_by_pillar?.[pil];
+                        return b ? (
+                          <span class={`idx-cov-chip idx-cov-${b}`}>
+                            {(T as any).covPillars[pil]} <i>{COV_LABEL[b][lang]}</i>
+                          </span>
+                        ) : null;
+                      })}
+                    </td>
                     <td class="idx-num">{e.n_operational} / {e.n_announced}</td>
                     <td class="idx-ev">{ev && `→ ${ev.to.grade ?? "–"} · ${dateFmt(ev.date)}`}</td>
                   </>
                 ) : (
                   <>
-                    <td colspan="4">{T.veilleRow} (n={e.n})</td>
+                    <td colspan="5">{T.veilleRow} (n={e.n})</td>
                     <td></td>
                     <td class="idx-ev">{ev && <>{dateFmt(ev.date)}</>}</td>
                   </>
