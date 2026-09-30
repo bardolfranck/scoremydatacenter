@@ -40,6 +40,30 @@ source de vérité du corpus (dont le champ `dc.synthesis`) est
 `../smdc-newsroom` — **committe ton travail là**, et il passera en ligne au
 prochain `make deploy` local qui le relit.
 
+## Le piège du diagnostic : ne JAMAIS vérifier la prod sur une URL `/data/`
+
+`prune-public-json` remplace, à chaque déploiement, **tous** les JSON de `dist/data/` par un
+bouchon `{"gone": true}` — c'est la protection anti-pillage (un `curl` sur `scores.json`
+siphonnait le corpus entier). Les deux `.geojson` que la carte charge au runtime sont les
+seules exceptions.
+
+**Donc `/data/actu/latest.json`, `/data/dc/{id}.json` et `/data/scores.json` sont vides EN
+PRODUCTION, par construction, et le resteront.** Les voir vides n'est pas un symptôme : c'est
+le comportement attendu. Le contenu réel est *inliné dans le HTML* au build.
+
+**Où l'on vérifie vraiment :**
+
+| ce qu'on veut vérifier | l'URL qui fait foi |
+|---|---|
+| le mur d'actualité | `https://scoremydatacenter.org/fr/actu/` |
+| une fiche, sa note, sa carte | `https://scoremydatacenter.org/fr/dc/{id}/` |
+| le corpus servi | le compte de `site/public/data/dc/*.json` **en local**, après build |
+
+Coût de ce piège le 2026-09-30 : deux alertes « les news ne sont pas en prod » remontées
+jusqu'à Franck, sur un mur qui était en ligne et correct depuis le matin. Le vrai incident de
+la veille (picks écrasés par le cron) était réel, mais il a été diagnostiqué sur le bon
+endroit — la page — et c'est ce qui l'a rendu réparable en dix minutes.
+
 ## Le piège branche : `make deploy` depuis une branche ne va PAS en prod
 
 Cloudflare Pages décide **production ou préversion d'après la branche git courante**.
