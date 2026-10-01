@@ -172,6 +172,22 @@ def test_revalidation_garde_le_legitime_et_le_silence():
     assert avis.rejection_reason("autonomie_heures", 72.0, silence) is None
 
 
+# ── Couche texte POLLUÉE (U+200D à la place des espaces) : signalée, pas extraite en silence ──
+
+def test_couche_texte_polluee_zwj_signalee_pas_extraite():
+    normal = "Les niveaux acoustiques en limite de propriété sont de 60 dB(A) de jour. " * 60
+    a = avis.extract_from_pages([normal], "https://example.test/a.pdf")
+    assert a.has_text_layer is True          # texte sain (~14 % d'espaces) : extrait normalement
+    assert a.facts
+
+    # mêmes mots, espaces remplacés par des jointures invisibles (le piège de Bonneuil)
+    pollue = normal.replace(" ", "‍")
+    b = avis.extract_from_pages([pollue], "https://example.test/a.pdf")
+    assert b.has_text_layer is False         # SIGNALÉ comme un scan…
+    assert b.facts == []                     # …et PAS extrait en silence (plutôt 0 que « 10/20 »)
+    assert "POLLU" in (b.warnings[0] if b.warnings else "")
+
+
 # ── CLASSE E — le FAUX NÉGATIF : un champ vide ne proteste pas ───────────────────────────────
 # Trouvés en confrontant notre extraction à une lecture indépendante du même avis (Tremblay,
 # 2026-10-01). Les quatre classes précédentes corrigeaient des faits FAUX ; celles-ci corrigent
