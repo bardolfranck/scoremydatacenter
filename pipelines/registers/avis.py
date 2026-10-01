@@ -101,6 +101,39 @@ MIXED_PROGRAM = re.compile(
 # On ne compte JAMAIS par somme : on énumère des installations, on n'additionne pas des valeurs.
 DC_LABEL = re.compile(r"\bDC0(\d)\b")
 
+# PÉTITIONNAIRE (maître d'ouvrage) depuis le PDF. 23 avis sur 39 viennent de l'index national qui
+# ne le publie pas, et c'est là que le détecteur de projets est aveugle. Le nom est en tête d'avis,
+# dans des tournures stables. On capte le nom APRÈS la tournure (« maître d'ouvrage … est X »,
+# « porté/présenté/déposé par X ») ; jamais le repli « la société X » nu, qui attrape un financier
+# ou un foncier (BNP Paribas) au lieu du data center. NAME est CASSE-SENSIBLE (vraies majuscules) :
+# sinon on avale « situé », « est », « le »… et on confond le boilerplate avec le nom. Mesuré sur
+# les 39 : 21 pétitionnaires, zéro faux visible (lead-only).
+_PET_PREFIX = (r"(?:la\s+soci[ée]t[ée]\s+|la\s+(?:SAS|SASU|SNC|SCI|SCCV|SA|SARL|holding)\s+|"
+               r"l['’]entreprise\s+|l['’][ée]tablissement\s+public\s+territorial\s+)?")
+_PET_LEAD = (r"ma[îi]tre\s+d['’]ouvrage[^.]{0,40}?est\s+" + _PET_PREFIX + r"|"
+             r"port[ée]e?\s+par\s+" + _PET_PREFIX + r"|"
+             r"présent[ée]e?\s+par\s+" + _PET_PREFIX + r"|"
+             r"déposée?\s+par\s+" + _PET_PREFIX + r"|"
+             r"pétitionnaire[^.]{0,8}?(?:est|:)\s+" + _PET_PREFIX + r"|"
+             r"demande\s+[^.]{0,40}?présentée\s+par\s+" + _PET_PREFIX)
+_PET_NAME = r"([A-ZÉÈÀ0-9][\w&'’\-]*(?:\s+[A-ZÉÈÀ0-9][\w&'’\-]*){0,5})"
+_PET_STOP = (r"(?=\s*(?:,|\.|;|\(|:|\bsur\b|\bà\b|\bsitu[ée]|\bdont\b|\bpour\b|\bqui\b|\ba\s+déposé|"
+             r"\brepr[ée]sent|\bau\s+titre|\ben\s+vue|\bsollicit|\bconsiste|\bse\s+situe|"
+             r"\bs['’]implante|\brelati|\best\b|\bafin\b|['’]|$))")
+# LEAD insensible à la casse (?i:…), NAME/STOP sensibles. LEAD groupé pour que NAME lie TOUTES
+# les branches (sinon, précédence du « | » : NAME ne s'applique qu'à la dernière).
+_PET_RE = re.compile(r"(?i:" + _PET_LEAD + r")" + _PET_NAME + _PET_STOP)
+
+
+def petitionnaire_from_pages(pages: list[str], head: int = 3) -> str | None:
+    """Le maître d'ouvrage, lu dans les premières pages de l'avis. None si aucune tournure claire
+    ne le nomme (on DÉCLARE l'absence plutôt que de deviner un tiers)."""
+    txt = re.sub(r"\s+", " ", _norm(" ".join(pages[:head])))
+    m = _PET_RE.search(txt)
+    if m and m.group(1) and m.group(1).strip(" .,;"):
+        return m.group(1).strip(" .,;")
+    return None
+
 
 def _n(s: str) -> float:
     key = s.strip().lower()
@@ -630,6 +663,9 @@ class Avis:
     # donne, True si le pluriel est là sans compte. L'avis décrit N installations, pas une — cela
     # change la lecture de TOUS les chiffres, pas seulement ceux du programme.
     plusieurs_installations: object = None
+    # Maître d'ouvrage lu dans le PDF (procédure, pas installation). Rempli surtout pour les avis
+    # de l'index national qui ne le publient pas au registre. None si non nommé clairement.
+    petitionnaire: str | None = None
 
     def as_dict(self) -> dict:
         by_theme: dict[str, list[dict]] = {}
@@ -741,6 +777,8 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
     if mixed:
         signaux = sorted({re.sub(r"[\d   ]+", " ", m).strip().lower() for m in mixed})
         avis.projet_mixte = {"occurrences": len(mixed), "signaux": signaux}
+
+    avis.petitionnaire = petitionnaire_from_pages(pages)
 
     seen: set[str] = set()
     for pno, text in enumerate(pages, start=1):
