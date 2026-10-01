@@ -84,6 +84,11 @@ def _meme_exploitant(a: str | None, b: str | None) -> bool:
     return ea in eb or eb in ea
 
 
+# Les registres anonymisent parfois le porteur : « pétitionnaire privé », « particulier ».
+# Ce n'est pas un nom, et le comparer à un exploitant ne peut produire qu'un faux.
+_ANONYME = re.compile(r"p[ée]titionnaire\s+priv|particulier|anonyme|non\s+communiqu", re.I)
+
+
 def _haversine_m(a: tuple[float, float], b: tuple[float, float]) -> float:
     r = 6_371_000.0
     p1, p2 = math.radians(a[0]), math.radians(b[0])
@@ -269,6 +274,31 @@ def proposer(avis_docs: dict[str, dict], corpus: dict[str, dict]) -> list[Propos
             p.statut = "a_confirmer"
         else:
             p.statut = "ambigu"
+        # LE CAS QUE LE DÉTECTEUR ANNONÇAIT SANS JAMAIS LE PRODUIRE.
+        #
+        # `projets_candidats` filtre sur `projet_absent_du_corpus` depuis le premier jour, et le
+        # workflow le décrit comme le cas le plus utile — mais aucun chemin ne l'attribuait. Il
+        # n'existait que dans un commentaire et dans un filtre : les projets absents du corpus
+        # (Village Delage, DIGITAL MRS5, SEGRO Actisud) ont été trouvés À LA MAIN, en lisant les
+        # PDF un par un. Signalé par agent-data-pipeline-FR.
+        #
+        # La règle : le document NOMME un exploitant, des candidats existent, et aucun d'eux
+        # n'est cet exploitant → l'avis parle d'un site que le corpus ignore.
+        #
+        # ELLE NE S'APPLIQUE QU'AUX CAS DÉJÀ INCERTAINS. Placée avant la cascade, elle volait un
+        # rattachement solide : Bruyères-le-Châtel, apparié par géométrie ET commune à 916 m,
+        # devenait « projet absent » parce que son porteur « BDC2 » ne ressemble pas à
+        # « Eclairion ». Nos noms d'exploitants sont des approximations ; une géométrie
+        # concordante pèse plus qu'une dissemblance de libellé.
+        if p.statut in ("ambigu", "a_confirmer"):
+            petitionnaire = proc.get("petitionnaire")
+            ops = [corpus[c.fiche].get("operator") for c in cands]
+            tous_connus = all(_enseigne(o) and _enseigne(o) != "unknown" for o in ops)
+            if (petitionnaire and not _ANONYME.search(petitionnaire) and tous_connus
+                    and not any(_meme_exploitant(petitionnaire, o) for o in ops)):
+                p.statut = "projet_absent_du_corpus"
+                p.exploitant_document = petitionnaire
+
         propositions.append(p)
 
     return propositions
