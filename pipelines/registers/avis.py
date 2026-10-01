@@ -57,6 +57,9 @@ WORD_RE = "|".join(sorted(WORDS, key=len, reverse=True))
 # Une ligne de sommaire (« … ............ 12 ») ou de glossaire (« MWh : unité de … ») n'affirme rien.
 TOC = re.compile(r"\.{4,}|…{2,}")
 GLOSSARY = re.compile(r"^\s*[A-Za-zÉé/³²\s\-]{1,28}\s*:\s*(?:unité|symbole|équivaut|correspond à|soit\s+\d)", re.I)
+# Abréviations suivies d'un nombre : « p. 171 », « n° 2 », « art. 3 ». Leur point n'est
+# pas une fin de phrase.
+ABBREV_DOT = re.compile(r"\b(?:pp?|nn?o?|art|cf|fig|al|r[ée]f|vol|chap|tab)\.(?=\s*\d)", re.I)
 DEFINES_UNIT = re.compile(r"(?:un|une|le|la)\s+(?:mégawatt|gigawatt|kilowatt|wattheure|décibel)", re.I)
 
 # Une phrase qui chiffre L'ENSEMBLE d'un site, et non la tranche objet de l'avis, ne décrit
@@ -140,12 +143,28 @@ FIELDS: tuple[Field, ...] = (
     Field("consommation_gwh_an", "Consommation électrique annuelle", "energie", "GWh/an",
           r"consommation\s+(?:électrique|annuelle|d['’]électricité|énergétique)",
           rf"({NUM})\s*GWh"),
+    # Le PUE se déclare en DEUX temps dans ces avis, et l'ordre compte. Spécification la plus
+    # précise d'abord : le MOTEUR s'arrête au premier spec qui capte un champ donné pour une
+    # phrase, donc déclarer deux fois `pue` du plus spécifique au plus général donne une
+    # priorité, sans machinerie supplémentaire.
+    #
+    # 1) La phrase qui OPPOSE une référence nationale à la valeur du projet :
+    #    « le PUE moyen des centres de données en France est de 1,6 … et celui ATTENDU pour le
+    #    projet est ESTIMÉ à 1,3 ». Mon premier correctif rejetait la phrase ENTIÈRE sur
+    #    « PUE moyen » — il écartait la moyenne nationale ET le 1,3 du projet avec elle.
+    #    Faux négatif que je m'étais fabriqué en corrigeant un faux positif ; relevé par une
+    #    extraction indépendante sur le même avis (Tremblay, 2026-10-01).
+    Field("pue", "PUE annoncé pour le projet", "energie", None,
+          r"\bPUE\b",
+          rf"(?:attendue?|estimée?|visée?|annoncée?|cible)[^.]{{0,40}}?({NUM})",
+          reject=r"ne\s+saurait|proche\s+de|plus\s+l['’]\s*indice|d['’]autant\s+plus"),
+    # 2) La phrase simple, sans opposition : « le PUE est passé de 1,8 en 2018 à 1,67 ».
+    #    Ici on refuse en revanche la tournure de référence nationale, qui donnerait 1,6.
     Field("pue", "PUE annoncé pour le projet", "energie", None,
           r"\bPUE\b",
           rf"PUE[^.]{{0,40}}?(?:de|:)\s*({NUM})",
           # « Plus l'indice PUE est PROCHE DE 1 et plus la performance… » est la DÉFINITION du
-          # PUE, pas la valeur du projet — elle sortait « pue=1 » (Bailly-Romainvilliers). Une
-          # définition n'est pas une mesure (même classe que « étude d'impact » → chaleur).
+          # PUE, pas la valeur du projet — elle sortait « pue=1 » (Bailly-Romainvilliers).
           reject=r"PUE\s+moyen|en\s+France\s+est|ne\s+saurait|rappelle|"
                  r"proche\s+de|plus\s+l['’]\s*indice|d['’]autant\s+plus"),
     Field("raccordement_kv", "Tension de raccordement", "energie", "kV",
@@ -326,7 +345,17 @@ FIELDS: tuple[Field, ...] = (
     # ── Voisinage : ce que l'élu regarde en premier ───────────────────────────────────────
     Field("habitations_distance_m", "Distance aux premières habitations", "voisinage", "m",
           r"habitations?\s+les\s+plus\s+proches|premières?\s+habitations?|zone\s+résidentielle[^.]{0,40}proche",
-          rf"({NUM})\s*(?:m|mètres|km)\b", bounds=(1.0, 20000.0)),
+          rf"({NUM}|{WORD_RE})\s*(?:m\b|mètres?|km)", bounds=(1.0, 20000.0)),
+    # La distance à une école ou un lycée est le fait le plus parlant de ces avis pour un élu,
+    # et elle s'écrit souvent EN TOUTES LETTRES : « un établissement scolaire est situé à
+    # QUINZE MÈTRES de l'installation » (Tremblay, p.21). Un motif qui n'accepte que les
+    # chiffres le perd — on avait réglé ce piège pour les cuves, jamais pour les distances.
+    Field("etablissement_sensible_distance_m", "Distance au premier établissement sensible",
+          "voisinage", "m",
+          r"(?:établissement\s+scolaire|école|lycée|collège|crèche|hôpital)[^.]{0,80}"
+          r"(?:situé|implanté|se\s+trouve|à)|"
+          r"(?:situé|implanté)[^.]{0,40}(?:de|du)\s+(?:l['’]établissement|l['’]école|lycée)",
+          rf"({NUM}|{WORD_RE})\s*(?:m\b|mètres?)", bounds=(1.0, 20000.0)),
     Field("etablissements_sensibles", "Établissements sensibles à proximité", "voisinage", None,
           r"école|crèche|hôpital|collège|lycée|EHPAD|établissements?\s+sensibles?", kind="text"),
     Field("trafic_pl", "Trafic poids lourds", "voisinage", None,
@@ -470,7 +499,22 @@ def _sentences(page_text: str) -> list[str]:
     flat = re.sub(r"\s*\n\s*", " ", page_text)
     # la césure de fin de ligne recolle les mots coupés (« réglemen- tée »)
     flat = re.sub(r"(\w)-\s+(\w)", r"\1\2", flat)
-    return [s.strip() for s in re.split(r"(?<=[.;:])\s+", flat) if 25 <= len(s.strip()) <= 420]
+    # Le point d'une ABRÉVIATION n'est pas une fin de phrase. Couper sur tout point suivi
+    # d'une espace tranchait les renvois internes : « …est de 1,6 (p. 171) et que celui
+    # attendu pour le projet est estimé à 1,3 » devenait deux morceaux, dont le second ne
+    # contenait plus le mot « PUE ». L'ancre ne matchait donc plus et la valeur du projet
+    # était perdue — un faux négatif invisible, puisqu'un champ vide ne proteste pas.
+    # Révélé en comparant notre extraction à une lecture indépendante du même avis.
+    #
+    # On neutralise ces points-là le temps du découpage, puis on les restaure : la phrase
+    # stockée reste EXACTEMENT celle du document, puisque c'est elle qui fait preuve.
+    # (Première tentative : ne couper que devant une majuscule. Elle réparait ce cas mais
+    # fusionnait trop ailleurs, et les phrases trop longues tombaient sous la limite de
+    # taille — La Courneuve y perdait cinq champs. Un correctif doit se mesurer, pas se
+    # supposer.)
+    masked = ABBREV_DOT.sub(lambda m: m.group(0).replace(".", "\x00"), flat)
+    parts = [p.replace("\x00", ".") for p in re.split(r"(?<=[.;:])\s+", masked)]
+    return [s.strip() for s in parts if 25 <= len(s.strip()) <= 420]
 
 
 def _asserts(sentence: str) -> bool:

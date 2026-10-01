@@ -167,3 +167,32 @@ def test_revalidation_garde_le_legitime_et_le_silence():
     # reste en place — la non-reproduction est un silence, pas une preuve (règle du chef).
     silence = "L’autonomie électrique du site est de 72 heures."
     assert avis.rejection_reason("autonomie_heures", 72.0, silence) is None
+
+
+# ── CLASSE E — le FAUX NÉGATIF : un champ vide ne proteste pas ───────────────────────────────
+# Trouvés en confrontant notre extraction à une lecture indépendante du même avis (Tremblay,
+# 2026-10-01). Les quatre classes précédentes corrigeaient des faits FAUX ; celles-ci corrigent
+# des faits MANQUANTS, qui ne se voient pas : un champ absent ressemble à une absence réelle.
+
+def test_classe_e_point_d_abreviation_ne_coupe_pas_la_phrase():
+    """« (p. 171) » au milieu d'une phrase la coupait en deux, et le second morceau perdait
+    l'ancre « PUE » — donc la valeur du projet était perdue en silence."""
+    vrai = ("Il est rappelé que le PUE moyen des centres de données en France est de 1,6 "
+            "(p. 171) et que celui attendu pour le projet est estimé à 1,3, ce qui est "
+            "vertueux d’après le dossier.")
+    assert _vals(vrai).get("pue") == 1.3, "la valeur du PROJET, pas la moyenne nationale"
+    # la tournure simple continue de passer (Magny)
+    simple = "Concernant le site actuel TH3, le PUE est passé de 1,8 en 2018 à 1,67 en 2021."
+    assert _vals(simple).get("pue") == 1.8
+    # et la définition reste rejetée (Bailly-Romainvilliers)
+    defi = "Plus l’indice « PUE » est proche de 1 et plus la performance énergétique est importante."
+    assert "pue" not in _vals(defi)
+
+
+def test_classe_e_distance_ecrite_en_toutes_lettres():
+    """« à quinze mètres de l'installation » : un motif qui n'accepte que les chiffres perd
+    ce qui est sans doute le fait le plus parlant du corpus pour un élu local."""
+    vrai = ("Cette démonstration est d’autant plus indispensable qu’un établissement scolaire "
+            "est situé à quinze mètres de l’installation et que des établissements sensibles "
+            "sont implantés à proximité.")
+    assert _vals(vrai).get("etablissement_sensible_distance_m") == 15.0
