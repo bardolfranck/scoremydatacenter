@@ -26,6 +26,17 @@ TROIS RÈGLES DE NOMMAGE, et elles ne sont pas cosmétiques :
 
 Les libellés humains ne disparaissent pas : ils deviennent `label: {fr, en}`, comme partout
 ailleurs dans le moteur (`methodology.json`).
+
+ORTHOGRAPHE : américaine, partout — `license`, `neighborhood`. Non par préférence, mais parce
+que les vocabulaires de données que nos consommateurs connaissent déjà (DCAT, schema.org)
+écrivent `license` ; un contrat qui panache les deux variantes oblige à deviner laquelle
+s'applique à quel champ. Une seule variété, choisie une fois.
+
+EXCEPTION ASSUMÉE : `icpe_categories` garde son sigle français. ICPE est le nom propre d'un
+régime juridique, comme REACH ou NACE, et ses valeurs sont des numéros de rubrique français
+(3110, 2910). Traduire la clé en `classified_installation_categories` laisserait croire à une
+notion générique alors que le contenu est spécifiquement français — et masquerait, pour un
+consommateur étranger, le fait qu'il n'y a pas d'équivalent chez lui.
 """
 
 from __future__ import annotations
@@ -36,7 +47,7 @@ ENVELOPE: dict[str, str] = {
     "doc_url": "doc_url",
     "registre": "register",
     "region": "region",
-    "licence": "licence",
+    "licence": "license",
     "pdf": "pdf",
     "pages": "pages",
     "caracteres": "characters",
@@ -87,7 +98,7 @@ THEMES: dict[str, str] = {
     "foncier": "land",
     "climat": "climate",
     "air": "air",
-    "voisinage": "neighbourhood",
+    "voisinage": "neighborhood",
     "biodiversite": "biodiversity",
     "sols": "soil",
     "risques": "hazards",
@@ -109,13 +120,13 @@ INDICATORS: dict[str, str] = {
     "groupes_carburant": "backup_generator_fuel",
     "cuves_nombre": "fuel_tank_count",
     "cuves_volume_unitaire_m3": "fuel_tank_unit_volume_m3",
-    "cuves_volume_total_m3": "fuel_storage_total_volume_m3",
+    "cuves_volume_total_m3": "fuel_tank_total_volume_m3",
     "cuves_enterrees": "fuel_tanks_buried",
     "autonomie_heures": "backup_autonomy_hours",
     "essais_groupes": "generator_periodic_testing",
     # bruit
     "bruit_bandes": "noise_levels_by_point",
-    "bruit_emergence_bandes": "noise_emergence_by_period",
+    "bruit_emergence_bandes": "noise_emergence_by_point",
     "bruit_niveau_dba": "noise_level_dba",
     "bruit_emergence_dba": "noise_emergence_dba",
     "bruit_emergence": "noise_emergence_mentioned",
