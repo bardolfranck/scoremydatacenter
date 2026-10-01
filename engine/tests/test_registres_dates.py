@@ -26,10 +26,20 @@ def test_date_invalide_rejetee():
     assert fiche.date_du_nom_de_fichier("http://x/2025-13-40_truc.pdf") is None   # mois 13, jour 40
 
 
-def test_yymmdd_et_numeros_davis_ne_sont_pas_des_dates():
-    # 6 chiffres : on ne tente pas (collision numéros d'avis) → pas de date devinée.
-    assert fiche.date_du_nom_de_fichier("http://x/mrae-180208-avis.pdf") is None
+def test_yymmdd_tranche_par_la_borne_basse():
+    # 6 chiffres ambigus (AAMMJJ vs JJMMAA) : on lit AAMMJJ et on REFUSE si JJMMAA est aussi
+    # plausible. La borne = une MRAe régionale n'existe pas avant 2016.
+    # 190110 : AAMMJJ 2019-01-10, JJMMAA 2010 (< 2016, impossible) → on garde AAMMJJ.
+    assert fiche.date_du_nom_de_fichier("http://x/mrae-190110-mrae-idf-avis.pdf") == "2019-01-10"
+    assert fiche.date_du_nom_de_fichier("http://x/mrae-180208-avis.pdf") == "2018-02-08"
+    # 180920 : AAMMJJ 2018-09-20 ET JJMMAA 2020-09-18, les deux ≥ 2016 → ambigu → refusé.
+    assert fiche.date_du_nom_de_fichier("http://x/mrae-180920-truc.pdf") is None
+
+
+def test_numeros_davis_ne_sont_pas_des_dates():
+    # Un numéro d'avis à 6 chiffres ne donne pas de date valide (mois 24, etc.) → None.
     assert fiche.date_du_nom_de_fichier("http://x/mrae-p-2024-15721-avis.pdf") is None
+    assert fiche.date_du_nom_de_fichier("http://x/mrae-n022432-avis.pdf") is None
 
 
 # ── corroboration ─────────────────────────────────────────────────────────────
