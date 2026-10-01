@@ -330,27 +330,33 @@ def patch_nearest_dwelling() -> int:
     return patched
 
 
-_DATE_DANS_NOM = re.compile(r"(20\d\d)-(\d\d)-(\d\d)")
+def _date_publiable(source: dict, proc: dict) -> bool:
+    """Une date s'affiche quand elle est corroborée. Sinon, un trou — un trou se voit, une date
+    fausse se croit.
 
+    Pour un avis venu du REGISTRE régional, la date est un acte administratif indexé : elle fait
+    foi. Pour un avis venu de l'INDEX NATIONAL, elle a été lue dans le PDF, et la mesure du
+    2026-10-01 était sans appel : 9 des 23 portaient une date que contredisait le nom de fichier
+    de la MRAe, dont un « 2026-04-13 » dans le FUTUR et un « 2020-07-06 » sur un document de 2025.
 
-def _date_corroboree(source: dict, proc: dict) -> bool:
-    """Deux oracles, sinon pas de date (même doctrine que la porte géo du moteur).
+    La corroboration VIT EN AMONT (pipelines/registers/fiche.date_corroboree, testée), et comme
+    pour la dédup on l'APPELLE au lieu de la refaire : j'en avais écrit une seconde ici, et deux
+    écritures d'une même règle finissent par diverger. Il ne reste à cette porte qu'une décision
+    d'AFFICHAGE — la seule qui m'appartienne : une date se publie quand les deux oracles
+    s'accordent (`confirmee`) ou quand l'amont a tranché (`corrigee`).
 
-    Pour un avis venu du REGISTRE régional, la date est un acte administratif indexé : elle
-    fait foi, on la garde. Pour un avis venu de l'INDEX NATIONAL, elle est lue dans le PDF, et
-    la mesure du 2026-10-01 est sans appel : 9 des 23 avis nationaux portaient une date que
-    contredisait le nom de fichier de la MRAe — dont un « 2026-04-13 » dans le FUTUR et un
-    « 2020-07-06 » sur un document de 2025. On ne tranche pas entre les deux oracles : quand
-    ils divergent, la fiche s'affiche SANS date. Un trou se voit ; une date fausse se croit.
-
-    Le défaut est en amont, dans l'extraction : l'index national est le chantier de
-    agent-data-pipeline-FR, cette porte ne fait que l'empêcher d'arriver au lecteur.
+    `a_arbitrer` ne se publie PAS, et ce n'est pas une prudence provisoire : le statut dit
+    littéralement que personne n'a encore décidé laquelle des deux dates est la bonne. Publier
+    l'une des deux parce que l'écart est petit, ce serait choisir en silence — et un jour où
+    l'écart ne serait plus petit, le même code publierait la mauvaise. `non_confirmee` non plus :
+    là il n'existe même pas de second oracle (nom de fichier sans date lisible).
     """
     if "national" not in (source.get("origine") or ""):
         return True
-    d = (proc.get("date_avis") or "")[:10]
-    m = _DATE_DANS_NOM.search(source.get("doc_url", "").rsplit("/", 1)[-1])
-    return bool(d and m and d == f"{m[1]}-{m[2]}-{m[3]}")
+    from pipelines.registers.fiche import date_corroboree  # amont : une seule écriture de la règle
+
+    _retenue, statut = date_corroboree(proc.get("date_avis"), source.get("doc_url"))
+    return statut in ("confirmee", "corrigee")
 
 
 def _sans_doublons(rendus: list[tuple[dict, dict]]) -> list[dict]:
@@ -459,7 +465,7 @@ def patch_dossier_environnemental() -> int:
             if not faits and not a["installation"].get("recommandations_autorite"):
                 continue
             proc = dict(a["procedure"])
-            if not _date_corroboree(a["source"], proc):
+            if not _date_publiable(a["source"], proc):
                 proc.pop("date_avis", None)
             avis_rendus.append((a, {
                 "source": a["source"], "procedure": proc, "faits": faits,
