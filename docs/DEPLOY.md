@@ -25,6 +25,40 @@ make deploy
 2. `npm run build --prefix site`.
 3. `wrangler pages deploy dist` → Cloudflare Pages.
 
+## ⚠️ IL Y A DEUX SORTIES, PAS UNE : le site Cloudflare **et** le bucket R2 de l'API
+
+`prod-artifacts` se termine par `sync-api-r2`, qui pousse **tout le set public**
+(`dc/*.json` hors `zz-` et `il-*`, plus `map.geojson`) vers le bucket `smdc-api-data`, celui
+que sert l'API — avec `--delete`, donc le bucket reflète exactement l'état local.
+
+Et `build` appelle `prod-artifacts` dès que `../smdc-newsroom/calibration` existe. Donc, sur
+la machine qui déploie :
+
+| commande | construit | pousse sur R2 | déploie le site |
+|---|---|---|---|
+| `make prod-artifacts` | oui | **OUI** | non |
+| `make build` | oui | **OUI** | non |
+| `make deploy` | oui | **OUI** | oui |
+| `uv run python scripts/build_prod_artifacts.py` | oui | non | non |
+
+**Aucune cible `make` ne construit sans publier sur R2.** Ça ne se devine pas depuis le nom
+des cibles, et c'est arrivé : le 2026-10-01, un `make prod-artifacts` lancé pour construire
+des fiches dans un arbre de travail a poussé 1438 fiches — dont un encart pas encore validé —
+vers le bucket de l'API, hors de tout gate. Aucun dégât (l'API n'était pas ouverte), mais la
+donnée avait quitté la machine sans décision.
+
+Pour construire les artefacts SANS rien publier, appeler le script directement :
+
+```bash
+uv run python scripts/build_prod_artifacts.py     # artefacts seuls : ni média, ni R2, ni site
+```
+
+Le push est inerte sans `~/.smdc/r2-api.env` — la cible le dit alors (« inert — API bucket
+untouched »). **Sur la machine qui déploie, il ne l'est jamais.**
+
+Le gate de déploiement de Franck porte sur le SITE. Le bucket API est une seconde sortie, qui
+part dès la construction : elle mérite la même prudence, et elle n'a pas de gate à elle.
+
 ## Pourquoi la CI ne déploie pas
 
 `ci.yml` ne checkoute **que** ce repo public + fixtures `zz-`. Elle n'a pas le
