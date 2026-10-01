@@ -112,12 +112,14 @@ INDICATORS: dict[str, str] = {
     "puissance_it_mw": "reported_data_hall_electrical_power_mw",
     "puissance_site_mw": "reported_site_power_demand_mw",
     "consommation_gwh_an": "annual_electricity_consumption_gwh",
+    "photovoltaique": "onsite_solar_pv",
     "pue": "reported_pue",
     "raccordement_kv": "grid_connection_voltage_kv",
     # secours au fioul
     "groupes_nombre": "backup_generator_count",
     "groupes_puissance_unitaire_mw": "backup_generator_unit_power_mw",
     "groupes_puissance_totale_mw": "backup_generator_total_installed_power_mw",
+    "puissance_thermique_combustion_mwth": "combustion_thermal_power_mwth",
     "groupes_carburant": "backup_generator_fuel",
     "cuves_nombre": "fuel_tank_count",
     "cuves_volume_unitaire_m3": "fuel_tank_unit_volume_m3",
@@ -153,6 +155,7 @@ INDICATORS: dict[str, str] = {
     # climat et air
     "ges_teqco2": "ghg_emissions_tco2e",
     "fluides_frigorigenes": "refrigerants_mentioned",
+    "fluide_frigorigene_nom": "refrigerant_type",
     "fuites_frigorigenes_t": "refrigerant_leakage_t",
     "nox": "air_pollutants_mentioned",
     "qualite_air_campagne": "air_quality_survey_mentioned",

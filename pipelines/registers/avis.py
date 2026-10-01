@@ -168,6 +168,14 @@ FIELDS: tuple[Field, ...] = (
     Field("consommation_gwh_an", "Consommation électrique annuelle", "energie", "GWh/an",
           r"consommation\s+(?:électrique|annuelle|d['’]électricité|énergétique)",
           rf"({NUM})\s*GWh"),
+    # Photovoltaïque sur site. L'étalon le montre 5 fois, mais SANS unité commune : 646 panneaux
+    # (Tremblay), 153 et 580 MWh/an (Saint-Priest, Bonneuil), 3 000 m² (Rungis), 581 kWc. Forcer
+    # une unique unité trahirait ; « mentionné » n'est pas un fait (règle du chef). On capte donc
+    # la VALEUR telle que déclarée, avec son unité, en texte — le chiffre voyage, la phrase tranche.
+    Field("photovoltaique", "Photovoltaïque sur site (valeur déclarée)", "energie", None,
+          r"photovolta[ïi]que|panneaux?\s+(?:solaires?|photovolta[ïi]ques?)|\bPV\b",
+          rf"({NUM}\s*(?:panneaux|kWc|MWc|MWh(?:\s*/\s*an|\s+(?:annuels?|par\s+an))?|m2|m²|GWh))",
+          multiple=True, as_text=True),
     # Le PUE se déclare en DEUX temps dans ces avis, et l'ordre compte. Spécification la plus
     # précise d'abord : le MOTEUR s'arrête au premier spec qui capte un champ donné pour une
     # phrase, donc déclarer deux fois `pue` du plus spécifique au plus général donne une
@@ -207,6 +215,21 @@ FIELDS: tuple[Field, ...] = (
     Field("groupes_puissance_totale_mw", "Puissance installée des groupes", "secours", "MW",
           r"puissance\s+totale\s+installée|puissance\s+(?:cumulée|installée)\s+des\s+groupes",
           rf"(?:totale\s+installée|cumulée|installée\s+des\s+groupes)\s+de\s+({NUM})\s*MW"),
+    # Puissance THERMIQUE de combustion (rubrique ICPE 3110). L'étalon la montre 4 fois (59,29 /
+    # 103,18 / 160 / 547 MWth). Grandeur DISTINCTE de la puissance ÉLECTRIQUE des groupes : c'est
+    # le classement ICPE de l'installation de combustion. L'unité « MWth / MW thermiques » est dans
+    # le motif de valeur, donc une puissance électrique en MW ne peut PAS y entrer.
+    Field("puissance_thermique_combustion_mwth", "Puissance thermique de combustion (ICPE 3110)",
+          "secours", "MWth",
+          r"puissance\s+thermique(?:\s+(?:nominale|de\s+(?:combustion|production)))?",
+          # Deux écritures : « …thermique nominale atteindra 59,29 MW » (MW nu, « thermique » avant)
+          # et « 547 MWth ». On prend le 1er nombre qui suit « thermique », ou la forme MWth explicite.
+          rf"thermique[^.]{{0,45}}?({NUM})\s*MW|({NUM})\s*MW\s*(?:th\b|thermiques?)",
+          # « …égale ou supérieure à 50 MW » est le SEUIL de la rubrique 3110, pas la puissance réelle.
+          # On rejette la seule tournure de SEUIL — pas « rubrique » nu, car la vraie valeur (« 160
+          # MWth ») est souvent énoncée dans la MÊME phrase que « rubrique 3110 ».
+          reject=r"(?:égale?\s+ou\s+)?sup[ée]rieure?\s+à|inf[ée]rieure?\s+à",
+          bounds=(1.0, 2000.0)),
     Field("groupes_carburant", "Carburant des groupes", "secours", None,
           r"groupes?\s+électrogènes?[^.]{0,120}(?:aliment|fonctionn)|carburant",
           kind="enum",
@@ -351,8 +374,20 @@ FIELDS: tuple[Field, ...] = (
           r"gaz\s+à\s+effet\s+de\s+serre|\bGES\b|empreinte\s+carbone|"
           r"émissions?[^.]{0,40}CO\s*2|t\s*eq\.?\s*CO\s*2",
           rf"({NUM})\s*(?:t|tonnes?)\s*(?:eq\.?\s*CO\s*2|CO\s*2\s*eq)", multiple=True),
-    Field("fluides_frigorigenes", "Fluides frigorigènes", "climat", None,
-          r"fluides?\s+frigorigènes?", kind="text"),
+    # DEUX champs, pas un (correctif chef). 27 avis discutent des frigorigènes, 11 seulement en
+    # nomment un : garder la PRÉSENCE À CÔTÉ du nom permet de distinguer « discuté mais non nommé »
+    # (not_disclosed — lacune de l'exploitant, une information) de « pas abordé du tout ». Remplacer
+    # la présence par le nom effacerait cette distinction, celle-là même qu'on passe la semaine à
+    # défendre. (« Mentionné n'est pas un fait » était une règle d'AFFICHAGE, pas de stockage.)
+    Field("fluides_frigorigenes", "Fluides frigorigènes (présence)", "climat", None,
+          r"fluides?\s+frigorig[èe]nes?|frigorig[èe]nes?", kind="text"),
+    # Le NOM du fluide quand l'avis le donne (R134a, R-1234ze, propane). Ancré sur une phrase
+    # frigorigène ; « R. 122-7 » (article de code, avec point) n'y entre pas — les frigorigènes
+    # s'écrivent sans point (« R134a »). `multiple` : un avis peut en nommer plusieurs.
+    Field("fluide_frigorigene_nom", "Fluide frigorigène (désignation)", "climat", None,
+          r"frigorig[èe]nes?|frigorifiques?",
+          r"(\bR-?\d{2,4}[a-zA-Z]{0,2}\b|\bpropane\b|\bammoniac\b|\bNH3\b)",
+          multiple=True, as_text=True),
     # Ce champ est une MASSE de frigorigène (tonnes/kg), PAS un équivalent carbone. « …les fuites
     # de fluide frigorigène à hauteur d'environ 500 t eq. » (Aulnay) donnait « 500 t » de
     # frigorigène, alors que « t eq. » = tonnes équivalent CO2. On REJETTE la forme équivalent-CO2
