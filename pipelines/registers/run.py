@@ -23,7 +23,6 @@ import re
 import sys
 import threading
 import time
-import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -256,6 +255,58 @@ def audit_centroides(out_dir: Path) -> dict:
                  "porteur manquant = indéterminé"),
         "groupes": groupes,
         "compte": dict(compte),
+    }
+
+
+def corriger_dates(out_dir: Path) -> dict:
+    """Corriger les `date_avis` fausses des avis d'ORIGINE NATIONALE, hors ligne, sans réseau.
+
+    L'index national publie parfois une date captée dans le CORPS du PDF (dans le futur, décalée
+    de mois ou d'années) ; la seule date fiable est celle du NOM DE FICHIER. On croise les deux
+    (`fiche.date_corroboree`) : écart grossier → on corrige vers le nom de fichier (trace
+    `date_corrigee`) ; écart léger (délibération vs publication ?) → on GARDE l'index et on le
+    verse « à arbitrer », jamais écrasé en silence. Ne touche QUE le national : la fiche de
+    registre tient sa date de l'acte administratif.
+    """
+    today = time.strftime("%Y-%m-%d")
+    corrigees: list[dict] = []
+    a_arbitrer: list[dict] = []
+    non_confirmees = 0
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            d = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+        if d.get("schema") != "smdc.registre-ae/1":
+            continue
+        src = d.get("source") or {}
+        if src.get("registre") is not None:
+            continue  # origine registre : date d'acte, fiable
+        proc = d.get("procedure") or {}
+        ancienne = proc.get("date_avis")
+        retenue, statut = F.date_corroboree(ancienne, src.get("doc_url"))
+        if statut == "corrigee" and retenue != ancienne:
+            proc["date_avis"] = retenue
+            d["date_corrigee"] = {
+                "date": today, "ancienne": ancienne, "nouvelle": retenue, "source": "nom_de_fichier",
+                "note": ("l'index avait capté une date du corps du PDF ; retenue = la date du nom "
+                         "de fichier (publication)"),
+            }
+            p.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+            corrigees.append({"avis": p.stem, "ancienne": ancienne, "nouvelle": retenue})
+        elif statut == "a_arbitrer":
+            a_arbitrer.append({"avis": p.stem, "index": ancienne,
+                               "nom_fichier": F.date_du_nom_de_fichier(src.get("doc_url"))})
+        elif statut == "non_confirmee":
+            non_confirmees += 1
+    return {
+        "note": ("date_avis d'origine nationale corroborée par le nom de fichier ; écart grossier "
+                 "corrigé (date du corps du PDF), écart léger laissé à arbitrer, non corroboré gardé"),
+        "corrigees": corrigees,
+        "a_arbitrer": a_arbitrer,
+        "non_confirmees": non_confirmees,
     }
 
 
@@ -493,8 +544,29 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--audit-centroides", dest="audit_centroides", action="store_true",
                     help="détecter les centroïdes de GÉOCODEUR (un même point sur ≥2 dossiers "
                          "distincts, aucun réseau) ; écrit la section centroides_geocodeur dans couverture.json")
+    ap.add_argument("--corriger-dates", dest="corriger_dates", action="store_true",
+                    help="corriger les date_avis nationales captées dans le corps du PDF via le nom "
+                         "de fichier (aucun réseau) ; écart léger laissé à arbitrer, section dates dans couverture.json")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.corriger_dates:
+        if not a.out.is_dir():
+            print(f"--corriger-dates : {a.out} introuvable", file=sys.stderr)
+            return 2
+        section = corriger_dates(a.out)
+        cov_path = a.out / "couverture.json"
+        cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov["dates"] = section
+        cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"corriger-dates : {len(section['corrigees'])} corrigée(s), "
+              f"{len(section['a_arbitrer'])} à arbitrer, {section['non_confirmees']} non corroborée(s).",
+              file=sys.stderr)
+        for c in section["corrigees"]:
+            print(f"  CORRIGÉ {c['avis']}: {c['ancienne']} → {c['nouvelle']}", file=sys.stderr)
+        for c in section["a_arbitrer"]:
+            print(f"  à arbitrer {c['avis']}: index {c['index']} vs fichier {c['nom_fichier']}", file=sys.stderr)
+        return 0
 
     if a.audit_centroides:
         if not a.out.is_dir():
