@@ -30,6 +30,7 @@ from pathlib import Path
 from . import avis as A
 from . import bruit as BR
 from . import fiche as F
+from . import geocoder as G
 from . import index as I
 from . import mrae_site as M
 
@@ -213,6 +214,37 @@ def _coverage_from_fiches(out_dir: Path) -> tuple[collections.Counter, collectio
         champs.update({f["indicateur"] for fs in inst["faits"].values() for f in fs})
         regions[_fiche_region(d)] += 1
     return champs, regions, retenus
+
+
+def _docs_from_fiches(out_dir: Path) -> dict[str, dict]:
+    """{nom_dossier: fiche} lu depuis les fiches servies (sans réseau)."""
+    docs: dict[str, dict] = {}
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            docs[p.stem] = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+    return docs
+
+
+def audit_centroides(out_dir: Path) -> dict:
+    """Section de comptabilité : les centroïdes de GÉOCODEUR (un même point sur ≥2 dossiers).
+
+    Lecture seule, sans réseau — rejouable sous gel. Un centroïde partagé par deux dossiers
+    distincts n'est pas un site : c'est le centre géocodé d'une commune/zone. On le COMPTE ici,
+    `match.py` l'écarte comme géométrie. Cf. pipelines.registers.geocoder.
+    """
+    shared = G.shared_centroids(_docs_from_fiches(out_dir))
+    groupes = [{"centroid": {"lat": lat, "lon": lon}, "dossiers": noms, "n": len(noms)}
+               for (lat, lon), noms in sorted(shared.items(), key=lambda kv: -len(kv[1]))]
+    return {
+        "note": ("un même point porté par plusieurs dossiers DISTINCTS = coordonnée de "
+                 "géocodeur (commune/zone), pas un site ; écartée comme géométrie au rattachement"),
+        "groupes": groupes,
+        "dossiers_concernes": sum(g["n"] for g in groupes),
+    }
 
 
 def revalidate(out_dir: Path) -> dict:
@@ -433,8 +465,27 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dedup-contenu", dest="dedup_contenu", action="store_true",
                     help="fusionner les avis en doublon PAR CONTENU LU (aucun réseau) ; garde la "
                          "fiche de registre, consigne l'URL alternative ; régénère couverture.json")
+    ap.add_argument("--audit-centroides", dest="audit_centroides", action="store_true",
+                    help="détecter les centroïdes de GÉOCODEUR (un même point sur ≥2 dossiers "
+                         "distincts, aucun réseau) ; écrit la section centroides_geocodeur dans couverture.json")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.audit_centroides:
+        if not a.out.is_dir():
+            print(f"--audit-centroides : {a.out} introuvable", file=sys.stderr)
+            return 2
+        section = audit_centroides(a.out)
+        cov_path = a.out / "couverture.json"
+        cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov["centroides_geocodeur"] = section
+        cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"audit-centroides : {len(section['groupes'])} centroïde(s) de géocodeur, "
+              f"{section['dossiers_concernes']} dossier(s) concerné(s).", file=sys.stderr)
+        for g in section["groupes"]:
+            print(f"  {g['centroid']['lat']}, {g['centroid']['lon']}  ← {', '.join(g['dossiers'])}",
+                  file=sys.stderr)
+        return 0
 
     if a.dedup_contenu:
         if not a.out.is_dir():
@@ -564,8 +615,10 @@ def main(argv: list[str] | None = None) -> int:
              "regions_outillees": sorted(I.REGIONS),
              "dossiers": rows}
     (a.out / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+    cov = couverture(rows)
+    cov["centroides_geocodeur"] = audit_centroides(a.out)   # détecté à chaque lot, pas à l'œil
     (a.out / "couverture.json").write_text(
-        json.dumps(couverture(rows), ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
 
     by = {}
     for r in rows:
