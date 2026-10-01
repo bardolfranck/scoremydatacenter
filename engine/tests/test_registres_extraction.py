@@ -270,3 +270,28 @@ def test_classe_e_couche_texte_polluee_est_reparee_pas_rejetee():
     assert _vals(pollue).get("groupes_nombre") == 54.0, (
         "un texte dont les espaces sont des caractères invisibles doit être réparé, pas perdu"
     )
+
+
+def test_recommandation_en_liste_est_captee_entierement():
+    """Les recommandations rédigées EN LISTE échappaient au motif en prose.
+
+    Il exigeait un point final dans les 400 caractères ; une liste ne l'atteint qu'au bout de
+    mille. Mesuré sur Tremblay : 17 captées sur 23, et les six manquantes étaient les plus
+    substantielles — bruit simultané des 54 groupes, dispersion atmosphérique, émissions
+    diffuses. Un décompte faux dans l'encart public (« les 14 autres » au lieu de « les 20 »)
+    n'était que le symptôme visible ; le vrai défaut était de perdre la matière.
+
+    Quand la numérotation existe, elle est le meilleur délimiteur : chaque recommandation
+    court jusqu'à la suivante.
+    """
+    page = (
+        "(15) L'Autorité environnementale recommande : - d'examiner et de modéliser les "
+        "niveaux sonores dans le cas où tous les groupes électrogènes seraient amenés à "
+        "fonctionner simultanément (situation d'urgence) afin de démontrer que cette "
+        "situation dégradée répond également aux objectifs de la réglementation applicable "
+        "aux installations classées pour la protection de l'environnement. "
+        "(16) L'Autorité environnementale recommande de préciser les modalités de suivi."
+    )
+    recos = avis.extract_from_pages([page], "https://example.test/avis.pdf").recommandations
+    assert [r["numero"] for r in recos] == [15, 16]
+    assert "simultanément" in recos[0]["texte"], "la liste doit être captée en entier"
