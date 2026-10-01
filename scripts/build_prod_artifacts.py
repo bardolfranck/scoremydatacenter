@@ -16,6 +16,7 @@ drafts) — use `make score` / `make validate` for the public fixtures.
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -329,6 +330,178 @@ def patch_nearest_dwelling() -> int:
     return patched
 
 
+def _date_publiable(source: dict, proc: dict) -> bool:
+    """Une date s'affiche quand elle est corroborée. Sinon, un trou — un trou se voit, une date
+    fausse se croit.
+
+    Pour un avis venu du REGISTRE régional, la date est un acte administratif indexé : elle fait
+    foi. Pour un avis venu de l'INDEX NATIONAL, elle a été lue dans le PDF, et la mesure du
+    2026-10-01 était sans appel : 9 des 23 portaient une date que contredisait le nom de fichier
+    de la MRAe, dont un « 2026-04-13 » dans le FUTUR et un « 2020-07-06 » sur un document de 2025.
+
+    La corroboration VIT EN AMONT (pipelines/registers/fiche.date_corroboree, testée), et comme
+    pour la dédup on l'APPELLE au lieu de la refaire : j'en avais écrit une seconde ici, et deux
+    écritures d'une même règle finissent par diverger. Il ne reste à cette porte qu'une décision
+    d'AFFICHAGE — la seule qui m'appartienne : une date se publie quand les deux oracles
+    s'accordent (`confirmee`) ou quand l'amont a tranché (`corrigee`).
+
+    `a_arbitrer` ne se publie PAS, et ce n'est pas une prudence provisoire : le statut dit
+    littéralement que personne n'a encore décidé laquelle des deux dates est la bonne. Publier
+    l'une des deux parce que l'écart est petit, ce serait choisir en silence — et un jour où
+    l'écart ne serait plus petit, le même code publierait la mauvaise. `non_confirmee` non plus :
+    là il n'existe même pas de second oracle (nom de fichier sans date lisible).
+    """
+    if "national" not in (source.get("origine") or ""):
+        return True
+    from pipelines.registers.fiche import date_corroboree  # amont : une seule écriture de la règle
+
+    # On ne déballe PAS le tuple : l'amont lui a ajouté une troisième valeur (la date de mise en
+    # ligne) et un `a, b = ...` ici aurait levé un ValueError. Il ne l'a pas levé, parce que
+    # depuis la porte « commune seule » plus aucun avis national n'arrive jusqu'ici : la casse
+    # était LATENTE, prête à sortir le jour où le rattachement du national sera réparé. Lire le
+    # statut par son rang, sans présumer du reste, c'est le prix d'emprunter une fonction amont.
+    return date_corroboree(proc.get("date_avis"), source.get("doc_url"))[1] in ("confirmee", "corrigee")
+
+
+def _sans_doublons(rendus: list[tuple[dict, dict]]) -> list[dict]:
+    """Garde-fou de publication contre le même PDF indexé deux fois — région ET national.
+
+    Trois fiches (campus LCP, Corbeil-Essonnes) affichaient deux fois l'avis du 30 mars 2022,
+    sous deux noms de fichier. La dédup VIT EN AMONT, dans pipelines/registers (run.dedup_contenu,
+    testée) ; ici on ne réimplémente pas la règle, on APPELLE la sienne — deux écritures d'un
+    même discriminant finiraient par diverger, et c'est au bord de la publication que l'écart
+    coûterait le plus cher. Ce garde-fou doit mesurer zéro une fois le registre nettoyé : s'il
+    attrape quelque chose, c'est que l'amont n'a pas tourné.
+
+    L'empreinte se calcule sur le document BRUT du registre, pas sur les faits déjà filtrés de
+    leurs mentions : c'est l'entrée qu'attend l'amont, et la même pour les deux couches.
+    On garde l'exemplaire du registre régional — il porte le sha256, la licence et la procédure,
+    là où l'index national n'a qu'un lien.
+    """
+    from pipelines.registers.run import _content_fp  # amont : une seule écriture de la règle
+
+    garde: dict[str, dict] = {}
+    for brut, rendu in rendus:
+        fp = _content_fp(brut)
+        if fp is None:  # aucun fait : rien à comparer, l'amont ne regroupe pas non plus
+            continue
+        tenu = garde.get(fp)
+        if tenu is None or ("national" in (tenu["source"].get("origine") or "")
+                            and "national" not in (rendu["source"].get("origine") or "")):
+            garde[fp] = rendu
+    retenus = {id(r) for r in garde.values()}
+    gardes = [rendu for brut, rendu in rendus
+              if _content_fp(brut) is None or id(rendu) in retenus]
+    if len(gardes) < len(rendus):
+        # Un garde-fou qui attrape quelque chose n'est pas une bonne nouvelle : il dit que
+        # l'amont n'a pas été rejoué. Il le DIT, plutôt que de rattraper en silence.
+        print(f"  ⚠ dossier environnemental : {len(rendus) - len(gardes)} doublon(s) rattrapé(s) "
+              f"à la publication — rejouer la dédup du registre (pipelines/registers)")
+    return gardes
+
+
+def patch_dossier_environnemental() -> int:
+    """L'avis d'autorité environnementale posé À CÔTÉ de la note (Franck 2026-10-01).
+
+    Ce que l'État écrit sur un projet : les groupes électrogènes et leur fioul, le bruit
+    mesuré avant travaux, la distance aux habitations et aux établissements scolaires, la
+    chaleur fatale, et les réserves de l'autorité. Aucun de ces faits n'entre dans un
+    indicateur ni dans une lettre — ils complètent la fiche, ils ne la notent pas.
+
+    TROIS RÈGLES, et chacune a été payée.
+
+    1. SEULS LES RATTACHEMENTS SÛRS VOYAGENT. On lit `rattachement.json` et on ne retient
+       que `rattache_propose` et `rattache_multiple`. Les `a_confirmer` et les `ambigu`
+       attendent un humain. Un rattachement faux ferait apparaître sur une fiche les
+       chiffres d'un AUTRE projet — des faits justes, sur la mauvaise fiche, et rien dans
+       la page ne trahirait l'erreur.
+
+    2. UNE MENTION N'EST PAS UN FAIT. Les champs de présence — « NOx : mentionné »,
+       « fluides frigorigènes : mentionné » — restent dans le JSON d'extraction, où ils
+       qualifient une absence, et ne sortent JAMAIS sur la fiche : une puce « mentionné »
+       n'apprend rien au lecteur et ressemble à une insinuation.
+
+    3. ON N'ADDITIONNE RIEN. Un campus porte plusieurs puissances (Nozay : 75, 37,5 et
+       15 MW) ; chacune garde sa phrase, qui nomme son bâtiment. Une somme serait un
+       calcul, interdit dans une couche qui rapporte, et fausse ici : on ignore si les
+       tranches sont simultanées.
+    """
+    ratt = CAL.parent / "registres" / "rattachement.json"
+    if not ratt.is_file():
+        return 0
+    from engine.core import write_json
+    doc = json.loads(ratt.read_text())
+    reg = CAL.parent / "registres"
+
+    # fiche_id -> liste de noms d'avis (un site peut en porter plusieurs)
+    liens: dict[str, list[str]] = {}
+    ecartes = 0
+    for p in doc.get("propositions", []):
+        if p.get("statut") not in ("rattache_propose", "rattache_multiple"):
+            continue
+        # LA MÊME COMMUNE N'EST PAS LE MÊME PROJET. Un avis d'origine nationale n'a qu'un
+        # signal possible — l'index MRAe ne publie ni géométrie, ni pétitionnaire, ni INSEE
+        # (cf. fiche.build_national) — alors le rapprochement par la seule commune l'accroche
+        # à TOUS les data centers de la ville. Mesuré le 2026-10-01 : 4 avis dans ce cas, dont
+        # « DC PA-16 Argenteuil » servi sur 3 fiches Equinix et un avis de La Courneuve sur 5.
+        # Résultat à l'écran : une fiche affichant 22 groupes au fioul ET 18 groupes à l'HVO,
+        # 30 salariés ET 40, sans que rien ne trahisse qu'il s'agit d'un AUTRE projet.
+        # C'est exactement l'erreur contre laquelle le reste de cette fonction est écrit, et
+        # j'avais pris `rattache_multiple` pour un gage de sûreté : c'en est un sur le NOMBRE
+        # de fiches, pas sur la FORCE du lien.
+        if set(p.get("signaux") or []) <= {"commune"}:
+            ecartes += 1
+            continue
+        for fid in (p.get("fiches") or ([p["fiche"]] if p.get("fiche") else [])):
+            liens.setdefault(fid, []).append(p["avis"])
+    if ecartes:
+        print(f"  dossier environnemental : {ecartes} avis écarté(s) — rattachés sur la seule "
+              f"commune (voir pipelines/registers/match.py)")
+
+    # Les champs de PRÉSENCE ne franchissent pas la frontière de la fiche (règle 2).
+    MENTIONS = {
+        "artificialisation", "bruit_emergence", "bruit_point_mesure", "bruit_zer",
+        "cuves_enterrees", "eaux_pluviales", "especes_protegees", "essais_groupes",
+        "etablissements_sensibles", "fluides_frigorigenes", "incendie", "natura2000",
+        "nox", "pfas", "pollution_sols", "qualite_air_campagne", "rejets_aqueux",
+        "trafic_pl", "zones_humides", "emplois_mention",
+    }
+
+    patched = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        noms = liens.get(d["id"])
+        if not noms:
+            d.pop("dossier_environnemental", None)
+            write_json(f, d)
+            continue
+        avis_rendus = []
+        for nom in noms:
+            src = reg / f"{nom}.json" if not nom.endswith(".json") else reg / nom
+            if not src.is_file():
+                continue
+            a = json.loads(src.read_text())
+            faits = [x for fs in a["installation"]["faits"].values() for x in fs
+                     if x["indicateur"] not in MENTIONS and x["valeur"] is not True]
+            if not faits and not a["installation"].get("recommandations_autorite"):
+                continue
+            proc = dict(a["procedure"])
+            if not _date_publiable(a["source"], proc):
+                proc.pop("date_avis", None)
+            avis_rendus.append((a, {
+                "source": a["source"], "procedure": proc, "faits": faits,
+                "recommandations": a["installation"].get("recommandations_autorite", []),
+            }))
+        avis_rendus = _sans_doublons(avis_rendus)
+        if avis_rendus:
+            d["dossier_environnemental"] = {"avis": avis_rendus}
+            patched += 1
+        else:
+            d.pop("dossier_environnemental", None)
+        write_json(f, d)
+    return patched
+
+
 def patch_status_check() -> int:
     """Status proof (Franck 2026-09-17): every OPERATIONAL fiche artifact gets its
     status_check {verified, checked_at, evidence?} from the weekly sidecar written by
@@ -397,6 +570,8 @@ def main() -> int:
     dwell = patch_nearest_dwelling()
     print(f"prod-artifacts: nearest_dwelling on {dwell} fiches" if dwell
           else "prod-artifacts: nearest_dwelling skipped (no habitations sidecar — run make habitations)")
+    dossiers = patch_dossier_environnemental()
+    print(f"prod-artifacts: dossier environnemental sur {dossiers} fiches (avis d'autorité)")
     checked = patch_status_check()
     print(f"prod-artifacts: status_check on {checked} operational fiches"
           if checked else "prod-artifacts: status_check skipped (no status-proof sidecar — run make status-proof)")
