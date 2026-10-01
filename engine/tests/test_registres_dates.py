@@ -34,13 +34,19 @@ def test_yymmdd_et_numeros_davis_ne_sont_pas_des_dates():
 
 # ── corroboration ─────────────────────────────────────────────────────────────
 
-def test_corroboration_confirmee_et_arbitrage_et_correction():
+def test_corroboration_le_nom_de_fichier_gagne_et_garde_la_mise_en_ligne():
     url = "http://x/2025-05-07_rungis.pdf"
-    assert fiche.date_corroboree("2025-05-07", url) == ("2025-05-07", "confirmee")
-    assert fiche.date_corroboree("2025-05-08", url) == ("2025-05-08", "a_arbitrer")   # +1 j : gardé
-    assert fiche.date_corroboree("2020-07-06", url) == ("2025-05-07", "corrigee")     # 5 ans : corrigé
-    assert fiche.date_corroboree("2025-05-07", "http://x/mrae-p-2024-15721.pdf") == ("2025-05-07", "non_confirmee")
-    assert fiche.date_corroboree(None, url) == ("2025-05-07", "corrigee")             # pas d'index → nom de fichier
+    # coïncidence → date de l'avis = nom de fichier, pas de mise en ligne à part
+    assert fiche.date_corroboree("2025-05-07", url) == ("2025-05-07", "confirmee", None)
+    # index +1 j = mise en ligne plausible : nom de fichier gagne, index CONSERVÉ en mel
+    assert fiche.date_corroboree("2025-05-08", url) == ("2025-05-07", "corrigee", "2025-05-08")
+    # écart grossier : l'index a capté une date du corps du PDF → jeté (mel None)
+    assert fiche.date_corroboree("2020-07-06", url) == ("2025-05-07", "corrigee", None)
+    # index AVANT l'avis : une publication ne précède pas la délibération → jeté
+    assert fiche.date_corroboree("2025-05-01", url) == ("2025-05-07", "corrigee", None)
+    # nom de fichier sans date sûre → non corroboré, on garde l'index
+    assert fiche.date_corroboree("2025-05-07", "http://x/mrae-p-2024-15721.pdf") == ("2025-05-07", "non_confirmee", None)
+    assert fiche.date_corroboree(None, url) == ("2025-05-07", "corrigee", None)
 
 
 # ── build_national applique la corroboration ──────────────────────────────────
@@ -56,11 +62,13 @@ class _FakeDoc:
         self.date, self.doc_url, self.titre, self.origine = date, url, "t", "site MRAe"
 
 
-def test_build_national_corrige_le_gros_ecart_garde_le_leger():
+def test_build_national_le_nom_de_fichier_gagne_et_garde_la_mise_en_ligne():
     gros = fiche.build_national(_FakeDoc("2020-07-06", "http://x/2025-05-07_corbeil.pdf"), _FakeAvis())
-    assert gros["procedure"]["date_avis"] == "2025-05-07"          # corrigé vers le nom de fichier
+    assert gros["procedure"]["date_avis"] == "2025-05-07"              # nom de fichier = date de l'avis
+    assert "date_mise_en_ligne" not in gros["procedure"]              # capture du corps du PDF : jetée
     leger = fiche.build_national(_FakeDoc("2025-05-08", "http://x/2025-05-07_rungis.pdf"), _FakeAvis())
-    assert leger["procedure"]["date_avis"] == "2025-05-08"          # ±1 j : index gardé
+    assert leger["procedure"]["date_avis"] == "2025-05-07"            # ±1 j : le nom de fichier gagne quand même
+    assert leger["procedure"]["date_mise_en_ligne"] == "2025-05-08"   # index conservé à part (mise en ligne)
 
 
 # ── passe hors ligne sur les fiches stockées ──────────────────────────────────
@@ -71,7 +79,7 @@ def _national(date_avis, url):
             "procedure": {"intitule": "t", "date_avis": date_avis}}
 
 
-def test_corriger_dates_corrige_arbitre_et_epargne_le_registre(tmp_path):
+def test_corriger_dates_corrige_tout_ecart_garde_la_mise_en_ligne_epargne_le_registre(tmp_path):
     (tmp_path / "gros.json").write_text(json.dumps(_national("2020-07-06", "http://x/2025-05-07_a.pdf")))
     (tmp_path / "leger.json").write_text(json.dumps(_national("2025-05-08", "http://x/2025-05-07_b.pdf")))
     # une fiche de REGISTRE, avec la même anomalie apparente : doit être épargnée (date d'acte).
@@ -80,11 +88,18 @@ def test_corriger_dates_corrige_arbitre_et_epargne_le_registre(tmp_path):
     (tmp_path / "idf-reg.json").write_text(json.dumps(reg))
 
     r = run.corriger_dates(tmp_path)
-    assert [c["avis"] for c in r["corrigees"]] == ["gros"]
-    assert json.loads((tmp_path / "gros.json").read_text())["procedure"]["date_avis"] == "2025-05-07"
-    assert "date_corrigee" in json.loads((tmp_path / "gros.json").read_text())
-    assert [c["avis"] for c in r["a_arbitrer"]] == ["leger"]
-    assert json.loads((tmp_path / "leger.json").read_text())["procedure"]["date_avis"] == "2025-05-08"  # inchangé
+    assert sorted(c["avis"] for c in r["corrigees"]) == ["gros", "leger"]   # les deux corrigés
+    assert "a_arbitrer" not in r                                            # l'arbitrage est tranché
+
+    gros = json.loads((tmp_path / "gros.json").read_text())
+    assert gros["procedure"]["date_avis"] == "2025-05-07"
+    assert "date_mise_en_ligne" not in gros["procedure"]   # capture jetée
+    assert "date_corrigee" in gros
+
+    leger = json.loads((tmp_path / "leger.json").read_text())
+    assert leger["procedure"]["date_avis"] == "2025-05-07"              # nom de fichier gagne
+    assert leger["procedure"]["date_mise_en_ligne"] == "2025-05-08"     # index conservé à part
+
     assert json.loads((tmp_path / "idf-reg.json").read_text())["procedure"]["date_avis"] == "2020-01-01"  # registre épargné
     # idempotent : un second passage ne corrige plus rien.
     assert run.corriger_dates(tmp_path)["corrigees"] == []
