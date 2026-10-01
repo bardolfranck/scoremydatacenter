@@ -73,6 +73,9 @@ ENVELOPE: dict[str, str] = {
     "recommandations_autorite": "authority_recommendations",
     "avertissements": "warnings",
     "projet_mixte": "mixed_use_project",
+    "plusieurs_installations": "multiple_installations",
+    "occurrences": "occurrences",
+    "signaux": "signals",
     "texte": "text",
     "credit": "credit",
     # dans un fait
