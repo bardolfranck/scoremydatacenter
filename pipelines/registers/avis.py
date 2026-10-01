@@ -546,6 +546,50 @@ TYPOGRAPHIC_RECO = re.compile(
     r"recommandations\s+(?:figurent|apparaissent)\s+en\s+(?:italique|gras)", re.I)
 
 
+# Libellés ANGLAIS. Ce sont du CONTENU (ils disent ce que le champ MESURE), pas du vocabulaire de
+# schéma — ils vivent donc ici, près des FIELDS, et non dans la couche de traduction (schema_en).
+# Rédigés pour dire la mesure, pas traduits mot à mot. Un fait sort `libelle: {fr, en}` (bilingue),
+# et la frontière `to_english` ne fait que renommer la clé. Test : un id sans libellé EN échoue.
+LABELS_EN: dict[str, str] = {
+    "puissance_it_mw": "Data hall (IT) power", "puissance_site_mw": "Reported site power demand",
+    "consommation_gwh_an": "Annual electricity consumption",
+    "photovoltaique": "On-site photovoltaics (as reported)", "pue": "Announced PUE",
+    "raccordement_kv": "Grid connection voltage", "groupes_nombre": "Backup generators (count)",
+    "groupes_puissance_unitaire_mw": "Backup generator unit power",
+    "groupes_puissance_totale_mw": "Backup generators installed power",
+    "puissance_thermique_combustion_mwth": "Combustion thermal power (ICPE 3110)",
+    "groupes_carburant": "Backup generator fuel", "cuves_nombre": "Fuel tanks (count)",
+    "cuves_volume_unitaire_m3": "Fuel tank unit volume",
+    "cuves_volume_total_m3": "Total fuel storage volume", "cuves_enterrees": "Buried fuel tanks",
+    "autonomie_heures": "Backup autonomy", "essais_groupes": "Periodic generator testing",
+    "bruit_bandes": "Noise levels by point and period",
+    "bruit_emergence_bandes": "Noise emergence by period", "bruit_niveau_dba": "Measured noise levels",
+    "bruit_emergence_dba": "Noise emergence", "bruit_emergence": "Regulatory noise emergence (mention)",
+    "bruit_point_mesure": "Noise measurement points", "bruit_zer": "Noise-regulated zones (ZER)",
+    "chaleur_fatale_mw_th": "Waste heat produced", "chaleur_valorisation": "Waste heat recovery",
+    "reseau_chaleur_distance": "Distance to district heating network",
+    "eau_m3_an": "Annual water consumption", "refroidissement_type": "Cooling technology",
+    "rejets_aqueux": "Aqueous discharges", "eaux_pluviales": "Stormwater management",
+    "parcelle_ha": "Plot area", "emprise_sol_m2": "Building footprint",
+    "surface_plancher_m2": "Gross floor area", "surface_salles_m2": "Data hall area",
+    "surface_locaux_techniques_m2": "Technical rooms area", "hauteur_m": "Building height",
+    "artificialisation": "Land take / soil sealing",
+    "ges_teqco2": "Greenhouse-gas emissions (per source)",
+    "fluides_frigorigenes": "Refrigerants (presence)", "fluide_frigorigene_nom": "Refrigerant (designation)",
+    "fuites_frigorigenes_t": "Refrigerant leakage", "nox": "Nitrogen oxides / air pollutants",
+    "qualite_air_campagne": "Air-quality measurement campaign",
+    "habitations_distance_m": "Distance to nearest dwellings",
+    "etablissement_sensible_distance_m": "Distance to nearest sensitive site",
+    "etablissements_sensibles": "Sensitive sites nearby", "trafic_pl": "Heavy-goods-vehicle traffic",
+    "natura2000": "Natura 2000 / ZNIEFF", "zones_humides": "Wetlands",
+    "especes_protegees": "Protected species / derogation",
+    "pollution_sols": "Soil contamination / former industrial site",
+    "pfas": "PFAS / emerging contaminants", "icpe_rubriques": "ICPE categories",
+    "incendie": "Fire risk / defence measures", "emplois_effectif": "Reported on-site headcount",
+    "emplois_mention": "Employment (mention)",
+}
+
+
 @dataclass
 class Fact:
     field_id: str
@@ -557,7 +601,10 @@ class Fact:
     page: int
 
     def as_dict(self) -> dict:
-        d = {"indicateur": self.field_id, "libelle": self.label, "theme": self.theme,
+        # `libelle` est bilingue (contenu) : {fr, en}. La frontière ne fait que renommer la clé.
+        d = {"indicateur": self.field_id,
+             "libelle": {"fr": self.label, "en": LABELS_EN.get(self.field_id, self.label)},
+             "theme": self.theme,
              "valeur": self.value, "phrase": self.sentence, "page": self.page}
         if self.unit:
             d["unite"] = self.unit

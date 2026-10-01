@@ -77,6 +77,7 @@ ENVELOPE: dict[str, str] = {
     "occurrences": "occurrences",
     "signaux": "signals",
     "texte": "text",
+    "numero": "number",
     "credit": "credit",
     # dans un fait
     "indicateur": "indicator",
@@ -86,10 +87,34 @@ ENVELOPE: dict[str, str] = {
     "unite": "unit",
     "phrase": "evidence_excerpt",
     "page": "page_pdf",
+    # racine + libellé bilingue
+    "schema": "schema",
+    "fr": "fr",
+    "en": "en",
+    # bandes de bruit (valeur structurée)
+    "point": "measurement_point",
+    "metrique": "metric",
+    "jour": "day",
+    "nuit": "night",
+    "min": "min",
+    "max": "max",
+    "seuil_cite": "cited_threshold",
+    # centroïde
+    "lat": "lat",
+    "lon": "lon",
     # traces d'opérations
     "revalidation": "revalidation",
     "derivation_bruit": "noise_derivation",
     "dedup": "deduplication",
+    "date": "date",
+    "regle": "rule",
+    "methode": "method",
+    "reserve": "caveat",
+    "faits_retires": "removed_facts",
+    "fusionnee_depuis": "merged_from",
+    "bandes_ajoutees": "bands_added",
+    "motif": "reason",
+    "fichier": "file",
 }
 
 # ── Thèmes ──────────────────────────────────────────────────────────────────────────────────
@@ -279,3 +304,60 @@ RESERVED: dict[str, str] = {
         "emploie le même 105 MW pour les salles informatiques et pour le raccordement."
     ),
 }
+
+
+class UntranslatedKey(KeyError):
+    """Une clé, un indicateur ou un thème français franchirait la frontière sans traduction."""
+
+
+_INTERNAL_TRACES = {"revalidation", "derivation_bruit", "dedup"}
+
+
+def to_english(obj):
+    """Fiche FR → EN, à la FRONTIÈRE produit (le moteur reste français ; seul ce qui SORT vers
+    l'API ou le site est traduit — les fichiers stockés ne sont pas touchés).
+
+    Traduit INTÉGRALEMENT (clés d'enveloppe, thèmes, indicateurs, valeurs d'énumération) et ÉCHOUE
+    BRUYAMMENT (`UntranslatedKey`) sur une clé, un indicateur ou un thème qu'il ne connaît pas,
+    plutôt que de le laisser passer en français. Un identifiant FR qui franchit en silence serait
+    le même faux silence qu'on traque partout : mieux vaut un échec visible qu'une fuite muette.
+
+    Les libellés sont du CONTENU bilingue `{fr, en}` (écrits dans FIELDS, pas ici) : on renomme la
+    clé `libelle` → `label` et on laisse la valeur telle quelle.
+    """
+    if isinstance(obj, list):
+        return [to_english(x) for x in obj]
+    if not isinstance(obj, dict):
+        return obj
+    out = {}
+    for k, v in obj.items():
+        if k in _INTERNAL_TRACES:
+            # Journal de travail INTERNE (pourquoi on a retiré / dérivé / fusionné), en français,
+            # et qui référence parfois un champ RETIRÉ du schéma (donc sans nom public) : ce n'est
+            # pas la donnée produit, on ne le sert pas. Le fail-loud reste strict sur les faits.
+            continue
+        if k not in ENVELOPE:
+            raise UntranslatedKey(f"clé sans traduction anglaise : {k!r}")
+        ek = ENVELOPE[k]
+        if k == "faits":
+            facts = {}
+            for theme, lst in v.items():
+                if theme not in THEMES:
+                    raise UntranslatedKey(f"thème sans traduction : {theme!r}")
+                facts[THEMES[theme]] = [to_english(f) for f in lst]
+            out[ek] = facts
+        elif k == "indicateur":
+            if v not in INDICATORS:
+                raise UntranslatedKey(f"indicateur sans nom public anglais : {v!r}")
+            out[ek] = INDICATORS[v]
+        elif k == "theme":
+            if v not in THEMES:
+                raise UntranslatedKey(f"thème sans traduction : {v!r}")
+            out[ek] = THEMES[v]
+        elif k == "libelle":
+            out[ek] = v  # {fr, en} : contenu bilingue, laissé tel quel
+        elif k == "valeur":
+            out[ek] = ENUM_VALUES.get(v, v) if isinstance(v, str) else to_english(v)
+        else:
+            out[ek] = to_english(v)
+    return out
