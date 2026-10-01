@@ -253,9 +253,17 @@ Chaîne : **REGISTRE (index) → LIEN PDF → AVIS → JSON d'extraction → RAT
 modules dans `pipelines/registers/`, un par maillon, et un seul chemin pour les lancer :
 
 ```
-python -m pipelines.registers.run      --out ../smdc-newsroom/registres --national   # récolte : index → PDF → extraction
-python -m pipelines.registers.match_run --out ../smdc-newsroom/registres              # rattachement + 3 sorties dérivées
+python -m pipelines.registers.run      --out ../smdc-newsroom/registres --national   # 1. récolte : index → PDF → extraction
+python -m pipelines.registers.run      --out ../smdc-newsroom/registres --dedup-contenu   # 2. fusionne les doublons
+python -m pipelines.registers.run      --out ../smdc-newsroom/registres --corriger-dates  # 3. corrige les dates nationales
+python -m pipelines.registers.match_run --out ../smdc-newsroom/registres              # 4. rattachement + 3 sorties dérivées
 ```
+
+**L'ORDRE compte, et `match_run` passe EN DERNIER.** Il lit les fiches telles qu'elles sont : s'il
+tourne avant la dédup, son `rattachement.json` référence un avis que la dédup va fusionner — une
+référence morte que la couche d'après ignore en silence (`if not src.is_file()`), ce qui masque le
+décalage au lieu de le dire. Dédup et correction des dates NETTOIENT les fiches ; le rattachement
+se calcule sur le résultat propre. Rejoué dans cet ordre, il n'a jamais de référence morte.
 
 `match_run` prend le **même `--out`** (le dossier du registre) ; le corpus noté est lu à côté,
 dans `<out>/../calibration` (ou `$NEWSROOM_CAL`). Il ne touche AUCUN réseau, il est idempotent
