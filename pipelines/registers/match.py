@@ -106,7 +106,16 @@ def _jetons(s: str | None) -> set[str]:
     # Le nom de fichier d'un avis national écrit le bâtiment avec un séparateur — « dc-pa-16 »,
     # « pa 16 » — là où la fiche le colle (« pa16 »). Sans recoller, le seul signal d'un avis
     # national (la commune) le sert à TOUS les DC de la ville : « PA-16 » atterrit sur PA12.
-    t = re.sub(r"\b([a-z]{1,4})[ -]+(\d{1,3}[a-z]?)\b", r"\1\2", _slug(s))
+    #
+    # On ne recolle QUE les préfixes ≤ 3 lettres. C'est ce qui sépare un jeton de bâtiment d'un
+    # bruit : les préfixes réels font 2-3 lettres (pa, th, nd, dc, par, cdg, mrs…), tandis que le
+    # bruit vient de mots de 4 lettres collés à un nombre — « mrae-03 » (préfixe de fichier + date),
+    # « sucy-en-brie-77 » (commune + DÉPARTEMENT), « villa-nova-1 ». Un code de département et un
+    # numéro de bâtiment sont INDISCERNABLES par la valeur (« data-17 » = bâtiment 17 ET dépt 17) ;
+    # la seule coupe propre est la longueur du préfixe. Coût mesuré : quelques jetons de fiche à
+    # préfixe de 4 lettres (atos1, data17) ne sont plus produits — zéro rattachement changé, et un
+    # signal manquant vaut mieux qu'un faux (un « brie77 » qui percuterait une fiche un jour).
+    t = re.sub(r"\b([a-z]{1,3})[ -]+(\d{1,3}[a-z]?)\b", r"\1\2", _slug(s))
     return {m for m in _JETON.findall(t) if not m.isdigit()}
 
 
