@@ -316,6 +316,28 @@ aucune ne se sert ni ne s'applique seule :
   peut combler. Un humain l'écrit avec l'avis pour provenance — et s'abstient quand le
   pétitionnaire manque (une fiche signalée n'est pas une fiche à renseigner).
 
+### Qualité des avis — deux passes HORS LIGNE, rejouables sous gel
+
+Le même avis arrive parfois deux fois, et l'index national publie parfois une date fausse. Deux
+commandes déterministes, sans réseau, corrigent les fiches DÉJÀ stockées (à rejouer à chaque
+récolte ; la ré-extraction au dégel doit rester un non-événement) :
+
+```
+python -m pipelines.registers.run --out ../smdc-newsroom/registres --dedup-contenu
+python -m pipelines.registers.run --out ../smdc-newsroom/registres --corriger-dates
+```
+
+- **Dédup par identité de contenu** : le même PDF indexé par le registre régional ET par l'index
+  national (deux URL, un ré-export à quelques octets près) est fusionné. Le discriminant n'est ni
+  le `sha256` du fichier (aveugle au ré-export) ni le texte brut (qu'un caractère change) mais
+  l'**identité structurelle : pagination + triplets de faits (indicateur, valeur, page)**. On garde
+  la fiche de registre (acte administratif), on consigne l'URL de l'autre service. Trace `dedup`.
+- **Correction des dates** : `date_avis` d'origine nationale est corroborée par la date du NOM DE
+  FICHIER. Écart grossier (date captée dans le corps du PDF — futur, mois, années) → corrigé vers
+  le nom de fichier, trace `date_corrigee`. Écart léger (délibération vs publication) → **gardé et
+  mis à arbitrer** (section `dates.a_arbitrer` de couverture.json), jamais écrasé. Nom de fichier
+  sans date sûre → laissé non corroboré (on ne devine pas un YYMMDD qui collisionne un n° d'avis).
+
 ## Run it end to end on a fictional DC (recipe for a successor)
 
 ```
