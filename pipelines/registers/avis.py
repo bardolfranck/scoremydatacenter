@@ -84,13 +84,22 @@ ICPE_SEUIL = (r"\brubrique\b|nomenclature|"
 # emplois ») ne sont PAS ceux du data center. On ne démêle pas fiche par fiche (faux-ami) : on DRAPE
 # la fiche pour que l'étage d'après lise ces chiffres avec prudence. Signal d'INCLUSION au PROJET
 # (« construction de N logements », « co-living »), pas de VOISINAGE (« habitations à 200 m »).
-# Mesuré sur l'étalon : Courbevoie 62, Bruges 38, Rungis 2 (léger) ; les 10 autres 0, dont
-# Saint-Priest (habitations proches mais 0 programme) — voisins ≠ programme.
+# Mesuré sur l'étalon : Courbevoie 62 occ., Bruges 38, Rungis 2 ; les 10 autres 0, dont
+# Saint-Priest (habitations proches mais 0 programme) — voisins ≠ programme. On rapporte ces
+# occurrences et les signaux captés ; on ne gradue pas (pas de seuil « léger/lourd » défendable).
 MIXED_PROGRAM = re.compile(
     r"village\s+delage|aqualudique|co-?living|résidences?-services?|"
     r"projets?\s+(?:mixtes?|urbains?)|programme\s+(?:mixte|urbain)|"
     r"\d[\d   ]*\s*(?:m2|m²)?\s*(?:de\s+)?logements|logements\s+(?:familiaux|sociaux)|"
     r"crèche\s+de\b|gymnase\b|groupe\s+scolaire\s+de\b", re.I)
+
+# PLUSIEURS INSTALLATIONS dans un même avis (campus). Compté à partir des FAITS, pas de mots-clés :
+# les mots-clés sur-déclenchent (« deux data centers » dans une comparaison de voisinage ; « DC1 »
+# pris dans le nom de société PIPA-DC1). Le signal fiable est le CONTENU extrait — plusieurs
+# puissances IT distinctes = plusieurs bâtiments (Nozay 75/37,5/15) — complété par les étiquettes
+# de bâtiment DC01/DC02/DC03 (zéro de tête = convention de bâtiment, écarte « PIPA-DC1 »).
+# On ne compte JAMAIS par somme : on énumère des installations, on n'additionne pas des valeurs.
+DC_LABEL = re.compile(r"\bDC0(\d)\b")
 
 
 def _n(s: str) -> float:
@@ -162,9 +171,13 @@ class Field:
 # ─────────────────────────────────────────────────────────────────────────────────────────
 FIELDS: tuple[Field, ...] = (
     # ── Énergie ──────────────────────────────────────────────────────────────────────────
+    # `multiple` : un CAMPUS porte plusieurs installations (Nozay : DC01 75, DC02 37,5, DC03 15 MW IT).
+    # Ce ne sont pas plusieurs valeurs d'un champ mais plusieurs bâtiments — chacun garde sa phrase
+    # (qui nomme le bâtiment), comme les GES poste par poste. On ne somme JAMAIS : on ne sait pas si
+    # les tranches sont simultanées ni si la dernière est encore au projet.
     Field("puissance_it_mw", "Puissance des salles informatiques", "energie", "MW",
           r"salles?\s+informatiques?.{0,80}puissance|puissance\s+(?:prévue|informatique|des\s+salles)",
-          rf"puissance[^.]{{0,60}}?({NUM})\s*MW", bounds=(0.1, 2000.0)),
+          rf"puissance[^.]{{0,60}}?({NUM})\s*MW", multiple=True, bounds=(0.1, 2000.0)),
     # `puissance_site_mw` : RETIRÉ puis ROUVERT. Je l'avais supprimé sur un 0/43, en concluant
     # que « la notion n'existe pas dans ces avis ». C'était déduire une absence d'un silence —
     # la quatrième fois cette semaine, et cette fois contre moi-même. L'étalon l'a démenti au
@@ -250,12 +263,15 @@ FIELDS: tuple[Field, ...] = (
                    (r"fioul\s+domestique", "fioul domestique"),
                    (r"gazole\s+non\s+routier|GNR", "gazole non routier"),
                    (r"\bgazole\b|\bfioul\b", "fioul/gazole"))),
+    # `multiple` : campus / split enterrées vs aériennes vs par bâtiment (Nozay 28 ent. + 87 aér. ;
+    # Normandie ND1 6×100 + ND2 8×80). Chaque occurrence garde sa phrase ; jamais de somme.
     Field("cuves_nombre", "Cuves de carburant (nombre)", "secours", "cuves",
           r"cuves?[^.]{0,80}(?:stocker|carburant|fioul|gazole|enterrées?|aériennes?)",
-          rf"({NUM}|{WORD_RE})\s+cuves?", reject=AGGREGAT_SITE, bounds=(1.0, 400.0)),
+          rf"({NUM}|{WORD_RE})\s+cuves?", reject=AGGREGAT_SITE, multiple=True, bounds=(1.0, 400.0)),
     Field("cuves_volume_unitaire_m3", "Volume unitaire d'une cuve", "secours", "m³",
           r"cuves?[^.]{0,60}(?:de|chacune)",
-          rf"({NUM})\s*(?:{M3})\s*chacune|cuves?\s+(?:enterrées?\s+|aériennes?\s+)?de\s+({NUM})\s*(?:{M3})", bounds=(1.0, 2000.0)),
+          rf"({NUM})\s*(?:{M3})\s*chacune|cuves?\s+(?:enterrées?\s+|aériennes?\s+)?de\s+({NUM})\s*(?:{M3})",
+          multiple=True, bounds=(1.0, 2000.0)),
     Field("cuves_volume_total_m3", "Volume total de carburant stocké", "secours", "m³",
           r"volume\s+total|capacité\s+(?:totale\s+)?de\s+stockage|stockage\s+total",
           rf"({NUM})\s*(?:{M3})",
@@ -263,7 +279,7 @@ FIELDS: tuple[Field, ...] = (
           # volume d'EAUX PLUVIALES capté comme volume de fioul — l'ancre « volume total » ne
           # dit pas de QUOI. On exclut le contexte hydraulique ; bon nombre, mauvais objet.
           reject=r"eaux?\s+pluviales?|infiltr|pluies?|rétention|bassin|assainissement",
-          bounds=(1.0, 50000.0)),
+          multiple=True, bounds=(1.0, 50000.0)),
     Field("cuves_enterrees", "Cuves enterrées", "secours", None,
           r"cuves?\s+enterrées?", kind="text"),
     Field("autonomie_heures", "Autonomie en secours", "secours", "h",
@@ -364,9 +380,10 @@ FIELDS: tuple[Field, ...] = (
     Field("surface_plancher_m2", "Surface de plancher", "foncier", "m²",
           r"surface\s+de\s+plancher",
           rf"({NUM})\s*(?:{M2})"),
+    # `multiple` : surfaces de salles par bâtiment sur un campus (Nozay DC01/02/03). Chacune sa phrase.
     Field("surface_salles_m2", "Surface des salles informatiques", "foncier", "m²",
           r"salles?\s+informatiques?[^.]{0,80}(?:emprise|surface|représentent)",
-          rf"salles?\s+informatiques?\s+(?:représentent|occupent)?\s*({NUM})\s*(?:{M2})"),
+          rf"salles?\s+informatiques?\s+(?:représentent|occupent)?\s*({NUM})\s*(?:{M2})", multiple=True),
     Field("surface_locaux_techniques_m2", "Surface des locaux techniques", "foncier", "m²",
           r"locaux\s+techniques",
           rf"locaux\s+techniques\s*({NUM})\s*(?:{M2})"),
@@ -557,9 +574,15 @@ class Avis:
     facts: list[Fact] = field(default_factory=list)
     recommandations: list[dict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
-    # « léger » / « lourd » quand l'avis couvre un PROGRAMME bâti au-delà du data center (voir
-    # MIXED_PROGRAM). None sinon. Drapeau, PAS une séparation des faits — l'étage d'après tranche.
-    projet_mixte: str | None = None
+    # Drapeau PROJET MIXTE : {"occurrences": n, "signaux": [...]} quand l'avis couvre un programme
+    # bâti au-delà du data center (voir MIXED_PROGRAM). None sinon. Le drapeau porte ses PREUVES —
+    # pas de niveau « léger/lourd » : on ne saurait défendre un seuil entre 2 et 38, on montre les
+    # tournures et le lecteur juge (même doctrine que « la phrase, pas la qualification »).
+    projet_mixte: dict | None = None
+    # Drapeau PLUSIEURS INSTALLATIONS : un entier (nombre de data centers décrits) quand l'avis le
+    # donne, True si le pluriel est là sans compte. L'avis décrit N installations, pas une — cela
+    # change la lecture de TOUS les chiffres, pas seulement ceux du programme.
+    plusieurs_installations: object = None
 
     def as_dict(self) -> dict:
         by_theme: dict[str, list[dict]] = {}
@@ -580,6 +603,8 @@ class Avis:
             # Drapeau de NATURE : lire les chiffres de programme (logements, emplois) avec prudence,
             # ils ne sont pas ceux du data center. On ne les retire pas ici — on prévient.
             out["projet_mixte"] = self.projet_mixte
+        if self.plusieurs_installations:
+            out["plusieurs_installations"] = self.plusieurs_installations
         return out
 
 
@@ -662,12 +687,13 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
             "extraction NON FIABLE, document SIGNALÉ et non extrait (à sortir du taux, comme un scan)")
         return avis
 
-    # PROJET MIXTE : l'avis couvre un programme bâti au-delà du data center → on DRAPE la fiche
-    # (on ne retire pas les faits de programme, on prévient). « lourd » quand le signal est massif
-    # (Village Delage, aqualudique), « léger » pour une composante annexe (co-living, crèche).
-    n_mixed = len(MIXED_PROGRAM.findall(full))
-    if n_mixed:
-        avis.projet_mixte = "lourd" if n_mixed >= 10 else "léger"
+    # PROJET MIXTE : l'avis couvre un programme bâti au-delà du data center → on DRAPE la fiche avec
+    # ses PREUVES (tournures captées, dédupliquées en retirant les chiffres, + nombre d'occurrences).
+    # Pas de niveau inventé : le lecteur juge sur les signaux. On ne retire aucun fait, on prévient.
+    mixed = MIXED_PROGRAM.findall(full)
+    if mixed:
+        signaux = sorted({re.sub(r"[\d   ]+", " ", m).strip().lower() for m in mixed})
+        avis.projet_mixte = {"occurrences": len(mixed), "signaux": signaux}
 
     seen: set[str] = set()
     for pno, text in enumerate(pages, start=1):
@@ -750,6 +776,14 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
             txt = re.sub(r"\s+", " ", m.group(0)).strip()
             page = next((i for i, p in enumerate(pages, 1) if txt[:60] in re.sub(r"\s+", " ", p)), None)
             avis.recommandations.append({"texte": txt, "page": page})
+
+    # PLUSIEURS INSTALLATIONS (campus) : compté sur les FAITS extraits, pas sur des mots-clés — ceux-ci
+    # sur-déclenchent (comparaison de voisinage, nom de société « PIPA-DC1 »). Plusieurs puissances IT
+    # distinctes = plusieurs bâtiments (Nozay 75/37,5/15), corroboré par les étiquettes DC01/DC02/DC03.
+    n_install = max(len({f.value for f in avis.facts if f.field_id == "puissance_it_mw"}),
+                    len(set(DC_LABEL.findall(full))))
+    if n_install >= 2:
+        avis.plusieurs_installations = n_install
     return avis
 
 
