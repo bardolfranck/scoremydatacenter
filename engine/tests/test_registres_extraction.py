@@ -154,8 +154,11 @@ def test_revalidation_retire_le_rejete():
     assert avis.rejection_reason("parcelle_ha", 1.0, meudon) is not None
     # Une valeur hors borne physique est positivement rejetée.
     assert avis.rejection_reason("groupes_nombre", 999.0, "999 groupes électrogènes.") is not None
-    # Un champ retiré du schéma est positivement rejeté.
-    assert avis.rejection_reason("puissance_site_mw", 50.0, "puissance du site de 50 MW.") is not None
+    # Un champ retiré du schéma est positivement rejeté. (`bruit_nuit_dba` a été remplacé par
+    # `bruit_bandes`. L'exemple était auparavant `puissance_site_mw` — rouvert depuis, parce
+    # que l'étalon a démenti le 0/43 sur lequel je l'avais supprimé : « la puissance électrique
+    # appelée (80 MW) », avis Interxion MRS4. Un champ vide n'était pas une notion absente.)
+    assert avis.rejection_reason("bruit_nuit_dba", 54.5, "54,5 dB(A) en période nocturne.") is not None
 
 
 def test_revalidation_garde_le_legitime_et_le_silence():

@@ -99,6 +99,7 @@ THEMES: dict[str, str] = {
 INDICATORS: dict[str, str] = {
     # énergie
     "puissance_it_mw": "reported_data_hall_electrical_power_mw",
+    "puissance_site_mw": "reported_site_power_demand_mw",
     "consommation_gwh_an": "annual_electricity_consumption_gwh",
     "pue": "reported_pue",
     "raccordement_kv": "grid_connection_voltage_kv",
