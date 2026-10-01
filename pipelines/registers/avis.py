@@ -37,6 +37,8 @@ import urllib.request
 from dataclasses import dataclass, field
 from io import BytesIO
 
+from . import bruit
+
 UA = "ScoreMyDataCenter/1.0 (+https://scoremydatacenter.org)"
 TIMEOUT = 180
 
@@ -114,6 +116,10 @@ class Field:
     # sortis sans que rien ne les arrête. Une valeur hors bornes est ÉCARTÉE, pas corrigée :
     # on ne devine pas ce que l'avis voulait dire.
     bounds: tuple[float, float] | None = None
+    # Certains faits ne sont pas scalaires : le bruit s'exprime en BANDES (point × période ×
+    # plage), et sortir les dB(A) à plat perd l'appariement. Un `parser(phrase) -> list[dict]`
+    # produit alors des valeurs STRUCTURÉES (une par point de mesure), chacune gardant sa phrase.
+    parser: object = None
 
 
 # ─────────────────────────────────────────────────────────────────────────────────────────
@@ -188,20 +194,25 @@ FIELDS: tuple[Field, ...] = (
           kind="text"),
 
     # ── Bruit : sujet n°1 de l'État dans ces avis, zéro indicateur chez nous ──────────────
-    # Tous les niveaux relevés, CHACUN AVEC SA PHRASE : c'est la phrase qui dit s'il s'agit
+    # STRUCTURÉ, pour la publication : point de mesure × période (jour/nuit) × plage ou valeur.
+    # C'est ce qui rend le bloc bruit lisible (« en limite est : 62,5–65 le jour, 59,5–62 la
+    # nuit ») là où les dB(A) à plat ne disaient rien. Deux grandeurs SÉPARÉES — niveau ambiant
+    # (surtout l'environnement) et émergence (le seul chiffre qui parle du data center) :
+    Field("bruit_bandes", "Bruit par point et période", "bruit", None,
+          r"dB\s*\(?\s*A\)?", parser=bruit.parse_levels),
+    Field("bruit_emergence_bandes", "Émergence par période", "bruit", None,
+          r"émergences?", parser=bruit.parse_emergences),
+    # Couche BRUTE conservée (jamais publiée telle quelle : un niveau sans sa période ni son
+    # point n'apprend rien) — tous les niveaux relevés, CHACUN AVEC SA PHRASE : c'est la phrase
+    # qui dit s'il s'agit
     # du jour ou de la nuit, d'un point de mesure ou d'une limite de propriété, d'une valeur
     # ferme ou d'une borne de fourchette. Réduire ce champ à un scalaire produit des demi-
     # vérités — « 62 dB(A) la nuit » alors que l'avis écrit « entre 59,5 et 62 dB(A) ».
     Field("bruit_niveau_dba", "Niveaux sonores relevés", "bruit", "dB(A)",
           r"niveaux?\s+(?:sonores?|acoustiques?|de\s+bruit)|bruit\s+(?:ambiant|résiduel)|émergence|\bLAeq\b",
           rf"({NUM})\s*dB\s*\(?A\)?", multiple=True, bounds=(25.0, 120.0)),
-    # Le niveau de nuit est souvent écrit SANS son unité, adossé au niveau de jour :
-    # « 60,5 dB(A) et 54,5 en période nocturne ». Un motif qui exige l'unité le perd.
-    # On refuse en revanche les phrases à fourchette : une borne n'est pas une valeur.
-    Field("bruit_nuit_dba", "Niveau sonore nocturne (valeur ferme)", "bruit", "dB(A)",
-          r"(?:nocturne|de\s+nuit|période\s+nuit)",
-          rf"({NUM})\s*(?:dB\s*\(?A\)?\s*)?(?:en\s+période\s+nocturne|de\s+nuit|la\s+nuit)",
-          reject=r"\bentre\b[^.]{0,60}\bet\b|oscillent", bounds=(25.0, 120.0)),
+    # `bruit_nuit_dba` (scalaire) RETIRÉ : remplacé par `bruit_bandes` ci-dessous, qui garde
+    # l'appariement jour/nuit. Une valeur présente à deux endroits finit par diverger.
     # L'ÉMERGENCE n'est pas un niveau sonore : c'est l'écart entre le bruit avec et sans
     # l'installation (3 à 6 dB(A) selon l'heure). Mélangée aux niveaux, elle tirait la série
     # vers un « minimum » de 2,5 dB(A) qui ne veut rien dire. Champ distinct, borné en écart.
@@ -496,6 +507,15 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
                 if not re.search(spec.anchor, s, re.I):
                     continue
                 if spec.reject and re.search(spec.reject, s, re.I):
+                    continue
+                if spec.parser is not None:
+                    # Faits STRUCTURÉS (bandes de bruit) : une valeur-dict par point de mesure.
+                    for band in spec.parser(s):
+                        key = f"{spec.id}:{band}"
+                        if key in seen:
+                            continue
+                        seen.add(key)
+                        avis.facts.append(Fact(spec.id, spec.label, spec.theme, band, None, s, pno))
                     continue
                 if spec.kind == "text":
                     key = f"{spec.id}:{pno}"
