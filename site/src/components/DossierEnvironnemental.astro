@@ -1,0 +1,415 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// L'avis d'autorité environnementale posé À CÔTÉ de la note (Franck 2026-10-01).
+//
+// Ce que l'État écrit sur un projet et que l'exploitant ne met pas en avant : les groupes
+// électrogènes et leur fioul, le bruit relevé avant travaux, la distance aux premières
+// habitations, la chaleur fatale non valorisée, et les réserves de l'autorité. Aucun de ces
+// faits n'entre dans un indicateur ni dans une lettre — ils complètent la fiche, ils ne la
+// notent pas.
+//
+// L'ATTRIBUTION EST LE BOUCLIER. Le bloc ne s'intitule pas « nuisances » — ce serait notre
+// verdict. Il nomme sa source : nous ne disons pas que c'est une nuisance, nous disons que
+// l'exploitant l'a déclaré et que l'autorité l'a écrit. Le pré-mortem est catégorique : on
+// ne juge pas une conduite, on la factualise.
+//
+// TOUT CHIFFRE EST DÉPLIABLE SUR SA PHRASE. Chaque ligne est un <details> dont le corps est
+// l'extrait du PDF et sa page. C'est le prix d'une couche qui rapporte : un lecteur qui
+// trouve la valeur douteuse doit pouvoir lire l'original sans nous croire.
+//
+// TROIS RÈGLES D'AFFICHAGE, chacune payée par une erreur :
+//  · un niveau sonore ne sort JAMAIS seul. `bruit_bandes` porte sa période (jour/nuit) et va
+//    au tableau ; `bruit_niveau_dba`, qui est une valeur nue, ne sort QU'AVEC sa phrase —
+//    « 55 dB(A) » sans son point de mesure n'apprend rien et suggère un jugement ;
+//  · plusieurs valeurs d'un même champ ne sont ni sommées ni moyennées : un campus de trois
+//    tranches n'a pas « une » puissance, et on ignore si elles sont simultanées ;
+//  · une puissance de groupes porte son avertissement en toutes lettres, sans quoi le lecteur
+//    la prend pour la puissance du site.
+//
+// Les identifiants listés ci-dessous sont ceux réellement produits par l'extraction
+// (pipelines/registers). Un champ absent de ces listes reste dans le JSON et ne s'affiche
+// pas : on n'improvise pas un libellé pour un indicateur qu'on n'a pas vu passer.
+const { dossier, lang = "fr" } = Astro.props;
+const avis = (dossier?.avis ?? []).filter((a: any) => a?.faits?.length || a?.recommandations?.length);
+
+const t = lang === "fr" ? {
+  kicker: "Ce que déclare le dossier environnemental",
+  lire: "lire l'avis (PDF)", pages: "p.", petitionnaire: "pétitionnaire",
+  secours: "Secours électrique", bruit: "Bruit relevé", voisinage: "Voisinage",
+  energie: "Énergie, eau et chaleur", emprise: "Emprise et bâti", icpe: "Classement ICPE",
+  reserves: "Réserves de l'autorité", autresNiv: "Autres niveaux cités dans l'avis",
+  periode: "", jour: "Jour", nuit: "Nuit", mesure: "Mesure", autres: "Les autres dans l'avis",
+  caveatGroupes: "puissance de secours — ce n'est pas la puissance consommée par le site",
+  bruitNote: "État relevé dans l'étude d'impact, avant exploitation.",
+  pasUneNote: "Ces chiffres ne sont pas une note.",
+  pasUneNoteSuite: " Ils proviennent du dossier déposé par le pétitionnaire et de l'avis de l'autorité environnementale ; nous les rapportons avec leur phrase et leur page, nous ne les évaluons pas.",
+  bloc: "Ce bloc n'existe que pour les projets soumis à évaluation environnementale — une minorité des sites.",
+  absence: "Son absence ne signifie pas l'absence d'impact",
+  absenceSuite: " : elle indique qu'aucun document public exploitable n'a été identifié dans notre corpus à ce jour.",
+  niveauxLabel: "Niveaux relevés", emergenceLabel: "Émergence",
+  avisPluriel: "avis d'autorité environnementale rendus sur ce site",
+  sansDate: "date non confirmée",
+} : {
+  kicker: "What the environmental case file states",
+  lire: "read the opinion (PDF)", pages: "p.", petitionnaire: "applicant",
+  secours: "Backup power", bruit: "Measured noise", voisinage: "Neighbourhood",
+  energie: "Energy, water and heat", emprise: "Footprint and buildings", icpe: "ICPE classification",
+  reserves: "Authority's reservations", autresNiv: "Other levels cited in the opinion",
+  periode: "", jour: "Day", nuit: "Night", mesure: "Measure", autres: "The others in the opinion",
+  caveatGroupes: "backup power — this is not the power the site draws",
+  bruitNote: "State recorded in the impact assessment, before operation.",
+  pasUneNote: "These figures are not a grade.",
+  pasUneNoteSuite: " They come from the file submitted by the applicant and from the environmental authority's opinion; we report them with their sentence and page, we do not assess them.",
+  bloc: "This block exists only for projects subject to environmental assessment — a minority of sites.",
+  absence: "Its absence does not mean an absence of impact",
+  absenceSuite: ": it means no usable public document has been identified in our corpus to date.",
+  niveauxLabel: "Recorded levels", emergenceLabel: "Emergence",
+  avisPluriel: "environmental authority opinions issued on this site",
+  sansDate: "date not confirmed",
+};
+
+const loc = lang === "fr" ? "fr-FR" : "en-GB";
+// Les deux sources ne datent pas pareil : le registre régional donne « 30/03/2022 », l'index
+// national « 2022-04-01 ». Une fiche qui porte trois avis affichait donc trois formats.
+const DATE = (d?: string) => {
+  if (!d) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+  if (m) return lang === "fr" ? `${m[3]}/${m[2]}/${m[1]}` : d;
+  const f = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);
+  if (f) return lang === "fr" ? d : `${f[3]}-${f[2]}-${f[1]}`;
+  return d;
+};
+const NUM = (v: any) => typeof v === "number"
+  ? v.toLocaleString(loc, { maximumFractionDigits: 2 })
+  : String(v ?? "");
+// Nettoyage d'AFFICHAGE seulement, jamais de sens : la phrase stockée reste celle du PDF.
+// On enlève la puce de liste et les glyphes de police privée que pypdf rend en carré, et le
+// « (p. » que le découpage de phrase laisse pendre en fin d'extrait.
+const PHRASE = (s: string) => String(s ?? "")
+  .replace(/[-￼�]/g, "")
+  .replace(/^[\s•▪◦·–—-]+/, "")
+  .replace(/\s*\(p\.?\s*$/, "")
+  .trim();
+
+const CLES = ["puissance_it_mw", "consommation_gwh_an", "pue", "emplois_effectif"];
+const SECOURS = ["groupes_nombre", "groupes_puissance_unitaire_mw", "groupes_puissance_totale_mw",
+                 "groupes_carburant", "cuves_nombre", "cuves_volume_unitaire_m3",
+                 "cuves_volume_total_m3", "autonomie_heures"];
+const VOISINAGE = ["habitations_distance_m"];
+const ENERGIE = ["raccordement_kv", "chaleur_fatale_mw_th", "chaleur_valorisation",
+                 "reseau_chaleur_distance", "refroidissement_type", "eau_m3_an", "ges_teqco2"];
+const EMPRISE = ["parcelle_ha", "emprise_sol_m2", "surface_plancher_m2", "surface_salles_m2",
+                 "surface_locaux_techniques_m2", "hauteur_m"];
+const BANDES = ["bruit_bandes", "bruit_emergence_bandes"];
+const NIVEAUX = ["bruit_niveau_dba", "bruit_emergence_dba"];
+// L'avertissement ne porte que sur la puissance TOTALE : c'est elle qu'on confond avec la
+// puissance du site. Le répéter sur la puissance unitaire, que son libellé désambiguïse
+// déjà, ne ferait que diluer la mise en garde.
+const CAVEAT: Record<string, string> = { groupes_puissance_totale_mw: t.caveatGroupes };
+
+// Une phrase qui énumère quatre chiffres produit quatre faits : citée quatre fois, elle
+// donne un mur illisible. On regroupe donc par phrase, et les valeurs qu'elle porte
+// s'alignent devant elle — énumérées, jamais additionnées.
+const parPhrase = (vals: any[]) => {
+  const out: any[] = [];
+  for (const x of vals) {
+    const ph = PHRASE(x.phrase);
+    const v = `${NUM(x.valeur)}${x.unite ? " " + x.unite : ""}`;
+    const g = out.find((o: any) => o.phrase === ph);
+    if (g) { if (!g.valeurs.includes(v)) g.valeurs.push(v); }
+    else out.push({ phrase: ph, page: x.page, valeurs: [v] });
+  }
+  return out;
+};
+
+const prendre = (faits: any[], ids: string[]) =>
+  ids.flatMap((id) => faits.filter((f: any) => f.indicateur === id));
+// « min–max » ou valeur ferme : les deux formes sortent de l'extraction, aucune n'est arrondie.
+const borne = (b: any) => !b ? null
+  : (b.valeur !== undefined && b.valeur !== null ? NUM(b.valeur)
+     : (b.min !== undefined ? `${NUM(b.min)} – ${NUM(b.max)}` : null));
+---
+
+{avis.length > 0 && (
+<section class="dossier-env" aria-labelledby="de-title">
+  <header class="de-head">
+    {/* Un seul titre, un seul pied, même quand le site porte trois avis : trois en-têtes
+        identiques empilés donnaient l'impression de trois encarts concurrents. */}
+    <h2 id="de-title">{t.kicker}</h2>
+    {avis.length > 1 && <p class="de-source">{`${avis.length} ${t.avisPluriel}`}</p>}
+  </header>
+
+{avis.map((a: any, iAvis: number) => {
+  const f = a.faits ?? [];
+  const cles = prendre(f, CLES);
+  const secours = prendre(f, SECOURS);
+  const vois = prendre(f, VOISINAGE);
+  const energie = prendre(f, ENERGIE);
+  const emprise = prendre(f, EMPRISE);
+  const icpe = prendre(f, ["icpe_rubriques"]);
+  const bandes = prendre(f, BANDES);
+  // Une même phrase donne à l'extraction autant de `bruit_niveau_dba` qu'elle contient de
+  // nombres — et souvent la bande structurée en plus. Affichés tels quels, on republiait six
+  // fois le même paragraphe. On regroupe donc PAR PHRASE, et on laisse tomber celles que le
+  // tableau cite déjà : la valeur nue n'apporte rien quand sa période est déjà en colonne.
+  const phrasesDeja = new Set(bandes.map((b: any) => PHRASE(b.phrase)));
+  const niveaux: any[] = [];
+  for (const n of prendre(f, NIVEAUX)) {
+    const ph = PHRASE(n.phrase);
+    if (phrasesDeja.has(ph)) continue;
+    const g = niveaux.find((x: any) => x.phrase === ph);
+    if (g) g.valeurs.push(`${NUM(n.valeur)} ${n.unite ?? ""}`.trim());
+    else niveaux.push({ phrase: ph, page: n.page, valeurs: [`${NUM(n.valeur)} ${n.unite ?? ""}`.trim()] });
+  }
+  const recos = a.recommandations ?? [];
+  const src = a.source ?? {};
+  const proc = a.procedure ?? {};
+  // Un indicateur qui revient plusieurs fois dans un même avis (GES par poste, puissances
+  // d'un campus, rubriques ICPE) ne s'empile PAS en lignes de même libellé : cinq
+  // « Émissions de GES » superposées n'apprennent rien et appellent la somme qu'on s'interdit.
+  // Il devient un groupe, et chaque valeur sort alors avec la phrase qui la distingue.
+  const grouper = (items: any[]) => {
+    const out: any[] = [];
+    for (const x of items) {
+      const g = out.find((o: any) => o.indicateur === x.indicateur);
+      if (g) g.vals.push(x); else out.push({ indicateur: x.indicateur, libelle: x.libelle, vals: [x] });
+    }
+    return out;
+  };
+  const Val = (x: any) => (
+    <>{NUM(x.valeur)}{x.unite ? <span class="de-u">{x.unite}</span> : null}</>
+  );
+  const Rows = (items: any[]) => grouper(items).map((g: any) => (
+    <details class="de-row">
+      <summary>
+        <span class="de-k">
+          {g.libelle}
+          {/* L'avertissement est DANS la ligne, jamais derrière un dépli : 405 MW posés à
+              côté de 105 MW sans leur phrase se lisent comme la puissance du site. */}
+          {CAVEAT[g.indicateur] && <span class="de-caveat">{CAVEAT[g.indicateur]}</span>}
+        </span>
+        {g.vals.length === 1
+          ? <><span class="de-v">{Val(g.vals[0])}</span><span class="de-p">{t.pages}{g.vals[0].page}</span></>
+          : <span class="de-v de-multi">{`${g.vals.length} ${lang === "fr" ? "valeurs" : "values"}`}</span>}
+      </summary>
+      {g.vals.length === 1
+        ? <blockquote>{PHRASE(g.vals[0].phrase)}</blockquote>
+        : parPhrase(g.vals).map((q: any) => (
+            <blockquote class="de-bq-val">
+              <span class="de-bq-v">
+                <span>{q.valeurs.join(" · ")}</span>
+                <span class="de-p">{t.pages}{q.page}</span>
+              </span>
+              {q.phrase}
+            </blockquote>
+          ))}
+    </details>
+  ));
+  return (
+    <article class={`de-avis${iAvis > 0 ? " de-avis-suite" : ""}`}>
+      {/* Une seule chaîne : en JSX l'espace entre deux expressions voisines est mangé,
+          et « pétitionnaireGoodman France » est passé à l'écran une fois. */}
+      <p class="de-source">
+        {/* L'artefact retire la date quand ses deux oracles divergent. On le DIT, au lieu de
+            la taire : un lecteur doit pouvoir distinguer « nous l'ignorons » de
+            « nous ne la publions pas ». */}
+        <span>{[DATE(proc.date_avis) || t.sansDate, proc.petitionnaire && `${t.petitionnaire} ${proc.petitionnaire}`,
+                 src.pdf?.pages && `${src.pdf.pages} pages`].filter(Boolean).join(" · ") + (src.doc_url ? " · " : "")}</span>
+        {src.doc_url ? <a href={src.doc_url} target="_blank" rel="noopener">{t.lire}</a> : null}
+      </p>
+
+      {cles.length > 0 && (
+        <div class="de-cles">
+          {cles.map((c: any) => (
+            <details class="de-cle">
+              <summary>
+                <span class="de-cle-v">{NUM(c.valeur)}{c.unite ? <span class="de-cle-u">{c.unite}</span> : null}</span>
+                <span class="de-cle-k">{c.libelle}</span>
+                <span class="de-p">{t.pages}{c.page}</span>
+              </summary>
+              <blockquote>{PHRASE(c.phrase)}</blockquote>
+            </details>
+          ))}
+        </div>
+      )}
+
+      <div class="de-grid">
+        {secours.length > 0 && (
+          <div class="de-block"><h3>{t.secours}</h3>{Rows(secours)}</div>
+        )}
+
+        {(bandes.length > 0 || niveaux.length > 0) && (
+          <div class="de-block">
+            <h3>{t.bruit}</h3>
+            {bandes.length > 0 && (
+              <table class="de-table">
+                <thead><tr><th>{t.mesure}</th><th>{t.jour}</th><th>{t.nuit}</th></tr></thead>
+                <tbody>
+                  {bandes.map((b: any) => (
+                    <tr>
+                      <td>
+                        {b.indicateur === "bruit_emergence_bandes" ? t.emergenceLabel : t.niveauxLabel}
+                        {b.valeur?.point ? <span class="de-pt"> · {b.valeur.point}</span> : null}
+                        <span class="de-p">{t.pages}{b.page}</span>
+                      </td>
+                      <td>{borne(b.valeur?.jour) ? <><strong>{borne(b.valeur.jour)}</strong> dB(A)</> : "—"}</td>
+                      <td>{borne(b.valeur?.nuit) ? <><strong>{borne(b.valeur.nuit)}</strong> dB(A)</> : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            {bandes.map((b: any) => (
+              <blockquote class="de-bq-inline">{PHRASE(b.phrase)}</blockquote>
+            ))}
+            {niveaux.length > 0 && (
+              <div class="de-niveaux">
+                <p class="de-sub">{t.autresNiv}</p>
+                {niveaux.map((n: any) => (
+                  <p class="de-niv">
+                    <strong>{n.valeurs.join(" · ")}</strong>
+                    <span class="de-niv-q">{`« ${n.phrase} »`}</span>
+                    <span class="de-p">{t.pages}{n.page}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+            <p class="de-note">{t.bruitNote}</p>
+          </div>
+        )}
+
+        {vois.length > 0 && (
+          <div class="de-block"><h3>{t.voisinage}</h3>{Rows(vois)}</div>
+        )}
+        {energie.length > 0 && (
+          <div class="de-block"><h3>{t.energie}</h3>{Rows(energie)}</div>
+        )}
+        {emprise.length > 0 && (
+          <div class="de-block"><h3>{t.emprise}</h3>{Rows(emprise)}</div>
+        )}
+        {icpe.length > 0 && (
+          <div class="de-block"><h3>{t.icpe}</h3>{Rows(icpe)}</div>
+        )}
+
+        {recos.length > 0 && (
+          <div class="de-block de-reserves">
+            <h3>{t.reserves} <span class="de-count">{recos.length}</span></h3>
+            {recos.slice(0, 4).map((r: any) => (
+              <details class="de-row de-reco">
+                <summary>
+                  <span class="de-reco-t">{PHRASE(r.texte).replace(/^\(\d+\)\s*/, "").slice(0, 130)}…</span>
+                  <span class="de-p">{t.pages}{r.page}</span>
+                </summary>
+                <blockquote>{PHRASE(r.texte)}</blockquote>
+              </details>
+            ))}
+            {recos.length > 4 && src.doc_url && (
+              <p class="de-more"><a href={src.doc_url} target="_blank" rel="noopener">{t.autres} ({recos.length - 4}) →</a></p>
+            )}
+          </div>
+        )}
+      </div>
+    </article>
+  );
+})}
+
+  <footer class="de-foot">
+    <p><strong>{t.pasUneNote}</strong>{t.pasUneNoteSuite}</p>
+    <p>{t.bloc} <strong>{t.absence}</strong>{t.absenceSuite}</p>
+  </footer>
+</section>
+)}
+
+<style>
+  .dossier-env {
+    margin: 2.2rem 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    overflow: hidden;
+  }
+  .de-head { padding: 1rem 1.15rem 0.85rem; background: var(--wash); border-bottom: 1px solid var(--line); }
+  .de-head h2 { margin: 0; font-size: 1.02rem; letter-spacing: -0.01em; color: var(--ink); }
+  .de-source { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--muted); font-family: var(--font-mono); }
+  .de-source a { color: var(--accent); }
+
+  .de-avis > .de-source { padding: 0.7rem 1.15rem 0; margin: 0; }
+  .de-avis-suite { border-top: 3px double var(--line); margin-top: 0.4rem; }
+
+  .de-cles {
+    display: grid; gap: 1px; background: var(--line);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    border-bottom: 1px solid var(--line); border-top: 1px solid var(--line);
+    margin-top: 0.7rem;
+  }
+  .de-cle { background: var(--paper); padding: 0.85rem 1rem; }
+  .de-cle > summary { list-style: none; cursor: pointer; display: block; }
+  .de-cle > summary::-webkit-details-marker { display: none; }
+  .de-cle-v { display: block; font-size: 1.5rem; font-weight: 600; color: var(--ink); line-height: 1.1; }
+  .de-cle-u { font-size: 0.8rem; font-weight: 400; color: var(--muted); margin-left: 0.22em; }
+  .de-cle-k { display: block; font-size: 0.78rem; color: var(--ink-soft); margin-top: 0.2rem; }
+
+  .de-grid { display: grid; gap: 1px; background: var(--line); grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+  .de-block { background: var(--paper); padding: 1rem 1.15rem 1.1rem; }
+  .de-block h3 { margin: 0 0 0.6rem; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+  .de-count { background: var(--wash); border: 1px solid var(--line); border-radius: 99px; padding: 0 0.4rem; font-size: 0.7rem; color: var(--ink-soft); }
+
+  .de-row { border-bottom: 1px solid var(--line); }
+  .de-row:last-of-type { border-bottom: 0; }
+  .de-row > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 0.5rem;
+    padding: 0.42rem 0; font-size: 0.86rem;
+  }
+  .de-row > summary::-webkit-details-marker { display: none; }
+  .de-row > summary:hover .de-k { color: var(--accent); }
+  .de-k { color: var(--ink-soft); flex: 1 1 auto; }
+  .de-v { font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .de-u { font-weight: 400; color: var(--muted); font-size: 0.8em; margin-left: 0.28em; }
+  .de-p { font-family: var(--font-mono); font-size: 0.68rem; color: var(--grade-na); white-space: nowrap; margin-left: auto; }
+  .de-row > summary .de-p { margin-left: 0; }
+  .de-reco-t { color: var(--ink-soft); flex: 1 1 auto; }
+
+  .de-row blockquote, .de-bq-inline {
+    margin: 0 0 0.6rem; padding: 0.55rem 0.7rem; background: var(--wash);
+    border-left: 2px solid var(--line); font-size: 0.8rem; line-height: 1.5; color: var(--ink-soft);
+  }
+  .de-caveat { display: block; font-size: 0.72rem; color: var(--grade-d); line-height: 1.35; margin-top: 0.1rem; }
+  .de-multi { font-weight: 500; font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+  .de-bq-val { display: block; }
+  .de-bq-v { display: flex; gap: 0.5rem; align-items: baseline; margin-bottom: 0.2rem; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+  .de-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+  .de-table th {
+    text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); font-weight: 600; padding: 0 0.4rem 0.3rem 0; border-bottom: 1px solid var(--line);
+  }
+  .de-table th:not(:first-child), .de-table td:not(:first-child) { text-align: right; }
+  .de-table td { padding: 0.38rem 0.4rem 0.38rem 0; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+  .de-table td:first-child { font-size: 0.82rem; }
+  .de-table strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .de-table .de-p { margin-left: 0.4rem; }
+  .de-pt { color: var(--muted); }
+
+  .de-niveaux { margin-top: 0.7rem; }
+  .de-sub { margin: 0 0 0.3rem; font-size: 0.72rem; color: var(--muted); }
+  .de-niv { margin: 0 0 0.45rem; font-size: 0.79rem; color: var(--ink-soft); line-height: 1.45; }
+  .de-niv strong { color: var(--ink); margin-right: 0.35rem; font-variant-numeric: tabular-nums; }
+  .de-niv-q { color: var(--muted); }
+
+  .de-note { margin: 0.55rem 0 0; font-size: 0.74rem; color: var(--muted); font-style: italic; }
+  .de-more { margin: 0.5rem 0 0; font-size: 0.8rem; }
+  .de-more a { color: var(--accent); }
+
+  .de-foot { padding: 0.85rem 1.15rem; background: var(--wash); border-top: 1px solid var(--line); }
+  .de-foot p { margin: 0 0 0.3rem; font-size: 0.76rem; line-height: 1.5; color: var(--muted); }
+  .de-foot p:last-child { margin-bottom: 0; }
+  .de-foot strong { color: var(--ink-soft); }
+
+  @media (max-width: 640px) {
+    .de-grid { grid-template-columns: 1fr; }
+    .de-cle-v { font-size: 1.3rem; }
+  }
+</style>

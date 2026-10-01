@@ -16,6 +16,7 @@ drafts) — use `make score` / `make validate` for the public fixtures.
 
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -329,6 +330,142 @@ def patch_nearest_dwelling() -> int:
     return patched
 
 
+_DATE_DANS_NOM = re.compile(r"(20\d\d)-(\d\d)-(\d\d)")
+
+
+def _date_corroboree(source: dict, proc: dict) -> bool:
+    """Deux oracles, sinon pas de date (même doctrine que la porte géo du moteur).
+
+    Pour un avis venu du REGISTRE régional, la date est un acte administratif indexé : elle
+    fait foi, on la garde. Pour un avis venu de l'INDEX NATIONAL, elle est lue dans le PDF, et
+    la mesure du 2026-10-01 est sans appel : 9 des 23 avis nationaux portaient une date que
+    contredisait le nom de fichier de la MRAe — dont un « 2026-04-13 » dans le FUTUR et un
+    « 2020-07-06 » sur un document de 2025. On ne tranche pas entre les deux oracles : quand
+    ils divergent, la fiche s'affiche SANS date. Un trou se voit ; une date fausse se croit.
+
+    Le défaut est en amont, dans l'extraction : l'index national est le chantier de
+    agent-data-pipeline-FR, cette porte ne fait que l'empêcher d'arriver au lecteur.
+    """
+    if "national" not in (source.get("origine") or ""):
+        return True
+    d = (proc.get("date_avis") or "")[:10]
+    m = _DATE_DANS_NOM.search(source.get("doc_url", "").rsplit("/", 1)[-1])
+    return bool(d and m and d == f"{m[1]}-{m[2]}-{m[3]}")
+
+
+def _sans_doublons(avis: list[dict]) -> list[dict]:
+    """Le même PDF indexé deux fois — une fois en région, une fois au national.
+
+    Trois fiches (le campus LCP de Corbeil-Essonnes) affichaient deux fois l'avis du
+    30 mars 2022, sous deux noms de fichier différents. Aucun rapprochement par le nom n'est
+    sûr — les deux formes diffèrent par un préfixe de registre et un suffixe de copie. On
+    compare donc ce qui ne ment pas : la PAGINATION et le jeu de faits extraits. Deux
+    documents qui produisent exactement la même extraction sur le même nombre de pages sont
+    le même document ; aucune heuristique de ressemblance n'entre ici.
+
+    On garde l'exemplaire du registre régional : il porte le sha256, la licence et la
+    procédure, là où l'index national n'a qu'un lien.
+    """
+    def signature(a: dict) -> tuple:
+        return (a["source"]["pdf"].get("pages"),
+                tuple(sorted((f["indicateur"], json.dumps(f["valeur"], sort_keys=True), f["page"])
+                             for f in a["faits"])))
+
+    garde: dict[tuple, dict] = {}
+    for a in avis:
+        s = signature(a)
+        tenu = garde.get(s)
+        if tenu is None or ("national" in (tenu["source"].get("origine") or "")
+                            and "national" not in (a["source"].get("origine") or "")):
+            garde[s] = a
+    return [a for a in avis if a is garde[signature(a)]]
+
+
+def patch_dossier_environnemental() -> int:
+    """L'avis d'autorité environnementale posé À CÔTÉ de la note (Franck 2026-10-01).
+
+    Ce que l'État écrit sur un projet : les groupes électrogènes et leur fioul, le bruit
+    mesuré avant travaux, la distance aux habitations et aux établissements scolaires, la
+    chaleur fatale, et les réserves de l'autorité. Aucun de ces faits n'entre dans un
+    indicateur ni dans une lettre — ils complètent la fiche, ils ne la notent pas.
+
+    TROIS RÈGLES, et chacune a été payée.
+
+    1. SEULS LES RATTACHEMENTS SÛRS VOYAGENT. On lit `rattachement.json` et on ne retient
+       que `rattache_propose` et `rattache_multiple`. Les `a_confirmer` et les `ambigu`
+       attendent un humain. Un rattachement faux ferait apparaître sur une fiche les
+       chiffres d'un AUTRE projet — des faits justes, sur la mauvaise fiche, et rien dans
+       la page ne trahirait l'erreur.
+
+    2. UNE MENTION N'EST PAS UN FAIT. Les champs de présence — « NOx : mentionné »,
+       « fluides frigorigènes : mentionné » — restent dans le JSON d'extraction, où ils
+       qualifient une absence, et ne sortent JAMAIS sur la fiche : une puce « mentionné »
+       n'apprend rien au lecteur et ressemble à une insinuation.
+
+    3. ON N'ADDITIONNE RIEN. Un campus porte plusieurs puissances (Nozay : 75, 37,5 et
+       15 MW) ; chacune garde sa phrase, qui nomme son bâtiment. Une somme serait un
+       calcul, interdit dans une couche qui rapporte, et fausse ici : on ignore si les
+       tranches sont simultanées.
+    """
+    ratt = CAL.parent / "registres" / "rattachement.json"
+    if not ratt.is_file():
+        return 0
+    from engine.core import write_json
+    doc = json.loads(ratt.read_text())
+    reg = CAL.parent / "registres"
+
+    # fiche_id -> liste de noms d'avis (un site peut en porter plusieurs)
+    liens: dict[str, list[str]] = {}
+    for p in doc.get("propositions", []):
+        if p.get("statut") not in ("rattache_propose", "rattache_multiple"):
+            continue
+        for fid in (p.get("fiches") or ([p["fiche"]] if p.get("fiche") else [])):
+            liens.setdefault(fid, []).append(p["avis"])
+
+    # Les champs de PRÉSENCE ne franchissent pas la frontière de la fiche (règle 2).
+    MENTIONS = {
+        "artificialisation", "bruit_emergence", "bruit_point_mesure", "bruit_zer",
+        "cuves_enterrees", "eaux_pluviales", "especes_protegees", "essais_groupes",
+        "etablissements_sensibles", "fluides_frigorigenes", "incendie", "natura2000",
+        "nox", "pfas", "pollution_sols", "qualite_air_campagne", "rejets_aqueux",
+        "trafic_pl", "zones_humides", "emplois_mention",
+    }
+
+    patched = 0
+    for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+        d = json.loads(f.read_text())
+        noms = liens.get(d["id"])
+        if not noms:
+            d.pop("dossier_environnemental", None)
+            write_json(f, d)
+            continue
+        avis_rendus = []
+        for nom in noms:
+            src = reg / f"{nom}.json" if not nom.endswith(".json") else reg / nom
+            if not src.is_file():
+                continue
+            a = json.loads(src.read_text())
+            faits = [x for fs in a["installation"]["faits"].values() for x in fs
+                     if x["indicateur"] not in MENTIONS and x["valeur"] is not True]
+            if not faits and not a["installation"].get("recommandations_autorite"):
+                continue
+            proc = dict(a["procedure"])
+            if not _date_corroboree(a["source"], proc):
+                proc.pop("date_avis", None)
+            avis_rendus.append({
+                "source": a["source"], "procedure": proc, "faits": faits,
+                "recommandations": a["installation"].get("recommandations_autorite", []),
+            })
+        avis_rendus = _sans_doublons(avis_rendus)
+        if avis_rendus:
+            d["dossier_environnemental"] = {"avis": avis_rendus}
+            patched += 1
+        else:
+            d.pop("dossier_environnemental", None)
+        write_json(f, d)
+    return patched
+
+
 def patch_status_check() -> int:
     """Status proof (Franck 2026-09-17): every OPERATIONAL fiche artifact gets its
     status_check {verified, checked_at, evidence?} from the weekly sidecar written by
@@ -397,6 +534,8 @@ def main() -> int:
     dwell = patch_nearest_dwelling()
     print(f"prod-artifacts: nearest_dwelling on {dwell} fiches" if dwell
           else "prod-artifacts: nearest_dwelling skipped (no habitations sidecar — run make habitations)")
+    dossiers = patch_dossier_environnemental()
+    print(f"prod-artifacts: dossier environnemental sur {dossiers} fiches (avis d'autorité)")
     checked = patch_status_check()
     print(f"prod-artifacts: status_check on {checked} operational fiches"
           if checked else "prod-artifacts: status_check skipped (no status-proof sidecar — run make status-proof)")

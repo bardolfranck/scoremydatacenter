@@ -12,6 +12,7 @@ import ScoreBadge from "./ScoreBadge.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
+import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct } from "../config/stats";
 
@@ -541,6 +542,14 @@ const seoDesc = seoLead
 
       {idxLine && (
         <p class="fiche-idxline">{idxLine.text} <a href={idxLine.href}>{lang === "fr" ? "Voir l'indice pays" : "See the country index"} →</a></p>
+      )}
+
+      {/* L'avis d'autorité environnementale, À CÔTÉ de la note et jamais dedans : il arrive
+          après la synthèse (qui, elle, s'appuie sur les indicateurs notés) et avant le
+          tableau, pour qu'on ne puisse pas lire ses chiffres comme une composante du score.
+          Présent sur les seules fiches dont le rattachement avis→site est sûr. */}
+      {dc.dossier_environnemental && (
+        <DossierEnvironnemental dossier={dc.dossier_environnemental} lang={lang} />
       )}
 
       <section class="fiche-section" aria-label={t.indicatorsTitle}>
