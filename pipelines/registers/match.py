@@ -103,7 +103,11 @@ _JETON = re.compile(r"\b([a-z]{1,4}\d{1,3}[a-z]?)\b")
 
 
 def _jetons(s: str | None) -> set[str]:
-    return {m for m in _JETON.findall(_slug(s)) if not m.isdigit()}
+    # Le nom de fichier d'un avis national écrit le bâtiment avec un séparateur — « dc-pa-16 »,
+    # « pa 16 » — là où la fiche le colle (« pa16 »). Sans recoller, le seul signal d'un avis
+    # national (la commune) le sert à TOUS les DC de la ville : « PA-16 » atterrit sur PA12.
+    t = re.sub(r"\b([a-z]{1,4})[ -]+(\d{1,3}[a-z]?)\b", r"\1\2", _slug(s))
+    return {m for m in _JETON.findall(t) if not m.isdigit()}
 
 
 @dataclass
@@ -244,12 +248,13 @@ def proposer(avis_docs: dict[str, dict], corpus: dict[str, dict]) -> list[Propos
         rivaux = [c for c in exaequo if indiscernable(c)]
 
         if rivaux:
-            # TOUS les rivaux appartiennent-ils au MÊME exploitant, sur la MÊME commune ?
-            # Alors ce n'est pas une ambiguïté : l'avis décrit un SITE que notre corpus
-            # découpe en plusieurs bâtiments (Interxion a quatre fiches à La Courneuve,
-            # Colt quatre à Villebon). Choisir l'une d'elles au hasard serait arbitraire et
-            # faux ; les rattacher toutes dit la vérité — ce dossier environnemental couvre
-            # ce site. Mesuré : 10 des 20 cas « ambigus » sont de cette nature.
+            # La COMMUNE SEULE ne lie pas à un site : un exploitant tient plusieurs DC distincts
+            # dans une ville (Equinix PA12 ET PA16 à Argenteuil). Un `rattache_multiple` — « l'avis
+            # couvre un site que le corpus découpe en bâtiments » — ne tient que si un signal PLUS
+            # FORT que la commune relie les candidats (géométrie, ou le jeton de bâtiment commun).
+            # Sinon on NE présente rien comme sûr : plusieurs candidats sur la seule commune, c'est
+            # une ambiguïté qu'un humain tranche, pas un site à rattacher en bloc.
+            fort = any(s != "commune" for s in meilleur.signaux)
             lot = [meilleur] + rivaux
             noms = [corpus[c.fiche].get("operator") for c in lot]
             connus = [n for n in noms if _enseigne(n) and _enseigne(n) != "unknown"]
@@ -258,7 +263,9 @@ def proposer(avis_docs: dict[str, dict], corpus: dict[str, dict]) -> list[Propos
             # le même exploitant, et une égalité stricte les aurait déclarés en conflit.
             homogene = all(_meme_exploitant(connus[0], n) for n in connus[1:]) if connus else False
             communes_lot = {_slug(corpus[c.fiche].get("municipality")) for c in lot}
-            if homogene and len(communes_lot) == 1:
+            if fort and homogene and len(communes_lot) == 1:
+                # Même exploitant, même commune, ET un lien fort partagé : l'avis couvre un SITE
+                # que le corpus découpe en plusieurs bâtiments (Interxion/La Courneuve, Colt/Villebon).
                 p.statut = "rattache_multiple"
                 p.fiches = [c.fiche for c in lot]
             else:

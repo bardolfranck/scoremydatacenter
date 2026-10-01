@@ -64,6 +64,59 @@ def test_meme_exploitant_meme_commune_est_rattache_multiple():
     assert set(p.fiches) == {"fr-data4-marcoussis-a", "fr-data4-marcoussis-b"}
 
 
+def test_jeton_du_nom_de_fichier_recolle_le_separateur():
+    # « dc-pa-16 » / « pa 16 » (avis) doivent donner le même jeton que « pa16 » (fiche),
+    # sinon le jeton du nom de fichier ne sert jamais à départager.
+    assert "pa16" in match._jetons("mrae-2025-04-23-avis-projet-dc-pa-16-argenteuil-equinix")
+    assert "pa16" in match._jetons("fr-equinix-pa16")
+    assert "pa16" not in match._jetons("fr-equinix-pa12")
+
+
+def test_avis_national_avec_jeton_vise_le_bon_batiment():
+    # Un avis national (commune seule) dont le NOM dit « pa-16 » doit viser PA16, pas tous les
+    # Equinix de la ville. Le jeton le départage → rattache_propose sur la bonne fiche.
+    corpus = {
+        "fr-equinix-pa12": {"municipality": "Argenteuil", "operator": "Equinix", "coordinates": None},
+        "fr-equinix-pa16": {"municipality": "Argenteuil", "operator": "Equinix", "coordinates": None},
+    }
+    avis = {"mrae-dc-pa-16-argenteuil-equinix":
+            _avis("avis projet dc pa-16 argenteuil equinix", commune="Argenteuil")}
+    p = {x.avis: x for x in match.proposer(avis, corpus)}["mrae-dc-pa-16-argenteuil-equinix"]
+    assert p.statut == "rattache_propose"
+    assert p.retenu == "fr-equinix-pa16"
+    assert "jeton_batiment" in p.signaux
+
+
+def test_commune_seule_ne_fait_jamais_un_multiple():
+    # Plusieurs DC du même exploitant dans une ville, aucun lien plus fort que la commune : ce
+    # n'est PAS un site à rattacher en bloc (Equinix a des sites distincts dans la même ville).
+    # Au mieux ambigu, jamais rattache_multiple ni rattache_propose.
+    corpus = {
+        "fr-acme-a": {"municipality": "Ville", "operator": "Acme", "coordinates": None},
+        "fr-acme-b": {"municipality": "Ville", "operator": "Acme", "coordinates": None},
+        "fr-acme-c": {"municipality": "Ville", "operator": "Acme", "coordinates": None},
+    }
+    avis = {"mrae-ville-acme": _avis("projet data center à Ville", commune="Ville")}
+    p = {x.avis: x for x in match.proposer(avis, corpus)}["mrae-ville-acme"]
+    assert p.statut == "ambigu"
+    assert p.signaux == ["commune"]
+
+
+def test_multiple_tient_toujours_avec_la_geometrie():
+    # Régression : un vrai site découpé en bâtiments (même exploitant, même point) reste un
+    # rattache_multiple — c'est la géométrie partagée, pas la commune, qui le fonde.
+    P = {"lat": 48.9, "lon": 2.4}
+    corpus = {
+        "fr-interxion-par7": {"municipality": "La Courneuve", "operator": "Interxion", "coordinates": P},
+        "fr-interxion-par8": {"municipality": "La Courneuve", "operator": "Interxion", "coordinates": P},
+    }
+    avis = {"idf-courneuve": _avis("data center La Courneuve", commune="La Courneuve")}
+    avis["idf-courneuve"]["procedure"]["centroid"] = P
+    p = {x.avis: x for x in match.proposer(avis, corpus)}["idf-courneuve"]
+    assert p.statut == "rattache_multiple"
+    assert set(p.fiches) == {"fr-interxion-par7", "fr-interxion-par8"}
+
+
 def test_porteurs_differents_meme_commune_est_ambigu():
     # Même commune/point, exploitants DIFFÉRENTS : on ne choisit pas → ambigu (attend un humain).
     corpus = {
