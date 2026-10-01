@@ -119,6 +119,16 @@ def _geo_gate(data_dir: Path) -> list[str]:
     sidecar = next((c for c in (data_dir / "geo-audit" / "centroid-check.json",
                                 newsroom / "geo-audit" / "centroid-check.json") if c.is_file()), None)
     if sidecar is None:
+        # SANS newsroom monté, il n'y a pas de corpus réel à protéger : `data_dir` est alors
+        # le jeu de fixtures du dépôt (2 fiches zz-), et exiger un sidecar y fait échouer la
+        # CI et tout clone frais, sur une mesure qui demande du réseau et un corpus privé.
+        # Le gate garde en revanche toutes ses dents dès que le newsroom EXISTE : un sidecar
+        # manquant est alors un vrai manquement, et c'est le cas qu'on veut attraper — sinon
+        # il suffirait de ne pas lancer la mesure pour passer.
+        # Défaut introduit en câblant ce gate (2026-09-29) : vert en local, rouge en CI, et
+        # il a bloqué la PR d'un coéquipier sur un sujet sans rapport.
+        if not newsroom.is_dir():
+            return []
         return ["GATE GÉO: sidecar centroid-check.json absent — lancer "
                 "`python -m pipelines.geo_audit.centroid_check` avant d'onboarder"]
     report = load_json(sidecar)
