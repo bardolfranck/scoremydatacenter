@@ -75,35 +75,42 @@ def _parse_date(s: str | None) -> date | None:
     return None
 
 
-# Au-delà de ce nombre de jours, l'écart entre la date de l'index et celle du nom de fichier n'est
-# plus un décalage délibération/publication (±1-2 j) mais une date captée dans le corps du PDF.
-# Mesuré : les écarts légitimes sont ≤ 2 j, les captures ≥ 355 j — n'importe quel seuil entre les
-# deux marche ; 15 j laisse la marge sans risque.
+# Le nom de fichier porte la date de l'AVIS (acte DREAL), l'index une date POSTÉRIEURE (mise en
+# ligne). Mesuré sur les 4 paires dédupliquées — leur jumeau de registre porte la date d'acte, et
+# elle coïncide 4/4 avec le nom de fichier au jour près ; l'index, lui, est +1 à +2 j après. Le
+# nom de fichier GAGNE donc toujours quand il existe. Le seuil ne décide plus de la correction : il
+# ne sert qu'à juger si la date de l'index est une mise en ligne PLAUSIBLE (juste après l'avis, à
+# garder) ou une date captée dans le corps du PDF (futur, mois, années — à jeter). Mesuré : lag de
+# publication ≤ 2 j, captures ≥ 355 j ; 15 j sépare sans risque.
 SEUIL_DATE_JOURS = 15
 
 
 def date_corroboree(date_index: str | None, url: str | None,
-                    seuil_jours: int = SEUIL_DATE_JOURS) -> tuple[str | None, str]:
-    """Croise la date de l'index avec celle du nom de fichier. Renvoie (date_retenue, statut).
+                    seuil_jours: int = SEUIL_DATE_JOURS) -> tuple[str | None, str, str | None]:
+    """Croise la date de l'index avec celle du nom de fichier. Renvoie (date_avis, statut, mel).
 
-    · `confirmee`    — les deux coïncident ;
-    · `a_arbitrer`   — écart ≤ seuil (délibération vs publication ?) : on GARDE l'index, un humain
-                       tranche (ne JAMAIS écraser en silence une date peut-être juste) ;
-    · `corrigee`     — écart > seuil : l'index a capté une date du corps du PDF, on retient celle
-                       du nom de fichier (date de publication, seule ancre fiable) ;
+    `mel` = date de mise en ligne à conserver à part (la date de l'index quand elle est une
+    publication plausible), sinon None. Le nom de fichier, lui, est la date de l'AVIS et prime :
+
+    · `confirmee`    — les deux coïncident → date de l'avis = nom de fichier, pas de mel ;
+    · `corrigee`     — elles diffèrent → date de l'avis = nom de fichier (l'index datait autre
+                       chose) ; si l'index tombe juste APRÈS l'avis (0 < écart ≤ seuil), c'est une
+                       mise en ligne plausible, rendue en `mel` ; au-delà (ou avant l'avis, ce
+                       qu'une publication ne peut pas être), l'index est une capture du corps du
+                       PDF → jeté (conservé seulement dans la trace `date_corrigee`) ;
     · `non_confirmee`— pas de date sûre dans le nom de fichier : on garde l'index, non corroboré.
     """
     fd = date_du_nom_de_fichier(url)
     if fd is None:
-        return date_index, "non_confirmee"
+        return date_index, "non_confirmee", None
     pi = _parse_date(date_index)
     if pi is None:
-        return fd, "corrigee"
-    if abs((date.fromisoformat(fd) - pi).days) == 0:
-        return date_index, "confirmee"
-    if abs((date.fromisoformat(fd) - pi).days) <= seuil_jours:
-        return date_index, "a_arbitrer"
-    return fd, "corrigee"
+        return fd, "corrigee", None
+    ecart = (pi - date.fromisoformat(fd)).days   # index − avis ; une publication est postérieure
+    if ecart == 0:
+        return fd, "confirmee", None
+    mel = date_index if 0 < ecart <= seuil_jours else None
+    return fd, "corrigee", mel
 
 
 def build_national(doc, avis: Avis) -> dict:
@@ -118,9 +125,9 @@ def build_national(doc, avis: Avis) -> dict:
     pdf_meta = inst.pop("source")
     pdf_meta.pop("doc_url", None)
     # La date de l'index national n'est pas fiable (elle capte parfois une date du corps du PDF) ;
-    # on la corrobore par le nom de fichier et on retient la date de publication quand l'écart est
-    # grossier. L'écart léger (délibération vs publication) est gardé tel quel, à arbitrer.
-    date_avis, _statut = date_corroboree(doc.date, doc.doc_url)
+    # le nom de fichier porte la date de l'AVIS et prime. La date de l'index, quand elle est une
+    # mise en ligne plausible (juste après l'avis), est conservée à part — pas jetée.
+    date_avis, _statut, mel = date_corroboree(doc.date, doc.doc_url)
     return {
         "schema": "smdc.registre-ae/1",
         "source": {
@@ -130,6 +137,7 @@ def build_national(doc, avis: Avis) -> dict:
             "pdf": pdf_meta,
         },
         "procedure": {"intitule": doc.titre, "date_avis": date_avis,
+                      **({"date_mise_en_ligne": mel} if mel else {}),
                       # l'index national ne publie pas le pétitionnaire : on le lit dans le PDF.
                       **({"petitionnaire": avis.petitionnaire} if avis.petitionnaire else {})},
         "installation": inst,

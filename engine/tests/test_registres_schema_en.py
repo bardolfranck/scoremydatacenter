@@ -92,3 +92,17 @@ def test_journal_interne_non_servi():
     fiche = {"schema": "s", "installation": {"faits": {}}, "revalidation": {"date": "2026", "regle": "x"}}
     en = to_english(fiche)
     assert "revalidation" not in en and "installation" in en
+
+
+def test_date_corrigee_est_un_journal_interne_et_mise_en_ligne_traduite():
+    # Régression : une fiche corrigée porte la trace `date_corrigee` (journal, à NE PAS servir) et
+    # un champ `date_mise_en_ligne` (donnée servie, à traduire). Sans l'un des deux, to_english
+    # échouait bruyamment — c'est exactement ce que la frontière doit attraper.
+    fiche = {"schema": "smdc.registre-ae/1",
+             "procedure": {"intitule": "t", "date_avis": "2025-05-07", "date_mise_en_ligne": "2025-05-08"},
+             "installation": {"faits": {}},
+             "date_corrigee": {"date": "2026", "ancienne": "2020-07-06", "nouvelle": "2025-05-07"}}
+    en = to_english(fiche)
+    assert "date_corrigee" not in en                               # journal interne, non servi
+    assert en["procedure"]["published_online_on"] == "2025-05-08"  # champ servi, traduit
+    assert "date_mise_en_ligne" not in en["procedure"]

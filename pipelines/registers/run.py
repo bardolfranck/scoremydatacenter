@@ -270,7 +270,6 @@ def corriger_dates(out_dir: Path) -> dict:
     """
     today = time.strftime("%Y-%m-%d")
     corrigees: list[dict] = []
-    a_arbitrer: list[dict] = []
     non_confirmees = 0
     for p in sorted(out_dir.glob("*.json")):
         if p.name in ("index.json", "couverture.json"):
@@ -286,26 +285,30 @@ def corriger_dates(out_dir: Path) -> dict:
             continue  # origine registre : date d'acte, fiable
         proc = d.get("procedure") or {}
         ancienne = proc.get("date_avis")
-        retenue, statut = F.date_corroboree(ancienne, src.get("doc_url"))
+        retenue, statut, mel = F.date_corroboree(ancienne, src.get("doc_url"))
         if statut == "corrigee" and retenue != ancienne:
             proc["date_avis"] = retenue
+            # L'index datait autre chose : mise en ligne plausible → conservée à part ; sinon
+            # (capture du corps du PDF) l'ancienne valeur ne survit que dans la trace.
+            if mel:
+                proc["date_mise_en_ligne"] = mel
+            else:
+                proc.pop("date_mise_en_ligne", None)
             d["date_corrigee"] = {
                 "date": today, "ancienne": ancienne, "nouvelle": retenue, "source": "nom_de_fichier",
-                "note": ("l'index avait capté une date du corps du PDF ; retenue = la date du nom "
-                         "de fichier (publication)"),
+                "note": ("le nom de fichier porte la date de l'avis (acte DREAL) ; l'index datait "
+                         "la mise en ligne ou avait capté une date du corps du PDF"),
             }
             p.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
-            corrigees.append({"avis": p.stem, "ancienne": ancienne, "nouvelle": retenue})
-        elif statut == "a_arbitrer":
-            a_arbitrer.append({"avis": p.stem, "index": ancienne,
-                               "nom_fichier": F.date_du_nom_de_fichier(src.get("doc_url"))})
+            corrigees.append({"avis": p.stem, "ancienne": ancienne, "nouvelle": retenue,
+                              "date_mise_en_ligne": mel})
         elif statut == "non_confirmee":
             non_confirmees += 1
     return {
-        "note": ("date_avis d'origine nationale corroborée par le nom de fichier ; écart grossier "
-                 "corrigé (date du corps du PDF), écart léger laissé à arbitrer, non corroboré gardé"),
+        "note": ("date_avis d'origine nationale = date du nom de fichier (date de l'avis) ; l'index, "
+                 "postérieur, est conservé en date_mise_en_ligne quand il est une publication "
+                 "plausible, sinon jeté (capture du corps du PDF) ; nom de fichier sans date = gardé index"),
         "corrigees": corrigees,
-        "a_arbitrer": a_arbitrer,
         "non_confirmees": non_confirmees,
     }
 
@@ -560,12 +563,10 @@ def main(argv: list[str] | None = None) -> int:
         cov["dates"] = section
         cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"corriger-dates : {len(section['corrigees'])} corrigée(s), "
-              f"{len(section['a_arbitrer'])} à arbitrer, {section['non_confirmees']} non corroborée(s).",
-              file=sys.stderr)
+              f"{section['non_confirmees']} non corroborée(s).", file=sys.stderr)
         for c in section["corrigees"]:
-            print(f"  CORRIGÉ {c['avis']}: {c['ancienne']} → {c['nouvelle']}", file=sys.stderr)
-        for c in section["a_arbitrer"]:
-            print(f"  à arbitrer {c['avis']}: index {c['index']} vs fichier {c['nom_fichier']}", file=sys.stderr)
+            mel = f"  (mise en ligne {c['date_mise_en_ligne']})" if c.get("date_mise_en_ligne") else ""
+            print(f"  CORRIGÉ {c['avis']}: {c['ancienne']} → {c['nouvelle']}{mel}", file=sys.stderr)
         return 0
 
     if a.audit_centroides:
