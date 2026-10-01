@@ -174,18 +174,36 @@ def test_revalidation_garde_le_legitime_et_le_silence():
 
 # ── Couche texte POLLUÉE (U+200D à la place des espaces) : signalée, pas extraite en silence ──
 
-def test_couche_texte_polluee_zwj_signalee_pas_extraite():
+def test_couche_texte_polluee_est_reparee_et_le_reste_est_signale():
+    """Texte pollué par des caractères de largeur nulle : on RÉPARE, et on signale le reste.
+
+    Ce test a d'abord affirmé l'inverse — document signalé, zéro fait, « plutôt 0 que 10/20 ».
+    Le diagnostic était juste, le remède non : une fois les caractères invisibles remplacés par
+    des espaces, l'avis de Bonneuil rend 40 faits et 16 recommandations au lieu de 10, et sa
+    densité d'espaces revient à 14,1 % — exactement celle des avis sains. Le signaler, c'était
+    jeter quarante faits justes à cause d'un défaut d'export.
+
+    La détection n'est pas supprimée pour autant : elle garde son rôle sur ce qui RÉSISTE à la
+    réparation — un vrai scan, une couche texte absente. Réparer d'abord, signaler ensuite.
+    """
     normal = "Les niveaux acoustiques en limite de propriété sont de 60 dB(A) de jour. " * 60
     a = avis.extract_from_pages([normal], "https://example.test/a.pdf")
-    assert a.has_text_layer is True          # texte sain (~14 % d'espaces) : extrait normalement
+    assert a.has_text_layer is True
     assert a.facts
 
     # mêmes mots, espaces remplacés par des jointures invisibles (le piège de Bonneuil)
-    pollue = normal.replace(" ", "‍")
+    pollue = normal.replace(" ", "\u200d")
     b = avis.extract_from_pages([pollue], "https://example.test/a.pdf")
-    assert b.has_text_layer is False         # SIGNALÉ comme un scan…
-    assert b.facts == []                     # …et PAS extrait en silence (plutôt 0 que « 10/20 »)
-    assert "POLLU" in (b.warnings[0] if b.warnings else "")
+    assert b.has_text_layer is True, "réparable, donc pas signalé comme illisible"
+    assert [f.field_id for f in b.facts] == [f.field_id for f in a.facts], (
+        "une fois réparé, le document pollué doit rendre exactement ce que rend le document sain"
+    )
+
+    # ce qui RÉSISTE à la réparation reste signalé : ici, pas de texte du tout.
+    c = avis.extract_from_pages([""] * 30, "https://example.test/scan.pdf")
+    assert c.has_text_layer is False
+    assert c.facts == []
+    assert c.warnings
 
 
 # ── CLASSE E — le FAUX NÉGATIF : un champ vide ne proteste pas ───────────────────────────────

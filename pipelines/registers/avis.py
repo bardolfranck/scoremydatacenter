@@ -559,6 +559,12 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
     analyser le PDF deux fois — et sur 117 documents, ce genre de gaspillage finit par être
     « optimisé » en sautant la vérification.
     """
+    # La réparation des caractères de largeur nulle vit dans `_norm`, qui n'est appliqué que
+    # par `pages_of`. Un appelant qui fournit ses propres pages — la source nationale, un test,
+    # un futur lot — recevrait du texte non réparé et perdrait les trois quarts de ses faits
+    # en silence. On répare donc ICI aussi : c'est le point d'entrée unique de l'extraction,
+    # et `_norm` est idempotent.
+    pages = [_norm(p) for p in pages]
     avis = Avis(doc_url=doc_url, n_pages=len(pages), n_chars=sum(len(p) for p in pages), sha256=sha256)
     if avis.n_chars < 500 * max(1, len(pages)) // 10:
         avis.has_text_layer = False
