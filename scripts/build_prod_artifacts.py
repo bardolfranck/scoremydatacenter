@@ -353,32 +353,41 @@ def _date_corroboree(source: dict, proc: dict) -> bool:
     return bool(d and m and d == f"{m[1]}-{m[2]}-{m[3]}")
 
 
-def _sans_doublons(avis: list[dict]) -> list[dict]:
-    """Le même PDF indexé deux fois — une fois en région, une fois au national.
+def _sans_doublons(rendus: list[tuple[dict, dict]]) -> list[dict]:
+    """Garde-fou de publication contre le même PDF indexé deux fois — région ET national.
 
-    Trois fiches (le campus LCP de Corbeil-Essonnes) affichaient deux fois l'avis du
-    30 mars 2022, sous deux noms de fichier différents. Aucun rapprochement par le nom n'est
-    sûr — les deux formes diffèrent par un préfixe de registre et un suffixe de copie. On
-    compare donc ce qui ne ment pas : la PAGINATION et le jeu de faits extraits. Deux
-    documents qui produisent exactement la même extraction sur le même nombre de pages sont
-    le même document ; aucune heuristique de ressemblance n'entre ici.
+    Trois fiches (campus LCP, Corbeil-Essonnes) affichaient deux fois l'avis du 30 mars 2022,
+    sous deux noms de fichier. La dédup VIT EN AMONT, dans pipelines/registers (run.dedup_contenu,
+    testée) ; ici on ne réimplémente pas la règle, on APPELLE la sienne — deux écritures d'un
+    même discriminant finiraient par diverger, et c'est au bord de la publication que l'écart
+    coûterait le plus cher. Ce garde-fou doit mesurer zéro une fois le registre nettoyé : s'il
+    attrape quelque chose, c'est que l'amont n'a pas tourné.
 
-    On garde l'exemplaire du registre régional : il porte le sha256, la licence et la
-    procédure, là où l'index national n'a qu'un lien.
+    L'empreinte se calcule sur le document BRUT du registre, pas sur les faits déjà filtrés de
+    leurs mentions : c'est l'entrée qu'attend l'amont, et la même pour les deux couches.
+    On garde l'exemplaire du registre régional — il porte le sha256, la licence et la procédure,
+    là où l'index national n'a qu'un lien.
     """
-    def signature(a: dict) -> tuple:
-        return (a["source"]["pdf"].get("pages"),
-                tuple(sorted((f["indicateur"], json.dumps(f["valeur"], sort_keys=True), f["page"])
-                             for f in a["faits"])))
+    from pipelines.registers.run import _content_fp  # amont : une seule écriture de la règle
 
-    garde: dict[tuple, dict] = {}
-    for a in avis:
-        s = signature(a)
-        tenu = garde.get(s)
+    garde: dict[str, dict] = {}
+    for brut, rendu in rendus:
+        fp = _content_fp(brut)
+        if fp is None:  # aucun fait : rien à comparer, l'amont ne regroupe pas non plus
+            continue
+        tenu = garde.get(fp)
         if tenu is None or ("national" in (tenu["source"].get("origine") or "")
-                            and "national" not in (a["source"].get("origine") or "")):
-            garde[s] = a
-    return [a for a in avis if a is garde[signature(a)]]
+                            and "national" not in (rendu["source"].get("origine") or "")):
+            garde[fp] = rendu
+    retenus = {id(r) for r in garde.values()}
+    gardes = [rendu for brut, rendu in rendus
+              if _content_fp(brut) is None or id(rendu) in retenus]
+    if len(gardes) < len(rendus):
+        # Un garde-fou qui attrape quelque chose n'est pas une bonne nouvelle : il dit que
+        # l'amont n'a pas été rejoué. Il le DIT, plutôt que de rattraper en silence.
+        print(f"  ⚠ dossier environnemental : {len(rendus) - len(gardes)} doublon(s) rattrapé(s) "
+              f"à la publication — rejouer la dédup du registre (pipelines/registers)")
+    return gardes
 
 
 def patch_dossier_environnemental() -> int:
@@ -452,10 +461,10 @@ def patch_dossier_environnemental() -> int:
             proc = dict(a["procedure"])
             if not _date_corroboree(a["source"], proc):
                 proc.pop("date_avis", None)
-            avis_rendus.append({
+            avis_rendus.append((a, {
                 "source": a["source"], "procedure": proc, "faits": faits,
                 "recommandations": a["installation"].get("recommandations_autorite", []),
-            })
+            }))
         avis_rendus = _sans_doublons(avis_rendus)
         if avis_rendus:
             d["dossier_environnemental"] = {"avis": avis_rendus}
