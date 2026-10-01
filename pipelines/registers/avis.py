@@ -79,6 +79,19 @@ ICPE_SEUIL = (r"\brubrique\b|nomenclature|"
               r"supérieure?\s+à[^.]{0,70}inférieure?\s+à|"
               r"égale?\s+ou\s+supérieure?\s+à")
 
+# Un PROJET MIXTE inclut, OUTRE le data center, un PROGRAMME bâti distinct (logements, crèche,
+# commerces, aqualudique, co-living). Ses chiffres de programme (80 000 m² de logements, « 8 000
+# emplois ») ne sont PAS ceux du data center. On ne démêle pas fiche par fiche (faux-ami) : on DRAPE
+# la fiche pour que l'étage d'après lise ces chiffres avec prudence. Signal d'INCLUSION au PROJET
+# (« construction de N logements », « co-living »), pas de VOISINAGE (« habitations à 200 m »).
+# Mesuré sur l'étalon : Courbevoie 62, Bruges 38, Rungis 2 (léger) ; les 10 autres 0, dont
+# Saint-Priest (habitations proches mais 0 programme) — voisins ≠ programme.
+MIXED_PROGRAM = re.compile(
+    r"village\s+delage|aqualudique|co-?living|résidences?-services?|"
+    r"projets?\s+(?:mixtes?|urbains?)|programme\s+(?:mixte|urbain)|"
+    r"\d[\d   ]*\s*(?:m2|m²)?\s*(?:de\s+)?logements|logements\s+(?:familiaux|sociaux)|"
+    r"crèche\s+de\b|gymnase\b|groupe\s+scolaire\s+de\b", re.I)
+
 
 def _n(s: str) -> float:
     key = s.strip().lower()
@@ -544,12 +557,15 @@ class Avis:
     facts: list[Fact] = field(default_factory=list)
     recommandations: list[dict] = field(default_factory=list)
     warnings: list[str] = field(default_factory=list)
+    # « léger » / « lourd » quand l'avis couvre un PROGRAMME bâti au-delà du data center (voir
+    # MIXED_PROGRAM). None sinon. Drapeau, PAS une séparation des faits — l'étage d'après tranche.
+    projet_mixte: str | None = None
 
     def as_dict(self) -> dict:
         by_theme: dict[str, list[dict]] = {}
         for f in self.facts:
             by_theme.setdefault(f.theme, []).append(f.as_dict())
-        return {
+        out = {
             # `sha256` identifie le DOCUMENT, pas son adresse : le même avis est servi par le
             # registre régional et par le site national sous deux URL différentes, et sans
             # cette empreinte le jeu contenait deux fiches pour un seul avis.
@@ -560,6 +576,11 @@ class Avis:
             "recommandations_autorite": self.recommandations,
             "avertissements": self.warnings,
         }
+        if self.projet_mixte:
+            # Drapeau de NATURE : lire les chiffres de programme (logements, emplois) avec prudence,
+            # ils ne sont pas ceux du data center. On ne les retire pas ici — on prévient.
+            out["projet_mixte"] = self.projet_mixte
+        return out
 
 
 def pages_of(pdf: bytes) -> list[str]:
@@ -640,6 +661,13 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
             f"{zwj} caractères de jointure invisibles) — mots soudés, ancres inopérantes : "
             "extraction NON FIABLE, document SIGNALÉ et non extrait (à sortir du taux, comme un scan)")
         return avis
+
+    # PROJET MIXTE : l'avis couvre un programme bâti au-delà du data center → on DRAPE la fiche
+    # (on ne retire pas les faits de programme, on prévient). « lourd » quand le signal est massif
+    # (Village Delage, aqualudique), « léger » pour une composante annexe (co-living, crèche).
+    n_mixed = len(MIXED_PROGRAM.findall(full))
+    if n_mixed:
+        avis.projet_mixte = "lourd" if n_mixed >= 10 else "léger"
 
     seen: set[str] = set()
     for pno, text in enumerate(pages, start=1):
