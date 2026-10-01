@@ -32,14 +32,33 @@
 // Les identifiants listés ci-dessous sont ceux réellement produits par l'extraction
 // (pipelines/registers). Un champ absent de ces listes reste dans le JSON et ne s'affiche
 // pas : on n'improvise pas un libellé pour un indicateur qu'on n'a pas vu passer.
+import lightning from "@phosphor-icons/core/assets/regular/lightning.svg?raw";
+import drop from "@phosphor-icons/core/assets/regular/drop.svg?raw";
+import gasCan from "@phosphor-icons/core/assets/regular/gas-can.svg?raw";
+import speakerHigh from "@phosphor-icons/core/assets/regular/speaker-high.svg?raw";
+import houseLine from "@phosphor-icons/core/assets/regular/house-line.svg?raw";
+import buildings from "@phosphor-icons/core/assets/regular/buildings.svg?raw";
+import briefcase from "@phosphor-icons/core/assets/regular/briefcase.svg?raw";
+import cloud from "@phosphor-icons/core/assets/regular/cloud.svg?raw";
+import clipboardText from "@phosphor-icons/core/assets/regular/clipboard-text.svg?raw";
+import scales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
+import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
+
 const { dossier, lang = "fr" } = Astro.props;
 const avis = (dossier?.avis ?? []).filter((a: any) => a?.faits?.length || a?.recommandations?.length);
+
+const ICO = (raw: string, size = 16) =>
+  raw.replace("<svg", `<svg width="${size}" height="${size}" aria-hidden="true" focusable="false"`);
 
 const t = lang === "fr" ? {
   kicker: "Ce que déclare le dossier environnemental",
   lire: "lire l'avis (PDF)", pages: "p.", petitionnaire: "pétitionnaire",
-  secours: "Secours électrique", bruit: "Bruit relevé", voisinage: "Voisinage",
-  energie: "Énergie, eau et chaleur", emprise: "Emprise et bâti", icpe: "Classement ICPE",
+  // Les rubriques DÉCRIVENT, elles ne qualifient pas. « Groupes électrogènes et fioul »
+  // plutôt que « nuisances » : nommer une nuisance serait notre verdict, et c'est exactement
+  // ce que ce bloc s'interdit. Le lecteur conclut, l'autorité écrit, nous rapportons.
+  secours: "Groupes électrogènes et fioul", bruit: "Bruit relevé", voisinage: "Voisinage",
+  energie: "Énergie et chaleur", eau: "Eau et refroidissement", emissions: "Émissions",
+  emploi: "Emploi", emprise: "Emprise et bâti", icpe: "Classement ICPE",
   reserves: "Réserves de l'autorité", autresNiv: "Autres niveaux cités dans l'avis",
   periode: "", jour: "Jour", nuit: "Nuit", mesure: "Mesure", autres: "Les autres dans l'avis",
   caveatGroupes: "puissance de secours — ce n'est pas la puissance consommée par le site",
@@ -52,11 +71,14 @@ const t = lang === "fr" ? {
   niveauxLabel: "Niveaux relevés", emergenceLabel: "Émergence",
   avisPluriel: "avis d'autorité environnementale rendus sur ce site",
   sansDate: "date non confirmée",
+  explication: "Explication",
+  icpeTip: "Installation classée pour la protection de l'environnement : le régime qui encadre, autorise et contrôle une activité pouvant présenter un risque ou une gêne. Chaque numéro désigne l'activité visée dans la nomenclature nationale. Être classé ne veut pas dire être dangereux : cela veut dire être encadré, et donc contrôlé.",
 } : {
   kicker: "What the environmental case file states",
   lire: "read the opinion (PDF)", pages: "p.", petitionnaire: "applicant",
-  secours: "Backup power", bruit: "Measured noise", voisinage: "Neighbourhood",
-  energie: "Energy, water and heat", emprise: "Footprint and buildings", icpe: "ICPE classification",
+  secours: "Generators and fuel", bruit: "Measured noise", voisinage: "Neighbourhood",
+  energie: "Energy and heat", eau: "Water and cooling", emissions: "Emissions",
+  emploi: "Employment", emprise: "Footprint and buildings", icpe: "ICPE classification",
   reserves: "Authority's reservations", autresNiv: "Other levels cited in the opinion",
   periode: "", jour: "Day", nuit: "Night", mesure: "Measure", autres: "The others in the opinion",
   caveatGroupes: "backup power — this is not the power the site draws",
@@ -69,6 +91,31 @@ const t = lang === "fr" ? {
   niveauxLabel: "Recorded levels", emergenceLabel: "Emergence",
   avisPluriel: "environmental authority opinions issued on this site",
   sansDate: "date not confirmed",
+  explication: "Explanation",
+  icpeTip: "ICPE — the French regime that authorises, frames and inspects an activity liable to create a risk or a nuisance. Each number designates the activity concerned in the national nomenclature. Being classified does not mean being dangerous: it means being regulated, and therefore inspected.",
+};
+
+// La nomenclature ICPE, pour l'habitant. Un numéro nu ne dit rien à personne : « 3110 » doit
+// se lire « la combustion des groupes électrogènes ». Intitulés repris de la nomenclature
+// nationale, raccourcis mais pas réécrits ; un numéro absent de cette table s'affiche nu
+// plutôt que glosé au jugé.
+const ICPE: Record<string, { fr: string; en: string }> = {
+  "3110": { fr: "Combustion — installations d'une puissance thermique totale ≥ 50 MW (directive IED)",
+            en: "Combustion — plants with a total thermal input ≥ 50 MW (IED directive)" },
+  "2910": { fr: "Combustion — installations de puissance inférieure",
+            en: "Combustion — plants below that threshold" },
+  "4734": { fr: "Stockage de produits pétroliers (le fioul des groupes)",
+            en: "Storage of petroleum products (the generators' fuel)" },
+  "1436": { fr: "Stockage de liquides combustibles de point éclair ≥ 60 °C",
+            en: "Storage of combustible liquids with a flash point ≥ 60 °C" },
+  "1185": { fr: "Gaz à effet de serre fluorés (fluides frigorigènes du refroidissement)",
+            en: "Fluorinated greenhouse gases (cooling refrigerants)" },
+  "2925": { fr: "Ateliers de charge d'accumulateurs (batteries de secours)",
+            en: "Battery charging areas (backup batteries)" },
+  "2515": { fr: "Broyage, concassage de matériaux",
+            en: "Crushing and grinding of materials" },
+  "2760": { fr: "Installation de stockage de déchets",
+            en: "Waste storage facility" },
 };
 
 const loc = lang === "fr" ? "fr-FR" : "en-GB";
@@ -94,15 +141,24 @@ const PHRASE = (s: string) => String(s ?? "")
   .replace(/\s*\(p\.?\s*$/, "")
   .trim();
 
-const CLES = ["puissance_it_mw", "consommation_gwh_an", "pue", "emplois_effectif"];
-const SECOURS = ["groupes_nombre", "groupes_puissance_unitaire_mw", "groupes_puissance_totale_mw",
-                 "groupes_carburant", "cuves_nombre", "cuves_volume_unitaire_m3",
-                 "cuves_volume_total_m3", "autonomie_heures"];
-const VOISINAGE = ["habitations_distance_m"];
-const ENERGIE = ["raccordement_kv", "chaleur_fatale_mw_th", "chaleur_valorisation",
-                 "reseau_chaleur_distance", "refroidissement_type", "eau_m3_an", "ges_teqco2"];
-const EMPRISE = ["parcelle_ha", "emprise_sol_m2", "surface_plancher_m2", "surface_salles_m2",
-                 "surface_locaux_techniques_m2", "hauteur_m"];
+// Les rubriques, dans l'ordre d'affichage. Un champ absent de ces listes reste dans le JSON
+// et ne sort pas : on n'improvise pas un rangement pour un indicateur qu'on n'a pas vu passer.
+const RUBRIQUES: { cle: string; ico: string; ids: string[] }[] = [
+  { cle: "energie", ico: lightning, ids: [
+      "raccordement_kv", "puissance_it_mw", "consommation_gwh_an", "pue",
+      "chaleur_fatale_mw_th", "chaleur_valorisation", "reseau_chaleur_distance"] },
+  { cle: "eau", ico: drop, ids: ["refroidissement_type", "eau_m3_an"] },
+  { cle: "secours", ico: gasCan, ids: [
+      "groupes_nombre", "groupes_puissance_unitaire_mw", "groupes_puissance_totale_mw",
+      "groupes_carburant", "cuves_nombre", "cuves_volume_unitaire_m3",
+      "cuves_volume_total_m3", "autonomie_heures"] },
+  { cle: "voisinage", ico: houseLine, ids: ["habitations_distance_m"] },
+  { cle: "emprise", ico: buildings, ids: [
+      "parcelle_ha", "emprise_sol_m2", "surface_plancher_m2", "surface_salles_m2",
+      "surface_locaux_techniques_m2", "hauteur_m"] },
+  { cle: "emploi", ico: briefcase, ids: ["emplois_effectif"] },
+  { cle: "emissions", ico: cloud, ids: ["ges_teqco2"] },
+];
 const BANDES = ["bruit_bandes", "bruit_emergence_bandes"];
 const NIVEAUX = ["bruit_niveau_dba", "bruit_emergence_dba"];
 // L'avertissement ne porte que sur la puissance TOTALE : c'est elle qu'on confond avec la
@@ -144,11 +200,9 @@ const borne = (b: any) => !b ? null
 
 {avis.map((a: any, iAvis: number) => {
   const f = a.faits ?? [];
-  const cles = prendre(f, CLES);
-  const secours = prendre(f, SECOURS);
-  const vois = prendre(f, VOISINAGE);
-  const energie = prendre(f, ENERGIE);
-  const emprise = prendre(f, EMPRISE);
+  const rubriques = RUBRIQUES
+    .map((r) => ({ ...r, items: prendre(f, r.ids) }))
+    .filter((r) => r.items.length > 0);
   const icpe = prendre(f, ["icpe_rubriques"]);
   const bandes = prendre(f, BANDES);
   // Une même phrase donne à l'extraction autant de `bruit_niveau_dba` qu'elle contient de
@@ -221,29 +275,17 @@ const borne = (b: any) => !b ? null
         {src.doc_url ? <a href={src.doc_url} target="_blank" rel="noopener">{t.lire}</a> : null}
       </p>
 
-      {cles.length > 0 && (
-        <div class="de-cles">
-          {cles.map((c: any) => (
-            <details class="de-cle">
-              <summary>
-                <span class="de-cle-v">{NUM(c.valeur)}{c.unite ? <span class="de-cle-u">{c.unite}</span> : null}</span>
-                <span class="de-cle-k">{c.libelle}</span>
-                <span class="de-p">{t.pages}{c.page}</span>
-              </summary>
-              <blockquote>{PHRASE(c.phrase)}</blockquote>
-            </details>
-          ))}
-        </div>
-      )}
-
       <div class="de-grid">
-        {secours.length > 0 && (
-          <div class="de-block"><h3>{t.secours}</h3>{Rows(secours)}</div>
-        )}
+        {rubriques.map((r: any) => (
+          <div class="de-block">
+            <h3><span class="de-ico" set:html={ICO(r.ico)} />{(t as any)[r.cle]}</h3>
+            {Rows(r.items)}
+          </div>
+        ))}
 
         {(bandes.length > 0 || niveaux.length > 0) && (
           <div class="de-block">
-            <h3>{t.bruit}</h3>
+            <h3><span class="de-ico" set:html={ICO(speakerHigh)} />{t.bruit}</h3>
             {bandes.length > 0 && (
               <table class="de-table">
                 <thead><tr><th>{t.mesure}</th><th>{t.jour}</th><th>{t.nuit}</th></tr></thead>
@@ -281,22 +323,32 @@ const borne = (b: any) => !b ? null
           </div>
         )}
 
-        {vois.length > 0 && (
-          <div class="de-block"><h3>{t.voisinage}</h3>{Rows(vois)}</div>
-        )}
-        {energie.length > 0 && (
-          <div class="de-block"><h3>{t.energie}</h3>{Rows(energie)}</div>
-        )}
-        {emprise.length > 0 && (
-          <div class="de-block"><h3>{t.emprise}</h3>{Rows(emprise)}</div>
-        )}
         {icpe.length > 0 && (
-          <div class="de-block"><h3>{t.icpe}</h3>{Rows(icpe)}</div>
+          <div class="de-block">
+            {/* Un numéro de nomenclature nu ne dit rien à un habitant. L'infobulle explique le
+                régime, et chaque numéro porte l'activité qu'il désigne : « 3110 » doit se lire
+                « la combustion des groupes électrogènes ». */}
+            <h3>
+              <span class="de-ico" set:html={ICO(clipboardText)} />{t.icpe}
+              <span class="info" tabindex="0" role="note" aria-label={`${t.explication} : ${t.icpeTip}`}>
+                <span class="info-ico" set:html={ICO(infoIcon, 14)} />
+                <span class="info-tip">{t.icpeTip}</span>
+              </span>
+            </h3>
+            <ul class="de-icpe">
+              {[...new Set(icpe.map((x: any) => String(x.valeur)))].map((num: any) => (
+                <li>
+                  <span class="de-icpe-n">{num}</span>
+                  <span class="de-icpe-l">{ICPE[num]?.[lang] ?? ""}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         {recos.length > 0 && (
           <div class="de-block de-reserves">
-            <h3>{t.reserves} <span class="de-count">{recos.length}</span></h3>
+            <h3><span class="de-ico" set:html={ICO(scales)} />{t.reserves} <span class="de-count">{recos.length}</span></h3>
             {recos.slice(0, 4).map((r: any) => (
               <details class="de-row de-reco">
                 <summary>
@@ -339,25 +391,35 @@ const borne = (b: any) => !b ? null
   .de-avis > .de-source { padding: 0.7rem 1.15rem 0; margin: 0; }
   .de-avis-suite { border-top: 3px double var(--line); margin-top: 0.4rem; }
 
-  .de-cles {
-    display: grid; gap: 1px; background: var(--line);
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    border-bottom: 1px solid var(--line); border-top: 1px solid var(--line);
-    margin-top: 0.7rem;
+  /* Pas de quadrillage : des rubriques posées dans du blanc, séparées par l'espace et une
+     règle fine sous leur titre. Le filet de 1px partout donnait au bloc l'air d'un formulaire
+     administratif — c'était le reproche. */
+  .de-grid {
+    display: grid; column-gap: 2.2rem; row-gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    padding: 1.1rem 1.15rem 1.3rem;
   }
-  .de-cle { background: var(--paper); padding: 0.85rem 1rem; }
-  .de-cle > summary { list-style: none; cursor: pointer; display: block; }
-  .de-cle > summary::-webkit-details-marker { display: none; }
-  .de-cle-v { display: block; font-size: 1.5rem; font-weight: 600; color: var(--ink); line-height: 1.1; }
-  .de-cle-u { font-size: 0.8rem; font-weight: 400; color: var(--muted); margin-left: 0.22em; }
-  .de-cle-k { display: block; font-size: 0.78rem; color: var(--ink-soft); margin-top: 0.2rem; }
-
-  .de-grid { display: grid; gap: 1px; background: var(--line); grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
-  .de-block { background: var(--paper); padding: 1rem 1.15rem 1.1rem; }
-  .de-block h3 { margin: 0 0 0.6rem; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 600; }
+  .de-block { min-width: 0; }
+  .de-block h3 {
+    display: flex; align-items: center; gap: 0.42rem;
+    margin: 0 0 0.45rem; padding-bottom: 0.4rem; border-bottom: 1px solid var(--line);
+    font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--ink-soft); font-weight: 600;
+  }
+  .de-ico { display: inline-flex; color: var(--muted); flex: 0 0 auto; }
+  .de-block h3 .info { text-transform: none; letter-spacing: 0; }
   .de-count { background: var(--wash); border: 1px solid var(--line); border-radius: 99px; padding: 0 0.4rem; font-size: 0.7rem; color: var(--ink-soft); }
 
-  .de-row { border-bottom: 1px solid var(--line); }
+  .de-icpe { list-style: none; margin: 0; padding: 0; }
+  .de-icpe li { display: flex; gap: 0.6rem; align-items: baseline; padding: 0.4rem 0; font-size: 0.84rem; }
+  .de-icpe li + li { border-top: 1px dotted var(--line); }
+  .de-icpe-n {
+    font-family: var(--font-mono); font-weight: 600; color: var(--ink);
+    background: var(--wash); border-radius: 4px; padding: 0.05rem 0.35rem; flex: 0 0 auto;
+  }
+  .de-icpe-l { color: var(--ink-soft); line-height: 1.4; }
+
+  .de-row { border-bottom: 1px dotted var(--line); }
   .de-row:last-of-type { border-bottom: 0; }
   .de-row > summary {
     list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 0.5rem;
