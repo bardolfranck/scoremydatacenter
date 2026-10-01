@@ -247,6 +247,51 @@ passer au **gate d'ingestion** : Fouju était publié, noté et faux, et ni l'au
 le registre de provenance ne le voyaient. Critère fiable = **près d'un oracle géocodeur ET
 pas sur un bâtiment** ; le seuil seul sur-signale.
 
+## Stage 5 — les REGISTRES d'autorité environnementale (avis MRAe) — depuis 2026-10-01
+
+Chaîne : **REGISTRE (index) → LIEN PDF → AVIS → JSON d'extraction → RATTACHEMENT**. Quatre
+modules dans `pipelines/registers/`, un par maillon, et un seul chemin pour les lancer :
+
+```
+python -m pipelines.registers.run --out ../smdc-newsroom/registres --national
+python -m pipelines.registers.match_run                       # rattachement + détection
+```
+
+Ce que chaque passage produit, **systématiquement et sans intervention** :
+
+| fichier | contenu |
+|---|---|
+| `registres/<avis>.json` | un JSON d'extraction par avis — chaque fait avec sa phrase et sa page |
+| `registres/index.json` | ce qui a été traité, et **pourquoi** un document ne l'a pas été |
+| `registres/couverture.json` | champ × avis, région × avis, motif de rejet × document |
+| `registres/rattachement.json` | quel avis parle de quelle fiche — **propositions, jamais confirmées** |
+| `registres/rattachement.json` → `projets_a_collecter` | **les projets que l'État documente et que le corpus ignore** |
+
+### Le détecteur de projets est DANS la machine, pas dans la tête de l'opérateur
+
+Le premier passage a trouvé cinq projets absents du corpus — DIGITAL MRS5 et SEGRO Urban
+Logistics à Marseille, le Village Delage à Courbevoie, un programme mixte à Vélizy — **en
+lisant les PDF un par un, à la main**. Un détecteur qui ne vit que dans le compte rendu d'un
+run ne détecte rien au run suivant.
+
+Il est donc une SORTIE NOMMÉE du rattachement (`projets_a_collecter`), écrite à chaque
+passage, et il couvre deux cas :
+
+- `non_rattache` — aucun candidat dans le rayon ni dans la commune ;
+- `projet_absent_du_corpus` — des candidats existaient, mais **l'exploitant nommé par le
+  document** ne correspond à aucun d'eux. C'est le cas des cinq : bonne commune, fiches
+  voisines plausibles, et pourtant un autre site.
+
+Le second cas suppose de lire l'exploitant DANS le PDF : 23 avis sur 39 viennent de l'index
+national, qui ne publie pas le pétitionnaire. Sans cette lecture, le détecteur est aveugle
+précisément là où il sert.
+
+### Ce qui n'est JAMAIS automatique
+
+Un rattachement faux ferait apparaître sur une fiche les chiffres d'un autre projet — des
+faits justes, sur la mauvaise fiche, et rien dans la fiche ne trahirait l'erreur. Aucune
+proposition n'est servie tant qu'un humain n'a pas passé `confirme` à `true`.
+
 ## Run it end to end on a fictional DC (recipe for a successor)
 
 ```
