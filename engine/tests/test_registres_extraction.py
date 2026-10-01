@@ -346,3 +346,39 @@ def test_photovoltaique_capte_la_valeur_declaree_quelle_que_soit_l_unite():
     assert any("MWh" in str(x) for x in _flat(_vals(
         "des panneaux photovoltaïques d'une production de 580 MWh par an."
     ).get("photovoltaique")))
+
+
+def test_projet_absent_du_corpus_ne_vole_pas_un_rattachement_solide():
+    """Le cas « l'avis parle d'un site que le corpus ignore » ne s'applique QU'aux incertains.
+
+    `projets_candidats` filtrait sur ce statut depuis le premier jour et le workflow le décrivait
+    comme le cas le plus utile — mais aucun chemin ne l'attribuait. Il n'existait que dans un
+    commentaire et dans un filtre, et les projets absents ont été trouvés à la main.
+
+    Placée AVANT la cascade, la règle volait un rattachement solide : un avis apparié par
+    géométrie ET commune devenait « projet absent » parce que le libellé de son porteur ne
+    ressemble pas à l'opérateur de la fiche. Nos noms d'exploitants sont des approximations ;
+    une géométrie concordante pèse plus qu'une dissemblance de libellé.
+    """
+    from pipelines.registers import match
+
+    corpus = {"fr-site-a": {"municipality": "Villebourg", "operator": "Eclairion",
+                            "coordinates": {"lat": 48.60, "lon": 2.20}}}
+    socle = {"schema": "smdc.registre-ae/1", "installation": {"faits": {}, "recommandations_autorite": []}}
+
+    # fort : géométrie + commune concordantes, porteur au libellé différent → RESTE rattaché
+    fort = {**socle, "procedure": {"intitule": "data center", "commune": "Villebourg",
+                                   "petitionnaire": "BDC2",
+                                   "centroid": {"lat": 48.6005, "lon": 2.2005}}}
+    # faible : commune seule, porteur qui ne correspond à personne → projet ABSENT
+    faible = {**socle, "procedure": {"intitule": "data center à Villebourg",
+                                     "commune": "Villebourg", "petitionnaire": "Interconstruction"}}
+    # anonymisé : le registre masque le porteur → on ne conclut RIEN
+    anonyme = {**socle, "procedure": {"intitule": "data center à Villebourg",
+                                      "commune": "Villebourg", "petitionnaire": "pétitionnaire privé"}}
+
+    r = {p.avis: p.statut for p in match.proposer(
+        {"fort.json": fort, "faible.json": faible, "anonyme.json": anonyme}, corpus)}
+    assert r["fort.json"] == "rattache_propose", "une géométrie concordante ne se perd pas sur un libellé"
+    assert r["faible.json"] == "projet_absent_du_corpus"
+    assert r["anonyme.json"] != "projet_absent_du_corpus", "« pétitionnaire privé » n'est pas un nom"
