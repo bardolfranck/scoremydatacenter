@@ -23,6 +23,7 @@ import re
 import sys
 import threading
 import time
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -319,6 +320,86 @@ def rederive_bruit(out_dir: Path) -> dict:
     return {"fiches_touchees": touched, "bandes_ajoutees": added, "listing": listing}
 
 
+def _content_fp(d: dict) -> str:
+    """Empreinte du CONTENU LU : phrases des faits + recommandations, normalisées.
+
+    Le `sha256` du FICHIER ne voit pas les quasi-doublons — le même avis ré-exporté à quelques
+    octets près, ou servi par le registre régional ET le site national sous deux URL. Le bon
+    discriminant est le texte lu, en minuscules, sans accents ni ponctuation.
+    """
+    parts: list[str] = []
+    for lst in d.get("installation", {}).get("faits", {}).values():
+        parts.extend(str(f.get("phrase", "")) for f in lst)
+    parts.extend(str(r.get("texte", "")) for r in d.get("installation", {}).get("recommandations_autorite", []))
+    s = unicodedata.normalize("NFKD", " ".join(parts))
+    s = "".join(c for c in s if not unicodedata.combining(c)).lower()
+    return hashlib.sha256(re.sub(r"[^a-z0-9]", "", s).encode()).hexdigest()
+
+
+def dedup_contenu(out_dir: Path) -> dict:
+    """Fusionner les avis EN DOUBLON PAR CONTENU (aucun réseau). Déterministe, idempotent.
+
+    Deux garde-fous payés par le test : (1) NE dédupliquer QUE les fiches à couche texte — une
+    empreinte vide regrouperait à tort les scans illisibles, qui sont des documents DISTINCTS
+    qu'on ne sait pas lire ; (2) quand un avis existe en version REGISTRE (acte administratif :
+    pétitionnaire, INSEE, procédure, géométrie) et en version site national, GARDER le registre
+    et consigner l'autre URL en source alternative — deux services publient le même avis, c'est
+    une information, pas un déchet.
+    """
+    today = time.strftime("%Y-%m-%d")
+    fiches = []
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            d = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+        inst = d.get("installation")
+        if not inst:
+            continue
+        src = d.get("source") or {}
+        has_text = (src.get("pdf") or {}).get("couche_texte", True)
+        fiches.append({"path": p, "d": d, "text": has_text,
+                       "registre": src.get("registre") is not None,
+                       "nfaits": sum(len(v) for v in inst.get("faits", {}).values()),
+                       "url": src.get("doc_url", "")})
+    groups: dict[str, list] = {}
+    for rec in fiches:
+        if not rec["text"]:
+            continue  # jamais de dédup sur une empreinte vide
+        groups.setdefault(_content_fp(rec["d"]), []).append(rec)
+
+    removed: list[str] = []
+    merges: list[tuple] = []
+    for recs in groups.values():
+        if len(recs) < 2:
+            continue
+        # keeper : le registre d'abord, puis le plus riche, puis par nom (déterministe).
+        keeper = sorted(recs, key=lambda r: (not r["registre"], -r["nfaits"], r["path"].name))[0]
+        kd = keeper["d"]
+        alts = kd.setdefault("source", {}).setdefault("sources_alternatives", [])
+        fused = []
+        for rec in recs:
+            if rec is keeper:
+                continue
+            if rec["url"] and rec["url"] not in alts:
+                alts.append(rec["url"])
+            fused.append({"fichier": rec["path"].name, "doc_url": rec["url"]})
+            rec["path"].unlink()
+            removed.append(rec["path"].name)
+        kd["dedup"] = {
+            "date": today,
+            "methode": ("empreinte du CONTENU lu (NFKD, minuscules, sans ponctuation) ; le "
+                        "sha256 du fichier ne voit pas les ré-exports différant de quelques octets"),
+            "fusionnee_depuis": fused,
+        }
+        keeper["path"].write_text(json.dumps(kd, ensure_ascii=False, indent=2), encoding="utf-8")
+        merges.append((keeper["path"].name, [f["fichier"] for f in fused]))
+    return {"fiches_fusionnees": removed, "merges": merges,
+            "sans_couche_texte": sum(1 for r in fiches if not r["text"])}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, required=True)
@@ -335,8 +416,34 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--rederive-bruit", dest="rederive_bruit", action="store_true",
                     help="AJOUTER les bandes de bruit dérivées des phrases déjà stockées (aucun "
                          "réseau) ; opération séparée du revalidate, trace datée distincte")
+    ap.add_argument("--dedup-contenu", dest="dedup_contenu", action="store_true",
+                    help="fusionner les avis en doublon PAR CONTENU LU (aucun réseau) ; garde la "
+                         "fiche de registre, consigne l'URL alternative ; régénère couverture.json")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.dedup_contenu:
+        if not a.out.is_dir():
+            print(f"--dedup-contenu : {a.out} introuvable", file=sys.stderr)
+            return 2
+        summary = dedup_contenu(a.out)
+        champs, regions, retenus = _coverage_from_fiches(a.out)
+        cov_path = a.out / "couverture.json"
+        cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov["avis_distincts"] = retenus
+        cov["champs"] = {"note": "nombre d'avis DISTINCTS portant le champ", "sur": retenus,
+                         "valeurs": dict(champs.most_common())}
+        cov["regions"] = dict(regions.most_common())
+        cov["dedup"] = {"date": time.strftime("%Y-%m-%d"),
+                        "fiches_fusionnees": len(summary["fiches_fusionnees"]),
+                        "note": ("dénominateur = avis DISTINCTS par contenu lu ; les fiches sans "
+                                 "couche texte restent distinctes (documents illisibles, pas doublons)")}
+        cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"dedup-contenu : {len(summary['fiches_fusionnees'])} fiche(s) fusionnée(s) ; "
+              f"{retenus} avis distincts.", file=sys.stderr)
+        for keeper, fused in summary["merges"]:
+            print(f"  gardé {keeper}\n      ← {', '.join(fused)}", file=sys.stderr)
+        return 0
 
     if a.rederive_bruit:
         if not a.out.is_dir():
