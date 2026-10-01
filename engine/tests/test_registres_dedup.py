@@ -54,3 +54,23 @@ def test_dedup_contenu_epargne_les_sans_couche_texte(tmp_path):
     s = run.dedup_contenu(tmp_path)
     assert s["fiches_fusionnees"] == []
     assert (tmp_path / "nt1.json").exists() and (tmp_path / "nt2.json").exists()
+
+
+def test_codes_region_normalises_vers_les_noms():
+    # Le code de spec et le nom lu désignent la même région — sinon le tableau la compte deux fois.
+    assert run._region_name("IDF") == "Île-de-France"
+    assert run._region_name("paca") == "Provence-Alpes-Côte d'Azur"
+    assert run._region_name("Île-de-France") == "Île-de-France"   # déjà un nom : inchangé
+    assert run._region_name(None) == "?"
+
+
+def test_coverage_fond_registre_et_national_en_une_region(tmp_path):
+    reg = {"installation": {"faits": {"x": [{"indicateur": "a"}]}},
+           "source": {"registre": {"region": "IDF"}, "pdf": {"couche_texte": True}}}
+    nat = {"installation": {"faits": {"x": [{"indicateur": "a"}]}},
+           "source": {"region_detectee": "Île-de-France", "registre": None, "pdf": {"couche_texte": True}}}
+    (tmp_path / "idf.json").write_text(json.dumps(reg, ensure_ascii=False))
+    (tmp_path / "mrae.json").write_text(json.dumps(nat, ensure_ascii=False))
+    _champs, regions, retenus = run._coverage_from_fiches(tmp_path)
+    assert regions["Île-de-France"] == 2 and "IDF" not in regions
+    assert retenus == 2

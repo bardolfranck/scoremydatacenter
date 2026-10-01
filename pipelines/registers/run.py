@@ -156,7 +156,7 @@ def couverture(rows: list[dict]) -> dict:
         if r["statut"] in ("extrait", "déjà extrait"):
             retenus += 1
             champs.update(r.get("champs", []))
-            regions[r.get("region") or "?"] += 1
+            regions[_region_name(r.get("region"))] += 1
         else:
             rejets[r["statut"]] += 1
     return {
@@ -173,11 +173,25 @@ def couverture(rows: list[dict]) -> dict:
     }
 
 
+# Les fiches nationales portent le NOM de région lu dans l'avis, les fiches de registre le CODE
+# de la spec. Sans normalisation, la même région apparaît deux fois dans la comptabilité (« IDF »
+# ET « Île-de-France ») et sous-estime de moitié la concentration réelle — un chiffre publié faux.
+REGION_NAMES = {
+    "idf": "Île-de-France", "ge": "Grand Est", "paca": "Provence-Alpes-Côte d'Azur",
+    "norm": "Normandie", "na": "Nouvelle-Aquitaine", "aura": "Auvergne-Rhône-Alpes",
+}
+
+
+def _region_name(code: str | None) -> str:
+    if not code:
+        return "?"
+    return REGION_NAMES.get(code.strip().lower(), code)
+
+
 def _fiche_region(d: dict) -> str:
     src = d.get("source") or {}
-    return (src.get("region_detectee")
-            or ((src.get("registre") or {}).get("region"))
-            or "?")
+    return _region_name(src.get("region_detectee")
+                        or ((src.get("registre") or {}).get("region")))
 
 
 def _coverage_from_fiches(out_dir: Path) -> tuple[collections.Counter, collections.Counter, int]:
@@ -430,6 +444,7 @@ def main(argv: list[str] | None = None) -> int:
         champs, regions, retenus = _coverage_from_fiches(a.out)
         cov_path = a.out / "couverture.json"
         cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov.pop("avis_retenus", None)   # ambigu une fois dédupliqué : seul avis_distincts fait foi
         cov["avis_distincts"] = retenus
         cov["champs"] = {"note": "nombre d'avis DISTINCTS portant le champ", "sur": retenus,
                          "valeurs": dict(champs.most_common())}
@@ -453,6 +468,7 @@ def main(argv: list[str] | None = None) -> int:
         champs, regions, retenus = _coverage_from_fiches(a.out)
         cov_path = a.out / "couverture.json"
         cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov.pop("avis_retenus", None)   # le dénominateur vit dans champs.sur / avis_distincts
         cov["champs"] = {"note": "nombre d'avis portant le champ", "sur": retenus,
                          "valeurs": dict(champs.most_common())}
         cov["regions"] = dict(regions.most_common())
@@ -481,7 +497,8 @@ def main(argv: list[str] | None = None) -> int:
             "schema": "smdc.registre-ae.couverture/1",
             "genere_le": time.strftime("%Y-%m-%d"),
             "mode": "revalidate",
-            "avis_retenus": retenus,
+            # pas de total à part : le dénominateur vit dans champs.sur, un seul endroit (deux
+            # nombres voisins qui disent des choses différentes finissent toujours confondus).
             "champs": {"note": "nombre d'avis portant le champ, après revalidation",
                        "sur": retenus, "valeurs": dict(champs_ap.most_common())},
             "regions": dict(regions_ap.most_common()),
