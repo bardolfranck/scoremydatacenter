@@ -1,59 +1,82 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 # https://scoremydatacenter.org · independent data center acceptability-risk score
-"""Détecteur de centroïde de géocodeur. Cas fondateur réel (2026-10-01) : les deux avis PACA de
-Marseille — DIGITAL MRS5 (silo Saint-Louis, GPMM) et le projet mixte SEGRO (zone Actisud) — deux
-sites distants d'environ 5 km, portaient le MÊME centroid 43.287981, 5.402336 (le centre géocodé de
-« Marseille »). Un même point sur deux dossiers distincts est un géocodeur, et ça doit être DÉTECTÉ,
-pas redécouvert à chaque fois.
+"""Détecteur de centroïde de géocodeur. Le critère n'est PAS l'égalité des coordonnées (trop
+large, comme « ordre du jour » l'était pour les procès-verbaux) mais le PÉTITIONNAIRE :
+
+  · Marseille (2026-10-01) : DIGITAL MRS5 et SEGRO partagent 43.287981,5.402336, porteurs
+    différents, ~5 km d'écart réel → géocodeur. Mais MRS5 n'a pas de pétitionnaire extrait →
+    on ne peut pas trancher → INDÉTERMINÉ (on ne suppose pas).
+  · Marcoussis : DATA 4 SAS et DATA 4 SERVICES partagent 48.646436,2.214727 — MÊME exploitant,
+    deux procédures sur LE MÊME site → pas un géocodeur, géométrie vraie, à garder.
+
+On réutilise `match._meme_exploitant` comme comparateur (il reconnaît « DATA 4 SAS » ≈
+« DATA 4 SERVICES »), on n'en écrit pas un second.
 """
 
-from pipelines.registers import match
-from pipelines.registers.geocoder import geocoder_keys, shared_centroids
+from pipelines.registers import geocoder, match
+from pipelines.registers.geocoder import (GEOCODEUR, INDETERMINE, MEME_SITE,
+                                          classify, suspect_keys)
 
-# Les deux dossiers réels de Marseille, réduits à ce qui compte pour le détecteur.
-MRS5 = {"procedure": {"intitule": "data-center DIGITAL MRS5 à Marseille (13)", "commune": "MARSEILLE",
-                      "centroid": {"lat": 43.287981, "lon": 5.402336}}}
-SEGRO = {"procedure": {"intitule": "data-center + entrepôt, zone Actisud, Marseille (13)", "commune": "MARSEILLE",
-                       "centroid": {"lat": 43.287981, "lon": 5.402336}}}
-# Un vrai site, ailleurs, avec SA géométrie propre.
-NOZAY = {"procedure": {"intitule": "data center DATA4 à Nozay (91)", "commune": "NOZAY",
-                       "centroid": {"lat": 48.659, "lon": 2.197}}}
+CMP = match._meme_exploitant
 
 
-def test_meme_point_sur_deux_dossiers_distincts_est_un_geocodeur():
-    shared = shared_centroids({"mrs5": MRS5, "segro": SEGRO, "nozay": NOZAY})
-    assert shared == {(43.287981, 5.402336): ["mrs5", "segro"]}
-    assert (43.287981, 5.402336) in geocoder_keys({"mrs5": MRS5, "segro": SEGRO})
+def _doc(intitule, centroid, petitionnaire=None):
+    proc = {"intitule": intitule, "centroid": centroid}
+    if petitionnaire:
+        proc["petitionnaire"] = petitionnaire
+    return {"procedure": proc}
 
 
-def test_un_point_sur_un_seul_dossier_nest_pas_signale():
-    # un vrai site, seul à porter son centroïde : rien à signaler.
-    assert shared_centroids({"nozay": NOZAY}) == {}
-    assert shared_centroids({"mrs5": MRS5, "nozay": NOZAY}) == {}
+MRS5 = _doc("data-center DIGITAL MRS5 à Marseille (13)", {"lat": 43.287981, "lon": 5.402336})
+SEGRO = _doc("data-center + entrepôt, zone Actisud, Marseille", {"lat": 43.287981, "lon": 5.402336}, "SEGRO")
+M_SAS = _doc("Extension du DATA IV à Marcoussis", {"lat": 48.646436, "lon": 2.214727}, "DATA 4 SAS")
+M_SRV = _doc("Modification de l'implantation, Marcoussis", {"lat": 48.646436, "lon": 2.214727}, "DATA 4 SERVICES")
+NOZAY = _doc("data center DATA4 à Nozay (91)", {"lat": 48.659, "lon": 2.197}, "DATA 4")
 
 
-def test_centroid_absent_ne_casse_pas():
-    assert shared_centroids({"x": {"procedure": {}}, "y": {}}) == {}
+def test_meme_exploitant_meme_point_est_le_meme_site_pas_un_geocodeur():
+    # Marcoussis : le point partagé est la VÉRITÉ, pas un artefact — ne pas le marquer.
+    cats = classify({"m5308": M_SAS, "m7366": M_SRV}, CMP)
+    assert cats[(48.646436, 2.214727)]["categorie"] == MEME_SITE
+    assert suspect_keys({"m5308": M_SAS, "m7366": M_SRV}, CMP) == set()
 
 
-def test_match_ecarte_la_geometrie_de_geocodeur():
-    # Les deux dossiers partagent le point ; une fiche du corpus est pile sur ce point.
-    # Sans garde-fou, les DEUX se rattacheraient à elle par « géométrie ». Avec le garde-fou, le
-    # signal géométrie disparaît et chaque proposition est marquée centroid_geocodeur.
-    corpus = {"fr-un-site-quelconque": {"municipality": "Marseille", "operator": None,
-                                        "coordinates": {"lat": 43.287981, "lon": 5.402336}}}
+def test_porteurs_differents_meme_point_est_un_geocodeur():
+    a = _doc("projet A", {"lat": 43.3, "lon": 5.4}, "SEGRO")
+    b = _doc("projet B", {"lat": 43.3, "lon": 5.4}, "Interxion France")
+    cats = classify({"a": a, "b": b}, CMP)
+    assert cats[(43.3, 5.4)]["categorie"] == GEOCODEUR
+    assert (43.3, 5.4) in suspect_keys({"a": a, "b": b}, CMP)
+
+
+def test_un_porteur_manquant_est_indetermine_pas_un_choix():
+    # Marseille réel : MRS5 sans pétitionnaire + SEGRO → on ne tranche pas.
+    cats = classify({"mrs5": MRS5, "segro": SEGRO}, CMP)
+    assert cats[(43.287981, 5.402336)]["categorie"] == INDETERMINE
+    # indéterminé reste suspect pour le rattachement (on ne fait pas confiance au point non confirmé).
+    assert (43.287981, 5.402336) in suspect_keys({"mrs5": MRS5, "segro": SEGRO}, CMP)
+
+
+def test_point_unique_nest_pas_signale():
+    assert classify({"nozay": NOZAY}, CMP) == {}
+    assert classify({"mrs5": MRS5, "nozay": NOZAY}, CMP) == {}
+
+
+def test_match_garde_la_geometrie_du_meme_site():
+    # Marcoussis : la fiche du corpus doit garder son signal géométrie (vrai site).
+    corpus = {"fr-data4-marcoussis": {"municipality": "Marcoussis", "operator": "DATA4",
+                                      "coordinates": {"lat": 48.646436, "lon": 2.214727}}}
+    props = {p.avis: p for p in match.proposer({"m5308": M_SAS, "m7366": M_SRV}, corpus)}
+    for avis in ("m5308", "m7366"):
+        assert props[avis].centroid_partage is None
+        assert "geometrie" in props[avis].signaux
+
+
+def test_match_ecarte_la_geometrie_de_geocodeur_et_indetermine():
+    corpus = {"fr-x": {"municipality": "Marseille", "operator": None,
+                       "coordinates": {"lat": 43.287981, "lon": 5.402336}}}
     props = {p.avis: p for p in match.proposer({"mrs5": MRS5, "segro": SEGRO}, corpus)}
     for avis in ("mrs5", "segro"):
-        assert props[avis].centroid_geocodeur is True
+        assert props[avis].centroid_partage == INDETERMINE
         assert "geometrie" not in props[avis].signaux
-        assert "geometrie_proche" not in props[avis].signaux
-
-
-def test_match_garde_la_geometrie_quand_le_point_est_unique():
-    # Un centroïde NON partagé reste un signal géométrie légitime.
-    corpus = {"fr-data4-nozay": {"municipality": "Nozay", "operator": "DATA4",
-                                 "coordinates": {"lat": 48.659, "lon": 2.197}}}
-    props = {p.avis: p for p in match.proposer({"nozay": NOZAY}, corpus)}
-    assert props["nozay"].centroid_geocodeur is False
-    assert "geometrie" in props["nozay"].signaux

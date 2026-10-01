@@ -39,7 +39,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .geocoder import centroid_key, geocoder_keys
+from . import geocoder
 
 # Le registre porte le centroïde du DOSSIER, le corpus le bâtiment : 1,1 km d'écart sur
 # Tremblay, qui est pourtant le même site. On ratisse large et on classe, on ne tranche pas
@@ -125,14 +125,14 @@ class Proposition:
     autres: list[dict] = field(default_factory=list)
     confirme: bool = False            # JAMAIS vrai sans relecture humaine
     exploitant_document: str | None = None   # l'exploitant lu DANS le PDF, pas dans le registre
-    centroid_geocodeur: bool = False  # le centroïde du dossier est une coordonnée de géocodeur
-                                      # (partagée par un autre dossier) : pas utilisée comme géométrie
+    centroid_partage: str | None = None  # "geocodeur" | "indetermine" quand le point du dossier est
+                                         # partagé sans être le même site : géométrie non utilisée
 
     def as_dict(self) -> dict:
         d = {"avis": self.avis, "intitule": self.intitule[:120], "statut": self.statut,
              "confirme": self.confirme}
-        if self.centroid_geocodeur:
-            d["centroid_geocodeur"] = True   # le point du dossier était une coordonnée de géocodeur
+        if self.centroid_partage:
+            d["centroid_partage"] = self.centroid_partage   # géocodeur ou indéterminé : point écarté
         if self.fiches:
             d["fiches"] = self.fiches
         if self.retenu:
@@ -175,10 +175,10 @@ def _commune_de_lavis(proc: dict, nom_fichier: str, communes: dict[str, list[str
 def proposer(avis_docs: dict[str, dict], corpus: dict[str, dict]) -> list[Proposition]:
     """corpus : {fiche_id: {municipality, operator, coordinates{lat,lon}}}."""
     communes = _communes_du_corpus(corpus)
-    # Un centroïde partagé par deux dossiers DISTINCTS est une coordonnée de géocodeur
-    # (centre de commune/zone), pas un site : on l'écarte comme géométrie, sinon on propose la
-    # même fiche pour deux projets différents. Cf. pipelines.registers.geocoder.
-    suspects = geocoder_keys(avis_docs)
+    # Un même point sur deux dossiers n'est un géocodeur que si les PORTEURS diffèrent ; même
+    # exploitant = même site (géométrie vraie, à garder). Le discriminant est le pétitionnaire,
+    # via _meme_exploitant — pas l'égalité des coordonnées. Cf. pipelines.registers.geocoder.
+    categories = geocoder.classify(avis_docs, _meme_exploitant)
     propositions: list[Proposition] = []
 
     for nom, doc in sorted(avis_docs.items()):
@@ -186,9 +186,10 @@ def proposer(avis_docs: dict[str, dict], corpus: dict[str, dict]) -> list[Propos
         intitule = proc.get("intitule") or nom
         p = Proposition(avis=nom, intitule=intitule)
         centro = proc.get("centroid")
-        if centroid_key(centro) in suspects:
-            p.centroid_geocodeur = True
-            centro = None   # géométrie de géocodeur : neutralisée, on retombe sur commune/pétitionnaire/jeton
+        info = categories.get(geocoder.centroid_key(centro))
+        if info and info["categorie"] in (geocoder.GEOCODEUR, geocoder.INDETERMINE):
+            p.centroid_partage = info["categorie"]
+            centro = None   # point non fiable : neutralisé, on retombe sur commune/pétitionnaire/jeton
         commune = _commune_de_lavis(proc, nom, communes)
         jetons = _jetons(f"{intitule} {nom}")
 

@@ -230,20 +230,32 @@ def _docs_from_fiches(out_dir: Path) -> dict[str, dict]:
 
 
 def audit_centroides(out_dir: Path) -> dict:
-    """Section de comptabilité : les centroïdes de GÉOCODEUR (un même point sur ≥2 dossiers).
+    """Section de comptabilité : les centroïdes PARTAGÉS, triés par le pétitionnaire.
 
-    Lecture seule, sans réseau — rejouable sous gel. Un centroïde partagé par deux dossiers
-    distincts n'est pas un site : c'est le centre géocodé d'une commune/zone. On le COMPTE ici,
-    `match.py` l'écarte comme géométrie. Cf. pipelines.registers.geocoder.
+    Lecture seule, sans réseau — rejouable sous gel. Un même point sur ≥2 dossiers n'est un
+    géocodeur que si les PORTEURS diffèrent (même exploitant = même site, géométrie vraie ;
+    porteur manquant = indéterminé). On réutilise le comparateur du rattachement
+    (`match._meme_exploitant`), on n'en écrit pas un second. Cf. pipelines.registers.geocoder.
     """
-    shared = G.shared_centroids(_docs_from_fiches(out_dir))
-    groupes = [{"centroid": {"lat": lat, "lon": lon}, "dossiers": noms, "n": len(noms)}
-               for (lat, lon), noms in sorted(shared.items(), key=lambda kv: -len(kv[1]))]
+    from .match import _meme_exploitant   # local : évite d'alourdir l'import au chargement du module
+    docs = _docs_from_fiches(out_dir)
+    classed = G.classify(docs, _meme_exploitant)
+    groupes = []
+    compte: collections.Counter = collections.Counter()
+    for (lat, lon), info in sorted(classed.items(), key=lambda kv: (-len(kv[1]["dossiers"]), kv[0])):
+        cat = info["categorie"]
+        compte[cat] += 1
+        groupes.append({
+            "centroid": {"lat": lat, "lon": lon},
+            "categorie": cat,
+            "dossiers": [{"nom": n, "petitionnaire": G.petitionnaire(docs[n])} for n in info["dossiers"]],
+        })
     return {
-        "note": ("un même point porté par plusieurs dossiers DISTINCTS = coordonnée de "
-                 "géocodeur (commune/zone), pas un site ; écartée comme géométrie au rattachement"),
+        "note": ("même point sur ≥2 dossiers : porteurs différents = géocodeur (commune/zone, "
+                 "écarté comme géométrie) ; même exploitant = même site (géométrie gardée) ; "
+                 "porteur manquant = indéterminé"),
         "groupes": groupes,
-        "dossiers_concernes": sum(g["n"] for g in groupes),
+        "compte": dict(compte),
     }
 
 
@@ -478,12 +490,14 @@ def main(argv: list[str] | None = None) -> int:
         section = audit_centroides(a.out)
         cov_path = a.out / "couverture.json"
         cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
-        cov["centroides_geocodeur"] = section
+        cov.pop("centroides_geocodeur", None)   # ancien nom de la section
+        cov["centroides_partages"] = section
         cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"audit-centroides : {len(section['groupes'])} centroïde(s) de géocodeur, "
-              f"{section['dossiers_concernes']} dossier(s) concerné(s).", file=sys.stderr)
+        print(f"audit-centroides : {len(section['groupes'])} point(s) partagé(s) — {section['compte']}",
+              file=sys.stderr)
         for g in section["groupes"]:
-            print(f"  {g['centroid']['lat']}, {g['centroid']['lon']}  ← {', '.join(g['dossiers'])}",
+            qui = ", ".join(f"{d['nom']} [{d['petitionnaire'] or '—'}]" for d in g["dossiers"])
+            print(f"  [{g['categorie']}] {g['centroid']['lat']}, {g['centroid']['lon']}  ← {qui}",
                   file=sys.stderr)
         return 0
 
@@ -616,7 +630,7 @@ def main(argv: list[str] | None = None) -> int:
              "dossiers": rows}
     (a.out / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
     cov = couverture(rows)
-    cov["centroides_geocodeur"] = audit_centroides(a.out)   # détecté à chaque lot, pas à l'œil
+    cov["centroides_partages"] = audit_centroides(a.out)   # détecté à chaque lot, pas à l'œil
     (a.out / "couverture.json").write_text(
         json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
 
