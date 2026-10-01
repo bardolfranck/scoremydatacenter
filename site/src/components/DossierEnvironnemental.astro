@@ -72,6 +72,8 @@ const t = lang === "fr" ? {
   avisPluriel: "avis d'autorité environnementale rendus sur ce site",
   sansDate: "date non confirmée",
   explication: "Explication",
+  differe: "diffère d'un dossier à l'autre",
+  differeNote: "Ce site a fait l'objet de plusieurs dossiers. Les valeurs qui ne sont pas les mêmes de l'un à l'autre sont signalées, et affichées côte à côte avec leur date. Un écart peut venir d'un projet redimensionné, d'une tranche différente, ou d'une donnée corrigée : l'avis ne dit pas laquelle, et nous ne le devinons pas.",
   icpeTip: "Installation classée pour la protection de l'environnement : le régime qui encadre, autorise et contrôle une activité pouvant présenter un risque ou une gêne. Chaque numéro désigne l'activité visée dans la nomenclature nationale. Être classé ne veut pas dire être dangereux : cela veut dire être encadré, et donc contrôlé.",
 } : {
   kicker: "What the environmental case file states",
@@ -92,6 +94,8 @@ const t = lang === "fr" ? {
   avisPluriel: "environmental authority opinions issued on this site",
   sansDate: "date not confirmed",
   explication: "Explanation",
+  differe: "differs between filings",
+  differeNote: "This site has been the subject of several filings. Values that are not the same from one to the next are flagged, and shown side by side with their date. A gap may come from a resized project, a different phase, or a corrected figure: the opinion does not say which, and we do not guess.",
   icpeTip: "ICPE — the French regime that authorises, frames and inspects an activity liable to create a risk or a nuisance. Each number designates the activity concerned in the national nomenclature. Being classified does not mean being dangerous: it means being regulated, and therefore inspected.",
 };
 
@@ -266,13 +270,26 @@ const borne = (b: any) => !b ? null
   const Val = (x: any) => (
     <>{NUM(x.valeur)}{x.unite ? <>{" "}<span class="de-u">{x.unite}</span></> : null}</>
   );
+  // Une valeur qui n'est pas la même d'un dossier à l'autre est SIGNALÉE, jamais interprétée.
+  //
+  // « Le site a changé de carburant » serait faux de deux façons. D'abord ce n'est pas un fait
+  // mais une conclusion, et ce bloc n'en tire aucune. Ensuite rien ne garantit que les deux
+  // dossiers décrivent le MÊME objet : un écart peut venir d'un projet redimensionné, d'une
+  // tranche différente du même campus, d'une donnée corrigée — ou d'un rattachement trop large,
+  // ce qui est précisément le doute qui pèse sur l'avis 2021 de PA16, lié à 2,5 km.
+  //
+  // On dit donc ce qu'on sait : la valeur déclarée diffère. On ne dit pas que quelque chose a
+  // changé. Le mot « change » appartient au lecteur, et il lui faut l'avis pour le prononcer.
+  const memeValeur = (s: any) => s.vals.map((x: any) => `${x.valeur}${x.unite ?? ""}`).sort().join("|");
   const Rows = (items: any[]) => grouper(items).map((g: any) => {
     const series = parAvis(g.vals);
+    const differe = series.length > 1 && new Set(series.map(memeValeur)).size > 1;
     return (
-      <details class="de-row">
+      <details class={`de-row${differe ? " de-row-differe" : ""}`}>
         <summary>
           <span class="de-k">
             {g.libelle}
+            {differe && <span class="de-differe">{t.differe}</span>}
             {/* L'avertissement est DANS la ligne, jamais derrière un dépli : 405 MW posés à
                 côté de 105 MW sans leur phrase se lisent comme la puissance du site. */}
             {CAVEAT[g.indicateur] && <span class="de-caveat">{CAVEAT[g.indicateur]}</span>}
@@ -328,6 +345,7 @@ const borne = (b: any) => !b ? null
             </p>
           );
         })}
+        {plusieurs && <p class="de-differe-note">{t.differeNote}</p>}
       </div>
 
       <div class="de-grid">
@@ -508,6 +526,19 @@ const borne = (b: any) => !b ? null
     white-space: nowrap; margin-right: 0.1rem;
   }
   .de-bq-d { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-right: 0.4rem; }
+
+  /* Signaler l'écart, ne pas le commenter : un liseré et une étiquette factuelle. Pas de rouge,
+     pas de flèche montante — une couleur d'alerte ou un symbole de progression DIRAIENT quelque
+     chose, et nous ne disons rien de plus que « ce n'est pas la même valeur ». */
+  .de-row-differe > summary { border-left: 2px solid var(--grade-c); padding-left: 0.5rem; margin-left: -0.5rem; }
+  .de-differe {
+    display: block; font-size: 0.7rem; font-weight: 500; color: var(--muted);
+    font-style: italic; margin-top: 0.05rem;
+  }
+  .de-differe-note {
+    margin: 0.5rem 0 0; font-size: 0.74rem; line-height: 1.5; color: var(--muted);
+    border-left: 2px solid var(--grade-c); padding-left: 0.55rem;
+  }
   /* Pas de `nowrap` : une valeur peut être une phrase (« huile végétale hydrotraitée (HVO) »)
      et débordait de sa colonne. Les nombres ne se coupent pas pour autant — ils n'ont pas
      d'espace, et l'insécable entre la valeur et son unité tient « 225 kV » ensemble. */
