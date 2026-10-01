@@ -253,19 +253,28 @@ Chaîne : **REGISTRE (index) → LIEN PDF → AVIS → JSON d'extraction → RAT
 modules dans `pipelines/registers/`, un par maillon, et un seul chemin pour les lancer :
 
 ```
-python -m pipelines.registers.run --out ../smdc-newsroom/registres --national
-python -m pipelines.registers.match_run                       # rattachement + détection
+python -m pipelines.registers.run      --out ../smdc-newsroom/registres --national   # récolte : index → PDF → extraction
+python -m pipelines.registers.match_run --out ../smdc-newsroom/registres              # rattachement + 3 sorties dérivées
 ```
 
-Ce que chaque passage produit, **systématiquement et sans intervention** :
+`match_run` prend le **même `--out`** (le dossier du registre) ; le corpus noté est lu à côté,
+dans `<out>/../calibration` (ou `$NEWSROOM_CAL`). Il ne touche AUCUN réseau, il est idempotent
+(deux passages donnent le même octet), il ne modifie JAMAIS le corpus, et il s'arrête en erreur
+si le corpus est absent ou tronqué — un `--out` qui pointe à côté ne doit pas produire un
+rattachement vide qui aurait l'air valide.
 
-| fichier | contenu |
-|---|---|
-| `registres/<avis>.json` | un JSON d'extraction par avis — chaque fait avec sa phrase et sa page |
-| `registres/index.json` | ce qui a été traité, et **pourquoi** un document ne l'a pas été |
-| `registres/couverture.json` | champ × avis, région × avis, motif de rejet × document |
-| `registres/rattachement.json` | quel avis parle de quelle fiche — **propositions, jamais confirmées** |
-| `registres/rattachement.json` → `projets_a_collecter` | **les projets que l'État documente et que le corpus ignore** |
+Ce que chaque passage produit, **systématiquement et sans intervention** (la GÉNÉRATION est
+automatique ; ce qu'on en fait ensuite ne l'est jamais — voir plus bas) :
+
+| fichier | contenu | ce qu'un humain en fait |
+|---|---|---|
+| `registres/<avis>.json` | un JSON d'extraction par avis — chaque fait avec sa phrase et sa page | rien : donnée brute, sourcée |
+| `registres/index.json` | ce qui a été traité, et **pourquoi** un document ne l'a pas été | rien |
+| `registres/couverture.json` | champ × avis, région × avis, motif de rejet × document, **centroïdes partagés** | lit la comptabilité ; décide quoi collecter/corriger |
+| `registres/rattachement.json` | quel avis parle de quelle fiche — **propositions, jamais confirmées** | **confirme** (`confirme: true`) avant tout service |
+| `registres/rattachement.json` → `projets_a_collecter` | **les projets que l'État documente et que le corpus ignore** | **collecte** (nouvelle fiche, ou veille si non localisable) |
+| `registres/rattachement-a-arbitrer.json` | les cas **ambigus** : par avis, le triplet `fiche (opérateur, commune)` de chaque candidat | **tranche** quelle fiche, sans ouvrir le corpus |
+| `registres/operateurs-a-renseigner.json` | fiches rattachées à **opérateur inconnu** + le pétitionnaire de l'avis | **écrit** l'opérateur (l'avis est la provenance), ou laisse si le pétitionnaire manque |
 
 ### Le détecteur de projets est DANS la machine, pas dans la tête de l'opérateur
 
@@ -288,9 +297,24 @@ précisément là où il sert.
 
 ### Ce qui n'est JAMAIS automatique
 
-Un rattachement faux ferait apparaître sur une fiche les chiffres d'un autre projet — des
-faits justes, sur la mauvaise fiche, et rien dans la fiche ne trahirait l'erreur. Aucune
-proposition n'est servie tant qu'un humain n'a pas passé `confirme` à `true`.
+**Un rattachement faux ferait apparaître sur une fiche les chiffres d'un autre projet — des
+faits justes, sur la mauvaise fiche, et rien ne trahirait l'erreur.** C'est l'erreur la plus
+grave que ce chantier puisse produire, parce qu'elle serait invisible. D'où la règle : la
+machine PROPOSE, elle n'APPLIQUE jamais.
+
+Les quatre sorties ne sont pas de même nature, et chacune attend un acte humain différent —
+aucune ne se sert ni ne s'applique seule :
+
+- `rattachement.json` **propose** un lien avis → fiche. Rien n'est servi tant qu'un humain
+  n'a pas passé `confirme` à `true` (`confirme: false` partout à la sortie de la machine).
+- `projets_a_collecter` **signale** un projet que le corpus ignore. Un humain décide d'en
+  faire une fiche notée (localisation réelle établie) ou une entrée en veille, jamais sur une
+  coordonnée de registre fabriquée.
+- `rattachement-a-arbitrer.json` **demande un arbitrage** : plusieurs fiches à score égal,
+  indiscernables par la machine. Un humain tranche en lisant le triplet, jamais la machine.
+- `operateurs-a-renseigner.json` **demande une écriture** : l'opérateur manquant qu'un avis
+  peut combler. Un humain l'écrit avec l'avis pour provenance — et s'abstient quand le
+  pétitionnaire manque (une fiche signalée n'est pas une fiche à renseigner).
 
 ## Run it end to end on a fictional DC (recipe for a successor)
 
