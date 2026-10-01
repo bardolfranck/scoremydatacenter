@@ -374,12 +374,17 @@ FIELDS: tuple[Field, ...] = (
           r"gaz\s+à\s+effet\s+de\s+serre|\bGES\b|empreinte\s+carbone|"
           r"émissions?[^.]{0,40}CO\s*2|t\s*eq\.?\s*CO\s*2",
           rf"({NUM})\s*(?:t|tonnes?)\s*(?:eq\.?\s*CO\s*2|CO\s*2\s*eq)", multiple=True),
-    # On capte le NOM du fluide (R134a, R-1234ze, propane…), pas sa simple mention : un nom est un
-    # fait, « mentionné » n'en est pas un (règle du chef). L'étalon en montre plusieurs désignations
-    # (R134a Tremblay/Meudon, R-1234ze Nozay). `multiple` car un avis peut en nommer plusieurs.
-    # Motif ancré sur une phrase frigorigène ; « R. 122-7 » (article de code, avec point) n'y entre
-    # pas, les frigorigènes s'écrivent sans point (« R134a »).
-    Field("fluides_frigorigenes", "Fluide frigorigène (désignation)", "climat", None,
+    # DEUX champs, pas un (correctif chef). 27 avis discutent des frigorigènes, 11 seulement en
+    # nomment un : garder la PRÉSENCE À CÔTÉ du nom permet de distinguer « discuté mais non nommé »
+    # (not_disclosed — lacune de l'exploitant, une information) de « pas abordé du tout ». Remplacer
+    # la présence par le nom effacerait cette distinction, celle-là même qu'on passe la semaine à
+    # défendre. (« Mentionné n'est pas un fait » était une règle d'AFFICHAGE, pas de stockage.)
+    Field("fluides_frigorigenes", "Fluides frigorigènes (présence)", "climat", None,
+          r"fluides?\s+frigorig[èe]nes?|frigorig[èe]nes?", kind="text"),
+    # Le NOM du fluide quand l'avis le donne (R134a, R-1234ze, propane). Ancré sur une phrase
+    # frigorigène ; « R. 122-7 » (article de code, avec point) n'y entre pas — les frigorigènes
+    # s'écrivent sans point (« R134a »). `multiple` : un avis peut en nommer plusieurs.
+    Field("fluide_frigorigene_nom", "Fluide frigorigène (désignation)", "climat", None,
           r"frigorig[èe]nes?|frigorifiques?",
           r"(\bR-?\d{2,4}[a-zA-Z]{0,2}\b|\bpropane\b|\bammoniac\b|\bNH3\b)",
           multiple=True, as_text=True),

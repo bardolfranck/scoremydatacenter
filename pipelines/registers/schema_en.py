@@ -154,7 +154,8 @@ INDICATORS: dict[str, str] = {
     "artificialisation": "land_take_mentioned",
     # climat et air
     "ges_teqco2": "ghg_emissions_tco2e",
-    "fluides_frigorigenes": "refrigerant_type",
+    "fluides_frigorigenes": "refrigerants_mentioned",
+    "fluide_frigorigene_nom": "refrigerant_type",
     "fuites_frigorigenes_t": "refrigerant_leakage_t",
     "nox": "air_pollutants_mentioned",
     "qualite_air_campagne": "air_quality_survey_mentioned",

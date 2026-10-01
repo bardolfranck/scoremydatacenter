@@ -322,15 +322,21 @@ def test_puissance_thermique_combustion_pas_electrique_ni_seuil():
         "une puissance totale installée de 405 MW, alimentés en fioul.")
 
 
-def test_fluide_frigorigene_capte_le_nom_pas_la_mention():
-    fl = _vals("Les groupes froids font circuler un fluide frigorigène R-1234ze à faible PRG.")
-    assert "R-1234ze" in _flat(fl.get("fluides_frigorigenes"))
-    assert "R134a" in _flat(_vals(
-        "Les groupes froids utilisent un fluide frigorigène, en l'occurrence le R134a, à fort PRG."
-    ).get("fluides_frigorigenes"))
-    # « R. 122-7 » (article de code, avec point) dans une phrase frigorigène ≠ un fluide.
-    nolegal = _vals("Les fluides frigorigènes relèvent de l'article R. 122-7 du code.")
-    assert all("122" not in str(x) for x in _flat(nolegal.get("fluides_frigorigenes")) if x)
+def test_fluide_frigorigene_presence_a_cote_du_nom():
+    # Discuté SANS être nommé : présence=True, pas de nom → encode « not_disclosed » (lacune
+    # de l'exploitant, une information — à ne pas confondre avec « pas abordé du tout »).
+    disc = _vals("L'étude d'impact traite des fluides frigorigènes des installations de froid "
+                 "sans préciser lesquels seront employés sur le site.")
+    assert disc.get("fluides_frigorigenes") is True
+    assert "fluide_frigorigene_nom" not in disc
+    # Nommé : les DEUX champs (présence + nom).
+    named = _vals("Les groupes froids utilisent un fluide frigorigène, en l'occurrence le R134a, "
+                  "à fort potentiel de réchauffement.")
+    assert named.get("fluides_frigorigenes") is True
+    assert "R134a" in _flat(named.get("fluide_frigorigene_nom"))
+    # « R. 122-7 » (article de code, avec point) n'est pas un fluide.
+    nolegal = _vals("Les fluides frigorigènes relèvent de l'article R. 122-7 du code environnement.")
+    assert all("122" not in str(x) for x in _flat(nolegal.get("fluide_frigorigene_nom")) if x)
 
 
 def test_photovoltaique_capte_la_valeur_declaree_quelle_que_soit_l_unite():
