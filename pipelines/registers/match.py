@@ -329,6 +329,52 @@ def projets_candidats(propositions: list[Proposition]) -> list[dict]:
     ]
 
 
+def arbitrages(propositions: list[Proposition], avis_docs: dict[str, dict],
+               corpus: dict[str, dict]) -> list[dict]:
+    """Les cas AMBIGUS, mis en forme pour trancher EN UNE LIGNE.
+
+    Un ambigu, c'est plusieurs fiches candidates à score égal et indiscernables : la machine
+    ne doit pas choisir. Pour que l'humain tranche sans ouvrir le corpus, on lui donne le
+    TRIPLET qui suffit — fiche, opérateur, commune — à côté du pétitionnaire de l'avis. C'est
+    ce triplet, et lui seul, qui dit « celle-ci, pas celle-là » en un coup d'œil.
+
+    Chaque candidat est rendu « id (opérateur, commune) » : une ligne lisible, pas un objet à
+    déplier. L'opérateur manquant s'affiche `unknown` — c'est une information (une fiche sans
+    exploitant est justement celle qu'un avis peut renseigner), pas un trou à masquer.
+    """
+    cas: list[dict] = []
+    for p in propositions:
+        if p.statut != "ambigu":
+            continue
+        proc = (avis_docs.get(p.avis) or {}).get("procedure") or {}
+        ids = ([p.retenu] if p.retenu else []) + [c["fiche"] for c in p.autres]
+        candidats = []
+        for fid in ids:
+            f = corpus.get(fid) or {}
+            op = f.get("operator") or "unknown"
+            com = f.get("municipality") or "?"
+            candidats.append(f"{fid} ({op}, {com})")
+        cas.append({"avis": p.avis, "intitule": p.intitule[:160],
+                    "petitionnaire": proc.get("petitionnaire"), "candidats": candidats})
+    return cas
+
+
+def ecrire_arbitrages(propositions: list[Proposition], avis_docs: dict[str, dict],
+                      corpus: dict[str, dict], out: Path, date: str) -> dict:
+    """Écrit `rattachement-a-arbitrer.json` : la file d'attente des ambiguïtés pour un humain."""
+    cas = arbitrages(propositions, avis_docs, corpus)
+    doc = {
+        "schema": "smdc.registre-ae.arbitrage/1",
+        "genere_le": date,
+        "note": ("Cas AMBIGUS : plusieurs fiches candidates à score égal, indiscernables par la "
+                 "machine. L'humain tranche en lisant le triplet (fiche, opérateur, commune) sans "
+                 "ouvrir le corpus. Rien n'est rattaché tant qu'il n'a pas tranché."),
+        "cas": cas,
+    }
+    out.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
+    return doc
+
+
 def ecrire(propositions: list[Proposition], out: Path, date: str) -> dict:
     par_statut: dict[str, int] = {}
     for p in propositions:
