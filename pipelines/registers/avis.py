@@ -361,6 +361,34 @@ FIELDS: tuple[Field, ...] = (
           reject=r"emploi\s+ou\s+stockage|fabrication,?\s+emploi"),
 )
 
+_FIELDS_BY_ID = {f.id: f for f in FIELDS}
+
+
+def rejection_reason(field_id: str, value, sentence: str) -> str | None:
+    """Pour la REVALIDATION d'un fait DÉJÀ stocké : la règle courante le REJETTE-t-elle ?
+
+    Renvoie un motif si le fait est POSITIVEMENT rejeté (champ retiré du schéma, motif de rejet
+    qui matche la phrase, ou valeur hors borne), sinon None (= on le garde).
+
+    Cette fonction ne dit JAMAIS « non reproduit ». Un rejeu qui ne retrouve pas un fait est un
+    SILENCE, pas une preuve — comme « zéro résultat » sur la recherche MRAe n'est pas « aucun
+    avis ». On ne retire que ce qu'une règle rejette explicitement ; un fait dont la phrase ne
+    déclenche aucun rejet reste en place, même si on ne le régénère pas à l'identique.
+    """
+    spec = _FIELDS_BY_ID.get(field_id)
+    if spec is None:
+        return "champ retiré du schéma"
+    if spec.reject:
+        m = re.search(spec.reject, sentence, re.I)
+        if m:
+            frag = re.sub(r"\s+", " ", m.group(0)).strip()
+            return f"rejet sur « {frag[:40]} »"
+    if spec.bounds and isinstance(value, (int, float)) and not isinstance(value, bool):
+        lo, hi = spec.bounds
+        if not (lo <= value <= hi):
+            return f"hors borne [{lo:g}, {hi:g}]"
+    return None
+
 # La formule change de région en région : « L'Autorité environnementale recommande »,
 # « La MRAe recommande », « l'Ae recommande ». Un motif calé sur la seule tournure
 # francilienne rendait ZÉRO recommandation en PACA et en Normandie — et zéro se lit comme

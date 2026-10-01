@@ -142,3 +142,28 @@ def test_cas_blanchis_restent_captes():
     lisses = ("Deux bâtiments de 33 000 m2, 48 salles informatiques et une puissance de "
               "240 MW en phase finale.")
     assert _vals(lisses).get("puissance_it_mw") == 240.0
+
+
+# ── REVALIDATION : ne retirer QUE le positivement rejeté, jamais un silence ──────────────────
+
+def test_revalidation_retire_le_rejete():
+    # Un fait dont la phrase déclenche une règle de rejet EST retiré (motif renvoyé).
+    meudon = ("Rubrique Intitulé de la rubrique Caractéristique de l’installation 2.1.5.0 Rejet "
+              "d’eaux pluviales dans les eaux douces superficielles, la surface totale du projet "
+              "étant supérieure à 1 ha mais inférieure à 20 ha.")
+    assert avis.rejection_reason("parcelle_ha", 1.0, meudon) is not None
+    # Une valeur hors borne physique est positivement rejetée.
+    assert avis.rejection_reason("groupes_nombre", 999.0, "999 groupes électrogènes.") is not None
+    # Un champ retiré du schéma est positivement rejeté.
+    assert avis.rejection_reason("puissance_site_mw", 50.0, "puissance du site de 50 MW.") is not None
+
+
+def test_revalidation_garde_le_legitime_et_le_silence():
+    # Un fait légitime dont la phrase ne déclenche aucun rejet est GARDÉ.
+    vrai = ("Ce projet s’implante sur une parcelle de 5,35 ha, occupée par des bâtiments "
+            "logistiques.")
+    assert avis.rejection_reason("parcelle_ha", 5.35, vrai) is None
+    # Et surtout : un fait qu'un rejeu ne reproduirait PAS, mais qu'aucune règle ne rejette,
+    # reste en place — la non-reproduction est un silence, pas une preuve (règle du chef).
+    silence = "L’autonomie électrique du site est de 72 heures."
+    assert avis.rejection_reason("autonomie_heures", 72.0, silence) is None
