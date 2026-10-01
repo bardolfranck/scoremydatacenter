@@ -27,6 +27,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from . import avis as A
+from . import bruit as BR
 from . import fiche as F
 from . import index as I
 from . import mrae_site as M
@@ -253,6 +254,71 @@ def revalidate(out_dir: Path) -> dict:
             "par_champ": dict(by_field.most_common())}
 
 
+_BRUIT_LABELS = {"bruit_bandes": "Bruit par point et période",
+                 "bruit_emergence_bandes": "Émergence par période"}
+_BRUIT_FLOOR = ("PLANCHER, pas la couverture réelle : les bandes sont DÉRIVÉES des phrases déjà "
+                "extraites (aucun réseau) ; une bande portée par une phrase que l'ancienne ancre "
+                "ne captait pas n'y figure pas. La vraie couverture du bruit sera connue à la "
+                "ré-extraction (dégel) — l'écart mesurera ce que la dérivation ne pouvait voir.")
+
+
+def rederive_bruit(out_dir: Path) -> dict:
+    """AJOUTER les bandes de bruit structurées, dérivées des PHRASES DÉJÀ STOCKÉES (aucun réseau).
+
+    Opération SÉPARÉE du revalidate (qui, lui, retire) : mélanger ajout et retrait dans un même
+    passage brouillerait la trace. Stamp distinct `derivation_bruit`. RÉSERVE : ne voit que les
+    phrases ayant déjà produit un fait ; le compte obtenu est un PLANCHER, pas une mesure.
+    """
+    today = time.strftime("%Y-%m-%d")
+    touched = added = 0
+    listing: list[tuple[str, list[str]]] = []
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            d = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+        faits = (d.get("installation") or {}).get("faits")
+        if not faits:
+            continue
+        phrases: dict[str, int] = {}
+        for lst in faits.values():
+            for f in lst:
+                ph = f.get("phrase")
+                if ph and ph not in phrases:
+                    phrases[ph] = f.get("page")
+        existing = {(f["indicateur"], str(f.get("valeur")))
+                    for f in faits.get("bruit", []) if f["indicateur"] in _BRUIT_LABELS}
+        new_facts: list[dict] = []
+        points: list[str] = []
+        for ph, page in phrases.items():
+            for fid, bands in (("bruit_bandes", BR.parse_levels(ph)),
+                               ("bruit_emergence_bandes", BR.parse_emergences(ph))):
+                for band in bands:
+                    key = (fid, str(band))
+                    if key in existing:
+                        continue
+                    existing.add(key)
+                    new_facts.append({"indicateur": fid, "libelle": _BRUIT_LABELS[fid],
+                                      "theme": "bruit", "valeur": band, "phrase": ph, "page": page})
+                    if band.get("point"):
+                        points.append(band["point"])
+        if new_facts:
+            faits.setdefault("bruit", []).extend(new_facts)
+            d["derivation_bruit"] = {
+                "date": today,
+                "source": "bandes dérivées des phrases déjà extraites, sans réseau",
+                "reserve": _BRUIT_FLOOR,
+                "bandes_ajoutees": len(new_facts),
+            }
+            p.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+            touched += 1
+            added += len(new_facts)
+            listing.append((p.name, sorted(set(points))))
+    return {"fiches_touchees": touched, "bandes_ajoutees": added, "listing": listing}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, required=True)
@@ -266,8 +332,34 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--revalidate", action="store_true",
                     help="réappliquer les règles courantes aux fiches DÉJÀ stockées (aucun "
                          "réseau) et retirer les faits positivement rejetés ; régénère couverture.json")
+    ap.add_argument("--rederive-bruit", dest="rederive_bruit", action="store_true",
+                    help="AJOUTER les bandes de bruit dérivées des phrases déjà stockées (aucun "
+                         "réseau) ; opération séparée du revalidate, trace datée distincte")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.rederive_bruit:
+        if not a.out.is_dir():
+            print(f"--rederive-bruit : {a.out} introuvable", file=sys.stderr)
+            return 2
+        summary = rederive_bruit(a.out)
+        champs, regions, retenus = _coverage_from_fiches(a.out)
+        cov_path = a.out / "couverture.json"
+        cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov["champs"] = {"note": "nombre d'avis portant le champ", "sur": retenus,
+                         "valeurs": dict(champs.most_common())}
+        cov["regions"] = dict(regions.most_common())
+        cov["bruit"] = {"fiches_avec_bande": summary["fiches_touchees"], "note": _BRUIT_FLOOR}
+        cov["derivation_bruit"] = {"date": time.strftime("%Y-%m-%d"),
+                                   "fiches_touchees": summary["fiches_touchees"],
+                                   "bandes_ajoutees": summary["bandes_ajoutees"]}
+        cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"rederive-bruit : {summary['bandes_ajoutees']} bande(s) ajoutée(s) sur "
+              f"{summary['fiches_touchees']} fiche(s) (PLANCHER).", file=sys.stderr)
+        for name, points in summary["listing"]:
+            print(f"  {name}\n      points : {', '.join(points) if points else '(aucun point nommé)'}",
+                  file=sys.stderr)
+        return 0
 
     if a.revalidate:
         if not a.out.is_dir():

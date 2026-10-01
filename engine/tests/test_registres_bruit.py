@@ -9,7 +9,9 @@ Deux grandeurs séparées : niveau (environnement) et émergence (le data center
 garde que ce que l'avis mesure — ni cible OMS, ni horaire pris pour un niveau.
 """
 
-from pipelines.registers import bruit
+import json
+
+from pipelines.registers import bruit, run
 
 
 # ── NIVEAUX : les tournures d'appariement ────────────────────────────────────────────────────
@@ -119,3 +121,28 @@ def test_horaires_sans_db_ecartes():
          "habitations les plus proches.")
     assert bruit.parse_levels(s) == []
     assert bruit.parse_emergences(s) == []
+
+
+# ── La dérivation réseau-free (`--rederive-bruit`) : ajoute, trace à part, idempotente ────────
+
+def test_rederive_bruit_ajoute_trace_a_part_et_idempotent(tmp_path):
+    fiche = {"installation": {"faits": {"bruit": [{
+        "indicateur": "bruit_niveau_dba", "valeur": 62.5, "page": 20,
+        "phrase": ("Les niveaux acoustiques en limite est de propriété oscillent entre 62,5 "
+                   "dB(A) et 65 dB(A) de jour, et entre 59,5 dB(A) et 62 dB(A) en période "
+                   "nocturne."),
+    }]}}}
+    (tmp_path / "f.json").write_text(json.dumps(fiche, ensure_ascii=False), encoding="utf-8")
+
+    s1 = run.rederive_bruit(tmp_path)
+    assert s1["fiches_touchees"] == 1 and s1["bandes_ajoutees"] == 1
+    d = json.loads((tmp_path / "f.json").read_text())
+    bandes = [f for f in d["installation"]["faits"]["bruit"] if f["indicateur"] == "bruit_bandes"]
+    assert bandes and bandes[0]["valeur"]["point"] == "en limite est de propriété"
+    # trace DISTINCTE du revalidate (deux opérations, deux traces)
+    assert "derivation_bruit" in d and "revalidation" not in d
+    assert "PLANCHER" in d["derivation_bruit"]["reserve"]
+    # couche brute conservée
+    assert any(f["indicateur"] == "bruit_niveau_dba" for f in d["installation"]["faits"]["bruit"])
+    # idempotente : un second passage n'ajoute rien
+    assert run.rederive_bruit(tmp_path)["bandes_ajoutees"] == 0
