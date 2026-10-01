@@ -171,3 +171,30 @@ def test_gate10_coherent_estimated_pair_passes(data_copy):
         _ind(d, "L2")["status"] = "estimated"
     edit(ALPHA, coherent)
     assert not any("GATE 10" in p for p in run_gates(root, TODAY))
+
+
+# ── GATE GÉO : des dents là où il y a un corpus, inerte là où il n'y en a pas ───────────────
+def test_geo_gate_inerte_sans_newsroom_mais_mordant_avec(tmp_path, monkeypatch):
+    """Sans corpus privé monté, ce gate n'a rien à protéger — AVEC, un sidecar manquant est
+    un vrai manquement.
+
+    Défaut vécu le 2026-10-01 : le gate exigeait le sidecar `centroid-check.json`, qui vit
+    dans le newsroom PRIVÉ. Vert en local (newsroom monté), rouge dans toute CI et tout clone
+    frais — et il a bloqué la PR d'un coéquipier sur un sujet sans aucun rapport. Un gate qui
+    échoue là où il ne peut rien protéger finit par être désactivé, et c'est alors le vrai
+    cas qui passe.
+    """
+    from engine.validate import _geo_gate
+    from engine.core import DATA_DIR
+
+    monkeypatch.setenv("NEWSROOM_CAL", str(tmp_path / "jamais-monte"))
+    assert _geo_gate(DATA_DIR) == [], "sans newsroom, le gate doit se taire (CI, clone frais)"
+
+    newsroom = tmp_path / "newsroom-sans-sidecar"
+    newsroom.mkdir()
+    monkeypatch.setenv("NEWSROOM_CAL", str(newsroom))
+    violations = _geo_gate(DATA_DIR)
+    assert any("sidecar" in v for v in violations), (
+        "avec un newsroom monté et PAS de sidecar, le gate doit refuser — sinon il suffirait "
+        "de ne pas lancer la mesure pour passer"
+    )
