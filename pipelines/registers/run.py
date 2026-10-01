@@ -378,20 +378,29 @@ def rederive_bruit(out_dir: Path) -> dict:
     return {"fiches_touchees": touched, "bandes_ajoutees": added, "listing": listing}
 
 
-def _content_fp(d: dict) -> str:
-    """Empreinte du CONTENU LU : phrases des faits + recommandations, normalisées.
+def _content_fp(d: dict) -> str | None:
+    """Identité STRUCTURELLE du document : pagination + jeu des faits EXTRAITS (indicateur,
+    valeur, page). `None` quand il n'y a aucun fait (rien à comparer → on ne déduplique pas).
 
     Le `sha256` du FICHIER ne voit pas les quasi-doublons — le même avis ré-exporté à quelques
-    octets près, ou servi par le registre régional ET le site national sous deux URL. Le bon
-    discriminant est le texte lu, en minuscules, sans accents ni ponctuation.
+    octets près, servi par le registre régional ET le site national sous deux URL (Corbeil : 25
+    pages des deux côtés, 71 608 vs 71 607 caractères, UN caractère d'écart). Le texte brut non
+    plus : ce caractère change son empreinte. Mais les FAITS extraits, eux, sont identiques — un
+    ré-export ne déplace ni une valeur ni sa page. C'est donc le discriminant juste : même
+    pagination + mêmes triplets (indicateur, valeur, page) ⇒ même document.
+
+    On n'inclut PAS les scans (couche_texte=False, filtrés en amont) ni les avis sans fait : une
+    identité vide regrouperait à tort des documents distincts qu'on ne sait pas comparer — même
+    garde-fou que pour les empreintes vides.
     """
-    parts: list[str] = []
-    for lst in d.get("installation", {}).get("faits", {}).values():
-        parts.extend(str(f.get("phrase", "")) for f in lst)
-    parts.extend(str(r.get("texte", "")) for r in d.get("installation", {}).get("recommandations_autorite", []))
-    s = unicodedata.normalize("NFKD", " ".join(parts))
-    s = "".join(c for c in s if not unicodedata.combining(c)).lower()
-    return hashlib.sha256(re.sub(r"[^a-z0-9]", "", s).encode()).hexdigest()
+    triples = sorted(
+        (str(f.get("indicateur")), str(f.get("valeur")), f.get("page"))
+        for lst in d.get("installation", {}).get("faits", {}).values() for f in lst)
+    if not triples:
+        return None
+    pages = (d.get("source", {}).get("pdf") or {}).get("pages")
+    return hashlib.sha256(
+        json.dumps([pages, triples], ensure_ascii=False, sort_keys=True).encode()).hexdigest()
 
 
 def dedup_contenu(out_dir: Path) -> dict:
@@ -425,8 +434,11 @@ def dedup_contenu(out_dir: Path) -> dict:
     groups: dict[str, list] = {}
     for rec in fiches:
         if not rec["text"]:
-            continue  # jamais de dédup sur une empreinte vide
-        groups.setdefault(_content_fp(rec["d"]), []).append(rec)
+            continue  # scan illisible : pas d'identité de contenu
+        fp = _content_fp(rec["d"])
+        if fp is None:
+            continue  # aucun fait extrait : rien à comparer, on ne déduplique pas à l'aveugle
+        groups.setdefault(fp, []).append(rec)
 
     removed: list[str] = []
     merges: list[tuple] = []
@@ -448,8 +460,9 @@ def dedup_contenu(out_dir: Path) -> dict:
             removed.append(rec["path"].name)
         kd["dedup"] = {
             "date": today,
-            "methode": ("empreinte du CONTENU lu (NFKD, minuscules, sans ponctuation) ; le "
-                        "sha256 du fichier ne voit pas les ré-exports différant de quelques octets"),
+            "methode": ("identité STRUCTURELLE : pagination + triplets de faits extraits "
+                        "(indicateur, valeur, page) ; robuste aux ré-exports de quelques octets "
+                        "que ni le sha256 du fichier ni le texte brut ne voient"),
             "fusionnee_depuis": fused,
         }
         keeper["path"].write_text(json.dumps(kd, ensure_ascii=False, indent=2), encoding="utf-8")
