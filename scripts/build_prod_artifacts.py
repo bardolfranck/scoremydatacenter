@@ -355,8 +355,12 @@ def _date_publiable(source: dict, proc: dict) -> bool:
         return True
     from pipelines.registers.fiche import date_corroboree  # amont : une seule écriture de la règle
 
-    _retenue, statut = date_corroboree(proc.get("date_avis"), source.get("doc_url"))
-    return statut in ("confirmee", "corrigee")
+    # On ne déballe PAS le tuple : l'amont lui a ajouté une troisième valeur (la date de mise en
+    # ligne) et un `a, b = ...` ici aurait levé un ValueError. Il ne l'a pas levé, parce que
+    # depuis la porte « commune seule » plus aucun avis national n'arrive jusqu'ici : la casse
+    # était LATENTE, prête à sortir le jour où le rattachement du national sera réparé. Lire le
+    # statut par son rang, sans présumer du reste, c'est le prix d'emprunter une fonction amont.
+    return date_corroboree(proc.get("date_avis"), source.get("doc_url"))[1] in ("confirmee", "corrigee")
 
 
 def _sans_doublons(rendus: list[tuple[dict, dict]]) -> list[dict]:
