@@ -116,12 +116,14 @@ def main(argv: list[str] | None = None) -> int:
     props = match.proposer(avis, corpus)
     doc = match.ecrire(props, a.out / "rattachement.json", date)
     arb = match.ecrire_arbitrages(props, avis, corpus, a.out / "rattachement-a-arbitrer.json", date)
+    ops = match.ecrire_operateurs(props, avis, corpus, a.out / "operateurs-a-renseigner.json", date)
 
     print(f"match_run : {len(avis)} avis × {len(dcs)} fiches → rattachement.json", file=sys.stderr)
     for statut, n in sorted(doc["resume"].items(), key=lambda kv: -kv[1]):
         print(f"  {n:3d}  {statut}", file=sys.stderr)
     print(f"  projets_a_collecter    : {len(doc['projets_a_collecter'])}", file=sys.stderr)
     print(f"  à arbitrer (ambigu)    : {len(arb['cas'])} → rattachement-a-arbitrer.json", file=sys.stderr)
+    print(f"  opérateurs à renseigner: {len(ops['fiches'])} → operateurs-a-renseigner.json", file=sys.stderr)
     return 0
 
 

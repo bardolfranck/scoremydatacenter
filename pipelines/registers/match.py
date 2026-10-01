@@ -375,6 +375,56 @@ def ecrire_arbitrages(propositions: list[Proposition], avis_docs: dict[str, dict
     return doc
 
 
+_RENSEIGNABLE = ("rattache_propose", "rattache_multiple")
+
+
+def operateurs_a_renseigner(propositions: list[Proposition], avis_docs: dict[str, dict],
+                            corpus: dict[str, dict]) -> list[dict]:
+    """Les fiches RATTACHÉES dont l'opérateur est inconnu, avec le pétitionnaire de l'avis.
+
+    Un avis nomme le pétitionnaire d'un projet ; quand ce projet est rattaché avec confiance
+    (`rattache_propose` ou `rattache_multiple`) à une fiche du corpus SANS opérateur, l'avis
+    peut combler ce manque — l'acte administratif EST la provenance (patron Goodman). On ne
+    traite que ces deux statuts sûrs : un `a_confirmer` ou un `ambigu` n'est pas assez établi
+    pour renseigner quoi que ce soit.
+
+    LA LISTE SIGNALE, ELLE NE DÉCIDE PAS. Elle inclut une fiche même quand le pétitionnaire
+    MANQUE (`petitionnaire: null`) — c'est précisément le cas qu'un humain doit voir sans que
+    rien ne soit écrit à sa place (fr-equinix : trois fiches Equinix à Argenteuil, renseigner
+    celle dont l'identité est justement inconnue serait une déduction déguisée en fait).
+    """
+    rows: list[dict] = []
+    for p in propositions:
+        if p.statut not in _RENSEIGNABLE:
+            continue
+        fiches = p.fiches if p.statut == "rattache_multiple" else ([p.retenu] if p.retenu else [])
+        petitionnaire = ((avis_docs.get(p.avis) or {}).get("procedure") or {}).get("petitionnaire")
+        for fid in fiches:
+            f = corpus.get(fid) or {}
+            if str(f.get("operator") or "").strip().lower() in ("", "unknown", "inconnu", "none"):
+                rows.append({"fiche": fid, "commune": f.get("municipality"),
+                             "avis": p.avis, "petitionnaire": petitionnaire,
+                             "statut_rattachement": p.statut})
+    return rows
+
+
+def ecrire_operateurs(propositions: list[Proposition], avis_docs: dict[str, dict],
+                      corpus: dict[str, dict], out: Path, date: str) -> dict:
+    """Écrit `operateurs-a-renseigner.json` : les opérateurs inconnus qu'un avis peut combler."""
+    fiches = operateurs_a_renseigner(propositions, avis_docs, corpus)
+    doc = {
+        "schema": "smdc.registre-ae.operateurs/1",
+        "genere_le": date,
+        "note": ("Fiches rattachées (propose/multiple) dont l'opérateur est inconnu. Le "
+                 "pétitionnaire de l'avis est la provenance ; vérifier qu'il est bien "
+                 "l'EXPLOITANT et non le foncier ou l'aménageur. `petitionnaire: null` = l'avis "
+                 "ne le nomme pas : la fiche est signalée, surtout pas renseignée."),
+        "fiches": fiches,
+    }
+    out.write_text(json.dumps(doc, ensure_ascii=False, indent=2), encoding="utf-8")
+    return doc
+
+
 def ecrire(propositions: list[Proposition], out: Path, date: str) -> dict:
     par_statut: dict[str, int] = {}
     for p in propositions:
