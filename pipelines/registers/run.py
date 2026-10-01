@@ -171,6 +171,88 @@ def couverture(rows: list[dict]) -> dict:
     }
 
 
+def _fiche_region(d: dict) -> str:
+    src = d.get("source") or {}
+    return (src.get("region_detectee")
+            or ((src.get("registre") or {}).get("region"))
+            or "?")
+
+
+def _coverage_from_fiches(out_dir: Path) -> tuple[collections.Counter, collections.Counter, int]:
+    """Recompter champs×avis et régions×avis À PARTIR DES FICHES servies (pour --revalidate)."""
+    champs: collections.Counter = collections.Counter()
+    regions: collections.Counter = collections.Counter()
+    retenus = 0
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            d = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+        inst = d.get("installation") or {}
+        if "faits" not in inst:
+            continue
+        retenus += 1
+        champs.update({f["indicateur"] for fs in inst["faits"].values() for f in fs})
+        regions[_fiche_region(d)] += 1
+    return champs, regions, retenus
+
+
+def revalidate(out_dir: Path) -> dict:
+    """Réappliquer les règles COURANTES aux phrases DÉJÀ STOCKÉES — aucun réseau.
+
+    Transforme une retouche en opération DÉTERMINISTE et rejouable : au dégel, la vraie
+    ré-extraction doit être un non-événement. On ne retire QUE ce qu'une règle REJETTE
+    (`avis.rejection_reason`), jamais ce qui est seulement « non reproduit » — un silence
+    n'est pas une preuve. Chaque fiche touchée est horodatée `revalidation` pour qu'un
+    lecteur distingue une fiche extraite d'une fiche revalidée.
+    """
+    today = time.strftime("%Y-%m-%d")
+    touched = 0
+    removed_total = 0
+    by_field: collections.Counter = collections.Counter()
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            d = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+        inst = d.get("installation") or {}
+        faits = inst.get("faits")
+        if not faits:
+            continue
+        removed: list[dict] = []
+        for theme in list(faits):
+            kept = []
+            for f in faits[theme]:
+                motif = A.rejection_reason(f.get("indicateur"), f.get("valeur"), f.get("phrase", ""))
+                if motif is None:
+                    kept.append(f)
+                else:
+                    removed.append({"indicateur": f.get("indicateur"),
+                                    "valeur": f.get("valeur"), "page": f.get("page"), "motif": motif})
+                    by_field[f.get("indicateur")] += 1
+            if kept:
+                faits[theme] = kept
+            else:
+                del faits[theme]
+        if removed:
+            d["revalidation"] = {
+                "date": today,
+                "regle": ("retrait des seuls faits POSITIVEMENT rejetés par les règles courantes "
+                          "(motif de rejet, agrégat de site, borne, champ retiré) ; jamais un "
+                          "fait seulement non reproduit"),
+                "faits_retires": removed,
+            }
+            p.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+            touched += 1
+            removed_total += len(removed)
+    return {"fiches_touchees": touched, "faits_retires": removed_total,
+            "par_champ": dict(by_field.most_common())}
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, required=True)
@@ -181,8 +263,46 @@ def main(argv: list[str] | None = None) -> int:
                     help="requêtes séparées par des virgules ; leur UNION est passée")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--revalidate", action="store_true",
+                    help="réappliquer les règles courantes aux fiches DÉJÀ stockées (aucun "
+                         "réseau) et retirer les faits positivement rejetés ; régénère couverture.json")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.revalidate:
+        if not a.out.is_dir():
+            print(f"--revalidate : {a.out} introuvable", file=sys.stderr)
+            return 2
+        champs_av, _reg_av, _ = _coverage_from_fiches(a.out)   # AVANT
+        summary = revalidate(a.out)
+        champs_ap, regions_ap, retenus = _coverage_from_fiches(a.out)  # APRÈS
+        cov_path = a.out / "couverture.json"
+        old = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov = {
+            "schema": "smdc.registre-ae.couverture/1",
+            "genere_le": time.strftime("%Y-%m-%d"),
+            "mode": "revalidate",
+            "avis_retenus": retenus,
+            "champs": {"note": "nombre d'avis portant le champ, après revalidation",
+                       "sur": retenus, "valeurs": dict(champs_ap.most_common())},
+            "regions": dict(regions_ap.most_common()),
+            # Les motifs de REJET de documents datent de la dernière récolte : la revalidation
+            # ne réexamine pas de documents, seulement des faits déjà extraits. On les conserve
+            # tels quels en le disant, plutôt que de les effacer ou de les prétendre à jour.
+            "rejets": old.get("rejets", {"note": "indisponible hors récolte"}),
+            "revalidation": {"date": time.strftime("%Y-%m-%d"),
+                             "fiches_touchees": summary["fiches_touchees"],
+                             "faits_retires": summary["faits_retires"],
+                             "par_champ": summary["par_champ"]},
+        }
+        cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"revalidate : {summary['faits_retires']} fait(s) retiré(s) sur "
+              f"{summary['fiches_touchees']} fiche(s).", file=sys.stderr)
+        print("champ : avant → après (effondrement = 0 restant)", file=sys.stderr)
+        for fid in sorted(summary["par_champ"]):
+            print(f"  {fid:28s} {champs_av.get(fid, 0):3d} → {champs_ap.get(fid, 0):3d}"
+                  f"{'  <-- EFFONDREMENT' if champs_ap.get(fid, 0) == 0 else ''}", file=sys.stderr)
+        return 0
 
     jobs: list[tuple[str, I.Dossier]] = []
     for r in a.regions.split(","):
