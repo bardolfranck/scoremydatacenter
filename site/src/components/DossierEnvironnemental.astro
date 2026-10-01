@@ -233,8 +233,11 @@ const borne = (b: any) => !b ? null
     }
     return out;
   };
+  // L'espace avant l'unité est une INSÉCABLE réelle, pas une marge CSS : une marge se voit à
+  // l'écran mais disparaît au copier-coller et n'existe pas pour un lecteur d'écran, qui lisait
+  // « 30personnes ». Insécable parce qu'une valeur ne se sépare pas de son unité en fin de ligne.
   const Val = (x: any) => (
-    <>{NUM(x.valeur)}{x.unite ? <span class="de-u">{x.unite}</span> : null}</>
+    <>{NUM(x.valeur)}{x.unite ? <>{" "}<span class="de-u">{x.unite}</span></> : null}</>
   );
   const Rows = (items: any[]) => grouper(items).map((g: any) => (
     <details class="de-row">
@@ -266,6 +269,15 @@ const borne = (b: any) => !b ? null
     <article class={`de-avis${iAvis > 0 ? " de-avis-suite" : ""}`}>
       {/* Une seule chaîne : en JSX l'espace entre deux expressions voisines est mangé,
           et « pétitionnaireGoodman France » est passé à l'écran une fois. */}
+      {/* Deux avis sur un même site NE SE SUIVENT PAS, ils s'annoncent. Sans ce rappel, le
+          lecteur voyait deux rubriques « Emploi » avec 30 puis 40 personnes, deux « Groupes »
+          avec du fioul puis de l'HVO, et concluait que nos chiffres se contredisaient — alors
+          qu'il regardait deux dossiers déposés à quatre ans d'intervalle. */}
+      {avis.length > 1 && (
+        <p class="de-avis-num">{lang === "fr"
+          ? `Avis ${iAvis + 1} sur ${avis.length} — chaque avis décrit l'état du dossier à sa date`
+          : `Opinion ${iAvis + 1} of ${avis.length} — each describes the file as it stood on its date`}</p>
+      )}
       <p class="de-source">
         {/* L'artefact retire la date quand ses deux oracles divergent. On le DIT, au lieu de
             la taire : un lecteur doit pouvoir distinguer « nous l'ignorons » de
@@ -388,8 +400,14 @@ const borne = (b: any) => !b ? null
   .de-source { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--muted); font-family: var(--font-mono); }
   .de-source a { color: var(--accent); }
 
-  .de-avis > .de-source { padding: 0.7rem 1.15rem 0; margin: 0; }
-  .de-avis-suite { border-top: 3px double var(--line); margin-top: 0.4rem; }
+  .de-avis > .de-source { padding: 0.15rem 1.15rem 0; margin: 0; }
+  .de-avis > .de-avis-num:first-child, .de-avis > .de-source:first-child { padding-top: 0.75rem; }
+  .de-avis-suite { border-top: 1px solid var(--line); background: linear-gradient(var(--wash), transparent 3.2rem); }
+  .de-avis-num {
+    margin: 0; padding: 0.7rem 1.15rem 0;
+    font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--ink-soft); font-weight: 600;
+  }
 
   /* Pas de quadrillage : des rubriques posées dans du blanc, séparées par l'espace et une
      règle fine sous leur titre. Le filet de 1px partout donnait au bloc l'air d'un formulaire
@@ -429,7 +447,7 @@ const borne = (b: any) => !b ? null
   .de-row > summary:hover .de-k { color: var(--accent); }
   .de-k { color: var(--ink-soft); flex: 1 1 auto; }
   .de-v { font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .de-u { font-weight: 400; color: var(--muted); font-size: 0.8em; margin-left: 0.28em; }
+  .de-u { font-weight: 400; color: var(--muted); font-size: 0.8em; }
   .de-p { font-family: var(--font-mono); font-size: 0.68rem; color: var(--grade-na); white-space: nowrap; margin-left: auto; }
   .de-row > summary .de-p { margin-left: 0; }
   .de-reco-t { color: var(--ink-soft); flex: 1 1 auto; }
