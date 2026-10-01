@@ -445,6 +445,20 @@ RECO = re.compile(
     r"(?:L['’]\s*Autorité\s+environnementale|La\s+MRAe|L['’]\s*(?:Ae|MRAe)|"
     r"La\s+mission\s+régionale\s+d['’]autorité\s+environnementale)\s+recommande[^.]{10,400}\.",
     re.I)
+# Beaucoup d'avis NUMÉROTENT leurs recommandations : « (15) L'Autorité environnementale
+# recommande : - d'examiner… - de modéliser… ». Ces formes-là sont des LISTES, souvent
+# longues, et le motif en prose les ratait : il exigeait un point final dans les 400
+# caractères, que la liste n'atteint qu'au bout de mille. Résultat mesuré sur Tremblay :
+# 17 captées sur 23, et les six manquantes étaient les plus substantielles — bruit simultané
+# des 54 groupes, dispersion atmosphérique, bilan GES diffus.
+#
+# Quand la numérotation existe, elle est le meilleur délimiteur possible : chaque
+# recommandation court jusqu'à la suivante. On l'utilise d'abord, et on garde le motif en
+# prose pour les avis qui ne numérotent pas.
+NUMBERED_RECO = re.compile(
+    r"\((\d{1,2})\)\s*(?:L['’]\s*Autorité\s+environnementale|La\s+MRAe|L['’]\s*Ae)\s+recommande",
+    re.I)
+
 TYPOGRAPHIC_RECO = re.compile(
     r"recommandations\s+sont\s+portées\s+en\s+(?:italique|gras)|"
     r"recommandations\s+(?:figurent|apparaissent)\s+en\s+(?:italique|gras)", re.I)
@@ -617,10 +631,20 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
             "recommandations signalées par la MISE EN FORME (italique gras) et non par une "
             "tournure : leur nombre ici n'est pas le nombre réel. Les extraire demande la "
             "police des caractères, pas une expression régulière.")
-    for m in RECO.finditer(full):
-        txt = re.sub(r"\s+", " ", m.group(0)).strip()
-        page = next((i for i, p in enumerate(pages, 1) if txt[:60] in re.sub(r"\s+", " ", p)), None)
-        avis.recommandations.append({"texte": txt, "page": page})
+    marques = list(NUMBERED_RECO.finditer(full))
+    if marques:
+        # Chaque recommandation court jusqu'à la suivante — le découpage le plus fiable.
+        for i, m in enumerate(marques):
+            fin = marques[i + 1].start() if i + 1 < len(marques) else min(m.end() + 1200, len(full))
+            txt = re.sub(r"\s+", " ", full[m.start():fin]).strip()
+            page = next((j for j, p in enumerate(pages, 1)
+                         if txt[:60] in re.sub(r"\s+", " ", p)), None)
+            avis.recommandations.append({"numero": int(m.group(1)), "texte": txt, "page": page})
+    else:
+        for m in RECO.finditer(full):
+            txt = re.sub(r"\s+", " ", m.group(0)).strip()
+            page = next((i for i, p in enumerate(pages, 1) if txt[:60] in re.sub(r"\s+", " ", p)), None)
+            avis.recommandations.append({"texte": txt, "page": page})
     return avis
 
 
