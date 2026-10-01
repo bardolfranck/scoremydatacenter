@@ -87,8 +87,25 @@ def _n(s: str) -> float:
     return float(re.sub(r"[   ]", "", s).replace(",", "."))
 
 
+# Certains exports PDF remplacent les ESPACES par des caractères de largeur nulle. Le texte
+# paraît normal à l'œil et devient du charabia pour une machine : les mots sont soudés, toutes
+# les ancres meurent, et le document rend quelques faits au lieu de quarante — SANS LE MOINDRE
+# SIGNAL. C'est le faux silence dans sa forme la plus pure.
+#
+# Mesuré sur l'avis de Bonneuil (34 pages) : 2,9 % d'espaces contre 13,9 à 14,6 % sur les
+# treize autres avis de l'étalon, et 57 516 caractères invisibles. Une fois remplacés par des
+# espaces, la densité revient à 14,1 % — exactement la plage saine — et le document rend
+# 40 faits et 16 recommandations au lieu de dix.
+#
+# On RÉPARE donc avant de juger. Signaler le document comme illisible, c'était jeter quarante
+# faits justes à cause d'un défaut d'export. Le signalement garde son rôle, mais en dernier
+# recours, pour ce qui résiste à la réparation.
+ZERO_WIDTH = re.compile("[\u200b\u200c\u200d\u2060\ufeff]+")
+
+
 def _norm(s: str) -> str:
     s = unicodedata.normalize("NFKC", s)
+    s = ZERO_WIDTH.sub(" ", s)
     return re.sub(r"[ \t ]+", " ", s)
 
 

@@ -234,3 +234,21 @@ def test_tous_les_indicateurs_ont_un_nom_public_anglais():
     noms = list(INDICATORS.values())
     collisions = sorted({n for n in noms if noms.count(n) > 1})
     assert collisions == [], f"deux indicateurs partagent un nom public : {collisions}"
+
+
+def test_classe_e_couche_texte_polluee_est_reparee_pas_rejetee():
+    """Des caractères de largeur nulle à la place des espaces : on RÉPARE avant de juger.
+
+    L'avis de Bonneuil (34 pages) portait 57 516 caractères invisibles et 2,9 % d'espaces,
+    contre 13,9 à 14,6 % sur les treize autres avis de l'étalon. Mots soudés, ancres mortes,
+    dix faits au lieu de quarante — et aucun signal. Le réflexe était de le signaler comme
+    illisible ; c'était jeter quarante faits justes à cause d'un défaut d'export.
+
+    La détection de pollution garde son rôle : elle attrape ce qui RÉSISTE à la réparation.
+    """
+    pollue = ("Le​projet​prévoit​54​groupes​électrogènes​pour​"
+              "assurer​un​fonctionnement​en​continu​du​centre​"
+              "de​données.")
+    assert _vals(pollue).get("groupes_nombre") == 54.0, (
+        "un texte dont les espaces sont des caractères invisibles doit être réparé, pas perdu"
+    )
