@@ -295,3 +295,48 @@ def test_recommandation_en_liste_est_captee_entierement():
     recos = avis.extract_from_pages([page], "https://example.test/avis.pdf").recommandations
     assert [r["numero"] for r in recos] == [15, 16]
     assert "simultanément" in recos[0]["texte"], "la liste doit être captée en entier"
+
+
+# ── Point 2 : champs récurrents ajoutés (PV, puissance thermique) + nom du fluide ────────────
+
+def _flat(v):
+    return v if isinstance(v, list) else [v]
+
+
+def test_puissance_thermique_combustion_pas_electrique_ni_seuil():
+    # « puissance thermique nominale atteindra 59,29 MW » (MW nu) — captée.
+    assert _vals("La puissance thermique nominale atteindra 59,29 MW.") \
+        .get("puissance_thermique_combustion_mwth") == 59.29
+    # forme « 547 MWth » aussi.
+    assert _vals("74 groupes, puissance thermique nominale de 547 MWth cumulé.") \
+        .get("puissance_thermique_combustion_mwth") == 547.0
+    # le SEUIL de la rubrique 3110 n'est pas une mesure…
+    seuil = "installations d'une puissance thermique nominale totale égale ou supérieure à 50 MW"
+    assert "puissance_thermique_combustion_mwth" not in _vals(seuil)
+    # …mais la vraie valeur, même dans une phrase qui cite « rubrique 3110 », l'est.
+    vraie = ("la rubrique 3110 au titre de ses 24 groupes électrogènes développant une puissance "
+             "thermique totale nominale de 160 MWth")
+    assert _vals(vraie).get("puissance_thermique_combustion_mwth") == 160.0
+    # une puissance ÉLECTRIQUE en MW n'entre pas (ni « thermique », ni « MWth »).
+    assert "puissance_thermique_combustion_mwth" not in _vals(
+        "une puissance totale installée de 405 MW, alimentés en fioul.")
+
+
+def test_fluide_frigorigene_capte_le_nom_pas_la_mention():
+    fl = _vals("Les groupes froids font circuler un fluide frigorigène R-1234ze à faible PRG.")
+    assert "R-1234ze" in _flat(fl.get("fluides_frigorigenes"))
+    assert "R134a" in _flat(_vals(
+        "Les groupes froids utilisent un fluide frigorigène, en l'occurrence le R134a, à fort PRG."
+    ).get("fluides_frigorigenes"))
+    # « R. 122-7 » (article de code, avec point) dans une phrase frigorigène ≠ un fluide.
+    nolegal = _vals("Les fluides frigorigènes relèvent de l'article R. 122-7 du code.")
+    assert all("122" not in str(x) for x in _flat(nolegal.get("fluides_frigorigenes")) if x)
+
+
+def test_photovoltaique_capte_la_valeur_declaree_quelle_que_soit_l_unite():
+    assert "646 panneaux" in _flat(_vals(
+        "646 panneaux photovoltaïques prévus au-dessus des places de stationnement."
+    ).get("photovoltaique"))
+    assert any("MWh" in str(x) for x in _flat(_vals(
+        "des panneaux photovoltaïques d'une production de 580 MWh par an."
+    ).get("photovoltaique")))
