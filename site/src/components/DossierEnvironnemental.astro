@@ -198,8 +198,26 @@ const borne = (b: any) => !b ? null
     {avis.length > 1 && <p class="de-source">{`${avis.length} ${t.avisPluriel}`}</p>}
   </header>
 
-{avis.map((a: any, iAvis: number) => {
-  const f = a.faits ?? [];
+{(() => {
+  // UN SEUL RENDU POUR LA FICHE, pas un par avis (Franck, 2026-10-01).
+  //
+  // Quand un site porte deux dossiers — Equinix PA16 en 2021 puis en 2025 — empiler deux fois
+  // les mêmes rubriques donnait deux « Emploi » avec 30 puis 40 personnes, deux « Groupes
+  // électrogènes » au fioul puis à l'HVO. Le lecteur n'y voyait pas deux dates, il y voyait nos
+  // chiffres se contredire. Étiqueter « Avis 1 sur 2 » nommait la contradiction sans la résoudre.
+  //
+  // On recoupe donc PAR INDICATEUR, et chaque valeur porte la date de son dossier. La même
+  // donnée cesse d'être une incohérence et redevient ce qu'elle est : une trajectoire. « 30
+  // personnes en 2021, 40 en 2025 », « fioul en 2021, HVO en 2025 » — deux faits qu'aucun des
+  // deux avis ne disait seul, et que la juxtaposition rendait illisibles.
+  //
+  // On ne calcule RIEN sur ces séries : ni écart, ni tendance, ni dernière valeur « officielle ».
+  // On les met côte à côte, datées, dans l'ordre des dossiers. Conclure appartient au lecteur.
+  const plusieurs = avis.length > 1;
+  const dateDe = (a: any) => DATE(a?.procedure?.date_avis) || t.sansDate;
+  const marque = (xs: any[], a: any, i: number) =>
+    (xs ?? []).map((x: any) => ({ ...x, _i: i, _date: dateDe(a) }));
+  const f = avis.flatMap((a: any, i: number) => marque(a.faits, a, i));
   const rubriques = RUBRIQUES
     .map((r) => ({ ...r, items: prendre(f, r.ids) }))
     .filter((r) => r.items.length > 0);
@@ -218,9 +236,7 @@ const borne = (b: any) => !b ? null
     if (g) g.valeurs.push(`${NUM(n.valeur)} ${n.unite ?? ""}`.trim());
     else niveaux.push({ phrase: ph, page: n.page, valeurs: [`${NUM(n.valeur)} ${n.unite ?? ""}`.trim()] });
   }
-  const recos = a.recommandations ?? [];
-  const src = a.source ?? {};
-  const proc = a.procedure ?? {};
+  const recos = avis.flatMap((a: any, i: number) => marque(a.recommandations, a, i));
   // Un indicateur qui revient plusieurs fois dans un même avis (GES par poste, puissances
   // d'un campus, rubriques ICPE) ne s'empile PAS en lignes de même libellé : cinq
   // « Émissions de GES » superposées n'apprennent rien et appellent la somme qu'on s'interdit.
@@ -233,59 +249,86 @@ const borne = (b: any) => !b ? null
     }
     return out;
   };
+  // À l'intérieur d'un indicateur, on sépare par DOSSIER : c'est la date qui fait sens, pas
+  // l'ordre d'extraction. Un même avis qui donne plusieurs valeurs les garde groupées sous sa
+  // date (les GES par poste de Goodman restent les GES par poste de Goodman).
+  const parAvis = (vals: any[]) => {
+    const out: any[] = [];
+    for (const x of vals) {
+      const g = out.find((o: any) => o._i === x._i);
+      if (g) g.vals.push(x); else out.push({ _i: x._i, _date: x._date, vals: [x] });
+    }
+    return out.sort((a, b) => a._i - b._i);
+  };
   // L'espace avant l'unité est une INSÉCABLE réelle, pas une marge CSS : une marge se voit à
   // l'écran mais disparaît au copier-coller et n'existe pas pour un lecteur d'écran, qui lisait
   // « 30personnes ». Insécable parce qu'une valeur ne se sépare pas de son unité en fin de ligne.
   const Val = (x: any) => (
     <>{NUM(x.valeur)}{x.unite ? <>{" "}<span class="de-u">{x.unite}</span></> : null}</>
   );
-  const Rows = (items: any[]) => grouper(items).map((g: any) => (
-    <details class="de-row">
-      <summary>
-        <span class="de-k">
-          {g.libelle}
-          {/* L'avertissement est DANS la ligne, jamais derrière un dépli : 405 MW posés à
-              côté de 105 MW sans leur phrase se lisent comme la puissance du site. */}
-          {CAVEAT[g.indicateur] && <span class="de-caveat">{CAVEAT[g.indicateur]}</span>}
-        </span>
-        {g.vals.length === 1
-          ? <><span class="de-v">{Val(g.vals[0])}</span><span class="de-p">{t.pages}{g.vals[0].page}</span></>
-          : <span class="de-v de-multi">{`${g.vals.length} ${lang === "fr" ? "valeurs" : "values"}`}</span>}
-      </summary>
-      {g.vals.length === 1
-        ? <blockquote>{PHRASE(g.vals[0].phrase)}</blockquote>
-        : parPhrase(g.vals).map((q: any) => (
-            <blockquote class="de-bq-val">
-              <span class="de-bq-v">
-                <span>{q.valeurs.join(" · ")}</span>
-                <span class="de-p">{t.pages}{q.page}</span>
+  const Rows = (items: any[]) => grouper(items).map((g: any) => {
+    const series = parAvis(g.vals);
+    return (
+      <details class="de-row">
+        <summary>
+          <span class="de-k">
+            {g.libelle}
+            {/* L'avertissement est DANS la ligne, jamais derrière un dépli : 405 MW posés à
+                côté de 105 MW sans leur phrase se lisent comme la puissance du site. */}
+            {CAVEAT[g.indicateur] && <span class="de-caveat">{CAVEAT[g.indicateur]}</span>}
+          </span>
+          <span class={`de-vals${series.length > 1 ? " de-vals-serie" : ""}`}>
+            {series.map((s: any) => (
+              <span class="de-val">
+                {/* La date ne s'affiche que si la fiche porte plusieurs dossiers : sur une fiche
+                    à un seul avis elle serait un bruit, la date est déjà en tête de bloc. */}
+                {plusieurs && <span class="de-val-d">{s._date}</span>}
+                {s.vals.length === 1
+                  ? <><span class="de-v">{Val(s.vals[0])}</span><span class="de-p">{t.pages}{s.vals[0].page}</span></>
+                  : <span class="de-v de-multi">{`${s.vals.length} ${lang === "fr" ? "valeurs" : "values"}`}</span>}
               </span>
-              {q.phrase}
-            </blockquote>
-          ))}
-    </details>
-  ));
+            ))}
+          </span>
+        </summary>
+        {series.map((s: any) => (
+          s.vals.length === 1
+            ? <blockquote>{plusieurs && <span class="de-bq-d">{s._date}</span>}{PHRASE(s.vals[0].phrase)}</blockquote>
+            : parPhrase(s.vals).map((q: any) => (
+                <blockquote class="de-bq-val">
+                  <span class="de-bq-v">
+                    <span>{q.valeurs.join(" · ")}</span>
+                    <span class="de-p">{(plusieurs ? s._date + " · " : "") + t.pages + q.page}</span>
+                  </span>
+                  {q.phrase}
+                </blockquote>
+              ))
+        ))}
+      </details>
+    );
+  });
   return (
-    <article class={`de-avis${iAvis > 0 ? " de-avis-suite" : ""}`}>
-      {/* Une seule chaîne : en JSX l'espace entre deux expressions voisines est mangé,
-          et « pétitionnaireGoodman France » est passé à l'écran une fois. */}
-      {/* Deux avis sur un même site NE SE SUIVENT PAS, ils s'annoncent. Sans ce rappel, le
-          lecteur voyait deux rubriques « Emploi » avec 30 puis 40 personnes, deux « Groupes »
-          avec du fioul puis de l'HVO, et concluait que nos chiffres se contredisaient — alors
-          qu'il regardait deux dossiers déposés à quatre ans d'intervalle. */}
-      {avis.length > 1 && (
-        <p class="de-avis-num">{lang === "fr"
-          ? `Avis ${iAvis + 1} sur ${avis.length} — chaque avis décrit l'état du dossier à sa date`
-          : `Opinion ${iAvis + 1} of ${avis.length} — each describes the file as it stood on its date`}</p>
-      )}
-      <p class="de-source">
-        {/* L'artefact retire la date quand ses deux oracles divergent. On le DIT, au lieu de
-            la taire : un lecteur doit pouvoir distinguer « nous l'ignorons » de
-            « nous ne la publions pas ». */}
-        <span>{[DATE(proc.date_avis) || t.sansDate, proc.petitionnaire && `${t.petitionnaire} ${proc.petitionnaire}`,
-                 src.pdf?.pages && `${src.pdf.pages} pages`].filter(Boolean).join(" · ") + (src.doc_url ? " · " : "")}</span>
-        {src.doc_url ? <a href={src.doc_url} target="_blank" rel="noopener">{t.lire}</a> : null}
-      </p>
+    <>
+      {/* Les dossiers sont annoncés UNE fois, en tête, du plus ancien au plus récent. Chaque
+          chiffre portera ensuite sa date : c'est là que le lecteur raccroche. */}
+      <div class="de-dossiers">
+        {avis.map((a: any) => {
+          const src = a.source ?? {};
+          const proc = a.procedure ?? {};
+          return (
+            <p class="de-source">
+              {/* Une seule chaîne : en JSX l'espace entre deux expressions voisines est mangé,
+                  et « pétitionnaireGoodman France » est passé à l'écran une fois.
+                  L'artefact retire la date quand ses deux oracles divergent. On le DIT au lieu
+                  de la taire : « nous l'ignorons » n'est pas « nous ne la publions pas ». */}
+              <span>{[DATE(proc.date_avis) || t.sansDate,
+                       proc.petitionnaire && `${t.petitionnaire} ${proc.petitionnaire}`,
+                       src.pdf?.pages && `${src.pdf.pages} pages`]
+                      .filter(Boolean).join(" · ") + (src.doc_url ? " · " : "")}</span>
+              {src.doc_url ? <a href={src.doc_url} target="_blank" rel="noopener">{t.lire}</a> : null}
+            </p>
+          );
+        })}
+      </div>
 
       <div class="de-grid">
         {rubriques.map((r: any) => (
@@ -305,6 +348,7 @@ const borne = (b: any) => !b ? null
                   {bandes.map((b: any) => (
                     <tr>
                       <td>
+                        {plusieurs && <span class="de-val-d">{b._date}</span>}
                         {b.indicateur === "bruit_emergence_bandes" ? t.emergenceLabel : t.niveauxLabel}
                         {b.valeur?.point ? <span class="de-pt"> · {b.valeur.point}</span> : null}
                         <span class="de-p">{t.pages}{b.page}</span>
@@ -364,21 +408,32 @@ const borne = (b: any) => !b ? null
             {recos.slice(0, 4).map((r: any) => (
               <details class="de-row de-reco">
                 <summary>
-                  <span class="de-reco-t">{PHRASE(r.texte).replace(/^\(\d+\)\s*/, "").slice(0, 130)}…</span>
+                  <span class="de-reco-t">
+                    {plusieurs && <span class="de-val-d">{r._date}</span>}
+                    {PHRASE(r.texte).replace(/^\(\d+\)\s*/, "").slice(0, 130)}…
+                  </span>
                   <span class="de-p">{t.pages}{r.page}</span>
                 </summary>
                 <blockquote>{PHRASE(r.texte)}</blockquote>
               </details>
             ))}
-            {recos.length > 4 && src.doc_url && (
-              <p class="de-more"><a href={src.doc_url} target="_blank" rel="noopener">{t.autres} ({recos.length - 4}) →</a></p>
+            {recos.length > 4 && (
+              <p class="de-more">
+                {/* Avec plusieurs dossiers, « les autres » sont dans plusieurs PDF : on renvoie
+                    vers chacun plutôt que vers un seul, qui ne les contiendrait pas tous. */}
+                {avis.filter((a: any) => a.source?.doc_url).map((a: any, i: number) => (
+                  <a href={a.source.doc_url} target="_blank" rel="noopener">
+                    {`${i === 0 ? t.autres + " (" + (recos.length - 4) + ")" : ""} ${plusieurs ? DATE(a.procedure?.date_avis) || t.sansDate : ""} →`}
+                  </a>
+                ))}
+              </p>
             )}
           </div>
         )}
       </div>
-    </article>
+    </>
   );
-})}
+})()}
 
   <footer class="de-foot">
     <p><strong>{t.pasUneNote}</strong>{t.pasUneNoteSuite}</p>
@@ -400,14 +455,8 @@ const borne = (b: any) => !b ? null
   .de-source { margin: 0.3rem 0 0; font-size: 0.78rem; color: var(--muted); font-family: var(--font-mono); }
   .de-source a { color: var(--accent); }
 
-  .de-avis > .de-source { padding: 0.15rem 1.15rem 0; margin: 0; }
-  .de-avis > .de-avis-num:first-child, .de-avis > .de-source:first-child { padding-top: 0.75rem; }
-  .de-avis-suite { border-top: 1px solid var(--line); background: linear-gradient(var(--wash), transparent 3.2rem); }
-  .de-avis-num {
-    margin: 0; padding: 0.7rem 1.15rem 0;
-    font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.06em;
-    color: var(--ink-soft); font-weight: 600;
-  }
+  .de-dossiers { padding: 0.75rem 1.15rem 0; }
+  .de-dossiers .de-source { margin: 0 0 0.15rem; }
 
   /* Pas de quadrillage : des rubriques posées dans du blanc, séparées par l'espace et une
      règle fine sous leur titre. Le filet de 1px partout donnait au bloc l'air d'un formulaire
@@ -441,12 +490,28 @@ const borne = (b: any) => !b ? null
   .de-row:last-of-type { border-bottom: 0; }
   .de-row > summary {
     list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 0.5rem;
-    padding: 0.42rem 0; font-size: 0.86rem;
+    padding: 0.42rem 0; font-size: 0.86rem; flex-wrap: wrap;
   }
+  .de-k { min-width: 7rem; }
   .de-row > summary::-webkit-details-marker { display: none; }
   .de-row > summary:hover .de-k { color: var(--accent); }
   .de-k { color: var(--ink-soft); flex: 1 1 auto; }
-  .de-v { font-weight: 600; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+  /* Une seule valeur : rien ne change, elle reste sur la ligne du libellé. Plusieurs dossiers :
+     la série passe en colonne, chaque valeur sous sa date — c'est la lecture verticale qui dit
+     « deux dates », là où la lecture horizontale disait « deux chiffres qui se contredisent ». */
+  .de-vals { display: flex; align-items: baseline; gap: 0.5rem; flex: 0 1 auto; min-width: 0; }
+  .de-vals-serie { flex-direction: column; align-items: flex-end; gap: 0.18rem; }
+  .de-val { display: flex; align-items: baseline; gap: 0.45rem; min-width: 0; }
+  .de-val-d {
+    font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted);
+    white-space: nowrap; margin-right: 0.1rem;
+  }
+  .de-bq-d { font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); margin-right: 0.4rem; }
+  /* Pas de `nowrap` : une valeur peut être une phrase (« huile végétale hydrotraitée (HVO) »)
+     et débordait de sa colonne. Les nombres ne se coupent pas pour autant — ils n'ont pas
+     d'espace, et l'insécable entre la valeur et son unité tient « 225 kV » ensemble. */
+  .de-v { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; text-align: right; }
   .de-u { font-weight: 400; color: var(--muted); font-size: 0.8em; }
   .de-p { font-family: var(--font-mono); font-size: 0.68rem; color: var(--grade-na); white-space: nowrap; margin-left: auto; }
   .de-row > summary .de-p { margin-left: 0; }
