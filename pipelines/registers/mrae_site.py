@@ -69,6 +69,18 @@ def _page(query: str, start: int) -> str:
     return _get(f"{BASE}?{q}")
 
 
+# Un PROCÈS-VERBAL de séance n'est pas un avis : il liste les dossiers examinés, donc il
+# parle de data centers sans en être l'évaluation. Il a franchi `confirms_datacenter` pour
+# cette raison exacte — son ordre du jour citait Argenteuil, Rungis et Bonneuil. Trouvé par
+# l'étalon au deuxième document annoté. Même famille que « parler de » ≠ « porter sur ».
+# Seules les tournures qui NOMMENT LA NATURE du document. Un premier jet ajoutait
+# « ordre du jour » et « membres présents » : les deux figurent dans de vrais avis délibérés
+# (« inscrit à l'ordre du jour de la séance du… »), et le filtre rejetait Les Ulis et
+# Saint-Priest. Un garde-fou qui écarte ce qu'il doit protéger est pire que pas de garde-fou.
+NOT_AN_OPINION = re.compile(
+    r"proc[èe]s[\s-]*verbal|compte[\s-]*rendu\s+de\s+(?:séance|réunion)|"
+    r"relevé\s+de\s+décisions", re.I)
+
 DC_MENTION = re.compile(r"data[\s\-]*cent|centre[s]?\s+de\s+donn[ée]es|h[ée]bergement\s+de\s+donn[ée]es", re.I)
 
 # Le même avis se cherche sous six noms. « data center » seul rend 117 candidats ; l'union des
@@ -89,7 +101,16 @@ REGIONS_FR = (
 
 
 def _region_pattern(name: str) -> re.Pattern:
-    # tolère les variantes d'accent, d'apostrophe et de césure rencontrées dans les PDF
+    """Tolère les variantes de césure et d'apostrophe des PDF — mais PAS la casse.
+
+    « La Réunion » est un nom propre ; « la réunion » est un nom commun. Un motif
+    insensible à la casse a classé un procès-verbal francilien en région Réunion parce
+    qu'il mentionnait « la réunion publique du projet de data center d'Argenteuil ».
+    La casse est ici porteuse de sens, pas de style — mais seulement par son ABSENCE de
+    majuscule : les en-têtes PACA écrivent « PROVENCE-ALPES-CÔTE D'AZUR » tout en capitales,
+    et exiger la casse canonique perdait la région entière. On accepte donc toute casse au
+    motif, et c'est `_is_proper_noun` qui écarte la forme intégralement minuscule.
+    """
     body = re.escape(name)
     body = body.replace("Île", "[IÎ]le").replace("é", "[ée]").replace("è", "[èe]")
     body = body.replace("\\'", "['’]").replace("\\-", "[\\s\\-]")
@@ -99,11 +120,33 @@ def _region_pattern(name: str) -> re.Pattern:
 _REGION_PATTERNS = tuple((n, _region_pattern(n)) for n in REGIONS_FR)
 
 
+# L'autorité se nomme : « MRAe Île-de-France », « mission régionale d'autorité
+# environnementale de Normandie ». On cherche D'ABORD un nom de région accolé à cette
+# formule — c'est l'émetteur — avant de se rabattre sur une mention isolée, qui peut être
+# n'importe quoi : le lieu d'un autre projet, une citation, un nom commun homonyme.
+_ISSUER = re.compile(r"(?:MRAe|mission\s+régionale\s+d['’]autorité\s+environnementale)"
+                     r"[\s,]*(?:de\s+la\s+|de\s+|d['’]|du\s+)?", re.I)
+
+
+def _is_proper_noun(matched: str) -> bool:
+    """« La Réunion » oui, « LA RÉUNION » oui, « la réunion » non."""
+    return matched != matched.lower()
+
+
 def region_of(pages: list[str], head: int = 2) -> str | None:
     """La région qui a délibéré l'avis, lue dans son en-tête. None si elle n'y figure pas."""
     txt = " ".join(pages[:head])
+    # 1) la région accolée au nom de l'autorité émettrice — la seule qui fasse foi
+    for m in _ISSUER.finditer(txt):
+        suite = txt[m.end():m.end() + 40]
+        for name, pat in _REGION_PATTERNS:
+            m2 = pat.match(suite)
+            if m2 and _is_proper_noun(m2.group(0)):
+                return name
+    # 2) à défaut, une mention isolée, sensible à la casse
     for name, pat in _REGION_PATTERNS:
-        if pat.search(txt):
+        m = pat.search(txt)
+        if m and _is_proper_noun(m.group(0)):
             return name
     return None
 
@@ -122,7 +165,10 @@ def confirms_datacenter(pages: list[str], head: int = 2, minimum: int = 2) -> bo
     Compter les mentions sur tout le document ne discrimine pas : un avis portuaire en a
     six, un vrai avis de data center en a parfois trois.
     """
-    return len(DC_MENTION.findall(" ".join(pages[:head]))) >= minimum
+    tete = " ".join(pages[:head])
+    if NOT_AN_OPINION.search(tete):
+        return False
+    return len(DC_MENTION.findall(tete)) >= minimum
 
 
 RESULT_COUNT = re.compile(r"(\d+)\s+r[ée]sultats?")

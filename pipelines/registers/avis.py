@@ -135,11 +135,19 @@ FIELDS: tuple[Field, ...] = (
     Field("puissance_it_mw", "Puissance des salles informatiques", "energie", "MW",
           r"salles?\s+informatiques?.{0,80}puissance|puissance\s+(?:prévue|informatique|des\s+salles)",
           rf"puissance[^.]{{0,60}}?({NUM})\s*MW", bounds=(0.1, 2000.0)),
-    # `puissance_site_mw` RETIRÉ (contrôle à l'échelle, 0/43 avis). Ces avis donnent la
-    # puissance des SALLES informatiques (`puissance_it_mw`) et la puissance des GROUPES
-    # séparément, jamais une « puissance appelée du site » globale : la notion n'existe pas
-    # dans la matière. Un champ toujours nul, exposé en API, se lirait comme une absence
-    # RÉELLE au lieu d'une notion inexistante. Si les 391 le démentent, on le remet.
+    # `puissance_site_mw` : RETIRÉ puis ROUVERT. Je l'avais supprimé sur un 0/43, en concluant
+    # que « la notion n'existe pas dans ces avis ». C'était déduire une absence d'un silence —
+    # la quatrième fois cette semaine, et cette fois contre moi-même. L'étalon l'a démenti au
+    # DEUXIÈME document annoté : l'avis Interxion MRS4 écrit « la puissance électrique appelée
+    # (80 MW) ». La notion existe, c'est notre motif qui ne la voyait pas.
+    #
+    # « Appelée » est le terme technique : la puissance que le site tire du réseau, distincte
+    # de la puissance des salles informatiques et de celle des groupes de secours. Le rejet sur
+    # les groupes reste, sans quoi 405 MW de secours entreraient ici.
+    Field("puissance_site_mw", "Puissance électrique appelée du site", "energie", "MW",
+          r"puissance\s+(?:électrique\s+)?(?:appelée|souscrite|totale\s+du\s+site|raccordée)",
+          rf"(?:appelée|souscrite|raccordée|totale\s+du\s+site)[^.]{{0,20}}?\(?({NUM})\)?\s*MW",
+          reject=r"groupes?\s+électrogènes?|secours", bounds=(0.1, 2000.0)),
     Field("consommation_gwh_an", "Consommation électrique annuelle", "energie", "GWh/an",
           r"consommation\s+(?:électrique|annuelle|d['’]électricité|énergétique)",
           rf"({NUM})\s*GWh"),
