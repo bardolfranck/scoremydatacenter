@@ -52,7 +52,9 @@ def build_national(doc, avis: Avis) -> dict:
             "registre": None,
             "pdf": pdf_meta,
         },
-        "procedure": {"intitule": doc.titre, "date_avis": doc.date},
+        "procedure": {"intitule": doc.titre, "date_avis": doc.date,
+                      # l'index national ne publie pas le pétitionnaire : on le lit dans le PDF.
+                      **({"petitionnaire": avis.petitionnaire} if avis.petitionnaire else {})},
         "installation": inst,
         "credit": CREDIT,
     }
@@ -60,6 +62,9 @@ def build_national(doc, avis: Avis) -> dict:
 
 def build(dossier: Dossier, avis: Avis) -> dict:
     proc = dossier.as_dict()
+    # Le registre donne le pétitionnaire ; s'il manque, on prend celui lu dans le PDF.
+    if not proc.get("petitionnaire") and avis.petitionnaire:
+        proc["petitionnaire"] = avis.petitionnaire
     inst = avis.as_dict()
     pdf_meta = inst.pop("source")
     doc_url = proc.pop("doc_url", "") or pdf_meta.pop("doc_url", "")
