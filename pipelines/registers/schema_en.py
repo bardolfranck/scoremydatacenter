@@ -66,6 +66,7 @@ ENVELOPE: dict[str, str] = {
     "statut": "status",
     "date_reception": "received_on",
     "date_avis": "opinion_date",
+    "date_mise_en_ligne": "published_online_on",
     "numero_avis": "opinion_number",
     "centroid": "centroid",
     "installation": "installation",
@@ -310,7 +311,7 @@ class UntranslatedKey(KeyError):
     """Une clé, un indicateur ou un thème français franchirait la frontière sans traduction."""
 
 
-_INTERNAL_TRACES = {"revalidation", "derivation_bruit", "dedup"}
+_INTERNAL_TRACES = {"revalidation", "derivation_bruit", "dedup", "date_corrigee"}
 
 
 def to_english(obj):
