@@ -36,14 +36,28 @@ CREDIT = ("Registre : avis de l'autorité environnementale, DREAL/DRIEAT, Licenc
           "Avis : document public, lié et non réhébergé. Extraction ScoreMyDataCenter.")
 
 # Date portée par le NOM DE FICHIER MRAe, dans l'ordre de confiance décroissante. Trois formats
-# NON AMBIGUS seulement : l'année à quatre chiffres (préfixée « 20 ») lève toute hésitation. On
-# n'essaie PAS le YYMMDD à six chiffres — il collisionne avec les numéros d'avis (« n022432 »,
-# « 15721 ») et une date fausse est pire qu'une date absente.
+# NON AMBIGUS d'abord : l'année à quatre chiffres (préfixée « 20 ») lève toute hésitation.
 _DATE_FICHIER = [
     (re.compile(r"(20\d\d)[-_](\d{2})[-_](\d{2})"), (0, 1, 2)),      # 2025-05-07
     (re.compile(r"(?<!\d)(\d{2})[-_](\d{2})[-_](20\d\d)(?!\d)"), (2, 1, 0)),  # 07-05-2025 (jour-mois-an, FR)
     (re.compile(r"(?<!\d)(20\d\d)(\d{2})(\d{2})(?!\d)"), (0, 1, 2)),  # 20250507
 ]
+
+# Six chiffres collés, en DERNIER recours : « 210114 ». Ambigu — se lit AAMMJJ (2021-01-14) ET
+# JJMMAA (2014-01-21), les deux parfois valides, et aucun filtre de plausibilité ne les départage.
+# Ce qui les départage : une MRAe régionale n'existe pas avant 2016, donc un avis ne peut pas la
+# précéder. Règle (confirmée 4/4 contre les registres, dont Les Ulis 210114 = 14/01/2021) : lire en
+# AAMMJJ, et REFUSER si la lecture JJMMAA est AUSSI valide ET postérieure à cette borne (on ne
+# devine pas entre deux lectures également plausibles). Une date fausse reste pire qu'une absente.
+_SIX_CHIFFRES = re.compile(r"(?<!\d)(\d{2})(\d{2})(\d{2})(?!\d)")
+BORNE_BASSE_ANNEE = 2016   # création des MRAe régionales : un avis ne peut pas la précéder
+
+
+def _date_ou_none(an: int, mois: int, jour: int) -> date | None:
+    try:
+        return date(an, mois, jour)
+    except ValueError:
+        return None
 
 
 def date_du_nom_de_fichier(url: str | None) -> str | None:
@@ -59,10 +73,17 @@ def date_du_nom_de_fichier(url: str | None) -> str | None:
         if not m:
             continue
         y, mo, da = m.group(iy + 1), m.group(im + 1), m.group(idd + 1)
-        try:
-            return date(int(y), int(mo), int(da)).isoformat()
-        except ValueError:
-            continue   # 00 ou 13 en mois, 32 en jour… : ce n'était pas une date
+        d = _date_ou_none(int(y), int(mo), int(da))
+        if d:
+            return d.isoformat()
+    # Dernier recours : six chiffres ambigus, tranchés par la borne basse (cf. _SIX_CHIFFRES).
+    m = _SIX_CHIFFRES.search(nom)
+    if m:
+        a, b, c = (int(g) for g in m.groups())
+        aammjj = _date_ou_none(2000 + a, b, c)        # année-mois-jour
+        jjmmaa = _date_ou_none(2000 + c, b, a)        # jour-mois-année
+        if aammjj and not (jjmmaa and jjmmaa.year >= BORNE_BASSE_ANNEE):
+            return aammjj.isoformat()
     return None
 
 
