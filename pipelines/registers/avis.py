@@ -564,6 +564,25 @@ def extract_from_pages(pages: list[str], doc_url: str, sha256: str = "") -> Avis
             "(une erreur de chiffre sur une fiche publique coûte plus que ce document ne rapporte)")
         return avis
 
+    # Couche texte PRÉSENTE mais POLLUÉE. Certains PDF remplacent les espaces par des caractères
+    # de jointure INVISIBLES (U+200D/200B/200C) : les mots se soudent, les ancres meurent, et
+    # l'extraction rend une poignée de faits SANS AUCUN SIGNAL — « 33 pages, 10 faits » (Bonneuil),
+    # qu'on prendrait pour une installation sobre. Un fait manquant ne proteste pas ; ici c'est tout
+    # le document qui disparaît en silence. On le SIGNALE comme un scan (hors du taux), on ne l'extrait
+    # pas. Seuils calibrés sur l'étalon : avis sains = 13,9–14,6 % d'espaces, 0 % de jointures ;
+    # Bonneuil = 2,9 % d'espaces, 39 % de jointures. Le plancher 8 % garde 6 points de marge.
+    full = "".join(pages)
+    zwj = full.count("‍") + full.count("​") + full.count("‌")
+    spaces = sum(1 for c in full if c in " \t ")
+    space_ratio = spaces / len(full) if full else 0.0
+    if len(full) >= 2000 and (space_ratio < 0.08 or zwj / len(full) > 0.02):
+        avis.has_text_layer = False
+        avis.warnings.append(
+            f"couche texte POLLUÉE (densité d'espaces {space_ratio:.1%} contre ~14 % attendus, "
+            f"{zwj} caractères de jointure invisibles) — mots soudés, ancres inopérantes : "
+            "extraction NON FIABLE, document SIGNALÉ et non extrait (à sortir du taux, comme un scan)")
+        return avis
+
     seen: set[str] = set()
     for pno, text in enumerate(pages, start=1):
         for s in _sentences(text):
