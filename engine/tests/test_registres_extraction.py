@@ -196,3 +196,22 @@ def test_classe_e_distance_ecrite_en_toutes_lettres():
             "est situé à quinze mètres de l’installation et que des établissements sensibles "
             "sont implantés à proximité.")
     assert _vals(vrai).get("etablissement_sensible_distance_m") == 15.0
+
+
+# ── Contrat public : aucun identifiant français ne doit atteindre l'API ──────────────────────
+def test_tous_les_indicateurs_ont_un_nom_public_anglais():
+    """Un identifiant français qui atteindrait l'API serait une fuite de vocabulaire interne
+    dans un contrat public — et il y resterait, puisque les consommateurs s'y adossent.
+
+    Décision Franck du 2026-10-01 : les clés du JSON sont en anglais, en prévision de l'API.
+    Ce test est là pour que l'ajout d'un champ sans sa traduction échoue au lieu de passer.
+    """
+    from pipelines.registers.avis import FIELDS
+    from pipelines.registers.schema_en import INDICATORS, unknown_indicators
+
+    ids = {f.id for f in FIELDS}
+    assert unknown_indicators(ids) == [], "indicateur sans nom public anglais"
+    assert sorted(set(INDICATORS) - ids) == [], "traduction orpheline (champ supprimé ?)"
+    noms = list(INDICATORS.values())
+    collisions = sorted({n for n in noms if noms.count(n) > 1})
+    assert collisions == [], f"deux indicateurs partagent un nom public : {collisions}"
