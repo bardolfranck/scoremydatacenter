@@ -30,6 +30,7 @@ from pathlib import Path
 from . import avis as A
 from . import bruit as BR
 from . import fiche as F
+from . import geocoder as G
 from . import index as I
 from . import mrae_site as M
 
@@ -213,6 +214,49 @@ def _coverage_from_fiches(out_dir: Path) -> tuple[collections.Counter, collectio
         champs.update({f["indicateur"] for fs in inst["faits"].values() for f in fs})
         regions[_fiche_region(d)] += 1
     return champs, regions, retenus
+
+
+def _docs_from_fiches(out_dir: Path) -> dict[str, dict]:
+    """{nom_dossier: fiche} lu depuis les fiches servies (sans réseau)."""
+    docs: dict[str, dict] = {}
+    for p in sorted(out_dir.glob("*.json")):
+        if p.name in ("index.json", "couverture.json"):
+            continue
+        try:
+            docs[p.stem] = json.loads(p.read_text())
+        except Exception:  # noqa: BLE001
+            continue
+    return docs
+
+
+def audit_centroides(out_dir: Path) -> dict:
+    """Section de comptabilité : les centroïdes PARTAGÉS, triés par le pétitionnaire.
+
+    Lecture seule, sans réseau — rejouable sous gel. Un même point sur ≥2 dossiers n'est un
+    géocodeur que si les PORTEURS diffèrent (même exploitant = même site, géométrie vraie ;
+    porteur manquant = indéterminé). On réutilise le comparateur du rattachement
+    (`match._meme_exploitant`), on n'en écrit pas un second. Cf. pipelines.registers.geocoder.
+    """
+    from .match import _meme_exploitant   # local : évite d'alourdir l'import au chargement du module
+    docs = _docs_from_fiches(out_dir)
+    classed = G.classify(docs, _meme_exploitant)
+    groupes = []
+    compte: collections.Counter = collections.Counter()
+    for (lat, lon), info in sorted(classed.items(), key=lambda kv: (-len(kv[1]["dossiers"]), kv[0])):
+        cat = info["categorie"]
+        compte[cat] += 1
+        groupes.append({
+            "centroid": {"lat": lat, "lon": lon},
+            "categorie": cat,
+            "dossiers": [{"nom": n, "petitionnaire": G.petitionnaire(docs[n])} for n in info["dossiers"]],
+        })
+    return {
+        "note": ("même point sur ≥2 dossiers : porteurs différents = géocodeur (commune/zone, "
+                 "écarté comme géométrie) ; même exploitant = même site (géométrie gardée) ; "
+                 "porteur manquant = indéterminé"),
+        "groupes": groupes,
+        "compte": dict(compte),
+    }
 
 
 def revalidate(out_dir: Path) -> dict:
@@ -433,8 +477,29 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dedup-contenu", dest="dedup_contenu", action="store_true",
                     help="fusionner les avis en doublon PAR CONTENU LU (aucun réseau) ; garde la "
                          "fiche de registre, consigne l'URL alternative ; régénère couverture.json")
+    ap.add_argument("--audit-centroides", dest="audit_centroides", action="store_true",
+                    help="détecter les centroïdes de GÉOCODEUR (un même point sur ≥2 dossiers "
+                         "distincts, aucun réseau) ; écrit la section centroides_geocodeur dans couverture.json")
     a = ap.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)
+
+    if a.audit_centroides:
+        if not a.out.is_dir():
+            print(f"--audit-centroides : {a.out} introuvable", file=sys.stderr)
+            return 2
+        section = audit_centroides(a.out)
+        cov_path = a.out / "couverture.json"
+        cov = json.loads(cov_path.read_text()) if cov_path.exists() else {}
+        cov.pop("centroides_geocodeur", None)   # ancien nom de la section
+        cov["centroides_partages"] = section
+        cov_path.write_text(json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"audit-centroides : {len(section['groupes'])} point(s) partagé(s) — {section['compte']}",
+              file=sys.stderr)
+        for g in section["groupes"]:
+            qui = ", ".join(f"{d['nom']} [{d['petitionnaire'] or '—'}]" for d in g["dossiers"])
+            print(f"  [{g['categorie']}] {g['centroid']['lat']}, {g['centroid']['lon']}  ← {qui}",
+                  file=sys.stderr)
+        return 0
 
     if a.dedup_contenu:
         if not a.out.is_dir():
@@ -564,8 +629,10 @@ def main(argv: list[str] | None = None) -> int:
              "regions_outillees": sorted(I.REGIONS),
              "dossiers": rows}
     (a.out / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
+    cov = couverture(rows)
+    cov["centroides_partages"] = audit_centroides(a.out)   # détecté à chaque lot, pas à l'œil
     (a.out / "couverture.json").write_text(
-        json.dumps(couverture(rows), ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(cov, ensure_ascii=False, indent=2), encoding="utf-8")
 
     by = {}
     for r in rows:
