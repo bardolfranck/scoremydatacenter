@@ -83,6 +83,44 @@ Incident du 2026-09-28 : lot de 16 fiches déployé depuis `geo-audit-probe`, an
 « complet » par wrangler, et 404 en production. Rattrapé avant d'être rapporté, parce
 que la vérification sur le domaine réel faisait partie de la procédure.
 
+## UN ARBRE DE TRAVAIL PAR AGENT — et `scoremydatacenter/` ne sert qu'à déployer
+
+Plusieurs agents travaillent sur la même machine. Pendant longtemps ils partageaient le
+MÊME répertoire git, et ça a coûté quatre incidents en une seule journée (2026-10-01) :
+
+1. une branche a embarqué le commit d'un autre agent sans que son auteur le voie ;
+2. une branche s'est créée sur un commit non mergé d'un tiers — la construire dessus
+   aurait **annulé une demi-journée de travail** déjà mergé ;
+3. un `main` local périmé a fait disparaître un module de l'arbre, au milieu d'un run ;
+4. une branche a été remise à `origin/main` pendant que son auteur y travaillait ; son
+   commit n'a survécu que comme objet git orphelin, poussé à la main.
+
+Trois des quatre n'ont été rattrapés que parce que quelqu'un a pensé à lire `git log` avant
+de commencer. **C'est un garde-fou humain, pas une protection.**
+
+### La règle
+
+- **`scoremydatacenter/` reste sur `main` et ne sert QU'AU DÉPLOIEMENT.** Personne n'y
+  travaille, personne n'y crée de branche.
+- **Chaque agent travaille dans son propre arbre**, créé au niveau des dépôts frères :
+
+```
+git worktree add --detach ../.wt-<nom-agent> main
+```
+
+Le `..` compte : les arbres vivent à côté de `scoremydatacenter/` et de `smdc-newsroom/`,
+donc `../smdc-newsroom` continue de résoudre — le moteur, le pipeline et le build y
+fonctionnent à l'identique. Un arbre placé ailleurs casserait silencieusement tout ce qui
+lit le corpus privé.
+
+### Pourquoi le déploiement reste dans le répertoire d'origine
+
+Cloudflare Pages décide **production ou préversion d'après la branche git courante** (voir
+le piège branche plus bas). Un arbre en `HEAD` détaché ne porte pas le nom `main` : un
+`make deploy` lancé depuis un arbre de travail publierait une préversion en silence, et
+tout aurait l'air d'avoir réussi. Le seul endroit où `main` est réellement sorti, c'est
+`scoremydatacenter/` — et c'est donc le seul endroit d'où l'on déploie.
+
 ## Prérequis machine (celle qui déploie)
 
 - `../smdc-newsroom` monté (corpus + calibration).
