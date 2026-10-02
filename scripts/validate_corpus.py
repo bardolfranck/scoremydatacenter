@@ -34,6 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
+from engine.validate import position_gate                    # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -104,6 +105,11 @@ def main() -> int:
             scored += 1
         except Exception as e:  # noqa: BLE001
             problems.append(f"SCORING {label}: {type(e).__name__}: {str(e)[:120]}")
+
+    # GATE POSITION — deux fiches au même point sans adjudication. Il vit ICI, sur le corpus
+    # réel, et pas seulement dans `make validate` qui ne voit que les 2 fixtures : c'est la
+    # leçon du gate géo, câblé au bon endroit mais branché sur le vide.
+    problems += position_gate(paths)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "

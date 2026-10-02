@@ -1,0 +1,181 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
+"""DETTE DE POSITION — les paires de fiches qui occupent le MÊME POINT sans qu'on ait tranché.
+
+Deux fiches à moins d'un mètre, c'est l'un de ces trois cas, et il faut dire lequel :
+  · la MÊME installation saisie deux fois (un doublon public, le pire des trois) ;
+  · deux halls d'un même campus (légitime) ;
+  · deux opérateurs dans un même immeuble (légitime, et plus fréquent qu'on ne croit).
+
+Rien ne les distingue depuis la coordonnée seule : il faut une source — adresse postale,
+registre, relevé de terrain. C'est pourquoi le gate n'exige pas une absence de paires, mais
+une ADJUDICATION : `position_adjudication` dans la provenance de l'une des deux fiches, avec
+son verdict, sa base et sa source. Le patron a été posé par agent-data-pipeline-EU sur les
+13 britanniques du 2026-10-02.
+
+CETTE LISTE EST UNE DETTE, PAS UNE RÈGLE. Elle recense les paires déjà SERVIES au jour où le
+gate a été câblé — trouvées parce que je retenais 13 fiches britanniques au nom d'un standard
+que le reste du corpus n'avait jamais eu à respecter. Elle n'autorise rien de nouveau : toute
+paire qui n'y figure pas est refusée. Elle doit DÉCROÎTRE, et le gate imprime son compte à
+chaque passage pour qu'on ne l'oublie pas.
+
+Au 2026-10-02 : 78 paires dans le corpus servi, dont 6 déjà tranchées (Royaume-Uni) qui
+passent au mérite et ne sont donc pas ici. Restent 72, réparties sur neuf pays — de 26,
+fr 25, ch 11, be 3, it 2, pl 2, es 1, nl 1, fi 1.
+
+Quelques-unes, vérifiées à la main, ressemblent très fort à la même fiche deux fois :
+  fr-celeste-marylin / fr-marilyn-celeste · fr-colt-paris-sw / fr-colt-paris-sw-dh10
+  de-net-build-datacenter-saarwellingen / de-net-build-gmbh
+Elles sont publiques aujourd'hui — `publication.status = "draft"` est servi en prod.
+"""
+
+from __future__ import annotations
+
+# Clé : les deux identifiants TRIÉS. Valeur : la date du constat et ce qu'on en sait.
+POSITION_WAIVERS: dict[tuple[str, str], str] = {
+    ("be-dcvlaanderen",
+     "be-hermes-telecom-dc"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("be-digital-realty-brussels-bru3",
+     "be-digital-realty-brussels-bru4"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("be-mci-verizon-brussels-diegem-e",
+     "be-mci-verizon-brussels-diegem-h"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-ckw-colo-rotkreuz",
+     "ch-ckw-zug"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-datawire-zg01",
+     "ch-datawire-zg02"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-digital-realty-zur1",
+     "ch-digital-realty-zur3"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-equinix-zh2",
+     "ch-equinix-zh4"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-equinix-zh2",
+     "ch-exa-infrastructure-zurich"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-equinix-zh4",
+     "ch-exa-infrastructure-zurich"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-evok-dc01",
+     "ch-evok-dc02"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-green-datacenter-zurich-metro",
+     "ch-stack-infrastucture-zur01"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-green-datacenter-zurich-metro",
+     "ch-stack-infrastucture-zurl1"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-infomaniak-dii",
+     "ch-infomaniak-diii"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("ch-stack-infrastucture-zur01",
+     "ch-stack-infrastucture-zurl1"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-atlasedge-dc-hamburg-ham002",
+     "de-itenos-hamburg-ham2"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-atlasedge-dc-stuttgart-str001",
+     "de-itenos-stuttgart-str2"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-carriercolo-berlin-luetzow-i-p-b-site-b",
+     "de-dns-net-colo-i-berlin"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-carriercolo-berlin-luetzow-i-p-b-site-b",
+     "de-pixelpark-gmbh-colo-ii-berlin"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-colocationix-dc2",
+     "de-colocationix-dc3"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-colocationix-dc2",
+     "de-colocationix-dc4"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-colocationix-dc3",
+     "de-colocationix-dc4"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-cyrusone-frankfurt-1",
+     "de-cyrusone-frankfurt-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-dns-net-colo-i-berlin",
+     "de-pixelpark-gmbh-colo-ii-berlin"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-edgeconnex-munich-edcmuc01",
+     "de-spacenet-la"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-equinix-fr5-frankfurt-kleyerstrasse",
+     "de-exa-edge-dc-frankfurt2"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-eunetworks-colocation-hamburg",
+     "de-portus-iphh-hh2-wendenstrasse-408"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-ibh-dresden-c1",
+     "de-ibh-dresden-c2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-itenos-dusseldorf-dus1",
+     "de-kpn-dssd2"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-itenos-frankfurt-fra1",
+     "de-newtelco-frankfurt"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-itenos-frankfurt-fra3",
+     "de-nlighten-frankfurt-fra1"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-itenos-stuttgart-str3",
+     "de-nlighten-stuttgart-str1"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-keppel-data-centres-maincubes-data-centre",
+     "de-maincubes-fra01"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-lynet-hamburg",
+     "de-n-work-hamburg-wendenstra-e"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-nepustil-stuttgart-zettachring-10a",
+     "de-plus-line-ag-stuttgart"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-net-build-datacenter-saarwellingen",
+     "de-net-build-gmbh"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-penta-infra-berlin-ber01",
+     "de-penta-infra-berlin-ber02"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-penta-infra-berlin-ber01",
+     "de-scaleup-datacenter-ber03"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-penta-infra-berlin-ber02",
+     "de-scaleup-datacenter-ber03"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("de-r-kom-datacenter",
+     "de-r-kom-datacenter-ostbayern-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("de-suc-datacenter-1",
+     "de-suc-datacenter-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("es-civicos-networking-iaas-madrid",
+     "es-iaas-datacenter-madrid"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("fi-dna-lauttasaari",
+     "fi-nebula-oy-lauttasaari"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("fr-agarik-atos-4",
+     "fr-agarik-atos-5"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-celeste-armor",
+     "fr-etix-everywhere-nantes-1"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("fr-celeste-marylin",
+     "fr-marilyn-celeste"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-cloud-hq-france-projet-cdg-1",
+     "fr-cloud-hq-france-projet-cdg-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-colt-paris-sw",
+     "fr-colt-paris-sw-dh10"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-colt-villebon-par-2",
+     "fr-colt-villebon-par-3"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-colt-villebon-par-2",
+     "fr-colt-villebon-par-4"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-colt-villebon-par-3",
+     "fr-colt-villebon-par-4"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-digital-realty-les-ulis-dc1-et-2-par-13",
+     "fr-digital-realty-les-ulis-projet-dc2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-eolas-mangin-1",
+     "fr-eolas-mangin-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-equinix-ibx-pa4",
+     "fr-ibx-pa8x"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-etix-everywhere-nantes-2",
+     "fr-sigma-carquefou"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-global-switch-paris-est",
+     "fr-global-switch-paris-ouest"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-goodman-1-projet",
+     "fr-goodman-2-projet"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-digital-reality-par3",
+     "fr-interxion-digital-reality-par5"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-digital-reality-par8",
+     "fr-interxion-par10"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-digital-reality-par8",
+     "fr-interxion-par11"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-digital-reality-par8",
+     "fr-interxion-par9"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-par10",
+     "fr-interxion-par11"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-par10",
+     "fr-interxion-par9"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-interxion-par11",
+     "fr-interxion-par9"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-lcp-fr-dc1-projet",
+     "fr-lcp-fr-dc2-projet"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-lcp-fr-dc1-projet",
+     "fr-lcp-fr-dc3-projet"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-lcp-fr-dc2-projet",
+     "fr-lcp-fr-dc3-projet"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("fr-th3-paris-magny",
+     "fr-th3-paris-magny-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("it-bbbell-torino",
+     "it-dnshosting-torino-pdf"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("it-c21",
+     "it-mix-dc-caldera"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("nl-keppel-data-centres-keppel-dc-almere-1",
+     "nl-keppel-data-centres-keppel-dc-almere-2"): "2026-10-02 — même opérateur, jamais tranchée",
+    ("pl-4-data-center",
+     "pl-quicktel-sp-z-o-o"): "2026-10-02 — opérateurs différents, jamais tranchée",
+    ("pl-orange-polska-warsaw-w-barbary-10",
+     "pl-orange-polska-warszawa"): "2026-10-02 — même opérateur, jamais tranchée",
+}

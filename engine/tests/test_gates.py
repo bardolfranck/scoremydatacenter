@@ -4,6 +4,8 @@
 """Every gate must actually block: each test breaks the data one way and
 asserts the right gate fires with an explicit message."""
 
+import json
+import re
 from datetime import date
 
 from engine.core import load_methodology, load_datacenters
@@ -198,3 +200,72 @@ def test_geo_gate_inerte_sans_newsroom_mais_mordant_avec(tmp_path, monkeypatch):
         "avec un newsroom monté et PAS de sidecar, le gate doit refuser — sinon il suffirait "
         "de ne pas lancer la mesure pour passer"
     )
+
+
+# ── GATE POSITION : deux fiches au même point doivent avoir été tranchées ───────────────────
+def _fiche_au_point(dossier, fid, lat, lon, adjudication=None):
+    """Le minimum que le gate position lit : un identifiant, un point, une provenance."""
+    (dossier / f"{fid}.json").write_text(json.dumps(
+        {"identity": {"coordinates": {"lat": lat, "lon": lon}}}), encoding="utf-8")
+    if adjudication is not None:
+        (dossier / f"{fid}.provenance.json").write_text(json.dumps(
+            {"position_adjudication": adjudication}), encoding="utf-8")
+    return dossier / f"{fid}.json"
+
+
+def test_position_gate_refuse_une_paire_neuve_et_accepte_une_paire_tranchee(tmp_path):
+    """La garantie, écrite noir sur blanc : une NOUVELLE paire co-localisée ne passe pas.
+
+    Ce gate existe parce que le contrôle avait d'abord été appliqué à un seul lot — 13 fiches
+    britanniques retenues sur ce critère, pendant que 78 paires à un mètre ou moins étaient
+    déjà servies sur neuf autres pays. Le standard était bon, son périmètre était faux.
+    """
+    from engine.validate import position_gate
+
+    d = tmp_path / "cal"
+    d.mkdir()
+    a = _fiche_au_point(d, "xx-alpha", 48.8566, 2.3522)
+    b = _fiche_au_point(d, "xx-beta", 48.8566, 2.3522)        # exactement le même point
+    loin = _fiche_au_point(d, "xx-gamma", 48.8570, 2.3522)    # ~44 m plus au nord
+
+    v = position_gate([a, b, loin])
+    assert len(v) == 1 and "xx-alpha" in v[0] and "xx-beta" in v[0], (
+        "deux fiches au même point sans adjudication doivent être refusées"
+    )
+    assert "xx-gamma" not in v[0], "44 m, ce sont deux points distincts — pas une paire"
+
+    # La MÊME paire, tranchée sur une seule des deux fiches : elle passe au mérite.
+    _fiche_au_point(d, "xx-beta", 48.8566, 2.3522,
+                    adjudication={"verdict": "confirmed", "basis": "deux halls, même campus",
+                                  "source": "registre", "date": "2026-10-02"})
+    assert position_gate([a, b, loin]) == [], (
+        "une paire tranchée en provenance doit passer — le gate exige une décision, "
+        "pas l'absence de co-localisation"
+    )
+
+
+def test_position_gate_laisse_passer_la_dette_inventoriee_mais_rien_d_autre(tmp_path, monkeypatch):
+    """La dette héritée passe PARCE QU'ELLE EST LISTÉE, et elle seule."""
+    from engine import position_waivers
+    from engine.validate import position_gate
+
+    d = tmp_path / "cal"
+    d.mkdir()
+    a = _fiche_au_point(d, "xx-dette-a", 50.0, 3.0)
+    b = _fiche_au_point(d, "xx-dette-b", 50.0, 3.0)
+    assert position_gate([a, b]), "hors inventaire, la paire est refusée"
+
+    monkeypatch.setitem(position_waivers.POSITION_WAIVERS,
+                        ("xx-dette-a", "xx-dette-b"), "2026-10-02 — héritée, à trancher")
+    assert position_gate([a, b]) == [], "inventoriée, la paire passe"
+
+
+def test_position_waivers_est_une_dette_pas_une_regle():
+    """Un inventaire sans date n'est pas une dette, c'est une permission déguisée."""
+    from engine.position_waivers import POSITION_WAIVERS
+
+    for paire, motif in POSITION_WAIVERS.items():
+        assert paire == tuple(sorted(paire)), f"clé non triée : {paire!r}"
+        assert re.match(r"^20\d\d-\d\d-\d\d — ", motif), (
+            f"{paire!r} : une dérogation sans date ni motif est un aveu d'échec — {motif!r}"
+        )
