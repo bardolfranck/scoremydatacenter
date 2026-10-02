@@ -40,7 +40,11 @@ export const FR_NAV: NavNode[] = [
     { href: "/fr/glossaire", label: "Glossaire" },
     { href: "/fr/#faq", label: "FAQ" },
   ]},
-  { href: "/fr/comparer", label: "Comparer" },
+  // « Comparer » RETIRÉ DU MENU (Franck 2026-10-02) — la page, le moteur, les artefacts par
+  // pays et la projection restent en place et continuent d'être construits à chaque build :
+  // /fr/comparer et /compare répondent toujours. Seule l'entrée de menu disparaît. Pour la
+  // remettre, décommenter la ligne ci-dessous (et son équivalent anglais) ; rien d'autre.
+  // { href: "/fr/comparer", label: "Comparer" },
   { href: "/fr/actu", label: "Actu" },
   { label: "Bibliothèque", children: [
     { href: "/fr/rapports/france", label: "Rapport — La France" },
@@ -75,7 +79,8 @@ export const EN_NAV: NavNode[] = [
     { href: "/glossary", label: "Glossary" },
     { href: "/#faq", label: "FAQ" },
   ]},
-  { href: "/compare", label: "Compare" },
+  // Retirée du menu, voir la note côté FR — la page /compare répond toujours.
+  // { href: "/compare", label: "Compare" },
   { href: "/news", label: "News" },
   { label: "Library", children: [
     { href: "/reports/france", label: "France report" },
