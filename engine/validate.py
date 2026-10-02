@@ -27,6 +27,7 @@ Gate 8  Extraction coherence: a project indicator may only be 'missing' (an
 Journal gate: every score_history entry after the first carries a rationale.
 """
 
+import math
 import re
 import os
 import sys
@@ -93,6 +94,87 @@ GEO_WAIVERS = {
     "es-aws-aragon-el-burgo-de-ebro": "2026-09-29 — périmètre EU, correction à cadrer",
     "es-meta-talavera-de-la-reina": "2026-09-29 — périmètre EU, correction à cadrer",
 }
+
+
+SEUIL_POSITION_M = 1.0   # sous le mètre, deux fiches désignent le même point, pas deux points
+
+
+def _metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
+    """Distance plane locale — à l'échelle du mètre, la projection ne coûte rien."""
+    dy = (lat1 - lat2) * 111_320.0
+    dx = (lon1 - lon2) * 111_320.0 * math.cos(math.radians((lat1 + lat2) / 2))
+    return math.hypot(dx, dy)
+
+
+def position_gate(paths: list[Path]) -> list[str]:
+    """GATE POSITION — deux fiches au même point doivent avoir été TRANCHÉES.
+
+    Pourquoi un gate et pas une consigne de collecte : la coordonnée seule ne distingue pas
+    un doublon d'un campus ni d'un immeuble partagé. Seule une source le fait — adresse
+    postale, registre, relevé. Le gate n'exige donc pas l'absence de paires, il exige
+    l'ADJUDICATION : `position_adjudication` dans la provenance de l'une des deux fiches.
+
+    Il existe parce que le contrôle a d'abord été appliqué à un seul lot. J'ai retenu 13
+    fiches britanniques sur ce critère, puis mesuré le corpus entier : 78 paires à un mètre
+    ou moins étaient DÉJÀ servies, sur neuf autres pays, dont des doublons manifestes. Le
+    standard était bon, son périmètre était faux.
+
+    Les paires d'alors sont inventoriées dans `position_waivers` — une dette datée qui doit
+    décroître, pas une permission. Toute paire nouvelle est refusée.
+
+    Le gate est DÉTERMINISTE : il ne lit que le corpus et les sidecars de provenance, aucun
+    réseau. Mesure dehors, décision dedans, comme le gate géo.
+    """
+    from .position_waivers import POSITION_WAIVERS
+
+    pts: list[tuple[str, float, float]] = []
+    tranchees: set[str] = set()
+    for p in paths:
+        try:
+            d = load_json(p)
+        except Exception:  # noqa: BLE001 — l'illisibilité est déjà signalée ailleurs
+            continue
+        c = ((d.get("identity") or {}).get("coordinates")) or {}
+        if not isinstance(c.get("lat"), (int, float)) or not isinstance(c.get("lon"), (int, float)):
+            continue
+        pts.append((p.stem, float(c["lat"]), float(c["lon"])))
+        prov = p.with_name(p.stem + ".provenance.json")
+        if prov.is_file():
+            try:
+                if "position_adjudication" in load_json(prov):
+                    tranchees.add(p.stem)
+            except Exception:  # noqa: BLE001
+                pass
+
+    # Balayage par latitude croissante : deux points à moins d'un mètre le sont d'abord en
+    # latitude, donc la fenêtre se referme tout de suite. Le corpus entier en une passe.
+    pts.sort(key=lambda t: t[1])
+    out: list[str] = []
+    vues: set[tuple[str, str]] = set()
+    for i, a in enumerate(pts):
+        for b in pts[i + 1:]:
+            if (b[1] - a[1]) * 111_320.0 > SEUIL_POSITION_M:
+                break
+            if _metres(a[1], a[2], b[1], b[2]) > SEUIL_POSITION_M:
+                continue
+            paire = tuple(sorted((a[0], b[0])))          # type: ignore[assignment]
+            if paire in vues:
+                continue
+            vues.add(paire)
+            if paire[0] in tranchees or paire[1] in tranchees:
+                continue                                  # tranchée : elle passe au mérite
+            if paire in POSITION_WAIVERS:
+                continue                                  # dette inventoriée, datée, à résorber
+            out.append(
+                f"GATE POSITION: {paire[0]!r} et {paire[1]!r} occupent le même point "
+                f"(≤ {SEUIL_POSITION_M:.0f} m) sans adjudication — trancher (doublon, campus "
+                f"ou immeuble partagé) et écrire `position_adjudication` en provenance"
+            )
+    reste = len(POSITION_WAIVERS)
+    if reste:
+        print(f"GATE POSITION: {reste} paire(s) co-localisées héritées restent à trancher "
+              f"(engine/position_waivers.py) — cette dette doit décroître", file=sys.stderr)
+    return out
 
 
 def _geo_gate(data_dir: Path) -> list[str]:
