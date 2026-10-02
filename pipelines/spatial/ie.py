@@ -73,7 +73,10 @@ def collect_e1_eirgrid(accessed: str) -> dict | None:
             return None  # transient (the dashboard 503s) — not cached, a later DC retries the year
         vals += [r.get("Value") for r in data.get("Rows", []) if r.get("Value") is not None]
         cur = nxt
-    if not vals:
+    # Same guard as GB: a window that returns 200 with empty Rows raises nothing, so without this the
+    # loop could emit a "12-month mean" quietly computed on a few months. A full year is 365*48 half
+    # hours; below 95 % we refuse rather than publish a partial-year average as a national constant.
+    if len(vals) < int(0.95 * 365 * 48):
         return None
     mean = round(sum(vals) / len(vals), 1)
     result = {
