@@ -1,4 +1,4 @@
-.PHONY: validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations validate-corpus
+.PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations validate-corpus
 
 install:
 	uv sync
@@ -125,8 +125,17 @@ methodology-doc:
 # satellite AUTOMATIQUEMENT au build de prod — génération idempotente (skip si
 # déjà sur R2), non fatale (le build n'échoue jamais pour une image), politesse
 # réseau. Secret HMAC + base URL : ~/.smdc/media.env (hors repos).
+# Projection UMAP du comparateur — À FROID, jamais dans le build. umap-learn tire numba et
+# llvmlite : en faire une dépendance de `make deploy` rendrait une mise en ligne otage d'une
+# pile de calcul scientifique. La projection ne bouge pas d'un jour à l'autre ; elle vit en
+# cache dans le newsroom et `prod-artifacts` se contente de la relire.
+# À rejouer quand un lot de fiches arrive dans un pays (le cache se périme sur le compte).
+comparator-projection:
+	uv run python scripts/build_comparator.py --projection
+
 prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py
+	uv run python scripts/build_comparator.py
 	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2
 

@@ -8,6 +8,11 @@ dependencies = [
     "jsonschema>=4",
     "pillow>=12.3.0",
     "requests>=2.34.2",
+    # Comparateur (scripts/build_comparator.py) : distances et imputation du chemin CHAUD,
+    # celui que `make prod-artifacts` rejoue à chaque build. UMAP et son numba restent dehors,
+    # dans le chemin froid — la projection vit en cache dans le newsroom.
+    "numpy>=2",
+    "scikit-learn>=1.5",
 ]
 
 [dependency-groups]
