@@ -186,16 +186,16 @@ def test_geo_gate_inerte_sans_newsroom_mais_mordant_avec(tmp_path, monkeypatch):
     échoue là où il ne peut rien protéger finit par être désactivé, et c'est alors le vrai
     cas qui passe.
     """
-    from engine.validate import _geo_gate
+    from engine.validate import geo_gate
     from engine.core import DATA_DIR
 
     monkeypatch.setenv("NEWSROOM_CAL", str(tmp_path / "jamais-monte"))
-    assert _geo_gate(DATA_DIR) == [], "sans newsroom, le gate doit se taire (CI, clone frais)"
+    assert geo_gate(DATA_DIR) == [], "sans newsroom, le gate doit se taire (CI, clone frais)"
 
     newsroom = tmp_path / "newsroom-sans-sidecar"
     newsroom.mkdir()
     monkeypatch.setenv("NEWSROOM_CAL", str(newsroom))
-    violations = _geo_gate(DATA_DIR)
+    violations = geo_gate(DATA_DIR)
     assert any("sidecar" in v for v in violations), (
         "avec un newsroom monté et PAS de sidecar, le gate doit refuser — sinon il suffirait "
         "de ne pas lancer la mesure pour passer"
@@ -269,3 +269,41 @@ def test_position_waivers_est_une_dette_pas_une_regle():
         assert re.match(r"^20\d\d-\d\d-\d\d — ", motif), (
             f"{paire!r} : une dérogation sans date ni motif est un aveu d'échec — {motif!r}"
         )
+
+
+def test_geo_gate_refuse_une_fiche_indecidable(tmp_path, monkeypatch):
+    """Une fiche qu'on ne sait PAS juger ne part pas en ligne.
+
+    Le détecteur classait « faux positif » — donc sain — une fiche près d'un centroïde dont
+    le verdict bâtiment manquait. Une fiche jamais mesurée ressemblait alors à une fiche
+    mesurée et propre, et le détecteur paraissait d'autant plus net qu'on lui ajoutait des
+    fiches qu'il ne savait pas juger. Le troisième état `non_evalue` vient d'agent-data-
+    pipeline-FR ; ce test fixe la conséquence côté gate, qui est de refuser.
+    """
+    from engine.validate import geo_gate, GEO_WAIVERS
+    from engine.core import DATA_DIR, datacenter_paths
+
+    newsroom = tmp_path / "newsroom"
+    (newsroom / "geo-audit").mkdir(parents=True)
+    sidecar = newsroom / "geo-audit" / "centroid-check.json"
+    monkeypatch.setenv("NEWSROOM_CAL", str(newsroom))
+    n = len(datacenter_paths(DATA_DIR))
+
+    def ecrire(non_evalues):
+        sidecar.write_text(json.dumps({
+            "meta": {"counts": {"testées": n}},
+            "fabriquees_probables": [],
+            "non_evalues": [{"id": i} for i in non_evalues],
+        }), encoding="utf-8")
+
+    ecrire([])
+    assert geo_gate(DATA_DIR) == [], "mesure complète et rien à signaler : le gate se tait"
+
+    ecrire(["xx-jamais-mesuree"])
+    violations = geo_gate(DATA_DIR)
+    assert any("xx-jamais-mesuree" in v and "indécidable" in v for v in violations), (
+        "une fiche sans verdict bâtiment doit être REFUSÉE, pas comptée saine"
+    )
+
+    monkeypatch.setitem(GEO_WAIVERS, "xx-jamais-mesuree", "2026-10-02 — cas de test")
+    assert geo_gate(DATA_DIR) == [], "une dérogation datée la fait passer, comme pour les fabriquées"

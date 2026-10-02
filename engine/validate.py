@@ -177,7 +177,7 @@ def position_gate(paths: list[Path]) -> list[str]:
     return out
 
 
-def _geo_gate(data_dir: Path) -> list[str]:
+def geo_gate(data_dir: Path) -> list[str]:
     """GATE GÉO — une coordonnée fabriquée ne doit pas pouvoir entrer dans le corpus.
 
     Pourquoi ce gate est ICI et pas dans une consigne envoyée à un agent (Franck, 2026-09-29,
@@ -219,6 +219,16 @@ def _geo_gate(data_dir: Path) -> list[str]:
     for fid in sorted(flagged - set(GEO_WAIVERS)):
         out.append(f"GATE GÉO: {fid!r} a une coordonnée de géocodeur (centre de commune) — "
                    f"localiser le site réel, ou inscrire une dérogation motivée et datée")
+    # NON ÉVALUÉES — près d'un centroïde, mais sans verdict bâtiment, donc INDÉCIDABLES.
+    # Elles étaient comptées « faux positif », c'est-à-dire saines : une fiche jamais mesurée
+    # ressemblait à une fiche mesurée et propre, et le détecteur paraissait d'autant plus net
+    # qu'on lui ajoutait des fiches qu'il ne savait pas juger. Le troisième état est venu
+    # d'agent-data-pipeline-FR ; ici on en tire la conséquence, qui est de REFUSER. Une fiche
+    # qu'on ne sait pas juger ne part pas en ligne — c'est tout l'objet de ce gate.
+    for fid in sorted({e["id"] for e in report.get("non_evalues", [])} - set(GEO_WAIVERS)):
+        out.append(f"GATE GÉO: {fid!r} est près d'un centroïde de commune et n'a PAS de verdict "
+                   f"bâtiment — indécidable, donc refusée : lancer l'audit bâtiment "
+                   f"(`python -m pipelines.geo_audit.audit`) sur cette fiche")
     # Couverture : le sidecar ne liste que les cas remarquables, pas les fiches saines. On
     # vérifie donc que la MESURE a bien porté sur tout le corpus — sinon il suffirait de ne
     # pas relancer le détecteur après un onboarding pour passer le gate sans être vu.
@@ -425,7 +435,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                 problems.append(f"GATE 1: {label}: duplicate watchlist id {entry['id']!r}")
             seen_watch_ids.add(entry["id"])
 
-    problems += _geo_gate(data_dir)
+    problems += geo_gate(data_dir)
 
     return problems
 
