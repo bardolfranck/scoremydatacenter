@@ -2146,3 +2146,6 @@ th.dev-cmp-pro { color: var(--accent); }
    de notre collecte, qu'on assume. Même teinte que le pilier mince, pas de rouge. */
 .idx-cmp { min-width: 190px; font-size: 0.8rem; }
 .idx-cmp-mince { font-style: normal; color: var(--muted); border-bottom: 1px dotted rgba(224, 140, 90, 0.6); }
+/* Mention du comparateur, grisée : le même libellé, sans l'affordance du lien. Pas de
+   soulignement, pas de curseur main — rien qui promette un clic qui n'arrivera pas. */
+.idx-cmp-lien-off { color: var(--muted); opacity: 0.65; }
