@@ -11,6 +11,13 @@
 
 export const FLAG_SVG: Record<string, string> = {
   // — current corpus (17) —
+  // Hors Europe — l'international est dans la mission, pas une extension (Franck).
+  IS: '<rect width="30" height="20" fill="#02529C"/><rect y="7.4" width="30" height="5.2" fill="#fff"/><rect x="9.4" width="5.2" height="20" fill="#fff"/><rect y="8.8" width="30" height="2.4" fill="#DC1E35"/><rect x="10.8" width="2.4" height="20" fill="#DC1E35"/>',
+  IL: '<rect width="30" height="20" fill="#fff"/><rect y="2.4" width="30" height="2.6" fill="#0038B8"/><rect y="15" width="30" height="2.6" fill="#0038B8"/><path d="M15 6.6 12.2 11.4h5.6zM15 13.4 12.2 8.6h5.6z" fill="none" stroke="#0038B8" stroke-width="0.75"/>',
+  US: '<rect width="30" height="20" fill="#B22234"/><rect y="1.54" width="30" height="1.54" fill="#fff"/><rect y="4.62" width="30" height="1.54" fill="#fff"/><rect y="7.70" width="30" height="1.54" fill="#fff"/><rect y="10.78" width="30" height="1.54" fill="#fff"/><rect y="13.86" width="30" height="1.54" fill="#fff"/><rect y="16.94" width="30" height="1.54" fill="#fff"/><rect width="12" height="10.77" fill="#3C3B6E"/><circle cx="1.4" cy="1.4" r="0.45" fill="#fff"/><circle cx="3.5" cy="1.4" r="0.45" fill="#fff"/><circle cx="5.6" cy="1.4" r="0.45" fill="#fff"/><circle cx="7.7" cy="1.4" r="0.45" fill="#fff"/><circle cx="9.8" cy="1.4" r="0.45" fill="#fff"/><circle cx="1.4" cy="3.5" r="0.45" fill="#fff"/><circle cx="3.5" cy="3.5" r="0.45" fill="#fff"/><circle cx="5.6" cy="3.5" r="0.45" fill="#fff"/><circle cx="7.7" cy="3.5" r="0.45" fill="#fff"/><circle cx="9.8" cy="3.5" r="0.45" fill="#fff"/><circle cx="1.4" cy="5.6" r="0.45" fill="#fff"/><circle cx="3.5" cy="5.6" r="0.45" fill="#fff"/><circle cx="5.6" cy="5.6" r="0.45" fill="#fff"/><circle cx="7.7" cy="5.6" r="0.45" fill="#fff"/><circle cx="9.8" cy="5.6" r="0.45" fill="#fff"/><circle cx="1.4" cy="7.7" r="0.45" fill="#fff"/><circle cx="3.5" cy="7.7" r="0.45" fill="#fff"/><circle cx="5.6" cy="7.7" r="0.45" fill="#fff"/><circle cx="7.7" cy="7.7" r="0.45" fill="#fff"/><circle cx="9.8" cy="7.7" r="0.45" fill="#fff"/>',
+  MA: '<rect width="30" height="20" fill="#C1272D"/><path d="M15 6.4 16.8 11.9 12.1 8.5h5.8L13.2 11.9z" fill="none" stroke="#006233" stroke-width="0.8"/>',
+  TN: '<rect width="30" height="20" fill="#E70013"/><circle cx="15" cy="10" r="6" fill="#fff"/><circle cx="15.6" cy="10" r="4.1" fill="#E70013"/><circle cx="17.2" cy="10" r="3.3" fill="#fff"/><path d="M16.2 8.2 16.9 10.3 15.1 9h2.2L15.5 10.3z" fill="#E70013"/>',
+  DZ: '<rect width="30" height="20" fill="#fff"/><rect width="15" height="20" fill="#006233"/><circle cx="15" cy="10" r="5.4" fill="#D21034"/><circle cx="16.4" cy="10" r="4.4" fill="#fff"/><path d="M17.4 7.9 18.2 10.3 16.2 8.8h2.5L16.7 10.3z" fill="#D21034"/>',
   FR: '<rect width="10" height="20" fill="#002395"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#ED2939"/>',
   DE: '<rect width="30" height="6.67" fill="#000"/><rect width="30" height="6.67" y="6.67" fill="#D00"/><rect width="30" height="6.66" y="13.33" fill="#FFCE00"/>',
   IT: '<rect width="10" height="20" fill="#009246"/><rect x="10" width="10" height="20" fill="#fff"/><rect x="20" width="10" height="20" fill="#CE2B37"/>',
@@ -45,6 +52,12 @@ export const FLAG_SVG: Record<string, string> = {
 };
 
 export const COUNTRY_NAME: Record<string, { fr: string; en: string }> = {
+  IS: { fr: "Islande", en: "Iceland" },
+  IL: { fr: "Israël", en: "Israel" },
+  US: { fr: "États-Unis", en: "United States" },
+  MA: { fr: "Maroc", en: "Morocco" },
+  TN: { fr: "Tunisie", en: "Tunisia" },
+  DZ: { fr: "Algérie", en: "Algeria" },
   FR: { fr: "France", en: "France" }, DE: { fr: "Allemagne", en: "Germany" },
   IT: { fr: "Italie", en: "Italy" }, BE: { fr: "Belgique", en: "Belgium" },
   NL: { fr: "Pays-Bas", en: "Netherlands" }, ES: { fr: "Espagne", en: "Spain" },
