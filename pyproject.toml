@@ -19,6 +19,14 @@ dependencies = [
 dev = [
     "pytest>=8",
 ]
+# Chemin FROID du comparateur, tenu HORS des dépendances du projet et hors du groupe par
+# défaut : umap-learn tire numba et llvmlite, et `uv run` n'installe un groupe nommé que si
+# on le demande (`--group projection`). Une mise en ligne ne porte donc jamais cette pile,
+# mais la commande documentée `make comparator-projection` tourne telle quelle — sans quoi
+# un cache périmé bloque le build, ce qui est arrivé le 2026-10-02 au passage de GB à 137.
+projection = [
+    "umap-learn>=0.5",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["engine/tests"]
