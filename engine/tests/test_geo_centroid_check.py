@@ -28,6 +28,15 @@ def test_pres_oracle_mais_sur_batiment_est_faux_positif():
     assert C.classer(10.0, "near_building") == "faux_positif"
 
 
+def test_pres_oracle_mais_batiment_inconnu_est_non_evalue():
+    # Fail-open corrigé : un verdict bâtiment manquant près d'un centroïde n'est JAMAIS « sain ».
+    # Une fiche jamais mesurée ne doit pas ressembler à une fiche mesurée et saine.
+    assert C.classer(0.0, None) == "non_evalue"
+    assert C.classer(149.0, None) == "non_evalue"
+    # mais loin de tout oracle, un verdict manquant n'a aucune importance (pas près d'un centroïde).
+    assert C.classer(500.0, None) is None
+
+
 def test_loin_de_tout_oracle_nest_pas_signale():
     assert C.classer(151.0, "off_building") is None       # au-delà du seuil
     assert C.classer(5000.0, "no_building") is None

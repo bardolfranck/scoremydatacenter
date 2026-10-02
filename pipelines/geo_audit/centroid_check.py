@@ -57,11 +57,16 @@ NOT_ON_BUILDING = {"off_building", "no_building"}
 
 
 def classer(closest_m: float | None, verdict: str | None) -> str | None:
-    """Le critère COMBINÉ, isolé pour être testable sans réseau : près d'un oracle (< seuil) ET
-    pas sur un bâtiment → géo fabriquée ; près d'un oracle mais SUR un bâtiment → faux positif
-    (vrai DC d'une commune dense) ; loin de tout oracle → rien à signaler."""
+    """Le critère COMBINÉ, isolé pour être testable sans réseau. Près d'un oracle (< seuil) :
+    pas sur un bâtiment → géo fabriquée ; sur un bâtiment → faux positif (vrai DC d'une commune
+    dense) ; **statut bâtiment INCONNU → `non_evalue`, surtout PAS faux positif** — une fiche
+    jamais mesurée ne doit jamais ressembler à une fiche mesurée et saine (sinon le détecteur
+    a l'air d'autant plus propre qu'on lui ajoute des fiches non testées : fail-open). Loin de
+    tout oracle → rien à signaler."""
     if closest_m is None or closest_m > THRESHOLD_M:
         return None
+    if verdict is None:
+        return "non_evalue"
     return "fabriquee" if verdict in NOT_ON_BUILDING else "faux_positif"
 
 
@@ -159,6 +164,7 @@ def main(argv: list[str] | None = None) -> int:
 
     fabriquees: list[dict] = []
     faux_positifs: list[dict] = []
+    non_evalues: list[dict] = []
     erreurs = 0
     for i, (cid, lat, lon, country) in enumerate(fiches):
         try:
@@ -184,6 +190,9 @@ def main(argv: list[str] | None = None) -> int:
             elif verdict_classe == "faux_positif":
                 rec["flag"] = "faux positif — sur un vrai bâtiment"
                 faux_positifs.append(rec)
+            elif verdict_classe == "non_evalue":
+                rec["flag"] = "NON ÉVALUÉ — près d'un centroïde, test bâtiment manquant"
+                non_evalues.append(rec)
         except Exception as e:  # noqa: BLE001
             erreurs += 1
             print(f"   ⚠ {cid}: {e}")
@@ -199,10 +208,15 @@ def main(argv: list[str] | None = None) -> int:
                        "l'autre, ET coordonnée PAS sur un bâtiment (off/no_building) = géo fabriquée "
                        "probable. Le test bâtiment élimine les vrais DC de petites communes denses."),
             "note": "Interne newsroom — jamais dans le build public.",
+            "angle_mort": ("ne teste que le centroïde de COMMUNE (reverse zoom 10) ; ne voit PAS "
+                           "les aires sub-communales (outcode/postcode, ex. UB11) ; hors FR un seul "
+                           "oracle (Nominatim), faute d'INSEE — 2ᵉ oracle mondial (GeoNames) à venir."),
             "counts": {"testées": len(fiches), "GÉO_FABRIQUÉE_PROBABLE": len(fabriquees),
-                       "faux_positifs_sur_bâtiment": len(faux_positifs), "erreurs": erreurs},
+                       "faux_positifs_sur_bâtiment": len(faux_positifs),
+                       "non_evalues": len(non_evalues), "erreurs": erreurs},
         },
         "fabriquees_probables": sorted(fabriquees, key=lambda r: r["closest_m"]),
+        "non_evalues": sorted(non_evalues, key=lambda r: r["closest_m"]),
         "faux_positifs": sorted(faux_positifs, key=lambda r: r["closest_m"]),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -210,7 +224,8 @@ def main(argv: list[str] | None = None) -> int:
     tmp.write_text(json.dumps(doc, ensure_ascii=False, indent=1))
     tmp.replace(OUT)
     print(f"testées {len(fiches)} · GÉO FABRIQUÉE PROBABLE {len(fabriquees)} · "
-          f"faux positifs (sur bâtiment) {len(faux_positifs)} · erreurs {erreurs}")
+          f"non évalués {len(non_evalues)} · faux positifs (sur bâtiment) {len(faux_positifs)} · "
+          f"erreurs {erreurs}")
     for r in fabriquees:
         print(f"   ⚠ {r['closest_m']:6.1f} m [{r['closest_oracle']}]  {r['commune']}  "
               f"{r['audit_verdict']}  {r['id']}")
