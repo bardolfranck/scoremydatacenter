@@ -41,6 +41,7 @@ QUATRE DÉCISIONS, chacune payée par une mesure.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import sys
@@ -158,17 +159,27 @@ def projection(pays: str, D: np.ndarray, froid: bool = False,
     pas d'un jour à l'autre — on la recalcule à froid, on la relit au build.
 
     `froid` AUTORISE le recalcul (chemin `make comparator-projection`), il ne l'impose pas :
-    seuls les pays dont le compte a bougé repassent par UMAP. Sans ça, rejouer la projection
-    pour UN pays redessinait les douze autres — et comme le dessin n'est pas rejouable à
-    l'identique, ça remplaçait douze cartes relues et validées sans qu'aucune donnée ait
-    changé. `force` est là pour le jour où on décide vraiment de tout refaire.
+    seuls les pays dont les DONNÉES ont bougé repassent par UMAP. Sans ça, rejouer la
+    projection pour UN pays redessinait les douze autres — et comme le dessin n'est pas
+    rejouable à l'identique, ça remplaçait douze cartes relues et validées sans qu'aucune
+    donnée ait changé. `force` est là pour le jour où on décide vraiment de tout refaire.
+
+    LE CACHE SE PÉRIME SUR LES DISTANCES, PAS SUR LE COMPTE. Il a d'abord été indexé sur le
+    seul nombre de sites, et ça a tenu jusqu'au jour où une VALEUR a changé sans que le compte
+    bouge : l'intensité carbone britannique, harmonisée sur les 148 fiches (2026-10-02). Les
+    listes de voisins, recalculées, perdaient bien l'artefact de millésime — 99 % de voisinage
+    entre fiches d'un même millésime, retombé à 3 % — pendant que la CARTE, relue en cache,
+    continuait d'afficher les familles d'avant. Deux vérités à l'écran sur la même page.
     """
     cache = PROJ_DIR / f"{pays}.json"
+    # Empreinte des distances, arrondies pour ne pas se périmer sur du bruit de virgule.
+    sig = hashlib.sha256(np.round(np.where(np.isfinite(D), D, -1.0), 6).tobytes()).hexdigest()[:16]
     if cache.is_file() and not force:
         d = json.loads(cache.read_text())
-        if d.get("n") == len(D):
+        if d.get("n") == len(D) and d.get("sig") == sig:
             return np.array(d["xy"], dtype=float), np.array(d["familles"], dtype=int)
-        quoi = f"cache périmé ({d.get('n')} ≠ {len(D)})"
+        quoi = (f"cache périmé ({d.get('n')} ≠ {len(D)})" if d.get("n") != len(D)
+                else "cache périmé (mêmes sites, distances différentes)")
     else:
         quoi = "aucun cache" if not cache.is_file() else "recalcul demandé"
     if not froid:
@@ -188,7 +199,8 @@ def projection(pays: str, D: np.ndarray, froid: bool = False,
     xy = np.round(xy, 5)
     lab = DBSCAN(metric="precomputed", **DBSCAN_PARAMS).fit_predict(Dp)
     PROJ_DIR.mkdir(parents=True, exist_ok=True)
-    cache.write_text(json.dumps({"n": len(D), "umap": UMAP_PARAMS, "dbscan": DBSCAN_PARAMS,
+    cache.write_text(json.dumps({"n": len(D), "sig": sig,
+                                 "umap": UMAP_PARAMS, "dbscan": DBSCAN_PARAMS,
                                  "xy": [[float(a), float(b)] for a, b in xy],
                                  "familles": [int(x) for x in lab]}, ensure_ascii=False))
     return xy, lab
