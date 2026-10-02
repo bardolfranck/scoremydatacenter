@@ -43,6 +43,21 @@ def test_loin_de_tout_oracle_nest_pas_signale():
     assert C.classer(None, "off_building") is None         # aucun oracle n'a répondu
 
 
+def test_geonames_oracle_plus_proche_centroïde(monkeypatch):
+    # Oracle local, sans réseau : on injecte des centroïdes GeoNames et on vérifie le plus proche.
+    monkeypatch.setitem(C._GN_PLACES, "CH", [(47.1430, 8.4310, "Rotkreuz"), (47.17, 8.51, "Zug")])
+    d, nom = C.geonames_oracle(47.1417, 8.43055, "CH")   # ~ le point ckw
+    assert nom == "Rotkreuz" and d < 200          # GeoNames place Rotkreuz tout près (cas ckw)
+    # pays inconnu / vide → pas d'oracle (pas de dump à choisir).
+    assert C.geonames_oracle(47.0, 8.0, "") == (None, None)
+
+
+def test_geonames_absent_ne_fait_pas_crasher(monkeypatch):
+    # Dump indisponible (réseau) → liste vide → None, le MIN retombe sur les autres oracles.
+    monkeypatch.setitem(C._GN_PLACES, "ZZ", [])
+    assert C.geonames_oracle(10.0, 10.0, "ZZ") == (None, None)
+
+
 def test_seuil_est_bien_150():
     assert C.THRESHOLD_M == 150.0
     assert C.classer(150.0, "off_building") == "fabriquee"   # borne incluse

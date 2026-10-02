@@ -37,8 +37,10 @@ import argparse
 import json
 import math
 import time
+import io
 import urllib.parse
 import urllib.request
+import zipfile
 from datetime import date
 from pathlib import Path
 
@@ -47,6 +49,7 @@ NEWSROOM = REPO.parent / "smdc-newsroom" / "calibration"   # dépôt privé vois
 OUT = NEWSROOM / "geo-audit" / "centroid-check.json"
 ONBUILDING = NEWSROOM / "geo-audit" / "on-building.json"
 CACHE = REPO / ".media-sat" / "centroid-cache.json"        # gitignored, politesse réseau
+GEONAMES_DIR = REPO / ".media-sat" / "geonames"            # dumps per-pays, gitignored
 
 UA = "ScoreMyDataCenter/geo-audit (+https://scoremydatacenter.org)"
 THRESHOLD_M = 150.0
@@ -83,6 +86,12 @@ def _get(url: str):
     req = urllib.request.Request(url, headers={"User-Agent": UA})
     with urllib.request.urlopen(req, timeout=30) as r:
         return json.loads(r.read())
+
+
+def _get_bytes(url: str) -> bytes:
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        return r.read()
 
 
 def _load_cache() -> dict:
@@ -135,6 +144,58 @@ def nominatim_oracle(lat: float, lon: float, cache: dict) -> tuple[float | None,
     return tuple(cache[key])
 
 
+_GN_PLACES: dict[str, list[tuple[float, float, str]]] = {}   # centroïdes GeoNames par pays (mémoire)
+
+
+def _geonames_places(cc: str) -> list[tuple[float, float, str]]:
+    """Centroïdes GeoNames (lieux peuplés P + unités admin A) d'un pays, depuis le dump LOCAL.
+
+    Dump per-pays CC-BY 4.0 (download.geonames.org), téléchargé UNE fois dans .media-sat — pas
+    l'API : pas de compte, pas de rate-limit, pas de panne au moment où le gate en a besoin. C'est
+    un 2ᵉ répertoire INDÉPENDANT de Nominatim/OSM : deux gazetteers ne placent pas le centre d'une
+    commune au même endroit, donc le MIN des distances rend le test robuste au répertoire d'amont
+    (mesuré : ch-ckw à 1560 m de Nominatim mais 141 m de GeoNames). Échec réseau → liste vide, le
+    MIN retombe sur les autres oracles (pas de crash)."""
+    if cc in _GN_PLACES:
+        return _GN_PLACES[cc]
+    txt = GEONAMES_DIR / f"{cc}.txt"
+    if not txt.is_file():
+        GEONAMES_DIR.mkdir(parents=True, exist_ok=True)
+        try:
+            data = _get_bytes(f"https://download.geonames.org/export/dump/{cc}.zip")
+            raw = zipfile.ZipFile(io.BytesIO(data)).read(f"{cc}.txt").decode("utf-8", "ignore")
+            txt.write_text(raw, encoding="utf-8")
+        except Exception:  # noqa: BLE001
+            _GN_PLACES[cc] = []
+            return []
+    places: list[tuple[float, float, str]] = []
+    for ln in txt.read_text(encoding="utf-8", errors="ignore").splitlines():
+        f = ln.split("\t")
+        if len(f) < 8 or f[6] not in ("P", "A"):
+            continue
+        try:
+            places.append((float(f[4]), float(f[5]), f[1]))
+        except ValueError:
+            continue
+    _GN_PLACES[cc] = places
+    return places
+
+
+def geonames_oracle(lat: float, lon: float, country: str) -> tuple[float | None, str | None]:
+    """Distance au plus proche centroïde GeoNames du pays (lieu peuplé ou unité admin)."""
+    cc = (country or "").upper()
+    if not cc:
+        return None, None
+    best_d, best_n = None, None
+    for plat, plon, name in _geonames_places(cc):
+        if abs(plat - lat) > 0.06 or abs(plon - lon) > 0.1:   # préfiltre : tout match <150 m y est
+            continue
+        d = metres((lat, lon), (plat, plon))
+        if best_d is None or d < best_d:
+            best_d, best_n = d, name
+    return (round(best_d, 1), best_n) if best_d is not None else (None, None)
+
+
 def corpus() -> list[tuple[str, float, float, str]]:
     """(id, lat, lon, country) pour chaque fiche SERVIE qui porte une coordonnée.
 
@@ -176,23 +237,28 @@ def main(argv: list[str] | None = None) -> int:
         try:
             d_insee, nom_insee = insee_oracle(lat, lon, cache) if country == "FR" else (None, None)
             d_nom, nom_nom = nominatim_oracle(lat, lon, cache)
-            dists = {k: v for k, v in (("insee", d_insee), ("nominatim", d_nom)) if v is not None}
+            d_gn, nom_gn = geonames_oracle(lat, lon, country)
+            dists = {k: v for k, v in (("insee", d_insee), ("nominatim", d_nom), ("geonames", d_gn))
+                     if v is not None}
             verdict = (verdicts.get(cid) or {}).get("verdict")
+            oracle_dist = {"insee": d_insee, "nominatim": d_nom, "geonames": d_gn}
             if not dists:
                 # AUCUN oracle n'a répondu : on ne sait PAS si la coordonnée est un centroïde. Ne
                 # pas la laisser en silence (elle ressemblerait à une fiche saine) — même fail-open
                 # que le verdict bâtiment manquant, un cran plus haut. → non_evalue.
                 non_evalues.append({
                     "id": cid, "commune": None, "country": country,
-                    "oracle_dist_m": {"insee": d_insee, "nominatim": d_nom},
+                    "oracle_dist_m": oracle_dist,
                     "closest_oracle": None, "closest_m": None, "audit_verdict": verdict,
                     "flag": "NON ÉVALUÉ — aucun oracle n'a répondu"})
                 continue
+            # MIN sur tous les oracles : robuste au répertoire d'amont (un point au centre d'UN
+            # gazetteer est vu dès qu'un de nos oracles reproduit ce centre).
             closest_oracle = min(dists, key=dists.get)
             closest_m = dists[closest_oracle]
             rec = {
-                "id": cid, "commune": nom_insee or nom_nom, "country": country,
-                "oracle_dist_m": {"insee": d_insee, "nominatim": d_nom},
+                "id": cid, "commune": nom_insee or nom_gn or nom_nom, "country": country,
+                "oracle_dist_m": oracle_dist,
                 "closest_oracle": closest_oracle, "closest_m": closest_m,
                 "audit_verdict": verdict,
             }
@@ -217,17 +283,18 @@ def main(argv: list[str] | None = None) -> int:
         "meta": {
             "generated_at": date.today().isoformat(),
             "threshold_m": THRESHOLD_M,
-            "method": ("2 oracles géocodeur (geo.api.gouv.fr INSEE + Nominatim), match sur l'un OU "
-                       "l'autre, ET coordonnée PAS sur un bâtiment (off/no_building) = géo fabriquée "
-                       "probable. Le test bâtiment élimine les vrais DC de petites communes denses."),
+            "method": ("3 oracles géocodeur (geo.api.gouv.fr INSEE [FR] + Nominatim + GeoNames local), "
+                       "MIN des distances aux centres de commune, ET coordonnée PAS sur un bâtiment "
+                       "(off/no_building) = géo fabriquée probable. Le MIN rend robuste au répertoire "
+                       "d'amont ; le test bâtiment élimine les vrais DC de petites communes denses."),
             "note": "Interne newsroom — jamais dans le build public.",
-            "angle_mort": ("(1) ne teste que le centroïde de COMMUNE (reverse zoom 10) — rate les "
-                           "aires sub-communales (outcode/postcode, ex. UB11). (2) DÉSACCORD ENTRE "
-                           "RÉPERTOIRES : un point fabriqué depuis un AUTRE gazetteer peut être à "
-                           ">150 m du centre Nominatim et passer inaperçu — mesuré sur ch-ckw "
-                           "(1560 m) et ch-datawire (1331 m), vrais centroïdes de commune non vus. "
-                           "(3) hors FR, un seul oracle (Nominatim), faute d'INSEE. Correctif (2)+(3) "
-                           "= 2ᵉ oracle mondial (GeoNames) + MIN des distances aux deux centres."),
+            "angle_mort": ("le MIN sur {INSEE, Nominatim, GeoNames} rend robuste à CES répertoires, "
+                           "pas à tous. (1) sub-commune : rate les aires plus fines que la commune "
+                           "(outcode/postcode, ex. UB11 — GeoNames n'a pas de centroïdes de code "
+                           "postal). (2) un point fabriqué AUTREMENT que par un centroïde de commune "
+                           "n'est pas visible ici — mesuré sur ch-datawire, à 1084 m de GeoNames et "
+                           "1331 m de Nominatim, et pourtant partagé par deux installations distantes "
+                           "de 98 m (ça, c'est le gate POSITION qui le voit, pas celui-ci)."),
             "counts": {"testées": len(fiches), "GÉO_FABRIQUÉE_PROBABLE": len(fabriquees),
                        "faux_positifs_sur_bâtiment": len(faux_positifs),
                        "non_evalues": len(non_evalues), "erreurs": erreurs},
