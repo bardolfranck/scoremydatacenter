@@ -239,6 +239,27 @@ def geo_gate(data_dir: Path) -> list[str]:
     elif covered < corpus:
         out.append(f"GATE GÉO: détecteur de centroïde périmé — {covered} fiches testées pour "
                    f"{corpus} au corpus ; relancer avant d'onboarder")
+    # CE QUE CE GATE NE DIT PAS, dit à chaque passage. Vert ici ne signifie pas « coordonnées
+    # certifiées » : il signifie « mesurées, et ne tombant pas dans le motif connu ». Deux
+    # angles morts sont établis, et le silence sur eux serait le vrai danger — c'est en
+    # croyant un gate plus large qu'il n'est qu'on publie une coordonnée fabriquée.
+    #
+    #   · il ne teste que le centroïde de COMMUNE : une coordonnée reprise d'une aire plus
+    #     fine (district postal, quartier) passe dessous — la classe qui a fait retenir
+    #     gb-virtus-london5-stockley-park ;
+    #   · il compare à UN répertoire géographique : un point fabriqué depuis un AUTRE
+    #     répertoire peut en être à plus de 150 m et n'être jamais signalé. Quatre fiches
+    #     suisses décrites comme des centroïdes de commune par agent-data-pipeline-EU
+    #     n'apparaissent dans aucune des deux listes du sidecar.
+    #
+    # Et la provenance ne comble pas le trou : au 2026-09-28, 1285 coordonnées sur 1430 sont
+    # `source: unrecorded`. On ne peut donc pas remonter à la source d'un point ; le test
+    # géométrique est tout ce qu'on a.
+    if not out:
+        angle = ((report.get("meta") or {}).get("angle_mort")
+                 or "ne teste que le centroïde de commune, sur un seul répertoire")
+        print(f"GATE GÉO: {covered} fiches mesurées, rien à signaler — ce test {angle}",
+              file=sys.stderr)
     return out
 
 

@@ -307,3 +307,32 @@ def test_geo_gate_refuse_une_fiche_indecidable(tmp_path, monkeypatch):
 
     monkeypatch.setitem(GEO_WAIVERS, "xx-jamais-mesuree", "2026-10-02 — cas de test")
     assert geo_gate(DATA_DIR) == [], "une dérogation datée la fait passer, comme pour les fabriquées"
+
+
+def test_geo_gate_dit_ce_qu_il_ne_voit_pas_quand_il_passe(tmp_path, monkeypatch, capsys):
+    """Vert ne veut pas dire « coordonnées certifiées », et le gate doit le dire lui-même.
+
+    Deux angles morts sont établis : le test ne regarde que le centroïde de COMMUNE (il rate
+    un centroïde de district postal, cf. gb-virtus-london5-stockley-park) et il compare à UN
+    seul répertoire géographique (quatre fiches suisses décrites comme des centroïdes de
+    commune n'apparaissent dans aucune liste du sidecar). La provenance ne rattrape rien :
+    1285 coordonnées sur 1430 sont `unrecorded`. Un gate qu'on croit plus large qu'il n'est
+    vaut moins qu'un gate absent.
+    """
+    from engine.validate import geo_gate
+    from engine.core import DATA_DIR, datacenter_paths
+
+    newsroom = tmp_path / "newsroom"
+    (newsroom / "geo-audit").mkdir(parents=True)
+    monkeypatch.setenv("NEWSROOM_CAL", str(newsroom))
+    (newsroom / "geo-audit" / "centroid-check.json").write_text(json.dumps({
+        "meta": {"counts": {"testées": len(datacenter_paths(DATA_DIR))},
+                 "angle_mort": "ne voit pas les aires sub-communales"},
+        "fabriquees_probables": [], "non_evalues": [],
+    }), encoding="utf-8")
+
+    assert geo_gate(DATA_DIR) == []
+    dit = capsys.readouterr().err
+    assert "rien à signaler" in dit and "ne voit pas les aires sub-communales" in dit, (
+        "quand il passe, le gate doit énoncer sa portée — sinon « vert » se lit « certifié »"
+    )
