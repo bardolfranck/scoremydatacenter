@@ -58,13 +58,27 @@ PROJ_DIR = CAL.parent / "comparator"          # la projection vit dans le newsro
 OUT_DIR = ARTIFACTS_DIR / "comparator"
 
 K_MUTUEL = 8
-AFFICHES = 5
-# SÉLECTIVITÉ : les voisins affichés doivent rester une MINORITÉ du pays. C'est ça, le critère —
-# pas un nombre de fiches rond. Mesuré le 2026-10-02 : en Autriche (9 sites) « vos 5
-# comparables » désignerait 56 % du pays et le filtre mutuel ne rejetterait rien, il serait
-# décoratif. En France ils font 1,2 %. Au-delà de 15 %, on ne sélectionne plus, on énumère.
+AFFICHES_MAX = 5
+
+# SÉLECTIVITÉ : les voisins affichés doivent rester une MINORITÉ du pays — c'est ça, le critère,
+# pas un nombre de fiches rond. Mesuré le 2026-10-02 : en France les 5 voisins font 1,2 % du
+# pays ; en Autriche (9 sites) ils en feraient 56 %, et le filtre mutuel n'y rejette RIEN (0 %
+# contre 20 % en France) — il deviendrait décoratif. Au-delà de 15 %, on n'élit plus, on énumère.
+#
+# Mais un seuil binaire excluait la Grande-Bretagne, gros marché européen, pour un motif qui
+# n'est pas statistique : nous n'y documentons que 14 sites. Un pays absent du comparateur est
+# un TROU DE COLLECTE, pas un pays sans data centers — le cacher, c'est faire passer notre
+# lacune pour une propriété du territoire. Alors on ADAPTE le nombre affiché à la taille du
+# pays : la sélectivité reste constante, et les petits corpus donnent des listes courtes qui
+# disent leur propre maigreur.
 SELECTIVITE_MAX = 0.15
-SEUIL_PAYS = int(np.ceil(AFFICHES / SELECTIVITE_MAX))   # 34 sites aujourd'hui
+AFFICHES_MIN = 2                    # en dessous de deux voisins, ce n'est plus une comparaison
+SEUIL_PAYS = int(np.ceil(AFFICHES_MIN / SELECTIVITE_MAX))   # 14 sites aujourd'hui
+
+# Pays EN VEILLE — notes retirées du public (doctrine Franck, gate A-26). Exclusion de POLICE,
+# pas de statistique : elle ne se déduit d'aucune mesure et ne doit pas dépendre d'un seuil.
+# Garder aligné avec smdc-api/src/veille.js.
+PAYS_EN_VEILLE = {"IL"}
 # Au-delà de ce tiers de l'étendue, une « famille » n'entoure plus rien : on ne la dessine pas.
 DISPERSION_MAX = 0.33
 
@@ -91,6 +105,17 @@ STATUT_EN = {
 
 def _fiches() -> list[dict]:
     return [json.loads(p.read_text()) for p in sorted((ARTIFACTS_DIR / "dc").glob("*.json"))]
+
+
+def _positions() -> dict[str, list[float]]:
+    """Les positions PUBLIQUES, arrondies au centième de degré par l'anti-pillage.
+
+    On ne lit jamais celles du newsroom pour la carte : elles sont au mètre, et la protection
+    qui les arrondit avant publication n'aurait plus de sens si le comparateur les republiait.
+    Un kilomètre suffit largement à situer un point sur une carte de pays.
+    """
+    geo = json.loads((ARTIFACTS_DIR / "map.geojson").read_text())
+    return {f["properties"]["id"]: f["geometry"]["coordinates"] for f in geo["features"]}
 
 
 def _matrice(fiches: list[dict]) -> tuple[list[str], np.ndarray, np.ndarray]:
@@ -147,7 +172,10 @@ def projection(pays: str, D: np.ndarray, force: bool = False) -> tuple[np.ndarra
     return xy, lab
 
 
-def construire(pays: str, fiches: list[dict], libelles: dict, force: bool) -> dict:
+def construire(pays: str, fiches: list[dict], libelles: dict, force: bool,
+               positions: dict[str, list[float]]) -> dict:
+    # Combien de voisins ce pays peut-il porter sans que la liste cesse d'être une sélection ?
+    affiches = max(AFFICHES_MIN, min(AFFICHES_MAX, int(len(fiches) * SELECTIVITE_MAX)))
     cols, X, P = _matrice(fiches)
     Z, D = _distances(X)
     xy, lab = projection(pays, D, force)
@@ -180,7 +208,7 @@ def construire(pays: str, fiches: list[dict], libelles: dict, force: bool) -> di
     for i, f in enumerate(fiches):
         voisins = []
         for j in ordre[i]:
-            if len(voisins) >= AFFICHES:
+            if len(voisins) >= affiches:
                 break
             if rang[j, i] >= K_MUTUEL:            # pas réciproque : pas un comparable
                 continue
@@ -205,10 +233,19 @@ def construire(pays: str, fiches: list[dict], libelles: dict, force: bool) -> di
             "statut_en": STATUT_EN.get(f.get("project_status"), f.get("project_status")),
             "note": g.get("grade"), "puissance_mw": f.get("power_mw"),
             "confiance": round((f.get("confidence") or {}).get("score", 0) * 100),
+            "xy": positions.get(f["id"]),
             "xy2": [round(float(xy[i, 0]), 4), round(float(xy[i, 1]), 4)],
             "famille": int(lab[i]), "comparables": voisins,
         })
-    return {"pays": pays, "k_mutuel": K_MUTUEL, "affiches": AFFICHES,
+    # LARGEUR DE DOCUMENTATION du pays : la médiane des variables communes à un rapprochement.
+    # C'est ce nombre qui dit au lecteur la finesse de la sélection qu'il obtient — 11 en
+    # France, 4 au Royaume-Uni. On publie ce chiffre et RIEN DE PLUS : le détail de quels
+    # indicateurs manquent où serait une carte de nos lacunes, utile surtout à qui voudrait
+    # nous copier ou nous attaquer. Dire la finesse sans détailler la faiblesse.
+    vp = [v["variables_partagees"] for s_ in sites for v in s_["comparables"]]
+    return {"pays": pays, "k_mutuel": K_MUTUEL, "affiches": affiches,
+            "selectivite": round(affiches / len(fiches), 3),
+            "variables_medianes": int(np.median(vp)) if vp else 0,
             "umap": UMAP_PARAMS, "dbscan": DBSCAN_PARAMS,
             "familles": familles, "sites": sites}
 
@@ -223,31 +260,45 @@ def main() -> int:
     libelles = {i["id"]: (i["label"]["fr"] if isinstance(i.get("label"), dict) else i["id"])
                 for i in meth["indicators"]}
     fiches = _fiches()
+    positions = _positions()
     par_pays: dict[str, list[dict]] = {}
     for f in fiches:
         par_pays.setdefault(f.get("country") or "??", []).append(f)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     index, total = [], 0
+    minces = []
     for pays, lot in sorted(par_pays.items()):
-        if len(lot) < SEUIL_PAYS:
+        if pays in PAYS_EN_VEILLE:
             continue
-        doc = construire(pays, lot, libelles, args.projection)
+        if len(lot) < SEUIL_PAYS:
+            # On le DIT au lieu de l'escamoter : la page nommera le pays et son compte, pour
+            # qu'un lecteur distingue « nous n'avons pas encore collecté ici » de « il n'y a
+            # rien ici ». C'est aussi ce qui tire la collecte.
+            minces.append({"pays": pays, "sites": len(lot)})
+            continue
+        doc = construire(pays, lot, libelles, args.projection, positions)
         (OUT_DIR / f"{pays}.json").write_text(json.dumps(doc, ensure_ascii=False))
         servis = sum(1 for s in doc["sites"] if s["comparables"])
         moy = np.mean([len(s["comparables"]) for s in doc["sites"]])
         index.append({"pays": pays, "sites": len(lot), "servis": servis,
+                      "affiches": doc["affiches"], "selectivite": doc["selectivite"],
+                      "variables_medianes": doc["variables_medianes"],
                       "familles": len(doc["familles"])})
         total += len(lot)
         print(f"  {pays} : {len(lot):4} sites · {servis} servis ({servis * 100 // len(lot)} %) · "
-              f"{moy:.1f} comparables en moyenne · {len(doc['familles'])} familles")
+              f"jusqu'à {doc['affiches']} voisins ({doc['selectivite']:.1%} du pays) · "
+              f"{moy:.1f} en moyenne · {doc['variables_medianes']} variables communes · "
+              f"{len(doc['familles'])} familles")
     (OUT_DIR / "index.json").write_text(json.dumps(
-        {"seuil_pays": SEUIL_PAYS, "selectivite_max": SELECTIVITE_MAX, "pays": index},
+        {"seuil_pays": SEUIL_PAYS, "selectivite_max": SELECTIVITE_MAX,
+         "pays": index, "corpus_trop_mince": sorted(minces, key=lambda d: -d["sites"])},
         ensure_ascii=False))
-    ecartes = sorted((p, len(l)) for p, l in par_pays.items() if len(l) < SEUIL_PAYS)
     print(f"comparator: {len(index)} pays, {total} sites · seuil {SEUIL_PAYS} sites "
-          f"({AFFICHES} voisins <= {SELECTIVITE_MAX:.0%} du pays) · "
-          f"écartés : {', '.join(f'{p} ({n})' for p, n in ecartes)}")
+          f"({AFFICHES_MIN} voisins minimum <= {SELECTIVITE_MAX:.0%} du pays)")
+    if minces:
+        print("  corpus trop mince, SIGNALÉ sur le site (trou de collecte, pas absence de sites) : "
+              + ", ".join(f"{m['pays']} ({m['sites']})" for m in minces))
     return 0
 
 

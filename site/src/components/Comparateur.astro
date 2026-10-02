@@ -1,0 +1,502 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// LE COMPARATEUR — « à quels projets celui-ci ressemble-t-il, et que sont-ils devenus ? »
+//
+// Le parcours part du PROJET, pas du filtre. Un analyste compose un corpus ; un élu, un
+// habitant, un militant partent de leur commune. Les deux ont besoin du même moteur, mais
+// l'un entre par la question et l'autre par la sélection — et c'est l'entrée par la question
+// qui n'existait nulle part.
+//
+// Trois vues sur le même groupe : où ils sont, à quoi ils ressemblent, ce qu'ils déclarent.
+// Elles ne se complètent pas par goût du nombre : la carte dit que la ressemblance n'est PAS
+// géographique, la projection dit qu'elle n'est pas non plus arbitraire.
+//
+// CE QUE CETTE PAGE NE FAIT PAS, et c'est délibéré. Elle ne conclut pas. « 3 des 5 projets
+// comparables ont été abandonnés » est un fait sur CES projets ; lu comme un pronostic sur
+// l'ancre, c'est du dénigrement. Le comptage est donc toujours accompagné de sa portée.
+import plotlyUrl from "plotly.js-basic-dist-min/plotly-basic.min.js?url";
+import outlines from "../data/outlines.json";
+
+const { lang, index, pays } = Astro.props as {
+  lang: "fr" | "en";
+  index: any;
+  pays: Record<string, any>;
+};
+
+const t = lang === "fr" ? {
+  titre: "À quels projets celui-ci ressemble-t-il ?",
+  lede: "Choisissez un site ou un projet. Nous cherchons, parmi les sites documentés du même pays, ceux qui lui ressemblent le plus — et nous montrons ce qu'ils sont devenus.",
+  pays: "Pays", recherche: "Commune, nom du site ou exploitant",
+  placeholder: "Ex. Marseille, Equinix, Slough…",
+  vues: ["Carte géographique", "Vue ressemblance", "Tableau"],
+  devenus: "Ce que sont devenus ces", projets: "sites",
+  comparables: "Les comparables", ordre: "ordre non significatif",
+  aucun: "Aucun comparable réciproque dans ce pays.",
+  aucunDetail: "Les sites dont celui-ci est proche ne le comptent pas parmi leurs propres voisins. Nous préférons ne rien afficher plutôt qu'un rapprochement à sens unique.",
+  identique: "Identique à", surLes: "sur les", varObs: "variables observées chez les deux",
+  rapproche: "Le rapproche de", separe: "Les sépare",
+  varPartagees: "variables partagées", ouvrirFiche: "Chaque nom ouvre sa fiche dans un nouvel onglet.",
+  ecartPuissance: "d'écart de puissance — la ressemblance porte sur le territoire, pas sur la taille du projet.",
+  rien: "Aucun site ne correspond.",
+  mince: "Pays dont le corpus ne permet pas encore de comparaison",
+  sitesDoc: "sites documentés",
+  portee: "Ce comptage décrit ces sites-là. Il ne dit rien de ce qui arrivera à",
+  axes: "Les axes ne sont pas interprétables ; seule la structure locale l'est.",
+  molette: "Molette pour zoomer · clic pour ouvrir la fiche",
+  fond: "sites du pays", votre: "Croix : le site de départ", couleur: "Couleur : note A–E",
+  familles: "familles", horsFamille: "sites hors famille",
+  avertissement: "La sélection opère sur les variables documentées de chaque site : plus la documentation est large, plus la sélection est fine.",
+  ici: "Ici, les rapprochements reposent sur",
+  variablesCommunes: "variables communes",
+  methode: "Comment cette liste est faite.",
+  methodeTxt: " Distance sur les variables du score, normalisées, valeurs manquantes estimées à partir des sites les plus proches. Un site n'est retenu que si le site de départ figure lui aussi parmi ses huit plus proches : la ressemblance vaut dans les deux sens, et la liste s'arrête où elle s'arrête plutôt que d'être complétée pour tenir un chiffre rond.",
+  limite: "Ce que cette liste ne dit pas.",
+  limiteTxt: " Nos variables décrivent surtout le territoire — réseau, eau, foncier, voisinage — et très peu la taille du projet. Deux sites voisins ici peuvent être de dimensions très différentes ; c'est signalé ligne à ligne quand les deux puissances sont connues.",
+} : {
+  titre: "Which projects does this one resemble?",
+  lede: "Pick a site or a project. We look, among the documented sites of the same country, for those it most resembles — and we show what became of them.",
+  pays: "Country", recherche: "Municipality, site name or operator",
+  placeholder: "e.g. Marseille, Equinix, Slough…",
+  vues: ["Map", "Resemblance view", "Table"],
+  devenus: "What became of these", projets: "sites",
+  comparables: "The comparables", ordre: "order not meaningful",
+  aucun: "No reciprocal comparable in this country.",
+  aucunDetail: "The sites this one is close to do not count it among their own neighbours. We would rather show nothing than a one-way match.",
+  identique: "Identical to", surLes: "on the", varObs: "variables observed in both",
+  rapproche: "Brings it close to", separe: "Sets them apart",
+  varPartagees: "shared variables", ouvrirFiche: "Each name opens its page in a new tab.",
+  ecartPuissance: "power gap — the resemblance is about the territory, not the size of the project.",
+  rien: "No site matches.",
+  mince: "Countries whose corpus does not yet allow a comparison",
+  sitesDoc: "documented sites",
+  portee: "This count describes those sites. It says nothing about what will happen to",
+  axes: "The axes are not interpretable; only the local structure is.",
+  molette: "Scroll to zoom · click to open the page",
+  fond: "sites in the country", votre: "Cross: the starting site", couleur: "Colour: grade A–E",
+  familles: "families", horsFamille: "sites outside any family",
+  avertissement: "The selection works on the variables documented for each site: the wider the documentation, the finer the selection.",
+  ici: "Here, matches rest on",
+  variablesCommunes: "shared variables",
+  methode: "How this list is built.",
+  methodeTxt: " Distance over the score's variables, normalised, missing values estimated from the nearest sites. A site is kept only if the starting site is also among its own eight nearest: the resemblance holds both ways, and the list stops where it stops rather than being padded to a round number.",
+  limite: "What this list does not say.",
+  limiteTxt: " Our variables mostly describe the territory — grid, water, land, neighbourhood — and very little the size of the project. Two sites adjacent here may differ widely in scale; this is flagged line by line when both powers are known.",
+};
+
+const NOM_PAYS: Record<string, { fr: string; en: string }> = {
+  FR: { fr: "France", en: "France" }, DE: { fr: "Allemagne", en: "Germany" },
+  NL: { fr: "Pays-Bas", en: "Netherlands" }, IT: { fr: "Italie", en: "Italy" },
+  PL: { fr: "Pologne", en: "Poland" }, ES: { fr: "Espagne", en: "Spain" },
+  CH: { fr: "Suisse", en: "Switzerland" }, SE: { fr: "Suède", en: "Sweden" },
+  NO: { fr: "Norvège", en: "Norway" }, BE: { fr: "Belgique", en: "Belgium" },
+  FI: { fr: "Finlande", en: "Finland" }, DK: { fr: "Danemark", en: "Denmark" },
+  GB: { fr: "Royaume-Uni", en: "United Kingdom" }, IE: { fr: "Irlande", en: "Ireland" },
+  LU: { fr: "Luxembourg", en: "Luxembourg" }, AT: { fr: "Autriche", en: "Austria" },
+  PT: { fr: "Portugal", en: "Portugal" },
+};
+const nomPays = (c: string) => NOM_PAYS[c]?.[lang] ?? c;
+
+const dispos = index.pays.map((p: any) => ({ ...p, nom: nomPays(p.pays) }))
+  .sort((a: any, b: any) => a.nom.localeCompare(b.nom, lang));
+const minces = (index.corpus_trop_mince ?? []).map((m: any) => ({ ...m, nom: nomPays(m.pays) }));
+const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+---
+
+<section class="cmp">
+  <header class="cmp-head">
+    <h1>{t.titre}</h1>
+    <p class="cmp-lede">{t.lede}</p>
+  </header>
+
+  <div class="cmp-start">
+    <div class="cmp-field">
+      <label for="cmp-pays">{t.pays}</label>
+      <select id="cmp-pays">
+        {dispos.map((p: any) => (
+          <option value={p.pays}>{`${p.nom} — ${p.sites} ${t.sitesDoc}`}</option>
+        ))}
+      </select>
+    </div>
+    <div class="cmp-field cmp-field-wide">
+      <label for="cmp-q">{t.recherche}</label>
+      <input id="cmp-q" type="search" autocomplete="off" placeholder={t.placeholder} />
+      <div id="cmp-sugg" class="cmp-sugg"></div>
+    </div>
+  </div>
+
+  <div id="cmp-anchor"></div>
+  <div id="cmp-result"></div>
+
+  {minces.length > 0 && (
+    /* Un pays absent du comparateur est un TROU DE COLLECTE, pas un pays sans data centers.
+       On le nomme avec son compte — et sans commenter notre propre insuffisance : le chiffre
+       suffit au lecteur qui veut juger, le commentaire ne serait que de l'autoflagellation. */
+    <p class="cmp-minces">
+      {/* L'espace avant les deux-points est une convention FRANÇAISE : en anglais c'est une
+          faute, et le lecteur anglophone la voit avant de lire la phrase. */}
+      <strong>{t.mince}{lang === "fr" ? " :" : ":"}</strong>{" "}
+      {minces.map((m: any, i: number) => (
+        <>{i > 0 ? " · " : ""}{m.nom} ({m.sites})</>
+      ))}
+    </p>
+  )}
+</section>
+
+<script define:vars={{ lang, pays, outlines, plotlyUrl, ficheBase, t, dispos }}>
+  const $ = (s) => document.querySelector(s);
+  const GC = { A: "#0a7046", B: "#79b03a", C: "#f0c419", D: "#e8701c", E: "#8a1a10" };
+  const gcol = (g) => GC[g] || "#8fa0b3";
+  const loc = lang === "fr" ? "fr-FR" : "en-GB";
+  const nb = (n) => new Intl.NumberFormat(loc).format(n);
+  const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const op = (v) => (!v || v === "unknown")
+    ? (lang === "fr" ? "exploitant non documenté" : "operator not documented") : v;
+  const statut = (s) => lang === "fr" ? s.statut_fr : s.statut_en;
+  const fiche = (id) => `${ficheBase}/${id}/`;
+
+  let PAYS = dispos[0].pays, D = null, BY = {}, ancre = null, vue = "carte", Plotly = null;
+
+  // Plotly est chargé À LA DEMANDE : 1,1 Mo n'ont rien à faire dans le chemin critique d'une
+  // page qu'on peut ouvrir pour lire une seule liste. Et il est AUTO-HÉBERGÉ : un script tiers,
+  // c'est l'adresse IP de chaque visiteur envoyée à un tiers, sur un site qui conditionne déjà
+  // sa mesure d'audience au consentement.
+  async function plotly() {
+    if (!Plotly) { await import(/* @vite-ignore */ plotlyUrl); Plotly = window.Plotly; }
+    return Plotly;
+  }
+
+  function charger(code) {
+    PAYS = code; D = pays[code];
+    BY = Object.fromEntries(D.sites.map((s) => [s.id, s]));
+    const def = D.sites.find((s) => s.comparables.length >= 2) || D.sites[0];
+    $("#cmp-q").value = "";
+    $("#cmp-sugg").innerHTML = "";
+    rendre(def.id);
+  }
+
+  function suggere(q) {
+    const tq = norm(q).trim(), box = $("#cmp-sugg");
+    if (!tq) { box.innerHTML = ""; return; }
+    const hits = D.sites.filter((s) =>
+      norm(s.commune).includes(tq) || norm(s.nom).includes(tq) || norm(s.operateur).includes(tq)
+    ).slice(0, 7);
+    box.innerHTML = hits.length ? hits.map((s) => `
+      <button type="button" data-id="${s.id}">
+        <b>${s.commune ?? ""}</b><em>${s.nom ?? ""}</em>
+        <span>${s.comparables.length}</span>
+      </button>`).join("") : `<p class="cmp-vide">${t.rien}</p>`;
+  }
+
+  const ISSUE = { operational:"#2f6fa8", construction:"#4a90c2", permitted:"#6fa032",
+    permitting:"#8fa0b3", announced:"#8fa0b3", planned:"#8fa0b3", study:"#8fa0b3",
+    consultation:"#dfa918", litigation:"#cf6a1c", suspended:"#bf3b21",
+    abandoned:"#8a2a18", decommissioned:"#6b7f92" };
+
+  function rendre(id) {
+    const a = BY[id]; ancre = a;
+    const c = a.comparables;
+    $("#cmp-anchor").innerHTML = `
+      <div class="cmp-anc">
+        <span class="cmp-grade" style="background:${gcol(a.note)}${a.note === "C" ? ";color:#4a3c00" : ""}">${a.note && a.note.length === 1 ? a.note : "–"}</span>
+        <div>
+          <h2>${a.nom}</h2>
+          <p>${a.commune ?? ""} · ${op(a.operateur)}</p>
+          <p class="cmp-tags">
+            <span>${statut(a)}</span>
+            ${a.puissance_mw ? `<span>${nb(a.puissance_mw)} MW</span>` : ""}
+            <span>${a.confiance} %</span>
+          </p>
+        </div>
+      </div>`;
+
+    if (!c.length) {
+      $("#cmp-result").innerHTML =
+        `<p class="cmp-avert">${t.avertissement}</p>
+         <div class="cmp-none"><b>${t.aucun}</b><br>${t.aucunDetail}</div>${pied()}`;
+      return;
+    }
+    const issues = {};
+    c.forEach((x) => { const k = BY[x.id].statut; issues[k] = (issues[k] || 0) + 1; });
+    const indis = c.every((x) => x.indiscernables);
+
+    $("#cmp-result").innerHTML = `
+      <p class="cmp-avert">${t.avertissement} ${t.ici} <b>${D.variables_medianes} ${t.variablesCommunes}</b>.</p>
+      <div class="cmp-views" role="tablist">
+        ${["carte", "sim", "tab"].map((v, i) =>
+          `<button class="cmp-tab${v === vue ? " on" : ""}" data-v="${v}">${t.vues[i]}</button>`).join("")}
+      </div>
+      <div class="cmp-canvas" id="cmp-canvas"></div>
+      <div id="cmp-legend"></div>
+      <div class="cmp-devenir">
+        <h3>${t.devenus} ${c.length} ${t.projets}</h3>
+        <div class="cmp-bars">${Object.entries(issues).map(([k, v]) =>
+          `<span style="flex:${v};background:${ISSUE[k] || "#8fa0b3"}">${v}</span>`).join("")}</div>
+        <p>${Object.entries(issues).map(([k, v]) =>
+            `<b>${v}</b> ${statut({ statut_fr: k, statut_en: k, ...BY[c.find((x) => BY[x.id].statut === k).id] }).toLowerCase()}`).join(" · ")}.
+           ${t.portee} ${a.nom}.</p>
+      </div>
+      <div class="cmp-list">
+        <h3>${t.comparables}${indis ? ` — ${t.ordre}` : ""}</h3>
+        ${c.map((x) => {
+          const s = BY[x.id];
+          const gap = (a.puissance_mw && s.puissance_mw)
+            ? Math.max(a.puissance_mw, s.puissance_mw) / Math.min(a.puissance_mw, s.puissance_mw) : null;
+          return `<div class="cmp-item">
+            <div class="cmp-item-head">
+              <span class="cmp-grade cmp-grade-sm" style="background:${gcol(s.note)}${s.note === "C" ? ";color:#4a3c00" : ""}">${s.note && s.note.length === 1 ? s.note : "–"}</span>
+              <a href="${fiche(s.id)}" target="_blank" rel="noopener">${s.nom}</a>
+              <span class="cmp-item-meta">${s.commune ?? ""} · ${statut(s)}${s.puissance_mw ? " · " + nb(s.puissance_mw) + " MW" : ""}</span>
+              <span class="cmp-item-var">${x.variables_partagees} ${t.varPartagees}</span>
+            </div>
+            <p>${x.indiscernables
+                ? `<b>${t.identique} ${a.nom}</b> ${t.surLes} ${x.variables_partagees} ${t.varObs}.`
+                : `${t.rapproche} ${a.nom} : <b>${x.rapprochent.join("</b>, <b>")}</b>.`}
+               ${x.separent.length ? `<br>${t.separe} : <b>${x.separent.join("</b>, <b>")}</b>.` : ""}
+               ${gap && gap >= 5 ? `<span class="cmp-gap">⚠ ${gap.toFixed(0)}× ${t.ecartPuissance}</span>` : ""}
+            </p></div>`;
+        }).join("")}
+        <p class="cmp-note">${t.ouvrirFiche}</p>
+      </div>${pied()}`;
+
+    document.querySelectorAll(".cmp-tab").forEach((b) => b.onclick = () => {
+      vue = b.dataset.v;
+      document.querySelectorAll(".cmp-tab").forEach((x) => x.classList.toggle("on", x === b));
+      dessiner();
+    });
+    dessiner();
+  }
+
+  function pied() {
+    return `<div class="cmp-foot">
+      <p><b>${t.methode}</b>${t.methodeTxt}</p>
+      <p><b>${t.limite}</b>${t.limiteTxt}</p></div>`;
+  }
+
+  async function dessiner() {
+    const div = $("#cmp-canvas"), a = ancre, c = a.comparables;
+    if (vue === "tab") { div.innerHTML = tableau(a, c); $("#cmp-legend").innerHTML = ""; return; }
+    const P = await plotly();
+    P.purge(div);
+    const base = { margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)", showlegend: false, hovermode: "closest",
+      font: { family: "Chivo, Inter, sans-serif", size: 11 },
+      hoverlabel: { bgcolor: "#17283a", bordercolor: "#17283a", font: { color: "#fff", size: 12 } } };
+    const conf = { displaylogo: false, responsive: true, scrollZoom: true,
+      modeBarButtonsToRemove: ["select2d", "lasso2d", "autoScale2d", "toggleSpikelines"] };
+    const sel = new Set(c.map((x) => x.id));
+    const bulle = (s) => `<b>${s.nom}</b><br>${s.commune ?? ""} · ${statut(s)}` +
+      (s.puissance_mw ? ` · ${nb(s.puissance_mw)} MW` : "") +
+      `<br>${lang === "fr" ? "note" : "grade"} ${s.note}<extra></extra>`;
+    // `scatter` et non `scattergl` : le canvas WebGL recouvre la couche SVG où Plotly dessine
+    // les formes, et le contour du pays disparaît sous lui — présent dans le DOM, invisible.
+    const pt = (arr, key, size, width, opacity) => ({
+      type: "scatter", mode: "markers",
+      x: arr.map((s) => s[key][0]), y: arr.map((s) => s[key][1]),
+      text: arr.map(bulle), hovertemplate: "%{text}",
+      marker: { size, opacity, color: arr.map((s) => gcol(s.note)),
+                line: { color: width ? "#17283a" : "#54687c", width: width || 0.7 } } });
+
+    const key = vue === "carte" ? "xy" : "xy2";
+    const ok = D.sites.filter((s) => s[key]);
+    const fond = ok.filter((s) => s.id !== a.id && !sel.has(s.id));
+    const comp = c.map((x) => BY[x.id]).filter((s) => s[key]);
+    const traces = [], ids = [];
+    if (a[key] && comp.length) {
+      traces.push({ type: "scatter", mode: "lines", hoverinfo: "skip",
+        x: comp.flatMap((s) => [a[key][0], s[key][0], null]),
+        y: comp.flatMap((s) => [a[key][1], s[key][1], null]),
+        line: { color: "#7f99af", width: 1.2, dash: "dot" } });
+      ids.push([]);
+    }
+    traces.push(pt(fond, key, 8, 0, 0.82)); ids.push(fond.map((s) => s.id));
+    traces.push(pt(comp, key, 15, 2.2, 1)); ids.push(comp.map((s) => s.id));
+    if (a[key]) {
+      traces.push(pt([a], key, 16, 2.4, 1)); ids.push([a.id]);
+      // Le site de départ en CROIX : dans un amas, un rond de plus se fond dans ses voisins.
+      // C'est une forme qu'il faut, pas une taille.
+      traces.push({ type: "scatter", mode: "markers", x: [a[key][0]], y: [a[key][1]],
+        hoverinfo: "skip", marker: { symbol: "x-thin", size: 15, color: "#17283a",
+        line: { color: "#17283a", width: 3 } } });
+      ids.push([]);
+    }
+
+    let layout;
+    if (vue === "carte") {
+      const o = outlines.pays[PAYS];
+      const [x0, y0, x1, y1] = o.bbox;
+      const mx = (x1 - x0) * 0.06, my = (y1 - y0) * 0.06;
+      const latm = Math.cos(((y0 + y1) / 2) * Math.PI / 180);
+      layout = { ...base,
+        shapes: [{ type: "path", path: o.path, xref: "x", yref: "y", layer: "below",
+                   fillcolor: "#dde6ee", line: { color: "#8fa6ba", width: 1.1 } }],
+        xaxis: { visible: false, range: [x0 - mx, x1 + mx] },
+        // Un degré de longitude vaut cos(latitude) degré de latitude : sans ce rapport,
+        // le pays s'étire en largeur — d'autant plus qu'on monte vers la Norvège.
+        yaxis: { visible: false, range: [y0 - my, y1 + my],
+                 scaleanchor: "x", scaleratio: 1 / latm } };
+    } else {
+      const fam = Object.entries(D.familles).filter(([, i]) => i.compacte);
+      const xs = D.sites.map((s) => s.xy2[0]), ys = D.sites.map((s) => s.xy2[1]);
+      const etendue = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) || 1;
+      layout = { ...base,
+        shapes: fam.map(([f]) => {
+          const ps = D.sites.filter((s) => String(s.famille) === String(f));
+          const fx = ps.map((s) => s.xy2[0]), fy = ps.map((s) => s.xy2[1]);
+          return { type: "rect", layer: "below",
+            x0: Math.min(...fx) - etendue * 0.012, x1: Math.max(...fx) + etendue * 0.012,
+            y0: Math.min(...fy) - etendue * 0.012, y1: Math.max(...fy) + etendue * 0.012,
+            line: { color: "#8fa6bb", width: 1, dash: "dot" }, fillcolor: "rgba(15,95,184,.05)" };
+        }),
+        xaxis: { visible: false }, yaxis: { visible: false, scaleanchor: "x" } };
+    }
+
+    await P.newPlot(div, traces, layout, conf);
+    div.on("plotly_click", (ev) => {
+      const p = ev.points[0];
+      const id = (ids[p.curveNumber] || [])[p.pointIndex];
+      if (id) window.open(fiche(id), "_blank", "noopener");
+    });
+    const nFam = Object.keys(D.familles).length;
+    const hors = D.sites.filter((s) => s.famille < 0).length;
+    $("#cmp-legend").innerHTML = `<div class="cmp-leg">
+      <span>${ok.length} ${t.fond}</span><span>${t.votre}</span><span>${t.couleur}</span>
+      ${vue === "sim" ? `<span>${nFam} ${t.familles} · ${hors} ${t.horsFamille}</span><span>${t.axes}</span>` : ""}
+      <span>${t.molette}</span></div>`;
+  }
+
+  function tableau(a, c) {
+    const pastille = (g) => (g && g.length === 1)
+      ? `<span class="cmp-grade cmp-grade-sm" style="background:${gcol(g)}${g === "C" ? ";color:#4a3c00" : ""}">${g}</span>`
+      : `<span class="cmp-na">–</span>`;
+    const ligne = (s, moi) => `<tr${moi ? ' class="cmp-moi"' : ""}>
+      <td><a href="${fiche(s.id)}" target="_blank" rel="noopener">${s.nom}</a></td>
+      <td>${s.commune ?? ""}</td><td>${statut(s)}</td><td>${pastille(s.note)}</td>
+      <td class="cmp-num">${s.puissance_mw ? nb(s.puissance_mw) + " MW" : "—"}</td>
+      <td class="cmp-num">${moi ? "" : c.find((x) => x.id === s.id).variables_partagees}</td></tr>`;
+    return `<div class="cmp-tab-wrap"><table class="cmp-table">
+      <thead><tr><th>${lang === "fr" ? "Site" : "Site"}</th><th>${lang === "fr" ? "Commune" : "Municipality"}</th>
+      <th>${lang === "fr" ? "État" : "Status"}</th><th>${lang === "fr" ? "Note" : "Grade"}</th>
+      <th class="cmp-num">${lang === "fr" ? "Puissance" : "Power"}</th>
+      <th class="cmp-num">${t.varPartagees}</th></tr></thead>
+      <tbody>${ligne(a, true)}${c.map((x) => ligne(BY[x.id], false)).join("")}</tbody>
+      </table><p class="cmp-note">${t.ouvrirFiche}</p></div>`;
+  }
+
+  $("#cmp-pays").addEventListener("change", (e) => charger(e.target.value));
+  $("#cmp-q").addEventListener("input", (e) => suggere(e.target.value));
+  $("#cmp-sugg").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-id]");
+    if (!b) return;
+    $("#cmp-q").value = BY[b.dataset.id].commune ?? "";
+    $("#cmp-sugg").innerHTML = "";
+    rendre(b.dataset.id);
+  });
+  $("#cmp-q").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { const b = $("#cmp-sugg button[data-id]"); if (b) b.click(); }
+  });
+  charger(PAYS);
+</script>
+
+<!-- `is:global` : Astro ne porte ses styles que sur le balisage présent à la compilation.
+     Or l'essentiel de cette page est construit en JS au clic — tout ce balisage-là sortait
+     sans aucun style (constaté : onglets et liste bruts). Tout est préfixé `.cmp`, le risque
+     de collision est nul. -->
+<style is:global>
+  .cmp { max-width: 1120px; margin: 0 auto; padding: 0 20px 56px; }
+  .cmp-head h1 { font-size: clamp(1.5rem, 2.1vw, 2.05rem); letter-spacing: -.04em; margin: 0 0 8px; }
+  .cmp-lede { color: var(--muted); max-width: 680px; margin: 0 0 20px; }
+
+  .cmp-start { display: flex; gap: 14px; flex-wrap: wrap; background: var(--surface, #fff);
+    border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .cmp-field { flex: 0 0 auto; min-width: 200px; }
+  .cmp-field-wide { flex: 1 1 280px; position: relative; }
+  .cmp-field label { display: block; font-size: .73rem; font-weight: 750; color: #445567; margin-bottom: 5px; }
+  .cmp-field select, .cmp-field input { width: 100%; border: 1px solid #cbd6e0; border-radius: 9px;
+    padding: 9px 11px; background: #fff; color: var(--ink); font: inherit; }
+  .cmp-sugg { position: absolute; z-index: 12; left: 0; right: 0; margin-top: 4px;
+    display: flex; flex-direction: column; gap: 2px; }
+  .cmp-sugg button { text-align: left; border: 1px solid var(--line); background: #fff;
+    border-radius: 8px; padding: 8px 11px; font: inherit; font-size: .84rem;
+    display: flex; gap: 9px; align-items: baseline; cursor: pointer; }
+  .cmp-sugg button:hover, .cmp-sugg button:focus { background: #eef6ff; border-color: #9cc2e6; }
+  .cmp-sugg em { font-style: normal; color: var(--muted); font-size: .79rem; }
+  .cmp-sugg span { margin-left: auto; font-family: var(--font-mono); font-size: .71rem; color: var(--na, #8fa0b3); }
+  .cmp-vide { margin: 0; padding: 9px 11px; background: #fff; border: 1px solid var(--line);
+    border-radius: 8px; font-size: .82rem; color: var(--muted); }
+
+  .cmp-anc { display: flex; gap: 14px; align-items: flex-start; margin: 18px 0 0;
+    background: var(--surface, #fff); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; box-shadow: var(--shadow); }
+  .cmp-anc h2 { margin: 0; font-size: 1.22rem; letter-spacing: -.02em; }
+  .cmp-anc p { margin: 2px 0 0; color: var(--muted); font-size: .85rem; }
+  .cmp-tags { margin-top: 6px !important; }
+  .cmp-tags span { display: inline-block; border: 1px solid var(--line); background: var(--wash);
+    border-radius: 999px; padding: 3px 9px; font-size: .73rem; color: #3d5168; margin: 0 6px 0 0; }
+  .cmp-grade { display: inline-grid; place-items: center; width: 36px; height: 36px;
+    border-radius: 9px; color: #fff; font-weight: 850; font-size: 1.05rem; flex: 0 0 auto; }
+  .cmp-grade-sm { width: 23px; height: 23px; font-size: .79rem; border-radius: 6px; }
+  .cmp-na { color: var(--na, #8fa0b3); }
+
+  #cmp-result { margin-top: 16px; background: var(--surface, #fff); border: 1px solid var(--line);
+    border-radius: 14px; box-shadow: var(--shadow); overflow: hidden; }
+  .cmp-avert { margin: 0; padding: 11px 18px; background: #fffbea; border-bottom: 1px solid #f0e4b4;
+    font-size: .78rem; color: #6f5c17; line-height: 1.5; }
+  .cmp-avert b { color: #4a3c00; }
+  .cmp-views { display: flex; border-bottom: 1px solid var(--line); padding: 0 12px; background: #fbfcfd; }
+  .cmp-tab { border: 0; background: transparent; padding: 11px 13px; font: inherit;
+    font-size: .79rem; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
+  .cmp-tab.on { color: var(--accent); font-weight: 800; border-color: var(--accent); }
+  .cmp-canvas { height: 400px; background: #fff; }
+  .cmp-leg { border-top: 1px solid var(--line); background: #fbfcfd; padding: 7px 18px;
+    font-size: .71rem; color: #44586c; display: flex; gap: 14px; flex-wrap: wrap; }
+
+  .cmp-devenir { padding: 15px 18px; border-top: 1px solid var(--line); }
+  .cmp-devenir h3, .cmp-list h3 { margin: 0 0 9px; font-size: .71rem; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--muted); font-weight: 800; }
+  .cmp-bars { display: flex; gap: 3px; height: 28px; border-radius: 7px; overflow: hidden; margin-bottom: 8px; }
+  .cmp-bars span { display: grid; place-items: center; color: #fff; font-size: .71rem;
+    font-weight: 750; min-width: 30px; }
+  .cmp-devenir p { margin: 0; font-size: .78rem; color: var(--muted); }
+
+  .cmp-list { padding: 15px 18px; }
+  .cmp-item { border-top: 1px solid var(--line); padding: 12px 0; }
+  .cmp-item:first-of-type { border-top: 0; }
+  .cmp-item-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .cmp-item-head a { font-weight: 750; color: #0d568f; text-decoration: none; }
+  .cmp-item-head a:hover { text-decoration: underline; }
+  .cmp-item-meta { color: var(--muted); font-size: .8rem; }
+  .cmp-item-var { margin-left: auto; font-family: var(--font-mono); font-size: .72rem; color: var(--na, #8fa0b3); }
+  .cmp-item p { margin: 6px 0 0; font-size: .82rem; color: #44586c; line-height: 1.5; }
+  .cmp-item b { color: var(--ink); font-weight: 650; }
+  .cmp-gap { display: block; margin-top: 4px; font-size: .76rem; color: var(--grade-d, #cf6a1c); }
+  .cmp-note { margin: 10px 0 0; font-size: .75rem; color: var(--muted); }
+
+  .cmp-tab-wrap { height: 100%; overflow: auto; padding: 8px 14px; }
+  .cmp-table { width: 100%; border-collapse: collapse; font-size: .81rem; }
+  .cmp-table th { text-align: left; color: #526375; font-size: .67rem; text-transform: uppercase;
+    letter-spacing: .04em; padding: 7px 8px; }
+  .cmp-table td { padding: 7px 8px; border-top: 1px solid #edf1f4; }
+  .cmp-table a { color: #0d568f; text-decoration: none; font-weight: 650; }
+  .cmp-table a:hover { text-decoration: underline; }
+  .cmp-moi { background: #eef6ff; font-weight: 700; }
+  .cmp-num { text-align: right; }
+
+  .cmp-none { padding: 20px 18px; color: var(--muted); font-size: .87rem; }
+  .cmp-foot { padding: 14px 18px; background: var(--wash); border-top: 1px solid var(--line);
+    font-size: .75rem; color: var(--muted); line-height: 1.55; }
+  .cmp-foot b { color: #3d5168; }
+  .cmp-foot p { margin: 0 0 6px; } .cmp-foot p:last-child { margin: 0; }
+  .cmp-minces { margin: 18px 0 0; font-size: .78rem; color: var(--muted); }
+  .cmp-minces strong { color: #3d5168; }
+
+  @media (max-width: 640px) {
+    .cmp { padding: 0 14px 40px; }
+    .cmp-start { flex-direction: column; }
+    .cmp-anc { flex-direction: column; }
+    .cmp-canvas { height: 330px; }
+    .cmp-item-var { margin-left: 0; }
+  }
+</style>

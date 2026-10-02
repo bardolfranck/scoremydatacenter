@@ -14,6 +14,7 @@
     "@phosphor-icons/core": "^2.1.1",
     "@resvg/resvg-js": "^2.6.2",
     "astro": "^5.0.0",
-    "maplibre-gl": "^5.24.0"
+    "maplibre-gl": "^5.24.0",
+    "plotly.js-basic-dist-min": "^4.1.1"
   }
 }
