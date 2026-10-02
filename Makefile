@@ -130,8 +130,12 @@ methodology-doc:
 # pile de calcul scientifique. La projection ne bouge pas d'un jour à l'autre ; elle vit en
 # cache dans le newsroom et `prod-artifacts` se contente de la relire.
 # À rejouer quand un lot de fiches arrive dans un pays (le cache se périme sur le compte).
+# Ne redessine QUE les pays périmés : UMAP ne ressort pas la même disposition d'un run à
+# l'autre, random_state ou pas (mesuré le 2026-10-02, 3 pays sur 13 entre deux runs), donc
+# tout redessiner remplacerait des cartes déjà relues sans qu'aucune donnée ait bougé.
+# `--force` existe pour le faire exprès.
 comparator-projection:
-	uv run python scripts/build_comparator.py --projection
+	uv run --group projection python scripts/build_comparator.py --projection
 
 prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py

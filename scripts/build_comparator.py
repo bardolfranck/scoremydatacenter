@@ -4,7 +4,7 @@
 """Le COMPARATEUR : pour un site, les sites de son pays qui lui ressemblent le plus.
 
     make comparator                  # lit la projection en cache, écrit les artefacts
-    make comparator-projection       # recalcule la projection UMAP (lourd, à froid)
+    make comparator-projection       # redessine les pays dont le compte a bougé (à froid)
 
 PAR PAYS, et ce n'est pas un découpage de confort. Mesuré le 2026-10-01 : sur le corpus
 entier, la rareté d'une fiche prédit celle de ses voisins à r=+0,795 — on croit comparer des
@@ -82,9 +82,16 @@ PAYS_EN_VEILLE = {"IL"}
 # Au-delà de ce tiers de l'étendue, une « famille » n'entoure plus rien : on ne la dessine pas.
 DISPERSION_MAX = 0.33
 
-# Paramètres de la projection, versionnés avec les artefacts : une projection qu'on ne sait
-# pas rejouer n'est pas une mesure, c'est une image. n_neighbors bas privilégie la structure
-# locale (familles détachées), min_dist bas resserre chaque famille.
+# Paramètres de la projection, versionnés avec les artefacts. n_neighbors bas privilégie la
+# structure locale (familles détachées), min_dist bas resserre chaque famille.
+#
+# ET LA PROJECTION N'EST PAS REJOUABLE À L'IDENTIQUE, random_state=0 ou pas. Mesuré le
+# 2026-10-02, deux runs consécutifs sur le même corpus : 3 pays sur 13 ressortent avec une
+# autre disposition (déplacement médian jusqu'à 0,9 sur une étendue normalisée à 1 — soit
+# une carte retournée). Ce qui EST stable, et c'est là que vit l'information : les familles
+# DBSCAN (identiques 13 fois sur 13) et les listes de voisins, qui ne passent pas par UMAP.
+# Le dessin illustre une structure mesurée ailleurs ; il n'est pas lui-même la mesure. D'où
+# le cache, qui est l'autorité : on ne le rejoue que pour un pays dont le compte a bougé.
 UMAP_PARAMS = {"n_components": 2, "n_neighbors": 8, "min_dist": 0.03,
                "spread": 1.4, "random_state": 0}
 DBSCAN_PARAMS = {"eps": 0.42, "min_samples": 5}
@@ -142,19 +149,34 @@ def _distances(X: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return Z, D
 
 
-def projection(pays: str, D: np.ndarray, force: bool = False) -> tuple[np.ndarray, np.ndarray]:
+def projection(pays: str, D: np.ndarray, froid: bool = False,
+               force: bool = False) -> tuple[np.ndarray, np.ndarray]:
     """La projection 2D et les familles, en CACHE dans le newsroom.
 
     UMAP tire numba et llvmlite : en faire une dépendance de `make deploy` reviendrait à
     rendre une mise en ligne otage d'une pile de calcul scientifique. La projection ne bouge
     pas d'un jour à l'autre — on la recalcule à froid, on la relit au build.
+
+    `froid` AUTORISE le recalcul (chemin `make comparator-projection`), il ne l'impose pas :
+    seuls les pays dont le compte a bougé repassent par UMAP. Sans ça, rejouer la projection
+    pour UN pays redessinait les douze autres — et comme le dessin n'est pas rejouable à
+    l'identique, ça remplaçait douze cartes relues et validées sans qu'aucune donnée ait
+    changé. `force` est là pour le jour où on décide vraiment de tout refaire.
     """
     cache = PROJ_DIR / f"{pays}.json"
     if cache.is_file() and not force:
         d = json.loads(cache.read_text())
         if d.get("n") == len(D):
             return np.array(d["xy"], dtype=float), np.array(d["familles"], dtype=int)
-        print(f"  {pays} : cache périmé ({d.get('n')} ≠ {len(D)}), projection recalculée")
+        quoi = f"cache périmé ({d.get('n')} ≠ {len(D)})"
+    else:
+        quoi = "aucun cache" if not cache.is_file() else "recalcul demandé"
+    if not froid:
+        # Le chemin CHAUD ne calcule jamais : il échouerait de toute façon sur l'import, mais
+        # sur un ModuleNotFoundError illisible. Mieux vaut nommer le pays et la commande.
+        raise SystemExit(f"comparator: {pays} — {quoi}. Le build ne recalcule pas la "
+                         f"projection : lancer `make comparator-projection` d'abord.")
+    print(f"  {pays} : {quoi}, projection recalculée")
     import umap
     from sklearn.cluster import DBSCAN
     Dp = np.where(np.isfinite(D), D, 0.0)
@@ -172,13 +194,13 @@ def projection(pays: str, D: np.ndarray, force: bool = False) -> tuple[np.ndarra
     return xy, lab
 
 
-def construire(pays: str, fiches: list[dict], libelles: dict, force: bool,
+def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force: bool,
                positions: dict[str, list[float]]) -> dict:
     # Combien de voisins ce pays peut-il porter sans que la liste cesse d'être une sélection ?
     affiches = max(AFFICHES_MIN, min(AFFICHES_MAX, int(len(fiches) * SELECTIVITE_MAX)))
     cols, X, P = _matrice(fiches)
     Z, D = _distances(X)
-    xy, lab = projection(pays, D, force)
+    xy, lab = projection(pays, D, froid, force)
     n = len(fiches)
     ordre = np.argsort(D, 1)
     # SEUIL DE RÉCIPROCITÉ PAR LA VALEUR, et surtout pas par le rang dans un tri.
@@ -263,7 +285,12 @@ def construire(pays: str, fiches: list[dict], libelles: dict, force: bool,
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--projection", action="store_true",
-                    help="recalculer la projection UMAP (nécessite umap-learn)")
+                    help="autoriser le recalcul UMAP des pays dont le cache a bougé "
+                         "(nécessite umap-learn : `make comparator-projection`)")
+    ap.add_argument("--force", action="store_true",
+                    help="tout redessiner, y compris les pays inchangés — la projection "
+                         "n'étant pas rejouable à l'identique, c'est une décision, pas une "
+                         "précaution")
     args = ap.parse_args()
 
     meth = json.loads((ARTIFACTS_DIR / "methodology.json").read_text())
@@ -287,7 +314,8 @@ def main() -> int:
             # rien ici ». C'est aussi ce qui tire la collecte.
             minces.append({"pays": pays, "sites": len(lot)})
             continue
-        doc = construire(pays, lot, libelles, args.projection, positions)
+        doc = construire(pays, lot, libelles, args.projection or args.force, args.force,
+                         positions)
         (OUT_DIR / f"{pays}.json").write_text(json.dumps(doc, ensure_ascii=False))
         servis = sum(1 for s in doc["sites"] if s["comparables"])
         moy = np.mean([len(s["comparables"]) for s in doc["sites"]])

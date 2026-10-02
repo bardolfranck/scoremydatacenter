@@ -19,7 +19,7 @@ import SatelliteWall from "./SatelliteWall.astro";
 import ProjectsStrip from "./ProjectsStrip.astro";
 import ActuStrip from "./ActuStrip.astro";
 import CountryRing from "./CountryRing.astro";
-import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
+import { COUNTRY_NAMES, countryFlag } from "../config/indices";
 
 const showcase = showcaseData as any;
 
@@ -376,7 +376,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         {idxTop5.map(([iso, e]) => (
             <a class="home-idx-row" href={`${lang === "fr" ? "/fr" : ""}/indices?pays=${iso}`}>
               <span class={`idx-chip idx-g${e.grade}`}>{e.grade}</span>
-              <span class="home-idx-name">{(COUNTRY_FLAGS_ISO as any)[iso]} {(COUNTRY_NAMES as any)[iso]?.[lang] ?? iso}
+              <span class="home-idx-name">{countryFlag(iso)} {(COUNTRY_NAMES as any)[iso]?.[lang] ?? iso}
                 <small>{e.reserved_from === "A" ? (lang === "fr" ? "A réservé · " : "A reserved · ") : ""}n = {e.n} · doc {e.documentation.band}</small>
               </span>
               <span class="home-idx-score">{lang === "fr" ? String(e.score).replace(".", ",") : e.score}</span>
