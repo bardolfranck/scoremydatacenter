@@ -15,7 +15,6 @@ import Base from "../layouts/Base.astro";
 import IndicesMap from "./IndicesMap.astro";
 import indicesData from "../../public/data/indices.json";
 import historyData from "../../public/data/indices_history.json";
-import comparatorIndex from "../../public/data/comparator/index.json";
 import { COUNTRY_NAMES, countryFlag } from "../config/indices";
 
 interface Props {
@@ -33,7 +32,18 @@ const HISTORY = historyData as any[];
 // Il manquait ce que cette connaissance PERMET : un pays peut être noté et rester trop mince
 // pour qu'on y compare quoi que ce soit. Le dire ici, c'est refuser de laisser croire que le
 // comparateur couvre uniformément les treize pays — et c'est ce qui tire la collecte.
-const CMP = comparatorIndex as any;
+// PAS un import statique : `site/public/data/` est généré, donc absent d'un clone frais.
+// Sans le newsroom monté, `make build` retombe sur `score` (les 2 fixtures) et n'écrit AUCUN
+// artefact de comparateur — un `import` direct fait alors échouer la compilation, ce que la
+// CI a attrapé (« Could not resolve ../../public/data/comparator/index.json »).
+// `import.meta.glob` tolère zéro correspondance : la colonne se vide, le build passe. Même
+// idiome que ComparerPage.astro, qui lit les treize pays de la même façon.
+//
+// Et ce const vit APRÈS les imports, jamais entre eux : le compilateur Astro remonte les
+// imports hors du frontmatter, et une déclaration insérée au milieu lui a fait émettre un
+// fragment d'instruction (« i is not defined » au rendu, build vert jusqu'à la page).
+const cmpGlob = import.meta.glob("../../public/data/comparator/index.json", { eager: true });
+const CMP = ((Object.values(cmpGlob)[0] as any)?.default ?? {}) as any;
 const cmpByCountry: Record<string, any> = {};
 for (const p of CMP.pays ?? []) cmpByCountry[p.pays] = p;
 const cmpTooThin: Record<string, number> = {};
