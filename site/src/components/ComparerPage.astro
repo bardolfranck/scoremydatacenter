@@ -1,0 +1,45 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// /fr/comparer + /compare — le gabarit de la page Comparer (FR/EN), mince comme les autres :
+// tout le produit vit dans <Comparateur>, cette page ne fait que l'habiller et le situer.
+//
+// Les données du comparateur sont lues À LA COMPILATION, pays par pays. Elles ne transitent
+// donc pas par une requête au runtime : la page est statique, et `prune-public-json` peut
+// continuer à vider /data/ sans rien casser — l'anti-pillage et le produit ne se gênent pas.
+import type { NavNode } from "../config/nav";
+import Base from "../layouts/Base.astro";
+import Comparateur from "./Comparateur.astro";
+
+interface Props { lang: "fr" | "en"; nav: NavNode[]; altHref: string; altLabel: string }
+const { lang, nav, altHref, altLabel } = Astro.props;
+
+// import.meta.glob avec eager : Astro résout les 13 fichiers au build. Un pays ajouté par la
+// collecte apparaît tout seul au build suivant — rien à déclarer ici.
+const brut = import.meta.glob("../../public/data/comparator/*.json", { eager: true });
+const pays: Record<string, any> = {};
+let index: any = { pays: [], corpus_trop_mince: [] };
+for (const [chemin, mod] of Object.entries(brut)) {
+  const code = chemin.split("/").pop()!.replace(".json", "");
+  if (code === "index") index = (mod as any).default;
+  else pays[code] = (mod as any).default;
+}
+
+const T = {
+  fr: {
+    title: "Comparer un site ou un projet — ScoreMyDataCenter",
+    desc: "Pour un data center ou un projet, les sites de son pays qui lui ressemblent le plus, ce qui les rapproche, et ce qu'ils sont devenus.",
+  },
+  en: {
+    title: "Compare a site or a project — ScoreMyDataCenter",
+    desc: "For a data centre or a project, the sites in its country it most resembles, what brings them together, and what became of them.",
+  },
+}[lang];
+---
+
+<Base lang={lang} nav={nav} altHref={altHref} altLabel={altLabel}
+      title={T.title} description={T.desc}>
+  <Comparateur lang={lang} index={index} pays={pays} />
+</Base>

@@ -40,6 +40,7 @@ export const FR_NAV: NavNode[] = [
     { href: "/fr/glossaire", label: "Glossaire" },
     { href: "/fr/#faq", label: "FAQ" },
   ]},
+  { href: "/fr/comparer", label: "Comparer" },
   { href: "/fr/actu", label: "Actu" },
   { label: "Bibliothèque", children: [
     { href: "/fr/rapports/france", label: "Rapport — La France" },
@@ -74,6 +75,7 @@ export const EN_NAV: NavNode[] = [
     { href: "/glossary", label: "Glossary" },
     { href: "/#faq", label: "FAQ" },
   ]},
+  { href: "/compare", label: "Compare" },
   { href: "/news", label: "News" },
   { label: "Library", children: [
     { href: "/reports/france", label: "France report" },
