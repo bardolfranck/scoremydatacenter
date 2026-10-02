@@ -64,19 +64,12 @@ const COUNTRY_NATIVE_LANGS: Record<string, string[]> = {
   it: ["it"],
 };
 
-/** Language code → flag emoji (same register as the header's 🇬🇧/🇫🇷 switch). */
-export const LANG_FLAGS: Record<string, string> = {
-  fr: "🇫🇷",
-  en: "🇬🇧",
-  nl: "🇳🇱",
-  de: "🇩🇪",
-  pl: "🇵🇱",
-  sv: "🇸🇪",
-  fi: "🇫🇮",
-  no: "🇳🇴",
-  es: "🇪🇸",
-  it: "🇮🇹",
-};
+/** Code de langue → libellé affiché. PAS de drapeau : une langue n'est pas un pays.
+ *  Le drapeau britannique exclut l'anglais américain ou indien, le drapeau français exclut
+ *  le Québec, la Suisse romande, la Belgique et l'Afrique francophone — soit une bonne part
+ *  des lecteurs qu'un observatoire européen vise. Le code de langue ne dit que la langue.
+ *  (Les drapeaux de PAYS, eux, restent : ils désignent bien un pays.) */
+export const LANG_FLAGS: Record<string, string> = {};
 
 /** Publication languages of a brief, native first, EN always present. */
 export const briefLanguages = (b: LibraryBrief): string[] => {

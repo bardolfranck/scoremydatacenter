@@ -181,9 +181,19 @@ def construire(pays: str, fiches: list[dict], libelles: dict, force: bool,
     xy, lab = projection(pays, D, force)
     n = len(fiches)
     ordre = np.argsort(D, 1)
-    rang = np.empty_like(ordre)
-    for i in range(n):
-        rang[i, ordre[i]] = np.arange(n)
+    # SEUIL DE RÉCIPROCITÉ PAR LA VALEUR, et surtout pas par le rang dans un tri.
+    #
+    # Quand des sites sont à distance EXACTEMENT nulle — fréquent là où nous ne documentons
+    # que quatre variables territoriales : seize data centers londoniens partagent les mêmes
+    # valeurs — `argsort` doit départager des ex æquo, et il le fait par ordre d'indice, donc
+    # par ordre alphabétique. Avec seize candidats pour huit places, les derniers de l'alphabet
+    # ne figuraient dans le top-8 de personne : réciprocité jamais satisfaite, AUCUN comparable.
+    # Quatre fiches Digital Realty (LHR17, 19, 20, 21) étaient dans ce cas, pour la seule
+    # raison que leur nom commence par une lettre tardive.
+    #
+    # On compare donc chaque distance au k-ième plus petit ÉCART, bornes comprises : tous les
+    # ex æquo sont dedans ou tous dehors, et la relation redevient symétrique par construction.
+    kth = np.partition(D, min(K_MUTUEL, n - 1) - 1, axis=1)[:, min(K_MUTUEL, n - 1) - 1]
     # Une ressemblance sur une variable CONSTANTE n'apprend rien : l'intensité carbone du
     # réseau est la même pour tout un pays (écart-type mesuré 0,000 en France), donc
     # « ce qui les rapproche : l'intensité carbone » est vrai de n'importe quel couple.
@@ -210,7 +220,7 @@ def construire(pays: str, fiches: list[dict], libelles: dict, force: bool,
         for j in ordre[i]:
             if len(voisins) >= affiches:
                 break
-            if rang[j, i] >= K_MUTUEL:            # pas réciproque : pas un comparable
+            if D[j, i] > kth[j] + 1e-12:          # pas réciproque : pas un comparable
                 continue
             partagees = np.where(P[i] & P[j])[0]
             ecarts = sorted(((abs(Z[i, c] - Z[j, c]), cols[c]) for c in partagees), key=lambda t: t[0])
