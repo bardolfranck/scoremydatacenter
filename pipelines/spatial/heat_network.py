@@ -18,7 +18,19 @@ fatale VERS le réseau). Le contenu CO2 / taux EnR&R du réseau NE module PAS E6
 bénéficie le plus d'une injection bas-carbone → l'inverser serait à l'envers). Qualité-réseau =
 piste séparée. FR uniquement (FCU est FR-only) ; le monde attend la décision indice-pays.
 
-Données FCU non commitées (82 Mo) : fetch documenté, chemin via $SMDC_FCU_DIR ou --fcu.
+Données FCU non commitées (~80 Mo) : HORS des deux dépôts (même convention que ~/.smdc/),
+pointées par $SMDC_FCU_DIR ou --fcu. Rejouable depuis zéro :
+
+    mkdir -p ~/.smdc/fcu && cd ~/.smdc/fcu
+    curl -fsSLO https://static.data.gouv.fr/resources/traces-des-reseaux-de-chaleur-et-de-froid/20260914-103127/opendata-fcu.zip
+    unzip -o opendata-fcu.zip reseaux_de_chaleur.geojson pdp.geojson
+    export SMDC_FCU_DIR=~/.smdc/fcu
+
+Les DEUX fichiers requis (les seuls lus ici), au format GeoJSON EPSG:2154 (Lambert 93) :
+  · reseaux_de_chaleur.geojson  — 1033 réseaux, MultiLineString, prop « reseaux classes » ;
+  · pdp.geojson                 — 219 Périmètres de Développement Prioritaire, MultiPolygon.
+La page du jeu (versions plus récentes) : FCU_URL. Figer la version datée ci-dessus = provenance
+reproductible ; pour rafraîchir, prendre la dernière archive de FCU_URL et re-vérifier le CRS.
 """
 
 from __future__ import annotations

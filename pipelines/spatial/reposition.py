@@ -41,6 +41,7 @@ import argparse
 import copy
 import datetime as _dt
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -63,9 +64,16 @@ def _collector_ids(spec: dict) -> set:
     return ids
 
 
+def _data_dir(newsroom) -> Path:
+    """Dossier que datacenter_paths globe (il cherche `datacenters*/`). Dans le newsroom c'est
+    `calibration/` ; on accepte aussi qu'on pointe directement ce dossier."""
+    root = Path(newsroom)
+    return root / "calibration" if (root / "calibration").is_dir() else root
+
+
 def fiche_servie(dc_id: str, newsroom) -> tuple[Path, dict]:
     """Retrouve la fiche servie dans le corpus (accesseur du moteur, pas de glob maison)."""
-    for p in datacenter_paths(Path(newsroom)):
+    for p in datacenter_paths(_data_dir(newsroom)):
         if p.stem == dc_id:
             return p, json.loads(p.read_text())
     raise SystemExit(f"fiche servie introuvable dans le corpus servi : {dc_id}")
@@ -131,6 +139,13 @@ def reposition(dc_id: str, lat: float, lon: float, *, newsroom, accessed: str,
     res_ids = {i["id"] for i in resultat["indicators"]}
     assert src_ids <= res_ids, f"indicateur perdu au repositionnement : {src_ids - res_ids}"
 
+    serv_by = {i["id"]: i for i in servie["indicators"]}
+    res_by = {i["id"]: i for i in resultat["indicators"]}
+    _mes = lambda i: bool(i) and i.get("status") == "measured"
+    # RÉTROGRADÉS : mesuré sur la fiche servie, plus mesuré après recalage (collecteur revenu
+    # vide à la nouvelle commune/point). C'est honnête — l'ancienne valeur décrivait l'autre
+    # lieu — mais ça PERD une mesure : à relire par un humain avant publication.
+    retrogradees = sorted(iid for iid in src_ids if _mes(serv_by[iid]) and not _mes(res_by[iid]))
     rapport = {
         "id": dc_id,
         "de": {"coord": ident["coordinates"],
@@ -138,13 +153,13 @@ def reposition(dc_id: str, lat: float, lon: float, *, newsroom, accessed: str,
         "vers": {"coord": {"lat": lat, "lon": lon},
                  "commune": resultat["identity"].get("municipality"),
                  "dept": resultat["identity"].get("admin_area")},
-        "remesures": sorted(set(remesures)),
+        "remesurees_avec_valeur": sorted(iid for iid in remesures if _mes(res_by.get(iid))),
+        "retrogradees": retrogradees,
         "conserves_nationaux": sorted(nationaux),
-        "skipped": skipped,
+        "collecteurs_revenus_vides": sorted(skipped),
         "valeurs_changees": sorted(
             iid for iid in src_ids
-            if ({i["id"]: i for i in servie["indicators"]}[iid].get("value")
-                != {i["id"]: i for i in resultat["indicators"]}[iid].get("value"))
+            if serv_by[iid].get("value") != res_by[iid].get("value")
         ),
         "cles_racine_identiques": set(servie) == set(resultat),
         "ids_indicateurs_identiques": src_ids == res_ids,
@@ -163,8 +178,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out-dir", default=None, help=f"défaut : <newsroom>/{HELD_DIR}")
     a = ap.parse_args(argv)
 
+    fcu_dir = a.fcu or os.environ.get("SMDC_FCU_DIR")  # FCU optionnel : requis seulement si E6 mesuré
     resultat, rapport = reposition(a.id, a.lat, a.lon, newsroom=a.newsroom,
-                                   accessed=a.accessed, fcu_dir=a.fcu)
+                                   accessed=a.accessed, fcu_dir=fcu_dir)
     out_dir = Path(a.out_dir) if a.out_dir else Path(a.newsroom) / HELD_DIR
     out_dir.mkdir(parents=True, exist_ok=True)
     out = out_dir / f"{a.id}.json"

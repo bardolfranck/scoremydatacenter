@@ -80,7 +80,8 @@ def test_point_remesure_national_conserve(patched):
     ind = _by_id(res)
     assert ind["W1"]["value"] == "neuf_w1"       # point re-mesuré
     assert ind["E1"]["value"] == 17.6            # national CONSERVÉ (pas le 99.9 du fragment)
-    assert "E1" in rap["conserves_nationaux"] and "W1" in rap["remesures"]
+    assert "E1" in rap["conserves_nationaux"] and "W1" in rap["remesurees_avec_valeur"]
+    assert rap["retrogradees"] == []       # rien perdu dans ce cas
 
 
 def test_saisie_main_et_non_collecte_conserves(patched):
@@ -93,7 +94,7 @@ def test_saisie_main_et_non_collecte_conserves(patched):
 def test_e6_remesure_quand_fcu(patched):
     res, rap = R.reposition("fr-x", 48.94, 2.18, newsroom="ns", accessed="2026-10-02", fcu_dir="/fcu")
     assert _by_id(res)["E6"]["value"] == "raccordable"   # jamais l'ancien "eloigne"
-    assert "E6" in rap["remesures"]
+    assert "E6" in rap["remesurees_avec_valeur"]
 
 
 def test_e6_mesure_sans_fcu_refuse(patched):
@@ -117,6 +118,26 @@ def test_rien_perdu_et_ordre_conserve(patched):
     assert [i["id"] for i in res["indicators"]] == [i["id"] for i in servie["indicators"]]
     assert rap["cles_racine_identiques"] and rap["ids_indicateurs_identiques"]
     assert res["score_history"] == []     # jamais écrit par le repositionnement (réservé moteur)
+
+
+def test_retrograde_mesure_perdue_est_signale(monkeypatch):
+    # Cas W3 réel : collecteur revenu vide à la nouvelle commune → la mesure servie est PERDUE.
+    # On NE conserve PAS l'ancienne valeur (elle décrirait l'autre lieu) et on le SIGNALE fort.
+    monkeypatch.setattr(R, "fiche_servie", lambda dc_id, newsroom: ("p", _servie()))
+    monkeypatch.setattr(R.heat_network, "load_fcu", lambda d: {"nets": [], "polys": []})
+    monkeypatch.setattr(R.heat_network, "e6_at",
+                        lambda *a, **k: {"id": "E6", "status": "measured", "value": "eloigne"})
+    frag, prov, _ = _fake_fragment()
+    for i in frag["indicators"]:
+        if i["id"] == "W1":                      # le collecteur W1 revient vide → padding missing
+            i["status"], i["value"] = "missing", None
+    monkeypatch.setattr(R, "build_draft", lambda *a, **k: (frag, prov, ["W1"]))
+
+    res, rap = R.reposition("fr-x", 48.94, 2.18, newsroom="ns", accessed="2026-10-02", fcu_dir="/fcu")
+    assert _by_id(res)["W1"]["status"] == "missing"      # ancienne valeur "vieux_w1" PAS conservée
+    assert rap["retrogradees"] == ["W1"]                 # signalé fort
+    assert "W1" in rap["collecteurs_revenus_vides"]
+    assert "W1" not in rap["remesurees_avec_valeur"]
 
 
 def test_valeurs_changees_rapportees(patched):
