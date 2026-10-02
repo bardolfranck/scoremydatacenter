@@ -34,7 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
-from engine.validate import position_gate                    # noqa: E402
+from engine.validate import geo_gate, position_gate          # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -110,6 +110,14 @@ def main() -> int:
     # réel, et pas seulement dans `make validate` qui ne voit que les 2 fixtures : c'est la
     # leçon du gate géo, câblé au bon endroit mais branché sur le vide.
     problems += position_gate(paths)
+
+    # GATE GÉO — une coordonnée fabriquée ne part pas en ligne. Il existait depuis le
+    # 2026-09-29, câblé dans `run_gates()`, donc dans `make validate`, qui ne voit que les
+    # 2 fixtures du dépôt : son contrôle de couverture comparait les 1447 fiches mesurées
+    # à... 2, et passait trivialement. Pendant ce temps le gate de deploy, qui voit le vrai
+    # corpus, ne l'appelait pas. Le gate avait toutes ses dents, braquées sur le vide.
+    # Il reçoit ici le périmètre RÉEL, le même que celui qu'il compte.
+    problems += geo_gate(CAL)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "

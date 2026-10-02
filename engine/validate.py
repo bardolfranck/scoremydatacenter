@@ -177,7 +177,7 @@ def position_gate(paths: list[Path]) -> list[str]:
     return out
 
 
-def _geo_gate(data_dir: Path) -> list[str]:
+def geo_gate(data_dir: Path) -> list[str]:
     """GATE GÉO — une coordonnée fabriquée ne doit pas pouvoir entrer dans le corpus.
 
     Pourquoi ce gate est ICI et pas dans une consigne envoyée à un agent (Franck, 2026-09-29,
@@ -219,6 +219,16 @@ def _geo_gate(data_dir: Path) -> list[str]:
     for fid in sorted(flagged - set(GEO_WAIVERS)):
         out.append(f"GATE GÉO: {fid!r} a une coordonnée de géocodeur (centre de commune) — "
                    f"localiser le site réel, ou inscrire une dérogation motivée et datée")
+    # NON ÉVALUÉES — près d'un centroïde, mais sans verdict bâtiment, donc INDÉCIDABLES.
+    # Elles étaient comptées « faux positif », c'est-à-dire saines : une fiche jamais mesurée
+    # ressemblait à une fiche mesurée et propre, et le détecteur paraissait d'autant plus net
+    # qu'on lui ajoutait des fiches qu'il ne savait pas juger. Le troisième état est venu
+    # d'agent-data-pipeline-FR ; ici on en tire la conséquence, qui est de REFUSER. Une fiche
+    # qu'on ne sait pas juger ne part pas en ligne — c'est tout l'objet de ce gate.
+    for fid in sorted({e["id"] for e in report.get("non_evalues", [])} - set(GEO_WAIVERS)):
+        out.append(f"GATE GÉO: {fid!r} est près d'un centroïde de commune et n'a PAS de verdict "
+                   f"bâtiment — indécidable, donc refusée : lancer l'audit bâtiment "
+                   f"(`python -m pipelines.geo_audit.audit`) sur cette fiche")
     # Couverture : le sidecar ne liste que les cas remarquables, pas les fiches saines. On
     # vérifie donc que la MESURE a bien porté sur tout le corpus — sinon il suffirait de ne
     # pas relancer le détecteur après un onboarding pour passer le gate sans être vu.
@@ -229,6 +239,27 @@ def _geo_gate(data_dir: Path) -> list[str]:
     elif covered < corpus:
         out.append(f"GATE GÉO: détecteur de centroïde périmé — {covered} fiches testées pour "
                    f"{corpus} au corpus ; relancer avant d'onboarder")
+    # CE QUE CE GATE NE DIT PAS, dit à chaque passage. Vert ici ne signifie pas « coordonnées
+    # certifiées » : il signifie « mesurées, et ne tombant pas dans le motif connu ». Deux
+    # angles morts sont établis, et le silence sur eux serait le vrai danger — c'est en
+    # croyant un gate plus large qu'il n'est qu'on publie une coordonnée fabriquée.
+    #
+    #   · il ne teste que le centroïde de COMMUNE : une coordonnée reprise d'une aire plus
+    #     fine (district postal, quartier) passe dessous — la classe qui a fait retenir
+    #     gb-virtus-london5-stockley-park ;
+    #   · il compare à UN répertoire géographique : un point fabriqué depuis un AUTRE
+    #     répertoire peut en être à plus de 150 m et n'être jamais signalé. Quatre fiches
+    #     suisses décrites comme des centroïdes de commune par agent-data-pipeline-EU
+    #     n'apparaissent dans aucune des deux listes du sidecar.
+    #
+    # Et la provenance ne comble pas le trou : au 2026-09-28, 1285 coordonnées sur 1430 sont
+    # `source: unrecorded`. On ne peut donc pas remonter à la source d'un point ; le test
+    # géométrique est tout ce qu'on a.
+    if not out:
+        angle = ((report.get("meta") or {}).get("angle_mort")
+                 or "ne teste que le centroïde de commune, sur un seul répertoire")
+        print(f"GATE GÉO: {covered} fiches mesurées, rien à signaler — ce test {angle}",
+              file=sys.stderr)
     return out
 
 
@@ -425,7 +456,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                 problems.append(f"GATE 1: {label}: duplicate watchlist id {entry['id']!r}")
             seen_watch_ids.add(entry["id"])
 
-    problems += _geo_gate(data_dir)
+    problems += geo_gate(data_dir)
 
     return problems
 
