@@ -177,12 +177,19 @@ def main(argv: list[str] | None = None) -> int:
             d_insee, nom_insee = insee_oracle(lat, lon, cache) if country == "FR" else (None, None)
             d_nom, nom_nom = nominatim_oracle(lat, lon, cache)
             dists = {k: v for k, v in (("insee", d_insee), ("nominatim", d_nom)) if v is not None}
+            verdict = (verdicts.get(cid) or {}).get("verdict")
             if not dists:
-                erreurs += 1
+                # AUCUN oracle n'a répondu : on ne sait PAS si la coordonnée est un centroïde. Ne
+                # pas la laisser en silence (elle ressemblerait à une fiche saine) — même fail-open
+                # que le verdict bâtiment manquant, un cran plus haut. → non_evalue.
+                non_evalues.append({
+                    "id": cid, "commune": None, "country": country,
+                    "oracle_dist_m": {"insee": d_insee, "nominatim": d_nom},
+                    "closest_oracle": None, "closest_m": None, "audit_verdict": verdict,
+                    "flag": "NON ÉVALUÉ — aucun oracle n'a répondu"})
                 continue
             closest_oracle = min(dists, key=dists.get)
             closest_m = dists[closest_oracle]
-            verdict = (verdicts.get(cid) or {}).get("verdict")
             rec = {
                 "id": cid, "commune": nom_insee or nom_nom, "country": country,
                 "oracle_dist_m": {"insee": d_insee, "nominatim": d_nom},
@@ -214,9 +221,13 @@ def main(argv: list[str] | None = None) -> int:
                        "l'autre, ET coordonnée PAS sur un bâtiment (off/no_building) = géo fabriquée "
                        "probable. Le test bâtiment élimine les vrais DC de petites communes denses."),
             "note": "Interne newsroom — jamais dans le build public.",
-            "angle_mort": ("ne teste que le centroïde de COMMUNE (reverse zoom 10) ; ne voit PAS "
-                           "les aires sub-communales (outcode/postcode, ex. UB11) ; hors FR un seul "
-                           "oracle (Nominatim), faute d'INSEE — 2ᵉ oracle mondial (GeoNames) à venir."),
+            "angle_mort": ("(1) ne teste que le centroïde de COMMUNE (reverse zoom 10) — rate les "
+                           "aires sub-communales (outcode/postcode, ex. UB11). (2) DÉSACCORD ENTRE "
+                           "RÉPERTOIRES : un point fabriqué depuis un AUTRE gazetteer peut être à "
+                           ">150 m du centre Nominatim et passer inaperçu — mesuré sur ch-ckw "
+                           "(1560 m) et ch-datawire (1331 m), vrais centroïdes de commune non vus. "
+                           "(3) hors FR, un seul oracle (Nominatim), faute d'INSEE. Correctif (2)+(3) "
+                           "= 2ᵉ oracle mondial (GeoNames) + MIN des distances aux deux centres."),
             "counts": {"testées": len(fiches), "GÉO_FABRIQUÉE_PROBABLE": len(fabriquees),
                        "faux_positifs_sur_bâtiment": len(faux_positifs),
                        "non_evalues": len(non_evalues), "erreurs": erreurs},
