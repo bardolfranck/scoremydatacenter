@@ -75,28 +75,53 @@ def fetch_commune(lat: float, lon: float) -> dict:
 
 # --- E1 · GB grid carbon (National Grid ESO — carbonintensity.org.uk, national, keyless) --------
 
+_e1_gb_cache: dict[tuple[str, str], dict] = {}
+
+
 def collect_e1_gb(accessed: str) -> dict | None:
-    """A 2-week mean of GB half-hourly carbon intensity (the API caps date ranges; a fortnight is
-    a stable, representative window). National — GB has one balancing area."""
-    end = accessed
-    y, m, d = int(accessed[:4]), int(accessed[5:7]), int(accessed[8:10])
-    start = f"{y:04d}-{m:02d}-01"  # ~2-4 weeks back within the same month floor; simple + range-safe
-    try:
-        data = get_json(f"https://api.carbonintensity.org.uk/intensity/{start}T00:00Z/{end}T00:00Z")
-    except SourceUnavailable:
-        return None
-    vals = [row["intensity"]["actual"] for row in data.get("data", [])
-            if row.get("intensity", {}).get("actual") is not None]
+    """GB grid carbon intensity as a 12-MONTH MEAN (National Grid ESO, carbonintensity.org.uk) — the
+    SAME method as the EU energy-charts E1 (eu.collect_e1_energy_charts), so E1 is a STABLE national
+    value, identical for every GB fiche whatever the day it is collected.
+
+    It used to average a month-floor-to-today window, which on the 2nd of a month was a single noisy
+    day (168 gCO2 on a low-wind day) while July/September runs got 119/105 — a 38 % spread on one of
+    GB's four measured variables, enough to make the comparator cluster by collection date instead of
+    territory. A trailing-year mean removes the seasonality and the collection-date artefact.
+
+    The API caps a request at ~30 days, so we loop monthly windows across the trailing year and
+    average the half-hourly actuals. Memoised per (start, end): one fetch per run, not one per site."""
+    from datetime import date, timedelta
+
+    end = date.fromisoformat(accessed)
+    start = end - timedelta(days=365)
+    key = (start.isoformat(), end.isoformat())
+    if key in _e1_gb_cache:
+        return _e1_gb_cache[key]
+    vals: list[float] = []
+    cur = start
+    while cur < end:
+        nxt = min(cur + timedelta(days=28), end)
+        try:
+            data = get_json(f"https://api.carbonintensity.org.uk/intensity/"
+                            f"{cur.isoformat()}T00:00Z/{nxt.isoformat()}T00:00Z")
+        except SourceUnavailable:
+            return None  # a national constant is never a partial-year average
+        vals += [row["intensity"]["actual"] for row in data.get("data", [])
+                 if row.get("intensity", {}).get("actual") is not None]
+        cur = nxt
     if not vals:
         return None
     mean = round(sum(vals) / len(vals), 1)
-    return {
+    out = {
         "id": "E1", "status": "measured", "value": mean,
         "source": {
             "title": f"National Grid ESO carbonintensity.org.uk — GB grid carbon intensity, "
-                     f"mean {start}..{end} ({mean} gCO2/kWh, n={len(vals)} half-hourly)",
+                     f"12-month mean {start.isoformat()}..{end.isoformat()} "
+                     f"({mean} gCO2/kWh, n={len(vals)} half-hourly)",
             "url": "https://carbonintensity.org.uk/", "accessed": accessed},
     }
+    _e1_gb_cache[key] = out
+    return out
 
 
 _GAPS = {
