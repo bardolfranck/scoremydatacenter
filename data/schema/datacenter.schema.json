@@ -295,6 +295,9 @@
           }
         }
       }
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
     }
   },
   "$defs": {
@@ -650,6 +653,43 @@
         "rationale": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where the RECORD came from and whether it may be published (veille chantier, 2026-07-30). A DC/candidate seeded from a commercial source (DCMag) stays publishable:false until re-verified against an open source. Absent = publishable by default (the 1405 legacy DCs). Never a grade.",
+      "required": [
+        "source",
+        "license",
+        "publishable"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human name of the origin (e.g. 'carte.dcmag.fr', 'DCWatch (Hubblo)', 'MRAe Île-de-France')."
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "description": "REAL licence identifier, not a class: ODbL-1.0 | Licence Ouverte 2.0 | CC-BY-4.0 | commercial | open-verified | …"
+        },
+        "publishable": {
+          "type": "boolean",
+          "description": "Render gate: false = commercial/unverified lead, must not be served publicly until re-sourced from an open source."
+        },
+        "lead_only": {
+          "type": "boolean",
+          "description": "true = only a pointer (coords/name) was used; all rendered indicators are re-sourced independently."
+        },
+        "note": {
+          "type": "string"
         }
       }
     }

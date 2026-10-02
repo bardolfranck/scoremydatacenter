@@ -35,7 +35,22 @@
           "type": "array",
           "description": "Sourced contestation facts (opposition, press, petition, moratorium…). MAY be empty: a tracked flagship with no contestation yet is justified by the entry-level source, no fake fact is fabricated.",
           "items": { "$ref": "#/$defs/fact" }
-        }
+        },
+        "provenance": { "$ref": "#/$defs/provenance" }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Where the record came from and whether it may be published (veille chantier, 2026-07-30). A candidate seeded from a commercial source (DCMag) stays publishable:false until re-verified against an open source. Absent = publishable by default. Never a grade.",
+      "required": ["source", "license", "publishable"],
+      "properties": {
+        "source": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "format": "uri" },
+        "license": { "type": "string", "minLength": 1, "description": "REAL licence id (ODbL-1.0 | Licence Ouverte 2.0 | CC-BY-4.0 | commercial | open-verified | …), not a 3-value class." },
+        "publishable": { "type": "boolean", "description": "Render gate: false = commercial/unverified lead, not served publicly until re-sourced." },
+        "lead_only": { "type": "boolean" },
+        "note": { "type": "string" }
       }
     },
     "fact": {
