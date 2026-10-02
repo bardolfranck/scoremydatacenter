@@ -25,7 +25,8 @@ def _servie():
         },
         "indicators": [
             {"id": "E1", "status": "measured", "value": 17.6},          # national → conservé
-            {"id": "W1", "status": "measured", "value": "vieux_w1"},    # point → re-mesuré
+            {"id": "W1", "status": "measured", "value": "vieux_w1",     # point → re-mesuré
+             "source": {"title": "VigiEau ancien", "url": "https://vigieau.example/x", "accessed": "2026-07-30"}},
             {"id": "F3", "status": "missing", "value": None},           # saisie main → conservé
             {"id": "E4", "status": "not_collected", "value": None},     # conservé
             {"id": "E6", "status": "measured", "value": "eloigne"},     # point hors collect()
@@ -52,7 +53,7 @@ def _fake_fragment():
                 {"id": "E6", "status": "not_collected", "value": None},  # padding E6
             ],
         },
-        {}, [],
+        {"commune_insee": "78586"}, [],
     )
 
 
@@ -134,10 +135,14 @@ def test_retrograde_mesure_perdue_est_signale(monkeypatch):
     monkeypatch.setattr(R, "build_draft", lambda *a, **k: (frag, prov, ["W1"]))
 
     res, rap = R.reposition("fr-x", 48.94, 2.18, newsroom="ns", accessed="2026-10-02", fcu_dir="/fcu")
-    assert _by_id(res)["W1"]["status"] == "missing"      # ancienne valeur "vieux_w1" PAS conservée
+    w1 = _by_id(res)["W1"]
+    assert w1["status"] == "missing" and w1.get("value") != "vieux_w1"   # ancienne valeur PAS conservée
     assert rap["retrogradees"] == ["W1"]                 # signalé fort
     assert "W1" in rap["collecteurs_revenus_vides"]
     assert "W1" not in rap["remesurees_avec_valeur"]
+    # motif publié (leçon Caparéseau) : source avec title+url+accessed, url d'origine réutilisée
+    assert "revenu vide pour la commune 78586" in w1["source"]["title"]
+    assert w1["source"]["url"] == "https://vigieau.example/x" and w1["source"]["accessed"] == "2026-10-02"
 
 
 def test_valeurs_changees_rapportees(patched):

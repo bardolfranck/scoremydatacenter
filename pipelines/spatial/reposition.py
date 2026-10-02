@@ -88,7 +88,7 @@ def reposition(dc_id: str, lat: float, lon: float, *, newsroom, accessed: str,
     ident = servie["identity"]
 
     # 1) re-mesure au NOUVEAU point (collecteurs spatiaux). Nom/opérateur/statut = vérité servie.
-    fragment, _prov, skipped = build_draft(
+    fragment, prov, skipped = build_draft(
         spec, lat, lon,
         name=ident["name"], operator=ident["operator"], power_mw=None,
         project_status=ident["project_status"], accessed=accessed,
@@ -124,6 +124,28 @@ def reposition(dc_id: str, lat: float, lon: float, *, newsroom, accessed: str,
     ordre = [i["id"] for i in servie["indicators"]]
     resultat["indicators"] = ([inds[i] for i in ordre]
                               + [inds[i] for i in inds if i not in ordre])
+
+    # 3bis) MOTIF des rétrogradés : un collecteur revenu vide à la nouvelle commune efface une
+    #       mesure. On ne garde PAS l'ancienne valeur (elle décrivait l'autre lieu), mais on PUBLIE
+    #       le motif de l'absence dans source.title — sinon « pas de donnée ici » est indistinguable
+    #       d'un oubli (leçon Caparéseau). On réutilise l'URL de la source d'origine (schéma : url
+    #       requise) pour pointer la bonne source de données.
+    serv_by0 = {i["id"]: i for i in servie["indicators"]}
+    new_insee = prov.get("commune_insee")
+    new_commune = fragment["identity"].get("municipality")  # résultat.identity pas encore recalé ici
+    for res in resultat["indicators"]:
+        servi = serv_by0.get(res["id"])
+        if servi and servi.get("status") == "measured" and res.get("status") != "measured":
+            old_url = (servi.get("source") or {}).get("url")
+            if old_url:
+                res["source"] = {
+                    "title": (f"{res['status']} — au repositionnement ({accessed}) le collecteur "
+                              f"{res['id']} est revenu vide pour la commune {new_insee} "
+                              f"({new_commune}) : la source a répondu, pas de donnée pour ce lieu. "
+                              f"Valeur précédente écartée (elle décrivait {ident.get('municipality')})."),
+                    "url": old_url,
+                    "accessed": accessed,
+                }
 
     # 4) identité : coordonnée + champs dérivés de la commune (la commune change à 400 km).
     #    On dérive les clés commune-dépendantes du fragment, on ne les code pas en dur.
