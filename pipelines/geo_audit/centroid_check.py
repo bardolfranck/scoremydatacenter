@@ -136,11 +136,17 @@ def nominatim_oracle(lat: float, lon: float, cache: dict) -> tuple[float | None,
 
 
 def corpus() -> list[tuple[str, float, float, str]]:
-    """(id, lat, lon, country) pour chaque fiche notée qui porte une coordonnée."""
+    """(id, lat, lon, country) pour chaque fiche SERVIE qui porte une coordonnée.
+
+    On appelle l'ACCESSEUR du moteur (`engine.core.datacenter_paths`), jamais un glob maison : lui
+    seul exclut les *.draft / aux (_AUX_SUFFIXES) que le build n'envoie pas. Un glob mesurerait un
+    ensemble DIFFÉRENT de celui que le gate compte (ici 1580 vs 1572 servies, à cause de 8 fiches
+    israéliennes .draft) — assez de couverture pour satisfaire le gate, pas le même ensemble pour
+    le protéger. Même périmètre des deux côtés, ou le gate est contournable.
+    """
+    from engine.core import datacenter_paths
     out: list[tuple[str, float, float, str]] = []
-    for p in sorted(NEWSROOM.glob("datacenters*/*.json")):
-        if p.name.endswith("provenance.json"):
-            continue
+    for p in datacenter_paths(NEWSROOM):
         try:
             idn = (json.loads(p.read_text()).get("identity") or {})
         except Exception:  # noqa: BLE001
