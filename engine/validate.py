@@ -93,6 +93,11 @@ GEO_WAIVERS = {
     "es-aws-aragon-villanueva-de-gallego": "2026-09-29 — périmètre EU, correction à cadrer",
     "es-aws-aragon-el-burgo-de-ebro": "2026-09-29 — périmètre EU, correction à cadrer",
     "es-meta-talavera-de-la-reina": "2026-09-29 — périmètre EU, correction à cadrer",
+    # Dérogations EU 2026-10-02 (coords GeoNames hors bâtiment, opérateur connu = vrai DC mais
+    # position bâtiment introuvable ; indicateurs de point en not_collected ; déblocage = adresse).
+    "es-amune-networks-cpd": "2026-10-02 — géocode PeeringDB (Avda Balsicas) à 128 m du centre de San Javier, hors bâtiment ; pas de data_center OSM ; point indicators not_collected ; déblocage = adresse bâtiment",
+    "pl-orange-polska-bia-ystok": "2026-10-02 — géocode à 120 m du centre de Białystok, hors bâtiment ; Kościelna 10 non géocodable au bâtiment, aucun data_center OSM ; point indicators not_collected ; déblocage = adresse bâtiment",
+    "nl-rabobank-datacenter-best": "2026-10-02 — géocode à 109 m du centre de Best, hors bâtiment ; seul hit OSM = agence bancaire (pas le datacenter) ; point indicators not_collected ; déblocage = adresse bâtiment",
 }
 
 
