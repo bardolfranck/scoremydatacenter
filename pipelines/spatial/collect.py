@@ -50,6 +50,7 @@ FR_SPEC = {
         "admin_area": c.get("codeDepartement"),
     },
     "collectors": [
+        # E1 : NATIONAL (par date/millésime, ne lit ni lat/lon ni commune) → listé dans "national".
         (("E1",), _wrap(lambda ctx: sources.collect_e1(ctx["accessed"]))),
         (("W1",), _wrap(lambda ctx: sources.collect_w1(ctx["lat"], ctx["lon"], ctx["accessed"]))),
         (("F1",), _wrap(lambda ctx: sources.collect_f1(ctx["lat"], ctx["lon"], ctx["accessed"]))),
@@ -60,6 +61,11 @@ FR_SPEC = {
         (("F2",), _collect_f2),
         (("E2", "E3"), _collect_grid),
     ],
+    # Indicateurs NATIONAUX : calculés par date/millésime, pas par coordonnée → identiques
+    # partout en France. Un repositionnement les CONSERVE (il ne les re-mesure pas) ;
+    # pipelines.spatial.country.national_indicators les lit ICI, personne ne les recense ailleurs.
+    # Tout collecteur ajouté qui ne lit NI lat/lon NI commune doit être ajouté à cet ensemble.
+    "national": frozenset({"E1"}),
     "collectable_gaps": frozenset(),
     "provenance_commune": lambda c: {
         "commune_insee": c["code"],

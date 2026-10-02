@@ -70,6 +70,15 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
+def national_indicators(spec: dict) -> frozenset:
+    """IDs des indicateurs NATIONAUX d'un pays : calculés par date/millésime, sans lat/lon ni
+    commune, donc identiques partout dans le pays. On les LIT dans le SPEC (clé "national"),
+    on ne les recense pas par introspection — l'information vit à côté du collecteur, là où
+    elle est vraie. Un repositionnement les conserve (il ne les re-mesure pas) ; même logique
+    que l'accesseur du périmètre du corpus : appeler, ne pas réécrire la règle."""
+    return frozenset(spec.get("national", frozenset()))
+
+
 def build_draft(spec: dict, lat: float, lon: float, *, name: str, operator: str,
                 power_mw: float | None, project_status: str,
                 accessed: str) -> tuple[dict, dict, list[str]]:
