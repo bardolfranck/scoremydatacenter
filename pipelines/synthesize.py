@@ -227,8 +227,23 @@ def main(argv=None) -> int:
     ap.add_argument("--source", required=True, type=Path, help="panel dir of source DCs (datacenters*/)")
     ap.add_argument("--artifacts", required=True, type=Path, help="built artifacts dir (has dc/<id>.json)")
     ap.add_argument("--force", action="store_true", help="re-redact even DCs that already have a valid synthesis")
+    ap.add_argument("--model", default="", metavar="NOM",
+                    help="modèle à appeler (défaut : celui de pipelines.llm_client)")
+    ap.add_argument("--no-llm", action="store_true",
+                    help="n'appeler aucun modèle — refuse à la première rédaction (test de câblage)")
     args = ap.parse_args(argv)
-    result = synthesize_panel(args.source, args.artifacts, llm=_no_llm, force=args.force)
+    # LE SIÈGE EST VIDE PAR DÉFAUT, MAIS LA COMMANDE DOIT TOURNER. Le modèle est une couture
+    # (A-22) pour qu'aucun fournisseur ne soit cloué dans ce module — mais le CLI passait
+    # `_no_llm`, donc la commande documentée dans WORKFLOW.md échouait sur « No LLM wired »
+    # quoi qu'on fasse. La couture reste (`--no-llm`, et `synthesize_panel(llm=…)` en
+    # bibliothèque) ; c'est le DÉFAUT qui change, parce qu'une commande documentée doit
+    # faire ce qu'elle annonce. Constaté le 2026-10-02, quatrième du genre dans la journée.
+    if args.no_llm:
+        llm = _no_llm
+    else:
+        from .llm_client import anthropic_llm
+        llm = anthropic_llm(args.model) if args.model else anthropic_llm()
+    result = synthesize_panel(args.source, args.artifacts, llm=llm, force=args.force)
     print(json.dumps(result, ensure_ascii=False, indent=2), file=sys.stderr)
     return 1 if result["failed"] else 0
 

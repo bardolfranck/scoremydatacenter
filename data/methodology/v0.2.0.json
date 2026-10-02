@@ -1130,6 +1130,7 @@
   "parameters": {
     "declarative_score_cap": 60,
     "min_coverage": 0.4,
+    "min_site_coverage": 0.1,
     "declarative_confidence_penalty": 0.5,
     "confidence_thresholds": {
       "high": 0.75,

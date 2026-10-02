@@ -168,6 +168,16 @@ def _citable_quote(site: dict, project_process: dict, pillar_details: dict, meth
     No adjectives, same discipline as the grade (no 'close to X')."""
     labels = {p["id"]: p["label"] for p in methodology["pillars"]}
     site_grade = site["grade"]
+    # L'AXE SITE AUSSI PEUT ÊTRE RETIRÉ (seuil `min_site_coverage`, 2026-10-02). Cette phrase
+    # est faite pour être copiée telle quelle par un journaliste : elle ne doit jamais contenir
+    # l'énumération interne. Sans ce cas, elle sortait « Noté insufficient_data sur le site ».
+    # Et quand on ne note ni le site ni le projet, la seule phrase opposable est celle qui le
+    # dit — pas une qui compare deux notes absentes.
+    if site_grade == INSUFFICIENT_DATA:
+        return {
+            "fr": "Données insuffisantes pour noter ce site ; aucune note n'est publiée.",
+            "en": "Insufficient data to grade this site; no grade is published.",
+        }
     graded = {pid: d for pid, d in pillar_details.items() if d["grade"] != INSUFFICIENT_DATA}
     if graded:
         worst_id = max(graded, key=lambda pid: (_GRADE_ORDER.index(graded[pid]["grade"]), -graded[pid]["score"]))
@@ -219,7 +229,38 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
 
     verified = _operationally_verified(entries)
     site_score = _aggregate(scored, base_defs, pillar_weights)
-    site = _reserve_top_grade(_grade(site_score, methodology), verified, methodology)
+    # L'ÉCHAPPATOIRE « DONNÉES INSUFFISANTES » VAUT AUSSI POUR L'AXE SITE (Franck, 2026-10-02).
+    # Elle n'existait que pour l'axe projet depuis le 2026-07-09 — « un 0 pour quelque chose
+    # qu'on n'a jamais lu serait aussi faux qu'un A de complaisance ». La même phrase vaut pour
+    # le territoire, et le cas s'est présenté : trois fiches dont la coordonnée était fabriquée
+    # ont vu leurs indicateurs de point passer en `not_collected`, et leur note de site est
+    # tombée de C à E. L'acte honnête — dire qu'on ignore où est le site — produisait un
+    # jugement public PLUS DUR que de garder une position fausse. C'est exactement l'inverse
+    # de ce que la note doit faire.
+    #
+    # SEUIL PROPRE À L'AXE, et surtout pas `min_coverage` (0,4), calibré pour les 7 indicateurs
+    # projet/processus. Mesuré sur le corpus du 2026-10-02 : à 0,4 l'axe site perdrait sa note
+    # sur 670 fiches de 1568 — toute l'Allemagne, tout le Royaume-Uni, toute la Suisse, toute
+    # la Norvège. Hors de France la plupart des pays n'ont que 4 à 6 sources sur 15 indicateurs
+    # de base : une couverture basse y est la norme, pas une pathologie.
+    #
+    # 0,10 tombe dans un VIDE de la distribution, et c'est ce qui le rend défendable : les
+    # trois fiches pathologiques sont à 0,049, la suivante (fr-microsoft) à 0,187, puis 0,228.
+    # Tout seuil entre 0,05 et 0,15 donne exactement le même résultat — le nombre n'est pas un
+    # réglage fin, c'est une frontière entre « on ne sait rien » et « on sait peu ».
+    base_total_w = sum(pillar_weights[d["pillar"]] * d["weight_in_pillar"] for d in base_defs)
+    base_filled_w = sum(pillar_weights[d["pillar"]] * d["weight_in_pillar"]
+                        for d in base_defs if per_indicator[d["id"]] is not None)
+    site_coverage = base_filled_w / base_total_w if base_total_w else 1.0
+    site_floor = params.get("min_site_coverage", 0.0)
+    #
+    # `coverage` n'est posé QUE sur la branche de retrait, pas sur la note normale : l'ajouter
+    # partout changerait l'artefact publié des 1568 fiches pour un agrément de symétrie, et une
+    # modification qui touche tout le corpus doit se payer par un besoin, pas par une élégance.
+    if site_coverage < site_floor:
+        site = {"grade": INSUFFICIENT_DATA, "coverage": round(site_coverage, 3)}
+    else:
+        site = _reserve_top_grade(_grade(site_score, methodology), verified, methodology)
     # Per-badge documentation (block-scoped confidence): the site badge is documented
     # by its BASE indicators only, the project badge by its project/process indicators.
     site["documentation"] = _documentation(_confidence(entries, base_defs, pillar_weights, methodology))
