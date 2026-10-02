@@ -109,7 +109,11 @@ def collect_e1_gb(accessed: str) -> dict | None:
         vals += [row["intensity"]["actual"] for row in data.get("data", [])
                  if row.get("intensity", {}).get("actual") is not None]
         cur = nxt
-    if not vals:
+    # A window that returns 200 with an EMPTY `data` raises nothing — it just adds no values. Without
+    # this guard the loop would emit a "12-month mean" quietly computed on a few months, the only
+    # witness being `n=` in the title that nobody reads. A full year is 365*48 = 17520 half-hours;
+    # below 95 % we refuse rather than publish a partial-year average as a national constant.
+    if len(vals) < int(0.95 * 365 * 48):
         return None
     mean = round(sum(vals) / len(vals), 1)
     out = {
