@@ -46,27 +46,45 @@ _e1_cache: dict[str, dict | None] = {}
 
 
 def collect_e1_eirgrid(accessed: str) -> dict | None:
-    """ROI grid CO2 intensity — mean of a recent ~7-day window from EirGrid's Smart Grid Dashboard
-    (the API caps date ranges; a week is stable and keyless). National → memoized per run, both to
-    avoid re-fetching for every Irish DC and to smooth the dashboard's intermittent 503s."""
+    """ROI grid CO2 intensity as a 12-MONTH MEAN from EirGrid's Smart Grid Dashboard — the SAME
+    method as the EU energy-charts E1, so E1 is a STABLE national value identical for every Irish DC
+    whatever the day it is collected.
+
+    It used to average a ~7-day window: the 12 Irish fiches were internally consistent only because
+    they were collected in one run, but a re-collection a week later would swing with the weather —
+    the same dormant defect that surfaced in GB as a 38 % spread. Ireland has a PUBLISHED country
+    index whose Energy pillar rode those seven days of wind, so this matters before the next run.
+
+    The dashboard caps date ranges and 503s intermittently, so we loop monthly windows across the
+    trailing year and average the half-hourly actuals. Memoized per run. energy-charts does not serve
+    the Irish zone, hence EirGrid."""
     if accessed in _e1_cache:
         return _e1_cache[accessed]
     end = date.fromisoformat(accessed)
-    start = end - timedelta(days=7)
-    try:
-        data = get_json(_EIRGRID, {"area": "co2intensity", "region": "ROI",
-                                   "datefrom": f"{start} 00:00", "dateto": f"{end} 00:00"})
-    except SourceUnavailable:
-        return None  # transient — not cached, a later DC retries
-    vals = [r.get("Value") for r in data.get("Rows", []) if r.get("Value") is not None]
-    if not vals:
+    start = end - timedelta(days=365)
+    vals: list[float] = []
+    cur = start
+    while cur < end:
+        nxt = min(cur + timedelta(days=28), end)
+        try:
+            data = get_json(_EIRGRID, {"area": "co2intensity", "region": "ROI",
+                                       "datefrom": f"{cur} 00:00", "dateto": f"{nxt} 00:00"})
+        except SourceUnavailable:
+            return None  # transient (the dashboard 503s) — not cached, a later DC retries the year
+        vals += [r.get("Value") for r in data.get("Rows", []) if r.get("Value") is not None]
+        cur = nxt
+    # Same guard as GB: a window that returns 200 with empty Rows raises nothing, so without this the
+    # loop could emit a "12-month mean" quietly computed on a few months. A full year is 365*48 half
+    # hours; below 95 % we refuse rather than publish a partial-year average as a national constant.
+    if len(vals) < int(0.95 * 365 * 48):
         return None
     mean = round(sum(vals) / len(vals), 1)
     result = {
         "id": "E1", "status": "measured", "value": mean,
         "source": {
-            "title": f"EirGrid Smart Grid Dashboard — ROI grid CO2 intensity, mean {start}..{end} "
-                     f"({mean} gCO2/kWh, n={len(vals)} half-hourly). energy-charts does not serve the Irish zone",
+            "title": f"EirGrid Smart Grid Dashboard — ROI grid CO2 intensity, 12-month mean "
+                     f"{start}..{end} ({mean} gCO2/kWh, n={len(vals)} half-hourly). "
+                     f"energy-charts does not serve the Irish zone",
             "url": "https://www.smartgriddashboard.com/", "accessed": accessed},
     }
     _e1_cache[accessed] = result
