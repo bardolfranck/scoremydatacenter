@@ -1,5 +1,16 @@
 .PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations validate-corpus
 
+# LA COUCHE DE COLLECTE EST PRIVÉE (décision Franck, 2026-10-02). Le dépôt public porte la
+# méthode — moteur de notation, gates, méthodologie, site ; la machine qui va CHERCHER la
+# donnée vit dans le newsroom. Une fiche cite ses sources, c'est le socle et il ne bouge pas ;
+# mais un registre de specs par pays, un squelette commun et un runner de masse forment un
+# extracteur clé en main, et il n'a rien à faire en ligne.
+#
+# Les cibles de collecte restent ICI — un seul endroit où l'on tape une commande, la règle
+# n'a pas changé — mais elles montent le paquet privé au lancement. Sans newsroom, elles
+# échouent sur un import manquant, ce qui est la vérité : il n'y a rien à collecter avec.
+COLLECT = PYTHONPATH=$(NEWSROOM) uv run python -m pipelines
+
 install:
 	uv sync
 	npm install --prefix site
@@ -10,15 +21,15 @@ validate:
 # Batch spatial collection from coordinates → sourced DRAFTS in the private newsroom.
 # Proposes only; every draft is human-reviewed before it enters the circuit.
 #   make collect-drafts SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
-SITES ?= pipelines/spatial/sample_sites.csv
+SITES ?= $(NEWSROOM)/pipelines/spatial/sample_sites.csv
 OUT ?= ../smdc-newsroom/drafts/datacenters
 collect-drafts:
-	uv run python -m pipelines.spatial.batch $(SITES) --out $(OUT)
+	$(COLLECT).spatial.batch $(SITES) --out $(OUT)
 
 # Same batch, any country — the ONE way to collect a country's sites (registry-dispatched).
 #   make collect-country COUNTRY=NL SITES=sites-nl.csv OUT=../smdc-newsroom/calibration/datacenters-nl
 collect-country:
-	uv run python -m pipelines.spatial.batch $(SITES) --country $(COUNTRY) --out $(OUT)
+	$(COLLECT).spatial.batch $(SITES) --country $(COUNTRY) --out $(OUT)
 
 # Seed from DCWatch (Hubblo, ODbL) — exports a sites CSV for the batch above; never a new driver.
 # Sites already in the panel (within 300 m) are set aside, not re-proposed. Output stays private
@@ -27,7 +38,7 @@ collect-country:
 RELEASE ?= 2026.04.09
 SEEDS ?= ../smdc-newsroom/seeds
 seed-dcwatch:
-	uv run python -m pipelines.seed.dcwatch --release $(RELEASE) --country $(COUNTRY) \
+	$(COLLECT).seed.dcwatch --release $(RELEASE) --country $(COUNTRY) \
 	  --exclude-panel ../smdc-newsroom/calibration/datacenters \
 	  --exclude-panel ../smdc-newsroom/drafts/datacenters --out $(SEEDS)
 
@@ -35,7 +46,7 @@ seed-dcwatch:
 # Proposes only; deterministic proxies are pre-filled, the judgment ones stay review leads.
 #   make collect-governance SITES=my-sites.csv OUT=../smdc-newsroom/drafts/datacenters
 collect-governance:
-	uv run python -m pipelines.press.batch $(SITES) --out $(OUT)
+	$(COLLECT).press.batch $(SITES) --out $(OUT)
 
 # Voie B — harvest the open contestation-signal feeds → DRAFT watchlist (facts only, no grade).
 # uMap FR + US fights + US moratoria; add GDELT press detection with GDELT_QUERY=.
@@ -45,13 +56,13 @@ collect-governance:
 SIGNAL_OUT ?= ../smdc-newsroom/drafts/watchlist
 SIGNAL_COUNTRY_FLAGS = $(foreach c,$(SIGNAL_COUNTRIES),--country $(c))
 collect-signal:
-	uv run python -m pipelines.press.collect_signal --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",) $(SIGNAL_COUNTRY_FLAGS)
+	$(COLLECT).press.collect_signal --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",) $(SIGNAL_COUNTRY_FLAGS)
 
 # ── The orchestrated workflow (A-22) — everything auto-chains up to ONE human gate ──
 # Onboard a DC: coords → spatial + governance + contestation match → bundle for review (no publish).
 #   make onboard-dc LAT=48.59 LON=2.80 NAME="…" OPERATOR="…" POWER_MW=30 SIGNAL=<watchlist.draft.geojson>
 onboard-dc:
-	uv run python -m pipelines.orchestrate onboard --lat $(LAT) --lon $(LON) \
+	$(COLLECT).orchestrate onboard --lat $(LAT) --lon $(LON) \
 	  $(if $(NAME),--name "$(NAME)",) $(if $(OPERATOR),--operator "$(OPERATOR)",) \
 	  $(if $(POWER_MW),--power-mw $(POWER_MW),) $(if $(PROJECT_STATUS),--project-status $(PROJECT_STATUS),) \
 	  $(if $(SIGNAL),--signal $(SIGNAL),) --out $(OUT)
@@ -59,19 +70,19 @@ onboard-dc:
 # Refresh the contestation signal → review queue (facts only). Add GDELT_QUERY= for press
 # detection, SIGNAL_COUNTRIES="CA …" for per-country GDELT specs.
 refresh-signal:
-	uv run python -m pipelines.orchestrate refresh --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",) $(SIGNAL_COUNTRY_FLAGS)
+	$(COLLECT).orchestrate refresh --out $(SIGNAL_OUT) $(if $(GDELT_QUERY),--gdelt-query "$(GDELT_QUERY)",) $(SIGNAL_COUNTRY_FLAGS)
 
 # Apply a human-approved contestation review queue (only decision:approve; adds archived_url).
 # Pass INTO=<dc.json> to WRITE the approved facts into the DC file (the last mile → re-score to render).
 #   make promote REVIEW=<id>/contestation.review.jsonl INTO=<id>/<id>.draft.json
 promote:
-	uv run python -m pipelines.orchestrate promote $(REVIEW) $(if $(INTO),--into $(INTO),)
+	$(COLLECT).orchestrate promote $(REVIEW) $(if $(INTO),--into $(INTO),)
 
 # Promote an approved review queue into the standalone "En veille" watchlist layer (A-19).
 # Then `make build` regenerates watchlist.geojson → the map's distinct markers.
 #   make promote-watchlist REVIEW=<queue>.jsonl WATCHLIST=../smdc-newsroom/drafts/watchlist/fr.json
 promote-watchlist:
-	uv run python -m pipelines.orchestrate promote $(REVIEW) --watchlist $(WATCHLIST)
+	$(COLLECT).orchestrate promote $(REVIEW) --watchlist $(WATCHLIST)
 
 score: validate
 	uv run python -m engine.score
@@ -140,7 +151,7 @@ comparator-projection:
 prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py
 	uv run python scripts/build_comparator.py
-	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    uv run python -m pipelines.media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
+	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    $(COLLECT).media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2
 
 # Go-live paid-API hook (Franck 2026-07-23): push the freshly built artifacts to
@@ -173,7 +184,7 @@ sync-api-r2:
 
 # Génération/upload manuel des photos satellite (mêmes règles, à la demande).
 media-sat:
-	@while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	uv run python -m pipelines.media.satellite --upload
+	@while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	$(COLLECT).media.satellite --upload
 
 # Deploy the built site to Cloudflare Pages (direct upload — the prod build needs
 # the private newsroom, so it happens HERE, never in a public-repo CI).
@@ -239,7 +250,7 @@ onepager:
 VEILLE_OUT ?= ../smdc-newsroom/veille
 VEILLE_TIMESPAN ?= 1w
 veille-fr:
-	uv run python -m pipelines.veille.fr --out $(VEILLE_OUT) --timespan $(VEILLE_TIMESPAN)
+	$(COLLECT).veille.fr --out $(VEILLE_OUT) --timespan $(VEILLE_TIMESPAN)
 	@cd $(VEILLE_OUT)/.. && git add veille && \
 	  if git diff --cached --quiet; then echo "veille-fr: rien de neuf"; \
 	  else git commit -q -m "veille: digest $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-fr: digest poussé au newsroom" || echo "veille-fr: commit local (push différé — offline?)"); fi
@@ -251,7 +262,7 @@ veille-fr:
 NEWSROOM ?= ../smdc-newsroom
 ACTU_TIMESPAN ?= 1w
 veille-actu:
-	uv run python -m pipelines.veille.actu --newsroom $(NEWSROOM) --public-data site/public/data --timespan $(ACTU_TIMESPAN)
+	$(COLLECT).veille.actu --newsroom $(NEWSROOM) --public-data site/public/data --timespan $(ACTU_TIMESPAN)
 	@cd $(NEWSROOM) && git add actu && \
 	  if git diff --cached --quiet; then echo "veille-actu: rien de neuf"; \
 	  else git commit -q -m "actu: archive $$(date +%F)" && (git push -q 2>/dev/null && echo "veille-actu: archive poussée au newsroom" || echo "veille-actu: commit local (push différé — offline?)"); fi
@@ -264,8 +275,8 @@ PROJECTS_OUT ?= ../smdc-newsroom/projects
 AUTO_WATCHLIST ?= ../smdc-newsroom/calibration/watchlist/eu-projects-auto.json
 collect-projects:
 	@mkdir -p "$(PROJECTS_OUT)/$$(date +%F)"
-	uv run python -m pipelines.press.osm_projects --out "$(PROJECTS_OUT)/$$(date +%F)/osm-pipeline-eu.csv"   # raw detection archive
-	uv run python -m pipelines.veille.onboard --publish "$(AUTO_WATCHLIST)"   # auto-deposit clean en-veille (dedup vs served needs a built map.geojson upstream)
+	$(COLLECT).press.osm_projects --out "$(PROJECTS_OUT)/$$(date +%F)/osm-pipeline-eu.csv"   # raw detection archive
+	$(COLLECT).veille.onboard --publish "$(AUTO_WATCHLIST)"   # auto-deposit clean en-veille (dedup vs served needs a built map.geojson upstream)
 	@cd $(PROJECTS_OUT)/.. && git add projects calibration/watchlist && \
 	  if git diff --cached --quiet; then echo "collect-projects: rien de neuf"; \
 	  else git commit -q -m "projects: collecte OSM + auto-dépôt en-veille $$(date +%F)" && (git push -q 2>/dev/null && echo "collect-projects: poussé au newsroom" || echo "collect-projects: commit local (push différé — offline?)"); fi
@@ -274,15 +285,28 @@ collect-projects:
 # archives (approved-only, windowed, transient _gate stripped). The CI run's public/data is
 # ephemeral → the newsroom is the source of truth. Call this in the site build BEFORE astro build.
 # No network, no LLM key. (agent-codeur-site 2026-09-04)
+#
+# SANS NEWSROOM, ON ÉMET UN FICHIER VIDE SANS TOUCHER AU PAQUET PRIVÉ. Le build Astro importe
+# ce JSON à la compilation : absent, il ne compile pas. Jusqu'au 2026-10-02 c'est le module de
+# veille qui écrivait le fichier vide, mais il est passé en privé avec le reste de la collecte
+# — et la CI, qui n'a pas le newsroom, est tombée sur « No module named 'pipelines' ». Le dépôt
+# public ne doit JAMAIS dépendre du privé pour se construire : deux lignes de shell suffisent
+# à produire un fichier vide, et elles disent ce qu'elles font.
 actu-latest:
-	uv run python -m pipelines.veille.actu --regen-latest --newsroom $(NEWSROOM) --public-data site/public/data
+	@if [ -d "$(NEWSROOM)" ]; then \
+	  $(COLLECT).veille.actu --regen-latest --newsroom $(NEWSROOM) --public-data site/public/data; \
+	else \
+	  mkdir -p site/public/data/actu; \
+	  printf '{"generated_at": null, "items": []}\n' > site/public/data/actu/latest.json; \
+	  echo "actu-latest: pas de newsroom, latest.json vide emis (clone public / CI)"; \
+	fi
 
 # Weekly status proof (Franck 2026-09-17): PeeringDB → label model → newsroom sidecar
 # calibration/status-proof/status_check.json. The next `make prod-artifacts` puts « statut
 # vérifié / non vérifié » on every operational fiche. Never edits a fiche, never flips a status,
 # never deploys. Refuses to overwrite if the verified count collapses (bad-week guard).
 status-proof:
-	uv run python -m pipelines.status_proof.run --cal $(NEWSROOM)/calibration
+	$(COLLECT).status_proof.run --cal $(NEWSROOM)/calibration
 	@cd $(NEWSROOM) && git add calibration/status-proof && \
 	  if git diff --cached --quiet; then echo "status-proof: rien de neuf"; \
 	  else git commit -q -m "status-proof: vérification hebdo $$(date +%F)" && (git push -q 2>/dev/null && echo "status-proof: poussé au newsroom" || echo "status-proof: commit local (push différé — offline?)"); fi
@@ -291,7 +315,7 @@ status-proof:
 # (Franck 2026-09-21 : on ne mesure pas les dB, on mesure l'exposition). Calcule seulement ce qui
 # manque (le bâti bouge lentement), écrit le sidecar newsroom et le commit. Ne déploie pas.
 habitations:
-	uv run python -m pipelines.habitations.run --cal $(NEWSROOM)/calibration $(if $(LIMIT),--limit $(LIMIT),)
+	$(COLLECT).habitations.run --cal $(NEWSROOM)/calibration $(if $(LIMIT),--limit $(LIMIT),)
 	@cd $(NEWSROOM) && git add calibration/habitations && \
 	  if git diff --cached --quiet; then echo "habitations: rien de neuf"; \
 	  else git commit -q -m "habitations: distance aux premières habitations $$(date +%F)" && (git push -q 2>/dev/null && echo "habitations: poussé au newsroom" || echo "habitations: commit local (push différé)"); fi

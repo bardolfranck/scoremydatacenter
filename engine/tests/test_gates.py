@@ -336,3 +336,37 @@ def test_geo_gate_dit_ce_qu_il_ne_voit_pas_quand_il_passe(tmp_path, monkeypatch,
     assert "rien à signaler" in dit and "ne voit pas les aires sub-communales" in dit, (
         "quand il passe, le gate doit énoncer sa portée — sinon « vert » se lit « certifié »"
     )
+
+
+def test_projection_se_perime_sur_les_distances_pas_sur_le_compte(tmp_path, monkeypatch):
+    """Un cache de carte indexé sur le seul NOMBRE de sites ment dès qu'une valeur change.
+
+    Vécu le 2026-10-02 : l'intensité carbone britannique harmonisée sur les 148 fiches, le
+    compte inchangé. Les listes de voisins, recalculées, perdaient bien l'artefact de
+    millésime (99 % de voisinage entre fiches d'un même millésime, retombé à 3 %) pendant
+    que la CARTE, relue en cache, continuait d'afficher les familles d'avant. Deux vérités
+    à l'écran sur la même page.
+    """
+    import sys
+    import numpy as np
+    sys.path.insert(0, "scripts")
+    import build_comparator as bc
+
+    monkeypatch.setattr(bc, "PROJ_DIR", tmp_path)
+    D1 = np.array([[0.0, 1.0], [1.0, 0.0]])
+    D2 = np.array([[0.0, 2.0], [2.0, 0.0]])          # MÊME nombre de sites, distances autres
+    (tmp_path / "ZZ.json").write_text(json.dumps({
+        "n": 2, "sig": bc.hashlib.sha256(np.round(D1, 6).tobytes()).hexdigest()[:16],
+        "xy": [[0.0, 0.0], [1.0, 1.0]], "familles": [0, 0]}), encoding="utf-8")
+
+    xy, fam = bc.projection("ZZ", D1, froid=False)
+    assert xy.shape == (2, 2), "distances inchangées : le cache doit être relu"
+
+    try:
+        bc.projection("ZZ", D2, froid=False)
+    except SystemExit as e:
+        assert "distances différentes" in str(e), (
+            f"le refus doit nommer la vraie cause, pas un écart de compte — {e}"
+        )
+    else:
+        raise AssertionError("mêmes sites, autres distances : le cache ne doit PAS être relu")

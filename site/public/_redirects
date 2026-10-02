@@ -20,3 +20,9 @@
 
 /fr/dc/pl-orange-polska-warszawa/  /fr/dc/pl-orange-polska-warsaw-w-barbary-10/  301
 /dc/pl-orange-polska-warszawa/     /dc/pl-orange-polska-warsaw-w-barbary-10/     301
+
+# Deuxième série, même jour : la fusion CKW, sortie du repositionnement des coordonnées
+# suisses. PeeringDB n'a qu'un seul site CKW à Rotkreuz, « CKW DC Zug », Industriestrasse 3A —
+# nos deux fiches le désignaient. On garde celle qui porte le nom du site.
+/fr/dc/ch-ckw-colo-rotkreuz/  /fr/dc/ch-ckw-zug/  301
+/dc/ch-ckw-colo-rotkreuz/     /dc/ch-ckw-zug/     301

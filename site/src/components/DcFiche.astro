@@ -274,7 +274,12 @@ const seoGrade = seoBand.kind === "en_attente"
   ? (lang === "fr" ? "note en attente" : "grade pending")
   : seoBand.kind === "provisional_band" && seoBand.band
     ? (lang === "fr" ? `note provisoire ${seoBand.band}` : `provisional grade ${seoBand.band}`)
-    : (lang === "fr" ? `note ${dc.grades.site.grade}` : `grade ${dc.grades.site.grade}`);
+    // L'axe site peut lui aussi être retiré faute de données (seuil `min_site_coverage`,
+    // 2026-10-02). Sans ce cas, le titre sortait « note insufficient_data » — l'énumération
+    // interne, en anglais, dans l'onglet du navigateur et dans les résultats de recherche.
+    : dc.grades.site.grade === "insufficient_data"
+      ? (lang === "fr" ? "données insuffisantes" : "insufficient data")
+      : (lang === "fr" ? `note ${dc.grades.site.grade}` : `grade ${dc.grades.site.grade}`);
 const seoPlaceRaw = dc.municipality ?? dc.admin_area ?? dc.country ?? "";
 // « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
 // est du bruit qui mange la largeur utile du titre en SERP.

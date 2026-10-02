@@ -62,7 +62,7 @@ const T = {
       mince: (n: number) => `corpus trop mince (${n} sites)`,
       absent: "—",
       note: "La colonne « comparateur » dit, pays par pays, jusqu'à combien de sites proches on affiche et sur combien de variables communes le rapprochement repose. Un pays sous le plancher n'a pas de comparateur du tout : c'est un trou de collecte, pas une absence de sites.",
-      lien: "Ouvrir le comparateur →",
+      lien: "Ouvrir le comparateur",
     },
     comparability: {
       title: "Ces pays ne sont pas mesurés sur la même base",
@@ -101,7 +101,7 @@ const T = {
       mince: (n: number) => `corpus too thin (${n} sites)`,
       absent: "—",
       note: "The « comparator » column states, country by country, how many near sites we show at most and how many shared variables the match rests on. A country below the floor has no comparator at all: that is a collection gap, not an absence of sites.",
-      lien: "Open the comparator →",
+      lien: "Open the comparator",
     },
     comparability: {
       title: "These countries are not measured on the same basis",
@@ -252,7 +252,12 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
     </div>
     <p class="idx-denoms">
       {(T as any).cmp.note}{" "}
-      <a href={lang === "fr" ? "/fr/comparer" : "/compare"}>{(T as any).cmp.lien}</a>
+      {/* GRISÉ, PAS SUPPRIMÉ (Franck 2026-10-02) — le comparateur sort de la navigation mais
+          la colonne reste, et sa mention aussi : elle dit ce que la couverture PERMET. Un
+          <span> plutôt qu'un <a> désactivé : un lien qu'on neutralise au CSS reste cliquable
+          au clavier et reste suivi par un robot d'indexation. Repasser en lien = restaurer la
+          balise, le libellé n'a pas bougé. */}
+      <span class="idx-cmp-lien-off">{(T as any).cmp.lien}</span>
     </p>
     <p class="idx-denoms">
       {lang === "fr"

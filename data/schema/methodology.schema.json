@@ -162,6 +162,12 @@
           "maximum": 1,
           "description": "Below this weighted coverage, a grade becomes 'insufficient_data' instead of a letter — applied to the global project/process grade AND cascaded to every per-pillar display sub-score (a pillar is never given a punitive letter drawn from unknowns)."
         },
+        "min_site_coverage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Same escape, for the SITE axis: below this weighted coverage of the base indicators, the site grade becomes 'insufficient_data' instead of a letter. A SEPARATE, much lower floor than min_coverage, which is calibrated for the 7 project/process indicators: the site axis has 15 base indicators and most countries outside France only have open sources for 4 to 6 of them, so low coverage there is the norm rather than a pathology. Measured on the 2026-10-02 corpus: at 0.4 the site grade would be withheld on 670 fiches of 1568 (all of Germany, the UK, Switzerland, Norway), at 0.1 on 3 — the three whose fabricated coordinate was removed, which fall at 0.049 while the next fiche sits at 0.187."
+        },
         "declarative_confidence_penalty": {
           "type": "number",
           "minimum": 0,

@@ -27,6 +27,20 @@ from engine.core import ARTIFACTS_DIR, load_datacenters, load_methodology, load_
 
 CAL = Path(os.environ.get("NEWSROOM_CAL", Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
 
+# LA COUCHE DE COLLECTE VIT DANS LE DÉPÔT PRIVÉ (décision Franck, 2026-10-02). Le dépôt public
+# porte la MÉTHODE — notation, gates, méthodologie, site ; il ne porte plus la MACHINE qui va
+# chercher la donnée. Une fiche cite ses sources, c'est notre socle et ça ne bouge pas ; mais
+# un registre de specs par pays, un squelette commun et un runner de masse, c'est un extracteur
+# clé en main, et il n'a rien à faire en ligne.
+#
+# Ce build en garde quatre emprunts étroits, tous des RÈGLES écrites une seule fois en amont
+# (clé média, date corroborée, empreinte de dédup) : on les importe, on ne les recopie pas.
+# Sans le newsroom monté, ils n'existent pas — et c'est exactement le cas d'un clone public,
+# où ce script ne tourne de toute façon pas (`make build` retombe sur `score`).
+_NEWSROOM = CAL.parent
+if _NEWSROOM.is_dir() and str(_NEWSROOM) not in sys.path:
+    sys.path.insert(0, str(_NEWSROOM))
+
 # Media env (HMAC secret + public base URL) lives OUTSIDE both repos —
 # ~/.smdc/media.env — loaded here so `make prod-artifacts` just works.
 _MEDIA_ENV = Path.home() / ".smdc" / "media.env"

@@ -36,10 +36,6 @@ from __future__ import annotations
 
 # Clé : les deux identifiants TRIÉS. Valeur : la date du constat et ce qu'on en sait.
 POSITION_WAIVERS: dict[tuple[str, str], str] = {
-    ('ch-ckw-colo-rotkreuz',
-     'ch-ckw-zug'): '2026-10-02 — même opérateur, jamais tranchée',
-    ('ch-datawire-zg01',
-     'ch-datawire-zg02'): '2026-10-02 — même opérateur, jamais tranchée',
     ('ch-equinix-zh2',
      'ch-exa-infrastructure-zurich'): '2026-10-02 — même opérateur, jamais tranchée',
     ('ch-equinix-zh4',
@@ -47,13 +43,9 @@ POSITION_WAIVERS: dict[tuple[str, str], str] = {
     ('ch-evok-dc01',
      'ch-evok-dc02'): '2026-10-02 — même opérateur, jamais tranchée',
     ('ch-green-datacenter-zurich-metro',
-     'ch-stack-infrastucture-zur01'): '2026-10-02 — même opérateur, jamais tranchée',
-    ('ch-green-datacenter-zurich-metro',
      'ch-stack-infrastucture-zurl1'): '2026-10-02 — même opérateur, jamais tranchée',
     ('ch-infomaniak-dii',
      'ch-infomaniak-diii'): '2026-10-02 — même opérateur, jamais tranchée',
-    ('ch-stack-infrastucture-zur01',
-     'ch-stack-infrastucture-zurl1'): '2026-10-02 — même opérateur, jamais tranchée',
     ('fr-agarik-atos-4',
      'fr-agarik-atos-5'): '2026-10-02 — même opérateur, jamais tranchée',
     ('fr-celeste-armor',
