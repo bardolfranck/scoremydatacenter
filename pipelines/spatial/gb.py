@@ -7,8 +7,10 @@
         --name "..." --operator "..." --out <newsroom>/drafts/datacenters
 
 The Brexit finding, in data terms: the UK left the EU data commons, so the free EU-level bricks
-partially fail here (probed 2026-07-12):
-  * W2 — EEA WISE has ZERO GB water bodies for the 2022 WFD cycle (UK reports nationally now). Gap.
+partially fail here (probed 2026-07-12) — and the fix is national wiring, done brick by brick:
+  * W2 — RECOVERED (2026-10-02) via the Environment Agency / DEFRA national WFD classification layers
+    (the post-Brexit replacement for EEA WISE, which has ZERO GB bodies). England only; Scotland
+    (SEPA) / Wales (NRW) publish separately → v1 gap. See collect_w2_england.
   * F1 — RECOVERED via Natural England/JNCC national layers (SAC England + UK SPA), the
     post-Brexit replacement for the EU-only EEA Natura. Scotland/Wales SAC = v1 gap.
   * F2 — Corine CLC2018 was produced while the UK was a member → it DOES cover GB. Works.
@@ -16,14 +18,15 @@ partially fail here (probed 2026-07-12):
     carbonintensity.org.uk (keyless). Works — and GB's grid is comparatively clean (~106 gCO2/kWh,
     wind + gas), the opposite end from Poland.
 
-So GB now = E1 (National Grid) + W1 (Aqueduct) + F1 (Natural England) + F2 (Corine) = 4/12. Unlike a fresh EU member, a deeper UK
-adapter is a NATIONAL build (Environment Agency / SEPA / NRW catchment data for W2, JNCC for F1,
-NGED/UKPN capacity, HSE COMAH for Seveso) — Brexit turned the free EU ride into national wiring,
-like Germany's Länder but for a whole country. That is itself the strategic point.
+So GB now = E1 (National Grid) + W1 (Aqueduct) + W2 (Environment Agency) + F1 (Natural England) +
+F2 (Corine) = 5/12. Unlike a fresh EU member, a deeper UK adapter is a NATIONAL build (EA for W2 ✓,
+SEPA/NRW for W2 in Scotland/Wales, JNCC for F1, NGED/UKPN capacity, HSE COMAH for Seveso) — Brexit
+turned the free EU ride into national wiring, like Germany's Länder but for a whole country. That is
+itself the strategic point.
 """
 
 from . import eu
-from .bands import F1_BEYOND_RINGS, F1_DISTANCE_RINGS
+from .bands import F1_BEYOND_RINGS, F1_DISTANCE_RINGS, wfd_eco_class_to_category
 from .country import build_draft, run_cli
 from .geo import arcgis_point_query
 from .http import SourceUnavailable, get_json
@@ -59,6 +62,49 @@ def collect_f1_uk(lat: float, lon: float, accessed: str) -> dict | None:
             "source": {"title": "Natural England / JNCC — no SAC/SPA within 5 km (post-Brexit "
                                "national layers)",
                        "url": "https://naturalengland-defra.opendata.arcgis.com/", "accessed": accessed}}
+
+
+# --- W2 · WFD ecological status (Environment Agency / DEFRA — the Brexit replacement for WISE) ----
+# England's WFD classification, published by DEFRA on ArcGIS Online (same figures as the Catchment
+# Data Explorer). The RIVER water-body *catchments* polygon tiles all inland land, so a point resolves
+# to the water body it drains to — the same point→water-body leg WISE needs, done nationally. The
+# Transitional & Coastal layer is a nearest-≤2 km fallback for tidal-corridor sites (e.g. Docklands)
+# that fall outside river catchments. Scotland (SEPA) and Wales (NRW) publish separately → not wired
+# here: a point there returns None and W2 stays not_collected with that reason (v1).
+_WFD_ENG = "https://services-eu1.arcgis.com/KB6uNVj5ZcJr7jUP/arcgis/rest/services"
+_WFD_RIVER_ENG = f"{_WFD_ENG}/WFDRiverWaterBodyCatchmentsCycle22019/FeatureServer"
+_WFD_TRAC_ENG = f"{_WFD_ENG}/WFDTransitionalAndCoastalWaterBodiesCycle22019/FeatureServer"
+# (service, layer, within_m, human label) — river catchment first (point-in-polygon), TraC as fallback.
+_WFD_PROBES = (
+    (_WFD_RIVER_ENG, 0, 0, "river water-body catchment"),
+    (_WFD_TRAC_ENG, 0, 2000, "transitional/coastal water body (nearest ≤2 km)"),
+)
+
+
+def collect_w2_england(lat: float, lon: float, accessed: str) -> dict | None:
+    """F2's water twin for GB: WFD ecological status at the point via the EA/DEFRA national layers,
+    mapped onto the SAME category enum as the EU WISE source (comparability by construction)."""
+    for service, layer, within_m, kind in _WFD_PROBES:
+        try:
+            feats = arcgis_point_query(service, layer, lat, lon, within_m, record_count=1)
+        except SourceUnavailable:
+            continue
+        if not feats:
+            continue
+        attrs = feats[0].get("attributes", {})
+        category = wfd_eco_class_to_category(attrs.get("eco_class"))
+        if category is None:
+            continue  # water body present but status Not assessed / blank → try the next probe
+        return {"id": "W2", "status": "measured", "value": category,
+                "source": {"title": f"Environment Agency / DEFRA — WFD ecological status (Cycle 2, "
+                                    f"2019 classification; post-Brexit national source, EEA WISE has "
+                                    f"no GB bodies) — {kind} '{attrs.get('wb_name')}' "
+                                    f"({attrs.get('wb_id')}): '{attrs.get('eco_class')}'",
+                           "url": "https://environment.data.gov.uk/catchment-planning/",
+                           "accessed": accessed}}
+    # No English WFD body at the point (tidal corridor / lake / Scotland / Wales), or body present
+    # with an unassessed status → caller degrades W2 to not_collected (a status is never guessed).
+    return None
 
 
 def fetch_commune(lat: float, lon: float) -> dict:
@@ -100,11 +146,13 @@ def collect_e1_gb(accessed: str) -> dict | None:
 
 
 _GAPS = {
-    "W2": "not_collected — BREXIT: EEA WISE has no GB water bodies for the 2022 WFD cycle; the "
-          "national source is Environment Agency / SEPA / NRW catchment data (v1)",
     "E2": "not_collected — grid capacity is per-DNO (NGED/UKPN/SSEN); no single national feed (v1)",
     "E3": "not_collected — no public national connection-queue feed wired",
-    "W3": "not_collected — abstraction volumes not wired",
+    "W3": "not_collected — W3 = abstraction VOLUMES (cf FR BNPE, Mm3 withdrawn). England's CAMS "
+          "'Water Resource Availability' (EA, point-queryable) is a DIFFERENT construct (resource "
+          "colour at low flow, not volume) → wiring it as W3 would break cross-country comparability; "
+          "defer to a methodology decision. Raw licensed-volume feed (EA abstraction licensing) not "
+          "aggregated per area in a point-queryable layer (v1)",
     "L1": "not_collected — BREXIT: the common Eurostat NUTS2 income brick has NO UK data (UK left "
           "EU regional statistics; find-nuts only resolves UK on pre-2021 vintages). ONS income "
           "per LAD is the national source (v1); bands are a methodology decision anyway",
@@ -115,8 +163,8 @@ GB_SPEC = {
     "iso": "GB",
     "generator": "pipelines.spatial.gb v0 (national E1 + EU Corine; Brexit-limited)",
     "summary": {
-        "fr": "BROUILLON GB v0 — post-Brexit : carbone réseau national (National Grid) + Corine. Natura/WISE tombés avec le Brexit. À vérifier.",
-        "en": "GB DRAFT v0 — post-Brexit: national grid carbon (National Grid) + Corine. Natura/WISE lost to Brexit. Verify before use.",
+        "fr": "BROUILLON GB v0 — post-Brexit : carbone réseau national (National Grid) + eau DCE (Environment Agency) + Natura (Natural England) + Corine. Câblage national post-Brexit. À vérifier.",
+        "en": "GB DRAFT v0 — post-Brexit: national grid carbon (National Grid) + WFD water status (Environment Agency) + Natura (Natural England) + Corine. Post-Brexit national wiring. Verify before use.",
     },
     "fetch_commune": fetch_commune,
     "identity_fields": lambda c: {
@@ -125,14 +173,15 @@ GB_SPEC = {
     },
     "collectors": [
         (("W1",), lambda ctx, prov: [x] if (x := eu.collect_w1_aqueduct(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
+        (("W2",), lambda ctx, prov: [x] if (x := collect_w2_england(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("E1",), lambda ctx, prov: [x] if (x := collect_e1_gb(ctx["accessed"])) else []),
         (("F1",), lambda ctx, prov: [x] if (x := collect_f1_uk(ctx["lat"], ctx["lon"], ctx["accessed"])) else []),
         (("F2",), lambda ctx, prov: _f2(ctx, prov)),
     ],
-    "collectable_gaps": frozenset({"W2", "E2", "E3", "W3", "L1", "L3"}),
+    "collectable_gaps": frozenset({"E2", "E3", "W3", "L1", "L3"}),
     "provenance_commune": lambda c: {"county": c.get("county"), "country_part": c.get("country_part")},
     "provenance_extra": lambda ctx, prov: {"known_gaps": _GAPS, "f2_crosscheck": prov.get("f2_crosscheck")},
-    "manual_still_required": ["F3", "L2", "T1", "T2", "W2", "E2", "E3", "W3", "L1", "L3"],
+    "manual_still_required": ["F3", "L2", "T1", "T2", "E2", "E3", "W3", "L1", "L3"],
 }
 
 

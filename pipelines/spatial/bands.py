@@ -38,6 +38,18 @@ WFD_STATUS_TO_CATEGORY = {
 }
 
 
+# W2 (GB) · the SAME WFD ecological status, but England's post-Brexit national source (Environment
+# Agency / DEFRA) publishes the class as English text, not the WISE '1'..'5' code. This maps the text
+# onto the IDENTICAL category enum above → GB W2 stays comparable with the EU WISE fiches by
+# construction. "Not assessed" / "Does not require assessment" / blank → None (a status is never
+# guessed; the caller degrades to not_collected).
+def wfd_eco_class_to_category(text: str | None) -> str | None:
+    return {
+        "high": "very_good", "good": "good", "moderate": "moderate",
+        "poor": "poor", "bad": "bad",
+    }.get((text or "").strip().lower())
+
+
 # W1 · baseline water stress — WRI Aqueduct `bws_cat` (0..4) → methodology category.
 # Aqueduct is the methodology's cited W1 referential (framing note §7.3, "paliers WRI Aqueduct
 # low → extremely high"), so this 5→4 mapping is referential-grounded, not editorial. Global,

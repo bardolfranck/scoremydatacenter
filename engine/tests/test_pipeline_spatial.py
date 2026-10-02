@@ -63,6 +63,19 @@ def test_w2_wfd_status_maps_to_methodology_categories():
         ["very_good", "good", "moderate", "poor", "bad"]
 
 
+def test_w2_gb_eco_class_text_maps_to_same_categories_as_wise():
+    # GB's post-Brexit source (Environment Agency) gives the WFD class as English TEXT, not the WISE
+    # '1'..'5' code. The text mapper must land on the IDENTICAL enum, so GB W2 stays comparable with
+    # the EU WISE fiches — and must never guess a status for unassessed / blank bodies.
+    from pipelines.spatial.bands import wfd_eco_class_to_category, WFD_STATUS_TO_CATEGORY
+    assert [wfd_eco_class_to_category(t) for t in ("High", "Good", "Moderate", "Poor", "Bad")] == \
+        [WFD_STATUS_TO_CATEGORY[str(i)] for i in range(1, 6)]
+    assert wfd_eco_class_to_category("moderate") == "moderate"        # case-insensitive
+    assert wfd_eco_class_to_category("  Good  ") == "good"            # whitespace-tolerant
+    for blank in (None, "", "Not assessed", "Does not require assessment"):
+        assert wfd_eco_class_to_category(blank) is None               # never fabricated
+
+
 def test_wise_query_targets_fr_current_cycle():
     from pipelines.spatial import wise
     # Guard the two facts that make the join correct: France, and the 2022 reporting cycle.
