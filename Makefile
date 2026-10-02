@@ -285,8 +285,21 @@ collect-projects:
 # archives (approved-only, windowed, transient _gate stripped). The CI run's public/data is
 # ephemeral → the newsroom is the source of truth. Call this in the site build BEFORE astro build.
 # No network, no LLM key. (agent-codeur-site 2026-09-04)
+#
+# SANS NEWSROOM, ON ÉMET UN FICHIER VIDE SANS TOUCHER AU PAQUET PRIVÉ. Le build Astro importe
+# ce JSON à la compilation : absent, il ne compile pas. Jusqu'au 2026-10-02 c'est le module de
+# veille qui écrivait le fichier vide, mais il est passé en privé avec le reste de la collecte
+# — et la CI, qui n'a pas le newsroom, est tombée sur « No module named 'pipelines' ». Le dépôt
+# public ne doit JAMAIS dépendre du privé pour se construire : deux lignes de shell suffisent
+# à produire un fichier vide, et elles disent ce qu'elles font.
 actu-latest:
-	$(COLLECT).veille.actu --regen-latest --newsroom $(NEWSROOM) --public-data site/public/data
+	@if [ -d "$(NEWSROOM)" ]; then \
+	  $(COLLECT).veille.actu --regen-latest --newsroom $(NEWSROOM) --public-data site/public/data; \
+	else \
+	  mkdir -p site/public/data/actu; \
+	  printf '{"generated_at": null, "items": []}\n' > site/public/data/actu/latest.json; \
+	  echo "actu-latest: pas de newsroom, latest.json vide emis (clone public / CI)"; \
+	fi
 
 # Weekly status proof (Franck 2026-09-17): PeeringDB → label model → newsroom sidecar
 # calibration/status-proof/status_check.json. The next `make prod-artifacts` puts « statut
