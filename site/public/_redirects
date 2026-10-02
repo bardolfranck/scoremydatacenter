@@ -1,0 +1,22 @@
+# Redirections servies par Cloudflare Pages (ce fichier est copié tel quel dans dist/).
+#
+# UNE FICHE FUSIONNÉE NE DISPARAÎT PAS, ELLE REDIRIGE. Quand deux fiches se révèlent être
+# la même installation, on en retire une du corpus — mais son URL a été servie, indexée, et
+# peut-être partagée. La supprimer sèchement laisse un 404 là où un lecteur, un moteur ou un
+# élu avait un lien. Un 301 vers la fiche conservée dit la vérité : ce n'était pas une autre
+# installation, c'était celle-ci.
+#
+# Une ligne par langue, parce que les deux URL existent. Le code 301 est délibéré : la
+# fusion est définitive, ce n'est pas un déplacement temporaire.
+#
+# Première série : les trois doublons tranchés par agent-data-pipeline-EU le 2026-10-02 sur
+# les adresses PeeringDB — même opérateur, même adresse, même point, deux identifiants.
+
+/fr/dc/de-net-build-gmbh/  /fr/dc/de-net-build-datacenter-saarwellingen/  301
+/dc/de-net-build-gmbh/     /dc/de-net-build-datacenter-saarwellingen/     301
+
+/fr/dc/de-keppel-data-centres-maincubes-data-centre/  /fr/dc/de-maincubes-fra01/  301
+/dc/de-keppel-data-centres-maincubes-data-centre/     /dc/de-maincubes-fra01/     301
+
+/fr/dc/pl-orange-polska-warszawa/  /fr/dc/pl-orange-polska-warsaw-w-barbary-10/  301
+/dc/pl-orange-polska-warszawa/     /dc/pl-orange-polska-warsaw-w-barbary-10/     301
