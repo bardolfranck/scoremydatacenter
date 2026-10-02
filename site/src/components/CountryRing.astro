@@ -36,7 +36,9 @@ const PAD = FLAG_W / 2 + 6;                      // room so flags aren't clipped
 const box = Math.round(2 * radius + 2 * PAD);
 const c = box / 2;
 
-const label = lang === "fr" ? "pays" : "countries";
+// « pays suivis » et non « pays » : l'anneau mêle désormais les pays notés et ceux que la
+// veille couvre. Dire « pays » laisserait croire qu'on y publie des notes partout.
+const label = lang === "fr" ? "pays suivis" : "countries tracked";
 const nameOf = (iso: string) => COUNTRY_NAME[iso]?.[lang] ?? iso;
 
 // Server-side trig: first flag at 12 o'clock, clockwise. Positioned by left/top
@@ -61,8 +63,8 @@ const slots = isos.map((iso, i) => {
   data-country-ring
   role="img"
   aria-label={lang === "fr"
-    ? `${n} pays couverts : ${isos.map(nameOf).join(", ")}`
-    : `${n} countries covered: ${isos.map(nameOf).join(", ")}`}
+    ? `${n} pays suivis : ${isos.map(nameOf).join(", ")}`
+    : `${n} countries tracked: ${isos.map(nameOf).join(", ")}`}
 >
   <div class="ring-rotor" aria-hidden="true">
     <span class="ring-guide"></span>

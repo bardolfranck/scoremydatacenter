@@ -51,7 +51,22 @@ const stressCount = dcAll.filter((d: any) => (d.indicators || []).some((i: any) 
   i.id === "W1" && ["high", "extremely_high"].includes(String(i.value ?? "").toLowerCase()))).length;
 let watchCount = 0;
 try { watchCount = JSON.parse(readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf8")).features.length; } catch { /* optional layer */ }
-const ringCountries = [...new Set(real.map((d: any) => d.country))].filter(Boolean);
+// L'anneau comptait les pays où nous NOTONS, et donnait donc du corpus une image bien plus
+// européenne qu'il ne l'est : la veille suit 842 projets aux États-Unis, plus l'Algérie, le
+// Maroc, la Tunisie et l'Islande. Il compte désormais les pays SUIVIS — notés ou en veille —
+// ce qui est la vraie portée de l'observatoire, et ce que la statistique « projets en veille »
+// posée juste à côté affirme déjà.
+//
+// EH (Sahara occidental) est volontairement écarté : y poser un drapeau serait prendre parti
+// dans un conflit de souveraineté, et n'en pas poser afficherait un code en lettres. Un seul
+// projet est concerné ; la décision appartient à Franck, pas à ce fichier.
+let watchCountries: string[] = [];
+try {
+  watchCountries = JSON.parse(readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf8"))
+    .features.map((f: any) => f.properties?.country);
+} catch { /* couche optionnelle */ }
+const ringCountries = [...new Set([...real.map((d: any) => d.country), ...watchCountries])]
+  .filter((c: string) => Boolean(c) && c !== "EH");
 const nCountries = ringCountries.length;
 const noPowerCount = real.filter((d: any) => typeof d.power_mw !== "number").length;
 const corpusStats = [
