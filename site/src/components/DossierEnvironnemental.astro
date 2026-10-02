@@ -184,6 +184,16 @@ const NIVEAUX = ["bruit_niveau_dba", "bruit_emergence_dba"];
 // L'avertissement ne porte que sur la puissance TOTALE : c'est elle qu'on confond avec la
 // puissance du site. Le répéter sur la puissance unitaire, que son libellé désambiguïse
 // déjà, ne ferait que diluer la mise en garde.
+// UN LIBELLÉ EST TANTÔT UNE CHAÎNE, TANTÔT UN COUPLE {fr,en}. Les avis français en donnent
+// une chaîne depuis le premier jour ; l'extracteur britannique en prépare un couple, pour que
+// la fiche parle la langue de son lecteur. Rendu tel quel, un objet s'affiche « [object
+// Object] » — un libellé illisible sur une fiche publique, et rien dans le build ne l'aurait
+// dit. On accepte les deux formes ici plutôt que d'imposer une migration : le jour où tout
+// est bilingue, cette fonction se réduit d'elle-même. (Repéré avant la première extraction GB,
+// 2026-10-03.)
+const LIB = (l: any): string =>
+  typeof l === "string" ? l : (l?.[lang] ?? l?.fr ?? l?.en ?? "");
+
 const CAVEAT: Record<string, string> = {
   groupes_puissance_totale_mw: t.caveatGroupes,
   groupes_puissance_totale_mwth: t.caveatGroupes,
@@ -268,7 +278,7 @@ const borne = (b: any) => !b ? null
     const out: any[] = [];
     for (const x of items) {
       const g = out.find((o: any) => o.indicateur === x.indicateur);
-      if (g) g.vals.push(x); else out.push({ indicateur: x.indicateur, libelle: x.libelle, vals: [x] });
+      if (g) g.vals.push(x); else out.push({ indicateur: x.indicateur, libelle: LIB(x.libelle), vals: [x] });
     }
     return out;
   };
