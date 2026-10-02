@@ -15,7 +15,8 @@ import Base from "../layouts/Base.astro";
 import IndicesMap from "./IndicesMap.astro";
 import indicesData from "../../public/data/indices.json";
 import historyData from "../../public/data/indices_history.json";
-import { COUNTRY_NAMES, COUNTRY_FLAGS_ISO } from "../config/indices";
+import comparatorIndex from "../../public/data/comparator/index.json";
+import { COUNTRY_NAMES, countryFlag } from "../config/indices";
 
 interface Props {
   lang: "fr" | "en";
@@ -27,6 +28,17 @@ const { lang, nav, altHref, altLabel } = Astro.props;
 const INDICES = indicesData as any;
 const HISTORY = historyData as any[];
 
+// COUVERTURE DU COMPARATEUR, pays par pays (Franck 2026-10-02). Deux colonnes de cette page
+// disaient déjà ce qu'on sait d'un pays — la documentation médiane et les piliers mesurés.
+// Il manquait ce que cette connaissance PERMET : un pays peut être noté et rester trop mince
+// pour qu'on y compare quoi que ce soit. Le dire ici, c'est refuser de laisser croire que le
+// comparateur couvre uniformément les treize pays — et c'est ce qui tire la collecte.
+const CMP = comparatorIndex as any;
+const cmpByCountry: Record<string, any> = {};
+for (const p of CMP.pays ?? []) cmpByCountry[p.pays] = p;
+const cmpTooThin: Record<string, number> = {};
+for (const m of CMP.corpus_trop_mince ?? []) cmpTooThin[m.pays] = m.sites;
+
 const T = {
   fr: {
     pageTitle: "Indice SITE par pays — ScoreMyDataCenter",
@@ -34,7 +46,14 @@ const T = {
     tagline: "Observatoire indépendant",
     lede: "La moyenne équipondérée des notes de SITES publiées, pays par pays — le contexte que les projets subissent (réseau, eau, foncier, risques).",
     tableTitle: "Le classement (vue table)",
-    th: { country: "Pays", index: "Indice", score: "Score", n: "n sites", doc: "Documentation", cov: "Ce qu'on a mesuré", denom: "En service / annoncés", last: "Dernière évolution" },
+    th: { country: "Pays", index: "Indice", score: "Score", n: "n sites", doc: "Documentation", cov: "Ce qu'on a mesuré", cmp: "Comparateur", denom: "En service / annoncés", last: "Dernière évolution" },
+    cmp: {
+      ouvert: (v: number, n: number) => `jusqu'à ${n} comparables · ${v} variables communes`,
+      mince: (n: number) => `corpus trop mince (${n} sites)`,
+      absent: "—",
+      note: "La colonne « comparateur » dit, pays par pays, jusqu'à combien de sites proches on affiche et sur combien de variables communes le rapprochement repose. Un pays sous le plancher n'a pas de comparateur du tout : c'est un trou de collecte, pas une absence de sites.",
+      lien: "Ouvrir le comparateur →",
+    },
     comparability: {
       title: "Ces pays ne sont pas mesurés sur la même base",
       body: "Nos indicateurs dépendent des sources ouvertes de chaque pays, et elles sont très inégales. La France dispose d'un registre public de capacité du réseau électrique (Caparéseau) : ses sites sont donc notés sur la saturation du raccordement. L'Allemagne, l'Italie, l'Espagne ou la Suisse n'ont pas d'équivalent — cette dimension n'y est pas mesurée du tout. Il en va de même du profil des communes d'accueil, renseigné en France et presque nulle part ailleurs. Dernier ajout, le 30 septembre 2026 : la raccordabilité à un réseau de chaleur, que la France publie et dont aucun autre pays de notre corpus n'a l'équivalent ouvert. C'est notre mesure qui s'étend, pas la note des autres qui baisse — mais la France y devient le seul pays dont le pilier Énergie est mesuré « complet ».",
@@ -66,7 +85,14 @@ const T = {
     tagline: "Independent observatory",
     lede: "The equal-weighted mean of published SITE grades, country by country — the context projects endure (grid, water, land, hazards).",
     tableTitle: "The ranking (table view)",
-    th: { country: "Country", index: "Index", score: "Score", n: "n sites", doc: "Documentation", cov: "What we measured", denom: "Operational / announced", last: "Last change" },
+    th: { country: "Country", index: "Index", score: "Score", n: "n sites", doc: "Documentation", cov: "What we measured", cmp: "Comparator", denom: "Operational / announced", last: "Last change" },
+    cmp: {
+      ouvert: (v: number, n: number) => `up to ${n} comparables · ${v} shared variables`,
+      mince: (n: number) => `corpus too thin (${n} sites)`,
+      absent: "—",
+      note: "The « comparator » column states, country by country, how many near sites we show at most and how many shared variables the match rests on. A country below the floor has no comparator at all: that is a collection gap, not an absence of sites.",
+      lien: "Open the comparator →",
+    },
     comparability: {
       title: "These countries are not measured on the same basis",
       body: "Our indicators depend on each country's open data, and it is deeply uneven. France publishes a grid hosting-capacity register (Caparéseau), so its sites are graded on connection saturation. Germany, Italy, Spain and Switzerland have no equivalent — that dimension is simply not measured there. The same holds for the profile of host municipalities: recorded in France, almost nowhere else. Latest addition, 30 September 2026: connectability to a district heating network, which France publishes and no other country in our corpus has an open equivalent for. It is our measurement widening, not other countries' grades falling — but France thereby becomes the only country whose Energy pillar is measured « complete ».",
@@ -125,7 +151,7 @@ const COV_PILLARS = ["energy", "water", "land_biodiversity", "local_impact"];
 
 const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
 const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
-const flag = (iso: string) => (COUNTRY_FLAGS_ISO as any)[iso] ?? "";
+const flag = (iso: string) => countryFlag(iso);
 // Page-level OG = the top-ranked eligible country's card (the ranking's own
 // headline; per-country cards live at /og/indices/{lang}-{cc}.png for shares).
 const topIso = countries.find(([, e]) => e.eligible)?.[0];
@@ -165,7 +191,8 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
         <thead>
           <tr>
             <th>{T.th.country}</th><th>{T.th.index}</th><th>{T.th.score}</th><th>{T.th.n}</th>
-            <th>{T.th.doc}</th><th>{(T as any).th.cov}</th><th>{T.th.denom}</th><th>{T.th.last}</th>
+            <th>{T.th.doc}</th><th>{(T as any).th.cov}</th><th>{(T as any).th.cmp}</th>
+            <th>{T.th.denom}</th><th>{T.th.last}</th>
           </tr>
         </thead>
         <tbody>
@@ -190,12 +217,19 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
                         ) : null;
                       })}
                     </td>
+                    <td class="idx-cmp">
+                      {cmpByCountry[iso]
+                        ? (T as any).cmp.ouvert(cmpByCountry[iso].variables_medianes, cmpByCountry[iso].affiches)
+                        : iso in cmpTooThin
+                          ? <i class="idx-cmp-mince">{(T as any).cmp.mince(cmpTooThin[iso])}</i>
+                          : (T as any).cmp.absent}
+                    </td>
                     <td class="idx-num">{e.n_operational} / {e.n_announced}</td>
                     <td class="idx-ev">{ev && `→ ${ev.to.grade ?? "–"} · ${dateFmt(ev.date)}`}</td>
                   </>
                 ) : (
                   <>
-                    <td colspan="5">{T.veilleRow} (n={e.n})</td>
+                    <td colspan="6">{T.veilleRow} (n={e.n})</td>
                     <td></td>
                     <td class="idx-ev">{ev && <>{dateFmt(ev.date)}</>}</td>
                   </>
@@ -206,6 +240,10 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
         </tbody>
       </table>
     </div>
+    <p class="idx-denoms">
+      {(T as any).cmp.note}{" "}
+      <a href={lang === "fr" ? "/fr/comparer" : "/compare"}>{(T as any).cmp.lien}</a>
+    </p>
     <p class="idx-denoms">
       {lang === "fr"
         ? `Dénominateurs corpus : ${denomTotal[0]} sites en service · ${denomTotal[1]} sites annoncés entrent dans les moyennes — énoncé, jamais caché.`

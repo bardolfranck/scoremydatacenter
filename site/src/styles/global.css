@@ -2141,3 +2141,8 @@ th.dev-cmp-pro { color: var(--accent); }
 .idx-cov-partiel { border-color: rgba(220, 190, 110, 0.5); }
 .idx-cov-mince   { border-color: rgba(224, 140, 90, 0.5); }
 .idx-cov-absent  { border-color: rgba(224, 86, 74, 0.6); opacity: 0.9; }
+
+/* Couverture du comparateur. Le « corpus trop mince » n'est pas une alerte : c'est un état
+   de notre collecte, qu'on assume. Même teinte que le pilier mince, pas de rouge. */
+.idx-cmp { min-width: 190px; font-size: 0.8rem; }
+.idx-cmp-mince { font-style: normal; color: var(--muted); border-bottom: 1px dotted rgba(224, 140, 90, 0.6); }
