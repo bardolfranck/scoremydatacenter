@@ -23,8 +23,22 @@ CE QU'ELLE A DÉJÀ ÉTABLI (corpus 2026-10-03) :
   · ajouter une variable CATÉGORIELLE rapporte peu — E3 9 points, W3 6, E2 5, L1 5, L3 2 ;
   · ajouter une variable CONTINUE rapporte beaucoup — L2 46 points ;
   · et la même variable continue, découpée en 4 bandes, ne rapporte plus que 6 points.
-    Quarante points séparent une distance de sa case. C'est l'argument qui vaut pour F1,
-    calculé en mètres partout et publié en quatre classes.
+
+UN CHIFFRE MARGINAL N'EST PAS UN GAIN PRODUIT — la correction la plus importante de ce
+module, due à R&D (2026-10-03), vérifiée ici. Le coût du découpage en bandes S'EFFONDRE
+quand le socle s'enrichit :
+
+      5 variables  40 points        11 variables   8 points
+      7 variables  17 points        12 variables   0 point
+
+Sur une fiche française bien couverte, publier L2 en classes ne coûte RIEN : les autres
+variables séparent déjà. Les « 40 points » sont donc la valeur marginale sur un socle
+appauvri à cinq variables, pas un gain sur le produit — et annoncés comme tel, ils se
+retournent contre nous, puisqu'on peut mesurer 0 sur le corpus complet.
+
+Le continu est un remède CIBLÉ là où la couverture est mince, c'est-à-dire hors de France :
+le Royaume-Uni à 5 variables observées et 94 % de profils partagés, l'Allemagne pareil. Il
+y est gratuit et il n'y nuit jamais. C'est cet argument-là qui tient, pas le 40.
 
 LIMITE À GARDER EN TÊTE. Un gain mesuré sur la France ne se transporte pas tel quel : il
 dépend de la DISTRIBUTION de la variable dans le pays visé. W2 vaut 42 % de concentration en
