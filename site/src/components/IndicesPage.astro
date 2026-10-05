@@ -251,13 +251,12 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
       </table>
     </div>
     <p class="idx-denoms">
-      {(T as any).cmp.note}{" "}
-      {/* GRISÉ, PAS SUPPRIMÉ (Franck 2026-10-02) — le comparateur sort de la navigation mais
-          la colonne reste, et sa mention aussi : elle dit ce que la couverture PERMET. Un
-          <span> plutôt qu'un <a> désactivé : un lien qu'on neutralise au CSS reste cliquable
-          au clavier et reste suivi par un robot d'indexation. Repasser en lien = restaurer la
-          balise, le libellé n'a pas bougé. */}
-      <span class="idx-cmp-lien-off">{(T as any).cmp.lien}</span>
+      {(T as any).cmp.note}
+      {/* LE LIEN DISPARAÎT, LA COLONNE RESTE (Franck, 2026-10-02 puis 2026-10-05). La page du
+          comparateur sort de la production, donc « ouvrir le comparateur » ne mène plus nulle
+          part et le libellé est retiré. La colonne, elle, ne parle pas du produit : elle dit
+          ce que la COUVERTURE permet, pays par pays, et c'est ce qui tire la collecte. Elle
+          survit donc au retrait de la page. Remettre le lien = restaurer la balise ici. */}
     </p>
     <p class="idx-denoms">
       {lang === "fr"

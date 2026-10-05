@@ -26,3 +26,14 @@
 # nos deux fiches le désignaient. On garde celle qui porte le nom du site.
 /fr/dc/ch-ckw-colo-rotkreuz/  /fr/dc/ch-ckw-zug/  301
 /dc/ch-ckw-colo-rotkreuz/     /dc/ch-ckw-zug/     301
+
+# LE COMPARATEUR SORT DE LA PRODUCTION (Franck, 2026-10-05, après démonstration à un
+# professionnel de la filière). Sa critique : la puissance est LE critère de comparabilité,
+# et un rapprochement entre un très petit site et une métropole dense « compare des éléphants
+# et des mouches » — l'argument « on compare le territoire, pas l'objet » n'a pas convaincu.
+# Le code reste entier (composant, script de construction, caches par pays) ; seules les deux
+# routes disparaissent. Les URL ont été servies et indexées : elles redirigent vers la carte,
+# qui répond à la même intention — voir les sites et leur voisinage — sans prétendre les
+# apparier. Pour remettre en service : retirer le préfixe « _ » des deux pages.
+/fr/comparer/  /fr/carte/  301
+/compare/      /map/       301
