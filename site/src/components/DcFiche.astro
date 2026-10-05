@@ -249,6 +249,33 @@ const shareLinks = {
 
 const pillars = methodology.pillars as any[];
 
+// SUR QUOI LA NOTE D'UN PILIER REPOSE. La renormalisation retire les indicateurs
+// non observés du dénominateur — ce qui est le bon choix (un 0 pour ce qu'on n'a
+// jamais lu pénaliserait notre ignorance), mais elle est SILENCIEUSE : un pilier
+// porté par un seul point se lit comme un pilier complet. Mesuré le 2026-10-05 :
+// 779 fiches ont un pilier porté par un seul indicateur, qui y pèse 38 % de la
+// note. On ne change pas le calcul (décision Franck), on le DIT.
+//
+// Pas de pourcentage affiché : il varie d'une fiche à l'autre (24 à 38 %) et un
+// chiffre figé rassurerait à tort. Le nom de l'indicateur est la partie utile —
+// le lecteur peut aller lire sa valeur dans le tableau juste en dessous.
+const socleParPilier: Record<string, string[]> = {};
+for (const i of methodology.indicators as any[]) {
+  if (i.block === "base") (socleParPilier[i.pillar] ??= []).push(i.id);
+}
+const OBSERVE = ["measured", "announced", "estimated"];
+const pillarBasis = (pid: string): string => {
+  const ids = socleParPilier[pid];
+  if (!ids?.length) return "";   // Transparence : aucun indicateur de socle, par construction
+  const vus = dc.indicators.filter((x: any) => ids.includes(x.id) && OBSERVE.includes(x.status));
+  if (!vus.length) return "";
+  if (vus.length === 1) {
+    const lbl = indMeta[vus[0].id]?.label;
+    return `${t.pillarBasis.one} ${t.quoteOpen}${L(lbl) || vus[0].id}${t.quoteClose}`;
+  }
+  return t.pillarBasis.some.replace("{k}", String(vus.length)).replace("{n}", String(ids.length));
+};
+
 // --- JSON-LD : dire la fiche aux machines, sans prétendre plus que la page ---------------
 // Pas de balisage Rating pour l'instant : c'est un test à mener (éligibilité Google, mapping
 // A=5…E=1), pas un go ferme, et un balisage d'avis sur une entreprise nommée se relit deux
@@ -508,6 +535,7 @@ const seoDesc = seoLead
                     <span class="on">{"●".repeat(dots)}</span><span class="off">{"○".repeat(4 - dots)}</span>
                   </span>
                 ) : <span class="pillar-dots"></span>}
+                {pillarBasis(p.id) && <span class="pillar-basis">{pillarBasis(p.id)}</span>}
               </div>
             );
           })}

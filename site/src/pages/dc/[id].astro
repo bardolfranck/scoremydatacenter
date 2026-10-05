@@ -95,6 +95,9 @@ const t = {
   th: { indicator: "Indicator", value: "Value", reading: "Reading", state: "State", source: "Source" },
   explanation: "Explanation",
   notDisclosed: "Not disclosed",
+  // What a pillar's grade ACTUALLY rests on. A thin pillar is renormalized in
+  // silence today: the reader cannot see that a single datum carries it.
+  pillarBasis: { one: "1 published indicator only:", some: "{k} of {n} indicators published" },
   procedureSeeSource: "Procedure (see source)",
   notApplicable: "not applicable",
   indStatus: { measured: "Measured", announced: "Announced", missing: "Missing" },

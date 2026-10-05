@@ -979,12 +979,18 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-map-link svg { color: var(--sidebar-muted); flex: none; }
 .fiche-legend { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); }
 .fiche-pillars { display: grid; gap: 9px; }
-.pillar-line { display: flex; align-items: center; gap: 14px; }
+/* `wrap` + `min-width: 0` sur la mention : le nom d'un indicateur peut être long
+   (« Aléa technologique / Seveso environnant »), il doit passer à la ligne plutôt
+   que déborder — y compris à largeur de téléphone. */
+.pillar-line { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .pillar-name { flex: 0 0 220px; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; color: var(--ink-soft); }
 .pillar-name .pillar-icon { color: var(--muted); }
 .pillar-dots { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px; white-space: nowrap; }
 .pillar-dots .on { color: var(--ink-soft); }
 .pillar-dots .off { color: #c2ccd6; }
+/* Sur quoi la note du pilier repose vraiment : discret, mais jamais tronqué —
+   c'est l'information qui manquait, pas un ornement. */
+.pillar-basis { flex: 1 1 auto; min-width: 0; font-size: 0.72rem; color: var(--muted); line-height: 1.3; }
 
 /* Top row: pillar sub-scores (the numbers) beside the narrative synthesis (the
    reading). Present only when the artifact carries a `synthesis`. */
