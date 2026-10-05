@@ -15,7 +15,7 @@ import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct } from "../config/stats";
-import { libelleValeur } from "../config/indicatorValues";
+import { libelleValeur, libelleUnite } from "../config/indicatorValues";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
 import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
@@ -210,7 +210,12 @@ const proxyFacts = (p: any): string[] => [
 // Methodology meta per indicator — units, scoring direction, threshold basis.
 const indMeta: Record<string, any> = {};
 for (const i of methodology.indicators) indMeta[i.id] = i;
-const indUnit = (id: string) => indMeta[id]?.unit ?? "";
+// Une unité qui est une PHRASE se traduit (« emplois permanents pour 100 MW ») ;
+// une notation standard reste telle quelle (gCO2e/kWh, PUE, L/kWh).
+const indUnit = (id: string) => {
+  const u = indMeta[id]?.unit ?? "";
+  return u ? libelleUnite(u, lang) : "";
+};
 const indTooltip = (id: string) => {
   const m = indMeta[id];
   if (!m) return "";
