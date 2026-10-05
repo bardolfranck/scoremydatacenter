@@ -15,6 +15,7 @@ import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct } from "../config/stats";
+import { libelleValeur } from "../config/indicatorValues";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
 import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
@@ -190,7 +191,9 @@ const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.l
 
 const indicatorValue = (ind: any) => {
   if (ind.status === "missing") return t.notDisclosed;
-  if (ind.value !== null && ind.value !== undefined) return String(ind.value);
+  // Une clé technique n'est pas une phrase : `none_within_5km` se lit « aucun site
+  // recensé … à notre connaissance ». La réserve est obligatoire sur une absence.
+  if (ind.value !== null && ind.value !== undefined) return libelleValeur(ind.id, ind.value, lang);
   if (ind.proxies) return t.procedureSeeSource;
   return "—";
 };
