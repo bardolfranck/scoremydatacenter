@@ -156,6 +156,23 @@ def patch_context_maps() -> int:
     from engine.core import write_json
     from pipelines.media.satellite import media_key
     confirmed = set(manifest.read_text().split())
+    # PAS DE CARTE PLUTÔT QU'UNE CARTE DU MAUVAIS ENDROIT (doctrine Franck, 2026-10-05).
+    # Une fiche dont la coordonnée vient d'être recalée garde une image dessinée depuis
+    # l'ANCIEN point : anneaux, cours d'eau, poste et logements y sont mesurés depuis un
+    # lieu que la fiche ne revendique plus. Les individus concernés sont nommés, datés et
+    # motivés dans le fichier d'exceptions — l'enquête attrape les individus, le détecteur
+    # attrape les classes. Les deux portées valent retrait de l'image : `hold` parce que la
+    # coordonnée est fausse, `carte` parce qu'elle est juste mais pas à l'échelle du
+    # bâtiment. Absent ou illisible = on sert : ne pas servir coûte une page amputée.
+    sans_carte: set[str] = set()
+    excs = CAL / "geo-audit" / "coord-hold-exceptions.json"
+    if excs.is_file():
+        try:
+            sans_carte = {k for k, v in json.loads(excs.read_text()).items()
+                          if not k.startswith("_") and isinstance(v, dict)
+                          and v.get("portee") in ("hold", "carte")}
+        except (ValueError, OSError):
+            sans_carte = set()
     # LA LANGUE DE L'IMAGE EST CELLE DE LA PAGE, jamais celle du pays de la fiche
     # (Franck, 2026-10-05). Les clés portent donc la langue — `ctx/{id}-{lang}-{hmac}.webp`,
     # le hmac calculé sur « id-lang » pour qu'une variante ne se devine pas depuis l'autre.
@@ -169,8 +186,14 @@ def patch_context_maps() -> int:
         if m:
             par_langue.setdefault(m.group(1), {})[m.group(2)] = cle
     patched = 0
+    retirees = 0
     for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
         d = json.loads(f.read_text())
+        if d["id"] in sans_carte:
+            if d.pop("context_map", None) is not None:
+                write_json(f, d)
+                retirees += 1
+            continue
         key = media_key(d["id"], secret).replace("sat/", "ctx/")
         urls = {lg: f"{base}/{k}" for lg, k in sorted(par_langue.get(d["id"], {}).items())}
         # Transition : tant qu'une fiche n'a pas ses deux variantes, l'ancienne clé unique
@@ -193,6 +216,9 @@ def patch_context_maps() -> int:
         }
         write_json(f, d)
         patched += 1
+    if retirees:
+        print(f"prod-artifacts: carte RETIRÉE sur {retirees} fiche(s) — coordonnée "
+              f"recalée ou non confirmée (geo-audit/coord-hold-exceptions.json)")
     return patched
 
 
