@@ -249,6 +249,16 @@ const shareLinks = {
 
 const pillars = methodology.pillars as any[];
 
+// LA CARTE DE CONTEXTE SUIT LA LANGUE DE LA PAGE, PAS LE PAYS DE LA FICHE (Franck,
+// 2026-10-05). Un lecteur francophone sur une fiche néerlandaise doit voir l'image en
+// français, et un anglophone sur une fiche française la voir en anglais : l'image est faite
+// pour voyager hors de son contexte, souvent vers un élu local, et c'est SA langue qui compte.
+// Repli sur l'ancienne URL unique tant qu'une fiche n'a pas reçu ses deux variantes — sans
+// quoi il faudrait livrer les 1366 cartes d'un coup, ou laisser des fiches sans image.
+const ctxUrl: string | null = dc.context_map
+  ? (dc.context_map.urls?.[lang] ?? dc.context_map.urls?.fr ?? dc.context_map.url ?? null)
+  : null;
+
 // SUR QUOI LA NOTE D'UN PILIER REPOSE. La renormalisation retire les indicateurs
 // non observés du dénominateur — ce qui est le bon choix (un 0 pour ce qu'on n'a
 // jamais lu pénaliserait notre ignorance), mais elle est SILENCIEUSE : un pilier
@@ -426,7 +436,7 @@ const seoDesc = seoLead
           before the share block — geography is context, not content; the prime
           spot belongs to the written synthesis. */}
       <div class="fiche-side-map">
-        {!dc.context_map && dc.satellite_image && (
+        {!ctxUrl && dc.satellite_image && (
           <figure class="fiche-sat">
             <a href={dc.satellite_image.url} target="_blank" rel="noopener">
               <img src={dc.satellite_image.thumb} alt={(t as any).satAlt?.replace("{name}", dc.name) ?? dc.name}
@@ -473,11 +483,11 @@ const seoDesc = seoLead
     </aside>
 
     <div class="fiche-main">
-      {dc.context_map && (
+      {ctxUrl && (
         <figure class="fiche-ctx">
-          <a href={dc.context_map.url} target="_blank" rel="noopener"
+          <a href={ctxUrl} target="_blank" rel="noopener"
              aria-label={lang === "fr" ? "Ouvrir la carte de contexte en grand" : "Open the context map full size"}>
-            <img src={dc.context_map.url} alt={lang === "fr"
+            <img src={ctxUrl} alt={lang === "fr"
               ? `Vue aérienne annotée de ${dc.name} à ${dc.municipality ?? ""} : emprise, cours d'eau, poste électrique et logements les plus proches, avec les distances mesurées.`
               : `Annotated aerial view of ${dc.name} in ${dc.municipality ?? ""}: footprint, watercourse, substation and nearest dwellings, with measured distances.`}
               width="1200" height="900" loading="lazy" />

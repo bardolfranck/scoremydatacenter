@@ -156,15 +156,32 @@ def patch_context_maps() -> int:
     from engine.core import write_json
     from pipelines.media.satellite import media_key
     confirmed = set(manifest.read_text().split())
+    # LA LANGUE DE L'IMAGE EST CELLE DE LA PAGE, jamais celle du pays de la fiche
+    # (Franck, 2026-10-05). Les clés portent donc la langue — `ctx/{id}-{lang}-{hmac}.webp`,
+    # le hmac calculé sur « id-lang » pour qu'une variante ne se devine pas depuis l'autre.
+    #
+    # On LIT le manifeste au lieu de recalculer le hmac : il dit ce qui existe réellement sur
+    # R2, et une seule dérivation du secret vit dans le pipeline qui téléverse. Recalculer ici
+    # ferait deux vérités pour une même clé, et c'est la deuxième qui pointe un 404.
+    par_langue: dict[str, dict[str, str]] = {}
+    for cle in confirmed:
+        m = re.fullmatch(r"ctx/(.+)-(fr|en)-[0-9a-f]{8}\.webp", cle)
+        if m:
+            par_langue.setdefault(m.group(1), {})[m.group(2)] = cle
     patched = 0
     for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
         d = json.loads(f.read_text())
         key = media_key(d["id"], secret).replace("sat/", "ctx/")
-        if key not in confirmed:
+        urls = {lg: f"{base}/{k}" for lg, k in sorted(par_langue.get(d["id"], {}).items())}
+        # Transition : tant qu'une fiche n'a pas ses deux variantes, l'ancienne clé unique
+        # reste servie. Sans ce repli il faudrait livrer les 1366 d'un coup ou laisser des
+        # fiches sans image.
+        if not urls and key not in confirmed:
             continue
         thumb = key.replace(".webp", "-thumb.webp")
         d["context_map"] = {
-            "url": f"{base}/{key}",
+            **({"urls": urls} if urls else {}),
+            **({"url": f"{base}/{key}"} if key in confirmed else {}),
             **({"thumb": f"{base}/{thumb}"} if thumb in confirmed else {}),
             "credit": "Esri, Maxar, Earthstar Geographics · OpenStreetMap (ODbL)",
             "caveat": {
