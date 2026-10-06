@@ -25,7 +25,7 @@ from pathlib import Path
 
 from .core import DATA_DIR, REPO_ROOT, GateError, load_json, load_methodology, datacenter_paths, write_json
 from .scoring import history_entry_fields, score_datacenter
-from .validate import run_gates
+from .validate import STALE_METHODOLOGY_REMEDY, run_gates
 
 VALID_EVENTS = ["initial_scoring", "ex_post_rescore",
                 "data_correction", "methodology_change"]
@@ -112,7 +112,12 @@ def build() -> int:
 
 
 def record(event: str, rationale: str | None, on: str) -> int:
-    problems = run_gates()
+    # CE QUE CETTE COMMANDE RÉPARE NE PEUT PAS L'EMPÊCHER DE TOURNER. Un historique qui
+    # référence l'ancienne version de méthodo est exactement la violation que `--record`
+    # existe pour lever : la compter ici fermait la boucle (le gate exige le re-score, le
+    # re-score refuse à cause du gate) et rendait toute montée de version impossible sans
+    # éditer les fiches à la main. Tous les AUTRES gates bloquent toujours.
+    problems = [p for p in run_gates() if STALE_METHODOLOGY_REMEDY not in p]
     if problems:
         print("rescore: gates failed — run `make validate` for details", file=sys.stderr)
         return 1

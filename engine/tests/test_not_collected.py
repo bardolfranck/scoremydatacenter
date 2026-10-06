@@ -90,3 +90,31 @@ def test_gate8_allows_not_collected_in_draft(data_copy):
     edit("datacenters/zz-test-alpha.json", to_draft_with_notcollected)
     problems = run_gates(target)
     assert not any("GATE 8" in p for p in problems), problems
+
+
+def test_gate8_exempts_informational_indicators_in_both_implementations():
+    """GATE 8 PROTÈGE LA NOTE, et un indicateur informationnel n'en fait pas partie.
+
+    Il est `mvp` (sinon il n'atteindrait jamais la fiche publiée) mais non noté : son
+    `not_collected` ne retire rien au score ni à la couverture. Le compter aurait ajouté
+    en silence une obligation de collecte avant publication — lire le document d'urbanisme
+    de chaque fiche — là où la décision était d'ajouter deux FAITS INERTES (v0.3.0,
+    2026-10-06). Et GATE 8 existe en DEUX exemplaires (le moteur pour les fixtures,
+    `validate_corpus` pour le corpus réel) : ce test les force à dire la même chose, sinon
+    la publication serait refusée d'un côté et acceptée de l'autre.
+    """
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+    from validate_corpus import _methodology_sets
+
+    methodology = load_methodology()
+    informationnels = {i["id"] for i in methodology["indicators"] if i.get("informational")}
+    assert informationnels, "aucun indicateur informationnel : ce test n'a plus d'objet, le retirer"
+
+    _, pp_corpus = _methodology_sets(methodology)
+    pp_moteur = {i["id"] for i in methodology["indicators"]
+                 if i["block"] in ("project", "process") and i["mvp"]
+                 and not i.get("informational")}
+    assert pp_corpus == pp_moteur, "les deux GATE 8 ne contrôlent pas le même périmètre"
+    assert not (informationnels & pp_corpus)

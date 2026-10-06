@@ -1,5 +1,5 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "status": "draft",
   "published_at": "2026-09-30",
   "pillars": [
@@ -722,6 +722,67 @@
         "reference": "Séquence Éviter-Réduire-Compenser (code de l'environnement, art. L110-1)"
       },
       "calibration_status": "calibrated"
+    },
+    {
+      "id": "F6",
+      "label": {
+        "fr": "Désignation à l'urbanisation dans un plan supra-communal",
+        "en": "Designated for urbanisation in a supra-municipal plan"
+      },
+      "description": {
+        "fr": "Le terrain est-il inscrit comme secteur d'urbanisation dans un document de planification au-dessus de la commune ? Fait de contexte, publié tel quel : il n'améliore ni n'aggrave la note.",
+        "en": "Is the site designated for urbanisation in a planning document above the municipality? A contextual fact, published as such: it neither improves nor worsens the grade."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "informational": true,
+      "calibration_status": "not_calibrated",
+      "sources": [
+        "schéma régional d'aménagement",
+        "document d'urbanisme supra-communal"
+      ],
+      "normalization": null,
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "FAIT, PAS JUGEMENT — « un site pré-fléché rencontre moins d'opposition » est l'hypothèse que le chantier de validation doit éprouver. L'intégrer à la note la rendrait intestable."
+      }
+    },
+    {
+      "id": "F7",
+      "label": {
+        "fr": "Procédure de mise en compatibilité du document d'urbanisme en cours",
+        "en": "Planning-document compatibility procedure under way"
+      },
+      "description": {
+        "fr": "Une procédure est-elle engagée pour rendre le document d'urbanisme compatible avec le projet ? Fait de contexte : on suit l'instrument, pas l'intention — le statut du sol ne changera que le jour où la procédure aboutit.",
+        "en": "Is a procedure under way to make the planning document compatible with the project? A contextual fact: we follow the instrument, not the intention — the land status only changes the day the procedure completes."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "informational": true,
+      "calibration_status": "not_calibrated",
+      "sources": [
+        "délibération communale",
+        "dossier de concertation",
+        "acte administratif"
+      ],
+      "normalization": null,
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Déclarer la procédure sans la créditer : le sol reste ce qu'il est jusqu'à l'acte."
+      }
     },
     {
       "id": "L1",

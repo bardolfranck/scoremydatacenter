@@ -8,16 +8,20 @@ import json
 import re
 from datetime import date
 
-from engine.core import load_methodology, load_datacenters
+from engine.core import DATA_DIR, load_methodology, load_datacenters
 from engine.scoring import history_entry_fields, score_datacenter
 from engine.score import _changed
-from engine.validate import run_gates
+from engine.validate import STALE_METHODOLOGY_REMEDY, run_gates
 
 TODAY = date(2026, 7, 5)
 
 ALPHA = "datacenters/zz-test-alpha.json"
 BETA = "datacenters/zz-test-beta.json"
-METH = "methodology/v0.2.0.json"
+# LE NOM DE LA MÉTHODO ACTIVE NE S'ÉCRIT PAS EN DUR. GATE 5 garantit qu'il n'y en a qu'une
+# dans data/methodology/ : on la DÉDUIT. Codé en dur, chaque version coupait la moitié des
+# tests de gate en FileNotFoundError — donc au moment précis où le gel d'une méthodo demande
+# le plus de garanties, les gates se taisaient (constaté au passage en v0.3.0, 2026-10-06).
+METH = f"methodology/{sorted(p.name for p in (DATA_DIR / 'methodology').glob('v*.json'))[0]}"
 
 
 def _ind(doc, indicator_id):
@@ -94,8 +98,9 @@ def test_gate5_real_dc_against_draft_methodology(data_copy):
 
 
 def test_gate5_stale_methodology_version(data_copy):
+    # La TÊTE du journal (l'état servi), pas l'entrée [0] : voir le test ci-dessous.
     root, edit = data_copy
-    edit(ALPHA, lambda d: d["score_history"][0].update(methodology_version="0.0.9"))
+    edit(ALPHA, lambda d: d["score_history"][-1].update(methodology_version="0.0.9"))
     assert any("GATE 5" in p and "methodology_change" in p for p in run_gates(root, TODAY))
 
 
@@ -370,3 +375,31 @@ def test_projection_se_perime_sur_les_distances_pas_sur_le_compte(tmp_path, monk
         )
     else:
         raise AssertionError("mêmes sites, autres distances : le cache ne doit PAS être relu")
+
+
+def test_gate5_judges_only_the_journal_head_and_lets_history_keep_old_versions(data_copy):
+    """UN JOURNAL GARDE SES VIEILLES VERSIONS, SINON CE N'EST PAS UN JOURNAL.
+
+    GATE 5 contrôlait chaque entrée : il réclamait donc que l'historique soit réécrit à
+    chaque montée de méthodo, alors qu'un re-score APPEND. Le remède qu'il imprime
+    (« make rescore ») ne pouvait jamais le satisfaire — boucle constatée en v0.3.0
+    (2026-10-06). Ce qui doit être à jour, c'est l'état PUBLIÉ, donc la dernière entrée.
+    """
+    root, edit = data_copy
+    actif = load_methodology(root)["version"]
+
+    def deux_entrees(d):
+        tete = dict(d["score_history"][-1])
+        d["score_history"] = [
+            dict(tete, methodology_version="0.0.1", event="methodology_change",
+                 rationale="entrée historique : calculée sous une méthodo antérieure"),
+            dict(tete, methodology_version=actif),
+        ]
+
+    edit(ALPHA, deux_entrees)
+    stale = [p for p in run_gates(root, TODAY) if STALE_METHODOLOGY_REMEDY in p]
+    assert stale == [], f"une entrée ANCIENNE ne doit rien déclencher : {stale}"
+
+    # …mais une tête périmée, si : c'est l'état servi qui serait calculé sous l'ancienne grille.
+    edit(ALPHA, lambda d: d["score_history"][-1].update(methodology_version="0.0.1"))
+    assert any(STALE_METHODOLOGY_REMEDY in p for p in run_gates(root, TODAY))
