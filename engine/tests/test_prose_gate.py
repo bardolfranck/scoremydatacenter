@@ -60,3 +60,29 @@ def test_une_fiche_sans_synthese_ne_declenche_rien(tmp_path):
     p = tmp_path / "zz-nue.json"
     p.write_text(json.dumps({"id": "zz-nue", "indicators": [{"id": "L3", "status": "missing"}]}))
     assert prose_gate([p]) == []
+
+
+def test_nearest_km_est_optionnel_nullable_et_refuse_le_negatif():
+    """LA MARGE AU SEUIL DOIT SE LIRE SUR UN NOMBRE, pas par regex sur `source.title`.
+
+    Un indicateur catégoriel (aucun / ≤5 km / ≤2 km) ne dit pas de combien on est loin de la
+    bascule : savoir si une coordonnée imprécise peut faire changer la classe demande la
+    distance. Ce test fige les trois propriétés dont dépend la rétro-compatibilité : le champ
+    est OPTIONNEL (les 1565 fiches antérieures valident sans lui), il est NULLABLE (« la source
+    n'a pas rendu de distance » ≠ zéro), et une distance négative est refusée.
+    """
+    from jsonschema import Draft202012Validator
+
+    from engine.core import DATA_DIR, load_json
+
+    schema = load_json(DATA_DIR / "schema" / "datacenter.schema.json")
+    ind = schema["$defs"]["indicator"]
+    valide = Draft202012Validator({**schema, **ind}, ).is_valid
+
+    assert "nearest_km" not in ind["required"]
+    assert valide({"id": "L3", "status": "missing"})                       # sans le champ
+    assert valide({"id": "L3", "status": "missing", "nearest_km": None})   # nullable
+    assert valide({"id": "L3", "status": "measured", "value": "none_within_5km",
+                   "source": {"title": "t", "url": "https://e.org", "accessed": "2026-10-06"},
+                   "nearest_km": 7.7})
+    assert not valide({"id": "L3", "status": "missing", "nearest_km": -1})
