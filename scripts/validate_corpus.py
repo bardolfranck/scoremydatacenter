@@ -34,7 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
-from engine.validate import _schema_errors, geo_gate, position_gate   # noqa: E402
+from engine.validate import _schema_errors, geo_gate, position_gate, prose_gate   # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -140,6 +140,10 @@ def main() -> int:
     # corpus, ne l'appelait pas. Le gate avait toutes ses dents, braquées sur le vide.
     # Il reçoit ici le périmètre RÉEL, le même que celui qu'il compte.
     problems += geo_gate(CAL)
+    # La PROSE est une valeur servie : une synthèse qui affirme une absence que
+    # l'indicateur contredit ne doit pas pouvoir être SERVIE (97 fiches l'ont été
+    # deux jours après la démotion L3 du 10-04, parce que rien ne regardait ici).
+    problems += prose_gate(paths)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "

@@ -114,6 +114,61 @@ def _metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return math.hypot(dx, dy)
 
 
+# LA PROSE EST UNE VALEUR SERVIE, DONC ELLE SE GATE. Né d'un défaut que j'ai laissé passer :
+# la démotion L3 du 2026-10-04 a corrigé 333 NOTES et laissé la PROSE affirmer l'absence qu'on
+# venait de retirer — 97 fiches servies (ES 41, IT 53, FI 3) ont annoncé pendant deux jours
+# « aucun site à risque industriel dans un rayon de 5 km » alors que leur indicateur disait
+# « non mesuré ». Un contrôle au moment de la RÉDACTION n'aurait rien vu : ces textes étaient
+# justes le jour où ils ont été écrits, et sont devenus faux quand la VALEUR a changé sous eux.
+# Le contrôle doit donc porter sur ce qui est SERVI, à chaque build.
+#
+# Portée volontairement étroite : on ne vérifie pas que la prose dit tout, on vérifie qu'elle
+# n'AFFIRME pas une absence que la valeur contredit. Une prose muette est incomplète, pas fausse.
+# La table se lit comme la méthodo : par indicateur, les valeurs qui autorisent l'affirmation.
+ABSENCE_AFFIRMEE = {
+    "L3": (
+        re.compile(r"(aucun (?:site|établissement)[^.;]{0,60}(?:risque|seveso)"
+                   r"|no (?:site|establishment)[^.;]{0,60}(?:risk|seveso)"
+                   r"|aucun seveso)", re.I),
+        {"none_within_5km"},
+    ),
+}
+
+
+def prose_gate(paths: list[Path]) -> list[str]:
+    """GATE PROSE — une synthèse ne peut pas affirmer une absence que la valeur servie contredit.
+
+    Déterministe, zéro réseau : ne lit que le corpus. Rend un problème par fiche fautive, en
+    nommant l'indicateur et sa valeur, pour que la fiche aille à la régénération de prose et pas
+    à une retouche manuelle (la prose se DÉRIVE de l'artefact noté, elle ne s'édite pas à la main).
+    """
+    problems = []
+    for p in paths:
+        try:
+            d = load_json(p)
+        except Exception:  # noqa: BLE001 — l'illisibilité est signalée ailleurs
+            continue
+        syn = d.get("synthesis")
+        if not syn:
+            continue
+        texte = " ".join(
+            v.get(lang, "") for v in syn.values() if isinstance(v, dict) for lang in ("fr", "en")
+        )
+        entrees = {i["id"]: i for i in d.get("indicators", [])}
+        for iid, (motif, valeurs_ok) in ABSENCE_AFFIRMEE.items():
+            e = entrees.get(iid)
+            if e is None or not (m := motif.search(texte)):
+                continue
+            servie = e.get("value") if e.get("status") not in ("missing", "not_collected") else e["status"]
+            if servie in valeurs_ok:
+                continue
+            problems.append(
+                f"GATE PROSE: {p.name}: la synthèse affirme « {m.group(0).strip()} » alors que "
+                f"{iid} vaut « {servie} » — régénérer la synthèse (la prose se dérive de l'artefact noté)"
+            )
+    return problems
+
+
 def position_gate(paths: list[Path]) -> list[str]:
     """GATE POSITION — deux fiches au même point doivent avoir été TRANCHÉES.
 
