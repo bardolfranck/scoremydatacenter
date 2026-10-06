@@ -198,6 +198,14 @@
     {
       "id": "E7",
       "status": "missing"
+    },
+    {
+      "id": "F6",
+      "status": "not_collected"
+    },
+    {
+      "id": "F7",
+      "status": "not_collected"
     }
   ],
   "publication": {
@@ -226,6 +234,17 @@
       "confidence": "medium",
       "event": "methodology_change",
       "rationale": "Calibration iter-2 (methodology 0.1.0 (h)): base thresholds recalibrated so the site scale can express E — F2 agricultural 25->0 (ENAF category fix), F1/F2 and E1/E2/E3 weight rebalance, W1 high 30->20. Beta (the sparse tier-1-only fixture) moves D 35.0 -> E 30.0."
+    },
+    {
+      "date": "2026-10-06",
+      "methodology_version": "0.3.0",
+      "grades": {
+        "site": "E",
+        "project_process": "insufficient_data"
+      },
+      "confidence": "medium",
+      "event": "methodology_change",
+      "rationale": "Méthodo v0.3.0 : F6 (désignation à l'urbanisation dans un plan supra-communal) et F7 (procédure de mise en compatibilité) entrent comme indicateurs INFORMATIONNELS — publiés comme faits, poids nul, hors de toute note. Re-score enregistré pour acter que les lettres NE BOUGENT PAS : c'est l'inertie promise par weight_in_pillar 0 qui est constatée, pas un changement de verdict."
     }
   ],
   "synthesis": {

@@ -275,6 +275,31 @@
         "url": "https://example.org/zz/e7-dossier",
         "accessed": "2026-07-01"
       }
+    },
+    {
+      "id": "F6",
+      "status": "measured",
+      "value": "oui",
+      "source": {
+        "title": "Fictional regional planning scheme (test) — plot listed as an urbanisation sector, ref. SR-ZZ/2026 art. 4",
+        "url": "https://example.org/zz/f6-schema-regional",
+        "accessed": "2026-07-01"
+      },
+      "verification_source": {
+        "title": "Fictional regional scheme, official gazette (test) — urbanisation sector map, plate 12",
+        "url": "https://example.org/zz/f6-journal-officiel",
+        "accessed": "2026-07-01"
+      }
+    },
+    {
+      "id": "F7",
+      "status": "announced",
+      "value": "non",
+      "source": {
+        "title": "Fictional municipal minutes read (test) — no compatibility procedure opened",
+        "url": "https://example.org/zz/f7-deliberation",
+        "accessed": "2026-07-01"
+      }
     }
   ],
   "publication": {
@@ -296,6 +321,17 @@
       "confidence": "high",
       "event": "initial_scoring",
       "rationale": "Initial scoring of fictional fixtures on draft methodology (engine bring-up)"
+    },
+    {
+      "date": "2026-10-06",
+      "methodology_version": "0.3.0",
+      "grades": {
+        "site": "B",
+        "project_process": "C"
+      },
+      "confidence": "high",
+      "event": "methodology_change",
+      "rationale": "Méthodo v0.3.0 : F6 (désignation à l'urbanisation dans un plan supra-communal) et F7 (procédure de mise en compatibilité) entrent comme indicateurs INFORMATIONNELS — publiés comme faits, poids nul, hors de toute note. Re-score enregistré pour acter que les lettres NE BOUGENT PAS : c'est l'inertie promise par weight_in_pillar 0 qui est constatée, pas un changement de verdict."
     }
   ],
   "contestation": [

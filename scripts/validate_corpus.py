@@ -34,7 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
-from engine.validate import geo_gate, position_gate          # noqa: E402
+from engine.validate import _schema_errors, geo_gate, position_gate, prose_gate   # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -49,8 +49,12 @@ def _methodology_sets(m: dict) -> tuple[set[str], set[str]]:
     périmètre qu'il contrôle.
     """
     inds = m["indicators"]
+    # Même exemption que `engine.validate` : un indicateur INFORMATIONNEL est mvp mais non noté,
+    # donc hors GATE 8 — sinon ce gate ajouterait une obligation de collecte avant publication
+    # que personne n'a décidée. Les deux implémentations de GATE 8 doivent dire la MÊME chose.
     return ({i["id"] for i in inds},
-            {i["id"] for i in inds if i.get("block") in ("project", "process") and i.get("mvp")})
+            {i["id"] for i in inds
+             if i.get("block") in ("project", "process") and i.get("mvp") and not i.get("informational")})
 
 
 def _fiches() -> list[Path]:
@@ -78,6 +82,24 @@ def main() -> int:
         return 2
 
     methodology = load_methodology()
+
+    # --- garde 3 : la MÉTHODO ELLE-MÊME est valide (trou symétrique, 2026-10-06)
+    # Ce gate est né parce que `make validate` ne voyait pas le vrai corpus. Le trou miroir
+    # vient de se payer : il voit le corpus mais PAS le schéma de la méthodo, donc v0.3.0 a
+    # été déployée avec un `calibration_status` hors énumération. Toute la suite de gates
+    # s'arrête sur cette erreur structurelle (`run_gates` rend la main dès là), autrement dit
+    # une méthodo invalide ÉTEINT les autres contrôles en silence. Le chemin de déploiement
+    # doit donc valider les DEUX : les fiches contre la méthodo, et la méthodo contre son schéma.
+    meth_schema = json.loads((Path(__file__).resolve().parent.parent
+                              / "data" / "schema" / "methodology.schema.json").read_text())
+    if erreurs := _schema_errors(methodology, meth_schema, "methodology"):
+        for e in erreurs:
+            print(e, file=sys.stderr)
+        print(f"GATE MÉTHODO: {len(erreurs)} violation(s) du schéma — refus avant de regarder "
+              f"les fiches (une méthodo invalide rendrait tous les autres gates muets).",
+              file=sys.stderr)
+        return 2
+
     meth_ids, scored_pp = _methodology_sets(methodology)
     problems: list[str] = []
     scored = 0
@@ -118,6 +140,10 @@ def main() -> int:
     # corpus, ne l'appelait pas. Le gate avait toutes ses dents, braquées sur le vide.
     # Il reçoit ici le périmètre RÉEL, le même que celui qu'il compte.
     problems += geo_gate(CAL)
+    # La PROSE est une valeur servie : une synthèse qui affirme une absence que
+    # l'indicateur contredit ne doit pas pouvoir être SERVIE (97 fiches l'ont été
+    # deux jours après la démotion L3 du 10-04, parce que rien ne regardait ici).
+    problems += prose_gate(paths)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "

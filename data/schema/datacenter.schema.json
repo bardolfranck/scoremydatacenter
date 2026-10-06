@@ -364,6 +364,14 @@
         "verification_source": {
           "$ref": "#/$defs/source",
           "description": "Required to mark a declarative indicator as measured (ex-post re-score evidence)."
+        },
+        "nearest_km": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "MESURE BRUTE À CÔTÉ DE LA CATÉGORIE, pour que la marge au seuil se lise sur un NOMBRE. Distance en kilomètres à l'objet le plus proche que l'indicateur classe (ex. L3 : l'établissement Seveso le plus proche). Nécessaire parce qu'un indicateur catégoriel (aucun / ≤5 km / ≤2 km) ne dit pas de combien on est loin de la bascule : savoir si une coordonnée imprécise peut faire changer la classe demande la distance, et la lire dans le texte de `source.title` serait l'extraction naïve qui nous a déjà donné un faux. Optionnel et nullable : les fiches antérieures restent valides, et `null` dit « la source n'a pas rendu de distance » sans se confondre avec zéro. Ajouté le 2026-10-06 pour le gate coord-feature (demande EU/R&D)."
         }
       },
       "allOf": [

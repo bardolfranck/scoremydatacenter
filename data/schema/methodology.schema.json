@@ -330,6 +330,29 @@
               }
             }
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "calibration_status": {
+                "const": "not_calibrated"
+              }
+            },
+            "required": [
+              "calibration_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "informational": {
+                "const": true
+              }
+            },
+            "required": [
+              "informational"
+            ]
+          },
+          "$comment": "L'ÉNUMÉRATION RESTE FERMÉE POUR CE QUI EST NOTÉ. « not_calibrated » dit l'absence de seuil à étalonner, ce qui n'a de sens que pour un fait publié non noté ; l'ouvrir à un indicateur noté rendrait l'étalonnage facultatif sur la note elle-même."
         }
       ],
       "properties": {
@@ -397,8 +420,10 @@
         "calibration_status": {
           "enum": [
             "provisional",
-            "calibrated"
-          ]
+            "calibrated",
+            "not_calibrated"
+          ],
+          "description": "`not_calibrated` est RÉSERVÉ aux indicateurs informationnels (contrainte ci-dessous) : sans normalisation ni poids, il n'y a pas de seuil à étalonner, et écrire « provisional » revendiquerait un état d'étalonnage qui n'existe pas. Pour un indicateur noté, les deux seules réponses restent « provisional » et « calibrated »."
         },
         "calibration_note": {
           "type": "string",

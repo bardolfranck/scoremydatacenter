@@ -228,6 +228,14 @@
         {
           "id": "E7",
           "status": "not_collected"
+        },
+        {
+          "id": "F6",
+          "status": "not_collected"
+        },
+        {
+          "id": "F7",
+          "status": "not_collected"
         }
       ],
       "target": {
@@ -360,6 +368,14 @@
           "id": "E7",
           "status": "announced",
           "value": "realise"
+        },
+        {
+          "id": "F6",
+          "status": "not_collected"
+        },
+        {
+          "id": "F7",
+          "status": "not_collected"
         }
       ],
       "target": {
@@ -488,6 +504,14 @@
         },
         {
           "id": "E7",
+          "status": "not_collected"
+        },
+        {
+          "id": "F6",
+          "status": "not_collected"
+        },
+        {
+          "id": "F7",
           "status": "not_collected"
         }
       ],
@@ -624,6 +648,14 @@
         },
         {
           "id": "E7",
+          "status": "not_collected"
+        },
+        {
+          "id": "F6",
+          "status": "not_collected"
+        },
+        {
+          "id": "F7",
           "status": "not_collected"
         }
       ],

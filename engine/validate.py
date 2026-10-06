@@ -79,6 +79,14 @@ def _schema_errors(instance, schema, label: str) -> list[str]:
     ]
 
 
+# LE SEUL GATE QUE SEUL `make rescore` PEUT LEVER. `engine.score.record()` refuse de tourner
+# tant qu'un gate échoue — règle juste en général, mais qui rendait ce remède-ci INATTEIGNABLE :
+# le gate réclamait un re-score, et le re-score refusait à cause du gate. Toute montée de version
+# de méthodo tombait donc dans cette boucle (constaté au passage en v0.3.0, 2026-10-06). La
+# phrase est nommée ici pour que `record()` la reconnaisse sans recopier un bout de message —
+# un gate et son remède ne doivent pas pouvoir dériver l'un de l'autre.
+STALE_METHODOLOGY_REMEDY = "record a methodology_change re-score (make rescore)"
+
 GEO_WAIVERS = {
     # Dérogations EXPLICITES, datées et motivées. Une dérogation n'est pas une exception
     # silencieuse : elle est listée ici, le gate l'imprime à chaque passage, et elle doit
@@ -104,6 +112,61 @@ def _metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     dy = (lat1 - lat2) * 111_320.0
     dx = (lon1 - lon2) * 111_320.0 * math.cos(math.radians((lat1 + lat2) / 2))
     return math.hypot(dx, dy)
+
+
+# LA PROSE EST UNE VALEUR SERVIE, DONC ELLE SE GATE. Né d'un défaut que j'ai laissé passer :
+# la démotion L3 du 2026-10-04 a corrigé 333 NOTES et laissé la PROSE affirmer l'absence qu'on
+# venait de retirer — 97 fiches servies (ES 41, IT 53, FI 3) ont annoncé pendant deux jours
+# « aucun site à risque industriel dans un rayon de 5 km » alors que leur indicateur disait
+# « non mesuré ». Un contrôle au moment de la RÉDACTION n'aurait rien vu : ces textes étaient
+# justes le jour où ils ont été écrits, et sont devenus faux quand la VALEUR a changé sous eux.
+# Le contrôle doit donc porter sur ce qui est SERVI, à chaque build.
+#
+# Portée volontairement étroite : on ne vérifie pas que la prose dit tout, on vérifie qu'elle
+# n'AFFIRME pas une absence que la valeur contredit. Une prose muette est incomplète, pas fausse.
+# La table se lit comme la méthodo : par indicateur, les valeurs qui autorisent l'affirmation.
+ABSENCE_AFFIRMEE = {
+    "L3": (
+        re.compile(r"(aucun (?:site|établissement)[^.;]{0,60}(?:risque|seveso)"
+                   r"|no (?:site|establishment)[^.;]{0,60}(?:risk|seveso)"
+                   r"|aucun seveso)", re.I),
+        {"none_within_5km"},
+    ),
+}
+
+
+def prose_gate(paths: list[Path]) -> list[str]:
+    """GATE PROSE — une synthèse ne peut pas affirmer une absence que la valeur servie contredit.
+
+    Déterministe, zéro réseau : ne lit que le corpus. Rend un problème par fiche fautive, en
+    nommant l'indicateur et sa valeur, pour que la fiche aille à la régénération de prose et pas
+    à une retouche manuelle (la prose se DÉRIVE de l'artefact noté, elle ne s'édite pas à la main).
+    """
+    problems = []
+    for p in paths:
+        try:
+            d = load_json(p)
+        except Exception:  # noqa: BLE001 — l'illisibilité est signalée ailleurs
+            continue
+        syn = d.get("synthesis")
+        if not syn:
+            continue
+        texte = " ".join(
+            v.get(lang, "") for v in syn.values() if isinstance(v, dict) for lang in ("fr", "en")
+        )
+        entrees = {i["id"]: i for i in d.get("indicators", [])}
+        for iid, (motif, valeurs_ok) in ABSENCE_AFFIRMEE.items():
+            e = entrees.get(iid)
+            if e is None or not (m := motif.search(texte)):
+                continue
+            servie = e.get("value") if e.get("status") not in ("missing", "not_collected") else e["status"]
+            if servie in valeurs_ok:
+                continue
+            problems.append(
+                f"GATE PROSE: {p.name}: la synthèse affirme « {m.group(0).strip()} » alors que "
+                f"{iid} vaut « {servie} » — régénérer la synthèse (la prose se dérive de l'artefact noté)"
+            )
+    return problems
 
 
 def position_gate(paths: list[Path]) -> list[str]:
@@ -324,7 +387,15 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     # Gate 8 protects the SCORE, so it is scoped to MVP indicators (out-of-MVP tier-3 rows
     # like E5/W5 are unscored and exempt).
     project_ids = {i["id"] for i in indicators if i["block"] == "project" and i["mvp"]}
-    scored_pp_ids = {i["id"] for i in indicators if i["block"] in ("project", "process") and i["mvp"]}
+    # …et un indicateur INFORMATIONNEL relève de la même exemption, pour la même raison : il est
+    # mvp (sinon il n'atteindrait pas la fiche) mais NON NOTÉ — son `not_collected` ne retire rien
+    # au score et rien à la couverture, donc il ne peut flatter personne. Le compter ici aurait
+    # ajouté en catimini une OBLIGATION DE COLLECTE avant publication (lire le document
+    # d'urbanisme de chaque fiche), là où la décision prise était d'ajouter deux faits INERTES.
+    # Un gate qui change les conditions de publication sans que personne ne l'ait décidé est un
+    # gate qui dépasse son mandat (constaté le 2026-10-06 en passant en v0.3.0).
+    scored_pp_ids = {i["id"] for i in indicators
+                     if i["block"] in ("project", "process") and i["mvp"] and not i.get("informational")}
 
     for path in datacenter_paths(data_dir):
         dc = load_json(path)
@@ -421,13 +492,21 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                 f"GATE 5: {label}: a real data center cannot be scored against a {methodology['status']} "
                 "methodology — freeze and tag v0.1.0 first (plan phase 5)"
             )
+        # UN JOURNAL GARDE SES VIEILLES VERSIONS — C'EST SA RAISON D'ÊTRE. Ce gate contrôlait
+        # CHAQUE entrée, donc il exigeait que l'historique soit RÉÉCRIT à chaque montée de
+        # méthodo : un re-score APPEND, il ne retouche pas le passé, si bien que le remède
+        # imprimé ne pouvait jamais satisfaire le gate. Ce qui doit être à jour, c'est la TÊTE
+        # du journal — l'état publié aujourd'hui doit avoir été calculé sous la méthodo active ;
+        # les entrées antérieures référencent à bon droit la version en vigueur ce jour-là, et
+        # noter cette version n'a de sens que si elle peut différer (constaté le 2026-10-06).
+        if (tete := (dc["score_history"] or [None])[-1]) and \
+                tete["methodology_version"] != methodology["version"]:
+            problems.append(
+                f"GATE 5: {label}: score_history[{len(dc['score_history']) - 1}] (la plus récente) "
+                f"references methodology {tete['methodology_version']} but the active version is "
+                f"{methodology['version']} — {STALE_METHODOLOGY_REMEDY}"
+            )
         for n, entry in enumerate(dc["score_history"]):
-            if entry["methodology_version"] != methodology["version"]:
-                problems.append(
-                    f"GATE 5: {label}: score_history[{n}] references methodology "
-                    f"{entry['methodology_version']} but the active version is {methodology['version']} — "
-                    "record a methodology_change re-score (make rescore)"
-                )
             # journal gate
             if n >= 1 and not entry.get("rationale"):
                 problems.append(

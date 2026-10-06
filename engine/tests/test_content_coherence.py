@@ -29,7 +29,13 @@ def methodology():
 
 
 def test_indicator_count_claims_match_methodology(methodology):
-    real = len(methodology["indicators"])
+    # LE CHIFFRE ANNONCÉ EST CELUI DE LA NOTE, PAS DU CATALOGUE. Les deux pages disent « deux
+    # notes A–E … À PARTIR DE N indicateurs » : un indicateur informationnel (weight_in_pillar 0,
+    # publié comme fait, jamais noté) n'en fait donc pas partie, et le compter aurait annoncé que
+    # F6/F7 alimentent la note — exactement ce que leur doctrine interdit (2026-10-06, méthodo
+    # v0.3.0). Compter le catalogue brut rendait ce test faux dans le sens le plus coûteux : il
+    # aurait fait corriger la copie VRAIE pour la rendre fausse.
+    real = sum(1 for i in methodology["indicators"] if not i.get("informational"))
     for lang, text in PAGES.items():
         for claimed in re.findall(r"(\d+)\s+indicat(?:or|eur)s", text):
             assert int(claimed) == real, (
