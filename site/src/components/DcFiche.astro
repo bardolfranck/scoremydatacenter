@@ -627,6 +627,14 @@ const seoDesc = seoLead
                       <tr>
                         <td class="ind-name">
                           {L(ind.label)}
+                          {/* UN FAIT CONTEXTUEL DOIT SE VOIR COMME TEL. Sans cette marque, un
+                              indicateur informationnel s'affiche au milieu des indicateurs notés,
+                              dans son pilier — c'est-à-dire qu'on publierait l'argument d'un
+                              porteur de projet à l'endroit exact où le lecteur cherche la note,
+                              et qu'on lui donnerait le crédit qu'on vient de lui refuser. */}
+                          {indMeta[ind.id]?.informational && (
+                            <span class="ind-info-flag">{lang === "fr" ? "non noté · fait contextuel" : "not scored · contextual fact"}</span>
+                          )}
                           {tip && (
                             <span class="info" tabindex="0" role="note" aria-label={`${t.explanation}: ${tip}`}>
                               <span class="info-ico" set:html={icon("info", 14)}></span>

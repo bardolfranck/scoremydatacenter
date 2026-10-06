@@ -2,6 +2,37 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.3.0 — 2026-10-06 — indicateurs INFORMATIONNELS : publier un fait de contexte sans le noter
+
+- **Décision (Franck Bardol, arbitrage délégué à agent-codeur-site, 2026-10-06)** : le porteur du
+  Campus IA de Fouju argumente, dans son dossier de concertation, que l'artificialisation de
+  86,5 hectares de terres agricoles est compensée par une désignation régionale et « permet de
+  respecter les objectifs Zéro artificialisation nette ». **F2 reste `agricultural`** et la note
+  reste E. Quatre raisons : F2 mesure ce que le terrain EST, pas ce qu'un plan prévoit ; la
+  source est le porteur de projet, donc une déclaration, jamais un fait constaté ; le dispositif
+  invoqué n'existe qu'en Île-de-France et creuserait l'écart France/Europe ; et surtout
+  **créditer la désignation serait circulaire** — « un site pré-fléché rencontre moins
+  d'opposition » est précisément l'hypothèse que le chantier de validation existe pour éprouver.
+- **Ligne de conduite : on suit l'instrument, pas l'intention.** Le jour où le document
+  d'urbanisme est effectivement modifié, F2 bougera par la mesure. On enregistre un changement
+  quand il est acquis, pas quand il est annoncé.
+- **Mécanisme** : nouveau champ de schéma `informational: true`, qui impose `weight_in_pillar: 0`
+  et autorise `normalization: null` ; `normalized_score` sort `None` avant de lire la
+  normalisation, ce qui dit la doctrine — un fait de contexte n'a pas de sous-score, « oui » n'y
+  est ni bon ni mauvais. `mvp` reste **vrai** : un indicateur hors socle n'atteint jamais
+  l'artefact publié, et il n'y aurait plus rien à afficher.
+- **Deux indicateurs** (pilier Foncier & biodiversité, poids 0) : **F6** désignation à
+  l'urbanisation dans un plan supra-communal ; **F7** procédure de mise en compatibilité du
+  document d'urbanisme en cours. Valeurs oui/non/inconnu, source obligatoire — et `inconnu`
+  exige lui aussi une mention, « non recherché » ou « recherché, non trouvé » : un vide muet se
+  lit comme une absence de risque.
+- **Affichage** : marque « non noté · fait contextuel » sur la ligne. Sans elle, on publierait
+  l'argument d'un porteur à l'endroit exact où le lecteur cherche la note.
+- **Effet mesuré sur le corpus** : 1566 fiches re-notées sous 0.2.0 puis 0.3.0 —
+  **zéro bascule de lettre, zéro score déplacé, zéro confiance modifiée.**
+- **Révision du poids** : seulement sur des issues observées (opposition, recours, abandon),
+  c'est-à-dire le registre des cas précurseurs. Pas sur une intuition.
+
 ## 0.1.0 (policy note) — 2026-08-02 — « W1 option b » : the basin reading is not the site's water fact in desal-dominant jurisdictions
 
 - **Rule (decision Franck Bardol, « W1 option b », 2026-08-02)**: in a jurisdiction whose water

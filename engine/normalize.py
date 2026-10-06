@@ -71,6 +71,12 @@ def normalized_score(definition: dict, entry: dict, parameters: dict) -> float |
     A of complacency (decision Franck Bardol, 2026-07-09)."""
     if entry["status"] in ("missing", "not_collected"):
         return None
+    # UN INDICATEUR INFORMATIONNEL N'A PAS DE SOUS-SCORE, et c'est la doctrine elle-même :
+    # « oui » n'y est ni bon ni mauvais. On publie le fait, on ne le note pas. Sortir ici
+    # plutôt que plus bas est nécessaire — sa `normalization` vaut `null`, donc lire
+    # `norm["type"]` casserait dès qu'une fiche renseigne une valeur.
+    if definition.get("informational"):
+        return None
     norm = definition["normalization"]
     kind = norm["type"]
     if kind == "thresholds":

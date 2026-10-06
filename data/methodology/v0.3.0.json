@@ -1,0 +1,1203 @@
+{
+  "version": "0.3.0",
+  "status": "draft",
+  "published_at": "2026-09-30",
+  "pillars": [
+    {
+      "id": "energy",
+      "label": {
+        "fr": "Énergie",
+        "en": "Energy"
+      },
+      "weight": 0.25
+    },
+    {
+      "id": "water",
+      "label": {
+        "fr": "Eau",
+        "en": "Water"
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "land_biodiversity",
+      "label": {
+        "fr": "Foncier & biodiversité",
+        "en": "Land & biodiversity"
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "local_impact",
+      "label": {
+        "fr": "Impact local",
+        "en": "Local impact"
+      },
+      "weight": 0.2
+    },
+    {
+      "id": "transparency_governance",
+      "label": {
+        "fr": "Transparence & gouvernance",
+        "en": "Transparency & governance"
+      },
+      "weight": 0.15
+    }
+  ],
+  "indicators": [
+    {
+      "id": "E1",
+      "label": {
+        "fr": "Intensité carbone du réseau local",
+        "en": "Local grid carbon intensity"
+      },
+      "description": {
+        "fr": "La quantité de CO₂ émise pour produire l'électricité que consommera le site, selon le réseau régional.",
+        "en": "How much CO₂ is emitted to produce the electricity the site will consume, based on the regional grid."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.12,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": "gCO2e/kWh",
+      "direction": "lower_is_better",
+      "mvp": true,
+      "sources": [
+        "RTE eCO2mix"
+      ],
+      "normalization": {
+        "type": "thresholds",
+        "thresholds": [
+          {
+            "up_to": 50,
+            "score": 100
+          },
+          {
+            "up_to": 150,
+            "score": 60
+          },
+          {
+            "up_to": 400,
+            "score": 30
+          },
+          {
+            "above": true,
+            "score": 0
+          }
+        ]
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "ADEME Base Empreinte — grid emission factors",
+        "url": "https://base-empreinte.ademe.fr/"
+      },
+      "calibration_status": "calibrated",
+      "calibration_note": "Iter-2: weight .30→.15 within pillar — zero intra-FR variance (national grid, one RTE figure for every French DC): at .30 it granted every DC 7.5 free points and masked local saturation. Weight returns to prominence with per-country carbon at internationalization (E1 stays the flagship internationally)."
+    },
+    {
+      "id": "E2",
+      "label": {
+        "fr": "Capacité / proximité de raccordement",
+        "en": "Grid connection capacity / proximity"
+      },
+      "description": {
+        "fr": "La facilité à raccorder le site au réseau électrique : capacité disponible et distance au poste le plus proche.",
+        "en": "How easily the site can be connected to the power grid: available capacity and distance to the nearest substation."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.28,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "RTE Caparéseau",
+        "S3REnR"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "ample": 100,
+          "adequate": 70,
+          "constrained": 35,
+          "saturated": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "E3",
+      "label": {
+        "fr": "Congestion / file d'attente réseau",
+        "en": "Grid congestion / connection queue"
+      },
+      "description": {
+        "fr": "L'encombrement du réseau électrique local : plus il est saturé, plus le raccordement pèse sur les autres usages.",
+        "en": "How congested the local grid is: the more saturated, the more the connection competes with other users."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.16,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "RTE / ODRÉ"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "low": 100,
+          "moderate": 65,
+          "high": 30,
+          "critical": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "E4",
+      "label": {
+        "fr": "PUE (efficacité énergétique annoncée)",
+        "en": "PUE (announced energy efficiency)"
+      },
+      "description": {
+        "fr": "L'efficacité énergétique annoncée : l'électricité totale consommée rapportée à celle qui sert vraiment aux calculs. Plus c'est proche de 1, mieux c'est.",
+        "en": "The announced energy efficiency: total electricity used versus what actually powers computing. Closer to 1 is better."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.13,
+      "block": "project",
+      "tier": 2,
+      "nature": "declarative",
+      "unit": "PUE",
+      "direction": "lower_is_better",
+      "mvp": true,
+      "sources": [
+        "ICPE filing",
+        "press"
+      ],
+      "normalization": {
+        "type": "thresholds",
+        "thresholds": [
+          {
+            "up_to": 1.2,
+            "score": 100
+          },
+          {
+            "up_to": 1.4,
+            "score": 70
+          },
+          {
+            "up_to": 1.6,
+            "score": 40
+          },
+          {
+            "above": true,
+            "score": 10
+          }
+        ]
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — industry ranges (Uptime Institute surveys) pending a citable reference; to be calibrated in phase 5."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "E5",
+      "label": {
+        "fr": "Approvisionnement réel (PPA, % EnR)",
+        "en": "Actual supply (PPA, % renewables)"
+      },
+      "description": {
+        "fr": "La part d'électricité réellement d'origine renouvelable, via des contrats d'achat vérifiables (et non de simples déclarations).",
+        "en": "The share of electricity genuinely from renewables, through verifiable purchase contracts (not mere claims)."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.07,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": "% renewable",
+      "direction": "higher_is_better",
+      "mvp": false,
+      "sources": [
+        "operator"
+      ],
+      "normalization": {
+        "type": "bounded_linear",
+        "min": 0,
+        "max": 100
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — out of MVP scope (tier 3); linear 0-100% placeholder."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "E6",
+      "label": {
+        "fr": "Raccordabilité à un réseau de chaleur",
+        "en": "Heat-network connectability"
+      },
+      "description": {
+        "fr": "Possibilité pour le site de valoriser sa chaleur fatale via un réseau de chaleur urbain : distance au réseau le plus proche et présence d'une obligation de raccordement (périmètre de développement prioritaire). Répond à la doctrine de l'autorité environnementale (récupération de la chaleur fatale, loi du 15/11/2021).",
+        "en": "Whether the site can valorise its waste heat via a district-heating network: distance to the nearest network and presence of a connection obligation (priority development perimeter)."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.14,
+      "block": "base",
+      "tier": 2,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "France Chaleur Urbaine (data.gouv, Licence Ouverte v2)"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "raccordable": 100,
+          "proche": 50,
+          "eloigne": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "Raccordable = ≤300 m d'un tracé OU dans un périmètre de développement prioritaire (PDP) ; proche = ≤1000 m ; sinon éloigné. Source France Chaleur Urbaine.",
+        "url": "https://www.data.gouv.fr/datasets/traces-des-reseaux-de-chaleur-et-de-froid"
+      },
+      "calibration_status": "calibrated",
+      "calibration_note": "Scope FR (FCU FR-only) ; hors FR = non collecté (pas non-applicable : le chauffage urbain est paneuropéen). Distance point→segment, Lambert 93. 'Réseau classé' non replié dans raccordable en v1 (périmètre légal non disponible en géométrie ; PDP capture l'obligation)."
+    },
+    {
+      "id": "E7",
+      "label": {
+        "fr": "Récupération de la chaleur fatale — engagement",
+        "en": "Waste-heat recovery — commitment"
+      },
+      "description": {
+        "fr": "Degré d'engagement de l'opérateur à valoriser la chaleur fatale du site (réalisé / contrat signé / étude / intention / aucun). Distingue l'intention non concrétisée de l'engagement réel, conformément aux avis de l'autorité environnementale.",
+        "en": "Operator commitment level to valorise the site's waste heat (delivered / signed contract / study / intention / none)."
+      },
+      "pillar": "energy",
+      "weight_in_pillar": 0.1,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "operator",
+        "permitting file"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "realise": 100,
+          "contrat_signe": 75,
+          "etude": 40,
+          "intention": 20,
+          "aucun": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "ISO/IEC 30134-6 — Energy Reuse Factor (ERF)",
+        "url": "https://www.iso.org/standard/79095.html"
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "W1",
+      "label": {
+        "fr": "Stress hydrique de la zone",
+        "en": "Local water stress"
+      },
+      "description": {
+        "fr": "La tension sur l'eau dans la zone : dans une région déjà en manque, prélever pèse plus lourd.",
+        "en": "Water tension in the area: in an already water-scarce region, withdrawals weigh more heavily."
+      },
+      "pillar": "water",
+      "weight_in_pillar": 0.3,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "ZRE",
+        "Propluvia",
+        "Hub'Eau"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "no_stress": 100,
+          "moderate": 60,
+          "high": 20,
+          "zre_or_crisis": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "ZRE zoning + Propluvia restriction levels (French regulatory framework)",
+        "url": "https://www.eaufrance.fr/"
+      },
+      "calibration_status": "calibrated",
+      "calibration_note": "Iter-2: 'high' 30→20 — WRI Aqueduct 'high' = 40-80% baseline withdrawal ratio, a severe class; 30/100 was generous for siting new load in it. PROVISIONAL, to survive counter-expert review at freeze."
+    },
+    {
+      "id": "W2",
+      "label": {
+        "fr": "État de la masse d'eau",
+        "en": "Water body status"
+      },
+      "description": {
+        "fr": "La santé écologique de la rivière ou de la nappe concernée, selon la classification européenne (de « très bon » à « mauvais »).",
+        "en": "The ecological health of the affected river or aquifer, per the EU classification (from 'high' to 'bad')."
+      },
+      "pillar": "water",
+      "weight_in_pillar": 0.2,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "Hub'Eau"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "very_good": 100,
+          "good": 80,
+          "moderate": 50,
+          "poor": 25,
+          "bad": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "EU Water Framework Directive ecological status classes",
+        "url": "https://environment.ec.europa.eu/topics/water/water-framework-directive_en"
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "W3",
+      "label": {
+        "fr": "Pression de prélèvement du bassin",
+        "en": "Basin withdrawal pressure"
+      },
+      "description": {
+        "fr": "L'intensité des prélèvements d'eau déjà en cours sur le bassin : un bassin très sollicité supporte mal un nouvel usage.",
+        "en": "How intensively water is already withdrawn from the basin: a heavily-tapped basin ill affords a new user."
+      },
+      "pillar": "water",
+      "weight_in_pillar": 0.2,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "BNPE",
+        "Hub'Eau"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "low": 100,
+          "moderate": 65,
+          "high": 30,
+          "very_high": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "W4",
+      "label": {
+        "fr": "Refroidissement + volume d'eau annoncé",
+        "en": "Cooling technology + announced water volume"
+      },
+      "description": {
+        "fr": "La technologie de refroidissement choisie et le volume d'eau qu'elle consommera, tels qu'annoncés par l'opérateur.",
+        "en": "The cooling technology chosen and the water volume it will consume, as announced by the operator."
+      },
+      "pillar": "water",
+      "weight_in_pillar": 0.2,
+      "block": "project",
+      "tier": 2,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "ICPE filing"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "closed_loop_dry": 100,
+          "hybrid_adiabatic": 60,
+          "evaporative_open": 20,
+          "unknown": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — cooling-technology ordering is robust, exact scores to be calibrated in phase 5."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "W5",
+      "label": {
+        "fr": "WUE constaté / source d'eau (auto-déclarés)",
+        "en": "Observed WUE / water source (self-reported)"
+      },
+      "description": {
+        "fr": "L'eau réellement consommée par unité de calcul, et d'où elle vient (potable, recyclée…) — chiffres constatés mais produits par l'opérateur, donc invérifiables sans source tierce. Plus c'est bas, mieux c'est.",
+        "en": "The water actually used per unit of computing, and where it comes from (drinking, recycled…) — observed figures, but operator-produced and unverifiable without a third-party source. Lower is better."
+      },
+      "pillar": "water",
+      "weight_in_pillar": 0.1,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": "L/kWh",
+      "direction": "lower_is_better",
+      "mvp": false,
+      "sources": [
+        "operator"
+      ],
+      "normalization": {
+        "type": "thresholds",
+        "thresholds": [
+          {
+            "up_to": 0.2,
+            "score": 100
+          },
+          {
+            "up_to": 0.5,
+            "score": 70
+          },
+          {
+            "up_to": 1.0,
+            "score": 40
+          },
+          {
+            "above": true,
+            "score": 10
+          }
+        ]
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — out of MVP scope (tier 3)."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "F1",
+      "label": {
+        "fr": "Recouvrement / distance zones protégées",
+        "en": "Overlap / distance to protected areas"
+      },
+      "description": {
+        "fr": "La proximité du projet avec des espaces naturels protégés (Natura 2000, ZNIEFF…).",
+        "en": "How close the project is to protected natural areas (Natura 2000, nature reserves…)."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0.2,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "INPN",
+        "Natura 2000",
+        "ZNIEFF"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "overlap": 0,
+          "adjacent_under_1km": 30,
+          "near_1_to_5km": 70,
+          "distant_over_5km": 100
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — distance bands to be anchored to a conservation-buffer reference in phase 5 (pre-mortem R1: threshold traceability)."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "F2",
+      "label": {
+        "fr": "Statut du sol (artificialisé / ENAF / agricole)",
+        "en": "Soil status (artificialized / natural / agricultural)"
+      },
+      "description": {
+        "fr": "Ce qu'était le terrain avant : déjà bétonné (friche), naturel, ou agricole — bétonner de la terre agricole ou naturelle pèse le plus.",
+        "en": "What the land was before: already built (brownfield), natural, or farmland — sealing farmland or nature weighs most."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0.35,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "Cerema",
+        "RPG"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "artificialized": 100,
+          "transitional": 60,
+          "agricultural": 0,
+          "natural_or_enaf": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "Cerema artificialization inventory + ZAN framework categories",
+        "url": "https://artificialisation.developpement-durable.gouv.fr/"
+      },
+      "calibration_status": "calibrated",
+      "calibration_note": "Iter-2: 'agricultural' 25→0 — category fix, not tuning: agricultural land IS part of ENAF (Espaces Naturels, Agricoles et Forestiers), scoring it above 'natural_or_enaf' contradicted the ZAN referential this basis cites. Weight .25→.35 (with F1 .30→.20): REX 2026-07-07 lesson 5 — F1 only sees DESIGNATED zones (Natura/ZNIEFF) and is blind to ordinary plain biodiversity; F2 carries ordinary-habitat destruction."
+    },
+    {
+      "id": "F3",
+      "label": {
+        "fr": "Continuités écologiques (TVB)",
+        "en": "Ecological corridors (TVB)"
+      },
+      "description": {
+        "fr": "Si le projet coupe un corridor que la faune emprunte pour se déplacer (trame verte et bleue).",
+        "en": "Whether the project severs a wildlife corridor (green-and-blue network)."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0.2,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "SRADDET",
+        "INPN"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "no_interference": 100,
+          "marginal": 70,
+          "corridor_nearby": 40,
+          "corridor_crossed": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "F4",
+      "label": {
+        "fr": "Surface au sol du projet",
+        "en": "Project ground footprint"
+      },
+      "description": {
+        "fr": "L'emprise au sol du projet en hectares : plus elle est étendue, plus l'impact foncier est fort.",
+        "en": "The project's ground footprint in hectares: the larger, the greater the land impact."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0.15,
+      "block": "project",
+      "tier": 2,
+      "nature": "public_fact",
+      "unit": "hectares",
+      "direction": "lower_is_better",
+      "mvp": true,
+      "sources": [
+        "ICPE filing",
+        "building permit"
+      ],
+      "normalization": {
+        "type": "thresholds",
+        "thresholds": [
+          {
+            "up_to": 5,
+            "score": 100
+          },
+          {
+            "up_to": 20,
+            "score": 65
+          },
+          {
+            "up_to": 50,
+            "score": 30
+          },
+          {
+            "above": true,
+            "score": 10
+          }
+        ]
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "F5",
+      "label": {
+        "fr": "Mesures ERC (éviter-réduire-compenser)",
+        "en": "Avoid-reduce-offset (ERC) measures"
+      },
+      "description": {
+        "fr": "Les mesures prises pour éviter, réduire ou compenser les atteintes à l'artificialisation et à la biodiversité. (La récupération de chaleur fatale a été déplacée en E6/E7, pilier Énergie.)",
+        "en": "Measures to avoid, reduce or offset harm to soil artificialisation and biodiversity. (Heat recovery moved to E6/E7, Energy pillar.)"
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0.1,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "operator",
+        "permitting file"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "erc_complet": 100,
+          "partiel": 50,
+          "aucun": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "reference",
+        "reference": "Séquence Éviter-Réduire-Compenser (code de l'environnement, art. L110-1)"
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "F6",
+      "label": {
+        "fr": "Désignation à l'urbanisation dans un plan supra-communal",
+        "en": "Designated for urbanisation in a supra-municipal plan"
+      },
+      "description": {
+        "fr": "Le terrain est-il inscrit comme secteur d'urbanisation dans un document de planification au-dessus de la commune ? Fait de contexte, publié tel quel : il n'améliore ni n'aggrave la note.",
+        "en": "Is the site designated for urbanisation in a planning document above the municipality? A contextual fact, published as such: it neither improves nor worsens the grade."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "informational": true,
+      "calibration_status": "not_calibrated",
+      "sources": [
+        "schéma régional d'aménagement",
+        "document d'urbanisme supra-communal"
+      ],
+      "normalization": null,
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "FAIT, PAS JUGEMENT — « un site pré-fléché rencontre moins d'opposition » est l'hypothèse que le chantier de validation doit éprouver. L'intégrer à la note la rendrait intestable."
+      }
+    },
+    {
+      "id": "F7",
+      "label": {
+        "fr": "Procédure de mise en compatibilité du document d'urbanisme en cours",
+        "en": "Planning-document compatibility procedure under way"
+      },
+      "description": {
+        "fr": "Une procédure est-elle engagée pour rendre le document d'urbanisme compatible avec le projet ? Fait de contexte : on suit l'instrument, pas l'intention — le statut du sol ne changera que le jour où la procédure aboutit.",
+        "en": "Is a procedure under way to make the planning document compatible with the project? A contextual fact: we follow the instrument, not the intention — the land status only changes the day the procedure completes."
+      },
+      "pillar": "land_biodiversity",
+      "weight_in_pillar": 0,
+      "block": "project",
+      "tier": 3,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "informational": true,
+      "calibration_status": "not_calibrated",
+      "sources": [
+        "délibération communale",
+        "dossier de concertation",
+        "acte administratif"
+      ],
+      "normalization": null,
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Déclarer la procédure sans la créditer : le sol reste ce qu'il est jusqu'à l'acte."
+      }
+    },
+    {
+      "id": "L1",
+      "label": {
+        "fr": "Profil socio-économique de la commune",
+        "en": "Municipality socio-economic profile"
+      },
+      "description": {
+        "fr": "Le profil social de la commune d'accueil. Garde-fou : un projet ne doit jamais améliorer sa note en s'installant dans une commune vulnérable.",
+        "en": "The host town's social profile. A safeguard: a project must never improve its grade by locating in a vulnerable town."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.15,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "non_monotonic",
+      "mvp": true,
+      "sources": [
+        "INSEE"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "strong_fit": 90,
+          "neutral": 60,
+          "sensitive": 30
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — composite INSEE profile to be specified with the methodology lead in phase 5."
+      },
+      "calibration_status": "provisional",
+      "constraints": [
+        "vulnerability_cannot_improve_score"
+      ],
+      "calibration_note": "Partly an ETHICAL choice, not an empirical one. If phase-5 retrospective calibration shows that fragile municipalities 'accept more easily', the model must NOT learn vulnerability = better grade — that is the path-of-least-resistance the ethical lock (framing note section 9) forbids. Retro-validation does not settle this alone: the vulnerability_cannot_improve_score constraint caps it. Category frame itself (strong_fit/neutral/sensitive) to be re-examined with the methodology lead.",
+      "vulnerability_order": [
+        "strong_fit",
+        "neutral",
+        "sensitive"
+      ]
+    },
+    {
+      "id": "L2",
+      "label": {
+        "fr": "Capacité d'absorption (taille du projet vs commune)",
+        "en": "Absorption capacity (project size vs municipality)"
+      },
+      "description": {
+        "fr": "La taille du projet rapportée à celle de la commune : un très gros projet dans une petite commune bouleverse davantage.",
+        "en": "The project's size relative to the town: a very large project in a small town disrupts more."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.15,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": "MW per 1000 inhabitants",
+      "direction": "lower_is_better",
+      "mvp": true,
+      "sources": [
+        "INSEE"
+      ],
+      "normalization": {
+        "type": "thresholds",
+        "thresholds": [
+          {
+            "up_to": 1,
+            "score": 100
+          },
+          {
+            "up_to": 10,
+            "score": 60
+          },
+          {
+            "up_to": 100,
+            "score": 30
+          },
+          {
+            "above": true,
+            "score": 0
+          }
+        ]
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "L3",
+      "label": {
+        "fr": "Aléa technologique / Seveso environnant",
+        "en": "Technological hazard / nearby Seveso sites"
+      },
+      "description": {
+        "fr": "La présence de sites industriels dangereux (Seveso) à proximité, qui ajoutent un risque au voisinage.",
+        "en": "The presence of hazardous industrial sites (Seveso) nearby, adding risk to the surroundings."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.1,
+      "block": "base",
+      "tier": 1,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "Géorisques"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "none_within_5km": 100,
+          "seveso_low_within_5km": 60,
+          "seveso_high_within_2km": 20
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — distance bands to be anchored to Seveso safety-perimeter practice in phase 5."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "L4",
+      "label": {
+        "fr": "Emplois annoncés",
+        "en": "Announced jobs"
+      },
+      "description": {
+        "fr": "Le nombre d'emplois permanents annoncés, rapporté à la taille du projet. Plus il y en a, mieux c'est.",
+        "en": "The number of permanent jobs announced, relative to project size. More is better."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.15,
+      "block": "project",
+      "tier": 2,
+      "nature": "declarative",
+      "unit": "permanent jobs per 100 MW",
+      "direction": "higher_is_better",
+      "mvp": true,
+      "sources": [
+        "press releases",
+        "press"
+      ],
+      "normalization": {
+        "type": "bounded_linear",
+        "min": 0,
+        "max": 50
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "L5",
+      "label": {
+        "fr": "Retombées fiscales annoncées",
+        "en": "Announced tax revenue"
+      },
+      "description": {
+        "fr": "Les recettes fiscales que le projet apporterait à la commune, telles qu'annoncées.",
+        "en": "The tax revenue the project would bring to the town, as announced."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.1,
+      "block": "project",
+      "tier": 2,
+      "nature": "declarative",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "council deliberations",
+        "press"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "documented_significant": 90,
+          "announced_unquantified": 50,
+          "none": 20
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "L6",
+      "label": {
+        "fr": "Niveau de contestation observé",
+        "en": "Observed level of opposition"
+      },
+      "description": {
+        "fr": "L'ampleur de l'opposition constatée : recours, pétitions, mobilisations relayées par la presse.",
+        "en": "The scale of observed opposition: appeals, petitions, mobilizations reported by the press."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.2,
+      "block": "base",
+      "tier": 2,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "press",
+        "petitions",
+        "local groups"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "none": 100,
+          "local_isolated": 70,
+          "organized": 35,
+          "national": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — observed fact (fait accompli), scored directly; bands to be calibrated in phase 5."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "L7",
+      "label": {
+        "fr": "Position des élus (faits votés uniquement)",
+        "en": "Elected officials' position (voted facts only)"
+      },
+      "description": {
+        "fr": "La position des élus telle qu'exprimée par des votes officiels uniquement (délibérations), sans aucun jugement de personne.",
+        "en": "Elected officials' position as expressed by official votes only (council decisions), with no personal judgment."
+      },
+      "pillar": "local_impact",
+      "weight_in_pillar": 0.15,
+      "block": "base",
+      "tier": 2,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "council deliberations",
+        "recorded votes"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "favorable": 90,
+          "none_recorded": 60,
+          "mixed": 45,
+          "unfavorable": 15
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — facts only, no intent, no named individuals (GDPR, pre-mortem R2); scores to be calibrated in phase 5."
+      },
+      "calibration_status": "calibrated"
+    },
+    {
+      "id": "T1",
+      "label": {
+        "fr": "Concertation / consentement / gouvernance (proxies procéduraux)",
+        "en": "Consultation / consent / governance (procedural proxies)"
+      },
+      "description": {
+        "fr": "La qualité du processus démocratique : enquête publique tenue, avis de l'autorité environnementale, recours, saisine de la CNDP.",
+        "en": "The quality of the democratic process: public inquiry held, environmental authority opinion, appeals, CNDP referral."
+      },
+      "pillar": "transparency_governance",
+      "weight_in_pillar": 0.6,
+      "block": "process",
+      "tier": 2,
+      "nature": "factualized_judgment",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "public inquiry",
+        "environmental authority opinion",
+        "CNDP",
+        "legal appeals",
+        "council deliberations"
+      ],
+      "normalization": {
+        "type": "proxy_rubric",
+        "rubric": {
+          "public_inquiry_held": {
+            "true": 25,
+            "false": 0
+          },
+          "environmental_authority_opinion": {
+            "favorable": 25,
+            "favorable_with_reservations": 15,
+            "none": 10,
+            "unfavorable": 0
+          },
+          "cndp_referral": {
+            "true": 15,
+            "false": 5
+          },
+          "legal_appeals_count": {
+            "0": 20,
+            "1": 10,
+            "2_or_more": 0
+          },
+          "council_deliberations": {
+            "favorable": 15,
+            "none_recorded": 8,
+            "mixed": 5,
+            "unfavorable": 0
+          }
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — never a verdict: opposable procedural proxies only (pre-mortem R3, relocated tier 3 -> 2). Point allocation to be calibrated in phase 5."
+      },
+      "calibration_status": "calibrated",
+      "calibration_note": "cndp_referral is a PROCESS signal, not a controversy flag: a real public debate = a governance lever properly used, scored neutral-to-positive, never a red flag. Rationale: CNDP referrals correlate with project size/controversy, and controversy is already captured by L6 — scoring CNDP negatively would double-count it. Phase-5 calibration must include a collinearity check between T1 proxies and L6. This is settled by definition and placement (transparency/process), not by tuning a number."
+    },
+    {
+      "id": "T2",
+      "label": {
+        "fr": "Transparence documentaire / disponibilité du dossier",
+        "en": "Documentation transparency / file availability"
+      },
+      "description": {
+        "fr": "À quel point le dossier du projet est réellement accessible au public : études, chiffres et engagements publiés.",
+        "en": "How genuinely accessible the project's file is to the public: published studies, figures and commitments."
+      },
+      "pillar": "transparency_governance",
+      "weight_in_pillar": 0.4,
+      "block": "process",
+      "tier": 2,
+      "nature": "public_fact",
+      "unit": null,
+      "direction": "encoded_in_scoring",
+      "mvp": true,
+      "sources": [
+        "registries",
+        "official publication"
+      ],
+      "normalization": {
+        "type": "categorical",
+        "categories": {
+          "full_dossier_online": 100,
+          "partial": 65,
+          "minimal": 30,
+          "unavailable": 0
+        }
+      },
+      "threshold_basis": {
+        "type": "editorial_choice",
+        "rationale": "PROVISIONAL — phrased as 'available documentation: weak/strong', never 'opaque operator' (pre-mortem R2); bands to be calibrated in phase 5."
+      },
+      "calibration_status": "calibrated"
+    }
+  ],
+  "confidence": {
+    "tier_weights": {
+      "1": 1.0,
+      "2": 0.6,
+      "3": 0.3
+    },
+    "causes": [
+      "unverifiable_declarative",
+      "missing_data"
+    ]
+  },
+  "grade_thresholds": [
+    {
+      "min": 80,
+      "grade": "A"
+    },
+    {
+      "min": 65,
+      "grade": "B"
+    },
+    {
+      "min": 50,
+      "grade": "C"
+    },
+    {
+      "min": 35,
+      "grade": "D"
+    },
+    {
+      "min": 0,
+      "grade": "E"
+    }
+  ],
+  "parameters": {
+    "declarative_score_cap": 60,
+    "min_coverage": 0.4,
+    "min_site_coverage": 0.1,
+    "declarative_confidence_penalty": 0.5,
+    "confidence_thresholds": {
+      "high": 0.75,
+      "medium": 0.45
+    },
+    "provisional": false,
+    "reserve_A_for_verified": true
+  }
+}

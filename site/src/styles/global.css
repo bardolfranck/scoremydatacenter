@@ -991,6 +991,10 @@ sup a { color: var(--accent); font-weight: 750; }
    et alignée sur le nom. Posée en bout de ligne flex, elle passait à la ligne dans
    la colonne étroite et se lisait comme le titre du pilier suivant (vu en prod,
    2026-10-05). L'écart entre blocs reste plus grand que l'écart ligne↔mention. */
+/* « non noté » : lisible sans crier. L'information doit arriver AVEC la ligne, pas au
+   survol — un lecteur qui parcourt le tableau ne survole pas. */
+.ind-info-flag { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 0.62rem;
+  letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
 .pillar-block { display: grid; gap: 2px; }
 .pillar-basis { margin: 0 0 0 24px; font-size: 0.72rem; color: var(--muted); line-height: 1.3; }
 

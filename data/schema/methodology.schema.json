@@ -311,6 +311,25 @@
             ],
             "$comment": "The ethical lock is executable, not declared: it needs the vulnerability ordering to enforce signed monotonicity."
           }
+        },
+        {
+          "if": {
+            "properties": {
+              "informational": {
+                "const": true
+              }
+            },
+            "required": [
+              "informational"
+            ]
+          },
+          "then": {
+            "properties": {
+              "weight_in_pillar": {
+                "const": 0
+              }
+            }
+          }
         }
       ],
       "properties": {
@@ -530,6 +549,9 @@
                   "minProperties": 1
                 }
               }
+            },
+            {
+              "type": "null"
             }
           ]
         },
@@ -589,6 +611,10 @@
               }
             }
           ]
+        },
+        "informational": {
+          "type": "boolean",
+          "description": "FAIT CONTEXTUEL, PAS UN JUGEMENT. Un indicateur informationnel est publié sur la fiche et n'entre dans aucun score : « oui » n'y est ni bon ni mauvais. Né du cas Fouju (2026-10-06) — le porteur argumentait que son artificialisation est compensée par une désignation régionale ; créditer cette désignation aurait laissé un plaidoyer améliorer la note, et aurait rendu intestable l'hypothèse même que le chantier de validation doit éprouver. On publie le fait, on ne le note pas. Inertie garantie par `weight_in_pillar: 0` (zéro au numérateur ET au dénominateur de l'agrégat, importance nulle dans la confiance) ; `mvp` reste VRAI, sinon l'indicateur n'atteint jamais l'artefact publié et il n'y a plus rien à afficher."
         }
       }
     }
