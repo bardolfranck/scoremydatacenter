@@ -85,6 +85,99 @@ def _summary(dc: dict, result: dict) -> dict:
     }
 
 
+# « CE QUI PÈSE LE PLUS ICI » — CALCULÉ, JAMAIS RÉDIGÉ.
+#
+# Le lecteur non spécialiste voit une lettre et ne sait pas ce qui la tire. On expose donc le
+# HAUT du classement des contributions, en un seul indicateur, et le site en fait une phrase.
+# Le moteur rend un ID et une PART, jamais des mots : la copie reste côté site, la dérivation
+# reste ici.
+#
+# POURQUOI CALCULÉ ET NON RÉDIGÉ : c'est le quatrième dérivé du point, après la note, la carte
+# et la prose. Les trois premiers ont déjà montré ce que coûte une explication STOCKÉE — 167
+# synthèses servies affirmaient une absence que la valeur contredisait, parce qu'elles avaient
+# été écrites puis gardées pendant que la mesure changeait sous elles. Un classement se
+# recalcule à chaque build : il ne peut pas périmer, et n'a donc pas besoin d'un gate.
+#
+# CE QU'ON NE DIT PAS, ET C'EST LE POINT DÉLICAT : jamais la DISTANCE au seuil. Et pas
+# seulement dans le texte — la SÉLECTION fuit autant. Si la phrase n'apparaissait que sur les
+# fiches proches d'une bascule, sa présence serait elle-même la mesure de l'écart, et sur
+# 1565 fiches elle localiserait les seuils. Elle s'affiche donc sur TOUTE fiche qui a la
+# matière, indépendamment de la note et de la position dans l'échelle (arbitrage avec R&D,
+# 2026-10-07).
+_PART_MINIMALE_PAYS = 20  # fiches
+
+def dominant_drag(result: dict, methodology: dict) -> str | None:
+    """L'indicateur qui pèse le plus sur la note de ce site, ou None si la fiche est trop mince.
+
+    Pèse = importance × manque, soit (poids_pilier × poids_dans_pilier × poids_tier) × (100 − score).
+    C'est le même produit que celui qui construit la note : on n'invente pas une seconde
+    hiérarchie à côté de l'agrégat, on en lit le premier rang.
+
+    Rend None quand le dominant est de tier 2 ou 3. Mesuré : une seule fiche du corpus a un
+    tier 2 en tête (E6, raccordabilité à un réseau de chaleur) — elle gagne faute de concurrents
+    mesurés, pas parce qu'elle pèse. Publier « ce qui pèse le plus ici, c'est l'absence de réseau
+    de chaleur » serait vrai arithmétiquement et faux au sens commun : une phrase pareille coûte
+    plus en crédibilité qu'elle n'apporte en information. Le critère est la MATIÈRE de la fiche,
+    jamais sa position dans l'échelle — sinon on retombe dans la fuite par sélection.
+    """
+    poids_pilier = {p["id"]: p["weight"] for p in methodology["pillars"]}
+    poids_tier = {str(k): v for k, v in methodology["confidence"]["tier_weights"].items()}
+    classement = []
+    for d in methodology["indicators"]:
+        score = result["indicators"].get(d["id"])
+        if not isinstance(score, (int, float)):
+            continue
+        importance = (poids_pilier.get(d["pillar"], 0)
+                      * d.get("weight_in_pillar", 0)
+                      * poids_tier.get(str(d.get("tier", 1)), 1.0))
+        if importance <= 0:
+            continue
+        classement.append((importance * (100 - score), d.get("tier", 1), d["id"]))
+    if not classement:
+        return None
+    _, tier, iid = max(classement)
+    return iid if tier == 1 else None
+
+
+def drag_fields(results: dict[str, dict], datacenters: dict[str, dict],
+                methodology: dict) -> dict[str, dict]:
+    """Par fiche : {indicator, country, country_share?}. Un pays mince n'a PAS de part.
+
+    La part dit « comme pour 83 % des sites français ». Elle retourne une limite en
+    information : le facteur dominant est quasi constant à l'intérieur d'un pays (mesuré :
+    FR 83 % sur E2, IE 92 %, IL 100 % ; DE et GB les plus variés à 39 % et 45 %), donc l'élu
+    qui lit SA fiche lirait la même phrase que ses voisins. Le dire explicitement transforme
+    la redondance en la chose la plus utile pour lui : la contrainte est SYSTÉMIQUE, elle
+    n'est pas le fait de ce projet-là. Elle ne révèle rien des seuils — c'est la distribution
+    des faiblesses par pays, pas la position des bascules.
+
+    Sous `_PART_MINIMALE_PAYS` fiches, on sert le facteur SANS la part : « comme pour 89 % des
+    sites portugais » reposerait sur huit fiches, soit le même voisinage fabriqué par la
+    minceur que le comparateur signale déjà. (J'avais d'abord voulu réutiliser le seuil du
+    comparateur ; il dérive d'un tout autre raisonnement — deux voisins minimum sous 15 % du
+    pays — et partager une constante parce que sa valeur coïncide aurait créé une dépendance
+    fausse.)
+    """
+    dominants = {dc_id: dominant_drag(r, methodology) for dc_id, r in results.items()}
+    pays = {dc_id: datacenters[dc_id]["identity"].get("country") for dc_id in results}
+    total, par_facteur = {}, {}
+    for dc_id, iid in dominants.items():
+        cc = pays[dc_id]
+        total[cc] = total.get(cc, 0) + 1
+        if iid:
+            par_facteur[(cc, iid)] = par_facteur.get((cc, iid), 0) + 1
+    out = {}
+    for dc_id, iid in dominants.items():
+        if not iid:
+            continue
+        cc = pays[dc_id]
+        champ = {"indicator": iid, "country": cc}
+        if total.get(cc, 0) >= _PART_MINIMALE_PAYS:
+            champ["country_share"] = round(par_facteur[(cc, iid)] / total[cc], 3)
+        out[dc_id] = champ
+    return out
+
+
 def _watchlist_kind(entry: dict) -> str:
     """Feature-level marker kind, derived from the entry's facts (facts stay untouched).
 
@@ -119,6 +212,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # Provisional coverage bands (deterministic): reference pool = every scored fiche's present
     # BASE sub-scores; the band tightens against it. servable_band gates it to pipeline fiches only.
     base_ids = [d["id"] for d in base_definitions(methodology)]
+    drags = drag_fields(results, datacenters, methodology)
 
     def _present(dc_id: str) -> dict:
         ind = results[dc_id]["indicators"]
@@ -211,6 +305,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "vintage": dc["identity"].get("vintage"),
             "admin_area": dc["identity"].get("admin_area"),
             "indicators": indicator_detail,
+            # « Ce qui pèse le plus ici » : l'id du facteur dominant + sa part dans le pays.
+            # Calculé à chaque build depuis le classement des contributions — jamais stocké,
+            # donc jamais périmé. Absent quand la fiche est trop mince (voir dominant_drag).
+            **({"dominant_drag": drags[dc_id]} if dc_id in drags else {}),
             "publication": dc["publication"],
             "score_history": dc["score_history"],
             # Contestation signal (A-21): sourced facts published next to the note,

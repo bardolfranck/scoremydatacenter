@@ -660,6 +660,10 @@
       "verification_source": null
     }
   ],
+  "dominant_drag": {
+    "indicator": "W1",
+    "country": "ZZ"
+  },
   "publication": {
     "status": "published",
     "operator_response": {
