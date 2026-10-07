@@ -15,6 +15,7 @@ import {
   normLang, newToken, nowIso,
 } from "../../_shared/util";
 import { getReport } from "../../_shared/reports";
+import { isWithdrawn } from "../../../src/config/reportStatus";
 import { sendConfirmationEmail } from "../../_shared/email";
 
 interface Body {
@@ -39,6 +40,11 @@ export const onRequestPost: PagesFunction<Env> = async ({ request, env }) => {
   if (body.consent !== true) return json({ ok: false, error: "consent" }, 400);
   const def = getReport(body.report);
   if (!def) return json({ ok: false, error: "report" }, 400);
+  // NE PAS COLLECTER UNE ADRESSE POUR UN RAPPORT QU'ON NE LIVRERA PAS. La page affiche
+  // déjà la note de retrait au lieu du formulaire ; ce contrôle couvre ce que la page ne
+  // peut pas couvrir — un POST direct, un onglet ouvert avant le retrait. Prendre le
+  // consentement puis ne rien envoyer serait pire que refuser.
+  if (isWithdrawn(def.slug)) return json({ ok: false, error: "withdrawn" }, 410);
   const lang = normLang(body.lang);
   const email = normalizeEmail(body.email);
   if (!isValidEmailFormat(email)) return json({ ok: false, error: "email" }, 400);

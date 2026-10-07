@@ -13,6 +13,7 @@
 // bots; no cookie, no tracker on this page.
 import Base from "../layouts/Base.astro";
 import type { NavNode } from "../config/nav";
+import { noticeText, reportStatus } from "../config/reportStatus";
 
 interface Props {
   lang: "en" | "fr";
@@ -38,6 +39,10 @@ const EDITIONS: Record<string, { code: "fr" | "en" | "nl"; label: string }[]> = 
   ],
 };
 const editions = EDITIONS[report] ?? null;
+// État éditorial du rapport, lu dans la MÊME table que la fonction de livraison
+// (src/config/reportStatus.ts) : une page qui annonce un retrait pendant que la
+// fonction sert encore le fichier serait pire que pas de note du tout.
+const { withdrawn: retrait, erratum: errata } = reportStatus(report);
 // Default download edition: the first listed for a multi-edition report (EN), else
 // the site language (unchanged single-edition behaviour). The teaser matches it and
 // is swapped client-side when the reader flips the selector.
@@ -219,10 +224,10 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
   "nederland": {
     fr: {
       title: "Les Pays-Bas, vus de leurs data centers — ScoreMyDataCenter",
-      metaDescription: "134 data centers néerlandais passés à notre grille : le réseau le plus chargé de notre corpus, un courant 21× plus carboné que la France — et pourtant 85 % de A/B et les 2 seuls A d'Europe. Rapport gratuit (édition anglaise), contre email.",
-      h1: "Le réseau le plus saturé d'Europe. Et les deux seules notes A du continent.",
-      lead: "134 data centers néerlandais, un courant 21× plus carboné que la France — et pourtant 85 % de A/B. Le réseau est coupable d'un seul pilier ; le reste tient.",
-      scoop: "Les <strong>2 seuls A d'Europe</strong> sont néerlandais — Eurofiber Alblasserdam et KPN Rotterdam, 84,5/100 chacun, à 16 km l'un de l'autre, en pleine congestion de Rotterdam. Tous deux sur preuve tierce (un A se prouve).",
+      metaDescription: "134 data centers néerlandais passés à notre grille : le réseau le plus chargé de notre corpus, un courant 21× plus carboné que la France. Rapport retiré du téléchargement le 7 octobre 2026, le temps de sa réécriture — la raison est publiée sur cette page.",
+      h1: "Le réseau le plus saturé d'Europe.",
+      lead: "134 data centers néerlandais, un courant 21× plus carboné que la France. Le réseau est coupable d'un seul pilier — mais ce rapport est en réécriture : le registre Seveso national a depuis déplacé une partie des notes, dont les deux A qu'il annonçait.",
+      scoop: "Le fait qui tient : <strong>105 sites sur 134</strong> sont saturés ou contraints au raccordement, médiane Énergie 16,7 — le réseau le plus chargé de notre corpus. Ce que le rapport affirmait en revanche sur les deux notes A néerlandaises est <strong>corrigé</strong> : un établissement Seveso se trouve à moins de 2 km de chacune.",
       inside: [
         "La <strong>carte des 134 sites</strong> — le parc le plus dense de notre corpus",
         "Le réseau <strong>coupable d'un seul pilier</strong> : 105/134 sites saturés ou contraints, médiane Énergie 16,7",
@@ -232,14 +237,14 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
       formLead: "L'aperçu (2 pages) est libre, ci-contre. Choisissez l'édition — néerlandaise ou anglaise — donnez votre email, et le rapport complet vous arrive : un clic de confirmation, et il est à vous.",
       coverKicker: "Rapport pays · Pays-Bas",
       coverTitle: "Pays-Bas",
-      coverSub: "Le réseau le plus chargé d'Europe, et ses deux seules notes A",
+      coverSub: "Le réseau le plus chargé d'Europe",
     },
     en: {
       title: "The Netherlands, seen through its data centers — ScoreMyDataCenter",
-      metaDescription: "134 Dutch data centers run through our lens: the most loaded grid in our corpus, power 21× more carbon-intensive than France — yet 85% A/B and Europe's only two A grades. Free report, for an email.",
-      h1: "Europe's most saturated grid. And the continent's only two A grades.",
-      lead: "134 Dutch data centers, power 21× more carbon-intensive than France — yet 85% A/B. The grid is guilty on a single pillar; the rest holds.",
-      scoop: "The <strong>only two A grades in Europe</strong> are Dutch — Eurofiber Alblasserdam and KPN Rotterdam, 84.5/100 each, 16 km apart, in the thick of Rotterdam's congestion. Both on third-party proof (an A is proven).",
+      metaDescription: "134 Dutch data centers run through our lens: the most loaded grid in our corpus, power 21× more carbon-intensive than France. Report withdrawn from download on 7 October 2026, pending rewrite — the reason is published on this page.",
+      h1: "Europe's most saturated grid.",
+      lead: "134 Dutch data centers, power 21× more carbon-intensive than France. The grid is guilty on a single pillar — but this report is being rewritten: the national Seveso register has since moved part of the grades, including the two A grades it announced.",
+      scoop: "What holds: <strong>105 of 134 sites</strong> are saturated or constrained on connection, Energy median 16.7 — the most loaded grid in our corpus. What the report claimed about the two Dutch A grades is <strong>corrected</strong>: a Seveso establishment sits within 2 km of each.",
       inside: [
         "The <strong>map of 134 sites</strong> — the densest fleet in our corpus",
         "The grid <strong>guilty on a single pillar</strong>: 105/134 sites saturated or constrained, Energy median 16.7",
@@ -249,7 +254,7 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
       formLead: "The preview (2 pages) is free, on the left. Pick your edition — Dutch or English — drop your email, and the full report arrives: one confirmation click and it's yours.",
       coverKicker: "Country report · Netherlands",
       coverTitle: "Netherlands",
-      coverSub: "Europe's most loaded grid, and its only two A grades",
+      coverSub: "Europe's most loaded grid",
     },
   },
 };
@@ -296,6 +301,18 @@ const t = { ...COMMON[lang], ...rc };
           {t.inside.map((li) => <li set:html={li} />)}
         </ul>
 
+        <!-- ERRATA. Un rapport figé ne se corrige pas en place et une copie téléchargée
+             circule : quand une mesure change ce qu'il affirme sur un PASSAGE, la
+             correction datée se publie à côté du téléchargement. Si l'affirmation
+             structurait le document, c'est `withdrawn` qu'on emploie, pas ceci. -->
+        {errata && (
+          <aside class="rd-erratum" aria-label={lang === "fr" ? "Errata du rapport" : "Report erratum"}>
+            <p class="rd-erratum-title">{lang === "fr" ? "Errata" : "Erratum"}</p>
+            <p>{noticeText(errata, lang)}</p>
+            <p class="rd-notice-date"><time datetime={errata.since}>{errata.since}</time></p>
+          </aside>
+        )}
+
         <!-- Free, un-gated preview (pages 1-2). The best advertising circulates
              with no friction; the gate is only for the full report. -->
         <a class="button button-secondary rd-teaser" href={teaserHref} download
@@ -304,14 +321,31 @@ const t = { ...COMMON[lang], ...rc };
             <path d="M10 3v9m0 0 3.2-3.2M10 12 6.8 8.8M4 15.5h12" fill="none"
                   stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <span>{t.teaserBtn}</span>
+          <span>{retrait
+            ? (lang === "fr" ? "Lire la note de retrait — 1 page" : "Read the withdrawal notice — 1 page")
+            : t.teaserBtn}</span>
         </a>
-        <p class="rd-teaser-sub">{t.teaserSub}</p>
-        <p class="rd-cliff">{t.cliff}</p>
+        {/* Le fichier d'aperçu sert désormais la note de retrait : son ancienne couverture
+            portait une pastille « A » au-dessus d'Alblasserdam. Le bouton doit donc dire ce
+            qu'il ouvre vraiment, et ni « aperçu libre » ni la relance vers le rapport
+            complet n'ont plus de sens tant qu'il est retiré. */}
+        {!retrait && <p class="rd-teaser-sub">{t.teaserSub}</p>}
+        {!retrait && <p class="rd-cliff">{t.cliff}</p>}
       </div>
 
-      <!-- Right: the email gate -->
+      <!-- Right: the email gate — OR, if the report has been withdrawn, the reason
+           instead of the form. On ne prend pas une adresse pour un rapport qu'on ne
+           livrera pas, et on ne laisse pas la page muette : le retrait s'explique. -->
       <div class="rd-form-col">
+        {retrait ? (
+          <div class="rd-card rd-withdrawn">
+            <h2 class="rd-form-title">{lang === "fr" ? "Rapport retiré du téléchargement" : "Report withdrawn from download"}</h2>
+            <p class="rd-withdrawn-body">{noticeText(retrait, lang)}</p>
+            <p class="rd-notice-date">
+              <time datetime={retrait.since}>{retrait.since}</time>
+            </p>
+          </div>
+        ) : (
         <div class="rd-card">
           <h2 class="rd-form-title">{t.formTitle}</h2>
           <p class="rd-form-lead">{t.formLead}</p>
@@ -360,6 +394,7 @@ const t = { ...COMMON[lang], ...rc };
             <p class="rd-sent-body">{t.sentBody}</p>
           </div>
         </div>
+        )}
       </div>
     </div>
   </section>
@@ -600,6 +635,33 @@ const t = { ...COMMON[lang], ...rc };
     background: var(--surface, #fff);
     box-shadow: 0 14px 40px -24px rgba(14, 22, 38, 0.45);
   }
+  /* RETRAIT ET ERRATA — deux notes éditoriales, pas deux alertes. Ton sobre et
+     lisible : une correction qu'on assume ne se déguise ni en bannière rouge ni
+     en petites lignes. La date est toujours visible, une correction non datée ne
+     vaut rien. */
+  .rd-withdrawn { border-color: #c98a2e; }
+  .rd-withdrawn-body { margin: 0; line-height: 1.6; }
+  .rd-erratum {
+    border: 1px solid #c98a2e;
+    border-left-width: 3px;
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    margin: 0 0 1.2rem;
+    background: #fdf8ef;
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .rd-erratum p { margin: 0 0 0.4rem; }
+  .rd-erratum p:last-child { margin-bottom: 0; }
+  .rd-erratum-title {
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: #8a5a10;
+  }
+  .rd-notice-date { margin: 0.5rem 0 0; font-size: 0.85rem; color: #8a97a8; }
+
   /* Edition selector (native country editions) — segmented toggle at the top of the gate */
   .rd-edition {
     display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
@@ -706,6 +768,9 @@ const t = { ...COMMON[lang], ...rc };
 
   @media (prefers-color-scheme: dark) {
     .rd-card { background: #141a24; border-color: #2a3444; }
+    .rd-withdrawn { border-color: #7a5a22; }
+    .rd-erratum { background: #1d1a12; border-color: #7a5a22; }
+    .rd-erratum-title { color: #d9a44e; }
     .rd-label input { background: #0e131c; border-color: #34404f; }
     .rd-card.is-sent { background: linear-gradient(180deg, #12251b, #141a24); border-color: #245239; }
     .rd-err { background: #3a1a20; color: #f3b3bd; }

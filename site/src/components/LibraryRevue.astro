@@ -14,6 +14,7 @@ import Base from "../layouts/Base.astro";
 import LibraryCard from "./LibraryCard.astro";
 import FeedbackBand from "./FeedbackBand.astro";
 import PillarIcon from "./PillarIcon.astro";
+import { isWithdrawn } from "../config/reportStatus";
 import {
   COMING_SOON_COUNTRIES, COUNTRY_BRIEFS, COUNTRY_FLAGS, FLAGSHIP, LANG_FLAGS,
   THEME_BRIEFS, briefLanguages, coverField, hookText,
@@ -41,18 +42,27 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
     <p class="lib-section-kicker">{lang === "fr" ? "À la une · nos rapports" : "Featured · our reports"}</p>
     <div class="lib-real-grid">
       {(lang === "fr" ? [
-        { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france" },
-        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe, et les 2 seules notes A. 134 sites.", href: "/fr/rapports/nederland" },
-        { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech" },
-        { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques" },
+        { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france", slug: "france" },
+        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe. 134 sites.", href: "/fr/rapports/nederland", slug: "nederland" },
+        { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech", slug: "big-tech" },
+        { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques", slug: "banques" },
       ] : [
-        { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france" },
-        { title: "Netherlands", sub: "Europe's most loaded grid, and its only two A grades. 134 sites.", href: "/reports/nederland" },
-        { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech" },
-        { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks" },
+        { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france", slug: "france" },
+        { title: "Netherlands", sub: "Europe's most loaded grid. 134 sites.", href: "/reports/nederland", slug: "nederland" },
+        { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech", slug: "big-tech" },
+        { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks", slug: "banques" },
       ]).map((r) => (
         <a class="lib-real-card" href={r.href}>
-          <span class="lib-real-free">{lang === "fr" ? "Gratuit · aperçu libre" : "Free · open preview"}</span>
+          {isWithdrawn(r.slug) ? (
+            /* Le rapport complet est retiré : l'aperçu reste libre, mais la vitrine ne doit
+               pas inviter à un téléchargement qui n'aura pas lieu. Dérivé de la table
+               d'état, jamais écrit en dur ici — sinon la vitrine survit au retrait. */
+            <span class="lib-real-free lib-real-withdrawn">
+              {lang === "fr" ? "Aperçu libre · rapport complet retiré" : "Open preview · full report withdrawn"}
+            </span>
+          ) : (
+            <span class="lib-real-free">{lang === "fr" ? "Gratuit · aperçu libre" : "Free · open preview"}</span>
+          )}
           <span class="lib-real-title">{r.title}</span>
           <span class="lib-real-sub">{r.sub}</span>
           <span class="lib-real-cta">{lang === "fr" ? "Lire →" : "Read →"}</span>
@@ -234,6 +244,7 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
     transition: transform .12s ease, box-shadow .12s ease;
   }
   .lib-real-card:hover { transform: translateY(-2px); box-shadow: 0 16px 36px -22px rgba(14,22,38,.6); }
+  .lib-real-withdrawn { color: #8a5a10; }
   .lib-real-free {
     font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
     color: #8ac14b; font-weight: 700;

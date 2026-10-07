@@ -9,6 +9,7 @@
 import type { Env } from "../../_shared/util";
 import { htmlPage, normLang } from "../../_shared/util";
 import { getReport, pdfKey, pdfFilename } from "../../_shared/reports";
+import { noticeText, reportStatus } from "../../../src/config/reportStatus";
 
 export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const token = new URL(request.url).searchParams.get("token") ?? "";
@@ -32,6 +33,23 @@ export const onRequestGet: PagesFunction<Env> = async ({ request, env }) => {
   const def = getReport(row.report);
   const lang = normLang(row.lang);
   if (!def) return htmlPage({ lang, status: 404, title: "Rapport introuvable", body: `<h1>Rapport introuvable</h1>` });
+
+  // UN RAPPORT RETIRÉ NE SE SERT PLUS, MÊME SUR UN LIEN DÉJÀ CONFIRMÉ. Le lien de
+  // téléchargement est stable et marque-page : un abonné confirmé la semaine dernière
+  // le rouvrirait et recevrait le PDF que nous venons de retirer. Et on répond par la
+  // NOTE, pas par un 404 : le lecteur a droit à la raison, surtout s'il a déjà le
+  // fichier entre les mains. 410 Gone, parce que l'adresse était valide et ne l'est plus.
+  const retire = reportStatus(def.slug).withdrawn;
+  if (retire) {
+    return htmlPage({
+      lang,
+      status: 410,
+      title: lang === "fr" ? "Rapport retiré" : "Report withdrawn",
+      body: `<h1>${lang === "fr" ? "Rapport retiré du téléchargement" : "Report withdrawn from download"}</h1>
+<p>${noticeText(retire, lang)}</p>
+<p style="color:#8a97a8">${retire.since}</p>`,
+    });
+  }
 
   const key = pdfKey(def, lang);
   const object = await env.REPORTS_BUCKET.get(key);
