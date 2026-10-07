@@ -162,10 +162,9 @@ export function libelleUnite(unite: string, lang: string): string {
 // Libellés arrêtés avec R&D le 2026-10-07.
 //
 // Une entrée ABSENTE signifie « on n'affiche pas le bloc » — pas « on improvise une
-// formulation ». W3 (pression de prélèvement du bassin) est volontairement absent : il
-// domine 5 fiches et R&D vérifie ce qu'il mesure exactement avant de figer une copie
-// publique dessus. Mieux vaut cinq fiches sans bloc qu'une phrase publique approximative.
-// E6 n'y est pas non plus : le moteur écarte déjà les tiers 2 de cette position.
+// formulation ». Les huit indicateurs de tier 1 qui peuvent dominer sont tous couverts ;
+// E6 n'y est pas parce que le moteur écarte les tiers 2 de cette position (un tier 2 qui
+// domine est le drapeau d'une couverture tier 1 trop mince, pas un signal).
 const FACTEUR_DOMINANT: Record<string, { fr: string; en: string }> = {
   E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix" },
   E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection" },
@@ -174,6 +173,7 @@ const FACTEUR_DOMINANT: Record<string, { fr: string; en: string }> = {
   W2: { fr: "la proximité d'un milieu aquatique fragile", en: "closeness to a fragile water body" },
   F1: { fr: "la proximité d'une zone naturelle protégée", en: "closeness to a protected natural area" },
   F2: { fr: "la consommation de terres agricoles ou naturelles", en: "building on farmland or natural land" },
+  W3: { fr: "de forts prélèvements d'eau sur le bassin", en: "heavy water abstraction on the basin" },
   L3: { fr: "la proximité d'un site industriel à risque (Seveso)", en: "closeness to a major-hazard (Seveso) site" },
 };
 
@@ -210,7 +210,13 @@ export function phraseFacteurDominant(
   const g = drag?.country ? GENTILES[drag.country] : undefined;
   if (drag?.country_share === undefined || !g) return base;
   const pct = Math.round(drag.country_share * 100);
+  // ON DONNE LE CHIFFRE, ON NE LE QUALIFIE PAS. Première version : « C'est AUSSI le premier
+  // facteur sur X % » — qui marche à 83 % et devient une non-information à 1 % (cas réel : les
+  // 5 fiches W3 françaises). Caractériser aurait demandé des paliers arbitraires (« systémique »
+  // au-dessus de tant, « peu fréquent » en dessous) ; la formulation neutre est vraie aux deux
+  // bouts et laisse le lecteur conclure — 83 % se lit comme une contrainte de pays, 1 % comme
+  // une singularité. Décrire le fait, ne pas le juger : la même règle que partout ailleurs.
   return fr
-    ? `${base} C'est aussi le premier facteur sur ${pct} % des sites ${g.fr} que nous avons notés.`
-    : `${base} It is also the leading factor for ${pct}% of the ${g.en} sites we have graded.`;
+    ? `${base} Premier facteur pour ${pct} % des sites ${g.fr} que nous avons notés.`
+    : `${base} Leading factor for ${pct}% of the ${g.en} sites we have graded.`;
 }
