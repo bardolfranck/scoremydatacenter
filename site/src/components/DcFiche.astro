@@ -433,7 +433,16 @@ const seoDesc = seoLead
            contributions, jamais stocké (donc jamais périmé), et jamais conditionné à la
            distance au seuil : la seule présence de la phrase serait sinon la mesure de
            l'écart. Ce que la note DOIT au lecteur, c'est ce qui la tire — pas la recette. */
-        <p class="fiche-drag">{phraseDrag}</p>
+        <p class="fiche-drag">
+          {phraseDrag}{" "}
+          {/* LE MAILLON QUI FAIT UN PARCOURS AU LIEU DE TROIS SURFACES. Le lecteur vient
+              d'apprendre ce qui tire CETTE note ; la question suivante est ce que valent les
+              lettres. Sans ce lien, l'explication de la fiche et l'échelle vivent chacune de
+              leur côté et personne ne passe de l'une à l'autre. */}
+          <a href={lang === "fr" ? "/fr/la-note-pas-a-pas" : "/the-grade-step-by-step"}>
+            {lang === "fr" ? "Ce que valent les lettres →" : "What the letters mean →"}
+          </a>
+        </p>
       )}
 
       <div class="fiche-conf">

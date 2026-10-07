@@ -82,6 +82,18 @@ const T = {
     finalLabel: "La note du site", scoreWord: "score global",
     philo: "La lettre est la note publiée ; le score la sous-tend.",
     hudLabel: "Note du site", hudScore: "score", hudHint: "bougez le curseur ↑",
+    s4h: "Et qu'est-ce qui aurait fait un B ?",
+    s4sub: "La lettre ne récompense pas une moyenne : elle compte les piliers en tension, et leur gravité.",
+    echelle: [
+      { l: "A", d: "aucune faiblesse marquée sur les piliers publiés" },
+      { l: "B", d: "solide, avec une ombre" },
+      { l: "C", d: "deux tensions nettes — le cas de notre exemple" },
+      { l: "D", d: "plusieurs piliers dans le rouge" },
+      { l: "E", d: "une tension majeure, ou le rouge presque partout" },
+    ],
+    s4note: "Un seul critère très mauvais suffit à tirer la lettre vers le bas : c'est voulu, comme pour le nutri-score alimentaire. Et le plafond ne se lève que sur preuve vérifiée par un tiers — <b>aucun site d'Europe n'atteint A aujourd'hui</b>.",
+    s4faq: "Pourquoi nous ne publions pas les seuils chiffrés →",
+    s4faqHref: "/fr/#faq",
     closeK: "Ce qu'on ne montre pas ici",
     closeH: "Voilà l'intuition. Le vrai calcul va plus loin.",
     closeP: "Un pilier faible pèse mais ne détruit pas. Il ne fait pas tout. Sous le capot, la méthode ajoute :",
@@ -114,6 +126,18 @@ const T = {
     finalLabel: "The site grade", scoreWord: "global score",
     philo: "The letter is the published grade; the score underpins it.",
     hudLabel: "Site grade", hudScore: "score", hudHint: "move the slider ↑",
+    s4h: "And what would have made it a B?",
+    s4sub: "The letter does not reward an average: it counts the pillars under tension, and how severe they are.",
+    echelle: [
+      { l: "A", d: "no marked weakness on the pillars published" },
+      { l: "B", d: "solid, with one shadow" },
+      { l: "C", d: "two clear tensions — our example's case" },
+      { l: "D", d: "several pillars in the red" },
+      { l: "E", d: "one major tension, or red almost everywhere" },
+    ],
+    s4note: "A single very poor criterion is enough to pull the letter down — that is deliberate, as with the food Nutri-Score. And the cap only lifts on third-party verified proof: <b>no site in Europe reaches A today</b>.",
+    s4faq: "Why we don't publish the numeric thresholds →",
+    s4faqHref: "/#faq",
     closeK: "What we don't show here",
     closeH: "That's the intuition. The real calculation goes further.",
     closeP: "A weak pillar weighs but doesn't destroy. It isn't everything. Under the hood, the method adds:",
@@ -201,6 +225,29 @@ const L = (o: { fr: string; en: string }) => o[lang];
         <div class="mw-philo">{t.philo}</div>
       </div>
     </div>
+  </div>
+
+  {/* ÉTAPE 4 — l'étape 3 vient de montrer 53/100 DEVENIR un C. La question du lecteur à cet
+      instant précis est « et qu'est-ce qui en aurait fait un B ? » : l'échelle se lit donc ici,
+      pas en tête de page, et elle s'illustre avec l'exemple que la page a déroulé (« deux
+      tensions nettes — le cas de notre exemple »). Directionnelle, zéro chiffre : dire la
+      position des seuils rendrait la note optimisable, et c'est le lien vers la FAQ qui porte
+      ce choix plutôt que de le taire.
+      Commentaire ASTRO et non HTML : un `<!-- -->` part dans la page livrée, donc notre
+      raisonnement éditorial se retrouverait dans la source publique de chaque page. */}
+  <div class="mw-step" data-n="4">
+    <h2>{t.s4h}</h2>
+    <p class="mw-sub">{t.s4sub}</p>
+    <ul class="mw-echelle">
+      {t.echelle.map((e: any) => (
+        <li>
+          <span class={`mw-ech-chip g-${e.l.toLowerCase()}`}>{e.l}</span>
+          <span>{e.d}</span>
+        </li>
+      ))}
+    </ul>
+    <p class="mw-ech-note" set:html={t.s4note}></p>
+    <a class="mw-ech-faq" href={t.s4faqHref}>{t.s4faq}</a>
   </div>
 
   <div class="mw-close">
@@ -295,6 +342,12 @@ const L = (o: { fr: string; en: string }) => o[lang];
   .mw-step{ position:relative; padding:0 0 4px 52px; margin:0 0 30px; }
   .mw-step::before{ content:attr(data-n); position:absolute; left:0; top:-2px; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font-family:var(--font-mono); font-weight:700; font-size:15px; color:var(--accent); background:var(--paper); border:1.5px solid var(--line); }
   .mw-step:not(:last-of-type)::after{ content:""; position:absolute; left:16.5px; top:36px; bottom:-30px; width:1.5px; background:linear-gradient(var(--line),transparent); }
+  .mw-echelle{ list-style:none; margin:10px 0 0; padding:0; display:grid; gap:7px; }
+  .mw-echelle li{ display:flex; align-items:center; gap:10px; font-size:15px; }
+  .mw-ech-chip{ flex:0 0 auto; width:26px; height:26px; border-radius:7px; display:grid; place-items:center; font-family:var(--font-mono); font-weight:700; font-size:14px; }
+  .mw-ech-note{ margin:12px 0 0; font-size:14px; line-height:1.55; color:var(--ink-soft,#51606f); }
+  .mw-ech-faq{ display:inline-block; margin:10px 0 0; font-size:14px; font-weight:600; color:var(--accent); text-decoration:none; }
+  .mw-ech-faq:hover{ text-decoration:underline; }
   .mw-step h2{ font-size:19px; font-weight:800; letter-spacing:-.01em; margin:2px 0 3px; }
   .mw-sub{ font-size:13.5px; color:var(--muted); margin:0 0 16px; max-width:66ch; } .mw-sub b{ color:var(--ink-soft); }
 
