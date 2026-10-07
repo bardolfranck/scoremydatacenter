@@ -15,7 +15,7 @@ import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct } from "../config/stats";
-import { libelleValeur, libelleUnite } from "../config/indicatorValues";
+import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
 import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
@@ -274,6 +274,8 @@ for (const i of methodology.indicators as any[]) {
   if (i.block === "base") (socleParPilier[i.pillar] ??= []).push(i.id);
 }
 const OBSERVE = ["measured", "announced", "estimated"];
+const phraseDrag = phraseFacteurDominant(dc.dominant_drag, lang);
+
 const pillarBasis = (pid: string): string => {
   const ids = socleParPilier[pid];
   if (!ids?.length) return "";   // Transparence : aucun indicateur de socle, par construction
@@ -425,6 +427,14 @@ const seoDesc = seoLead
           naLabel={t.naLabel}
         />
       </div>
+
+      {phraseDrag && (
+        /* « Ce qui pèse le plus ici » — calculé à chaque build depuis le classement des
+           contributions, jamais stocké (donc jamais périmé), et jamais conditionné à la
+           distance au seuil : la seule présence de la phrase serait sinon la mesure de
+           l'écart. Ce que la note DOIT au lecteur, c'est ce qui la tire — pas la recette. */
+        <p class="fiche-drag">{phraseDrag}</p>
+      )}
 
       <div class="fiche-conf">
         <span class="fiche-conf-label">{t.confGlobal}</span>

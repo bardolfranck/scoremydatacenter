@@ -575,6 +575,10 @@
       "verification_source": null
     }
   ],
+  "dominant_drag": {
+    "indicator": "F2",
+    "country": "ZZ"
+  },
   "publication": {
     "status": "published",
     "operator_response": null

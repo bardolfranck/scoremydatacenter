@@ -153,3 +153,64 @@ export function libelleUnite(unite: string, lang: string): string {
   if (lang !== "fr") return unite;
   return UNITES[unite] ?? unite;
 }
+
+// « CE QUI PÈSE LE PLUS ICI » — les mots d'habitant du facteur dominant.
+//
+// Le moteur rend un ID et une part (`dominant_drag` dans l'artefact) ; la phrase se fabrique
+// ici. Ce ne sont PAS les étiquettes d'indicateur : « Capacité / proximité de raccordement »
+// ne dit rien à un riverain, « un réseau électrique saturé au raccordement » lui dit tout.
+// Libellés arrêtés avec R&D le 2026-10-07.
+//
+// Une entrée ABSENTE signifie « on n'affiche pas le bloc » — pas « on improvise une
+// formulation ». W3 (pression de prélèvement du bassin) est volontairement absent : il
+// domine 5 fiches et R&D vérifie ce qu'il mesure exactement avant de figer une copie
+// publique dessus. Mieux vaut cinq fiches sans bloc qu'une phrase publique approximative.
+// E6 n'y est pas non plus : le moteur écarte déjà les tiers 2 de cette position.
+const FACTEUR_DOMINANT: Record<string, { fr: string; en: string }> = {
+  E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix" },
+  E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection" },
+  E3: { fr: "une capacité réseau déjà largement réservée", en: "grid capacity already heavily reserved" },
+  W1: { fr: "un bassin d'eau sous tension", en: "a water-stressed basin" },
+  W2: { fr: "la proximité d'un milieu aquatique fragile", en: "closeness to a fragile water body" },
+  F1: { fr: "la proximité d'une zone naturelle protégée", en: "closeness to a protected natural area" },
+  F2: { fr: "la consommation de terres agricoles ou naturelles", en: "building on farmland or natural land" },
+  L3: { fr: "la proximité d'un site industriel à risque (Seveso)", en: "closeness to a major-hazard (Seveso) site" },
+};
+
+const GENTILES: Record<string, { fr: string; en: string }> = {
+  FR: { fr: "français", en: "French" },
+  NL: { fr: "néerlandais", en: "Dutch" },
+  DE: { fr: "allemands", en: "German" },
+  GB: { fr: "britanniques", en: "British" },
+  IT: { fr: "italiens", en: "Italian" },
+  ES: { fr: "espagnols", en: "Spanish" },
+  PL: { fr: "polonais", en: "Polish" },
+  BE: { fr: "belges", en: "Belgian" },
+  CH: { fr: "suisses", en: "Swiss" },
+  SE: { fr: "suédois", en: "Swedish" },
+  NO: { fr: "norvégiens", en: "Norwegian" },
+  DK: { fr: "danois", en: "Danish" },
+  FI: { fr: "finlandais", en: "Finnish" },
+};
+
+/** La phrase « ce qui pèse le plus ici », ou null si on n'a pas de mots sûrs pour ce facteur. */
+export function phraseFacteurDominant(
+  drag: { indicator?: string; country?: string; country_share?: number } | null | undefined,
+  lang: string,
+): string | null {
+  const mots = drag?.indicator ? FACTEUR_DOMINANT[drag.indicator] : undefined;
+  if (!mots) return null;
+  const fr = lang === "fr";
+  const facteur = fr ? mots.fr : mots.en;
+  const base = fr ? `Ce qui pèse le plus ici : ${facteur}.` : `What weighs most here: ${facteur}.`;
+  // La part n'est servie que si le pays a assez de fiches pour qu'elle veuille dire quelque
+  // chose (le moteur l'omet sinon). Elle ne révèle rien des seuils : c'est la distribution
+  // des faiblesses dans le pays, et elle dit au lecteur la chose utile — la contrainte est
+  // systémique, elle n'est pas le fait de ce projet-là.
+  const g = drag?.country ? GENTILES[drag.country] : undefined;
+  if (drag?.country_share === undefined || !g) return base;
+  const pct = Math.round(drag.country_share * 100);
+  return fr
+    ? `${base} C'est aussi le premier facteur sur ${pct} % des sites ${g.fr} que nous avons notés.`
+    : `${base} It is also the leading factor for ${pct}% of the ${g.en} sites we have graded.`;
+}

@@ -959,6 +959,9 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-badges .scorebadge-label { color: var(--sidebar-muted); }
 .fiche-badges .scorebadge-doc { color: #fff; font-size: 0.86rem; }
 .fiche-badges hr { width: 100%; height: 1px; border: 0; background: rgba(255, 255, 255, 0.1); margin: 0; }
+/* « Ce qui pèse le plus ici » — une phrase, pas une alerte, dans la colonne sombre de la
+   fiche : elle se lit juste après la lettre, là où le lecteur se demande pourquoi celle-là. */
+.fiche-drag { margin: 0; padding: 11px 13px; border-left: 3px solid rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06); border-radius: 0 10px 10px 0; font-size: 0.92rem; line-height: 1.5; color: #e8eef6; }
 .fiche-conf { display: grid; gap: 7px; }
 .fiche-conf-label { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sidebar-muted); }
 .fiche-conf-track { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
