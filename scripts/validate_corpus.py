@@ -100,6 +100,17 @@ def main() -> int:
               file=sys.stderr)
         return 2
 
+    # --- garde 4 : chaque FICHE est valide contre SON schéma (le trou jumeau, 2026-10-09)
+    # La garde 3 valide la méthodo contre son schéma, les contrôles par fiche valident les fiches
+    # contre la MÉTHODO — mais personne ne validait les fiches contre `datacenter.schema.json`.
+    # Ce contrôle existait, dans `run_gates`, qui ne voit que les 2 fixtures du dépôt : elles
+    # passaient, et le corpus réel dérivait. Mesuré le jour où on l'a branché : 13 528 écarts,
+    # 26 causes — presque toutes des motifs DÉLIBÉRÉS que le schéma ne connaissait pas (provenance
+    # OSM, raison d'un `not_collected`, développeur ICPE, dérogation géo, lead bilingue). Un
+    # schéma qui ne voit jamais la donnée ne décrit plus rien.
+    dc_schema = json.loads((Path(__file__).resolve().parent.parent
+                            / "data" / "schema" / "datacenter.schema.json").read_text())
+
     meth_ids, scored_pp = _methodology_sets(methodology)
     problems: list[str] = []
     scored = 0
@@ -111,6 +122,7 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001
             problems.append(f"{label}: JSON illisible ({e})")
             continue
+        problems += _schema_errors(dc, dc_schema, label)
         inds = {i["id"]: i for i in dc.get("indicators", [])}
         # GATE 1 — set complet
         missing = meth_ids - set(inds)

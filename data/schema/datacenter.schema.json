@@ -40,8 +40,12 @@
           "minLength": 1
         },
         "operator": {
-          "type": "string",
-          "minLength": 1
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 1,
+          "description": "L'exploitant, ou `null` quand il n'est pas connu — écrire `null` dit « on ne sait pas », inventer un nom serait pire."
         },
         "municipality": {
           "type": "string",
@@ -96,6 +100,11 @@
               "type": "integer",
               "minimum": 1990,
               "maximum": 2100
+            },
+            "source": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Provenance du millésime, en clair (ex. « DCWatch (Hubblo) ODbL, export 7dd5b5e9 — date_service »). C'est une PHRASE, pas un objet `source` : le millésime vient d'un champ d'export, il n'a pas d'URL propre."
             }
           }
         },
@@ -128,6 +137,41 @@
             "estimated"
           ],
           "description": "Documentation status of power_mw itself (the consumer contract for the fiche/ranking marker): measured = on record; announced = operator claim; estimated = internal model output (rendered '~X MW · estimé', never as a bare fact). Absent = legacy fill, treated as undisclosed provenance."
+        },
+        "source": {
+          "$ref": "#/$defs/source",
+          "description": "Provenance de l'identité elle-même (ex. tag OSM de cycle de vie)."
+        },
+        "developer": {
+          "oneOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "object",
+              "additionalProperties": true,
+              "required": [
+                "name"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          ],
+          "description": "Le porteur du dossier, distinct de l'exploitant — le pétitionnaire ICPE n'est pas forcément celui qui exploitera. ⚠️ DEUX FORMES coexistent dans la donnée (chaîne simple, ou objet {name, activity_fr, activity_en}) : les deux sont acceptées ici pour ne pas bloquer, mais c'est une divergence à normaliser — un champ à deux formes finit par être lu de travers."
+        },
+        "developer_source": {
+          "$ref": "#/$defs/source"
+        },
+        "operator_type": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -184,6 +228,14 @@
               }
             }
           ]
+        },
+        "operator_notified_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "description": "Date à laquelle l'opérateur a été informé — trace du droit de réponse."
         }
       }
     },
@@ -258,8 +310,23 @@
           ],
           "properties": {
             "lead": {
-              "type": "string",
-              "minLength": 1
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fr",
+                "en"
+              ],
+              "properties": {
+                "fr": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "description": "Titre court de la synthèse, PAR LANGUE. Le schéma exigeait une chaîne unique alors que le rédacteur produit {fr,en} depuis longtemps et que la fiche l'affiche dans la langue du lecteur : 2800 champs servis étaient en désaccord avec le schéma sans que rien ne le voie."
             },
             "fr": {
               "type": "string",
@@ -281,8 +348,23 @@
           ],
           "properties": {
             "lead": {
-              "type": "string",
-              "minLength": 1
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "fr",
+                "en"
+              ],
+              "properties": {
+                "fr": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "en": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "description": "Titre court de la synthèse, PAR LANGUE. Le schéma exigeait une chaîne unique alors que le rédacteur produit {fr,en} depuis longtemps et que la fiche l'affiche dans la langue du lecteur : 2800 champs servis étaient en désaccord avec le schéma sans que rien ne le voie."
             },
             "fr": {
               "type": "string",
@@ -295,6 +377,11 @@
           }
         }
       }
+    },
+    "_notes": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Notes de correction datées, en clair, sur la fiche — p. ex. un recalage et son motif. Préfixé d'un souligné : métadonnée humaine, jamais lue par le moteur."
     }
   },
   "$defs": {
@@ -303,7 +390,6 @@
       "additionalProperties": false,
       "required": [
         "title",
-        "url",
         "accessed"
       ],
       "properties": {
@@ -312,8 +398,12 @@
           "minLength": 1
         },
         "url": {
-          "type": "string",
-          "format": "uri"
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uri",
+          "description": "L'adresse du document, ou `null` quand il n'y en a pas de document — le motif d'un `not_collected` (« le collecteur du pays n'est pas implémenté ») ou une dérogation géo sont des sources qui EXPLIQUENT sans pointer une page. Rendre `url` obligatoire poussait à inventer un lien ou à taire la raison ; or une raison écrite vaut mieux qu'un silence, et c'est la doctrine « not_collected EXPLICITE + raison »."
         },
         "accessed": {
           "type": "string",
@@ -323,6 +413,11 @@
           "type": "string",
           "format": "uri",
           "description": "Durable snapshot of the source (e.g. a web-archive capture), against link rot (A-20). Evidence for a human reader; the engine scores from the value only, so scoring stays reproducible from the public repo alone. Copyrighted press is linked here, never reproduced."
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Licence de la donnée (ODbL, Licence Ouverte…), portée par 407 fiches."
         }
       }
     },
@@ -352,8 +447,10 @@
           "type": [
             "number",
             "string",
-            "boolean"
-          ]
+            "boolean",
+            "null"
+          ],
+          "description": "`null` sur un état vide (`missing`/`not_collected`) : la clé reste écrite pour que l'absence se LISE dans la fiche au lieu de devoir se déduire d'une clé manquante."
         },
         "proxies": {
           "$ref": "#/$defs/t1_proxies"
@@ -372,11 +469,16 @@
           ],
           "minimum": 0,
           "description": "MESURE BRUTE À CÔTÉ DE LA CATÉGORIE, pour que la marge au seuil se lise sur un NOMBRE. Distance en kilomètres à l'objet le plus proche que l'indicateur classe (ex. L3 : l'établissement Seveso le plus proche). Nécessaire parce qu'un indicateur catégoriel (aucun / ≤5 km / ≤2 km) ne dit pas de combien on est loin de la bascule : savoir si une coordonnée imprécise peut faire changer la classe demande la distance, et la lire dans le texte de `source.title` serait l'extraction naïve qui nous a déjà donné un faux. Optionnel et nullable : les fiches antérieures restent valides, et `null` dit « la source n'a pas rendu de distance » sans se confondre avec zéro. Ajouté le 2026-10-06 pour le gate coord-feature (demande EU/R&D)."
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Pourquoi cet indicateur est dans l'état où il est, en clair — typiquement un `not_collected` dont on dit la cause (« collecteur spatial du pays non implémenté »). C'est la même exigence que la trace de lecture : on ne laisse pas une absence muette."
         }
       },
       "allOf": [
         {
-          "$comment": "Value-bearing states (measured/announced) require a source; empty states (missing/not_collected) carry no value or proxies. A `missing` MAY carry a read-trace source (proof we looked); `not_collected` may not (see next).",
+          "$comment": "États porteurs de valeur (measured/announced/estimated) : une source est requise. États vides (missing/not_collected) : aucune valeur, aucun proxy. ⚠️ « Pas de valeur » veut dire PAS DE VALEUR, non pas « pas de clé » : la donnée écrit `value: null` sur 1424 fiches et c'est mieux ainsi — l'absence se LIT dans la fiche au lieu de devoir se déduire d'une clé manquante (rattrapage 2026-10-09).",
           "if": {
             "properties": {
               "status": {
@@ -394,46 +496,57 @@
             ]
           },
           "else": {
-            "not": {
-              "anyOf": [
-                {
-                  "required": [
-                    "value"
-                  ]
-                },
-                {
+            "allOf": [
+              {
+                "properties": {
+                  "value": {
+                    "type": "null"
+                  }
+                }
+              },
+              {
+                "not": {
                   "required": [
                     "proxies"
                   ]
                 }
-              ]
-            }
+              }
+            ]
           }
         },
         {
-          "$comment": "not_collected = nobody looked → no source, no verification evidence either.",
+          "$comment": "DEUX DOCTRINES SE CONTREDISAIENT, la donnée les a réconciliées (2026-10-09). Le schéma interdisait toute source sur un `not_collected`, pour empêcher de simuler une trace de lecture ; la doctrine de collecte exige au contraire un `not_collected` EXPLICITE AVEC SA RAISON (« la source ouverte est FR-only », « le collecteur du pays n'est pas implémenté »). Mesure : sur 2466 `not_collected` portant une source, 2464 avaient déjà `url: null` — ce sont des RAISONS, pas des documents. D'où la règle, qui garde les deux intentions : une source est permise, mais sans URL — une URL affirmerait qu'on a consulté un document, ce que `not_collected` nie précisément. Les 2 fiches qui en portaient une étaient de vrais défauts. `verification_source` reste interdit : il n'y a rien à vérifier.",
           "if": {
             "properties": {
               "status": {
                 "const": "not_collected"
               }
-            }
+            },
+            "required": [
+              "status"
+            ]
           },
           "then": {
-            "not": {
-              "anyOf": [
-                {
-                  "required": [
-                    "source"
-                  ]
-                },
-                {
+            "allOf": [
+              {
+                "properties": {
+                  "source": {
+                    "properties": {
+                      "url": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "not": {
                   "required": [
                     "verification_source"
                   ]
                 }
-              ]
-            }
+              }
+            ]
           }
         },
         {
@@ -445,12 +558,13 @@
             }
           },
           "then": {
-            "not": {
-              "required": [
-                "value"
-              ]
+            "properties": {
+              "value": {
+                "type": "null"
+              }
             }
-          }
+          },
+          "$comment": "T1 porte des proxies, jamais une valeur simple — `null` toléré, même raison qu'allOf[0]."
         },
         {
           "if": {
@@ -661,5 +775,6 @@
         }
       }
     }
-  }
+  },
+  "$comment": "RATTRAPAGE DU SCHÉMA SUR LA DONNÉE, 2026-10-09. Mesuré : 13 528 écarts, 26 causes. Presque toutes étaient des motifs DÉLIBÉRÉS que le schéma ne connaissait pas, parce que rien ne validait les fiches RÉELLES contre lui — le contrôle de schéma ne voyait que les 2 fixtures du dépôt. Chaque champ ci-dessous est donc autorisé avec sa raison, et le chemin de déploiement valide désormais le corpus servi contre ce fichier."
 }
