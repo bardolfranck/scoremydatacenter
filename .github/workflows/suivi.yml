@@ -1,0 +1,55 @@
+name: Suivi des projets non résolus (hebdo)
+
+# Franck 2026-10-13. Les trois autres crons vont vers l'AVANT — collecte OSM, veille GDELT,
+# preuve de statut (qui ne regarde que les fiches `operational`). Tous demandent « quoi de
+# neuf ? ». Aucun ne demandait « qu'est-ce qui a changé sur ce que j'ai déjà ? », et c'est
+# comme ça que 45 projets FR connus et sourcés ont dormi un mois dans un brouillon.
+#
+# Ce job tient la file des objets NON RÉSOLUS (fiches non opérationnelles + leads sans fiche),
+# la repasse chaque semaine et écrit `suivi/REVUE-SUIVI.md`. Il n'ajoute AUCUN scraping : il
+# joint des sources qu'on collecte déjà. Il ne modifie aucune fiche, ne retourne aucun statut,
+# ne note rien, ne déploie pas — tout flip public reste le gate de Franck.
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"    # lundi 07:00 UTC — APRÈS la preuve de statut (04:00), la collecte
+                           # projets (05:00) et la veille (06:00) : le suiveur lit ce qu'elles
+                           # viennent d'écrire, et aucun push ne court après l'autre.
+  workflow_dispatch: {}
+
+concurrency:
+  group: suivi
+  cancel-in-progress: false
+
+jobs:
+  suivi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (public)
+        uses: actions/checkout@v4
+        with:
+          path: scoremydatacenter
+
+      - name: Checkout newsroom (private — needs NEWSROOM_TOKEN)
+        uses: actions/checkout@v4
+        with:
+          repository: bardolfranck/smdc-newsroom
+          token: ${{ secrets.NEWSROOM_TOKEN }}
+          path: smdc-newsroom
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install deps
+        working-directory: scoremydatacenter
+        run: uv sync
+
+      - name: Git identity (for the newsroom commit)
+        run: |
+          git config --global user.name  "smdc-suivi-bot"
+          git config --global user.email "suivi@scoremydatacenter.org"
+
+      - name: Suivi → file ouverte + revue (NO deploy)
+        working-directory: scoremydatacenter
+        run: make suivi

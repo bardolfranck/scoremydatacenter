@@ -1,4 +1,4 @@
-.PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof habitations validate-corpus
+.PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi habitations validate-corpus
 
 # LA COUCHE DE COLLECTE EST PRIVÉE (décision Franck, 2026-10-02). Le dépôt public porte la
 # méthode — moteur de notation, gates, méthodologie, site ; la machine qui va CHERCHER la
@@ -310,6 +310,18 @@ status-proof:
 	@cd $(NEWSROOM) && git add calibration/status-proof && \
 	  if git diff --cached --quiet; then echo "status-proof: rien de neuf"; \
 	  else git commit -q -m "status-proof: vérification hebdo $$(date +%F)" && (git push -q 2>/dev/null && echo "status-proof: poussé au newsroom" || echo "status-proof: commit local (push différé — offline?)"); fi
+
+# LE SUIVEUR (Franck 2026-10-13) : repasse sur les projets NON RÉSOLUS et dit ce qui a bougé.
+# Tous les autres crons vont vers l'avant — ils demandent « quoi de neuf ? ». Celui-ci demande
+# « qu'est-ce qui a changé sur ce que j'ai déjà ? », la question qui manquait : 45 projets FR
+# connus et sourcés dormaient dans un brouillon, qu'on aurait redécouverts un mois plus tard.
+# N'ajoute AUCUN scraping : il joint le corpus, la couche watchlist, l'archive de presse et le
+# sidecar de preuve de statut. Ne modifie aucune fiche, ne retourne aucun statut, ne déploie pas.
+suivi:
+	$(COLLECT).suivi.run --cal $(NEWSROOM)/calibration --newsroom $(NEWSROOM)
+	@cd $(NEWSROOM) && git add suivi && \
+	  if git diff --cached --quiet; then echo "suivi: rien de neuf"; \
+	  else git commit -q -m "suivi: passage $$(date +%F)" && (git push -q 2>/dev/null && echo "suivi: poussé au newsroom" || echo "suivi: commit local (push différé — offline?)"); fi
 
 # Distance aux premières habitations (OSM) — un FAIT publié à côté de la note, jamais dedans
 # (Franck 2026-09-21 : on ne mesure pas les dB, on mesure l'exposition). Calcule seulement ce qui
