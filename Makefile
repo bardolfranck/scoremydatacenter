@@ -1,4 +1,4 @@
-.PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi habitations validate-corpus
+.PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus
 
 # LA COUCHE DE COLLECTE EST PRIVÉE (décision Franck, 2026-10-02). Le dépôt public porte la
 # méthode — moteur de notation, gates, méthodologie, site ; la machine qui va CHERCHER la
@@ -322,6 +322,18 @@ suivi:
 	@cd $(NEWSROOM) && git add suivi && \
 	  if git diff --cached --quiet; then echo "suivi: rien de neuf"; \
 	  else git commit -q -m "suivi: passage $$(date +%F)" && (git push -q 2>/dev/null && echo "suivi: poussé au newsroom" || echo "suivi: commit local (push différé — offline?)"); fi
+
+# Le suiveur AVEC qualification Jev (TypeSafe System One) — LOCAL seulement : la clé vit dans
+# ~/.smdc/typesafekey.env, comme la clé de déploiement, et n'est pas en CI. Jev répond à trois
+# questions FERMÉES par signal (événement, statut impliqué, porte-t-il sur ce site) et la revue
+# est TRIÉE par gravité : un abandon avant une étape administrative, une carte nationale en
+# dernier. Sans qualification, 67 lignes à plat ne se lisent pas. Mesuré : ~0,0005 $ le passage.
+# Plafond de tokens DUR dans le client (jev.PLAFOND_TOKENS), zéro retry.
+suivi-qualifie:
+	$(COLLECT).suivi.run --cal $(NEWSROOM)/calibration --newsroom $(NEWSROOM) --qualifie
+	@cd $(NEWSROOM) && git add suivi && \
+	  if git diff --cached --quiet; then echo "suivi: rien de neuf"; \
+	  else git commit -q -m "suivi: passage qualifié $$(date +%F)" && (git push -q 2>/dev/null && echo "suivi: poussé au newsroom" || echo "suivi: commit local (push différé — offline?)"); fi
 
 # Distance aux premières habitations (OSM) — un FAIT publié à côté de la note, jamais dedans
 # (Franck 2026-09-21 : on ne mesure pas les dB, on mesure l'exposition). Calcule seulement ce qui
