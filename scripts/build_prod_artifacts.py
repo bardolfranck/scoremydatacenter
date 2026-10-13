@@ -457,6 +457,32 @@ def _sans_doublons(rendus: list[tuple[dict, dict]]) -> list[dict]:
     return gardes
 
 
+def _document_id(fiche_id: str, avis: dict, nom_source: str) -> str | None:
+    """Nom public du document pour CETTE fiche, ou None si on ne peut pas l'établir.
+
+    Le rang n'est pas calculé ici : deux documents du même type, même site, même date sont
+    assez rares pour que le cas soit traité quand il se présentera, et un rang faux serait
+    pire qu'absent (il ferait croire à deux documents là où il y en a un).
+    """
+    from pipelines.registers.doc_id import DocIdInvalide, doc_id, type_depuis_source
+    import re
+    proc = avis.get("procedure") or {}
+    t = type_depuis_source(avis.get("source") or {}, proc)
+    date = proc.get("date_avis") or ""
+    # Le registre écrit la date en JJ/MM/AAAA, `doc_id` exige l'ISO — et il a raison d'être
+    # strict : une date mal lue dans un identifiant est permanente, elle voyage dans les
+    # liens publiés. La conversion est donc EXPLICITE ici, chez l'appelant qui connaît le
+    # format de sa source, et non tolérée par la fonction qui fabrique le nom.
+    if m := re.fullmatch(r"(\d{2})/(\d{2})/(\d{4})", str(date).strip()):
+        date = f"{m.group(3)}-{m.group(2)}-{m.group(1)}"
+    if not t or not date:
+        return None
+    try:
+        return doc_id(fiche_id, t, str(date)[:10])
+    except DocIdInvalide:
+        return None
+
+
 def patch_dossier_environnemental() -> int:
     """L'avis d'autorité environnementale posé À CÔTÉ de la note (Franck 2026-10-01).
 
@@ -529,7 +555,7 @@ def patch_dossier_environnemental() -> int:
         d = json.loads(f.read_text())
         noms = liens.get(d["id"])
         if not noms:
-            d.pop("dossier_environnemental", None)
+            d.pop("environmental_dossier", None)
             write_json(f, d)
             continue
         avis_rendus = []
@@ -547,14 +573,30 @@ def patch_dossier_environnemental() -> int:
                 proc.pop("date_avis", None)
             avis_rendus.append((a, {
                 "source": a["source"], "procedure": proc, "faits": faits,
-                "recommandations": a["installation"].get("recommandations_autorite", []),
+                "recommandations_autorite": a["installation"].get("recommandations_autorite", []),
+                # Nom PUBLIC du document, rattaché à SA fiche (Franck 2026-10-13) : un
+                # « dossier-mairie-...-data-donnees.pdf » ne dit pas de quel site il parle.
+                # Dérivé du rattachement, jamais stocké en double — la clé de stockage reste
+                # l'empreinte de l'URL, qui existe AVANT qu'on sache à quel site rattacher.
+                # Type indevinable → pas de nom public : on ne devine pas l'autorité d'un
+                # document (un cadrage présenté comme un avis délibéré prendrait le poids
+                # d'une décision).
+                "document_id": _document_id(d["id"], a, nom),
             }))
         avis_rendus = _sans_doublons(avis_rendus)
         if avis_rendus:
-            d["dossier_environnemental"] = {"avis": avis_rendus}
+            # LA FRONTIÈRE PRODUIT (décision Franck 2026-10-01) : le moteur et les fichiers
+            # stockés restent en français — c'est la langue de l'équipe et des sources — mais
+            # ce qui SORT vers le site et l'API est en anglais, une fois pour toutes.
+            # `to_english` ÉCHOUE BRUYAMMENT sur une clé inconnue : une clé française qui
+            # franchirait en silence serait le même faux silence qu'on traque ailleurs.
+            # Écrit le 2026-10-01, appelé par personne jusqu'ici : les 44 JSON servaient des
+            # clés françaises au site.
+            from pipelines.registers.schema_en import to_english
+            d["environmental_dossier"] = to_english({"avis": avis_rendus})
             patched += 1
         else:
-            d.pop("dossier_environnemental", None)
+            d.pop("environmental_dossier", None)
         write_json(f, d)
     return patched
 

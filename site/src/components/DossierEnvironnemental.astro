@@ -45,7 +45,7 @@ import scales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 
 const { dossier, lang = "fr" } = Astro.props;
-const avis = (dossier?.avis ?? []).filter((a: any) => a?.faits?.length || a?.recommandations?.length);
+const avis = (dossier?.opinions ?? []).filter((a: any) => a?.facts?.length || a?.authority_recommendations?.length);
 
 const ICO = (raw: string, size = 16) =>
   raw.replace("<svg", `<svg width="${size}" height="${size}" aria-hidden="true" focusable="false"`);
@@ -149,9 +149,9 @@ const PHRASE = (s: string) => String(s ?? "")
 // et ne sort pas : on n'improvise pas un rangement pour un indicateur qu'on n'a pas vu passer.
 const RUBRIQUES: { cle: string; ico: string; ids: string[] }[] = [
   { cle: "energie", ico: lightning, ids: [
-      "raccordement_kv", "puissance_it_mw", "consommation_gwh_an", "pue",
-      "chaleur_fatale_mw_th", "chaleur_valorisation", "reseau_chaleur_distance"] },
-  { cle: "eau", ico: drop, ids: ["refroidissement_type", "eau_m3_an", "eau_l_par_kwh"] },
+      "grid_connection_voltage_kv", "reported_data_hall_electrical_power_mw", "annual_electricity_consumption_gwh", "pue",
+      "waste_heat_mw_thermal", "waste_heat_recovery_status", "district_heating_distance_m"] },
+  { cle: "eau", ico: drop, ids: ["cooling_technology", "annual_water_consumption_m3", "eau_l_par_kwh"] },
   // PUISSANCE THERMIQUE ET PUISSANCE ÉLECTRIQUE NE PARTAGENT PAS UNE COLONNE. Un permis
   // britannique donne la puissance de COMBUSTION (MWth) ; un dossier français donne tantôt
   // l'une tantôt l'autre. Les ranger ensemble ferait comparer en silence des grandeurs
@@ -164,23 +164,23 @@ const RUBRIQUES: { cle: string; ico: string; ids: string[] }[] = [
   // totale de 112 MWth » (fr-colt-paris-sw) n'a donné que le nombre et le carburant ;
   // 142,2 MWth chez fr-equinix-pa16, pareil. Ces champs leur ouvrent une place.
   { cle: "secours", ico: gasCan, ids: [
-      "groupes_nombre", "groupes_puissance_unitaire_mw", "groupes_puissance_totale_mw",
-      "groupes_puissance_unitaire_mwth", "groupes_puissance_totale_mwth",
-      "groupes_carburant", "cuves_nombre", "cuves_volume_unitaire_m3",
-      "cuves_volume_total_m3", "autonomie_heures"] },
-  { cle: "voisinage", ico: houseLine, ids: ["habitations_distance_m"] },
+      "backup_generator_count", "backup_generator_unit_power_mw", "backup_generator_total_installed_power_mw",
+      "backup_generator_unit_thermal_power_mwth", "backup_generator_total_thermal_power_mwth",
+      "backup_generator_fuel", "fuel_tank_count", "fuel_tank_unit_volume_m3",
+      "fuel_tank_total_volume_m3", "backup_autonomy_hours"] },
+  { cle: "voisinage", ico: houseLine, ids: ["nearest_dwellings_distance_m"] },
   { cle: "emprise", ico: buildings, ids: [
-      "parcelle_ha", "emprise_sol_m2", "surface_plancher_m2", "surface_salles_m2",
-      "surface_locaux_techniques_m2", "hauteur_m"] },
-  { cle: "emploi", ico: briefcase, ids: ["emplois_effectif"] },
+      "site_area_ha", "building_footprint_m2", "gross_floor_area_m2", "data_hall_area_m2",
+      "technical_rooms_area_m2", "building_height_m"] },
+  { cle: "emploi", ico: briefcase, ids: ["reported_onsite_operational_headcount"] },
   // Les oxydes d'azote sont la nuisance d'un groupe électrogène qui tourne, et les permis
   // britanniques en donnent la limite autorisée — un fait chiffré, daté, opposable, que nos
   // indicateurs spatiaux ne voient pas. Même rubrique que les gaz à effet de serre : ce qui
   // sort par la cheminée.
-  { cle: "emissions", ico: cloud, ids: ["ges_teqco2", "emissions_nox_mg_nm3"] },
+  { cle: "emissions", ico: cloud, ids: ["ghg_emissions_tco2e", "emissions_nox_mg_nm3"] },
 ];
-const BANDES = ["bruit_bandes", "bruit_emergence_bandes"];
-const NIVEAUX = ["bruit_niveau_dba", "bruit_emergence_dba"];
+const BANDES = ["noise_levels_by_point", "noise_emergence_by_point"];
+const NIVEAUX = ["noise_level_dba", "noise_emergence_dba"];
 // L'avertissement ne porte que sur la puissance TOTALE : c'est elle qu'on confond avec la
 // puissance du site. Le répéter sur la puissance unitaire, que son libellé désambiguïse
 // déjà, ne ferait que diluer la mise en garde.
@@ -205,20 +205,20 @@ const CAVEAT: Record<string, string> = {
 const parPhrase = (vals: any[]) => {
   const out: any[] = [];
   for (const x of vals) {
-    const ph = PHRASE(x.phrase);
-    const v = `${NUM(x.valeur)}${x.unite ? " " + x.unite : ""}`;
-    const g = out.find((o: any) => o.phrase === ph);
+    const ph = PHRASE(x.evidence_excerpt);
+    const v = `${NUM(x.value)}${x.unit ? " " + x.unit : ""}`;
+    const g = out.find((o: any) => o.evidence_excerpt === ph);
     if (g) { if (!g.valeurs.includes(v)) g.valeurs.push(v); }
-    else out.push({ phrase: ph, page: x.page, valeurs: [v] });
+    else out.push({ evidence_excerpt: ph, page_pdf: x.page_pdf, valeurs: [v] });
   }
   return out;
 };
 
-const prendre = (faits: any[], ids: string[]) =>
-  ids.flatMap((id) => faits.filter((f: any) => f.indicateur === id));
+const prendre = (facts: any[], ids: string[]) =>
+  ids.flatMap((id) => facts.filter((f: any) => f.indicator === id));
 // « min–max » ou valeur ferme : les deux formes sortent de l'extraction, aucune n'est arrondie.
 const borne = (b: any) => !b ? null
-  : (b.valeur !== undefined && b.valeur !== null ? NUM(b.valeur)
+  : (b.value !== undefined && b.value !== null ? NUM(b.value)
      : (b.min !== undefined ? `${NUM(b.min)} – ${NUM(b.max)}` : null));
 ---
 
@@ -247,29 +247,29 @@ const borne = (b: any) => !b ? null
   // On ne calcule RIEN sur ces séries : ni écart, ni tendance, ni dernière valeur « officielle ».
   // On les met côte à côte, datées, dans l'ordre des dossiers. Conclure appartient au lecteur.
   const plusieurs = avis.length > 1;
-  const dateDe = (a: any) => DATE(a?.procedure?.date_avis) || t.sansDate;
+  const dateDe = (a: any) => DATE(a?.procedure?.opinion_date) || t.sansDate;
   const marque = (xs: any[], a: any, i: number) =>
     (xs ?? []).map((x: any) => ({ ...x, _i: i, _date: dateDe(a) }));
-  const f = avis.flatMap((a: any, i: number) => marque(a.faits, a, i));
+  const f = avis.flatMap((a: any, i: number) => marque(a.facts, a, i));
   const rubriques = RUBRIQUES
     .map((r) => ({ ...r, items: prendre(f, r.ids) }))
     .filter((r) => r.items.length > 0);
-  const icpe = prendre(f, ["icpe_rubriques"]);
+  const icpe = prendre(f, ["icpe_categories"]);
   const bandes = prendre(f, BANDES);
   // Une même phrase donne à l'extraction autant de `bruit_niveau_dba` qu'elle contient de
   // nombres — et souvent la bande structurée en plus. Affichés tels quels, on republiait six
   // fois le même paragraphe. On regroupe donc PAR PHRASE, et on laisse tomber celles que le
   // tableau cite déjà : la valeur nue n'apporte rien quand sa période est déjà en colonne.
-  const phrasesDeja = new Set(bandes.map((b: any) => PHRASE(b.phrase)));
+  const phrasesDeja = new Set(bandes.map((b: any) => PHRASE(b.evidence_excerpt)));
   const niveaux: any[] = [];
   for (const n of prendre(f, NIVEAUX)) {
-    const ph = PHRASE(n.phrase);
+    const ph = PHRASE(n.evidence_excerpt);
     if (phrasesDeja.has(ph)) continue;
-    const g = niveaux.find((x: any) => x.phrase === ph);
-    if (g) g.valeurs.push(`${NUM(n.valeur)} ${n.unite ?? ""}`.trim());
-    else niveaux.push({ phrase: ph, page: n.page, valeurs: [`${NUM(n.valeur)} ${n.unite ?? ""}`.trim()] });
+    const g = niveaux.find((x: any) => x.evidence_excerpt === ph);
+    if (g) g.valeurs.push(`${NUM(n.value)} ${n.unit ?? ""}`.trim());
+    else niveaux.push({ evidence_excerpt: ph, page_pdf: n.page_pdf, valeurs: [`${NUM(n.value)} ${n.unit ?? ""}`.trim()] });
   }
-  const recos = avis.flatMap((a: any, i: number) => marque(a.recommandations, a, i));
+  const recos = avis.flatMap((a: any, i: number) => marque(a.authority_recommendations, a, i));
   // Un indicateur qui revient plusieurs fois dans un même avis (GES par poste, puissances
   // d'un campus, rubriques ICPE) ne s'empile PAS en lignes de même libellé : cinq
   // « Émissions de GES » superposées n'apprennent rien et appellent la somme qu'on s'interdit.
@@ -277,8 +277,8 @@ const borne = (b: any) => !b ? null
   const grouper = (items: any[]) => {
     const out: any[] = [];
     for (const x of items) {
-      const g = out.find((o: any) => o.indicateur === x.indicateur);
-      if (g) g.vals.push(x); else out.push({ indicateur: x.indicateur, libelle: LIB(x.libelle), vals: [x] });
+      const g = out.find((o: any) => o.indicator === x.indicator);
+      if (g) g.vals.push(x); else out.push({ indicator: x.indicator, label: LIB(x.label), vals: [x] });
     }
     return out;
   };
@@ -297,7 +297,7 @@ const borne = (b: any) => !b ? null
   // l'écran mais disparaît au copier-coller et n'existe pas pour un lecteur d'écran, qui lisait
   // « 30personnes ». Insécable parce qu'une valeur ne se sépare pas de son unité en fin de ligne.
   const Val = (x: any) => (
-    <>{NUM(x.valeur)}{x.unite ? <>{" "}<span class="de-u">{x.unite}</span></> : null}</>
+    <>{NUM(x.value)}{x.unit ? <>{" "}<span class="de-u">{x.unit}</span></> : null}</>
   );
   // Une valeur qui n'est pas la même d'un dossier à l'autre est SIGNALÉE, jamais interprétée.
   //
@@ -309,7 +309,7 @@ const borne = (b: any) => !b ? null
   //
   // On dit donc ce qu'on sait : la valeur déclarée diffère. On ne dit pas que quelque chose a
   // changé. Le mot « change » appartient au lecteur, et il lui faut l'avis pour le prononcer.
-  const memeValeur = (s: any) => s.vals.map((x: any) => `${x.valeur}${x.unite ?? ""}`).sort().join("|");
+  const memeValeur = (s: any) => s.vals.map((x: any) => `${x.value}${x.unit ?? ""}`).sort().join("|");
   const Rows = (items: any[]) => grouper(items).map((g: any) => {
     const series = parAvis(g.vals);
     const differe = series.length > 1 && new Set(series.map(memeValeur)).size > 1;
@@ -317,11 +317,11 @@ const borne = (b: any) => !b ? null
       <details class={`de-row${differe ? " de-row-differe" : ""}`}>
         <summary>
           <span class="de-k">
-            {g.libelle}
+            {g.label}
             {differe && <span class="de-differe">{t.differe}</span>}
             {/* L'avertissement est DANS la ligne, jamais derrière un dépli : 405 MW posés à
                 côté de 105 MW sans leur phrase se lisent comme la puissance du site. */}
-            {CAVEAT[g.indicateur] && <span class="de-caveat">{CAVEAT[g.indicateur]}</span>}
+            {CAVEAT[g.indicator] && <span class="de-caveat">{CAVEAT[g.indicator]}</span>}
           </span>
           <span class={`de-vals${series.length > 1 ? " de-vals-serie" : ""}`}>
             {series.map((s: any) => (
@@ -330,7 +330,7 @@ const borne = (b: any) => !b ? null
                     à un seul avis elle serait un bruit, la date est déjà en tête de bloc. */}
                 {plusieurs && <span class="de-val-d">{s._date}</span>}
                 {s.vals.length === 1
-                  ? <><span class="de-v">{Val(s.vals[0])}</span><span class="de-p">{t.pages}{s.vals[0].page}</span></>
+                  ? <><span class="de-v">{Val(s.vals[0])}</span><span class="de-p">{t.pages}{s.vals[0].page_pdf}</span></>
                   : <span class="de-v de-multi">{`${s.vals.length} ${lang === "fr" ? "valeurs" : "values"}`}</span>}
               </span>
             ))}
@@ -338,14 +338,14 @@ const borne = (b: any) => !b ? null
         </summary>
         {series.map((s: any) => (
           s.vals.length === 1
-            ? <blockquote>{plusieurs && <span class="de-bq-d">{s._date}</span>}{PHRASE(s.vals[0].phrase)}</blockquote>
+            ? <blockquote>{plusieurs && <span class="de-bq-d">{s._date}</span>}{PHRASE(s.vals[0].evidence_excerpt)}</blockquote>
             : parPhrase(s.vals).map((q: any) => (
                 <blockquote class="de-bq-val">
                   <span class="de-bq-v">
                     <span>{q.valeurs.join(" · ")}</span>
-                    <span class="de-p">{(plusieurs ? s._date + " · " : "") + t.pages + q.page}</span>
+                    <span class="de-p">{(plusieurs ? s._date + " · " : "") + t.pages + q.page_pdf}</span>
                   </span>
-                  {q.phrase}
+                  {q.evidence_excerpt}
                 </blockquote>
               ))
         ))}
@@ -366,7 +366,7 @@ const borne = (b: any) => !b ? null
                   et « pétitionnaireGoodman France » est passé à l'écran une fois.
                   L'artefact retire la date quand ses deux oracles divergent. On le DIT au lieu
                   de la taire : « nous l'ignorons » n'est pas « nous ne la publions pas ». */}
-              <span>{[DATE(proc.date_avis) || t.sansDate,
+              <span>{[DATE(proc.opinion_date) || t.sansDate,
                        proc.petitionnaire && `${t.petitionnaire} ${proc.petitionnaire}`,
                        src.pdf?.pages && `${src.pdf.pages} pages`]
                       .filter(Boolean).join(" · ") + (src.doc_url ? " · " : "")}</span>
@@ -396,19 +396,19 @@ const borne = (b: any) => !b ? null
                     <tr>
                       <td>
                         {plusieurs && <span class="de-val-d">{b._date}</span>}
-                        {b.indicateur === "bruit_emergence_bandes" ? t.emergenceLabel : t.niveauxLabel}
-                        {b.valeur?.point ? <span class="de-pt"> · {b.valeur.point}</span> : null}
-                        <span class="de-p">{t.pages}{b.page}</span>
+                        {b.indicator === "noise_emergence_by_point" ? t.emergenceLabel : t.niveauxLabel}
+                        {b.value?.point ? <span class="de-pt"> · {b.value.point}</span> : null}
+                        <span class="de-p">{t.pages}{b.page_pdf}</span>
                       </td>
-                      <td>{borne(b.valeur?.jour) ? <><strong>{borne(b.valeur.jour)}</strong> dB(A)</> : "—"}</td>
-                      <td>{borne(b.valeur?.nuit) ? <><strong>{borne(b.valeur.nuit)}</strong> dB(A)</> : "—"}</td>
+                      <td>{borne(b.value?.jour) ? <><strong>{borne(b.value.jour)}</strong> dB(A)</> : "—"}</td>
+                      <td>{borne(b.value?.nuit) ? <><strong>{borne(b.value.nuit)}</strong> dB(A)</> : "—"}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
             {bandes.map((b: any) => (
-              <blockquote class="de-bq-inline">{PHRASE(b.phrase)}</blockquote>
+              <blockquote class="de-bq-inline">{PHRASE(b.evidence_excerpt)}</blockquote>
             ))}
             {niveaux.length > 0 && (
               <div class="de-niveaux">
@@ -416,8 +416,8 @@ const borne = (b: any) => !b ? null
                 {niveaux.map((n: any) => (
                   <p class="de-niv">
                     <strong>{n.valeurs.join(" · ")}</strong>
-                    <span class="de-niv-q">{`« ${n.phrase} »`}</span>
-                    <span class="de-p">{t.pages}{n.page}</span>
+                    <span class="de-niv-q">{`« ${n.evidence_excerpt} »`}</span>
+                    <span class="de-p">{t.pages}{n.page_pdf}</span>
                   </p>
                 ))}
               </div>
@@ -439,7 +439,7 @@ const borne = (b: any) => !b ? null
               </span>
             </h3>
             <ul class="de-icpe">
-              {[...new Set(icpe.map((x: any) => String(x.valeur)))].map((num: any) => (
+              {[...new Set(icpe.map((x: any) => String(x.value)))].map((num: any) => (
                 <li>
                   <span class="de-icpe-n">{num}</span>
                   <span class="de-icpe-l">{ICPE[num]?.[lang] ?? ""}</span>
@@ -459,7 +459,7 @@ const borne = (b: any) => !b ? null
                     {plusieurs && <span class="de-val-d">{r._date}</span>}
                     {PHRASE(r.texte).replace(/^\(\d+\)\s*/, "").slice(0, 130)}…
                   </span>
-                  <span class="de-p">{t.pages}{r.page}</span>
+                  <span class="de-p">{t.pages}{r.page_pdf}</span>
                 </summary>
                 <blockquote>{PHRASE(r.texte)}</blockquote>
               </details>
@@ -470,7 +470,7 @@ const borne = (b: any) => !b ? null
                     vers chacun plutôt que vers un seul, qui ne les contiendrait pas tous. */}
                 {avis.filter((a: any) => a.source?.doc_url).map((a: any, i: number) => (
                   <a href={a.source.doc_url} target="_blank" rel="noopener">
-                    {`${i === 0 ? t.autres + " (" + (recos.length - 4) + ")" : ""} ${plusieurs ? DATE(a.procedure?.date_avis) || t.sansDate : ""} →`}
+                    {`${i === 0 ? t.autres + " (" + (recos.length - 4) + ")" : ""} ${plusieurs ? DATE(a.procedure?.opinion_date) || t.sansDate : ""} →`}
                   </a>
                 ))}
               </p>
