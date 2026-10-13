@@ -50,6 +50,19 @@ jobs:
           git config --global user.name  "smdc-suivi-bot"
           git config --global user.email "suivi@scoremydatacenter.org"
 
+      # La qualification Jev ne part que si le secret existe. Sans lui, le passage reste
+      # DÉTERMINISTE et complet : la file est écrite, seul le tri par gravité manque. Un suiveur
+      # qui refuserait de tourner parce qu'un service tiers n'est pas configuré serait pire que
+      # pas de qualification du tout.
       - name: Suivi → file ouverte + revue (NO deploy)
         working-directory: scoremydatacenter
-        run: make suivi
+        env:
+          TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+        run: |
+          if [ -n "$TYPESAFE_API_KEY" ]; then
+            echo "clé Jev présente → passage qualifié (plafond de tokens dur côté client)"
+            make suivi-qualifie
+          else
+            echo "pas de secret TYPESAFE_API_KEY → passage déterministe seul"
+            make suivi
+          fi
