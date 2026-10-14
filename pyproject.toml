@@ -27,6 +27,20 @@ dev = [
 projection = [
     "umap-learn>=0.5",
 ]
+# Transformations de DATUM, chemin FROID de collecte — hors dépendances par défaut, même
+# discipline qu'umap : une mise en ligne ne porte jamais cette pile.
+#   make locate-gb-ea   /   uv run --group geo python -m pipelines.registers.gb_ea
+# Raison d'être : le registre EA des installations à permis publie l'Easting/Northing en
+# OSGB36 (EPSG:27700) et nos fiches sont en WGS84. Une conversion maison entre ces deux
+# systèmes ignore le décalage de datum et se trompe de l'ordre de 100 m — soit, avec un
+# rayon d'appariement de 250 m, le permis du VOISIN attribué à notre site. Le commentaire
+# de pipelines/registers/index.py le dit déjà pour le WFS : « une reprojection maison est
+# exactement le genre de calcul silencieux qui a déjà produit des coordonnées fabriquées
+# dans ce projet ». pyproj est l'outil juste, et il resservira (géo-audit, bandes, qualité
+# de coordonnée).
+geo = [
+    "pyproj>=3.6",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["engine/tests"]
