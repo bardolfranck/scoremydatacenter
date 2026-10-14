@@ -513,30 +513,14 @@ def patch_dossier_environnemental() -> int:
     if not ratt.is_file():
         return 0
     from engine.core import write_json
-    doc = json.loads(ratt.read_text())
     reg = CAL.parent / "registres"
 
-    # fiche_id -> liste de noms d'avis (un site peut en porter plusieurs)
-    liens: dict[str, list[str]] = {}
-    ecartes = 0
-    for p in doc.get("propositions", []):
-        if p.get("statut") not in ("rattache_propose", "rattache_multiple"):
-            continue
-        # LA MÊME COMMUNE N'EST PAS LE MÊME PROJET. Un avis d'origine nationale n'a qu'un
-        # signal possible — l'index MRAe ne publie ni géométrie, ni pétitionnaire, ni INSEE
-        # (cf. fiche.build_national) — alors le rapprochement par la seule commune l'accroche
-        # à TOUS les data centers de la ville. Mesuré le 2026-10-01 : 4 avis dans ce cas, dont
-        # « DC PA-16 Argenteuil » servi sur 3 fiches Equinix et un avis de La Courneuve sur 5.
-        # Résultat à l'écran : une fiche affichant 22 groupes au fioul ET 18 groupes à l'HVO,
-        # 30 salariés ET 40, sans que rien ne trahisse qu'il s'agit d'un AUTRE projet.
-        # C'est exactement l'erreur contre laquelle le reste de cette fonction est écrit, et
-        # j'avais pris `rattache_multiple` pour un gage de sûreté : c'en est un sur le NOMBRE
-        # de fiches, pas sur la FORCE du lien.
-        if set(p.get("signaux") or []) <= {"commune"}:
-            ecartes += 1
-            continue
-        for fid in (p.get("fiches") or ([p["fiche"]] if p.get("fiche") else [])):
-            liens.setdefault(fid, []).append(p["avis"])
+    # fiche_id -> liste de noms d'avis (un site peut en porter plusieurs). La règle — dont
+    # l'exclusion « rattaché par la seule commune » — vit dans match.liens_servis et n'est
+    # PAS recopiée ici : le compteur de couverture des nuisances en a besoin aussi, et une
+    # seconde écriture aurait compté comme couvert un site qu'on refuse de servir.
+    from pipelines.registers.match import liens_servis
+    liens, ecartes = liens_servis(ratt)
     if ecartes:
         print(f"  dossier environnemental : {ecartes} avis écarté(s) — rattachés sur la seule "
               f"commune (voir pipelines/registers/match.py)")

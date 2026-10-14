@@ -148,10 +148,18 @@ const PHRASE = (s: string) => String(s ?? "")
 // Les rubriques, dans l'ordre d'affichage. Un champ absent de ces listes reste dans le JSON
 // et ne sort pas : on n'improvise pas un rangement pour un indicateur qu'on n'a pas vu passer.
 const RUBRIQUES: { cle: string; ico: string; ids: string[] }[] = [
+  // ⚠️ CES IDS SONT DES NOMS DE CHAMPS SERVIS, et un id périmé ne casse rien : la rubrique
+  // se vide en silence. Trois l'étaient — `pue`, `eau_l_par_kwh`, `emissions_nox_mg_nm3` —
+  // depuis le passage de la frontière produit à l'anglais (2026-10-14) : la ligne PUE, la
+  // ligne litres/kWh et la limite de NOx ne s'affichaient plus du tout. Le test
+  // `test_laffichage_du_dossier_ne_designe_aucun_champ_fantome` (newsroom) confronte
+  // désormais cette liste au registre `schema_en.INDICATORS` et casse au prochain renommage.
   { cle: "energie", ico: lightning, ids: [
-      "grid_connection_voltage_kv", "reported_data_hall_electrical_power_mw", "annual_electricity_consumption_gwh", "pue",
+      "grid_connection_voltage_kv", "reported_data_hall_electrical_power_mw", "annual_electricity_consumption_gwh",
+      "reported_site_power_demand_mw", "reported_pue", "onsite_solar_pv",
       "waste_heat_mw_thermal", "waste_heat_recovery_status", "district_heating_distance_m"] },
-  { cle: "eau", ico: drop, ids: ["cooling_technology", "annual_water_consumption_m3", "eau_l_par_kwh"] },
+  { cle: "eau", ico: drop, ids: ["cooling_technology", "annual_water_consumption_m3",
+      "reported_water_intensity_l_per_kwh", "refrigerant_type"] },
   // PUISSANCE THERMIQUE ET PUISSANCE ÉLECTRIQUE NE PARTAGENT PAS UNE COLONNE. Un permis
   // britannique donne la puissance de COMBUSTION (MWth) ; un dossier français donne tantôt
   // l'une tantôt l'autre. Les ranger ensemble ferait comparer en silence des grandeurs
@@ -167,8 +175,17 @@ const RUBRIQUES: { cle: string; ico: string; ids: string[] }[] = [
       "backup_generator_count", "backup_generator_unit_power_mw", "backup_generator_total_installed_power_mw",
       "backup_generator_unit_thermal_power_mwth", "backup_generator_total_thermal_power_mwth",
       "backup_generator_fuel", "fuel_tank_count", "fuel_tank_unit_volume_m3",
-      "fuel_tank_total_volume_m3", "backup_autonomy_hours"] },
-  { cle: "voisinage", ico: houseLine, ids: ["nearest_dwellings_distance_m"] },
+      "fuel_tank_total_volume_m3", "backup_autonomy_hours",
+      // Un PLAFOND d'heures AUTORISÉ par l'arrêté (les Betriebsstunden allemands), pas un
+      // fonctionnement observé : l'acte dit ce qu'il PERMET. Et l'hydrogène, qui fait du
+      // site une SOURCE d'aléa et non plus seulement un récepteur comme dans L3 — 149 m³
+      // en 4 cuves sur une décision ooś polonaise. Publiés en faits, non notés (arbitrage
+      // Franck 2026-10-14) ; le compteur pipelines/nuisances/couverture.py suit la
+      // couverture, qui décide quand la question de la note se rouvre.
+      "backup_generator_permitted_annual_hours",
+      "hydrogen_storage_tank_count", "hydrogen_storage_total_volume_m3"] },
+  { cle: "voisinage", ico: houseLine, ids: [
+      "nearest_dwellings_distance_m", "nearest_sensitive_receptor_distance_m"] },
   { cle: "emprise", ico: buildings, ids: [
       "site_area_ha", "building_footprint_m2", "gross_floor_area_m2", "data_hall_area_m2",
       "technical_rooms_area_m2", "building_height_m"] },
@@ -177,7 +194,12 @@ const RUBRIQUES: { cle: string; ico: string; ids: string[] }[] = [
   // britanniques en donnent la limite autorisée — un fait chiffré, daté, opposable, que nos
   // indicateurs spatiaux ne voient pas. Même rubrique que les gaz à effet de serre : ce qui
   // sort par la cheminée.
-  { cle: "emissions", ico: cloud, ids: ["ghg_emissions_tco2e", "emissions_nox_mg_nm3"] },
+  // ⚠️ Une concentration de NOx ne se compare qu'à CONDITION DE RÉFÉRENCE ÉGALE : les arrêtés
+  // allemands précisent « bezogen auf 5 % O₂ ». La référence en oxygène voyage donc à côté de
+  // la valeur, jamais la valeur nue.
+  { cle: "emissions", ico: cloud, ids: [
+      "ghg_emissions_tco2e", "air_pollutant_nox_mg_nm3", "air_pollutant_nox_reference_o2_pct",
+      "refrigerant_leakage_t"] },
 ];
 const BANDES = ["noise_levels_by_point", "noise_emergence_by_point"];
 const NIVEAUX = ["noise_level_dba", "noise_emergence_dba"];
