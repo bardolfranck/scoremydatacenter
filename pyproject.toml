@@ -27,6 +27,31 @@ dev = [
 projection = [
     "umap-learn>=0.5",
 ]
+# Transformations de DATUM, chemin FROID de collecte — hors dépendances par défaut, même
+# discipline qu'umap : une mise en ligne ne porte jamais cette pile.
+#   make locate-gb-ea   /   uv run --group geo python -m pipelines.registers.gb_ea
+# Raison d'être : le registre EA des installations à permis publie l'Easting/Northing en
+# OSGB36 (EPSG:27700) et nos fiches sont en WGS84. Une conversion maison entre ces deux
+# systèmes ignore le décalage de datum et se trompe de l'ordre de 100 m — soit, avec un
+# rayon d'appariement de 250 m, le permis du VOISIN attribué à notre site. Le commentaire
+# de pipelines/registers/index.py le dit déjà pour le WFS : « une reprojection maison est
+# exactement le genre de calcul silencieux qui a déjà produit des coordonnées fabriquées
+# dans ce projet ». pyproj est l'outil juste, et il resservira (géo-audit, bandes, qualité
+# de coordonnée).
+geo = [
+    "pyproj>=3.6",
+    # pyosmium : interroger un extrait `.osm.pbf` LOCAL au lieu d'Overpass.
+    # Raison chiffrée (2026-10-14) : la couche « distance aux habitations » via Overpass
+    # tourne à 92 s par fiche — 39 HEURES pour les 1 514 fiches restantes, et 39 heures de
+    # martèlement d'un service public gratuit qu'on n'a pas le droit de saturer. Le chemin
+    # durable était déjà identifié le 2026-10-05 pour la carte de contexte (API OSM en 509,
+    # Overpass en 504) et jamais tranché : extrait Geofabrik local + pyosmium. Il débloque
+    # d'un coup l'exposition de masse, les cartes de contexte en échec sur zones denses, et
+    # tout audit géographique du corpus.
+    # Extraits PAR PAYS (~23 Go au total) plutôt que l'Europe entière (~30 Go) : chaque
+    # calcul ne lit que le pays concerné.
+    "osmium>=3.7",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["engine/tests"]
