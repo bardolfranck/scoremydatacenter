@@ -52,6 +52,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from engine.core import ARTIFACTS_DIR  # noqa: E402
+from engine import puissance as _puissance  # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -80,6 +81,61 @@ SEUIL_PAYS = int(np.ceil(AFFICHES_MIN / SELECTIVITE_MAX))   # 14 sites aujourd'h
 # pas de statistique : elle ne se déduit d'aucune mesure et ne doit pas dépendre d'un seuil.
 # Garder aligné avec smdc-api/src/veille.js.
 PAYS_EN_VEILLE = {"IL"}
+
+# 🔴 LA CELLULE : puissance × typologie. C'est la réponse à la critique qui a sorti ce
+# comparateur de la production (Yves Grandmontagne, DCmag, 2026-10-05) — « si tu dis à un pro
+# que Marseille dense est comparable à Marly, tu n'es pas crédible ». Il comparait des
+# TERRITOIRES faute de pouvoir comparer des OBJETS : la puissance n'existait que sur une
+# partie du corpus, et le moteur se rabattait sur les variables de territoire par DÉFAUT DE
+# DONNÉES, pas par choix.
+#
+# Deux sites ne sont comparables que s'ils partagent leur GROUPE DE PUISSANCE et leur GROUPE
+# D'USAGE. La ressemblance territoriale ne classe plus qu'À L'INTÉRIEUR de la cellule : elle
+# départage des objets déjà comparables, au lieu de rapprocher un bourg d'une métropole.
+#
+# L'étage retenu est le GROSSIER (petit / moyen / grand). Mesuré : à l'étage fin les 221
+# puissances françaises s'éparpillent sur six cases dont deux n'en contiennent que 3 et 4 —
+# une cellule de trois sites ne fait pas un univers de comparaison. L'étage grossier sépare
+# mieux aujourd'hui (les hyperscalers n'existent que dans « grand », les télécoms captifs n'y
+# entrent jamais) et laisse des cellules peuplées. On affinera quand la puissance sera là.
+COMPARABLE_SUR = ("zone de puissance", "groupe d'usage")
+TYPOLOGIE = CAL.parent.parent / "smdc-library" / "referentials" / "operators.json"
+
+
+def _usage_groups() -> list[tuple[str, str]]:
+    """(motif de libellé, groupe d'usage) — le référentiel, jamais un mot-clé.
+
+    Le référentiel documente ses propres pièges : « DataBank » est un colocateur et non une
+    banque, « LCL » en Belgique est un colocateur belge et non la banque française. Tout
+    rapprochement passe par lui.
+    """
+    if not TYPOLOGIE.is_file():
+        return []
+    doc = json.loads(TYPOLOGIE.read_text())
+    return [(e["label_pattern"], e["usage_group"]) for e in doc["entries"] if e.get("usage_group")]
+
+
+def cellule(fiche: dict, motifs: list[tuple[str, str]]) -> tuple[str, str] | None:
+    """(zone de puissance, groupe d'usage) — ou None si l'un des deux manque.
+
+    Une fiche sans cellule n'est pas comparée : elle n'est PAS rapprochée d'office de ce qui
+    lui ressemble en territoire. C'est le cœur du correctif — mieux vaut ne rien proposer que
+    proposer un voisin fondé sur la seule géographie.
+    """
+    import fnmatch
+
+    g = _puissance.groupe({"power_mw": fiche.get("power_mw"),
+                           "power_mw_range": fiche.get("power_mw_range"),
+                           "power_mw_status": fiche.get("power_mw_status")})
+    if g is None:
+        return None
+    label = (fiche.get("operator") or "").strip()
+    if not label:
+        return None
+    for motif, usage in motifs:
+        if fnmatch.fnmatch(label, motif) or fnmatch.fnmatch(label.lower(), motif.lower()):
+            return (g["zone"], usage)
+    return None
 # Au-delà de ce tiers de l'étendue, une « famille » n'entoure plus rien : on ne la dessine pas.
 DISPERSION_MAX = 0.33
 
@@ -207,9 +263,10 @@ def projection(pays: str, D: np.ndarray, froid: bool = False,
 
 
 def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force: bool,
-               positions: dict[str, list[float]]) -> dict:
+               positions: dict[str, list[float]], motifs: list[tuple[str, str]]) -> dict:
     # Combien de voisins ce pays peut-il porter sans que la liste cesse d'être une sélection ?
     affiches = max(AFFICHES_MIN, min(AFFICHES_MAX, int(len(fiches) * SELECTIVITE_MAX)))
+    cellules = [cellule(f, motifs) for f in fiches]
     cols, X, P = _matrice(fiches)
     Z, D = _distances(X)
     xy, lab = projection(pays, D, froid, force)
@@ -227,7 +284,19 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
     #
     # On compare donc chaque distance au k-ième plus petit ÉCART, bornes comprises : tous les
     # ex æquo sont dedans ou tous dehors, et la relation redevient symétrique par construction.
-    kth = np.partition(D, min(K_MUTUEL, n - 1) - 1, axis=1)[:, min(K_MUTUEL, n - 1) - 1]
+    # 🔴 LA RÉCIPROCITÉ SE CALCULE DANS LA CELLULE, pas dans le pays. La cellule est
+    # désormais l'univers de comparaison : chercher les k plus proches à l'échelle du pays
+    # reviendrait à mesurer la réciprocité contre des sites avec lesquels on refuse de
+    # comparer. Mesuré en le câblant mal d'abord : 58 fiches françaises servies sur 408,
+    # parce que les huit plus proches d'un site étaient presque toujours hors de sa cellule.
+    kth = np.full(n, np.inf)
+    for c in {x for x in cellules if x is not None}:
+        membres = [i for i, x in enumerate(cellules) if x == c]
+        if len(membres) < 2:
+            continue                      # une cellule d'un seul site n'a personne à comparer
+        sousD = D[np.ix_(membres, membres)]
+        k = min(K_MUTUEL, len(membres) - 1)
+        kth[membres] = np.partition(sousD, k - 1, axis=1)[:, k - 1]
     # Une ressemblance sur une variable CONSTANTE n'apprend rien : l'intensité carbone du
     # réseau est la même pour tout un pays (écart-type mesuré 0,000 en France), donc
     # « ce qui les rapproche : l'intensité carbone » est vrai de n'importe quel couple.
@@ -251,9 +320,13 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
     sites = []
     for i, f in enumerate(fiches):
         voisins = []
-        for j in ordre[i]:
+        # Sans cellule, pas de comparables : on ne rapproche PAS par le territoire faute de
+        # mieux. C'est le défaut qui a sorti ce comparateur de la production.
+        for j in (ordre[i] if cellules[i] is not None else []):
             if len(voisins) >= affiches:
                 break
+            if cellules[j] != cellules[i]:        # autre groupe de puissance ou d'usage
+                continue
             if D[j, i] > kth[j] + 1e-12:          # pas réciproque : pas un comparable
                 continue
             partagees = np.where(P[i] & P[j])[0]
@@ -280,6 +353,10 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
             "xy": positions.get(f["id"]),
             "xy2": [round(float(xy[i, 0]), 4), round(float(xy[i, 1]), 4)],
             "famille": int(lab[i]), "comparables": voisins,
+            # La cellule est AFFICHÉE : le lecteur doit savoir sur quoi la comparaison repose,
+            # et voir qu'elle ne repose pas sur la seule géographie.
+            "zone_puissance": cellules[i][0] if cellules[i] else None,
+            "groupe_usage": cellules[i][1] if cellules[i] else None,
         })
     # LARGEUR DE DOCUMENTATION du pays : la médiane des variables communes à un rapprochement.
     # C'est ce nombre qui dit au lecteur la finesse de la sélection qu'il obtient — 11 en
@@ -287,7 +364,9 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
     # indicateurs manquent où serait une carte de nos lacunes, utile surtout à qui voudrait
     # nous copier ou nous attaquer. Dire la finesse sans détailler la faiblesse.
     vp = [v["variables_partagees"] for s_ in sites for v in s_["comparables"]]
+    avec_cellule = sum(1 for c in cellules if c is not None)
     return {"pays": pays, "k_mutuel": K_MUTUEL, "affiches": affiches,
+            "comparable_sur": list(COMPARABLE_SUR), "avec_cellule": avec_cellule,
             "selectivite": round(affiches / len(fiches), 3),
             "variables_medianes": int(np.median(vp)) if vp else 0,
             "umap": UMAP_PARAMS, "dbscan": DBSCAN_PARAMS,
@@ -310,6 +389,11 @@ def main() -> int:
                 for i in meth["indicators"]}
     fiches = _fiches()
     positions = _positions()
+    motifs = _usage_groups()
+    if not motifs:
+        print("comparator: référentiel de typologie introuvable — aucune cellule, donc "
+              "aucun comparable. On ne se rabat PAS sur la ressemblance territoriale.",
+              file=sys.stderr)
     par_pays: dict[str, list[dict]] = {}
     for f in fiches:
         par_pays.setdefault(f.get("country") or "??", []).append(f)
@@ -327,7 +411,7 @@ def main() -> int:
             minces.append({"pays": pays, "sites": len(lot)})
             continue
         doc = construire(pays, lot, libelles, args.projection or args.force, args.force,
-                         positions)
+                         positions, motifs)
         (OUT_DIR / f"{pays}.json").write_text(json.dumps(doc, ensure_ascii=False))
         servis = sum(1 for s in doc["sites"] if s["comparables"])
         moy = np.mean([len(s["comparables"]) for s in doc["sites"]])
