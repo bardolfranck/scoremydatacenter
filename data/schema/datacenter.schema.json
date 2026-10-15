@@ -112,6 +112,25 @@
           "type": "number",
           "exclusiveMinimum": 0
         },
+        "power_mw_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "min",
+            "max"
+          ],
+          "description": "FOURCHETTE annoncée, quand la source en donne une (« 60 à 240 MW ») — décision Franck 2026-10-15. Sans ce champ il fallait choisir un point, et choisir c'est fabriquer : les annonces en fourchette n'étaient donc pas stockées DU TOUT, pas stockées en moins précis. Ne remplace pas `power_mw` (valeur unique déclarée) : les deux coexistent, et le groupe de puissance se lit par l'accesseur `engine.puissance`, jamais en lisant ces champs directement.",
+          "properties": {
+            "min": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "max": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
         "summary": {
           "type": "object",
           "additionalProperties": false,
