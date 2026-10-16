@@ -15,6 +15,7 @@ export const STATS = statsData as any;
 export const perimeterKeys = (): string[] => Object.keys(STATS.perimeters);
 
 export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
+  US: { fr: "États-Unis", en: "United States" }, IL: { fr: "Israël", en: "Israel" },
   AT: { fr: "Autriche", en: "Austria" }, BE: { fr: "Belgique", en: "Belgium" },
   CH: { fr: "Suisse", en: "Switzerland" }, DE: { fr: "Allemagne", en: "Germany" },
   DK: { fr: "Danemark", en: "Denmark" }, ES: { fr: "Espagne", en: "Spain" },
@@ -36,8 +37,16 @@ export const REGION_NAMES: Record<string, string> = {
   "corse": "Corse", "outre-mer": "Outre-mer",
 };
 
+/** L'appartenance européenne, telle que le moteur l'a publiée (data/scopes.json → stats.json).
+ *  La carte s'en sert pour son cadrage par défaut : elle portait sa propre copie de la liste,
+ *  dans deux fichiers — et une liste à deux endroits finit toujours par diverger. */
+export const EUROPE_ISO: string[] = (STATS as any).scopes?.europe ?? [];
+
 export function perimeterLabel(key: string, lang: Lang): string {
   if (key === "europe") return "Europe";
+  // Agrégat « tout le corpus » (Franck, 2026-10-16). Publié seulement quand il DIFFÈRE de
+  // l'Europe : sinon le sélecteur proposerait deux fois les mêmes chiffres sous deux noms.
+  if (key === "monde") return lang === "fr" ? "Monde" : "World";
   return COUNTRY_NAMES[key]?.[lang] ?? key;
 }
 

@@ -23,6 +23,23 @@ bonus/friction editorial rule live site-side (i18n), never here.
 
 from collections import Counter
 
+def load_scope(name: str = "europe", data_dir=None) -> set[str]:
+    """L'appartenance géographique d'un périmètre — source unique : data/scopes.json.
+
+    🔴 « Europe » était jusqu'ici un NOM donné au corpus entier, pas une appartenance : le
+    périmètre agrégeait tout ce qu'on servait. Tant que le corpus était européen, le nom
+    disait vrai par coïncidence. La première fiche hors d'Europe en faisait une affirmation
+    fausse — sur une page de chiffres, et dans le cadrage par défaut de la carte.
+    Fichier absent ou vide → set() ; l'appelant retombe alors sur le corpus entier plutôt que
+    de publier un agrégat vide, et le dit (voir build_stats)."""
+    from .core import DATA_DIR
+    import json as _json
+    path = (data_dir or DATA_DIR) / "scopes.json"
+    if not path.exists():
+        return set()
+    return set(_json.loads(path.read_text()).get(name, []))
+
+
 def load_veille(data_dir=None) -> set[str]:
     """The 'en veille' country scope (A-26) — single source: data/veille.json.
     Consumed here for the named counts and by site/scripts/scrub-enveille.mjs for
@@ -391,7 +408,18 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
                  if isinstance((src := entry.get("source")), dict) and src.get("accessed")]
     corpus_date = max(dates) if dates else None
 
-    perimeters: dict[str, dict] = {"europe": _perimeter(sites, watchlist, mvp_ids, results, veille_countries)}
+    # MONDE = tout le corpus servi. EUROPE = les sites des pays européens, par appartenance
+    # déclarée (data/scopes.json), jamais « ce qu'il se trouve qu'on sert ».
+    # Le périmètre monde n'est publié QUE s'il diffère de l'Europe : tant que le corpus est
+    # entièrement européen, deux entrées identiques dans le sélecteur ne diraient rien et
+    # feraient douter de la différence entre les deux.
+    europe_iso = load_scope("europe")
+    eu_sites = [dc for dc in sites if dc["identity"]["country"] in europe_iso] if europe_iso else sites
+    perimeters: dict[str, dict] = {
+        "europe": _perimeter(eu_sites, watchlist, mvp_ids, results, veille_countries),
+    }
+    if len(eu_sites) != len(sites):
+        perimeters["monde"] = _perimeter(sites, watchlist, mvp_ids, results, veille_countries)
     for country in sorted({dc["identity"]["country"] for dc in sites}):
         c_sites = [dc for dc in sites if dc["identity"]["country"] == country]
         peri = _perimeter(c_sites, watchlist, mvp_ids, results, veille_countries)
@@ -409,5 +437,8 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
         "methodology_version": methodology["version"],
         "corpus_date": corpus_date,
         "min_n": STATS_MIN_N,
+        # L'appartenance voyage AVEC les chiffres : la carte cadre son plan européen dessus
+        # au lieu de porter sa propre copie de la liste (elle en portait deux).
+        "scopes": {"europe": sorted(europe_iso)},
         "perimeters": perimeters,
     }

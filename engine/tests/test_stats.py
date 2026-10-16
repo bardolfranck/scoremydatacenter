@@ -167,3 +167,36 @@ def test_credit_travels_with_the_data():
     # A-28: every object artifact carries the credit line
     stats = build_stats(_corpus(), METHODOLOGY)
     assert "scoremydatacenter.org" in stats["credit"]
+
+
+# ── « Europe » est une APPARTENANCE, pas un synonyme du corpus ────────────────────────────
+# Avant data/scopes.json, perimeters["europe"] agrégeait TOUT ce qu'on servait : tant que le
+# corpus était européen le nom disait vrai par coïncidence, et la première fiche hors d'Europe
+# en faisait une affirmation fausse sur une page de chiffres. Ces deux tests se contredisent
+# mutuellement : l'un exige que l'américaine sorte d'Europe, l'autre qu'elle reste dans le
+# corpus. Un périmètre qui se contenterait de FILTRER sans agrégat monde échouerait au second.
+def test_europe_exclut_un_site_hors_scope_et_monde_le_garde():
+    dcs = _corpus()
+    dcs["us-1"] = _dc("us-1", "US")
+    stats = build_stats(dcs, METHODOLOGY)
+    peri = stats["perimeters"]
+    assert "US" not in peri["europe"]["countries"], "un site américain compté dans « Europe »"
+    assert peri["europe"]["n_sites"] == len(dcs) - 1
+    assert "monde" in peri, "le corpus n'est plus entièrement européen : l'agrégat monde doit exister"
+    assert peri["monde"]["n_sites"] == len(dcs)
+    assert "US" in peri["monde"]["countries"]
+    assert "US" in peri, "le pays garde sa propre page, il n'est pas effacé"
+
+
+def test_pas_d_agregat_monde_quand_le_corpus_est_entierement_europeen():
+    # Deux entrées identiques dans le sélecteur ne diraient rien et feraient douter le lecteur
+    # sur la différence entre les deux.
+    stats = build_stats(_corpus(), METHODOLOGY)
+    assert "monde" not in stats["perimeters"]
+
+
+def test_l_appartenance_voyage_avec_les_chiffres():
+    # La carte cadre son plan européen dessus ; sans ce champ elle reporterait sa propre copie
+    # de la liste — elle en portait deux.
+    scopes = build_stats(_corpus(), METHODOLOGY)["scopes"]["europe"]
+    assert "FR" in scopes and "US" not in scopes

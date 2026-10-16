@@ -26,10 +26,11 @@ interface Props {
     watch?: { badge: string; note: string; source: string; press: string; selfReported: string; aria: string; title: string; status: Record<string, string> };
   };
 }
+import { EUROPE_ISO } from "../config/stats";
 const { variant, labels } = Astro.props;
 ---
 
-<div class={`map-island map-${variant}`} data-variant={variant} data-labels={JSON.stringify(labels)}>
+<div class={`map-island map-${variant}`} data-variant={variant} data-labels={JSON.stringify(labels)} data-europe={JSON.stringify(EUROPE_ISO)}>
   <div class="map-canvas"></div>
   {variant === "hero" && labels.openMap && (
     <a class="button button-primary map-open-link" href={labels.mapPath ?? "/fr/carte"}>{labels.openMap}</a>
@@ -131,11 +132,20 @@ const { variant, labels } = Astro.props;
     const DROP_WINDOW_MS = 2200; // whole cascade fits in ~2.2s whatever the pin count
 
     const introDots: HTMLElement[] = [];
-    const bounds = new maplibregl.LngLatBounds();
+    // CADRAGE : « Europe » est une APPARTENANCE, pas « ce qu'il se trouve qu'on sert ».
+    // Le plan par défaut se calait sur tous les points servis : une seule fiche américaine
+    // l'aurait étiré jusqu'au Kansas et aurait ouvert la carte européenne sur l'Atlantique.
+    // La liste vient du moteur (data/scopes.json → stats.json) ; elle était recopiée ici.
+    // Liste vide (fichier absent) → on retombe sur tous les points plutôt que sur rien.
+    const EUROPE_ISO = new Set<string>(JSON.parse(root.dataset.europe || "[]"));
+    const inEurope = (cc: string) => EUROPE_ISO.size === 0 || EUROPE_ISO.has(cc);
+    const bounds = new maplibregl.LngLatBounds();      // plan européen = le plan par défaut
+    const worldBounds = new maplibregl.LngLatBounds(); // plan « 🌍 Monde » = tout, sans exception
     geo.features.forEach((feature: any, idx: number) => {
       const p = feature.properties;
       const [lon, lat] = feature.geometry.coordinates;
-      bounds.extend([lon, lat]);
+      worldBounds.extend([lon, lat]);
+      if (inEurope(p.country)) bounds.extend([lon, lat]);
 
       // Full map: the graded corpus rides a CLUSTERED source (distribution donuts),
       // built after this loop. 1 405 DOM markers would both melt the map AND carpet
@@ -389,11 +399,8 @@ const { variant, labels } = Astro.props;
         // "🌍 Monde" click away. The default frame is built from the graded corpus (§6), which
         // has no Icelandic DC, so Bakki fell ~1° off the NW corner. Extend the bounds with the
         // European watch points and re-fit, so a European "en veille" pin is never off-frame.
-        const EUROPE_ISO = new Set(["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR",
-          "HU","IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE","IS","NO",
-          "LI","CH","GB","AD","MC","SM","VA","AL","BA","ME","MK","RS","XK","MD","UA"]);
         for (const f of watch.features) {
-          if (EUROPE_ISO.has(f.properties.country)) bounds.extend(f.geometry.coordinates);
+          if (inEurope(f.properties.country)) bounds.extend(f.geometry.coordinates);
         }
         if (!focusId && geo.features.length > 1) {
           map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: 0 });
@@ -407,8 +414,15 @@ const { variant, labels } = Astro.props;
           ? { type: "FeatureCollection", features: clusteredAll.features.filter((f: any) => f.properties.kind === FILTERS[v]) }
           : clusteredAll;
 
+        // « Monde » = tout ce qui est sur la carte, veille comprise ET fiches servies hors
+        // d'Europe : sans ces dernières, le seul endroit où elles seraient visibles serait un
+        // zoom manuel.
         const watchBounds = new maplibregl.LngLatBounds();
         for (const f of watch.features) watchBounds.extend(f.geometry.coordinates);
+        if (!worldBounds.isEmpty()) {
+          watchBounds.extend(worldBounds.getSouthWest());
+          watchBounds.extend(worldBounds.getNorthEast());
+        }
         // View doctrine (COUNTRIES.md §6): the full map keeps the EUROPE frame by
         // default — the graded corpus is the product. Everything else is one explicit
         // click away. The watch layer was US-only ("Monde" then overpromised); it now

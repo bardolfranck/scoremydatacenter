@@ -1,0 +1,11 @@
+{
+  "note": "Source UNIQUE de l'appartenance géographique des périmètres servis. Consommée par engine/stats.py (construction des agrégats) et, via stats.json, par la carte (cadrage par défaut). AVANT ce fichier, « europe » était un nom donné à TOUT le corpus et la carte se cadrait sur tous les points servis : une seule fiche hors d'Europe faisait mentir la page /chiffres/europe et ouvrait la carte sur l'Atlantique. La liste des pays européens était en outre recopiée dans deux composants de carte. Un pays ABSENT d'ici n'est pas exclu du site : il garde sa page pays et sa place dans l'agrégat monde, il n'entre simplement pas dans « Europe ».",
+  "schema": "scopes/1",
+  "europe": [
+    "AD", "AL", "AT", "BA", "BE", "BG", "BY", "CH", "CY", "CZ",
+    "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HR", "HU",
+    "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MC", "MD", "ME",
+    "MK", "MT", "NL", "NO", "PL", "PT", "RO", "RS", "SE", "SI",
+    "SK", "SM", "UA", "VA", "XK"
+  ]
+}
