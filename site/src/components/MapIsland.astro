@@ -113,6 +113,7 @@ const { variant, labels } = Astro.props;
           ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
           <div class="map-popup-grades">
             <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
+            ${p.band_central ? `<span class="map-popup-prov">${labels.probable ?? "probable"} ${p.band_central}${p.band && p.band !== p.band_central ? ` · ${p.band}` : ""}</span>` : ""}
           </div>
           ${fixtureTag}
           <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
@@ -151,6 +152,9 @@ const { variant, labels } = Astro.props;
       const tier = typeof p.size_tier === "number" ? p.size_tier : 0;
       const size = [10, 15, 22, 32][tier] ?? 10;
       el.style.width = el.style.height = `${size}px`;
+      // La pastille d'un projet en plage reste NEUTRE : une fenêtre ne tient pas dans un point
+      // de six pixels, et y peindre le probable seul republierait le point sans son
+      // incertitude. L'infobulle, elle, a la place de dire « probable E · E–C ».
       // « Pas de lettre » a deux valeurs servies : insufficient_data (jamais assez de
       // données) et en_attente (note retenue — veille, ou bande plus large que le
       // plancher). Les deux se peignent en neutre. Sans ce second cas la classe

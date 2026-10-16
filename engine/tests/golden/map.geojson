@@ -18,6 +18,9 @@
         "municipality": "Alphaville",
         "country": "ZZ",
         "grade_site": "B",
+        "band_central": "B",
+        "band": "B",
+        "band_wide": false,
         "project_status": "permitting",
         "size_tier": 3,
         "first_seen": null
@@ -39,6 +42,9 @@
         "municipality": "Betaburg",
         "country": "ZZ",
         "grade_site": "E",
+        "band_central": "E",
+        "band": "E–D",
+        "band_wide": false,
         "project_status": "announced",
         "size_tier": 3,
         "first_seen": null

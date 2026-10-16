@@ -26,7 +26,12 @@ interface Props {
   naLabel?: string; // localized "insufficient data"
   reservedLabel?: string; // A-25: localized "A réservé — se prouve en exploitation", shown when grade.reserved_from is set
   enAttenteLabel?: string; // en-veille: localized "note en attente" (grade withheld pending publication)
-  band?: { central: string; adjacent?: string | null; a_reserved?: boolean } | null; // loupe: provisional coverage band on a PIPELINE project (central = big letter, adjacent = small). Same invariant: never rendered without its confidence/provisional coupling.
+  band?: { central: string; adjacent?: string | null; a_reserved?: boolean; wide?: boolean } | null; // loupe: provisional coverage band on a PIPELINE project (central = big letter, adjacent = small). Same invariant: never rendered without its confidence/provisional coupling.
+  // `wide` (règle C-bis) : la fenêtre dépasse le plancher irréductible. La loupe s'affiche
+  // quand même — « probable E · distribué E–C » dit min, max et tendance là où la puce muette
+  // ne disait rien — mais elle doit SE VOIR comme plus incertaine. Même composant, trait
+  // discontinu : deux composants jumeaux auraient divergé, et un rendu identique aurait fait
+  // passer une fenêtre de 45 points pour une plage au plancher.
   provisionalLabel?: string; // localized "provisoire · se resserre" shown under the loupe
 }
 const {
@@ -69,7 +74,7 @@ const bandAria = band
 
 {band ? (
   <div class="scorebadge scorebadge-band">
-    <span class="gradechip-loupe" role="img" aria-label={bandAria}>
+    <span class={`gradechip-loupe${band.wide ? " gradechip-loupe-wide" : ""}`} role="img" aria-label={bandAria}>
       <span class={`gradechip lg grade-${band.central.toLowerCase()}`} aria-hidden="true">{band.central}</span>
       {bandEdges.map((g: string) => (
         <span class={`gradechip sm grade-${g.toLowerCase()} gc-adjacent`} aria-hidden="true">{g}</span>

@@ -124,7 +124,26 @@
       "fr": "Noté B sur le site, C en projet & processus.",
       "en": "Rated B on site, C on project & process."
     },
-    "publication_status": "published"
+    "publication_status": "published",
+    "provisional_band": {
+      "kind": "provisional_band",
+      "provisional": true,
+      "central": "B",
+      "edges": [],
+      "adjacent": null,
+      "a_reserved": true,
+      "confidence": "high",
+      "band": "B",
+      "worst": 73.3,
+      "best": 85.3,
+      "span": 0,
+      "n_present": 15,
+      "n_base": 15,
+      "label": {
+        "fr": "note provisoire (plage) — se resserre à la livraison",
+        "en": "provisional grade (range) — narrows at delivery"
+      }
+    }
   },
   {
     "id": "zz-test-beta",
@@ -231,6 +250,27 @@
       "fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
       "en": "Rated E on site; project data insufficient to grade project & process."
     },
-    "publication_status": "published"
+    "publication_status": "published",
+    "provisional_band": {
+      "kind": "provisional_band",
+      "provisional": true,
+      "central": "E",
+      "edges": [
+        "D"
+      ],
+      "adjacent": "D",
+      "a_reserved": false,
+      "confidence": "medium",
+      "band": "E–D",
+      "worst": 22.1,
+      "best": 40.1,
+      "span": 1,
+      "n_present": 12,
+      "n_base": 15,
+      "label": {
+        "fr": "note provisoire (plage) — se resserre à la livraison",
+        "en": "provisional grade (range) — narrows at delivery"
+      }
+    }
   }
 ]

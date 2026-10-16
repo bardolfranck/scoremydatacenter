@@ -236,9 +236,13 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
         result = results[dc_id]
         band = _provisional_band(dc_id, dc)  # None for operational fiches (never a band)
         band_field = {"provisional_band": band} if band else {}
-        # scores.json is a leaderboard array consumed by strict readers — the band lives on
-        # the per-fiche dc/{id}.json (the loupe's source), not here, until asked otherwise.
-        scores.append(_summary(dc, result))
+        # La bande voyage DÉSORMAIS avec la ligne de classement (Franck, 2026-10-16, option A).
+        # Elle vivait seulement sur dc/{id}.json « jusqu'à ce qu'on le demande » ; c'est demandé.
+        # Raison : sous la règle C-bis la FICHE publie une note probable, et une surface qui ne
+        # peut pas lire la bande ne peut dire que deux choses — la lettre définitive (retenue,
+        # donc un mensonge) ou rien (donc une contradiction avec la fiche). On vient de payer
+        # les deux. Le classement lit la bande et dit la MÊME chose que la fiche.
+        scores.append({**_summary(dc, result), **band_field})
 
         # ── Anti-pillage (Franck 2026-07-22): map.geojson is the ONE data file
         # the site MUST serve publicly (the map fetches it client-side), so it
@@ -264,6 +268,14 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
                 "municipality": dc["identity"]["municipality"],
                 "country": dc["identity"]["country"],
                 "grade_site": result["grades"]["site"]["grade"],
+                # La note PROBABLE d'une fiche en plage (règle C / C-bis) — même classe
+                # d'information que la lettre ci-dessus (seau A), jamais une donnée vendable.
+                # Une pastille de carte ne peut pas porter une fenêtre : elle reste neutre et
+                # c'est l'infobulle qui dit « probable X ». Sans ce champ, la carte n'avait
+                # d'autre choix que de taire ce que la fiche affiche.
+                **({"band_central": band["central"], "band": band.get("band"),
+                    "band_wide": bool(band.get("wide"))}
+                   if band and isinstance(band.get("central"), str) else {}),
                 # A-25 reserve is part of the public letter's presentation, not a sold field.
                 **({"reserved_site": True} if result["grades"]["site"].get("reserved_from") == "A" else {}),
                 "project_status": dc["identity"]["project_status"],

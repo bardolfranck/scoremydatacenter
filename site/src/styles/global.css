@@ -387,6 +387,11 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 }
 .fiche-badges .scorebadge-reserved { color: rgba(255, 255, 255, 0.82); }
 .map-popup-reserved { margin-left: 0.3rem; color: var(--ink-soft); font-size: 0.78rem; font-style: italic; }
+/* Note probable d'un projet en plage : discrète, sous la pastille neutre — elle informe sans
+   se faire passer pour la lettre définitive qui, elle, n'est pas publiée. */
+.map-popup-prov { display: block; margin-top: 0.15rem; color: var(--ink-soft); font-size: 0.78rem; }
+/* Même rôle dans le rail du classement. */
+.rail-label-prov { font-style: italic; }
 /* Lead layout — big chip first, label + documentation stacked (fiche dual badge) */
 .scorebadge-lead { display: flex; align-items: center; gap: 14px; }
 .scorebadge-lead-text { display: grid; gap: 3px; }
@@ -421,6 +426,17 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .gradechip-loupe .gc-adjacent { margin-left: -8px; margin-top: -5px; transform: scale(0.9); opacity: 0.6; box-shadow: 0 0 0 3px var(--surface, #fff); }
 .scorebadge-prov { color: var(--muted); font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; }
 @media (prefers-color-scheme: dark) { .gradechip-loupe .gc-adjacent { box-shadow: 0 0 0 3px #141a24; } }
+
+/* FENÊTRE LARGE (règle C-bis, 2026-10-16) — la loupe affiche la note probable d'une plage
+   PLUS LARGE que le plancher irréductible. Elle doit se lire comme plus incertaine qu'une
+   plage au plancher, sinon une fenêtre de 45 points a exactement l'allure d'une fenêtre de 12.
+   Le contour discontinu dit « bords flous » sans toucher à la couleur de la lettre : la
+   couleur reste le code A–E partagé avec la carte et le classement. */
+.gradechip-loupe-wide .gradechip.lg {
+  outline: 2px dashed var(--surface, #fff);
+  outline-offset: -4px;
+}
+.gradechip-loupe-wide { opacity: 0.94; }
 
 .confidence { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 0.84rem; font-weight: 700; }
 .confidence .dot { width: 9px; height: 9px; border-radius: 50%; }

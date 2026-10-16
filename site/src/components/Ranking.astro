@@ -75,6 +75,21 @@ const pctInfo = (arr: number[], graded: any, dc: any, axis: "site" | "operator")
   }
   return { pos: Math.min(99, Math.max(1, bp)), label: `P${bp} · ${label}` };
 };
+// NOTE PROBABLE (règle C-bis) — la bande voyage avec la ligne de classement depuis l'option A.
+// `bandOf` ne rend un objet que si la bande porte vraiment une lettre : une fiche tenue en
+// veille est blanchie en amont (plus de bande du tout), elle retombe donc sur la puce neutre.
+const bandOf = (dc: any) => {
+  const b = dc.provisional_band;
+  return b && typeof b.central === "string"
+    ? { central: b.central, edges: b.edges ?? null, adjacent: b.adjacent ?? null,
+        a_reserved: b.a_reserved, wide: !!b.wide }
+    : null;
+};
+const probableLabel = (dc: any): string => {
+  const b = dc.provisional_band;
+  const span = b.band && b.band !== b.central ? ` · ${t.distributed} ${b.band}` : "";
+  return `${t.probable} ${b.central}${span}`;
+};
 const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
 // Accent-insensitive haystack for the basic search engine (client mirrors this).
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
@@ -194,6 +209,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                     <ScoreBadge
                       label={t.thSite}
                       grade={dc.grades.site}
+                      band={bandOf(dc)}
                       confidence={dc.confidence.level}
                       confidenceLabel={t.confidence[dc.confidence.level]}
                       renderConfidence={false}
@@ -203,7 +219,14 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       enAttenteLabel={t.enAttenteLabel}
                       reservedLabel={t.reserved}
                     />
-                    {p
+                    {/* Le rail porte la MÊME phrase que la fiche. Un classement qui afficherait
+                        une lettre nue là où la fiche publie « probable E · distribué E–C »
+                        republierait un point sans son incertitude — la famille de bug qui a
+                        produit « Google Bissen · dans les 3 % les moins bien notés » sous une
+                        fiche qui disait ne pas savoir. */}
+                    {bandOf(dc)
+                      ? <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-prov">{probableLabel(dc)}</span></Fragment>
+                      : p
                       ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
                       : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{dc.grades.site.grade === "en_attente" ? t.enAttenteLabel : t.naLabel}</span></Fragment>}
                   </div> ); })()}

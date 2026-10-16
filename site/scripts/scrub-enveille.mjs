@@ -143,6 +143,9 @@ if (existsSync(scoresPath)) {
       r.grades.project_process.grade = SENTINEL; delete r.grades.project_process.score; changed = true;
     }
     if (scrubPillars(r)) changed = true;
+    // Même hiérarchie que sur la fiche : la bande voyage avec la ligne de classement depuis
+    // l'option A, donc elle se blanchit ici aussi — population (1) seulement.
+    if (isEnVeille(r) && r.provisional_band) { delete r.provisional_band; changed = true; }
   }
   if (changed) writeFileSync(scoresPath, JSON.stringify(rows));
 }
@@ -160,6 +163,13 @@ if (existsSync(geoPath)) {
     // n'est PAS en veille, et poser le drapeau sur elle écrirait un fait faux dans
     // un fichier public. La lettre blanchie suffit à dire ce qu'il y a à dire.
     if (isEnVeille(pr) || !bandIds.has(pr.id)) pr.en_veille = true;
+    // La carte porte la note probable depuis l'option A (`band_central`) : une fiche en veille
+    // la perd, sinon le blanchiment de `grade_site` ne blanchirait plus rien.
+    if (isEnVeille(pr)) {
+      for (const k of ["band_central", "band", "band_wide"]) {
+        if (k in pr) { delete pr[k]; changed = true; }
+      }
+    }
   }
   if (changed) writeFileSync(geoPath, JSON.stringify(geo));
 }
@@ -216,13 +226,17 @@ if (existsSync(scoresPath)) {
     if (!scrubbedIds.has(r.id)) continue;
     seenLetter("scores.json/site", r.id, r.grades?.site?.grade);
     seenLetter("scores.json/projet", r.id, r.grades?.project_process?.grade);
+    if (isEnVeille(r)) seenLetter("scores.json/bande", r.id, r.provisional_band?.central);
     if (typeof r.grades?.site?.score === "number") leaks.push(`scores.json/score ${r.id} = ${r.grades.site.score}`);
     for (const [k, v] of Object.entries(r.pillars ?? {})) seenLetter(`scores.json/pilier:${k}`, r.id, v?.grade);
   }
 }
 if (existsSync(geoPath)) {
   for (const f of JSON.parse(readFileSync(geoPath, "utf8")).features ?? []) {
-    if (scrubbedIds.has(f.properties?.id)) seenLetter("map.geojson", f.properties.id, f.properties.grade_site);
+    const pr = f.properties ?? {};
+    if (!scrubbedIds.has(pr.id)) continue;
+    seenLetter("map.geojson", pr.id, pr.grade_site);
+    if (isEnVeille(pr)) seenLetter("map.geojson/bande", pr.id, pr.band_central);
   }
 }
 if (existsSync(DC_DIR)) {

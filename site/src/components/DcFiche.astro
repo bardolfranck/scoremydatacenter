@@ -88,14 +88,27 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 // Loupe — provisional coverage band on a PIPELINE project (servable_band → dc/{id}.json.provisional_band).
 // Servable → big central letter + a small chip per edge; band withheld → the neutral en_attente chip.
 const pband = (dc as any).provisional_band;
-const hasLoupe = pband?.kind === "provisional_band" && typeof pband.central === "string";
+// RÈGLE C-BIS (Franck, 2026-10-16) : une fenêtre PLUS LARGE que le plancher n'est plus muette.
+// Elle porte la note probable (le point renormalisé) et ses bornes — « probable E · distribué
+// E–C » dit min, max et tendance là où « en attente » ne disait rien. Le `kind` reste
+// "en_attente" côté moteur ; ce qui change est ce qu'il TRANSPORTE, d'où le test sur `central`
+// et non sur le kind seul. Une fiche tenue en veille n'a plus de bande du tout (blanchie par la
+// couche de service) : elle retombe donc sur la puce neutre sans rien savoir d'ici.
+const bandWide = pband?.kind === "en_attente" && typeof pband.central === "string";
+const hasLoupe = (pband?.kind === "provisional_band" || bandWide) && typeof pband.central === "string";
 // A withheld band is « en attente » on the PAGE too, not just in the <title>. Without the second
 // clause the badge fell back to the definitive letter from grades.site: the SERP announced « note
 // en attente » while the page showed a firm D — the site contradicting itself on the one thing it
 // sells, on 15 pipeline fiches (constaté le 2026-09-30, antérieur à la règle C). An operational
 // fiche has no band at all, so it keeps its definitive letter untouched.
-const isEnAttente = dc.grades?.site?.grade === "en_attente" || pband?.kind === "en_attente";
-const provLabel = lang === "fr" ? "provisoire · s'affine avec la donnée" : "provisional · narrows as data lands";
+// « En attente » = AUCUNE lettre publiable. Dès que la loupe s'ouvre (plage au plancher OU
+// fenêtre large portant un probable), la fiche PUBLIE une lettre : elle n'est plus en attente,
+// et le bloc d'explication comme le titre doivent suivre — sans quoi la page dirait « pas
+// encore notée » juste au-dessus d'une note.
+const isEnAttente = !hasLoupe && (dc.grades?.site?.grade === "en_attente" || pband?.kind === "en_attente");
+const provLabel = bandWide
+  ? (pband.label?.[lang] ?? (lang === "fr" ? "note probable (fenêtre large)" : "probable grade (wide window)"))
+  : lang === "fr" ? "provisoire · s'affine avec la donnée" : "provisional · narrows as data lands";
 const isDesalCountry = dc.country === "IL";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
@@ -336,7 +349,12 @@ const filAriane = {
 // La note affichée est celle qu'on PUBLIE — fourchette provisoire ou « en attente », jamais
 // une lettre ferme là où on publie une plage : un titre de SERP est lu comme un verdict.
 const seoBand = dc.provisional_band ?? {};
-const seoGrade = seoBand.kind === "en_attente"
+const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "string"
+  // Fenêtre large : le titre annonce la note PROBABLE. Écrire « note en attente » au-dessus
+  // d'une page qui affiche « probable E » rejouerait exactement la contradiction SERP↔page
+  // constatée le 2026-09-30.
+  ? (lang === "fr" ? `note probable ${seoBand.central}` : `probable grade ${seoBand.central}`)
+  : seoBand.kind === "en_attente"
   ? (lang === "fr" ? "note en attente" : "grade pending")
   : seoBand.kind === "provisional_band" && seoBand.band
     ? (lang === "fr" ? `note provisoire ${seoBand.band}` : `provisional grade ${seoBand.band}`)
@@ -423,7 +441,8 @@ const seoDesc = seoLead
             label={t.siteScore}
             grade={dc.grades.site}
             band={{ central: pband.central, edges: pband.edges ?? null,
-                    adjacent: pband.adjacent ?? null, a_reserved: pband.a_reserved }}
+                    adjacent: pband.adjacent ?? null, a_reserved: pband.a_reserved,
+                    wide: bandWide }}
             provisionalLabel={provLabel}
             confidence={pband.confidence ?? dc.confidence.level}
             confidenceLabel={t.confidence[pband.confidence ?? dc.confidence.level]}
@@ -543,6 +562,17 @@ const seoDesc = seoLead
               width="1200" height="900" loading="lazy" />
           </a>
         </figure>
+      )}
+      {bandWide && (
+        /* Une note probable sans explication est une note ferme mal écrite : si la page montre
+           « probable E · distribué E–C », elle doit dire d'où vient le E et pourquoi il bouge.
+           Court volontairement — le détail du calcul vit dans « la note, pas à pas ». */
+        <section class="fiche-enveille" aria-label={lang === "fr" ? "Note probable" : "Probable grade"}>
+          <p class="fiche-enveille-k">{lang === "fr" ? "Note probable, fenêtre large" : "Probable grade, wide window"}</p>
+          <p class="fiche-enveille-lead">{lang === "fr"
+            ? `Ce projet n'est pas en service : nous publions une note probable (${pband.central}) et la plage dans laquelle elle peut encore bouger (${pband.band}). La note probable est calculée sur les seuls indicateurs déjà sourcés ; la plage dit ce que les indicateurs manquants pourraient encore changer. Elle est ici plus large que d'ordinaire — c'est la mesure de ce qui manque, pas un doute sur le calcul. Elle se resserrera à mesure que le dossier se remplit.`
+            : `This project is not in service: we publish a probable grade (${pband.central}) and the range it can still move within (${pband.band}). The probable grade is computed on the sourced indicators alone; the range says what the missing ones could still change. It is wider than usual here — that width measures what is missing, not doubt about the calculation. It narrows as the file fills in.`}</p>
+        </section>
       )}
       {isEnAttente && (
         <section class="fiche-enveille" aria-label={lang === "fr" ? "Note en attente" : "Grade pending"}>

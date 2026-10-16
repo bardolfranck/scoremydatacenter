@@ -18,6 +18,13 @@ SEAU_A_KEYS = {
     "id", "name", "operator", "municipality", "country",
     "grade_site", "project_status", "size_tier", "reserved_site",
     "first_seen",  # Phase-1: first-recorded date for the « derniers scorés » banner (free, benign; SIGN-OFF codeur-API)
+    # Note PROBABLE d'un projet en plage + ses bornes (règle C / C-bis, option A du
+    # 2026-10-16). MÊME CLASSE que `grade_site` : c'est la lettre publique d'un projet
+    # pipeline, celle que la fiche affiche. L'alternative — la taire sur la carte — ne
+    # protège rien et fait mentir la carte : pour ces fiches, `grade_site` vaut
+    # « en_attente » et la lettre définitive reste, elle, hors du fichier public.
+    # Rien de vendable n'entre ici : ni score, ni pilier, ni confiance.
+    "band_central", "band", "band_wide",
 }
 # Fields that are worth money (Seau B) and must stay OUT of the public geojson.
 FORBIDDEN = {
