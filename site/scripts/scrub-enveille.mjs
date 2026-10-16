@@ -64,7 +64,7 @@ const isWithheld = (o) => isEnVeille(o) || isBandWithheld(o);
 
 let scrubbedIds = new Set();
 let bandIds = new Set();        // population (2), pour un log qui distingue les deux
-let counts = { dc: 0, scores: 0, geojson: 0, indices: 0 };
+let counts = { dc: 0, scores: 0, geojson: 0, indices: 0, bands: 0 };
 
 // Pillar sub-grades are notes too — a lone "land: B" on an en-veille fiche leaks
 // the assessment we withhold. Blank every A–E pillar letter + its score.
@@ -113,6 +113,18 @@ if (existsSync(DC_DIR)) {
       }
     }
     if (scrubPillars(dc)) changed = true;
+    // 🔴 HIÉRARCHIE : PUBLICATION > AFFICHAGE. Une fiche EN VEILLE perd aussi sa bande.
+    // Le champ `provisional_band` ne portait rien de lisible tant que la fenêtre large était
+    // muette, donc personne ne le blanchissait. La règle C-bis lui fait porter la note
+    // PROBABLE — et une règle d'affichage n'a jamais eu mandat de rouvrir une décision de
+    // publication signée (data/veille.json : « editing this file is a publication decision —
+    // Franck signs »). Sans cette ligne, la fiche israélienne de Kfar Yona (pipeline, donc
+    // elle a une bande) ressortirait sa lettre au premier build après C-bis.
+    // Retiré en entier, pas rogné : la fiche retombe sur la puce neutre, qui est l'état voulu.
+    // ⚠️ NE S'APPLIQUE QU'À LA POPULATION (1). Une fiche « note en attente » hors veille garde
+    // sa bande : ce qu'elle a le droit d'y montrer est un arbitrage d'affichage, pas de
+    // publication — et il est ouvert.
+    if (isEnVeille(dc) && dc.provisional_band) { delete dc.provisional_band; changed = true; counts.bands++; }
     if (changed) { writeFileSync(p, JSON.stringify(dc, null, 2)); counts.dc++; }
   }
 }
@@ -185,7 +197,7 @@ if (existsSync(statsPath)) {
 
 console.log(
   `[scrub-grades] retenues: ${scrubbedIds.size} (veille ${scrubbedIds.size - bandIds.size} + note-en-attente ${bandIds.size})`
-  + ` | blanchi → dc:${counts.dc} scores:${counts.scores} geojson:${counts.geojson} indices:${counts.indices} stats-perimeters:${counts.stats || 0}`
+  + ` | blanchi → dc:${counts.dc} scores:${counts.scores} geojson:${counts.geojson} bandes-veille:${counts.bands} indices:${counts.indices} stats-perimeters:${counts.stats || 0}`
 );
 
 // ── GARDE DE SORTIE ───────────────────────────────────────────────────────────
@@ -223,6 +235,10 @@ if (existsSync(DC_DIR)) {
     if (typeof dc.grades?.site?.score === "number") leaks.push(`dc/score ${dc.id} = ${dc.grades.site.score}`);
     for (const [k, v] of Object.entries(dc.pillars ?? {})) seenLetter(`dc/pilier:${k}`, dc.id, v?.grade);
     for (const h of dc.score_history ?? []) seenLetter("dc/historique", dc.id, h?.grades?.site);
+    // Population (1) seulement : une fiche en veille ne garde AUCUNE bande, puisque la bande
+    // porte des lettres depuis C-bis. Une fiche « note en attente » hors veille en garde une —
+    // ce qu'elle a le droit d'y afficher ne se tranche pas ici.
+    if (isEnVeille(dc) && dc.provisional_band) leaks.push(`dc/bande ${dc.id} = ${JSON.stringify(dc.provisional_band).slice(0, 60)}`);
   }
 }
 if (leaks.length) {
