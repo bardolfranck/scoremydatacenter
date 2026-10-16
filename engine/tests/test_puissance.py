@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Le groupe de puissance : deux étages, et ce qu'on refuse de fabriquer.
 
 Ce qui est figé ici n'est pas une arithmétique de bornes, c'est une doctrine de comparaison :
