@@ -151,6 +151,7 @@ comparator-projection:
 prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py
 	uv run python scripts/build_comparator.py
+	$(MAKE) scrub-grades
 	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    $(COLLECT).media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2
 
@@ -172,6 +173,18 @@ prod-artifacts: validate-corpus
 # Env is parsed line-by-line (KEY=VALUE only) — a malformed line is skipped, never
 # executed, so a secret can never leak into the build log (cf. the cloudflare.env
 # lesson).
+# 🔴 LE BLANCHIMENT DES NOTES RETENUES PASSE AVANT TOUT CONSOMMATEUR D'ARTEFACTS.
+# (Franck 2026-10-16, « la fiche a raison ».) Il tournait seulement dans `npm run build`,
+# donc APRÈS sync-api-r2 : le bucket de l'API payante recevait systématiquement la version
+# NON blanchie des artefacts. sync-r2.sh s'en tirait pour les pays en veille parce qu'il
+# refait le filtrage de son côté (exclusion `il-*`) — une deuxième écriture de la même règle,
+# qui ignorait forcément les fiches « note en attente » apparues depuis.
+# Le correctif n'est PAS d'apprendre la règle à un second script : c'est de blanchir AVANT,
+# pour que tout consommateur en aval lise des artefacts déjà propres et n'ait rien à savoir.
+# Le scrub est idempotent — celui de `npm run build` reste en place et devient un no-op.
+scrub-grades:
+	node site/scripts/scrub-enveille.mjs
+
 SYNC_R2 ?= ../smdc-api/scripts/sync-r2.sh
 sync-api-r2:
 	-@if [ -f "$(SYNC_R2)" ] && [ -f "$$HOME/.smdc/r2-api.env" ]; then \

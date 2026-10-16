@@ -151,7 +151,11 @@ const { variant, labels } = Astro.props;
       const tier = typeof p.size_tier === "number" ? p.size_tier : 0;
       const size = [10, 15, 22, 32][tier] ?? 10;
       el.style.width = el.style.height = `${size}px`;
-      const na = p.grade_site === "insufficient_data";
+      // « Pas de lettre » a deux valeurs servies : insufficient_data (jamais assez de
+      // données) et en_attente (note retenue — veille, ou bande plus large que le
+      // plancher). Les deux se peignent en neutre. Sans ce second cas la classe
+      // `dot-en_attente` n'existe pas en CSS et la pastille sort sans couleur.
+      const na = p.grade_site === "insufficient_data" || p.grade_site === "en_attente";
       const dot = document.createElement("span");
       dot.className = `map-dot ${na ? "dot-na" : `dot-${p.grade_site.toLowerCase()}`}${tier === 0 ? " mw-unknown" : ""}`;
       dot.title = `${p.name}${p.operator ? ` — ${p.operator}` : ""}`;
@@ -214,18 +218,25 @@ const { variant, labels } = Astro.props;
     // centre; click to expand; past clusterMaxZoom the individual saturated dots return
     // (the vert/rouge punch comes back at street scale). Never a single averaged colour.
     if (isFull) {
-      // "X" = insufficient_data (grey) — counted honestly so a donut never hides an NA site.
+      // "X" = SANS LETTRE PUBLIÉE (gris) — compté honnêtement pour qu'un anneau ne cache
+      // jamais un site non noté. Deux valeurs servies entrent ici : insufficient_data (on
+      // n'en sait pas assez) et en_attente (note RETENUE — veille, ou bande plus large que
+      // le plancher). Oublier la seconde laissait les arcs sommer à MOINS que le nombre au
+      // centre : l'anneau disait 1 555 et n'en peignait que 1 537.
       const RING = ["A", "B", "C", "D", "E", "X"] as const;
       const GC: Record<string, string> = {
         A: "#0b7a4b", B: "#6fa032", C: "#dfa918", D: "#cf6a1c", E: "#bf3b21", X: "#8fa0b3",
       };
-      const isNA = (g: string) => g === "insufficient_data";
+      const isNA = (g: string) => g === "insufficient_data" || g === "en_attente";
       const donutMarkers: Record<number, any> = {};
       let donutOn: Record<number, any> = {};
       let sitesHidden = false;
 
       const clusterCounts = Object.fromEntries(
-        RING.map((g) => [g, ["+", ["case", g === "X" ? ["==", ["get", "grade_site"], "insufficient_data"] : ["==", ["get", "grade_site"], g], 1, 0]]]),
+        RING.map((g) => [g, ["+", ["case",
+          g === "X"
+            ? ["any", ["==", ["get", "grade_site"], "insufficient_data"], ["==", ["get", "grade_site"], "en_attente"]]
+            : ["==", ["get", "grade_site"], g], 1, 0]]]),
       );
 
       const mountSites = () => {

@@ -200,11 +200,12 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       renderLabel={false}
                       size="sm"
                       naLabel={t.naLabel}
+                      enAttenteLabel={t.enAttenteLabel}
                       reservedLabel={t.reserved}
                     />
                     {p
                       ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
-                      : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{t.naLabel}</span></Fragment>}
+                      : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{dc.grades.site.grade === "en_attente" ? t.enAttenteLabel : t.naLabel}</span></Fragment>}
                   </div> ); })()}
                   {(() => { const p = pctInfo(ppPool, dc.grades.project_process, dc, "operator"); return (
                   <div class="rail">
@@ -218,6 +219,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       renderLabel={false}
                       size="sm"
                       naLabel={t.naLabel}
+                      enAttenteLabel={t.enAttenteLabel}
                       reservedLabel={t.reserved}
                     />
                     {p
@@ -236,6 +238,7 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                       renderLabel={false}
                       size="sm"
                       naLabel={t.naLabel}
+                      enAttenteLabel={t.enAttenteLabel}
                     />
                   </td>
                 ))}

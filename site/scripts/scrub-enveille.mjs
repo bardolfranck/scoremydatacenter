@@ -2,15 +2,32 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 //
-// EN-VEILLE SCRUB — leak-safety gate, runs BEFORE every `astro build`.
-// A site can be shown "en veille" (visible, no published grade) only if its
-// internal grade appears NOWHERE in the served output. The grade is baked into
-// three consolidated artifacts (scores.json → ranking, map.geojson → map, the
-// per-site dc/*.json → fiches/OG). This script blanks the PUBLIC grade of every
-// en-veille site (publication_status !== "published") to the sentinel
-// "en_attente" across all three, in place. Idempotent: re-running on already
-// scrubbed data is a no-op. The real grade stays only in the pipeline's private
-// newsroom — never in what we ship.
+// GRADE-WITHHELD SCRUB — leak-safety gate, runs BEFORE every `astro build`.
+// A site shown WITHOUT a published grade is only truly withheld if its internal
+// grade appears NOWHERE in the served output. The grade is baked into three
+// consolidated artifacts (scores.json → ranking, map.geojson → map, the per-site
+// dc/*.json → fiches/OG). This script blanks it to the sentinel "en_attente"
+// across all three, in place. Idempotent. The real grade stays only in the
+// pipeline's private newsroom — never in what we ship.
+//
+// 🔴 DEUX POPULATIONS, UNE SEULE RÈGLE (Franck, 2026-10-16 : « la fiche a raison »).
+// Ce script ne couvrait que la première, et la seconde fuyait en production :
+//   (1) EN VEILLE — un pays de data/veille.json (Israël). Décision de publication.
+//   (2) NOTE EN ATTENTE — la fiche affiche « note en attente » parce que sa bande
+//       de couverture est plus large que le plancher irréductible (servable_band →
+//       provisional_band.kind === "en_attente"). La fiche retirait la lettre ; le
+//       CLASSEMENT et la CARTE la publiaient quand même. Mesuré le 2026-10-16 :
+//       18 fiches, dont Google Bissen affiché « note en attente » sur sa page et
+//       « Site D · dans les 3 % les moins bien notés » au classement. Même site,
+//       deux affirmations publiques contradictoires, sur un opérateur nommé.
+// La règle tranchée : une lettre qu'on refuse de montrer sur la fiche n'apparaît
+// NULLE PART. La fiche est l'affichage vetté ; les agrégats la suivent.
+//
+// ⚠️ Et la lettre n'est pas seule : le SCORE la redonne. Les seuils de notation
+// sont publics, donc servir 38,7 en retirant le « D » ne retire rien du tout.
+// Chaque blanchiment retire la lettre ET son score — c'est déjà ce que faisait ce
+// script pour la veille, c'est pour ça qu'on élargit son déclencheur au lieu
+// d'écrire un second mécanisme à côté.
 
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
@@ -39,7 +56,14 @@ const isEnVeille = (o) =>
   o?.publication_status === "en_veille" ||
   EN_VEILLE_COUNTRIES.has(o?.country);
 
+// Déclencheur (2) : la fiche elle-même dit « note en attente ». Lu sur l'artefact
+// servi, pas recalculé ici — le moteur est seul juge de la bande (servable_band),
+// ce script ne fait que propager SA décision aux agrégats.
+const isBandWithheld = (o) => o?.provisional_band?.kind === SENTINEL;
+const isWithheld = (o) => isEnVeille(o) || isBandWithheld(o);
+
 let scrubbedIds = new Set();
+let bandIds = new Set();        // population (2), pour un log qui distingue les deux
 let counts = { dc: 0, scores: 0, geojson: 0, indices: 0 };
 
 // Pillar sub-grades are notes too — a lone "land: B" on an en-veille fiche leaks
@@ -62,8 +86,9 @@ if (existsSync(DC_DIR)) {
     const p = join(DC_DIR, f);
     let dc;
     try { dc = JSON.parse(readFileSync(p, "utf8")); } catch { continue; }
-    if (!isEnVeille(dc)) continue;
+    if (!isWithheld(dc)) continue;
     scrubbedIds.add(dc.id);
+    if (!isEnVeille(dc)) bandIds.add(dc.id);
     let changed = false;
     if (dc.grades?.site && dc.grades.site.grade !== SENTINEL) {
       dc.grades.site.grade = SENTINEL;
@@ -119,7 +144,10 @@ if (existsSync(geoPath)) {
     const pr = feat.properties ?? {};
     if (!scrubbedIds.has(pr.id) && !isEnVeille(pr)) continue;
     if (pr.grade_site && pr.grade_site !== SENTINEL) { pr.grade_site = SENTINEL; changed = true; counts.geojson++; }
-    pr.en_veille = true;
+    // `en_veille` reste réservé à la population (1) : une fiche « note en attente »
+    // n'est PAS en veille, et poser le drapeau sur elle écrirait un fait faux dans
+    // un fichier public. La lettre blanchie suffit à dire ce qu'il y a à dire.
+    if (isEnVeille(pr) || !bandIds.has(pr.id)) pr.en_veille = true;
   }
   if (changed) writeFileSync(geoPath, JSON.stringify(geo));
 }
@@ -156,5 +184,52 @@ if (existsSync(statsPath)) {
 }
 
 console.log(
-  `[scrub-enveille] en-veille sites: ${scrubbedIds.size} | scrubbed → dc:${counts.dc} scores:${counts.scores} geojson:${counts.geojson} indices:${counts.indices} stats-perimeters:${counts.stats || 0}`
+  `[scrub-grades] retenues: ${scrubbedIds.size} (veille ${scrubbedIds.size - bandIds.size} + note-en-attente ${bandIds.size})`
+  + ` | blanchi → dc:${counts.dc} scores:${counts.scores} geojson:${counts.geojson} indices:${counts.indices} stats-perimeters:${counts.stats || 0}`
 );
+
+// ── GARDE DE SORTIE ───────────────────────────────────────────────────────────
+// Le scrub ci-dessus écrit ; ce bloc RELIT ce qui vient d'être écrit et refuse le
+// build si une lettre a survécu quelque part. Sans lui, la prochaine clé ajoutée à
+// un artefact (un `grade` dans un champ neuf, un historique, un résumé) rouvrirait
+// la fuite en silence — exactement ce qui vient de se produire : le mécanisme de
+// bande est arrivé APRÈS ce script, et personne n'a vérifié que les deux
+// s'accordaient. Un garde qui ne relit pas sa propre sortie ne garde rien.
+const LETTER = /^[A-E]$/;
+const leaks = [];
+const seenLetter = (where, id, val) => { if (LETTER.test(val ?? "")) leaks.push(`${where} ${id} = ${val}`); };
+
+if (existsSync(scoresPath)) {
+  for (const r of JSON.parse(readFileSync(scoresPath, "utf8"))) {
+    if (!scrubbedIds.has(r.id)) continue;
+    seenLetter("scores.json/site", r.id, r.grades?.site?.grade);
+    seenLetter("scores.json/projet", r.id, r.grades?.project_process?.grade);
+    if (typeof r.grades?.site?.score === "number") leaks.push(`scores.json/score ${r.id} = ${r.grades.site.score}`);
+    for (const [k, v] of Object.entries(r.pillars ?? {})) seenLetter(`scores.json/pilier:${k}`, r.id, v?.grade);
+  }
+}
+if (existsSync(geoPath)) {
+  for (const f of JSON.parse(readFileSync(geoPath, "utf8")).features ?? []) {
+    if (scrubbedIds.has(f.properties?.id)) seenLetter("map.geojson", f.properties.id, f.properties.grade_site);
+  }
+}
+if (existsSync(DC_DIR)) {
+  for (const f of readdirSync(DC_DIR)) {
+    if (!f.endsWith(".json")) continue;
+    let dc; try { dc = JSON.parse(readFileSync(join(DC_DIR, f), "utf8")); } catch { continue; }
+    if (!scrubbedIds.has(dc.id)) continue;
+    seenLetter("dc/site", dc.id, dc.grades?.site?.grade);
+    seenLetter("dc/projet", dc.id, dc.grades?.project_process?.grade);
+    if (typeof dc.grades?.site?.score === "number") leaks.push(`dc/score ${dc.id} = ${dc.grades.site.score}`);
+    for (const [k, v] of Object.entries(dc.pillars ?? {})) seenLetter(`dc/pilier:${k}`, dc.id, v?.grade);
+    for (const h of dc.score_history ?? []) seenLetter("dc/historique", dc.id, h?.grades?.site);
+  }
+}
+if (leaks.length) {
+  console.error(
+    `[scrub-grades] FUITE — ${leaks.length} note(s) retenue(s) encore servie(s). Le build est refusé :\n  - `
+    + leaks.slice(0, 20).join("\n  - ") + (leaks.length > 20 ? `\n  … et ${leaks.length - 20} autres` : "")
+  );
+  process.exit(1);
+}
+console.log(`[scrub-grades] garde OK — aucune lettre servie pour les ${scrubbedIds.size} fiches retenues.`);
