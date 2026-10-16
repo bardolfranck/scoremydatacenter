@@ -147,12 +147,10 @@ def build_reference_pool(scored_fiches) -> dict[str, list]:
     return by_country
 
 
-def neighbour_band(present: dict, country: str, indicator_id: str, defn: dict,
-                   pool: dict[str, list], k: int = 8) -> tuple[float, float]:
-    """[p10, p90] of `indicator_id` among the k nearest neighbours (same country first,
-    else all with a soft country penalty) that HAVE it. Falls back to the theoretical
-    extreme sub-scores when fewer than 3 usable neighbours — never fabricates precision.
-    Distance = mean squared difference over the shared present BASE sub-scores."""
+def _neighbour_values(present: dict, country: str, indicator_id: str,
+                      pool: dict[str, list], k: int = 8) -> list[float]:
+    """The k nearest neighbours' sub-scores for `indicator_id` (same country first, else all
+    with a soft country penalty). Distance = mean squared difference over shared BASE ids."""
     def usable(bucket):
         return [v for v in bucket if indicator_id in v]
 
@@ -169,7 +167,15 @@ def neighbour_band(present: dict, country: str, indicator_id: str, defn: dict,
             d += 2500.0  # ~½ a full 100-pt gap: prefer same-country evidence
         dists.append((d, v[indicator_id]))
     dists.sort(key=lambda x: x[0])
-    vals = [s for _, s in dists[:k]]
+    return [s for _, s in dists[:k]]
+
+
+def neighbour_band(present: dict, country: str, indicator_id: str, defn: dict,
+                   pool: dict[str, list], k: int = 8) -> tuple[float, float]:
+    """[p10, p90] of `indicator_id` among the k nearest neighbours that HAVE it. Falls back
+    to the theoretical extreme sub-scores when fewer than 3 usable neighbours — never
+    fabricates precision."""
+    vals = _neighbour_values(present, country, indicator_id, pool, k)
     w_s, b_s = extreme_subscores(defn)
     if len(vals) < 3:
         return w_s, b_s
@@ -177,6 +183,36 @@ def neighbour_band(present: dict, country: str, indicator_id: str, defn: dict,
         qs = quantiles(sorted(vals), n=10)
         return qs[0], qs[-1]
     return float(min(vals)), float(max(vals))
+
+
+def knn_expected_score(present: dict, country: str, methodology: dict,
+                       pool: dict[str, list], k: int = 8) -> dict:
+    """🔴 INTERNAL ONLY — the kNN « espérance » (option b, Franck 2026-10-16): every missing
+    STRUCTURAL base indicator is imputed at its neighbours' MEDIAN, then the site score is
+    recomputed. A MODEL OUTPUT in the 1c sense (model_estimated), on named sites — it is
+    NEVER served (the firewall test pins that artifacts.py does not reference it). Its one
+    job today: the DIVERGENCE DETECTOR — when the renorm point (served « probable ») and this
+    espérance disagree by ≥1 letter, the renormalisation is hiding something; the fiche gets
+    flagged for review. Fewer than 3 usable neighbours for a gap → the gap stays ABSENT
+    (renormalized away), never a fabricated midpoint."""
+    base = base_definitions(methodology)
+    blind = _not_applicable(country, methodology)
+    scored = dict(present)
+    imputed: dict[str, float] = {}
+    for d in base:
+        iid = d["id"]
+        if iid in present or iid in blind:
+            continue
+        vals = _neighbour_values(present, country, iid, pool, k)
+        if len(vals) >= 3:
+            vals = sorted(vals)
+            n = len(vals)
+            med = float(vals[n // 2]) if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2.0
+            scored[iid] = imputed[iid] = round(med, 1)
+    score = site_score_from_subscores(scored, methodology)
+    return {"score": round(score, 1), "grade": grade_of(score, methodology),
+            "imputed": imputed, "n_imputed": len(imputed),
+            "semantics": "model_estimated (1c) — interne, jamais servi"}
 
 
 # ---------------------------------------------------------------- the one public entry point
@@ -317,8 +353,31 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
     # irreducible". Never the letter count — see the docstring.
     floor = STATUS_FLOOR.get(status, _DEFAULT_FLOOR)
     if (kb - kw) > floor + 1e-6:
+        # RÈGLE C-BIS (Franck Bardol, 2026-10-16 — amendement de la règle C, sonde US) : une
+        # fenêtre plus large que le plancher n'est plus une puce MUETTE. Elle porte la note
+        # PROBABLE (le point renormalisé sur les indicateurs présents — pas un modèle, pas une
+        # imputation) ET ses bornes : « probable E · distribué E–C » dit min, max et tendance
+        # là où « en attente » ne disait rien. Le kind reste "en_attente" (la fenêtre reste
+        # plus large que l'irréductible, le rendu doit le dire) ; ce qui change est ce qu'il
+        # TRANSPORTE. S'applique au corpus entier — les fiches EU en-veille y gagnent les
+        # mêmes lettres (une seule règle d'affichage, jamais par pays).
+        central = reserved_letter(site_score_from_subscores(present, methodology))
+        edges = sorted({g for g in (worst_letter, best_letter) if g != central},
+                       key=GRADE_ORDER.index, reverse=True)
+        letters = sorted({central, worst_letter, best_letter},
+                         key=GRADE_ORDER.index, reverse=True)
+        plage = letters[0] if len(letters) == 1 else f"{letters[0]}–{letters[-1]}"
         return {"kind": "en_attente", "reason": "donnees_insuffisantes",
-                "span": span, "width": round(kb - kw, 1), "floor": floor}
+                "span": span, "width": round(kb - kw, 1), "floor": floor,
+                "provisional": True, "wide": True,
+                "central": central,          # la note PROBABLE (point renormalisé, A réservé→B)
+                "edges": edges, "band": plage,
+                "a_reserved": a_reserved,
+                "worst": round(kw, 1), "best": round(kb, 1),
+                "n_present": band["n_present"], "n_base": band["n_base"],
+                "confidence": confidence or _coverage_confidence(band["n_present"], methodology),
+                "label": {"fr": "note probable (fenêtre large) — la plage se resserre à la collecte",
+                          "en": "probable grade (wide window) — the range narrows as data lands"}}
 
     central = reserved_letter(site_score_from_subscores(present, methodology))
     # Endpoint letters other than the central one, WORST FIRST. Deterministic: a set literal
