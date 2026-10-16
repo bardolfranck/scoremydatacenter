@@ -33,6 +33,26 @@ Every methodology change is a version bump with a rationale and a signatory. No 
 - **Révision du poids** : seulement sur des issues observées (opposition, recours, abandon),
   c'est-à-dire le registre des cas précurseurs. Pas sur une intuition.
 
+## 0.1.0 (policy note) — 2026-10-16 — US referential mappings: E3 queue-region classes (LBNL) and W2 ATTAINS IR categories
+
+- **Rules (decision Franck Bardol, 2026-10-16 — both tables signed on the US probe's recon
+  evidence)**:
+  - **E3 (grid congestion)** is read at the REGION/ISO mesh — the grid-zone unit, same logic
+    as the eGRID-subregion E1 arbitrage — from the LBNL « Queued Up » compilation (CC BY 4.0,
+    vintage pinned in the filename). Region→class table (bands.US_QUEUE_REGION_E3), derived
+    from measured end-2025 figures (historical withdrawal rate, median wait to service):
+    critical = CAISO, NYISO · high = MISO, SPP, Southeast · moderate = PJM, West, ISO-NE ·
+    low = ERCOT. The NL precedent (national class mapped onto the shared e3 bands, documented
+    approximation). Every fiche carries its region's measured numbers in provenance — never
+    the class alone.
+  - **W2 (water-body status)** maps EPA ATTAINS « IR categories » (CWA 303(d)/305(b) national
+    vocabulary) onto the SAME W2 enum as WISE/GB (comparability by construction, the GB
+    text-mapping precedent): 1→good, 2→moderate, 4→poor, 5→bad, 3 (not assessed)→None —
+    never guessed. Deliberately no `very_good`: ATTAINS tests designated-USE attainment, not
+    a fine ecological status; « Fully Supporting » does not prove excellence.
+- **Effect**: no weight/threshold change; version stays 0.1.0 (referential-mapping policy
+  notes, same family as the world-referentials note of 2026-07-27).
+
 ## 0.1.0 (policy note) — 2026-10-16 — « règle C-bis » : une fenêtre large porte la note PROBABLE et ses bornes
 
 - **Rule (decision Franck Bardol, 2026-10-16 — amendement de la « règle C » du 2026-09-30, né de
