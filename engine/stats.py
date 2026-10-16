@@ -52,6 +52,44 @@ def load_veille(data_dir=None) -> set[str]:
     return set(_json.loads(path.read_text()).get("countries", []))
 
 
+# Une page de chiffres PAYS se construit autour de notes DÉFINITIVES : distribution des
+# lettres, exemplaires désignés par leur note, « note la plus fréquente ». Un pays qui n'en a
+# AUCUNE aurait une page dont chaque rubrique est vide — le cas de la sonde américaine, dix
+# fiches qui ne portent que des notes probables.
+#
+# 🔴 LE SEUIL EST ZÉRO, PAS CINQ. Le pipeline proposait n≥5 par analogie avec STATS_MIN_N ;
+# le test `test_gate_below_min_n` a montré que ça révoquait une décision prise en juillet :
+# un pays de 4 fiches GARDE sa page, avec ses parts gatées et leur n affiché — « le lecteur
+# juge ». Appliquer le seuil une seconde fois au niveau de la PAGE supprimait des pages que
+# ce contrat protège. On garde donc la règle minimale qui règle le problème réel : aucune
+# note définitive → aucune page. Le critère reste « définitive » et non « fiche servie » :
+# une note définitive encode déjà le gate de couverture, alors que des parts calculées sur
+# des plages seraient de la précision feinte au niveau d'un pays.
+# Mesuré avant d'écrire : sur le corpus du jour, aucune page pays existante ne disparaît.
+COUNTRY_MIN_DEFINITIVE = 1
+
+_PIPELINE_STATUSES = ("announced", "permitting", "under_construction")
+_REAL_GRADES = ("A", "B", "C", "D", "E")
+
+
+def _n_definitive(sites: list[dict], results: dict[str, dict] | None) -> int:
+    """Combien de sites de ce lot portent une note DÉFINITIVE (ni plage, ni absence)."""
+    n = 0
+    for dc in sites:
+        if dc["identity"]["project_status"] in _PIPELINE_STATUSES:
+            continue  # un projet en plage porte une note probable, jamais définitive
+        if results is None:
+            # Appelé sans les résultats (certains tests) : on ne peut pas lire la lettre, on
+            # compte les fiches en service. Majorant, donc le gate ne ferme jamais À TORT —
+            # il peut seulement laisser passer, ce que l'appel réel (avec résultats) corrige.
+            n += 1
+            continue
+        grade = (((results.get(dc["id"]) or {}).get("grades") or {}).get("site") or {}).get("grade")
+        if grade in _REAL_GRADES:
+            n += 1
+    return n
+
+
 # Below this many assessed sites a percentage is noise, not a fact.
 # 5, pas 10 (Franck, 2026-07-16) : une part sur 8 sites se publie — avec son n
 # affiché, le lecteur juge. Sous 5, c'est une anecdote déguisée en moyenne.
@@ -422,6 +460,8 @@ def build_stats(datacenters: dict[str, dict], methodology: dict,
         perimeters["monde"] = _perimeter(sites, watchlist, mvp_ids, results, veille_countries)
     for country in sorted({dc["identity"]["country"] for dc in sites}):
         c_sites = [dc for dc in sites if dc["identity"]["country"] == country]
+        if _n_definitive(c_sites, results) < COUNTRY_MIN_DEFINITIVE:
+            continue  # pas de page de chiffres pour un pays sans notes définitives
         peri = _perimeter(c_sites, watchlist, mvp_ids, results, veille_countries)
         regions: dict[str, dict] = {}
         for slug in sorted({r for dc in c_sites if (r := _region(dc))}):

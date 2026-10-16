@@ -200,3 +200,26 @@ def test_l_appartenance_voyage_avec_les_chiffres():
     # de la liste — elle en portait deux.
     scopes = build_stats(_corpus(), METHODOLOGY)["scopes"]["europe"]
     assert "FR" in scopes and "US" not in scopes
+
+
+def test_pas_de_page_pays_sans_aucune_note_definitive():
+    # Le cas réel : dix fiches américaines en projet, donc dix notes PROBABLES et zéro
+    # définitive. La page /chiffres/us se générerait toute seule, avec une distribution de
+    # lettres vide et des exemplaires introuvables.
+    dcs = _corpus()
+    for i in range(10):
+        dcs[f"us-{i}"] = _dc(f"us-{i}", "US", status="announced")
+    peri = build_stats(dcs, METHODOLOGY)["perimeters"]
+    assert "US" not in peri, "un pays sans aucune note définitive ne doit pas avoir de page"
+    # … mais il reste compté là où le compte est le sujet.
+    assert "US" in peri["monde"]["countries"]
+    assert peri["monde"]["n_sites"] == len(dcs)
+
+
+def test_un_pays_sous_le_seuil_de_parts_garde_sa_page():
+    # Contre-test : la règle ci-dessus ne doit PAS revoquer la décision de juillet (une part
+    # sous STATS_MIN_N est gatée, la page reste). Quatre fiches notées = une page.
+    dcs = {f"be-{i}": _dc(f"be-{i}", "BE") for i in range(STATS_MIN_N - 1)}
+    peri = build_stats(dcs, METHODOLOGY)["perimeters"]
+    assert "BE" in peri
+    assert "grid_saturated" not in peri["BE"]["stats"] and peri["BE"]["gated"]["grid_saturated"] == STATS_MIN_N - 1
