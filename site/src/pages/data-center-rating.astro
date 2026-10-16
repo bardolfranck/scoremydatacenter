@@ -1,0 +1,25 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN concept page — mirror of /fr/notation-data-center/ ; template in PagePilier.astro.
+import PagePilier from "../components/PagePilier.astro";
+import { EN_NAV } from "../config/nav";
+
+const t = {
+  title: 'Rating a data center — the Nutri-Score method for acceptability | ScoreMyDataCenter',
+  metaDescription: 'How is a data center rated? Two grades from A to E — site and project — each with a confidence level and an open method. The “Nutri-Score” of acceptability, project by project.',
+  tagline: "Independent observatory",
+  h1: 'Data center rating',
+  lead: 'Rating a data center means summarising, in a single letter from <strong><span class="note-inline n-a">A</span> to <span class="note-inline n-e">E</span></strong>, what dozens of sourced indicators say about its footprint and its conduct — like a <strong>Nutri-Score</strong>, but for an infrastructure project. We assign <strong>two grades</strong> per project, always paired with a confidence level.',
+  sections: [
+    { h2: 'The Nutri-Score idea', corps: '<p>A label anyone can read in front of a complex technical reality. A letter does not replace the file: it opens it, and makes it comparable from one site to the next.</p>' },
+    { h2: 'Two grades, not one', corps: '<p>One for the <strong>site</strong> — the context the project endures and did not choose — and one for the <strong>project and process</strong> — what the operator decides. Keeping them apart stops a good file from buying off a bad location, or the reverse. A grade is <strong>not</strong> the average of the pillars: see <a href="/methodology">the method</a>.</p>' },
+    { h2: 'Five pillars, explicit weights', corps: '<p>Energy 25%, Water 20%, Land and biodiversity 20%, Local impact 20%, Transparency and governance 15%. These weights are public and do not vary from one site to another.</p>' },
+    { h2: 'Confidence is never detached from the grade', corps: '<p>Below 40% documentary coverage we write “insufficient data” instead of a letter. <strong>An <span class="note-inline n-a">A</span> is proven, never promised</strong>: missing data never earns a good grade — otherwise the least transparent site would be the best rated.</p>' },
+    { h2: 'A reproducible method', corps: '<p>The calculation rests only on the sourced values in each project\'s file, and the method is open. To see it applied step by step: <a href="/the-grade-step-by-step">the grade, step by step</a>, <a href="/ranking">the ranking</a>, <a href="/map">the map</a>.</p>' },
+  ],
+};
+---
+
+<PagePilier lang="en" t={t} nav={EN_NAV} altHref="/fr/notation-data-center" altLabel="FR" />

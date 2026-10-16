@@ -32,6 +32,11 @@ export const FR_NAV: NavNode[] = [
     { href: "/fr/chiffres", label: "Les chiffres" },
   ]},
   { label: "Comprendre", children: [
+    // Pages de CONCEPT (une page = un concept), placées avant la pédagogie longue : elles
+    // définissent les mots que le reste du site emploie.
+    { href: "/fr/acceptabilite-data-center", label: "L'acceptabilité" },
+    { href: "/fr/notation-data-center", label: "La notation" },
+    { href: "/fr/nuisances-data-center", label: "Les nuisances" },
     { href: "/fr/comprendre", label: "Comprendre les data centers" },
     { href: "/fr/normes", label: "Les normes · où on se situe" },
     { href: "/fr/methodologie", label: "Méthode" },
@@ -44,7 +49,12 @@ export const FR_NAV: NavNode[] = [
   // pays et la projection restent en place et continuent d'être construits à chaque build :
   // /fr/comparer et /compare répondent toujours. Seule l'entrée de menu disparaît. Pour la
   // remettre, décommenter la ligne ci-dessous (et son équivalent anglais) ; rien d'autre.
-  // { href: "/fr/comparer", label: "Comparer" },
+  // ⭐ REMIS AU MENU LE 2026-10-16, le jour où le comparateur est revenu en production sur
+  // puissance × typologie. Il avait été retiré le 2026-10-02 parce qu'il comparait des
+  // territoires ; il compare désormais des objets de même taille et de même métier.
+  // ⚠️ Sans cette ligne la page répondait mais n'était atteignable que par son URL — une
+  // page en production que personne ne peut trouver est une page qui n'existe pas.
+  { href: "/fr/comparer", label: "Comparer" },
   { href: "/fr/actu", label: "Actu" },
   { label: "Bibliothèque", children: [
     { href: "/fr/rapports/france", label: "Rapport — La France" },
@@ -71,6 +81,9 @@ export const EN_NAV: NavNode[] = [
     { href: "/figures", label: "Figures" },
   ]},
   { label: "Understand", children: [
+    { href: "/acceptability-of-data-centers", label: "Acceptability" },
+    { href: "/data-center-rating", label: "Rating" },
+    { href: "/data-center-nuisances", label: "Nuisances" },
     { href: "/understand", label: "Understanding data centers" },
     { href: "/standards", label: "The standards · where we sit" },
     { href: "/methodology", label: "Method" },
@@ -79,8 +92,8 @@ export const EN_NAV: NavNode[] = [
     { href: "/glossary", label: "Glossary" },
     { href: "/#faq", label: "FAQ" },
   ]},
-  // Retirée du menu, voir la note côté FR — la page /compare répond toujours.
-  // { href: "/compare", label: "Compare" },
+  // Remise au menu le 2026-10-16 avec le retour du comparateur en production — voir FR.
+  { href: "/compare", label: "Compare" },
   { href: "/news", label: "News" },
   { label: "Library", children: [
     { href: "/reports/france", label: "France report" },

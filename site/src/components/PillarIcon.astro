@@ -11,8 +11,17 @@ import usersThree from "@phosphor-icons/core/assets/regular/users-three.svg?raw"
 import magnifyingGlass from "@phosphor-icons/core/assets/regular/magnifying-glass.svg?raw";
 import speakerHigh from "@phosphor-icons/core/assets/regular/speaker-high.svg?raw";
 import coins from "@phosphor-icons/core/assets/regular/coins.svg?raw";
+// Nuisances : ces noms ne sont PAS des piliers de notation, ce sont des objets concrets de la
+// page « nuisances ». Ils vivent ici quand même — un second composant d'icônes divergerait du
+// premier au premier ajustement de taille ou de couleur.
+import engine from "@phosphor-icons/core/assets/regular/engine.svg?raw";
+import gasCan from "@phosphor-icons/core/assets/regular/gas-can.svg?raw";
+import eyeSlash from "@phosphor-icons/core/assets/regular/eye-slash.svg?raw";
+import warning from "@phosphor-icons/core/assets/regular/warning.svg?raw";
+import ruler from "@phosphor-icons/core/assets/regular/ruler.svg?raw";
 
-export type PillarIconName = "energy" | "water" | "land" | "local" | "transparency" | "noise" | "tax";
+// ⚠️ Union sur UNE ligne : un « | » en tête de ligne casse le parseur du frontmatter Astro.
+export type PillarIconName = "energy" | "water" | "land" | "local" | "transparency" | "noise" | "tax" | "engine" | "fuel" | "hidden" | "hazard" | "measure";
 
 const ICONS: Record<PillarIconName, string> = {
   energy: lightning,
@@ -22,6 +31,11 @@ const ICONS: Record<PillarIconName, string> = {
   transparency: magnifyingGlass,
   noise: speakerHigh,
   tax: coins,
+  engine: engine,
+  fuel: gasCan,
+  hidden: eyeSlash,
+  hazard: warning,
+  measure: ruler,
 };
 
 interface Props {

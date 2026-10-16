@@ -1,0 +1,142 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// Gabarit COMMUN des pages de concept (une page = un concept) : acceptabilité, notation,
+// nuisances. Un seul composant pour les six routes (3 concepts × 2 langues) — trois
+// composants jumeaux auraient divergé au premier ajustement de mise en page, et on sait ce
+// que coûte une liste à deux endroits.
+//
+// 🔴 CES PAGES NE SONT PAS DES PAGES-PORTES. Une page qui n'existerait que pour capter une
+// requête et renvoyer ailleurs est exactement ce que les moteurs déclassent — et ce serait
+// mérité. Le contrat tenu ici : une DÉFINITION nette dans le premier paragraphe, un corps qui
+// se lit seul, et les liens descendants EN FIN de section, jamais à la place du contenu.
+//
+// ⚠️ Et une règle de fond, venue du pilier nuisances : CHAQUE PHRASE PORTE SON PÉRIMÈTRE.
+// « sur les 41 avis que nous avons dépouillés, pas les 1 565 sites du corpus » se dit DANS la
+// phrase, pas en note de bas de page qu'on ne lit jamais.
+import Base from "../layouts/Base.astro";
+import PillarIcon from "./PillarIcon.astro";
+
+const { lang, t, nav, altHref, altLabel } = Astro.props as {
+  lang: "fr" | "en";
+  t: {
+    title: string; metaDescription: string; tagline: string; h1: string;
+    lead: string;                                   // la définition — premier paragraphe
+    // `icone` est FACULTATIVE : une section sans icône reste un h2 nu, alignée avec les autres.
+    // Une icône par section n'a de sens que si CHAQUE section du lot en porte une — une liste
+    // à moitié illustrée se lit comme un bug.
+    sections: { h2: string; corps: string; icone?: string }[];
+    // Les cinq piliers, chacun avec SON icône (celles des fiches — un lecteur qui a vu une
+    // fiche retrouve les mêmes repères) et une phrase qui dit de quoi il retourne. Une icône
+    // sans phrase est un ornement ; une phrase sans icône est un mur de texte.
+    piliers?: { icone: string; titre: string; corps: string }[];
+    piliersH2?: string;
+    // Les sections qui viennent APRÈS la liste des piliers. Sans ce second emplacement, la
+    // liste tomberait toujours en fin de page : l'ordre de lecture (constat → piliers → ce
+    // qu'on en fait) se tient ici, pas dans l'ordre de déclaration d'un seul tableau.
+    sectionsApres?: { h2: string; corps: string }[];
+    // Replis « en savoir plus » : ce qui enrichit sans alourdir la lecture principale.
+    details?: { resume: string; corps: string }[];
+    apres?: string;                                 // note de pied éventuelle
+  };
+  nav: any; altHref: string; altLabel: string;
+};
+const slug = t.h1.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <section class="section" aria-labelledby={`${slug}-title`}>
+    <div class="section-inner prose legal legal-wide">
+      <h1 id={`${slug}-title`}>{t.h1}</h1>
+      {/* La définition en premier : c'est elle qui fait la page, et c'est elle que les
+          moteurs reprennent en extrait. */}
+      <Fragment set:html={`<p class="pilier-lead">${t.lead}</p>`} />
+
+      {t.sections.map((s) => (
+        <>
+          <h2 class={s.icone ? "h2-ico" : undefined}>
+            {s.icone && <span class="h2-ico-mark" aria-hidden="true"><PillarIcon name={s.icone as any} size={22} /></span>}
+            {s.h2}
+          </h2>
+          <Fragment set:html={s.corps} />
+        </>
+      ))}
+
+      {t.piliers && t.piliers.length > 0 && (
+        <>
+          {t.piliersH2 && <h2>{t.piliersH2}</h2>}
+          <ul class="pilier-liste">
+            {t.piliers.map((p) => (
+              <li>
+                <span class="pilier-ico" aria-hidden="true"><PillarIcon name={p.icone as any} size={20} /></span>
+                <span><strong>{p.titre}</strong> — <Fragment set:html={p.corps} /></span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {t.sectionsApres?.map((s) => (
+        <>
+          <h2>{s.h2}</h2>
+          <Fragment set:html={s.corps} />
+        </>
+      ))}
+
+      {t.details?.map((d) => (
+        /* Un repli, pas une page de plus : le lecteur pressé lit la page, le lecteur curieux
+           ouvre. Sans ça on choisit entre « trop léger » et « encyclopédie illisible ». */
+        <details class="pilier-plus">
+          <summary>{d.resume}</summary>
+          <Fragment set:html={d.corps} />
+        </details>
+      ))}
+
+      {t.apres && <Fragment set:html={t.apres} />}
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Le premier paragraphe porte la définition : on lui donne le poids qui va avec, sans
+     inventer un composant — la page reste de la prose. */
+  .pilier-lead { font-size: 1.12rem; line-height: 1.6; }
+
+  /* Les piliers : une icône, un titre, une phrase. Aéré, pas tabulaire — c'est de la lecture,
+     pas un tableau de bord. */
+  .pilier-liste { list-style: none; padding: 0; margin: 1rem 0 1.4rem; }
+  .pilier-liste li { display: flex; gap: 0.7rem; align-items: flex-start; margin: 0 0 0.85rem; }
+  .pilier-ico { flex: 0 0 auto; display: inline-flex; margin-top: 0.15rem; color: var(--accent, #0b7a4b); }
+
+  /* Un h2 illustré : l'icône est posée DANS le flux du titre, alignée sur sa première ligne,
+     et elle ne décale pas le texte si elle manque (cas d'une section sans icône). */
+  .h2-ico { display: flex; align-items: center; gap: 0.5rem; }
+  .h2-ico-mark { flex: 0 0 auto; display: inline-flex; color: var(--accent, #0f5fb8); opacity: 0.85; }
+
+  .pilier-plus { margin: 1.1rem 0; border-left: 3px solid var(--line, #e3e3e3); padding-left: 0.9rem; }
+  .pilier-plus > summary { cursor: pointer; font-weight: 600; }
+  .pilier-plus[open] > summary { margin-bottom: 0.5rem; }
+
+  /* Une note nommée dans le texte porte SA couleur — « deux notes de A à E » devient lisible
+     d'un coup d'œil, et c'est le même code couleur que les fiches et la carte. */
+  :global(.note-inline) {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.35em; height: 1.35em; border-radius: 4px; color: #fff;
+    font-weight: 800; font-size: 0.92em; line-height: 1; vertical-align: -0.18em;
+  }
+  :global(.note-inline.n-a) { background: var(--grade-a); }
+  :global(.note-inline.n-b) { background: var(--grade-b); }
+  :global(.note-inline.n-c) { background: var(--grade-c); }
+  :global(.note-inline.n-d) { background: var(--grade-d); }
+  :global(.note-inline.n-e) { background: var(--grade-e); }
+</style>

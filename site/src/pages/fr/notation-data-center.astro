@@ -1,0 +1,33 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR « La notation des data centers » : page de concept, gabarit dans PagePilier.astro.
+// ⚠️ C'est la page la plus exposée au reproche de PAGE-PORTE, puisqu'elle renvoie vers la
+// méthode et le classement. Elle doit donc dire quelque chose d'elle-même : ce que vaut une
+// lettre, pourquoi il y en a DEUX, et pourquoi une absence de donnée ne devient jamais un A.
+import PagePilier from "../../components/PagePilier.astro";
+import { FR_NAV } from "../../config/nav";
+
+const t = {
+  title: "Noter un data center — la méthode Nutri-Score de l'acceptabilité | ScoreMyDataCenter",
+  metaDescription: "Comment note-t-on un data center ? Deux notes de A à E — site et projet — avec niveau de confiance et méthode ouverte. Le « Nutri-Score » de l'acceptabilité, projet par projet.",
+  tagline: "Observatoire indépendant",
+  h1: "La notation des data centers",
+  lead: "Noter un data center, c'est résumer en une lettre de <strong><span class='note-inline n-a'>A</span> à <span class='note-inline n-e'>E</span></strong> ce que des dizaines d'indicateurs sourcés disent de son empreinte et de sa conduite — comme un <strong>Nutri-Score</strong>, mais pour un projet d'infrastructure. Nous attribuons <strong>deux notes</strong> par projet, toujours assorties d'un niveau de confiance.",
+  sections: [
+    { h2: "L'idée du Nutri-Score",
+      corps: "<p>Une étiquette lisible par tous devant une réalité technique complexe. Une lettre ne remplace pas le dossier : elle y donne accès et le rend comparable d'un site à l'autre.</p>" },
+    { h2: "Deux notes, pas une",
+      corps: "<p>Une pour le <strong>site</strong> — le contexte que le projet subit, qu'il n'a pas choisi — et une pour le <strong>projet et le processus</strong> — ce que l'opérateur décide. Les séparer évite qu'un bon dossier rachète un mauvais terrain, ou l'inverse. Une note n'est <strong>pas</strong> la moyenne des piliers : voir <a href=\"/fr/methodologie\">la méthode</a>.</p>" },
+    { h2: "Cinq piliers, des poids explicites",
+      corps: "<p>Énergie 25 %, Eau 20 %, Foncier et biodiversité 20 %, Impact local 20 %, Transparence et gouvernance 15 %. Ces poids sont publics et ne changent pas d'un site à l'autre.</p>" },
+    { h2: "La confiance ne se sépare jamais de la note",
+      corps: "<p>Sous 40 % de couverture documentaire, nous écrivons « données insuffisantes » au lieu d'une lettre. <strong>Le <span class='note-inline n-a'>A</span> se prouve, il ne se promet pas</strong> : une absence de donnée ne vaut jamais une bonne note — sans quoi le site le moins transparent serait le mieux noté.</p>" },
+    { h2: "Une méthode reproductible",
+      corps: "<p>Le calcul ne repose que sur les valeurs sourcées du fichier de chaque projet, et la méthode est ouverte. Pour la voir s'appliquer pas à pas : <a href=\"/fr/la-note-pas-a-pas\">la note, pas à pas</a>, <a href=\"/fr/classement\">le classement</a>, <a href=\"/fr/carte\">la carte</a>.</p>" },
+  ],
+};
+---
+
+<PagePilier lang="fr" t={t} nav={FR_NAV} altHref="/data-center-rating" altLabel="EN" />

@@ -1,0 +1,96 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR « Les nuisances des data centers » : page de concept, gabarit dans PagePilier.astro.
+//
+// 🔴 PAGE LA PLUS EXPOSÉE DU LOT : elle publie ce que NOS relevés disent, sur une page qui
+// vante nos relevés. Donc CHAQUE PHRASE PORTE SON PÉRIMÈTRE — « sur les avis que nous avons
+// dépouillés », jamais en note de bas de page. Deux affirmations ont déjà été corrigées avant
+// écriture : le bruit n'est PAS la nuisance la plus relevée (groupes 32, cuves 26, bruit 26
+// sur 41 avis), et les groupes ne sont PAS « le plus souvent au fioul domestique » (sur les
+// 25 avis qui nomment le carburant : 11 huile végétale hydrotraitée, 8 fioul/gazole, 6 fioul
+// domestique).
+//
+// 🔴 ET UNE RÈGLE D'ÉCRITURE : les comptes fins (25 avis, onze, quatorze…) NE SONT PAS PUBLIÉS
+// dans la prose. Ils vieillissent à chaque avis dépouillé — c'est une dette technique qu'on
+// s'inflige — et ils n'apprennent rien au lecteur que l'ORDRE n'apprend déjà. On publie le
+// classement en mots, et le périmètre en toutes lettres. Les comptes restent dans les données.
+//
+// ⚠️ Les attributs HTML sont en guillemets SIMPLES (la chaîne est délimitée par des doubles).
+// ⚠️ Les valeurs réglementaires citées sont ATTRIBUÉES (arrêté du 23 janvier 1997) : sur une
+// page lue par des élus, un ordre de grandeur sans source est pire que pas d'ordre de grandeur.
+import PagePilier from "../../components/PagePilier.astro";
+import { FR_NAV } from "../../config/nav";
+
+const AE = "https://www.igedd.developpement-durable.gouv.fr/l-autorite-environnementale-r145.html";
+const MRAE = "https://www.mrae.developpement-durable.gouv.fr/";
+
+const t = {
+  title: "Les nuisances des data centers — bruit, groupes électrogènes, carburant, eau | ScoreMyDataCenter",
+  metaDescription: "Bruit, groupes électrogènes de secours, cuves de carburant, prélèvements d'eau : quelles nuisances locales un data center fait-il peser, et à partir de quand ? Ce que documentent les avis environnementaux.",
+  tagline: "Observatoire indépendant",
+  h1: "Les nuisances des data centers",
+  lead: `Un data center se discute souvent sur son bilan global — l'électricité, le climat. Ce qui se vit depuis la rue est plus concret : du <strong>bruit</strong> en continu, des <strong>groupes électrogènes</strong> mis à l'essai, des <strong>cuves de carburant</strong>, de l'<strong>eau</strong> prélevée puis rejetée. Sur les 41 avis de l'<a href="${AE}" target="_blank" rel="noopener">autorité environnementale</a> que nous avons dépouillés, ce sont les groupes électrogènes qui reviennent le plus souvent, devant les cuves de carburant et le bruit.`,
+
+  sections: [
+    // ORDRE VOULU : groupes → cuves (et le carburant DANS les cuves) → eau → électricité.
+    // Le carburant n'a pas de sens avant qu'on ait dit à quoi il sert.
+    { icone: "noise", h2: "Le bruit, la nuisance de tous les jours",
+      corps: `<p>Un data center ne s'arrête jamais : il évacue en permanence la chaleur de ses machines. Le bruit ne vient donc pas du bâtiment mais de ce qui est posé dessus et autour — <strong>ventilateurs, aérorefroidisseurs, groupes froids</strong> — et il est <strong>continu, jour et nuit</strong>. C'est ce qui le distingue d'un chantier ou d'une route : il n'y a pas de creux.</p>
+      <p>Trois choses comptent plus que le niveau brut :</p>
+      <ul>
+        <li><strong>L'écart avec le bruit de fond</strong>, et non le décibel absolu. La réglementation des installations classées raisonne en « émergence » : l'arrêté du 23 janvier 1997 admet en général <strong>+5 dB(A) le jour et +3 dB(A) la nuit</strong> chez le voisin, avec un plafond en limite de site de l'ordre de 70 dB(A) le jour et 60 dB(A) la nuit. Conséquence directe : une campagne où la nuit descend à 30 dB(A) ne laisse presque aucune marge, alors que la même machine disparaît dans un quartier d'activités. <strong>Le même équipement n'est pas acceptable partout.</strong></li>
+        <li><strong>La distance aux premières habitations.</strong> C'est le seul paramètre que personne ne peut corriger après coup, et c'est pour cette raison que nous le mesurons site par site.</li>
+        <li><strong>La tonalité.</strong> Un sifflement ou un ronronnement sur une fréquence marquée se remarque à niveau égal bien plus qu'un souffle diffus ; la réglementation le traite d'ailleurs à part.</li>
+      </ul>
+      <p>La technologie de refroidissement change la donne : un site refroidi à l'air sèche sur de grands bancs de ventilateurs, qui <strong>accélèrent justement pendant les canicules</strong> — au moment où les fenêtres sont ouvertes. Un site adiabatique ou à eau souffle moins fort, mais consomme de l'eau. Le refroidissement liquide au plus près des puces réduit encore les ventilateurs. <strong>Il n'existe pas de choix sans contrepartie</strong> : le bruit, l'eau et l'électricité s'échangent entre eux.</p>` },
+
+    { icone: "engine", h2: "Les groupes électrogènes de secours : pourquoi c'est une nuisance",
+      corps: `<p>Ces moteurs ne produisent rien en temps normal. Ils existent pour que le site survive à une coupure du réseau — et un data center dimensionne sa flotte pour tenir <strong>la totalité</strong> de sa charge, refroidissement compris, avec de la redondance. En ordre de grandeur, un site de plusieurs dizaines de mégawatts aligne donc <strong>plusieurs dizaines de moteurs</strong> de la taille de ceux d'un navire. C'est une centrale électrique de secours, posée en lisière de ville.</p>
+      <p>Le voisinage ne les entend pas lors des pannes, qui sont rares. Il les entend lors des <strong>essais périodiques</strong>, obligatoires pour garantir qu'ils démarreront : typiquement un essai par mois et par machine, plus un essai en charge plus long une fois par an. Un site qui aligne trente moteurs a donc des essais <strong>très régulièrement</strong>, et c'est de loin le premier motif de crispation dans les dossiers que nous lisons.</p>
+      <p>À partir de quand est-ce « beaucoup » ? Deux repères plutôt qu'un chiffre : la <strong>puissance cumulée</strong> de la flotte — au-delà d'un certain seuil thermique, elle fait basculer l'installation dans un régime d'autorisation plus exigeant au titre des installations classées — et le <strong>rapport entre cette puissance et la taille de la commune</strong>. C'est ce second rapport qui explique qu'un même projet passe sans bruit dans une zone industrielle et bloque ailleurs.</p>` },
+
+    { icone: "fuel", h2: "Les cuves de carburant : la quantité avant la matière",
+      corps: `<p>Qui dit groupes dit réserve : les moteurs doivent pouvoir tourner plusieurs heures, parfois plusieurs jours, sans livraison. Un dossier déclare donc un <strong>volume de stockage</strong>, et c'est ce volume que nous relevons.</p>
+      <p>Le carburant déclaré varie : certains avis déclarent de l'huile végétale hydrotraitée, d'autres du fioul ou du gazole.</p>
+      <p>Et alors ? La matière compte moins que trois choses :</p>
+      <ul>
+        <li><strong>La quantité stockée.</strong> C'est elle qui mesure le risque : quelques mètres cubes et plusieurs centaines ne se gèrent pas de la même façon, et ce sont des seuils de volume — pas la nature du produit — qui déclenchent les obligations les plus lourdes.</li>
+        <li><strong>Le confinement.</strong> Cuves à double paroi, bassins de rétention capables de retenir à la fois le carburant et les eaux d'extinction d'un incendie : c'est là que se joue l'essentiel. Un déversement non retenu à proximité d'un captage d'eau potable ou d'un cours d'eau est le scénario qui inquiète les services instructeurs.</li>
+        <li><strong>Ce qui sort à l'échappement pendant les essais.</strong> Oxydes d'azote et particules, à hauteur de toiture, aux heures ouvrées.</li>
+      </ul>
+      <p>Qu'est-ce qui est vertueux, alors ? <strong>Moins de volume, mieux confiné</strong>, et un carburant moins émetteur. L'huile végétale hydrotraitée réduit nettement les émissions et n'est pas d'origine fossile — mais elle brûle et se stocke dans les mêmes cuves : elle améliore le bilan, elle ne supprime pas le risque.</p>` },
+
+    { icone: "water", h2: "L'eau : le volume, mais aussi le rejet",
+      corps: `<p>Refroidir avec de l'eau coûte beaucoup moins d'électricité que refroidir à l'air — c'est le même arbitrage que plus haut, vu de l'autre côté. Deux questions se posent alors : <strong>combien</strong> est prélevé, et <strong>sur quelle ressource</strong>. Un volume modeste pris sur un bassin déjà en tension l'été pèse plus qu'un volume important pris ailleurs.</p>
+      <p>Le rejet est la moitié oubliée du sujet : l'eau repart <strong>plus chaude</strong>, plus concentrée en sels, et traitée contre l'entartrage et les légionelles. La question pour une commune n'est donc pas seulement « combien », mais « <strong>vers où, à quelle température, avec quel traitement</strong> ».</p>` },
+
+    { icone: "energy", h2: "L'électricité : la nuisance qu'on ne voit pas",
+      corps: `<p>Elle ne s'entend ni ne se sent, mais c'est souvent elle qui décide. Un raccordement de forte puissance consomme une capacité de réseau que les autres usages du territoire — industrie, logement, transport — n'auront plus avant des années, et sa file d'attente se compte en années. C'est aussi ce qui rend la flotte de groupes aussi grosse : plus le site est puissant, plus son secours est imposant.</p>` },
+
+    { icone: "hidden", h2: "Le « caché »",
+      corps: `<p>Un exploitant se présente par son efficacité énergétique. Il met rarement en avant ses groupes électrogènes, ses cuves ou la modélisation acoustique que l'autorité environnementale lui demande. <strong>L'écart entre une plaquette de communication et le contenu d'un dossier d'évaluation est, en soi, une information</strong> — et c'est le matériau de cette page.</p>` },
+
+    { icone: "hazard", h2: "Quand le site porte lui-même un risque",
+      corps: `<p>Certains projets stockent sur place du carburant en quantité, des batteries lithium-ion, voire de l'hydrogène. Le site <strong>porte</strong> alors un aléa, au lieu de seulement le subir — ce n'est plus une nuisance, c'est un risque, et il se traite dans l'étude de dangers. Nous publions ces éléments <strong>en information, à côté de la note</strong>, tant que la couverture ne permet pas de les noter sans fausser la comparaison entre sites.</p>` },
+
+    { icone: "measure", h2: "Où en est la mesure, chez nous",
+      corps: `<p>Notre corpus compte <strong>1 565 sites</strong>. Une mesure de <strong>distance aux premières habitations</strong> est disponible sur <strong>784</strong> d'entre eux — c'est le seul indicateur d'exposition que nous calculons nous-mêmes, partout de la même façon. Le détail des nuisances, lui, vient des <strong>41 avis environnementaux dépouillés</strong> : les projets passés en évaluation, <strong>pas l'ensemble du parc</strong>. Ces faits sont publiés <strong>à côté de la note, pas dedans</strong>.</p>
+      <p>Voir <a href='/fr/acceptabilite-data-center'>l'acceptabilité des data centers</a>, <a href='/fr/carte'>la carte des sites</a> et <a href='/fr/methodologie'>la méthode</a>.</p>` },
+  ],
+
+  details: [
+    { resume: "En savoir plus — l'autorité environnementale, ça vaut quoi ?",
+      corps: `<p>Pour les projets de cette taille, le porteur doit produire une <strong>étude d'impact</strong>. Un organisme distinct du service qui délivrera l'autorisation l'examine et rend un <strong>avis public</strong> : c'est l'<a href="${AE}" target="_blank" rel="noopener">autorité environnementale</a>, le plus souvent, en région, une <a href="${MRAE}" target="_blank" rel="noopener">mission régionale d'autorité environnementale (MRAe)</a>.</p>
+      <p>Ce que cet avis <strong>est</strong> : une expertise sur la <em>qualité du dossier</em> et sur la façon dont le projet prend en compte l'environnement, assortie de recommandations. Ce qu'il <strong>n'est pas</strong> : une autorisation, ni un refus. L'avis ne décide pas du projet.</p>
+      <p>Pour autant il n'est pas décoratif. Le porteur doit y <strong>répondre par écrit</strong>, et son avis comme sa réponse sont <strong>joints au dossier soumis au public</strong> ; l'autorité qui délivre le permis doit motiver sa décision au regard de ces éléments. En pratique, un avis qui pointe une lacune oblige à compléter le dossier, et sert d'appui aux élus et aux riverains pendant la consultation. <strong>C'est le document le plus utile à lire avant de se faire une opinion sur un projet</strong> — et c'est notre matière première.</p>` },
+
+    { resume: "En savoir plus — comment le bruit d'un projet est évalué",
+      corps: `<p>Avant travaux, un acousticien mesure le <strong>bruit de fond existant</strong>, de jour et de nuit, aux habitations les plus proches. Il modélise ensuite le site en fonctionnement et compare : ce qui est jugé, c'est l'<strong>écart</strong> entre les deux, pas le niveau de la machine. Des engagements sont pris en conséquence — écrans, capotages, ventilateurs à vitesse réduite la nuit, bridage des essais de groupes en soirée — et une <strong>campagne de contrôle après mise en service</strong> est en principe demandée.</p>
+      <p>Deux failles classiques, visibles à la lecture des avis : un bruit de fond mesuré hors saison ou un jour mal choisi, qui gonfle la marge disponible ; et une modélisation faite à puissance de ventilation nominale, alors que les pointes réelles arrivent en canicule. D'où l'intérêt des <strong>mesures après mise en service</strong>, et de la distance aux habitations : elle, au moins, ne se renégocie pas.</p>` },
+  ],
+};
+---
+
+<PagePilier lang="fr" t={t} nav={FR_NAV} altHref="/data-center-nuisances" altLabel="EN" />

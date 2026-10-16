@@ -1,0 +1,84 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// EN concept page — mirror of /fr/nuisances-data-center/ ; template in PagePilier.astro.
+//
+// 🔴 Same two rules as the FR page: EVERY SENTENCE CARRIES ITS SCOPE (the counts come from
+// the 41 environmental opinions we reviewed, not from the 1,565-site corpus), and FINE-GRAINED
+// COUNTS STAY OUT OF THE PROSE — they age with every new opinion reviewed and teach the reader
+// nothing the ordering does not. The ranking is published in words; the numbers live in the data.
+// 🔴 And one EN-specific duty: the regulatory figures are FRENCH. Say so — an English reader
+// must not take an émergence limit for a universal rule.
+import PagePilier from "../components/PagePilier.astro";
+import { EN_NAV } from "../config/nav";
+
+const AE = "https://www.igedd.developpement-durable.gouv.fr/l-autorite-environnementale-r145.html";
+const MRAE = "https://www.mrae.developpement-durable.gouv.fr/";
+
+const t = {
+  title: "Data center nuisances — noise, backup generators, fuel, water | ScoreMyDataCenter",
+  metaDescription: "Noise, backup generators, fuel tanks, water abstraction: what local nuisances does a data center impose, and from what point? What environmental assessments actually document.",
+  tagline: "Independent observatory",
+  h1: "Data center nuisances",
+  lead: `A data center is usually argued over its global balance sheet — electricity, climate. What is experienced from the street is more concrete: continuous <strong>noise</strong>, <strong>backup generators</strong> under test, <strong>fuel tanks</strong>, <strong>water</strong> abstracted and discharged. Across the 41 French <a href="${AE}" target="_blank" rel="noopener">environmental authority</a> opinions we reviewed, backup generators come up most often, ahead of fuel tanks and noise.`,
+
+  sections: [
+    { icone: "noise", h2: "Noise, the everyday nuisance",
+      corps: `<p>A data center never stops: it continuously evacuates the heat of its machines. The noise therefore comes not from the building but from what sits on and around it — <strong>fans, dry coolers, chillers</strong> — and it is <strong>continuous, day and night</strong>. That is what sets it apart from a building site or a road: there is no lull.</p>
+      <p>Three things matter more than the raw level:</p>
+      <ul>
+        <li><strong>The gap with background noise</strong>, not the absolute decibel. French regulation for classified installations reasons in terms of “emergence”: the order of 23 January 1997 generally allows <strong>+5 dB(A) by day and +3 dB(A) at night</strong> at the neighbour's, with a site-boundary ceiling of around 70 dB(A) by day and 60 dB(A) at night. The direct consequence: countryside that drops to 30 dB(A) at night leaves almost no headroom, while the same machine disappears into an industrial district. <strong>The same equipment is not acceptable everywhere.</strong></li>
+        <li><strong>The distance to the nearest dwellings.</strong> It is the one parameter nobody can fix afterwards, which is why we measure it site by site.</li>
+        <li><strong>Tonality.</strong> A whine or a hum on a marked frequency is noticed far more than a diffuse rush at the same level; regulation treats it separately for that reason.</li>
+      </ul>
+      <p>Cooling technology changes the picture: an air-cooled site relies on large fan banks that <strong>speed up precisely during heatwaves</strong> — when windows are open. An adiabatic or water-cooled site blows less hard, but consumes water. Liquid cooling at the chip reduces fans further. <strong>There is no choice without a trade-off</strong>: noise, water and electricity are exchanged against one another.</p>` },
+
+    { icone: "engine", h2: "Backup generators: why they count as a nuisance",
+      corps: `<p>These engines produce nothing in normal operation. They exist so the site survives a grid outage — and a data center sizes its fleet to carry <strong>its entire</strong> load, cooling included, with redundancy on top. As an order of magnitude, a site of several tens of megawatts therefore lines up <strong>several dozen engines</strong> the size of a ship's. It is a backup power station, parked at the edge of town.</p>
+      <p>Neighbours do not hear them during outages, which are rare. They hear them during the <strong>periodic tests</strong> that are required to guarantee the engines will start: typically one test per month per machine, plus a longer load test once a year. A site with thirty engines therefore runs tests <strong>very regularly</strong>, and that is by far the first source of friction in the files we read.</p>
+      <p>From what point is it “a lot”? Two markers rather than a figure: the fleet's <strong>aggregate power</strong> — beyond a certain thermal threshold it moves the installation into a more demanding authorisation regime for classified installations — and the <strong>ratio between that power and the size of the municipality</strong>. It is the second ratio that explains why the same project passes unnoticed in an industrial zone and stalls elsewhere.</p>` },
+
+    { icone: "fuel", h2: "Fuel tanks: quantity before substance",
+      corps: `<p>Generators mean reserves: the engines must run for hours, sometimes days, without a delivery. A file therefore declares a <strong>storage volume</strong>, and that volume is what we record.</p>
+      <p>The declared fuel varies: some opinions declare hydrotreated vegetable oil, others heating oil or diesel.</p>
+      <p>So what? The substance matters less than three things:</p>
+      <ul>
+        <li><strong>The quantity stored.</strong> That is what measures the risk: a few cubic metres and several hundred are not managed the same way, and it is volume thresholds — not the nature of the product — that trigger the heaviest obligations.</li>
+        <li><strong>Containment.</strong> Double-skinned tanks, retention bunds able to hold both the fuel and the water used to fight a fire: that is where most of it is decided. An uncontained spill near a drinking-water catchment or a watercourse is the scenario that worries the authorities.</li>
+        <li><strong>What comes out of the exhaust during tests.</strong> Nitrogen oxides and particulates, at roof height, during working hours.</li>
+      </ul>
+      <p>So what is virtuous? <strong>Less volume, better contained</strong>, and a cleaner fuel. Hydrotreated vegetable oil clearly reduces emissions and is not fossil — but it burns, and it is stored in the same tanks: it improves the balance, it does not remove the risk.</p>` },
+
+    { icone: "water", h2: "Water: the volume, but also the discharge",
+      corps: `<p>Cooling with water costs far less electricity than cooling with air — the same trade-off as above, seen from the other side. Two questions follow: <strong>how much</strong> is abstracted, and <strong>from which resource</strong>. A modest volume taken from a catchment already stressed in summer weighs more than a large volume taken elsewhere.</p>
+      <p>Discharge is the forgotten half: the water leaves <strong>warmer</strong>, more concentrated in salts, and treated against scaling and legionella. For a municipality the question is not only “how much”, but “<strong>to where, at what temperature, with what treatment</strong>”.</p>` },
+
+    { icone: "energy", h2: "Electricity: the nuisance you cannot see",
+      corps: `<p>It is neither heard nor smelt, yet it often decides. A high-power connection consumes grid capacity that the territory's other uses — industry, housing, transport — will not have for years, and its queue is counted in years. It is also what makes the generator fleet so large: the more powerful the site, the more imposing its backup.</p>` },
+
+    { icone: "hidden", h2: "The “hidden” part",
+      corps: `<p>An operator presents itself through its energy efficiency. It rarely highlights its generators, its tanks or the acoustic modelling the environmental authority requires of it. <strong>The gap between a communication brochure and the content of an assessment file is, in itself, information</strong> — and it is the raw material of this page.</p>` },
+
+    { icone: "hazard", h2: "When the site itself carries a hazard",
+      corps: `<p>Some projects store fuel in quantity on site, lithium-ion batteries, sometimes hydrogen. The site then <strong>carries</strong> a hazard instead of merely enduring one — that is no longer a nuisance but a risk, handled in the hazard study. We publish these elements <strong>as information, next to the grade</strong>, for as long as coverage does not allow grading them without distorting comparison between sites.</p>` },
+
+    { icone: "measure", h2: "Where our measurement stands",
+      corps: `<p>Our corpus holds <strong>1,565 sites</strong>. A <strong>distance to the nearest dwellings</strong> is available for <strong>784</strong> of them — the one exposure indicator we compute ourselves, the same way everywhere. The nuisance detail comes from the <strong>41 environmental opinions reviewed</strong>: projects that went through assessment, <strong>not the whole estate</strong>. These facts are published <strong>next to the grade, not inside it</strong>.</p>
+      <p>See <a href='/acceptability-of-data-centers'>data center acceptability</a>, <a href='/map'>the map</a> and <a href='/methodology'>the method</a>.</p>` },
+  ],
+
+  details: [
+    { resume: "More — what is an environmental authority opinion worth?",
+      corps: `<p>For projects of this size the developer must produce an <strong>impact assessment</strong>. A body separate from the service that will grant the permit examines it and issues a <strong>public opinion</strong>: in France, the <a href="${AE}" target="_blank" rel="noopener">environmental authority</a>, most often a regional <a href="${MRAE}" target="_blank" rel="noopener">mission (MRAe)</a>.</p>
+      <p>What that opinion <strong>is</strong>: an expert view on the <em>quality of the file</em> and on how the project accounts for the environment, with recommendations. What it <strong>is not</strong>: an authorisation, nor a refusal. The opinion does not decide the project.</p>
+      <p>It is not decorative either. The developer must <strong>answer it in writing</strong>, and both opinion and answer are <strong>attached to the file put to public consultation</strong>; the permitting authority must justify its decision in their light. In practice an opinion that points to a gap forces the file to be completed, and gives elected officials and residents something solid to stand on. <strong>It is the single most useful document to read before forming a view on a project</strong> — and it is our raw material.</p>` },
+
+    { resume: "More — how a project's noise is assessed",
+      corps: `<p>Before construction, an acoustician measures the <strong>existing background noise</strong>, by day and by night, at the nearest dwellings. The site in operation is then modelled and compared: what is judged is the <strong>gap</strong> between the two, not the machine's own level. Commitments follow — screens, enclosures, fans slowed at night, generator tests barred in the evening — and a <strong>verification campaign after commissioning</strong> is normally required.</p>
+      <p>Two classic weaknesses, visible when reading the opinions: background noise measured out of season or on a poorly chosen day, which inflates the available headroom; and modelling done at nominal fan power when the real peaks arrive in a heatwave. Hence the value of <strong>post-commissioning measurements</strong> — and of distance to dwellings, which at least cannot be renegotiated.</p>` },
+  ],
+};
+---
+
+<PagePilier lang="en" t={t} nav={EN_NAV} altHref="/fr/nuisances-data-center" altLabel="FR" />
