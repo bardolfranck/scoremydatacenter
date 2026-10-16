@@ -17,11 +17,15 @@ export async function getStaticPaths() {
   const lite = dcs.map((d: any) => toLite(d, coords));
   return dcs.map((dc: any) => ({
     params: { id: dc.id },
-    props: { dc, related: buildRelated(lite, toLite(dc, coords)) },
+    // La coordonnée PUBLIQUE (déjà arrondie ~1 km dans map.geojson) voyage jusqu'à la
+    // fiche pour le balisage `geo`. 🔴 Surtout pas celle du corpus : l'arrondi est une
+    // décision d'exposition, et republier la position exacte dans les données structurées
+    // la défairait en silence — la machine lirait ce que la carte refuse de montrer.
+    props: { dc, related: buildRelated(lite, toLite(dc, coords)), geo: coords[dc.id] ?? null },
   }));
 }
 
-const { dc, related } = Astro.props as { dc: any; related: Related[] };
+const { dc, related, geo } = Astro.props as { dc: any; related: Related[]; geo: [number, number] | null };
 
 const t = {
   tagline: "Independent observatory",
@@ -149,4 +153,4 @@ const t = {
 };
 ---
 
-<DcFiche dc={dc} related={related} lang="en" t={t} nav={EN_NAV} altHref={`/fr/dc/${dc.id}`} altLabel="FR" />
+<DcFiche geo={geo} dc={dc} related={related} lang="en" t={t} nav={EN_NAV} altHref={`/fr/dc/${dc.id}`} altLabel="FR" />

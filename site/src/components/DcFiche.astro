@@ -27,9 +27,10 @@ import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
 
-const { dc, lang, t, nav, altHref, altLabel, related = [] } = Astro.props as {
+const { dc, lang, t, nav, altHref, altLabel, related = [], geo = null } = Astro.props as {
   dc: any; lang: "fr" | "en"; t: any; nav: NavNode[];
   altHref: string; altLabel: string; related?: any[];
+  geo?: [number, number] | null;
 };
 
 // T0 « Les chiffres du parc » : la ligne contextuelle — ce site situé dans les
@@ -306,8 +307,26 @@ const jsonLd = {
     ...(dc.admin_area ? { addressRegion: String(dc.admin_area) } : {}),
     ...(dc.country ? { addressCountry: dc.country } : {}),
   },
+  // 🔴 LA COORDONNÉE EST CELLE DE LA CARTE PUBLIQUE, arrondie à ~1 km — pas celle du
+  // corpus. L'arrondi est une décision d'exposition prise une fois ; republier la position
+  // exacte ici la défairait en silence, et une machine lirait ce que la carte refuse de
+  // montrer. Le balisage dit donc exactement ce que le site montre, ni plus fin ni autre.
+  ...(geo ? { geo: { "@type": "GeoCoordinates", latitude: geo[1], longitude: geo[0] } } : {}),
   ...(dc.content_changed_at ? { dateModified: dc.content_changed_at } : {}),
   isPartOf: { "@type": "WebSite", name: "ScoreMyDataCenter", url: SITE_ORIGIN },
+};
+
+// Fil d'Ariane : il dit la place de la fiche dans le site, et c'est aussi ce qui permet à un
+// moteur d'afficher « ScoreMyDataCenter › Carte › {commune} » plutôt qu'une URL nue.
+const racine = `${SITE_ORIGIN}${lang === "fr" ? "/fr" : ""}`;
+const filAriane = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "ScoreMyDataCenter", item: `${racine}/` },
+    { "@type": "ListItem", position: 2, name: lang === "fr" ? "Carte" : "Map", item: `${racine}/${lang === "fr" ? "carte" : "map"}/` },
+    { "@type": "ListItem", position: 3, name: dc.name, item: `${racine}/dc/${dc.id}/` },
+  ],
 };
 
 // --- SEO : titre daté, sur TOUTES les fiches (Franck 2026-09-29) -------------------------
@@ -336,13 +355,24 @@ const seoDate = dc.updated_at
   ? new Date(dc.updated_at).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB",
       { day: "numeric", month: "long", year: "numeric" })
   : null;
-const seoTitle = `${dc.name}${seoPlace ? ` (${seoPlace})` : ""} : ${seoGrade}`
+// 🔴 LE TITRE NE PORTAIT PAS LE MOT « DATA CENTER » (audit SEO, 2026-10-16). « Campus IA
+// Fouju : note provisoire E–D » ne répond pas à « data center Fouju » — la requête d'un
+// riverain ou d'un élu, c'est-à-dire exactement notre lecteur. On nomme donc la CATÉGORIE et
+// la COMMUNE, sans toucher aux deux règles déjà acquises : la date sur toutes les fiches, et
+// une note qui n'affirme jamais plus que ce qu'on publie (plage, « en attente »).
+// ⚠️ La commune est répétée même quand le nom la contient (« Campus IA Fouju, data center à
+// Fouju ») : la redondance coûte quelques caractères, l'absence coûtait la requête.
+const seoLieu = dc.municipality
+  ? (lang === "fr" ? `data center à ${dc.municipality}` : `data center in ${dc.municipality}`)
+    + (dc.admin_area ? ` (${dc.admin_area})` : "")
+  : (lang === "fr" ? "data center" : "data center");
+const seoTitle = `${dc.name}, ${seoLieu} : ${seoGrade}`
   + (seoDate ? (lang === "fr" ? ` — au ${seoDate}` : ` — as of ${seoDate}`) : "");
 // La meta reprend l'accroche générée du contrat d'artefact plutôt qu'un gabarit : c'est une
 // phrase écrite pour CE site, donc un extrait SERP qui dit quelque chose.
 const seoLead = dc.synthesis?.site?.lead?.[lang];
 const seoDesc = seoLead
-  ? `${seoLead} — ${dc.name}${seoPlace ? `, ${seoPlace}` : ""}. ${seoGrade.charAt(0).toUpperCase()}${seoGrade.slice(1)}, `
+  ? `${seoLead} — ${dc.name}, ${seoLieu}. ${seoGrade.charAt(0).toUpperCase()}${seoGrade.slice(1)}, `
     + (lang === "fr" ? "indicateurs sourcés, observatoire indépendant." : "sourced indicators, independent observatory.")
   : t.metaDescription.replace("{name}", dc.name).replace("{municipality}", dc.municipality);
 ---
@@ -358,6 +388,7 @@ const seoDesc = seoLead
   ogImage={`${SITE_ORIGIN}/og/dc/${dc.id}.png`}
 >
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+  <script type="application/ld+json" set:html={JSON.stringify(filAriane)}></script>
   <article class="fiche">
     <aside class="fiche-side">
       <div>
