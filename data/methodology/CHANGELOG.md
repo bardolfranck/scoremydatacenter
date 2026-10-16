@@ -33,6 +33,25 @@ Every methodology change is a version bump with a rationale and a signatory. No 
 - **Révision du poids** : seulement sur des issues observées (opposition, recours, abandon),
   c'est-à-dire le registre des cas précurseurs. Pas sur une intuition.
 
+## 0.1.0 (policy note) — 2026-10-16 — « règle C-bis » : une fenêtre large porte la note PROBABLE et ses bornes
+
+- **Rule (decision Franck Bardol, 2026-10-16 — amendement de la « règle C » du 2026-09-30, né de
+  la sonde US)**: a provisional fiche whose coverage plage is WIDER than the lifecycle floor no
+  longer displays a mute « en attente » chip. The band object now carries the **probable grade**
+  — the renormalized point over the PRESENT base indicators (no model, no imputation; A stays
+  reserved → shown B) — together with its bounds: « probable E · distribué E–C ». The kind stays
+  `en_attente` (the window is still wider than the irreducible floor and the display must say
+  so); what changes is what it carries. One display rule for the whole corpus — EU en-veille
+  fiches gain the same letters; never a per-country display.
+- **Companion (internal, never served)**: `knn_expected_score` — the kNN « espérance » (every
+  structural gap imputed at the neighbours' median) is a MODEL OUTPUT in the 1c sense
+  (`model_estimated`) and stays internal, pinned by the firewall test. Its job is the
+  divergence detector: probable vs espérance apart by ≥1 letter → fiche flagged for review.
+  It may be promoted to display only by a future signed note, once the domestic (same-country)
+  neighbour pool is deep enough.
+- **Effect**: no weight/threshold change; version stays 0.1.0 (engine-semantics policy note,
+  same precedent as L2-prudence 2026-07-19 and W1 option b 2026-08-02).
+
 ## 0.1.0 (policy note) — 2026-08-02 — « W1 option b » : the basin reading is not the site's water fact in desal-dominant jurisdictions
 
 - **Rule (decision Franck Bardol, « W1 option b », 2026-08-02)**: in a jurisdiction whose water

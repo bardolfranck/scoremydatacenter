@@ -27,7 +27,7 @@ import json
 from pathlib import Path
 
 from engine.core import load_methodology
-from engine.plage_bands import servable_band, PIPELINE_STATUSES
+from engine.plage_bands import servable_band, PIPELINE_STATUSES, build_reference_pool
 
 ENGINE = Path(__file__).resolve().parent.parent
 REPO = ENGINE.parent
@@ -138,11 +138,41 @@ def test_same_width_same_treatment_wherever_it_sits():
     assert len(shifted["edges"]) == 2, "the shifted window is expected to touch three letters"
 
 
-def test_pipeline_noncredible_returns_en_attente_not_a_letter():
+def test_pipeline_wide_carries_the_probable_and_its_bounds():
+    # RÈGLE C-BIS (Franck 2026-10-16): a wide window is no longer a mute chip — it carries the
+    # PROBABLE (renorm point) and its bounds. The kind stays "en_attente" (still wider than the
+    # irreducible floor; the renderer must say so), and there is still no bare "grade" key.
     out = servable_band("announced", _THIN, "FR", _METHO, None)
     assert out is not None and out["kind"] == "en_attente"
-    assert "grade" not in out and "band" not in out and "central" not in out, (
-        "a non-credible pipeline fiche shows « en_attente », never a letter or a band."
+    assert out["wide"] is True and out["provisional"] is True
+    assert out["central"] in ("B", "C", "D", "E")          # the probable (A reserved -> B)
+    assert "–" in out["band"] or out["band"] == out["central"]
+    assert out["width"] > out["floor"]
+    assert "grade" not in out, "never a bare grade key — it must not slot into grades.site"
+
+
+def test_knn_expected_score_is_internal_and_imputes_medians():
+    from engine.plage_bands import knn_expected_score
+    # pool: 4 same-country neighbours all carrying W1 -> median imputation kicks in
+    pool = build_reference_pool([
+        {"country": "FR", "present": {"E1": 60.0, "W1": v}} for v in (10.0, 30.0, 50.0, 70.0)
+    ])
+    out = knn_expected_score({"E1": 60.0}, "FR", _METHO, pool)
+    assert out["n_imputed"] >= 1 and "W1" in out["imputed"]
+    assert out["imputed"]["W1"] == 40.0                    # median of 10/30/50/70
+    assert out["grade"] in ("A", "B", "C", "D", "E")
+    assert "jamais servi" in out["semantics"]
+    # fewer than 3 neighbours for a gap -> the gap stays ABSENT, never a fabricated midpoint
+    thin_pool = build_reference_pool([{"country": "FR", "present": {"E1": 60.0, "W1": 10.0}}])
+    out2 = knn_expected_score({"E1": 60.0}, "FR", _METHO, thin_pool)
+    assert "W1" not in out2["imputed"]
+
+
+def test_espérance_is_never_referenced_by_the_artifact_builder():
+    import pathlib
+    src = (pathlib.Path(__file__).resolve().parents[1] / "artifacts.py").read_text()
+    assert "knn_expected_score" not in src, (
+        "the kNN espérance is a model output on named sites — INTERNAL, never served (1c)."
     )
 
 
