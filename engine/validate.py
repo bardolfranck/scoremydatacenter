@@ -114,18 +114,23 @@ GEO_WAIVERS = {
     "es-amune-networks-cpd": "2026-10-16 — faux positif : point = adresse opérateur déclarée "
                              "(PeeringDB, Avda Balsicas 6) à 30 m du géocodage de la rue ; la "
                              "proximité du centre GeoNames (128 m) vient du site en centre-ville",
-    # EU 2026-10-16 : deux vrais DC (opérateur connu) dont la POSITION BÂTIMENT est introuvable —
-    # géocode au niveau commune, mais les indicateurs de POINT sont DÉJÀ en not_collected, donc la
-    # coordonnée grossière ne fabrique aucune valeur (pas de « favorable par absence »). Dérogation,
-    # pas suppression (verdict de provenance du 2026-10-02). Levée = empreinte bâtiment OSM/cadastre.
-    "nl-rabobank-datacenter-best": "2026-10-16 — Rabobank Datacenter Best (Noord-Brabant), vrai DC "
-                                   "opérateur connu ; géocode à 109 m du centre de Best, hors bâtiment "
-                                   "(seul hit OSM = l'agence bancaire, pas le DC) ; indicateurs de point "
-                                   "déjà en not_collected ; déblocage = adresse bâtiment (OSM/cadastre/portail)",
-    "pl-orange-polska-bia-ystok": "2026-10-16 — Orange Polska Białystok (podlaskie), vrai DC opérateur "
-                                  "connu ; géocode à 120 m du centre de Białystok, hors bâtiment (adresse "
-                                  "Kościelna 10 non géocodable au bâtiment, aucun data_center OSM) ; "
-                                  "indicateurs de point déjà en not_collected ; déblocage = adresse bâtiment",
+    # EU 2026-10-16 (ré-examen après mesure codeur-site par la méthode Amune) : DEUX vrais DC (opérateur
+    # connu), mais — contrairement à Amune — la coordonnée N'EST PAS confirmée par l'adresse déclarée.
+    # Ce ne sont donc PAS des faux positifs prouvés : des géocodes NIVEAU VILLE, non vérifiés au bâtiment,
+    # assumés TEMPORAIREMENT. Ce qui les rend inoffensifs : les indicateurs de POINT sont déjà en
+    # not_collected (aucune valeur fabriquée) — la dérogation N'AFFIRME PAS « c'est correct », elle dit
+    # « coord grossière connue comme telle ». Levée = adresse opérateur / cadastre / empreinte bâtiment OSM.
+    "nl-rabobank-datacenter-best": "2026-10-16 — Rabobank Datacenter Best, vrai DC (opérateur connu, "
+                                   "provenance 02-10) ; AUCUNE entrée PeeringDB → pas d'arbitre adresse ; "
+                                   "coordonnée = géocode niveau commune à 109 m du centre de Best, hors "
+                                   "bâtiment, NON vérifiée ; indicateurs de point en not_collected (rien de "
+                                   "fabriqué) ; déblocage = adresse opérateur/cadastre vérifiée",
+    "pl-orange-polska-bia-ystok": "2026-10-16 — Orange Polska Białystok, vrai DC (opérateur connu) ; la "
+                                  "coordonnée (= déclaration PeeringDB) tombe près du centre-ville, PAS sur "
+                                  "la rue déclarée Kościelna (122 m) → vraisemblablement un géocode de ville ; "
+                                  "« Kościelna 10 » ne géocode pas au bâtiment dans Białystok (Nominatim → "
+                                  "communes voisines à 8 km) ; indicateurs de point en not_collected ; "
+                                  "déblocage = numéro de rue vérifié sur Kościelna / cadastre",
 }
 
 
