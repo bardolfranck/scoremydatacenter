@@ -359,8 +359,10 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
         # imputation) ET ses bornes : « probable E · distribué E–C » dit min, max et tendance
         # là où « en attente » ne disait rien. Le kind reste "en_attente" (la fenêtre reste
         # plus large que l'irréductible, le rendu doit le dire) ; ce qui change est ce qu'il
-        # TRANSPORTE. S'applique au corpus entier — les fiches EU en-veille y gagnent les
-        # mêmes lettres (une seule règle d'affichage, jamais par pays).
+        # TRANSPORTE. Une seule règle d'affichage pour les fiches PUBLIABLES, jamais par pays —
+        # mais la publication signée domine l'affichage : une fiche tenue en veille reste
+        # blanchie par la couche de service (provisional_band inclus), ce module n'en sait rien
+        # et n'a pas à le savoir (il reste pur ; cf. test de hiérarchie).
         central = reserved_letter(site_score_from_subscores(present, methodology))
         edges = sorted({g for g in (worst_letter, best_letter) if g != central},
                        key=GRADE_ORDER.index, reverse=True)

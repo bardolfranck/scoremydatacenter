@@ -179,3 +179,18 @@ def test_espérance_is_never_referenced_by_the_artifact_builder():
 def test_pipeline_statuses_are_exactly_the_provisional_set():
     # guards against a status silently gaining/losing band-eligibility
     assert PIPELINE_STATUSES == frozenset({"announced", "permitting", "under_construction"})
+
+
+def test_publication_signee_domine_laffichage_principe_pas_implementation():
+    """HIÉRARCHIE (actée pipeline+site, 2026-10-16) : publication (veille.json, Franck signe)
+    > affichage (règle C/C-bis). Le PRINCIPE figé côté moteur — pas l'implémentation du scrub :
+    `plage_bands` est PUR et ne consulte JAMAIS veille.json (aucune I/O). Si la bande savait
+    lire la veille, il y aurait deux autorités de blanchiment qui divergent en silence ; la
+    couche de service reste la SEULE autorité qui retire (lettres ET provisional_band) ce
+    qu'une décision de publication signée retient."""
+    import pathlib
+    from engine import plage_bands
+    src = pathlib.Path(plage_bands.__file__).read_text()
+    assert "veille.json" not in src, "plage_bands ne doit jamais consulter la liste de veille"
+    for io_marker in ("open(", "read_text", "urllib", "requests", "json.load"):
+        assert io_marker not in src, f"plage_bands doit rester pur (trouvé {io_marker!r})"
