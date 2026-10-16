@@ -36,7 +36,7 @@ import icChartBar from "@phosphor-icons/core/assets/regular/chart-bar.svg?raw";
 import {
   STATS, T, SECTIONS, HERO_PRIORITY, REGION_NAMES, STAT_TONE, STAT_ICON, FRAGMENTS,
   MEANINGS, HERO_MEANING, EXEMPLAR_COPY, rankConstraints,
-  perimeterKeys, perimeterLabel, statView, composeStory, fmtPct, fmtInt,
+  EUROPE_ISO, perimeterKeys, perimeterLabel, statView, composeStory, fmtPct, fmtInt,
   type Lang,
 } from "../config/stats";
 
@@ -53,6 +53,11 @@ const v3 = (t as any).v3;
 const ex = EXEMPLAR_COPY[lang];
 const peri = STATS.perimeters[perimeter];
 const defaultKey = lang === "fr" ? "FR" : "europe";
+// Le périmètre parent d'un pays : Europe s'il en est, sinon l'agrégat Monde quand il existe.
+const parentKey = perimeter === "europe" || perimeter === "monde"
+  ? perimeter
+  : EUROPE_ISO.includes(perimeter) ? "europe"
+  : (STATS as any).perimeters?.monde ? "monde" : "europe";
 const pathFor = (key: string) =>
   key === defaultKey ? `${basePath}` : `${basePath}/${key.toLowerCase()}`;
 const altPathFor = (key: string) => {
@@ -224,8 +229,12 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
     <div class="stx-terrbar">
       <span>{v3.looking} : <b data-terr-label>{perimeterLabel(perimeter, lang)}</b></span>
       <span class="stx-crumb">
-        <a href={pathFor("europe")}>Europe</a>
-        {perimeter !== "europe" && <> › <a href={pathFor(perimeter)}>{perimeterLabel(perimeter, lang)}</a></>}
+        {/* La racine du fil d'ariane est le périmètre qui CONTIENT le pays : « Europe › Pays-Bas »
+            est vrai, « Europe › États-Unis » est faux. Le fil se calait en dur sur Europe, du
+            temps où le corpus était européen — le même angle mort que les agrégats, réparé au
+            même endroit : l'appartenance déclarée (data/scopes.json → stats.json). */}
+        <a href={pathFor(parentKey)}>{perimeterLabel(parentKey, lang)}</a>
+        {perimeter !== parentKey && <> › <a href={pathFor(perimeter)}>{perimeterLabel(perimeter, lang)}</a></>}
         {regionPayload && <> › <span data-terr-region>{v3.allRegions}</span></>}
       </span>
       <span class="stx-terr-spacer"></span>

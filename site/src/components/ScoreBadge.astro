@@ -67,6 +67,18 @@ const reserved = !isNa && grade.reserved_from === "A" && reservedLabel;
 // E–C around a central D); `adjacent` is the older single-letter field, kept for safety.
 // Bound by the same invariant as every letter here — it carries its confidence + "provisoire" coupling.
 const bandEdges = band ? (band.edges ?? (band.adjacent ? [band.adjacent] : [])) : [];
+// AXE A–E (Franck, 2026-10-16) — deux pastilles autour d'une grosse lettre n'expriment PAS une
+// fourchette : ni axe, ni direction, ni « de… à ». Le lecteur devait deviner une convention que
+// rien d'autre sur le site n'emploie, puisque la légende, l'anneau de la carte et le classement
+// lisent tous A→E. L'axe porte le sens de lecture, réutilise cet ordre, et montre ce qui est
+// EXCLU autant que ce qui est possible — un A éteint dit quelque chose qu'aucune pastille ne
+// disait. Les lettres hors plage restent visibles, en retrait : c'est l'échelle entière qui
+// donne sa mesure à la fenêtre.
+const SCALE = ["A", "B", "C", "D", "E"];
+const bandSpan = band ? [band.central, ...bandEdges].sort((a: string, b: string) => SCALE.indexOf(a) - SCALE.indexOf(b)) : [];
+const inBand = (g: string) =>
+  bandSpan.length > 0 && SCALE.indexOf(g) >= SCALE.indexOf(bandSpan[0]) && SCALE.indexOf(g) <= SCALE.indexOf(bandSpan[bandSpan.length - 1]);
+const bandRange = bandSpan.length > 1 ? `${bandSpan[0]}–${bandSpan[bandSpan.length - 1]}` : (band ? band.central : "");
 const bandAria = band
   ? `${label}: ${band.central}${bandEdges.length ? ` (${bandEdges.join("–")})` : ""}${band.a_reserved ? " (A réservé)" : ""}`
   : "";
@@ -76,20 +88,27 @@ const bandAria = band
   <div class="scorebadge scorebadge-band">
     <span class={`gradechip-loupe${band.wide ? " gradechip-loupe-wide" : ""}`} role="img" aria-label={bandAria}>
       <span class={`gradechip lg grade-${band.central.toLowerCase()}`} aria-hidden="true">{band.central}</span>
-      {bandEdges.map((g: string) => (
-        <span class={`gradechip sm grade-${g.toLowerCase()} gc-adjacent`} aria-hidden="true">{g}</span>
-      ))}
     </span>
     <span class="scorebadge-lead-text">
       <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
+      <span class="gradeaxis" aria-hidden="true">
+        {SCALE.map((g: string) => (
+          <span class={`gradeaxis-step grade-${g.toLowerCase()}${inBand(g) ? "" : " out"}${g === band.central ? " is-central" : ""}`}>{g}</span>
+        ))}
+      </span>
       {provisionalLabel && <span class="scorebadge-prov">{provisionalLabel}</span>}
       {band.a_reserved && reservedLabel && <span class="scorebadge-reserved">{reservedLabel}</span>}
-      {renderConfidence && (
+      {/* « confiance : faible » sapait la note qu'elle accompagne — le mot porte sur ce qu'on
+          vaut, pas sur ce qu'on sait. On dit donc ce qui est réellement mesuré : l'état du
+          DOSSIER. Même formulation que les notes définitives, qui l'emploient déjà. */}
+      {renderConfidence && (documentationLabel
+        ? <span class="scorebadge-doc">{documentationLabel}</span>
+        : (
         <span class={`confidence ${confidence}`}>
           <span class="dot" aria-hidden="true"></span>
           {confidenceLabel}
         </span>
-      )}
+      ))}
     </span>
   </div>
 ) : layout === "lead" ? (

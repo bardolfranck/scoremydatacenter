@@ -365,9 +365,13 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
         # et n'a pas à le savoir (il reste pur ; cf. test de hiérarchie).
         central = reserved_letter(site_score_from_subscores(present, methodology))
         edges = sorted({g for g in (worst_letter, best_letter) if g != central},
-                       key=GRADE_ORDER.index, reverse=True)
-        letters = sorted({central, worst_letter, best_letter},
-                         key=GRADE_ORDER.index, reverse=True)
+                       key=GRADE_ORDER.index)
+        # SENS DE LECTURE (Franck, 2026-10-16) : « plage B–E », du meilleur vers le pire,
+        # comme l'échelle A→E que portent déjà la légende, l'anneau de la carte et le
+        # classement. Écrite à l'envers (« E–B »), elle obligeait le lecteur à deviner une
+        # convention que rien d'autre sur le site n'emploie — et le premier à buter dessus a
+        # été l'auteur du projet.
+        letters = sorted({central, worst_letter, best_letter}, key=GRADE_ORDER.index)
         plage = letters[0] if len(letters) == 1 else f"{letters[0]}–{letters[-1]}"
         return {"kind": "en_attente", "reason": "donnees_insuffisantes",
                 "span": span, "width": round(kb - kw, 1), "floor": floor,
@@ -382,13 +386,13 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
                           "en": "probable grade (wide window) — the range narrows as data lands"}}
 
     central = reserved_letter(site_score_from_subscores(present, methodology))
-    # Endpoint letters other than the central one, WORST FIRST. Deterministic: a set literal
+    # Endpoint letters other than the central one, in SCALE ORDER (A→E). Deterministic: a set literal
     # was iterated here before, which only stayed stable because a 2-letter plage can have at
     # most one such letter. A 3-letter plage has two, so the order has to be defined.
     edges = sorted({g for g in (worst_letter, best_letter) if g != central},
-                   key=GRADE_ORDER.index, reverse=True)
+                   key=GRADE_ORDER.index)
     adjacent = edges[0] if len(edges) == 1 else None
-    letters = sorted({central, *edges}, key=GRADE_ORDER.index, reverse=True)
+    letters = sorted({central, *edges}, key=GRADE_ORDER.index)   # sens de l'échelle : B–E
     plage = letters[0] if len(letters) == 1 else f"{letters[0]}–{letters[-1]}"
     return {
         "kind": "provisional_band",

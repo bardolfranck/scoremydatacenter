@@ -59,8 +59,11 @@ const { variant, labels } = Astro.props;
 
   function chip(grade: string, extra = ""): string {
     const na = grade === "insufficient_data";
-    const cls = na ? "grade-na" : `grade-${grade.toLowerCase()}`;
-    return `<span class="gradechip sm ${cls} ${extra}">${na ? "–" : grade}</span>`;
+    // « en_attente » est une ÉNUMÉRATION INTERNE : sans ce cas, l'infobulle affichait le mot
+    // `en_attente` en clair, dans une classe CSS qui n'existe pas (donc sans couleur).
+    const pending = grade === "en_attente";
+    const cls = na ? "grade-na" : pending ? "grade-enveille" : `grade-${grade.toLowerCase()}`;
+    return `<span class="gradechip sm ${cls} ${extra}">${na ? "–" : pending ? "…" : grade}</span>`;
   }
 
   // Client-side mirror of the SourceLink component (A-20): live link + archived snapshot.
@@ -113,8 +116,16 @@ const { variant, labels } = Astro.props;
           ${p.operator ? `<span class="map-popup-sub">${p.operator}</span>` : ""}
           ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
           <div class="map-popup-grades">
-            <span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>
-            ${p.band_central ? `<span class="map-popup-prov">${labels.probable ?? "probable"} ${p.band_central}${p.band && p.band !== p.band_central ? ` · ${p.band}` : ""}</span>` : ""}
+            ${p.band_central
+              // Projet en plage : l'infobulle dit la MÊME chose que la fiche, lettres en
+              // couleur — « probable D · plage B–E ». Afficher d'abord la puce neutre de
+              // `grade_site` puis le probable juste en dessous disait deux fois la même
+              // chose, dont une fois sans information.
+              ? `<span>${labels.site} ${labels.probable ?? "probable"} ${chip(p.band_central)}${
+                  p.band && p.band !== p.band_central
+                    ? ` · ${labels.range ?? "plage"} ${p.band.split("–").map((g: string) => chip(g)).join("–")}`
+                    : ""}</span>`
+              : `<span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>`}
           </div>
           ${fixtureTag}
           <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}">${labels.viewFiche || "Voir la fiche →"}</a>
@@ -265,12 +276,23 @@ const { variant, labels } = Astro.props;
           id: "site-dot", type: "circle", source: "sites",
           filter: ["!", ["has", "point_count"]],
           paint: {
-            "circle-color": ["match", ["get", "grade_site"],
-              "A", GC.A, "B", GC.B, "C", GC.C, "D", GC.D, "E", GC.E, GC.X],
+            // Un projet en PLAGE porte la couleur de sa note PROBABLE, mais en ANNEAU CREUX :
+            // la couleur dit la note, la forme dit le statut. Le laisser gris laissait la carte
+            // muette là où la fiche affiche « probable D » — deux surfaces, deux récits, la
+            // famille de bug qu'on vient de réparer. Le peindre en disque plein aurait dit
+            // l'inverse : une note définitive qu'on n'a pas.
+            "circle-color": ["case",
+              ["has", "band_central"], "#ffffff",
+              ["match", ["get", "grade_site"],
+                "A", GC.A, "B", GC.B, "C", GC.C, "D", GC.D, "E", GC.E, GC.X]],
             "circle-radius": ["interpolate", ["linear"], ["zoom"],
               5, ["match", ["get", "size_tier"], 3, 5.5, 2, 4.5, 1, 3.6, 3],
               11, ["match", ["get", "size_tier"], 3, 12, 2, 9, 1, 6.5, 5]],
-            "circle-stroke-width": 1.4, "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": ["case", ["has", "band_central"], 2.6, 1.4],
+            "circle-stroke-color": ["case",
+              ["has", "band_central"], ["match", ["get", "band_central"],
+                "A", GC.A, "B", GC.B, "C", GC.C, "D", GC.D, "E", GC.E, GC.X],
+              "#ffffff"],
             "circle-opacity": 0.96,
           },
         });

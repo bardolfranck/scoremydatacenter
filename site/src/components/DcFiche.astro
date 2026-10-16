@@ -106,9 +106,17 @@ const hasLoupe = (pband?.kind === "provisional_band" || bandWide) && typeof pban
 // et le bloc d'explication comme le titre doivent suivre — sans quoi la page dirait « pas
 // encore notée » juste au-dessus d'une note.
 const isEnAttente = !hasLoupe && (dc.grades?.site?.grade === "en_attente" || pband?.kind === "en_attente");
+// Le libellé du badge dit le FAIT, rien de plus : « note probable : D, fenêtre C–E ». La
+// phrase longue du moteur (« la plage se resserre à la collecte ») prenait trois lignes dans
+// la barre latérale et disait ce que le bloc « pourquoi cette note ? » explique en entier.
 const provLabel = bandWide
-  ? (pband.label?.[lang] ?? (lang === "fr" ? "note probable (fenêtre large)" : "probable grade (wide window)"))
+  ? (lang === "fr"
+      ? `note probable : ${pband.central}${pband.band && pband.band !== pband.central ? `, fenêtre ${pband.band}` : ""}`
+      : `probable grade: ${pband.central}${pband.band && pband.band !== pband.central ? `, window ${pband.band}` : ""}`)
   : lang === "fr" ? "provisoire · s'affine avec la donnée" : "provisional · narrows as data lands";
+// Les lettres citées dans la prose portent leur couleur (.note-inline, global.css).
+const noteChip = (g: string) => `<span class="note-inline n-${g.toLowerCase()}">${g}</span>`;
+const bandChips = (b: string) => b.split("–").map(noteChip).join("–");
 const isDesalCountry = dc.country === "IL";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
@@ -437,6 +445,7 @@ const seoDesc = seoLead
 
       <div class="fiche-badges">
         {hasLoupe ? (
+          <>
           <ScoreBadge
             label={t.siteScore}
             grade={dc.grades.site}
@@ -446,10 +455,21 @@ const seoDesc = seoLead
             provisionalLabel={provLabel}
             confidence={pband.confidence ?? dc.confidence.level}
             confidenceLabel={t.confidence[pband.confidence ?? dc.confidence.level]}
+            {/* « dossier peu sourcé » existait déjà dans la fiche et parle du DOSSIER, pas de
+                ce que vaut la note : c'est exactement ce qu'on mesure. Rien à inventer. */}
+            documentationLabel={t.confidenceNote[pband.confidence ?? dc.confidence.level]}
             reservedLabel={t.reserved}
             size="lg"
             naLabel={t.naLabel}
           />
+          {bandWide && (
+            /* Sans ce lien, la lettre et son axe arrivent sans rien pour appeler
+               l'explication : le bloc qui dit d'où elle vient est plus bas dans la page et
+               rien n'y menait. Une ancre, pas un repli — le bloc reste lisible pour qui
+               arrive par la recherche ou imprime la page. */
+            <a class="fiche-why" href="#note-probable">{lang === "fr" ? "pourquoi cette note ?" : "why this grade?"}</a>
+          )}
+          </>
         ) : (
           <ScoreBadge
             label={t.siteScore}
@@ -567,11 +587,11 @@ const seoDesc = seoLead
         /* Une note probable sans explication est une note ferme mal écrite : si la page montre
            « probable E · distribué E–C », elle doit dire d'où vient le E et pourquoi il bouge.
            Court volontairement — le détail du calcul vit dans « la note, pas à pas ». */
-        <section class="fiche-enveille" aria-label={lang === "fr" ? "Note probable" : "Probable grade"}>
+        <section class="fiche-enveille" id="note-probable" aria-label={lang === "fr" ? "Note probable" : "Probable grade"}>
           <p class="fiche-enveille-k">{lang === "fr" ? "Note probable, fenêtre large" : "Probable grade, wide window"}</p>
-          <p class="fiche-enveille-lead">{lang === "fr"
-            ? `Ce projet n'est pas en service : nous publions une note probable (${pband.central}) et la plage dans laquelle elle peut encore bouger (${pband.band}). La note probable est calculée sur les seuls indicateurs déjà sourcés ; la plage dit ce que les indicateurs manquants pourraient encore changer. Elle est ici plus large que d'ordinaire — c'est la mesure de ce qui manque, pas un doute sur le calcul. Elle se resserrera à mesure que le dossier se remplit.`
-            : `This project is not in service: we publish a probable grade (${pband.central}) and the range it can still move within (${pband.band}). The probable grade is computed on the sourced indicators alone; the range says what the missing ones could still change. It is wider than usual here — that width measures what is missing, not doubt about the calculation. It narrows as the file fills in.`}</p>
+          <p class="fiche-enveille-lead" set:html={lang === "fr"
+            ? `Ce projet n'est pas en service : nous publions une note probable ${noteChip(pband.central)} et la plage dans laquelle elle peut encore bouger ${bandChips(pband.band)}. La note probable est calculée sur les seuls indicateurs déjà sourcés ; la plage dit ce que les indicateurs manquants pourraient encore changer. Elle est ici plus large que d'ordinaire — c'est la mesure de ce qui manque, pas un doute sur le calcul. Elle se resserrera à mesure que le dossier se remplit.`
+            : `This project is not in service: we publish a probable grade ${noteChip(pband.central)} and the range it can still move within ${bandChips(pband.band)}. The probable grade is computed on the sourced indicators alone; the range says what the missing ones could still change. It is wider than usual here — that width measures what is missing, not doubt about the calculation. It narrows as the file fills in.`} />
         </section>
       )}
       {isEnAttente && (

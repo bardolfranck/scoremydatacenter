@@ -87,7 +87,7 @@ const bandOf = (dc: any) => {
 };
 const probableLabel = (dc: any): string => {
   const b = dc.provisional_band;
-  const span = b.band && b.band !== b.central ? ` · ${t.distributed} ${b.band}` : "";
+  const span = b.band && b.band !== b.central ? ` · ${t.range} ${b.band}` : "";
   return `${t.probable} ${b.central}${span}`;
 };
 const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
