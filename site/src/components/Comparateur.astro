@@ -42,7 +42,8 @@ const t = lang === "fr" ? {
   ecartPuissance: "d'écart de puissance à l'intérieur du même ordre de grandeur.",
   rien: "Aucun site ne correspond.",
   mince: "Pays dont le corpus ne permet pas encore de comparaison",
-  sitesDoc: "sites documentés",
+  sitesDoc: "sites comparables",
+  sansComparaison: "Pays documentés dont aucun site n'est encore comparable, faute de puissance connue",
   portee: "Ce comptage décrit ces sites-là. Il ne dit rien de ce qui arrivera à",
   axes: "Les axes ne sont pas interprétables ; seule la structure locale l'est.",
   molette: "Molette pour zoomer · clic pour ouvrir la fiche",
@@ -71,7 +72,8 @@ const t = lang === "fr" ? {
   ecartPuissance: "power gap within the same order of magnitude.",
   rien: "No site matches.",
   mince: "Countries whose corpus does not yet allow a comparison",
-  sitesDoc: "documented sites",
+  sitesDoc: "comparable sites",
+  sansComparaison: "Documented countries where no site is comparable yet, for want of a known power",
   portee: "This count describes those sites. It says nothing about what will happen to",
   axes: "The axes are not interpretable; only the local structure is.",
   molette: "Scroll to zoom · click to open the page",
@@ -102,6 +104,11 @@ const nomPays = (c: string) => NOM_PAYS[c]?.[lang] ?? c;
 const dispos = index.pays.map((p: any) => ({ ...p, nom: nomPays(p.pays) }))
   .sort((a: any, b: any) => a.nom.localeCompare(b.nom, lang));
 const minces = (index.corpus_trop_mince ?? []).map((m: any) => ({ ...m, nom: nomPays(m.pays) }));
+// Les pays documentés mais SANS comparaison possible : ils ne figurent plus dans la liste
+// déroulante — proposer un pays qui ne sert rien envoie le lecteur sur une page vide — mais
+// ils sont NOMMÉS avec leur compte et leur raison. Un pays absent reste un pays qu'on
+// documente ; c'est la puissance qui manque, pas les sites.
+const sans = (index.sans_comparaison ?? []).map((m: any) => ({ ...m, nom: nomPays(m.pays) }));
 const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 ---
 
@@ -116,7 +123,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
       <label for="cmp-pays">{t.pays}</label>
       <select id="cmp-pays">
         {dispos.map((p: any) => (
-          <option value={p.pays}>{`${p.nom} — ${p.sites} ${t.sitesDoc}`}</option>
+          <option value={p.pays}>{`${p.nom} — ${p.servis} ${t.sitesDoc}`}</option>
         ))}
       </select>
     </div>
@@ -129,6 +136,18 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 
   <div id="cmp-anchor"></div>
   <div id="cmp-result"></div>
+
+  {sans.length > 0 && (
+    /* Ces pays ONT des sites documentés, et aucune comparaison possible : il leur manque la
+       puissance, qui est la moitié du critère. On le dit plutôt que de les offrir au choix
+       pour rien — et on donne le compte, qui dit l'ampleur du trou sans le commenter. */
+    <p class="cmp-minces">
+      <strong>{t.sansComparaison}{lang === "fr" ? " :" : ":"}</strong>{" "}
+      {sans.map((m: any, i: number) => (
+        <>{i > 0 ? " · " : ""}{m.nom} ({m.sites})</>
+      ))}
+    </p>
+  )}
 
   {minces.length > 0 && (
     /* Un pays absent du comparateur est un TROU DE COLLECTE, pas un pays sans data centers.

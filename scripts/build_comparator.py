@@ -400,7 +400,7 @@ def main() -> int:
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     index, total = [], 0
-    minces = []
+    minces, sans = [], []
     for pays, lot in sorted(par_pays.items()):
         if pays in PAYS_EN_VEILLE:
             continue
@@ -412,10 +412,22 @@ def main() -> int:
             continue
         doc = construire(pays, lot, libelles, args.projection or args.force, args.force,
                          positions, motifs)
-        (OUT_DIR / f"{pays}.json").write_text(json.dumps(doc, ensure_ascii=False))
         servis = sum(1 for s in doc["sites"] if s["comparables"])
+        # 🔴 UN PAYS QUI NE SERT AUCUN COMPARABLE NE FIGURE PAS DANS LA LISTE. Depuis que la
+        # comparaison exige une cellule puissance × typologie, onze pays sur treize n'ont
+        # aucune puissance et ne peuvent rien apparier : les proposer au choix enverrait le
+        # lecteur sur une page vide, et le compte « 313 sites documentés » lui promettrait
+        # une comparaison qui n'existe pas. On les NOMME à part, avec la raison.
+        if servis == 0:
+            sans.append({"pays": pays, "sites": len(lot),
+                         "avec_cellule": doc["avec_cellule"],
+                         "raison": ("aucune puissance connue" if doc["avec_cellule"] == 0
+                                    else "pas assez de sites comparables entre eux")})
+            continue
+        (OUT_DIR / f"{pays}.json").write_text(json.dumps(doc, ensure_ascii=False))
         moy = np.mean([len(s["comparables"]) for s in doc["sites"]])
         index.append({"pays": pays, "sites": len(lot), "servis": servis,
+                      "avec_cellule": doc["avec_cellule"],
                       "affiches": doc["affiches"], "selectivite": doc["selectivite"],
                       "variables_medianes": doc["variables_medianes"],
                       "familles": len(doc["familles"])})
@@ -426,13 +438,18 @@ def main() -> int:
               f"{len(doc['familles'])} familles")
     (OUT_DIR / "index.json").write_text(json.dumps(
         {"seuil_pays": SEUIL_PAYS, "selectivite_max": SELECTIVITE_MAX,
-         "pays": index, "corpus_trop_mince": sorted(minces, key=lambda d: -d["sites"])},
+         "comparable_sur": list(COMPARABLE_SUR),
+         "pays": index, "corpus_trop_mince": sorted(minces, key=lambda d: -d["sites"]),
+         "sans_comparaison": sorted(sans, key=lambda d: -d["sites"])},
         ensure_ascii=False))
     print(f"comparator: {len(index)} pays, {total} sites · seuil {SEUIL_PAYS} sites "
           f"({AFFICHES_MIN} voisins minimum <= {SELECTIVITE_MAX:.0%} du pays)")
     if minces:
         print("  corpus trop mince, SIGNALÉ sur le site (trou de collecte, pas absence de sites) : "
               + ", ".join(f"{m['pays']} ({m['sites']})" for m in minces))
+    if sans:
+        print("  aucun comparable, RETIRÉS de la liste et nommés sur la page : "
+              + ", ".join(f"{m['pays']} ({m['sites']} sites, {m['raison']})" for m in sans))
     return 0
 
 
