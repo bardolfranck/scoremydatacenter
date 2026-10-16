@@ -51,19 +51,13 @@ export const REPORT_STATUS: Record<string, ReportStatus> = {
         "Deux sites néerlandais y portent la note A : Eurofiber Alblasserdam et KPN Rotterdam. " +
         "Le registre Seveso national (BRZO) établit depuis qu'un établissement classé se trouve " +
         "à moins de 2 km de chacun — 1,86 km et 1,94 km. Leur note de site est B (65,1 sur 100), " +
-        "et aucun site du corpus n'atteint A aujourd'hui. Ces deux notes portaient deux pages " +
-        "entières du rapport : un errata n'y suffisait pas. " +
-        "La correction vient de notre propre méthode : une source qui recense les établissements " +
-        "remplace une couche qui ne pouvait pas établir une absence.",
+        "et aucun site du corpus n'atteint A aujourd'hui.",
       en:
         "Report withdrawn from download on 7 October 2026, pending rewrite. " +
         "Two Dutch sites carry an A grade in it: Eurofiber Alblasserdam and KPN Rotterdam. " +
         "The national Seveso register (BRZO) has since established that a classified establishment " +
         "sits within 2 km of each — 1.86 km and 1.94 km. Their site grade is B (65.1 out of 100), " +
-        "and no site in the corpus reaches A today. Those two grades carried two full pages of the " +
-        "report, so an erratum would not have been enough. " +
-        "The correction comes from our own method: a source that enumerates establishments replaces " +
-        "a layer that could never establish an absence.",
+        "and no site in the corpus reaches A today.",
     },
   },
   "big-tech": {
