@@ -101,6 +101,19 @@ GEO_WAIVERS = {
     "es-aws-aragon-villanueva-de-gallego": "2026-09-29 — périmètre EU, correction à cadrer",
     "es-aws-aragon-el-burgo-de-ebro": "2026-09-29 — périmètre EU, correction à cadrer",
     "es-meta-talavera-de-la-reina": "2026-09-29 — périmètre EU, correction à cadrer",
+    # FAUX POSITIF MESURÉ, pas une correction à cadrer : le point N'EST PAS un centre de commune.
+    # PeeringDB déclare pour cette installation lat 37.80561 / lon -0.83857 — exactement la
+    # coordonnée de la fiche — à « Avda Balsicas, 6, 30730 San Javier ». Géocodage de cette rue
+    # (Nominatim, 2026-10-16) : 30 m du point. Le centre GeoNames de la commune tombe à 128 m
+    # parce que l'installation est EN CENTRE-VILLE, pas parce que la coordonnée a été fabriquée.
+    # Le verdict `off_building` s'explique par une petite installation dans un bâti mixte non
+    # tracé en bâtiment sur OSM. Arbitre retenu : l'adresse déclarée par l'opérateur.
+    # Levée de la dérogation = empreinte bâtiment OSM, ou une adresse opérateur contredisant
+    # celle-ci. (Inscrite par codeur-site, qui est le gate de publication, pas la lane EU : à
+    # ré-examiner par EU quand la session revient.)
+    "es-amune-networks-cpd": "2026-10-16 — faux positif : point = adresse opérateur déclarée "
+                             "(PeeringDB, Avda Balsicas 6) à 30 m du géocodage de la rue ; la "
+                             "proximité du centre GeoNames (128 m) vient du site en centre-ville",
 }
 
 
