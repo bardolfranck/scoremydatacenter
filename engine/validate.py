@@ -31,6 +31,7 @@ import math
 import re
 import os
 import sys
+import unicodedata
 from datetime import date
 from pathlib import Path
 
@@ -209,6 +210,70 @@ def prose_gate(paths: list[Path]) -> list[str]:
             problems.append(
                 f"GATE PROSE: {p.name}: la synthèse affirme « {m.group(0).strip()} » alors que "
                 f"{iid} vaut « {servie} » — régénérer la synthèse (la prose se dérive de l'artefact noté)"
+            )
+    return problems
+
+
+# ── GATE OPÉRATEUR ──────────────────────────────────────────────────────────────────────────
+# Une absence d'exploitant s'écrit `null`. Écrite en prose, elle se fait passer pour un nom.
+#
+# NÉ D'UNE FUITE SERVIE (2026-10-17). La lane US écrivait « opérateur non identifié », la lane
+# EU « unknown », une troisième « UNKNOWN — to fill ». Côté site, quatre endroits répondaient à
+# « l'opérateur est-il identifié ? » avec quatre listes de graphies différentes : aucune ne les
+# connaissait toutes. Servi en production sur 329 sites de la carte et 162 fiches — dont le
+# balisage schema.org, qui AFFIRMAIT à une machine que l'exploitant du site est une société
+# nommée « opérateur non identifié ». 871 fiches ont été migrées vers `null`.
+#
+# POURQUOI UN GATE ET PAS UNE CONSIGNE. Le filtre d'affichage ne peut pas connaître la
+# prochaine graphie, et il échoue en silence : il n'affiche pas une erreur, il affiche un nom.
+# Le gate déplace l'échec là où quelqu'un le voit — le build casse, nommément.
+#
+# SON MANDAT EST LE CORPUS SERVI, et rien d'autre. Le coffre d'étude `validation/` garde ses
+# placeholders : c'est une cohorte pré-enregistrée scellée, qui n'est jamais publiée et qu'on
+# ne réécrit pas après coup. Elle sort du mandat par CONSTRUCTION (le gate ne lit que les
+# chemins servis), pas par une exception ajoutée à la main — une exception se perd.
+#
+# ⚠️ DEUX FORMES DE COMPARAISON, ET C'EST DÉLIBÉRÉ. Les jetons courts sont comparés en ÉGALITÉ
+# sur forme normalisée ; les seules recherches par inclusion sont des locutions assez longues
+# pour ne rien attraper d'autre. Une inclusion naïve mentirait : en cherchant « n/a » dans la
+# chaîne, « Amazon/AWS » devient une absence — le faux positif a été rencontré en écrivant ce
+# gate, sur cinq fiches réelles.
+_ABSENCE_EXACTE = {
+    "", "unknown", "none", "null", "nil", "n/a", "na", "nc", "inconnu", "indetermine",
+    "non identifie", "non renseigne", "a renseigner", "to fill", "tbd",
+}
+_ABSENCE_LOCUTION = (
+    "non identifie", "not identified", "to fill", "a renseigner",
+    "etat inconnu", "operateur inconnu", "unknown operator",
+)
+
+
+def _forme_normalisee(valeur: str) -> str:
+    """Casse, accents et espaces multiples ne doivent pas rouvrir la porte : « Opérateur Non
+    Identifié » doit mourir comme « operateur non identifie », sans qu'on écrive les deux."""
+    sans_accent = unicodedata.normalize("NFD", valeur.strip().lower())
+    sans_accent = "".join(c for c in sans_accent if unicodedata.category(c) != "Mn")
+    return re.sub(r"\s+", " ", sans_accent)
+
+
+def operator_gate(paths: list[Path]) -> list[str]:
+    """GATE OPÉRATEUR — un opérateur servi NOMME un exploitant, ou vaut `null`."""
+    problems = []
+    for p in paths:
+        try:
+            d = load_json(p)
+        except Exception:  # noqa: BLE001 — l'illisibilité est signalée ailleurs
+            continue
+        valeur = d.get("identity", {}).get("operator")
+        if valeur is None:
+            continue  # l'absence déclarée : exactement ce que le gate demande
+        forme = _forme_normalisee(str(valeur))
+        if forme in _ABSENCE_EXACTE or any(loc in forme for loc in _ABSENCE_LOCUTION):
+            problems.append(
+                f"GATE OPÉRATEUR: {p.name}: operator vaut « {valeur} » — une absence d'exploitant "
+                f"s'écrit `null`, pas en prose. Écrite ainsi elle s'affiche comme un nom de "
+                f"société, groupe des fiches sous « même opérateur » et part dans le balisage "
+                f"structuré de la page."
             )
     return problems
 

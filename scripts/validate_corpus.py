@@ -34,7 +34,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
-from engine.validate import _schema_errors, geo_gate, position_gate, prose_gate   # noqa: E402
+from engine.validate import (_schema_errors, geo_gate, operator_gate, position_gate,  # noqa: E402
+                             prose_gate)
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -156,6 +157,12 @@ def main() -> int:
     # l'indicateur contredit ne doit pas pouvoir être SERVIE (97 fiches l'ont été
     # deux jours après la démotion L3 du 10-04, parce que rien ne regardait ici).
     problems += prose_gate(paths)
+    # GATE OPÉRATEUR — une absence d'exploitant écrite en prose se fait passer pour un nom.
+    # Il vit ICI et pas dans `make validate` pour la même raison que les deux au-dessus : la
+    # fuite est dans le corpus servi, que `make validate` ne voit pas. Son mandat s'arrête au
+    # servi — `validation/` (cohorte scellée) n'est pas dans `paths`, donc hors portée par
+    # construction et non par exception.
+    problems += operator_gate(paths)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "
