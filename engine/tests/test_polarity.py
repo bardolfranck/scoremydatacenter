@@ -98,3 +98,39 @@ def test_aucune_autre_colonne_ne_declare_la_polarite_sans_lot_signe(methodology)
         f"{declarants} déclarent penalty_only : le lot de re-notation correspondant doit avoir "
         "été mesuré, montré et signé avant que cette liste change."
     )
+
+
+# ── Les DEUX portes, pas une ────────────────────────────────────────────────────────────────
+# `penalty_only` a deux modes d'échec symétriques, et fermer l'un laisse l'autre ouvert :
+#   (a) une valeur PÉNALISANTE qui fait MONTER le pilier — elle entre dans une moyenne, donc
+#       quand le reste est pire qu'elle, elle tire vers le haut. C'est la violation que la
+#       contrainte éthique a attrapée en production (29,5 -> 30,0 sur zz-test-beta).
+#   (b) un état INERTE qui fait BAISSER un pilier déjà au-dessus du plafond — si l'inerte
+#       entrait dans la moyenne au lieu d'en être retiré, un « aucune pénalité » à 60
+#       pénaliserait un pilier à 90.
+# L'insight qui vaut au-delà de cet indicateur : **une pénalité exprimée comme VALEUR DANS UNE
+# MOYENNE n'est pas monotone.** Tout « ne peut que nuire » doit être une opération monotone —
+# un minimum, un plafond — jamais un membre de moyenne.
+from engine.scoring import _aggregate  # noqa: E402
+
+_P = {"local_impact": 1.0}
+_AUTRE = {"id": "YY", "pillar": "local_impact", "weight_in_pillar": 1.0}
+_PEN_DEF = {"id": "XX", "pillar": "local_impact", "weight_in_pillar": 1.0,
+            "polarity": "penalty_only"}
+
+
+def test_une_valeur_penalisante_ne_fait_jamais_monter_le_pilier():
+    # Le reste du pilier est PIRE que la pénalité : sans la règle du minimum, la « pénalité »
+    # de 30 ferait monter un pilier à 20.
+    sans = _aggregate({"XX": None, "YY": 20.0}, [_PEN_DEF, _AUTRE], _P)
+    avec = _aggregate({"XX": 30.0, "YY": 20.0}, [_PEN_DEF, _AUTRE], _P)
+    assert avec <= sans, f"la pénalité a fait monter le pilier {sans} -> {avec}"
+
+
+def test_un_etat_inerte_ne_fait_jamais_baisser_un_pilier_eleve():
+    # Porte symétrique : l'inerte doit être RETIRÉ de l'agrégat, pas seulement borné. S'il
+    # entrait avec sa valeur (60), il tirerait un pilier à 90 vers 75.
+    sans = _aggregate({"XX": None, "YY": 90.0}, [_PEN_DEF, _AUTRE], _P)
+    assert sans == 90.0
+    # `_substantive` rend None pour un état inerte : c'est exactement l'entrée ci-dessus.
+    assert is_inert(PEN, 60) is True
