@@ -47,8 +47,48 @@ const real = scores.filter((d: any) => !d.id.startsWith("zz-"));
 const dcFiles = import.meta.glob("../../public/data/dc/*.json", { eager: true });
 const dcAll = Object.values(dcFiles).map((m: any) => (m as any).default).filter((d: any) => !d.id.startsWith("zz-"));
 const dcById: Record<string, any> = Object.fromEntries(dcAll.map((d: any) => [d.id, d]));
-const stressCount = dcAll.filter((d: any) => (d.indicators || []).some((i: any) =>
-  i.id === "W1" && ["high", "extremely_high"].includes(String(i.value ?? "").toLowerCase()))).length;
+// 🔴 « PROJETS NOTÉS » COMPTAIT DES PROJETS QUI NE SONT PAS NOTÉS (corrigé 2026-10-17).
+// Il affichait la taille du corpus — 2 198 — alors que 342 fiches ne portent aucune lettre :
+// 339 en attente (note probable publiée en plage) et 3 en données insuffisantes. La page se
+// contredisait elle-même à trois écrans d'intervalle, puisque sa propre FAQ dit qu'aux
+// États-Unis on publie la veille et « jamais une note ».
+// Le compteur dit donc ce que son libellé promet : les sites qui portent une lettre A–E.
+const GRADES_SERVIS = ["A", "B", "C", "D", "E"];
+const notedCount = real.filter((d: any) =>
+  GRADES_SERVIS.includes(d?.grades?.site?.grade)).length;
+
+// 🔴 CE COMPTEUR SOUS-DÉCLARAIT NOTRE PROPRE CONSTAT (corrigé 2026-10-17). Il cherchait
+// `extremely_high` — une valeur qui n'existe PAS dans notre échelle, qui s'appelle
+// `zre_or_crisis`. Zéro site trouvé dans une classe inexistante ressemble à une classe vide :
+// rien n'a crié, et les 234 sites de la pire classe — zone de répartition des eaux, ou crise —
+// n'étaient comptés nulle part. La home annonçait 521 là où la mesure en donne 755.
+//
+// Donc on ne RECOPIE plus les noms de classes : on les DÉRIVE du barème servi. « Sous tension »
+// = les classes que la grille pénalise plus qu'elle ne récompense, c'est-à-dire sous la moitié
+// de l'échelle. Renommer une classe ou en ajouter une suit tout seul ; se tromper de nom devient
+// impossible, puisqu'on ne l'écrit plus.
+const W1 = (methodology.indicators as any[]).find((i: any) => i.id === "W1");
+const W1_CATEGORIES: Record<string, number> = W1?.normalization?.categories ?? {};
+const CLASSES_SOUS_TENSION = Object.entries(W1_CATEGORIES)
+  .filter(([, score]) => Number(score) < 50)
+  .map(([nom]) => nom);
+// Figer l'ATTENTE, pas le résultat du jour : si le barème change de forme et que la dérivation
+// ne rend plus rien, le build casse au lieu d'afficher un zéro qui passerait pour une bonne
+// nouvelle. C'est exactement l'échec qu'on vient de réparer.
+if (CLASSES_SOUS_TENSION.length === 0) {
+  throw new Error(
+    "Landing: aucune classe de tension hydrique dérivée du barème W1 — le compteur de la home " +
+    `afficherait 0. Catégories lues : ${JSON.stringify(W1_CATEGORIES)}`
+  );
+}
+const w1Values = dcAll.map((d: any) =>
+  (d.indicators || []).find((i: any) => i.id === "W1")?.value)
+  .map((v: any) => (v == null ? null : String(v).toLowerCase()));
+// Le dénominateur est le nombre de sites où l'eau est MESURÉE, pas le corpus entier : rapporter
+// une mesure à des fiches qui ne l'ont pas diluerait le constat.
+const stressBase = w1Values.filter((v: string | null) => v !== null).length;
+const stressCount = w1Values.filter((v: string | null) => v !== null
+  && CLASSES_SOUS_TENSION.includes(v)).length;
 let watchCount = 0;
 try { watchCount = JSON.parse(readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf8")).features.length; } catch { /* optional layer */ }
 // L'anneau comptait les pays où nous NOTONS, et donnait donc du corpus une image bien plus
@@ -70,7 +110,7 @@ const ringCountries = [...new Set([...real.map((d: any) => d.country), ...watchC
 const nCountries = ringCountries.length;
 const noPowerCount = real.filter((d: any) => typeof d.power_mw !== "number").length;
 const corpusStats = [
-  { figure: String(real.length), label: t.corpus.noted },
+  { figure: String(notedCount), label: t.corpus.noted },
   { figure: String(nCountries), label: t.corpus.countries },
   { figure: String(stressCount), label: t.corpus.stress },
   { figure: String(watchCount), label: t.corpus.watch },
@@ -398,7 +438,15 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           <div class="matters-card">
             <span class="matters-ic" aria-hidden="true"><PillarIcon name={m.icon} size={20} /></span>
             <h3>{m.title}</h3>
-            <p set:html={m.body.replace("{stress}", String(stressCount)).replace("{total}", String(real.length)).replace("{noPower}", String(noPowerCount))}></p>
+            {/* `{mesures}` est le dénominateur de l'EAU : les sites où le stress hydrique est
+                mesuré, pas le corpus entier. Rapporter une mesure à des fiches qui ne la
+                portent pas diluerait le constat d'autant. `{total}` reste le corpus, qui est
+                bien le bon dénominateur pour la puissance non communiquée. */}
+            <p set:html={m.body
+              .replace("{stress}", String(stressCount))
+              .replace("{mesures}", String(stressBase))
+              .replace("{total}", String(real.length))
+              .replace("{noPower}", String(noPowerCount))}></p>
             <a href={m.href}>{m.link} →</a>
           </div>
         ))}
