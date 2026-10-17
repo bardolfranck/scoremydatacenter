@@ -54,6 +54,10 @@ const { variant, labels } = Astro.props;
   import maplibregl from "maplibre-gl";
   import "maplibre-gl/dist/maplibre-gl.css";
   import { whitenBasemap } from "../scripts/basemap";
+  // Même réponse que la fiche à « l'opérateur est-il identifié ? ». L'infobulle testait
+  // `p.operator ?` tout court — vrai pour « unknown » (167 sites) et pour « opérateur non
+  // identifié » (162), qui s'affichaient donc comme des noms d'exploitant sur la carte.
+  import { operateurIdentifie } from "../config/operator";
 
   const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
@@ -113,7 +117,7 @@ const { variant, labels } = Astro.props;
       return `
         <div class="map-popup">
           <strong>${p.name}</strong>
-          ${p.operator ? `<span class="map-popup-sub">${p.operator}</span>` : ""}
+          ${operateurIdentifie(p.operator) ? `<span class="map-popup-sub">${p.operator}</span>` : ""}
           ${place ? `<span class="map-popup-sub">${place}</span>` : ""}
           <div class="map-popup-grades">
             ${p.band_central
@@ -183,7 +187,7 @@ const { variant, labels } = Astro.props;
       const na = p.grade_site === "insufficient_data" || p.grade_site === "en_attente";
       const dot = document.createElement("span");
       dot.className = `map-dot ${na ? "dot-na" : `dot-${p.grade_site.toLowerCase()}`}${tier === 0 ? " mw-unknown" : ""}`;
-      dot.title = `${p.name}${p.operator ? ` — ${p.operator}` : ""}`;
+      dot.title = `${p.name}${operateurIdentifie(p.operator) ? ` — ${p.operator}` : ""}`;
       el.appendChild(dot);
       if (animateIntro) {
         // Armed but hidden until the section scrolls into view (see below).

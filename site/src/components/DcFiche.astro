@@ -15,6 +15,7 @@ import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct } from "../config/stats";
+import { operateurIdentifie } from "../config/operator";
 import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
@@ -190,7 +191,9 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
 
 // Operator (Franck 2026-09-17): shown when known; a register-resolved one links to its SIRENE entry.
-const hasOperator = !!dc.operator && !["unknown", "none", ""].includes(String(dc.operator).trim().toLowerCase());
+// « Connu » se décide à UN seul endroit (config/operator.ts) : trois copies de la réponse
+// vivaient ici, dans related.ts et dans le balisage, et elles divergeaient.
+const hasOperator = operateurIdentifie(dc.operator);
 // Distance aux premières habitations (Franck 2026-09-21) : un FAIT à côté de la note, jamais dedans.
 // « environ », car la mesure vise le centre de l'objet OSM ; une zone résidentielle (bâti non tagué,
 // fréquent en rural) est dite comme telle, jamais présentée comme une maison.
@@ -319,7 +322,11 @@ const jsonLd = {
   "@type": "Place",
   name: dc.name,
   url: `${SITE_ORIGIN}${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/`,
-  ...(dc.operator && dc.operator !== "unknown"
+  // 🔴 Le balisage est la pire des quatre fuites : il AFFIRME à une machine, sans prose
+  // autour pour nuancer, que l'exploitant de ce site est une société nommée « opérateur non
+  // identifié ». C'est ce qui était publié sur 162 fiches jusqu'au 2026-10-17. Même prédicat
+  // que l'affichage : une seule réponse à « l'opérateur est-il identifié ? ».
+  ...(operateurIdentifie(dc.operator)
     ? { additionalProperty: [{ "@type": "PropertyValue", name: lang === "fr" ? "Opérateur" : "Operator", value: dc.operator }] }
     : {}),
   address: {
