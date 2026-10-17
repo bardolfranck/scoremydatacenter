@@ -125,12 +125,20 @@ GEO_WAIVERS = {
                                    "coordonnée = géocode niveau commune à 109 m du centre de Best, hors "
                                    "bâtiment, NON vérifiée ; indicateurs de point en not_collected (rien de "
                                    "fabriqué) ; déblocage = adresse opérateur/cadastre vérifiée",
-    "pl-orange-polska-bia-ystok": "2026-10-16 — Orange Polska Białystok, vrai DC (opérateur connu) ; la "
-                                  "coordonnée (= déclaration PeeringDB) tombe près du centre-ville, PAS sur "
-                                  "la rue déclarée Kościelna (122 m) → vraisemblablement un géocode de ville ; "
-                                  "« Kościelna 10 » ne géocode pas au bâtiment dans Białystok (Nominatim → "
-                                  "communes voisines à 8 km) ; indicateurs de point en not_collected ; "
-                                  "déblocage = numéro de rue vérifié sur Kościelna / cadastre",
+    # ⚠️ MESURE CORRIGÉE le 2026-10-17 — et elle AFFAIBLIT la thèse du géocode de ville.
+    # Les « 122 m de la rue Kościelna » venaient du point REPRÉSENTATIF de la rue, c'est-à-dire
+    # de son milieu : un mauvais témoin, puisqu'une rue n'est pas un point. Mesuré sur le bâti
+    # OSM, le point de la fiche est à 58 m de « Kościelna 8 », DERNIER numéro cartographié de
+    # la rue — et le n° 10 n'existe pas dans OSM. Autrement dit le point tombe là où la rue se
+    # poursuit, pas sur le centre-ville (120 m). Lecture honnête : vraisemblablement l'adresse
+    # déclarée, impossible à confirmer au bâtiment faute du n° 10.
+    # La dérogation reste donc PRUDENTE et les indicateurs de point restent neutralisés : on ne
+    # repositionne pas vers une cible qu'on ne peut pas désigner. Aucun recalage à faire ici.
+    "pl-orange-polska-bia-ystok": "2026-10-17 — Orange Polska Białystok, vrai DC (opérateur connu) ; "
+                                  "coordonnée = déclaration PeeringDB « Kościelna 10 », à 58 m du n° 8 "
+                                  "(dernier numéro cartographié de cette rue) et à 120 m du centre GeoNames ; "
+                                  "le n° 10 est absent d'OSM, donc NON vérifiable au bâtiment ; indicateurs "
+                                  "de point en not_collected ; déblocage = n° 10 cartographié ou cadastre",
 }
 
 
