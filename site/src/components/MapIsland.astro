@@ -238,7 +238,15 @@ const { variant, labels } = Astro.props;
     } else if (geo.features.length > 1 && !(isFull && focusId)) {
       // Frame the corpus — except on the full map WITH a deep-link, where the cluster
       // setup below flies to the target site (avoids a fit→fly double-move flash).
-      map.fitBounds(bounds, { padding: isFull ? 120 : 90, maxZoom: 7, duration: 0 });
+      // 🔴 LE PLAN D'OUVERTURE DIT CE QU'EST LE CORPUS. Il s'ouvrait sur l'Europe, et c'était
+      // juste tant que le corpus était européen. Depuis la vague américaine, les États-Unis
+      // sont le PREMIER pays servi (633 fiches, devant la France et ses 408) : ouvrir sur
+      // l'Europe demandait au lecteur de deviner qu'un tiers du corpus existe hors du cadre.
+      // Un cadrage n'est pas un réglage esthétique, c'est une affirmation sur le périmètre.
+      // Le héros garde son plan européen : il montre une poignée d'épingles qui tombent, pas
+      // le corpus — à l'échelle du monde elles seraient six points perdus.
+      map.fitBounds(isFull ? worldBounds : bounds,
+                    { padding: isFull ? 60 : 90, maxZoom: isFull ? 6 : 7, duration: 0 });
     }
 
     // ── Full map: distribution-donut clustering for the graded corpus (2026-07-30) ──
@@ -425,11 +433,16 @@ const { variant, labels } = Astro.props;
         // "🌍 Monde" click away. The default frame is built from the graded corpus (§6), which
         // has no Icelandic DC, so Bakki fell ~1° off the NW corner. Extend the bounds with the
         // European watch points and re-fit, so a European "en veille" pin is never off-frame.
+        // Les points de veille entrent dans les DEUX plans : l'européen (bouton « Europe »)
+        // et le mondial, qui est désormais le plan d'ouverture. Ce re-cadrage existe parce
+        // que la veille arrive APRÈS le premier `fitBounds` — sans lui, un point hors du
+        // rectangle du corpus noté (Bakki en Islande) s'ouvrait hors champ.
         for (const f of watch.features) {
+          worldBounds.extend(f.geometry.coordinates);
           if (inEurope(f.properties.country)) bounds.extend(f.geometry.coordinates);
         }
         if (!focusId && geo.features.length > 1) {
-          map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: 0 });
+          map.fitBounds(worldBounds, { padding: 60, maxZoom: 6, duration: 0 });
         }
 
         // Shareable filter state, ranking-style URL: /fr/carte?veille=moratoires
