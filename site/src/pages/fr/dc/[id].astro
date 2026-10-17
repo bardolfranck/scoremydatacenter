@@ -148,7 +148,10 @@ const t = {
     title: "D'autres sites à comparer",
     sub: "Même opérateur, même département, ou simplement les plus proches — notés dans la même grille.",
     seeAll: "Voir le classement complet →",
-    relation: { operator: "même opérateur :", region: "même région", regionFR: "même département", nearby: "à {km} km" },
+    // Sous le kilomètre, la coordonnée publiée (arrondie à ~1 km) ne mesure plus rien :
+    // voir PLANCHER_KM dans DcFiche. `nearbyMi` n'a pas de pendant ici — la page française
+    // reste métrique, même pour un site américain.
+    relation: { operator: "même opérateur :", region: "même région", regionFR: "même département", nearby: "à {km} km", nearbyUnder: "à moins d'un kilomètre" },
   },
 };
 ---

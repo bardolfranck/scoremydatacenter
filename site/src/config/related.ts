@@ -69,8 +69,27 @@ function km(a: DcLite, b: DcLite): number | undefined {
 }
 
 // An "unknown" operator is a placeholder, not an identity: it must never group fiches together.
+//
+// 🔴 CE GARDE A ÉCHOUÉ EN PROD (2026-10-17). Il connaissait « unknown » ; la lane américaine
+// écrit « opérateur non identifié ». Résultat servi sur 162 fiches × 2 langues : « same
+// operator: opérateur non identifié » — Tulsa présentée comme exploitée par la même société
+// que Phoenix et Montgomery, et un placeholder français affiché sur la page anglaise. Le
+// lecteur lisait une AFFIRMATION DE FAIT que personne n'avait vérifiée.
+//
+// La panne n'est pas l'orthographe manquante, c'est la FORME du garde : une liste de
+// graphies ne peut pas connaître la prochaine. Elle n'échoue pas bruyamment, elle laisse
+// passer. Le correctif de fond est en amont — une absence d'opérateur s'écrit `null`, pas en
+// prose — et il appartient aux lanes de collecte (passé à WORLD le 2026-10-17). Ici on tient
+// le filet : la liste reste à UN seul endroit, et la comparaison se fait sur une forme
+// normalisée pour qu'un accent ou une casse ne rouvre pas la porte.
+const ABSENCE_DOPERATEUR = new Set([
+  "", "unknown", "none", "n/a", "na",
+  "inconnu", "non identifie", "operateur non identifie", "operator not identified",
+]);
+const normaliseOperateur = (o: string) =>
+  o.trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 const namedOperator = (o?: string) =>
-  !!o && !["unknown", "none", "inconnu", ""].includes(o.trim().toLowerCase());
+  !!o && !ABSENCE_DOPERATEUR.has(normaliseOperateur(o));
 
 export function buildRelated(all: DcLite[], current: DcLite, max = 6): Related[] {
   const out: Related[] = [];

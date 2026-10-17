@@ -350,6 +350,42 @@ const filAriane = {
   ],
 };
 
+// --- Unité de distance : elle suit le LIEU, pas le moteur (Franck 2026-10-17) ------------
+// « 17 km away » sur un site de Virginie ne dit rien à l'habitant qui le cherche. L'unité
+// d'un voisinage est une convention locale, et la page anglaise d'un site américain est
+// précisément celle que ce lecteur-là ouvre. La page française garde le kilomètre : son
+// lecteur à elle est métrique, même quand le site est au Maryland.
+//
+// ⚠️ ON NE CONVERTIT QUE CETTE DISTANCE-LÀ. Les bandes d'indicateur (« zone protégée à
+// 1–5 km ») sont des SEUILS de la grille, identiques dans tous les pays : réécrites en
+// miles elles donneraient « 0,6–3,1 miles », une précision que personne n'a posée et une
+// frontière que la méthodologie ne reconnaîtrait pas. Un seuil se cite dans son unité.
+//
+// La liste est un ENSEMBLE, pas un `if` : y ajouter le Royaume-Uni (qui compte aussi ses
+// distances en miles) doit être un mot, pas une condition de plus à retrouver.
+const PAYS_EN_MILES = new Set(["US"]);
+const enMiles = lang === "en" && PAYS_EN_MILES.has(dc.country);
+// 🔴 PLANCHER DE PRÉCISION — la coordonnée publiée est ARRONDIE À ~1 km, c'est une décision
+// d'exposition prise une fois (voir le balisage GeoCoordinates plus bas). Une distance
+// calculée entre deux points arrondis ne peut donc rien affirmer sous le kilomètre : les
+// « 0,0 km » servis sur 238 fiches ne disaient pas « ces deux data centers sont au même
+// endroit », ils disaient « nos deux points sont tombés dans la même case ». On publiait la
+// trace de notre propre arrondi comme si c'était une mesure.
+// La phrase de repli est vraie dans les deux unités : sous 1 km, c'est aussi sous un mile.
+const PLANCHER_KM = 1;
+// Même règle d'arrondi dans les deux unités : sous 10, une décimale ; au-delà, l'entier.
+// Une distance de voisinage à trois décimales ferait croire à une mesure de géomètre.
+const distanceVoisin = (km: number) => {
+  // Gabarit absent = build rouge, et c'est voulu : une unité déclarée sans ses phrases doit
+  // s'entendre, pas se replier en silence sur l'autre unité.
+  if (km < PLANCHER_KM)
+    return enMiles ? t.related.relation.nearbyUnderMi : t.related.relation.nearbyUnder;
+  const v = enMiles ? km / 1.609344 : km;
+  const n = v < 10 ? v.toFixed(1) : String(Math.round(v));
+  return (enMiles ? t.related.relation.nearbyMi : t.related.relation.nearby)
+    .replace(enMiles ? "{mi}" : "{km}", n);
+};
+
 // --- SEO : titre daté, sur TOUTES les fiches (Franck 2026-09-29) -------------------------
 // Motif : la date rend bénigne une SERP en retard sur un changement de note — cas vécu avec
 // Fouju passée de E à D pendant que Google servait encore l'ancienne. « Pas d'exceptions qui
@@ -824,7 +860,7 @@ const seoDesc = seoLead
                   <span class="fr-meta">
                     {[r.municipality,
                       r.relation === "nearby"
-                        ? (r.km == null ? null : t.related.relation.nearby.replace("{km}", r.km < 10 ? r.km.toFixed(1) : String(Math.round(r.km))))
+                        ? (r.km == null ? null : distanceVoisin(r.km))
                         : r.relation === "operator"
                           ? `${t.related.relation.operator} ${r.operator}`
                           : (dc.country === "FR" ? t.related.relation.regionFR : t.related.relation.region),

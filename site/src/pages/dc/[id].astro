@@ -148,7 +148,9 @@ const t = {
     title: "Other sites to compare",
     sub: "Same operator, same region, or simply the closest — scored on the same grid.",
     seeAll: "See the full ranking →",
-    relation: { operator: "same operator:", region: "same region", regionFR: "same département", nearby: "{km} km away" },
+    // `nearbyMi` sert aux pays qui comptent leurs distances en miles (voir PAYS_EN_MILES
+    // dans DcFiche) : la même phrase, l'unité du lieu.
+    relation: { operator: "same operator:", region: "same region", regionFR: "same département", nearby: "{km} km away", nearbyMi: "{mi} miles away", nearbyUnder: "less than 1 km away", nearbyUnderMi: "less than a mile away" },
   },
 };
 ---
