@@ -120,11 +120,17 @@ GEO_WAIVERS = {
     # assumés TEMPORAIREMENT. Ce qui les rend inoffensifs : les indicateurs de POINT sont déjà en
     # not_collected (aucune valeur fabriquée) — la dérogation N'AFFIRME PAS « c'est correct », elle dit
     # « coord grossière connue comme telle ». Levée = adresse opérateur / cadastre / empreinte bâtiment OSM.
-    "nl-rabobank-datacenter-best": "2026-10-16 — Rabobank Datacenter Best, vrai DC (opérateur connu, "
-                                   "provenance 02-10) ; AUCUNE entrée PeeringDB → pas d'arbitre adresse ; "
-                                   "coordonnée = géocode niveau commune à 109 m du centre de Best, hors "
-                                   "bâtiment, NON vérifiée ; indicateurs de point en not_collected (rien de "
-                                   "fabriqué) ; déblocage = adresse opérateur/cadastre vérifiée",
+    # ORIGINE ÉTABLIE le 2026-10-17 (lane EU) : ce n'est ni un annuaire ni une saisie, c'est la
+    # DÉCLARATION RÉGLEMENTAIRE qui ne descend pas plus bas. La directive EED (RVO) déclare à la
+    # maille GEMEENTE — la fiche porte `lau_code GM0753` et AUCUNE adresse —, donc le pipeline a
+    # géocodé la commune. Il n'existe rien de plus fin À RECALER DEPUIS CETTE SOURCE : le défaut
+    # n'est pas dans le point, il est dans la granularité du registre. Le déblocage passe donc
+    # obligatoirement par une source HORS EED (adresse opérateur, cadastre).
+    "nl-rabobank-datacenter-best": "2026-10-17 — Rabobank Datacenter Best, vrai DC ; coordonnée = géocode "
+                                   "du code commune (EED/RVO, lau_code GM0753, déclaration sans adresse), "
+                                   "à 109 m du centre de Best, hors bâtiment ; aucune entrée PeeringDB, donc "
+                                   "pas d'arbitre adresse ; indicateurs de point en not_collected (rien de "
+                                   "fabriqué) ; déblocage = adresse bâtiment d'une source hors EED",
     # ⚠️ MESURE CORRIGÉE le 2026-10-17 — et elle AFFAIBLIT la thèse du géocode de ville.
     # Les « 122 m de la rue Kościelna » venaient du point REPRÉSENTATIF de la rue, c'est-à-dire
     # de son milieu : un mauvais témoin, puisqu'une rue n'est pas un point. Mesuré sur le bâti
