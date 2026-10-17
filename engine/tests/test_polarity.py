@@ -66,12 +66,35 @@ def test_une_echelle_continue_refuse_bruyamment():
         no_penalty_ceiling(continu)
 
 
-def test_le_mecanisme_est_opt_in_et_inerte_par_defaut(methodology):
-    """Aucun indicateur servi ne déclare `polarity` aujourd'hui : poser le mécanisme ne doit
-    déplacer AUCUNE note. C'est ce qui permet de l'armer AVANT la décision qui l'emploiera —
-    le garde précède ce qu'il garde, au lieu de réparer après coup."""
-    declarants = [i["id"] for i in methodology["indicators"] if i.get("polarity") == "penalty_only"]
-    assert declarants == [], (
-        f"{declarants} déclare(nt) polarity=penalty_only : ce n'est plus un no-op, et le lot "
-        "de re-notation correspondant doit avoir été vu et signé avant que ce test change."
+def test_l1_declare_la_polarite_et_son_bareme_ne_recompense_plus(methodology):
+    """L1 EST la première colonne à déclarer la polarité (Franck, 2026-10-17 : « je retire ce
+    bonus et je garde la pénalité »). Les deux moitiés comptent et ce test les tient ensemble :
+
+    · la DÉCLARATION, sans quoi l'état neutre resterait actif et déplacerait des lettres par
+      renormalisation ;
+    · le BARÈME, sans quoi la déclaration produirait l'effet INVERSE — le moteur dérive
+      l'inertie du PLAFOND de l'échelle, donc un `strong_fit` resté à 90 serait inerte et
+      `neutral` (60) deviendrait pénalisant. Le bonus aurait survécu sous forme d'absence de
+      malus, et les communes moyennes auraient été punies. Le piège est silencieux : rien dans
+      le moteur ne s'en plaindrait.
+    """
+    l1 = next(i for i in methodology["indicators"] if i["id"] == "L1")
+    assert l1.get("polarity") == "penalty_only"
+    cats = l1["normalization"]["categories"]
+    assert cats["sensitive"] < cats["neutral"], "la vulnérabilité doit pénaliser"
+    assert cats["strong_fit"] == cats["neutral"], (
+        "« territoire aisé » ne doit plus valoir mieux que « neutre » : sinon le plafond de "
+        "l'échelle n'est plus le neutre, et la polarité rend inerte le mauvais état."
+    )
+
+
+def test_aucune_autre_colonne_ne_declare_la_polarite_sans_lot_signe(methodology):
+    """Fil de détente. Étendre la polarité à une autre colonne re-note des fiches servies —
+    Franck voit le lot avant, c'est sa règle ferme. Ce test n'interdit rien : il oblige à
+    toucher ce fichier, donc à savoir qu'on déclenche une re-notation."""
+    declarants = sorted(i["id"] for i in methodology["indicators"]
+                        if i.get("polarity") == "penalty_only")
+    assert declarants == ["L1"], (
+        f"{declarants} déclarent penalty_only : le lot de re-notation correspondant doit avoir "
+        "été mesuré, montré et signé avant que cette liste change."
     )

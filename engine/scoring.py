@@ -22,7 +22,7 @@ Only MVP indicators are scored; tier-3 out-of-MVP indicators are ignored for
 both score and confidence.
 """
 
-from .normalize import normalized_score, is_inert
+from .normalize import PENALTY_ONLY, normalized_score, is_inert
 
 # Right-of-reply window length (doctrine A-24/A-26). Single source; validate re-exports it.
 
@@ -80,11 +80,29 @@ def _aggregate(scored: dict[str, float | None], definitions: list[dict],
     project/process datum as an explicit 0.0 before aggregating (see `_substantive`)."""
     pillar_scores: dict[str, float] = {}
     for pillar in pillar_weights:
+        here = [d for d in definitions if d["pillar"] == pillar]
         pairs = [(d["weight_in_pillar"], scored[d["id"]])
-                 for d in definitions if d["pillar"] == pillar and scored[d["id"]] is not None]
+                 for d in here if scored[d["id"]] is not None]
         if pairs:
             total_w = sum(w for w, _ in pairs)
             pillar_scores[pillar] = sum(w * s for w, s in pairs) / total_w
+            # 🔴 UNE COLONNE QUI NE SAIT QUE PÉNALISER NE DOIT JAMAIS FAIRE MONTER LE PILIER.
+            # Rendre son état neutre inerte ne suffisait PAS, et c'est la contrainte éthique
+            # signée qui l'a montré : sur zz-test-beta, passer L1 de `neutral` à `sensitive`
+            # faisait passer la note de 29,5 à 30,0 — plus de vulnérabilité, meilleure note.
+            # La cause est que la pénalité entre comme une VALEUR DANS UNE MOYENNE : quand le
+            # reste du pilier est pire que la pénalité, la pénalité tire vers le haut.
+            # On dérive donc du fait déclaré sa conséquence entière — « penalty_only » veut dire
+            # « ne peut que baisser » — en comparant le pilier AVEC et SANS la colonne et en
+            # retenant le minimum. La contrainte éthique tient alors par construction, et non
+            # par chance sur la composition du pilier.
+            penal = [d for d in here if d.get("polarity") == PENALTY_ONLY and scored[d["id"]] is not None]
+            if penal and len(pairs) > len(penal):
+                reste = [(d["weight_in_pillar"], scored[d["id"]])
+                         for d in here if d not in penal and scored[d["id"]] is not None]
+                w_reste = sum(w for w, _ in reste)
+                sans = sum(w * s for w, s in reste) / w_reste
+                pillar_scores[pillar] = min(pillar_scores[pillar], sans)
     if not pillar_scores:
         return None
     total_pw = sum(pillar_weights[p] for p in pillar_scores)

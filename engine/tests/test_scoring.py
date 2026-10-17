@@ -11,7 +11,9 @@ def test_alpha_dual_grades(methodology, alpha):
     r = score_datacenter(alpha, methodology)
     site = r["grades"]["site"]
     # no editorial gloss: the letter and the one-decimal score, nothing else
-    assert (site["grade"], site["score"]) == ("B", 79.3)
+    # 79,3 -> 79,8 le 2026-10-17 : L1 est passé en `penalty_only`, donc son état « aucune
+    # pénalité » est inerte et ne tire plus la moyenne du pilier. La LETTRE ne bouge pas.
+    assert (site["grade"], site["score"]) == ("B", 79.8)
     assert "close_to" not in site
     pp = r["grades"]["project_process"]
     # v0.2.0: heat recovery split out of F5 → E7 (project) entered MVP; alpha discloses no
@@ -34,7 +36,10 @@ def test_beta_site_grade_on_rounded_score(methodology, beta):
     # iter-2 base thresholds move beta to 30.0 -> E. The rounding guarantee this
     # test pins (letter graded on the rounded published score, so number and letter
     # can never contradict) holds at any value; re-pin a .x5 boundary case at freeze.
-    assert (site["grade"], site["score"]) == ("E", 30.0)
+    # 30,0 -> 29,5 le 2026-10-17 : beta porte L1=`sensitive`, et une colonne à pénalité seule
+    # ne peut plus faire MONTER son pilier (elle le faisait : 29,5 -> 30,0, c'est la contrainte
+    # éthique qui l'a attrapé). La LETTRE ne bouge pas.
+    assert (site["grade"], site["score"]) == ("E", 29.5)
 
 
 def test_beta_project_process_insufficient_data(methodology, beta):

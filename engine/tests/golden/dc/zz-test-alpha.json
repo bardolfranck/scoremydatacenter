@@ -13,7 +13,7 @@
   "grades": {
     "site": {
       "grade": "B",
-      "score": 79.3,
+      "score": 79.8,
       "documentation": {
         "level": "high",
         "score": 1.0,
@@ -93,7 +93,7 @@
     },
     "local_impact": {
       "grade": "B",
-      "score": 65.0,
+      "score": 65.9,
       "coverage": 1.0,
       "documentation": {
         "level": "high",

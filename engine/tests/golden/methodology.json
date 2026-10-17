@@ -808,7 +808,7 @@
       "normalization": {
         "type": "categorical",
         "categories": {
-          "strong_fit": 90,
+          "strong_fit": 60,
           "neutral": 60,
           "sensitive": 30
         }
@@ -826,7 +826,8 @@
         "strong_fit",
         "neutral",
         "sensitive"
-      ]
+      ],
+      "polarity": "penalty_only"
     },
     {
       "id": "L2",

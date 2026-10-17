@@ -13,7 +13,7 @@
     "grades": {
       "site": {
         "grade": "B",
-        "score": 79.3,
+        "score": 79.8,
         "documentation": {
           "level": "high",
           "score": 1.0,
@@ -93,7 +93,7 @@
       },
       "local_impact": {
         "grade": "B",
-        "score": 65.0,
+        "score": 65.9,
         "coverage": 1.0,
         "documentation": {
           "level": "high",
@@ -159,7 +159,7 @@
     "grades": {
       "site": {
         "grade": "E",
-        "score": 30.0,
+        "score": 29.5,
         "documentation": {
           "level": "high",
           "score": 0.89,
@@ -229,7 +229,7 @@
       },
       "local_impact": {
         "grade": "E",
-        "score": 16.2,
+        "score": 12.0,
         "coverage": 0.4,
         "documentation": {
           "level": "medium",

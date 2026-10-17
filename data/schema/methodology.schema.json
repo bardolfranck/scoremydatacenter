@@ -640,6 +640,13 @@
         "informational": {
           "type": "boolean",
           "description": "FAIT CONTEXTUEL, PAS UN JUGEMENT. Un indicateur informationnel est publié sur la fiche et n'entre dans aucun score : « oui » n'y est ni bon ni mauvais. Né du cas Fouju (2026-10-06) — le porteur argumentait que son artificialisation est compensée par une désignation régionale ; créditer cette désignation aurait laissé un plaidoyer améliorer la note, et aurait rendu intestable l'hypothèse même que le chantier de validation doit éprouver. On publie le fait, on ne le note pas. Inertie garantie par `weight_in_pillar: 0` (zéro au numérateur ET au dénominateur de l'agrégat, importance nulle dans la confiance) ; `mvp` reste VRAI, sinon l'indicateur n'atteint jamais l'artefact publié et il n'y a plus rien à afficher."
+        },
+        "polarity": {
+          "type": "string",
+          "enum": [
+            "penalty_only"
+          ],
+          "description": "Fait de conception : cet axe mesure un RISQUE A LA BAISSE, pas un avantage a la hausse. Le moteur en derive que le plafond de l'echelle (l'etat « aucune penalite ») est INERTE — il n'entre pas dans l'agregat et n'active pas le poids du pilier, mais la valeur reste PUBLIEE sur la fiche. Pose en 10-2026 apres mesure : ajouter une colonne a un pilier mince deplacait 121 lettres dont 102 AVEC LA COLONNE VIDE DE SENS. Opt-in par indicateur, jamais global : un neutre inerte partout re-noterait le corpus entier en silence."
         }
       }
     }
