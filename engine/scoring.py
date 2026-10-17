@@ -22,7 +22,7 @@ Only MVP indicators are scored; tier-3 out-of-MVP indicators are ignored for
 both score and confidence.
 """
 
-from .normalize import normalized_score
+from .normalize import normalized_score, is_inert
 
 # Right-of-reply window length (doctrine A-24/A-26). Single source; validate re-exports it.
 
@@ -221,6 +221,14 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
     def _substantive(d: dict) -> float | None:
         s = per_indicator[d["id"]]
         if s is not None:
+            # POLARITÉ (R&D, 2026-10-17) : sur une colonne qui ne peut que pénaliser, l'état
+            # « aucune pénalité » est INERTE — il ne tire pas la moyenne du pilier et n'active
+            # pas son poids. Sans ça, poser une colonne sur un pilier mince déplace des lettres
+            # par pure renormalisation : mesuré, 102 sur 121 bougeaient AVEC LA COLONNE VIDE DE
+            # SENS. La valeur reste PUBLIÉE sur la fiche — inerte veut dire « ne déplace pas la
+            # note », pas « n'existe pas ».
+            if is_inert(d, s):
+                return None
             return s
         if d["block"] in BLOCKS_PROJECT_PROCESS and entries[d["id"]]["status"] == "missing":
             return 0.0

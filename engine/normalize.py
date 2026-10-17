@@ -60,6 +60,51 @@ def _proxy_rubric(norm: dict, proxies: dict, indicator_id: str) -> float:
     return total
 
 
+# ── POLARITÉ : une colonne qui ne peut que PÉNALISER ────────────────────────────────────────
+# Posé par R&D le 2026-10-17, né d'une mesure : ajouter une colonne à un pilier mince déplaçait
+# 121 lettres dont 102 AVEC LA COLONNE VIDE DE SENS — l'arithmétique de renormalisation, pas la
+# donnée. L'invariant qui en sort : « une colonne qui ne porte aucune information déplace ZÉRO
+# lettre ».
+#
+# Le porteur est un FAIT DE CONCEPTION déclaré sur l'indicateur — `polarity: "penalty_only"`,
+# « cet axe mesure un risque à la baisse, pas un avantage à la hausse » — et le moteur en DÉRIVE
+# l'inertie du plafond. On ne liste pas à la main les états inertes : une liste tenue à la main
+# dérive de l'intention qu'elle est censée servir.
+#
+# ⚠️ Le champ est OPT-IN par indicateur, jamais global. Rendre tout neutre inerte d'un coup
+# re-noterait le corpus entier en silence — on corrigerait un re-notage accidentel par un
+# re-notage massif, exactement le silence qu'on fuit.
+PENALTY_ONLY = "penalty_only"
+
+
+def no_penalty_ceiling(definition: dict) -> float:
+    """Le score le plus haut que l'échelle DÉCLARE : l'état « aucune pénalité ».
+
+    Dérivé, jamais listé. Sur une échelle catégorielle {pénalisant …, neutre}, le plafond EST le
+    neutre — donc l'inertie se déduit du barème au lieu d'être recopiée à côté de lui.
+    Volontairement limité au catégoriel : un indicateur continu n'a pas d'état « neutre »
+    identifiable sans convention inventée, et inventer ici produirait une inertie silencieuse
+    sur une plage de valeurs. On refuse bruyamment plutôt que de deviner."""
+    norm = definition.get("normalization") or {}
+    if norm.get("type") != "categorical":
+        raise GateError(
+            f"GATE 1: indicator {definition['id']}: polarity={PENALTY_ONLY!r} n'est défini que "
+            f"pour une normalisation catégorielle (reçu {norm.get('type')!r}) — le plafond "
+            f"« aucune pénalité » ne se dérive pas d'une échelle continue"
+        )
+    return max(float(v) for v in norm["categories"].values())
+
+
+def is_inert(definition: dict, score: float | None) -> bool:
+    """Vrai quand ce score ne doit PAS entrer dans l'agrégat — il n'apporte aucune pénalité.
+
+    La fiche continue de PUBLIER la valeur : inerte veut dire « ne déplace pas la note », pas
+    « n'existe pas ». C'est la même discipline que publier un fait à côté d'une note."""
+    if score is None or definition.get("polarity") != PENALTY_ONLY:
+        return False
+    return score >= no_penalty_ceiling(definition)
+
+
 def normalized_score(definition: dict, entry: dict, parameters: dict) -> float | None:
     """Return the 0-100 sub-score for one indicator entry, or None if it has no value.
 
