@@ -750,6 +750,23 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rail-label-na { color: var(--muted); font-weight: 600; font-style: italic; }
 .rank-ref { margin: -10px 0 14px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
 /* Plain-language legend for project statuses (jargon "en instruction"… doesn't speak to everyone) */
+/* LE REPÈRE DE LA COMMUNE — « vous êtes ici ». Il doit se lire comme un point de vue,
+   pas comme un projet : pas de couleur de note, une cible creuse et une étiquette. Un
+   lecteur qui confondrait ce repère avec une épingle croirait qu'un data center est posé
+   sur sa mairie. */
+.map-lieu-repere { position: relative; width: 18px; height: 18px; border-radius: 50%;
+  border: 3px solid var(--ink, #14181f); background: transparent;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.9); }
+.map-lieu-repere::after { content: ""; position: absolute; inset: 5px; border-radius: 50%;
+  background: var(--ink, #14181f); }
+.map-lieu-repere > span { position: absolute; left: 50%; top: calc(100% + 7px);
+  transform: translateX(-50%); white-space: nowrap; font-size: 0.78rem; font-weight: 700;
+  color: var(--ink, #14181f); background: rgba(255,255,255,0.92); padding: 1px 6px;
+  border-radius: 4px; }
+
+/* Le lien qui prolonge la recherche de commune vers la carte. */
+.rank-lieu .rl-carte { display: inline-block; margin: 10px 0 0; font-weight: 600; }
+
 /* RÉPONSE DE LIEU — « aucun data center ici, voici les plus proches ». Ce n'est pas un
    message d'erreur : c'est la réponse la plus fréquente du site, puisque la plupart des
    communes n'ont pas de data center. Elle se présente donc comme un résultat, pas comme

@@ -487,9 +487,16 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
         + "</p>"
       : "";
 
+    // Le prolongement du scénario : le lecteur sait « 5,5 km », il veut savoir DE QUEL CÔTÉ.
+    // On passe la coordonnée, pas un niveau de zoom : c'est la carte qui sait jusqu'où ouvrir
+    // pour que les voisins tiennent dans l'image, et elle le recalcule si le corpus bouge.
+    const versCarte = `${L.mapPath}?lieu=${lat},${lon}&nom=${encodeURIComponent(nom)}`;
+
     blocLieu.innerHTML =
       `<p class="rl-titre">${L.none.replace("{lieu}", `<strong>${nom}</strong> (${pays})`)}</p>`
-      + `<p class="rl-sous">${L.nearest}</p><ol class="rl-liste">${items}</ol>${autres}`
+      + `<p class="rl-sous">${L.nearest}</p><ol class="rl-liste">${items}</ol>`
+      + `<a class="rl-carte" href="${versCarte}">${L.onMap.replace("{lieu}", nom)} ↗</a>`
+      + autres
       + `<p class="rl-src">${L.source}</p>`;
     blocLieu.hidden = false;
   }

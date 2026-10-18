@@ -108,6 +108,24 @@ const { variant, labels } = Astro.props;
     const focusId = new URLSearchParams(location.search).get("dc");
     const markerById: Record<string, { marker: any; center: [number, number] }> = {};
 
+    // ── « MONTRE-MOI CHEZ MOI » : /fr/carte?lieu=<lat>,<lon>&nom=<commune> ────────────────
+    // Les liens existants répondent « montre-moi CE data center » ; celui-ci répond
+    // « montre-moi CHEZ MOI, et ce qu'il y a autour ». C'est la suite de la recherche par
+    // commune : le lecteur vient d'apprendre qu'un site est à 5,5 km, et sa question
+    // suivante est physique — de quel côté ? Cinq kilomètres au nord d'une ville et cinq
+    // kilomètres sous le vent ne sont pas la même nouvelle.
+    const paramLieu = new URLSearchParams(location.search).get("lieu");
+    const lieuDemande = (() => {
+      if (!paramLieu) return null;
+      const [la, lo] = paramLieu.split(",").map(Number);
+      // Une coordonnée hors domaine n'est pas un plantage, c'est une URL bricolée : on
+      // l'ignore et la carte s'ouvre normalement.
+      if (!Number.isFinite(la) || !Number.isFinite(lo)) return null;
+      if (Math.abs(la) > 90 || Math.abs(lo) > 180) return null;
+      return { lat: la, lon: lo };
+    })();
+    const nomLieu = new URLSearchParams(location.search).get("nom") || "";
+
     // Popup carries ONLY the free floor (name, operator, place, status, site LETTER).
     // The depth lives on the fiche (free HTML) + the API (paid). Shared by the hero DOM
     // markers AND the full map's clustered dot clicks (2026-07-30), so both read identically.
@@ -235,7 +253,7 @@ const { variant, labels } = Astro.props;
       const { marker, center } = markerById[focusId];
       map.flyTo({ center, zoom: 9, duration: 800 });
       marker.togglePopup();
-    } else if (geo.features.length > 1 && !(isFull && focusId)) {
+    } else if (geo.features.length > 1 && !(isFull && focusId) && !lieuDemande) {
       // Frame the corpus — except on the full map WITH a deep-link, where the cluster
       // setup below flies to the target site (avoids a fit→fly double-move flash).
       // 🔴 LE PLAN D'OUVERTURE DIT CE QU'EST LE CORPUS. Il s'ouvrait sur l'Europe, et c'était
@@ -441,7 +459,7 @@ const { variant, labels } = Astro.props;
           worldBounds.extend(f.geometry.coordinates);
           if (inEurope(f.properties.country)) bounds.extend(f.geometry.coordinates);
         }
-        if (!focusId && geo.features.length > 1) {
+        if (!focusId && !lieuDemande && geo.features.length > 1) {
           map.fitBounds(worldBounds, { padding: 60, maxZoom: 6, duration: 0 });
         }
 
@@ -640,6 +658,85 @@ const { variant, labels } = Astro.props;
       } catch {
         /* no watchlist artifact yet — the layer is optional */
       }
+    }
+
+    // ── Cadrer sur la commune demandée ───────────────────────────────────────────────────
+    // Le cadrage se CALCULE ici plutôt que d'être passé dans l'URL : la carte connaît les
+    // points, elle sait donc jusqu'où ouvrir pour que les voisins tiennent dans l'image. Une
+    // URL qui porterait un niveau de zoom mentirait dès qu'un site apparaît ou disparaît du
+    // corpus, et deux pages se contrediraient sur « les plus proches ».
+    if (lieuDemande) {
+      const km = (aLon: number, aLat: number, bLon: number, bLat: number) => {
+        const r = Math.PI / 180;
+        const dLat = (bLat - aLat) * r, dLon = (bLon - aLon) * r;
+        const h = Math.sin(dLat / 2) ** 2
+          + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLon / 2) ** 2;
+        return 2 * 6371 * Math.asin(Math.sqrt(h));
+      };
+      const proches = geo.features
+        .map((f: any) => ({ c: f.geometry.coordinates as [number, number],
+                            d: km(lieuDemande.lon, lieuDemande.lat,
+                                  f.geometry.coordinates[0], f.geometry.coordinates[1]) }))
+        .sort((a: any, b: any) => a.d - b.d)
+        .slice(0, 5);
+
+      // Le repère de la commune n'est PAS une épingle de projet : c'est le point de vue du
+      // lecteur. Il doit se distinguer au premier regard des sites notés, sinon on lui fait
+      // croire qu'un data center est posé sur sa mairie.
+      const repere = document.createElement("div");
+      repere.className = "map-lieu-repere";
+      if (nomLieu) {
+        const etiquette = document.createElement("span");
+        // textContent, jamais innerHTML : ce nom vient de l'URL, donc du lecteur, donc
+        // potentiellement de n'importe qui lui ayant envoyé un lien.
+        etiquette.textContent = nomLieu;
+        repere.appendChild(etiquette);
+      }
+      new maplibregl.Marker({ element: repere, anchor: "center" })
+        .setLngLat([lieuDemande.lon, lieuDemande.lat])
+        .addTo(map);
+
+      const cadre = new maplibregl.LngLatBounds();
+      cadre.extend([lieuDemande.lon, lieuDemande.lat]);
+      for (const p of proches) cadre.extend(p.c);
+
+      // La légende et la barre de filtres sont POSÉES SUR la carte : un cadrage à marge
+      // uniforme place les voisins pile dessous. Vu depuis Ferney-Voltaire, les cinq sites
+      // genevois disparaissaient derrière la légende — soit exactement ce que le lien
+      // promettait de montrer. On mesure donc les panneaux au lieu de deviner, et on retombe
+      // sur une marge simple quand ils sont absents (le héros n'en a pas) ou quand l'écran
+      // est trop étroit pour qu'une réserve ait un sens.
+      const hauteur = (sel: string) =>
+        Math.ceil((root.querySelector(sel) as HTMLElement)?.getBoundingClientRect().height ?? 0);
+      const largeur = (sel: string) =>
+        Math.ceil((root.querySelector(sel) as HTMLElement)?.getBoundingClientRect().width ?? 0);
+      const boite = map.getContainer();
+      const etroit = boite.clientWidth < 720;
+      const marges = {
+        top: Math.max(70, hauteur(".map-veille-ctl") + 30),
+        right: 70,
+        bottom: Math.max(60, hauteur(".map-legend") + 24),
+        // Sur un écran étroit la légende occupe toute la largeur : lui réserver une colonne
+        // à gauche ne protège rien et pousse le repère hors cadre. Elle est déjà couverte
+        // par la marge basse.
+        left: etroit ? 40 : Math.max(60, largeur(".map-legend") + 24),
+      };
+      // 🔴 DES MARGES PLUS GRANDES QUE LA CARTE NE CADRENT PLUS RIEN. Sur un téléphone, la
+      // légende fait la moitié de la hauteur : additionnée à la barre de filtres, la réserve
+      // dépassait la zone utile et le repère sortait par le haut. On borne donc chaque axe à
+      // 60 % de sa dimension, en gardant la proportion entre les deux côtés — mieux vaut un
+      // voisin un peu sous la légende qu'une commune hors de l'écran.
+      const borne = (a: number, b: number, total: number): [number, number] => {
+        const max = total * 0.6;
+        if (a + b <= max || a + b === 0) return [a, b];
+        const k = max / (a + b);
+        return [Math.floor(a * k), Math.floor(b * k)];
+      };
+      [marges.top, marges.bottom] = borne(marges.top, marges.bottom, boite.clientHeight);
+      [marges.left, marges.right] = borne(marges.left, marges.right, boite.clientWidth);
+      // `maxZoom` protège le cas où un data center serait sur la commune même : sans lui, le
+      // cadre serait un point et la carte plongerait au niveau de la rue.
+      map.fitBounds(cadre, { padding: marges, maxZoom: 11, duration: 0 });
     }
   });
 </script>
