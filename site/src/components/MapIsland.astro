@@ -764,6 +764,19 @@ const { variant, labels } = Astro.props;
       const normLieu = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "")
         .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
       const tranches = new Map<string, any[]>();
+      // Les fiches portent le CODE de la région (« US.NH ») ; son nom vit dans une table à
+      // part, chargée une fois, parce qu'il y a 165 000 lieux pour 290 régions. Elle porte
+      // les deux langues : la table de référence de GeoNames est anglicisée, et la page
+      // française affichait « Normandy » à côté de notre propre « Normandie ».
+      let nomsRegions: Record<string, any> = {};
+      fetch("/data/lieux/regions.json")
+        .then((r) => (r.ok ? r.json() : {}))
+        .then((t) => { nomsRegions = t; })
+        .catch(() => { /* sans la table, on affiche le pays seul : dégradé, pas cassé */ });
+      // La langue se lit sur la page elle-même : le composant est le même pour /fr/carte et
+      // /map, et seul `<html lang>` dit laquelle est servie.
+      const langue = document.documentElement.lang === "en" ? "en" : "fr";
+      const nomRegion = (code: string) => (code && nomsRegions[code]?.[langue]) || "";
       const chargerTranche = async (prefixe: string): Promise<any[]> => {
         if (tranches.has(prefixe)) return tranches.get(prefixe)!;
         try {
@@ -825,7 +838,11 @@ const { variant, labels } = Astro.props;
           ? exacts.concat(prefixes.filter((c) => !exacts.includes(c)))
           : prefixes)
           .slice(0, 5)
-          .map((c: any[]) => ({ type: "lieu" as const, titre: c[0], sous: c[1],
+          // « Berlin (US) » ne permet pas de choisir : il y a plusieurs Berlin aux
+          // États-Unis. Le pays ne situe rien À L'INTÉRIEUR d'un pays — c'est l'État ou la
+          // région qui le fait, et c'est le repère que le lecteur connaît.
+          .map((c: any[]) => ({ type: "lieu" as const, titre: c[0],
+                                sous: [nomRegion(c[5]), c[1]].filter(Boolean).join(" · "),
                                 lat: c[2], lon: c[3] }));
 
         const resultats = [...projets, ...communes];

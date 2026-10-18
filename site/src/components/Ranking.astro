@@ -384,6 +384,17 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const tranches = new Map<string, any[]>();
   let demandeEnCours = 0;
+  // Les fiches portent le CODE de la région (« US.NH ») ; son nom vit dans une table à
+  // part, chargée une fois — 165 000 lieux pour 290 régions. Elle porte les deux langues,
+  // parce que la table de référence de GeoNames est anglicisée : la page française
+  // affichait « Vernon (Normandy) » juste au-dessus de « Nation Data Center – Normandie ».
+  let nomsRegions: Record<string, any> = {};
+  fetch("/data/lieux/regions.json")
+    .then((r) => (r.ok ? r.json() : {}))
+    .then((t) => { nomsRegions = t; })
+    .catch(() => { /* sans la table, on affiche le pays seul : dégradé, pas cassé */ });
+  const langue = document.documentElement.lang === "en" ? "en" : "fr";
+  const nomRegion = (code: string) => (code && nomsRegions[code]?.[langue]) || "";
 
   async function chargerTranche(prefixe: string): Promise<any[]> {
     if (tranches.has(prefixe)) return tranches.get(prefixe)!;
@@ -437,7 +448,10 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                                   : prefixes;
     if (!trouves.length) return masquerBloc();
 
-    const [nom, pays, lat, lon] = trouves[0];
+    const [nom, pays, lat, lon, , region] = trouves[0];
+    // « Berlin (US) » ne permet pas de choisir : il y a plusieurs Berlin aux États-Unis.
+    // Le pays ne situe rien À L'INTÉRIEUR d'un pays — c'est l'État ou la région qui le fait.
+    const situe = (code: string, p: string) => [nomRegion(code), p].filter(Boolean).join(" · ");
     const proches = Array.from(tbody.querySelectorAll("tr"))
       .map((row) => {
         const rLat = parseFloat((row as HTMLElement).dataset.lat ?? "");
@@ -483,7 +497,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       ? `<p class="rl-autres">${L.ambiguous.replace("{n}", String(homonymes.length))} `
         // Le pays seul ne départage pas : la France a plusieurs Vernon. La population, si.
         + homonymes.slice(0, 3).map((c: any[]) =>
-            `<span>${c[0]} (${c[1]}${c[4] ? `, ${c[4].toLocaleString()} ${L.inhabitants}` : ""})</span>`).join(", ")
+            `<span>${c[0]} (${situe(c[5], c[1])}${c[4] ? `, ${c[4].toLocaleString()} ${L.inhabitants}` : ""})</span>`).join(", ")
         + "</p>"
       : "";
 
@@ -493,7 +507,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     const versCarte = `${L.mapPath}?lieu=${lat},${lon}&nom=${encodeURIComponent(nom)}`;
 
     blocLieu.innerHTML =
-      `<p class="rl-titre">${L.none.replace("{lieu}", `<strong>${nom}</strong> (${pays})`)}</p>`
+      `<p class="rl-titre">${L.none.replace("{lieu}", `<strong>${nom}</strong> (${situe(region, pays)})`)}</p>`
       + `<p class="rl-sous">${L.nearest}</p><ol class="rl-liste">${items}</ol>`
       + `<a class="rl-carte" href="${versCarte}">${L.onMap.replace("{lieu}", nom)} ↗</a>`
       + autres

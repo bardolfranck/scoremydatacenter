@@ -63,8 +63,69 @@ def normalise(nom: str) -> str:
     return " ".join("".join(c if c.isalnum() else " " for c in base).split())
 
 
-def lieux_du_fichier(chemin: Path):
-    """Rend (nom affichable, pays, lat, lon, population) des lignes retenues."""
+def regions(cache: Path) -> tuple[dict[str, str], dict[str, dict]]:
+    """Table des régions : code admin1 → nom, dans les DEUX langues du site.
+
+    POURQUOI UNE RÉGION (Franck, 2026-10-18) : la suggestion « Berlin (US) » ne permet pas
+    de choisir, il y a plusieurs Berlin aux États-Unis. Le pays ne situe rien À L'INTÉRIEUR
+    d'un pays — c'est l'État ou la région qui le fait, et c'est le repère que le lecteur a.
+
+    On prend admin1 (État américain, région française) et non admin2 (comté, département) :
+    une seule règle pour tous les pays, et c'est le niveau qui tranche le cas rencontré.
+
+    POURQUOI LES DEUX LANGUES : la table de référence de GeoNames est anglicisée. La page
+    française affichait « Vernon (Normandy · FR) » juste au-dessus de « Nation Data Center
+    – Normandie » — le même territoire, deux orthographes, dans la même liste. On relit donc
+    le nom local dans les noms alternatifs, par langue.
+
+    ET POURQUOI UNE TABLE À PART plutôt qu'un nom dans chaque fiche : il y a 165 000 lieux
+    pour quelques centaines de régions. Porter le nom dans chaque enregistrement le
+    répéterait, en double (fr + en). La fiche garde le CODE, court et très répétitif, et la
+    table se charge une fois.
+    """
+    table = cache / "admin1CodesASCII.txt"
+    if not table.is_file():
+        # Le dictionnaire reste utilisable sans : les suggestions perdent la région, pas la
+        # commune. On le DIT plutôt que de rendre un champ vide sans explication.
+        print(f"gazetteer: {table.name} absent — suggestions sans région", file=sys.stderr)
+        return {}, {}
+
+    # code admin1 → (nom de référence, identifiant GeoNames de la région)
+    reference: dict[str, tuple[str, str]] = {}
+    for ligne in table.read_text(encoding="utf-8", errors="replace").splitlines():
+        champs = ligne.split("\t")
+        if len(champs) >= 4 and champs[0]:
+            reference[champs[0]] = (champs[1], champs[3])
+
+    # Noms alternatifs : on ne lit QUE les identifiants des régions, pas les 12 millions de
+    # lignes du fichier. `isPreferredName` l'emporte quand la langue en propose plusieurs.
+    voulus = {gid: code for code, (_, gid) in reference.items()}
+    locaux: dict[str, dict[str, tuple[str, bool]]] = defaultdict(dict)
+    dossier_alt = cache / "alt"
+    for fichier in sorted(dossier_alt.glob("*.txt")) if dossier_alt.is_dir() else []:
+        with fichier.open(encoding="utf-8", errors="replace") as fh:
+            for ligne in fh:
+                champs = ligne.rstrip("\n").split("\t")
+                if len(champs) < 4:
+                    continue
+                code = voulus.get(champs[1])
+                if code is None or champs[2] not in ("fr", "en"):
+                    continue
+                prefere = len(champs) > 4 and champs[4] == "1"
+                courant = locaux[code].get(champs[2])
+                if courant is None or (prefere and not courant[1]):
+                    locaux[code][champs[2]] = (champs[3], prefere)
+
+    noms: dict[str, dict] = {}
+    for code, (defaut, _) in reference.items():
+        fr = locaux.get(code, {}).get("fr", (defaut, False))[0]
+        en = locaux.get(code, {}).get("en", (defaut, False))[0]
+        noms[code] = {"fr": fr, "en": en} if fr != en else {"fr": fr, "en": fr}
+    return {code: v["en"] for code, v in noms.items()}, noms
+
+
+def lieux_du_fichier(chemin: Path, noms_regions: dict[str, str]):
+    """Rend (nom affichable, pays, lat, lon, population, région) des lignes retenues."""
     with chemin.open(encoding="utf-8", errors="replace") as fh:
         for ligne in fh:
             champs = ligne.rstrip("\n").split("\t")
@@ -81,7 +142,11 @@ def lieux_du_fichier(chemin: Path):
                 continue
             if not commune and pop < POP_MINIMALE:
                 continue
-            yield champs[1], champs[8], lat, lon, pop
+            pays = champs[8]
+            # On porte le CODE, pas le nom : court, très répétitif (donc quasi gratuit
+            # une fois compressé), et traduisible à l'affichage.
+            code = f"{pays}.{champs[10]}" if champs[10] else ""
+            yield champs[1], pays, lat, lon, pop, (code if code in noms_regions else "")
 
 
 def main() -> int:
@@ -101,11 +166,14 @@ def main() -> int:
 
     # GeoNames porte souvent la commune (ADM4) ET son chef-lieu (P) sous le même nom, au même
     # endroit. Deux entrées pour un lieu, c'est du poids pour rien et une liste qui bégaie.
+    noms_regions, regions_par_langue = regions(CACHE)
     vus: set = set()
     tranches: dict[str, list] = defaultdict(list)
     retenus = 0
     for fichier in fichiers:
-        for nom, pays, lat, lon, pop in lieux_du_fichier(fichier):
+        if fichier.name == "admin1CodesASCII.txt":
+            continue                      # table de correspondance, pas un dump de pays
+        for nom, pays, lat, lon, pop, code_region in lieux_du_fichier(fichier, noms_regions):
             cle_nom = normalise(nom)
             if not cle_nom:
                 continue
@@ -114,13 +182,32 @@ def main() -> int:
                 continue
             vus.add(cle)
             retenus += 1
+            # Une région qui répète la commune n'aide personne à choisir : les villes-États
+            # rendent « Berlin (State of Berlin) », « Wien (Vienna) », « Hamburg (Hamburg) ».
+            # On la tait — la région n'est là QUE pour départager des homonymes ; quand
+            # elle redit le nom, elle ne départage rien. Vérifié dans les DEUX langues :
+            # il suffit qu'une seule répète pour que la mention soit du bruit.
+            libelles = regions_par_langue.get(code_region, {})
+            if code_region and any(cle_nom in normalise(v) for v in libelles.values()):
+                code_region = ""
             tranches[cle_nom[:LONGUEUR_PREFIXE]].append([nom, pays, round(lat, 4),
-                                                         round(lon, 4), pop])
+                                                         round(lon, 4), pop, code_region])
 
     if SORTIE.is_dir():
         for vieux in SORTIE.glob("*.json"):
             vieux.unlink()
     SORTIE.mkdir(parents=True, exist_ok=True)
+
+    # La table des régions, à part : quelques centaines d'entrées pour 165 000 lieux, et
+    # elle porte les deux langues. Le client la charge une fois et traduit le code.
+    # Restreinte aux régions RÉELLEMENT citées par le dictionnaire : la table de GeoNames
+    # couvre le monde entier (3 865 entrées, 47 ko compressés) alors que nos dix-neuf pays
+    # en utilisent une fraction. Le lecteur la télécharge à sa première recherche ; lui
+    # envoyer les régions du Paraguay serait payer pour rien.
+    citees = {item[5] for items in tranches.values() for item in items if item[5]}
+    (SORTIE / "regions.json").write_text(
+        json.dumps({c: v for c, v in sorted(regions_par_langue.items()) if c in citees},
+                   separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
 
     octets = 0
     for prefixe, items in tranches.items():
