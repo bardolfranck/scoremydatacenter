@@ -118,7 +118,7 @@ build:
 # qui a besoin de le lire depuis le navigateur. Notre corpus, lui, reste bouchonné.
 prune-public-json:
 	@find site/dist/data -name '*.json' ! -name '*.geojson' ! -path 'site/dist/data/lieux/*' -type f -exec sh -c 'printf "%s" "{\"gone\":true,\"note\":\"Bulk data endpoints are retired - structured access is available via the API.\"}" > "$$1"' _ {} \;
-	@echo "prune: $$(find site/dist/data -name '*.json' ! -name '*.geojson' ! -path 'site/dist/data/lieux/*' | wc -l | tr -d ' ') data JSON replaced by no-store stub; geojson kept → $$(ls site/dist/data/*.geojson 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ') · dictionnaire de lieux servi ($$(ls site/dist/data/lieux/*.json 2>/dev/null | wc -l | tr -d ' ') tranches)"
+	@echo "prune: $$(find site/dist/data -name '*.json' ! -name '*.geojson' ! -path 'site/dist/data/lieux/*' | wc -l | tr -d ' ') data JSON replaced by no-store stub; geojson kept → $$(ls site/dist/data/*.geojson 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ') · dictionnaire de lieux servi ($$(ls site/dist/data/lieux/*.json 2>/dev/null | grep -cv regions.json) tranches + table des régions)"
 
 test: headers-check
 	uv run pytest -q
