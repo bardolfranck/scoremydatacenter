@@ -750,6 +750,25 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rail-label-na { color: var(--muted); font-weight: 600; font-style: italic; }
 .rank-ref { margin: -10px 0 14px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
 /* Plain-language legend for project statuses (jargon "en instruction"… doesn't speak to everyone) */
+/* RÉPONSE DE LIEU — « aucun data center ici, voici les plus proches ». Ce n'est pas un
+   message d'erreur : c'est la réponse la plus fréquente du site, puisque la plupart des
+   communes n'ont pas de data center. Elle se présente donc comme un résultat, pas comme
+   un vide — cadre net, liste numérotée, distance en évidence. */
+.rank-lieu { margin: 0 0 18px; padding: 14px 16px; border: 1px solid var(--line, #e3e3e3);
+  border-left: 3px solid var(--accent, #0f5fb8); border-radius: 6px; background: var(--card, #fff); }
+.rank-lieu .rl-titre { margin: 0 0 2px; font-size: 1.02rem; }
+.rank-lieu .rl-sous { margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); }
+.rank-lieu .rl-liste { margin: 0; padding-left: 1.25rem; display: grid; gap: 5px; }
+.rank-lieu .rl-liste li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.rank-lieu .rl-ou { font-size: 0.82rem; color: var(--muted); }
+/* La distance est l'information, pas la décoration : elle est en chiffres tabulaires pour
+   que les cinq lignes s'alignent à l'œil. */
+.rank-lieu .rl-km { margin-left: auto; font-family: var(--font-mono); font-size: 0.8rem;
+  font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rank-lieu .rl-autres { margin: 9px 0 0; font-size: 0.8rem; color: var(--muted); }
+.rank-lieu .rl-src { margin: 8px 0 0; font-size: 0.72rem; color: var(--muted); }
+@media (max-width: 520px) { .rank-lieu .rl-km { margin-left: 0; } }
+
 .rank-status-legend { display: flex; flex-wrap: wrap; gap: 5px 14px; align-items: baseline; margin: -6px 0 16px; font-size: 0.8rem; color: var(--muted); line-height: 1.4; }
 .rank-status-legend .rsl-label { font-family: var(--font-mono); font-size: 0.64rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); align-self: center; }
 .rank-status-legend .rsl-item b { color: var(--ink-soft); font-weight: 700; }

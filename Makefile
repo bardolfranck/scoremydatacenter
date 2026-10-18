@@ -112,9 +112,13 @@ build:
 # with a tiny no-store STUB, so the asset still EXISTS in the deployment:
 # Cloudflare then has something authoritative to serve and replaces the stale
 # corpus. Only the two geojson the map fetches at runtime keep real (Seau-A) data.
+# `data/lieux/` est EXCLU du bouchonnage, et ce n'est pas une entorse à l'anti-pillage :
+# ce dictionnaire de communes n'est pas notre donnée, c'est GeoNames (CC BY 4.0), déjà
+# public à la source. Le protéger ne défendrait rien et casserait la recherche par lieu,
+# qui a besoin de le lire depuis le navigateur. Notre corpus, lui, reste bouchonné.
 prune-public-json:
-	@find site/dist/data -name '*.json' ! -name '*.geojson' -type f -exec sh -c 'printf "%s" "{\"gone\":true,\"note\":\"Bulk data endpoints are retired - structured access is available via the API.\"}" > "$$1"' _ {} \;
-	@echo "prune: $$(find site/dist/data -name '*.json' ! -name '*.geojson' | wc -l | tr -d ' ') data JSON replaced by no-store stub; geojson kept → $$(ls site/dist/data/*.geojson 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ')"
+	@find site/dist/data -name '*.json' ! -name '*.geojson' ! -path 'site/dist/data/lieux/*' -type f -exec sh -c 'printf "%s" "{\"gone\":true,\"note\":\"Bulk data endpoints are retired - structured access is available via the API.\"}" > "$$1"' _ {} \;
+	@echo "prune: $$(find site/dist/data -name '*.json' ! -name '*.geojson' ! -path 'site/dist/data/lieux/*' | wc -l | tr -d ' ') data JSON replaced by no-store stub; geojson kept → $$(ls site/dist/data/*.geojson 2>/dev/null | xargs -n1 basename 2>/dev/null | tr '\n' ' ') · dictionnaire de lieux servi ($$(ls site/dist/data/lieux/*.json 2>/dev/null | wc -l | tr -d ' ') tranches)"
 
 test: headers-check
 	uv run pytest -q
@@ -151,6 +155,7 @@ comparator-projection:
 prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py
 	uv run python scripts/build_comparator.py
+	uv run python scripts/build_gazetteer.py
 	$(MAKE) scrub-grades
 	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    $(COLLECT).media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2

@@ -97,9 +97,13 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
         </span>
       </a>
       <form class="header-search" action={lang === "fr" ? "/fr/classement" : "/ranking"} method="get" role="search">
+        {/* Le libellé promettait « un site, un opérateur, un pays » — jamais une commune,
+            qui est pourtant la façon dont un riverain ou un élu arrive ici. Depuis le
+            dictionnaire de lieux (2026-10-18), taper un nom de commune RÉPOND, même quand
+            elle n'a aucun data center : on annonce donc ce que la boîte sait faire. */}
         <input type="search" name="q"
-          placeholder={lang === "fr" ? "Rechercher un site, un opérateur, un pays…" : "Search a site, an operator, a country…"}
-          aria-label={lang === "fr" ? "Rechercher dans les projets notés" : "Search the scored projects"} />
+          placeholder={lang === "fr" ? "Rechercher une commune, un site, un opérateur…" : "Search a town, a site, an operator…"}
+          aria-label={lang === "fr" ? "Rechercher une commune ou un projet noté" : "Search a town or a scored project"} />
       </form>
       <nav class="main-nav" aria-label="Site sections">
         {nav.map((item) => (

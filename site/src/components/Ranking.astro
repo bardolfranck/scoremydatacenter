@@ -10,6 +10,7 @@ import type { NavNode } from "../config/nav";
 import ScoreBadge from "./ScoreBadge.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
+import { readFileSync } from "node:fs";
 
 const { lang, t, nav, altHref, altLabel } = Astro.props as {
   lang: "fr" | "en"; t: any; nav: NavNode[];
@@ -94,6 +95,20 @@ const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").r
 // Accent-insensitive haystack for the basic search engine (client mirrors this).
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.country].filter(Boolean).join(" "));
+
+// RECHERCHE PAR LIEU (Franck 2026-10-18) : chaque ligne porte sa position pour que le
+// navigateur puisse répondre « les plus proches de la commune que vous cherchez ».
+// La coordonnée est celle de la carte publique — arrondie à ~1 km, déjà servie dans
+// map.geojson. On n'expose donc rien de neuf : on réutilise, à la décimale près, ce que la
+// carte montre déjà. Republier ici une position plus fine défairait en silence l'arrondi
+// décidé pour l'exposition.
+const mapData = JSON.parse(
+  readFileSync(new URL("../../public/data/map.geojson", import.meta.url), "utf8"));
+const coordsParId: Record<string, [number, number]> = Object.fromEntries(
+  ((mapData as any).features ?? [])
+    .filter((f: any) => f?.properties?.id && Array.isArray(f?.geometry?.coordinates))
+    .map((f: any) => [f.properties.id, f.geometry.coordinates as [number, number]])
+);
 ---
 
 <Base
@@ -159,6 +174,15 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
       )}
       <p class="sr-only">{t.srSummary}</p>
 
+      {/* RÉPONSE DE LIEU — le troisième état du classement. Il n'en avait que deux : des
+          lignes, ou rien. « Rien » était un mensonge par omission : chercher
+          « Ferney-Voltaire » ne rendait aucune ligne alors que cinq data centers sont à
+          moins de 21 km, dont quatre en Suisse — qu'aucune recherche textuelle ne trouvera
+          jamais, puisqu'une frontière n'est pas un mot. Le bloc transforme l'absence en
+          réponse. Il est VIDE au rendu et rempli par le navigateur : le dictionnaire de
+          communes ne descend qu'à la demande, par tranche. */}
+      <div class="rank-lieu" id="rank-lieu" hidden data-labels={JSON.stringify(t.lieu)}></div>
+
       <div class="rank-wrap">
         <table class="rank-table" id="rank-table">
           <thead>
@@ -179,6 +203,10 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
                 data-status={dc.project_status}
                 data-country={dc.country}
                 data-search={haystack(dc)}
+                data-lon={coordsParId[dc.id]?.[0]}
+                data-lat={coordsParId[dc.id]?.[1]}
+                data-nom={dc.name}
+                data-commune={dc.municipality ?? ""}
                 data-k-site={gradeRank(dc.grades.site)}
                 data-k-operator={gradeRank(dc.grades.project_process)}
                 data-k-confidence={confidenceRank[dc.confidence.level]}
@@ -343,7 +371,146 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
   if (sortSel.selectedIndex < 0) sortSel.value = "site";
   if (statusSel.selectedIndex < 0) statusSel.value = "all";
 
+  // ── RECHERCHE PAR LIEU ────────────────────────────────────────────────────────────────
+  // Quand le texte ne rend AUCUNE ligne, la question n'est pas close : le lecteur a peut-être
+  // tapé le nom de sa commune. On va alors chercher le lieu dans le dictionnaire embarqué et
+  // on répond par les data centers les plus proches — en kilomètres, pas en mots.
+  const blocLieu = document.getElementById("rank-lieu")!;
+  const L = JSON.parse(blocLieu.dataset.labels || "{}");
+  // La normalisation doit être EXACTEMENT celle du générateur (scripts/build_gazetteer.py) :
+  // c'est elle qui décide du nom de la tranche à télécharger. Deux normalisations qui
+  // divergent rendraient des communes introuvables, et sans la moindre erreur à l'écran.
+  const normLieu = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const tranches = new Map<string, any[]>();
+  let demandeEnCours = 0;
+
+  async function chargerTranche(prefixe: string): Promise<any[]> {
+    if (tranches.has(prefixe)) return tranches.get(prefixe)!;
+    try {
+      const r = await fetch(`/data/lieux/${prefixe.replace(/ /g, "_")}.json`);
+      // Une tranche absente n'est pas une panne : c'est « aucune commune ne commence
+      // ainsi ». On mémorise le vide pour ne pas redemander à chaque frappe.
+      const data = r.ok ? await r.json() : [];
+      tranches.set(prefixe, data);
+      return data;
+    } catch {
+      tranches.set(prefixe, []);
+      return [];
+    }
+  }
+
+  const RAYON_TERRE_KM = 6371;
+  const km = (aLon: number, aLat: number, bLon: number, bLat: number) => {
+    const r = Math.PI / 180;
+    const dLat = (bLat - aLat) * r, dLon = (bLon - aLon) * r;
+    const h = Math.sin(dLat / 2) ** 2
+      + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLon / 2) ** 2;
+    return 2 * RAYON_TERRE_KM * Math.asin(Math.sqrt(h));
+  };
+
+  const fmtKm = (d: number) => (d < 10 ? d.toFixed(1) : String(Math.round(d)))
+    .replace(".", L.decimal || ".");
+
+  async function repondreParLieu(saisie: string) {
+    const q = normLieu(saisie);
+    // Deux lettres : en dessous, « pa » ramènerait des milliers de communes pour une frappe
+    // qui n'est pas encore une recherche.
+    if (q.length < 2) return masquerBloc();
+    const jeton = ++demandeEnCours;
+    const candidats = await chargerTranche(q.slice(0, 2));
+    if (jeton !== demandeEnCours) return;           // une frappe plus récente a pris la main
+
+    // 🔴 DEUX RÈGLES, DANS CET ORDRE — et les deux ont été établies par un contre-exemple,
+    // pas par raisonnement :
+    //   1. UN NOM EXACT BAT UN PRÉFIXE. Sans ça, « Vernon » élisait « Vernon Hills »
+    //      (Illinois, 22 000 hab.) parce qu'elle est à peine plus peuplée que Vernon dans
+    //      l'Eure — et répondait avec les data centers de Chicago.
+    //   2. À ÉGALITÉ DE FORME, LE PLUS PEUPLÉ GAGNE. La tranche arrive déjà triée ainsi.
+    // Le cas « Ferney » traverse les deux : aucun nom exact ne lui correspond (les deux
+    // hameaux américains homonymes sont sous le plancher de 100 habitants du dictionnaire),
+    // donc on tombe sur le préfixe le plus peuplé — Ferney-Voltaire. Les homonymes restent
+    // listés en dessous : rien n'est caché, et trois lettres de plus suffisent à les viser.
+    const prefixes = candidats.filter((c: any[]) => normLieu(c[0]).startsWith(q));
+    const exacts = prefixes.filter((c: any[]) => normLieu(c[0]) === q);
+    const trouves = exacts.length ? exacts.concat(prefixes.filter((c) => !exacts.includes(c)))
+                                  : prefixes;
+    if (!trouves.length) return masquerBloc();
+
+    const [nom, pays, lat, lon] = trouves[0];
+    const proches = Array.from(tbody.querySelectorAll("tr"))
+      .map((row) => {
+        const rLat = parseFloat((row as HTMLElement).dataset.lat ?? "");
+        const rLon = parseFloat((row as HTMLElement).dataset.lon ?? "");
+        if (Number.isNaN(rLat) || Number.isNaN(rLon)) return null;
+        return { row: row as HTMLElement, d: km(lon, lat, rLon, rLat) };
+      })
+      .filter(Boolean)
+      .sort((a: any, b: any) => a.d - b.d)
+      .slice(0, 5) as { row: HTMLElement; d: number }[];
+    if (!proches.length) return masquerBloc();
+
+    // ⚠️ ON LISTE PAR DISTANCE, JAMAIS PAR NOTE. Un rayon traverse les frontières et nos
+    // notes sont calibrées pays par pays : classer un B suisse et un D français dans la même
+    // colonne inviterait une comparaison que la grille ne soutient pas. Le pays est donc
+    // toujours affiché, et l'ordre est géographique.
+    const items = proches.map(({ row, d }) => {
+      const href = row.querySelector("a")?.getAttribute("href") ?? "#";
+      const commune = row.dataset.commune || "";
+      const drapeau = row.dataset.country || "";
+      return `<li><a href="${href}">${row.dataset.nom}</a>`
+        + `<span class="rl-ou">${commune}${commune && drapeau ? " · " : ""}${drapeau}</span>`
+        + `<b class="rl-km">${L.away.replace("{km}", fmtKm(d))}</b></li>`;
+    }).join("");
+
+    // « 21 autres lieux portent ce nom » était faux : le compte ramassait tous les préfixes,
+    // donc Vernonia et Vernon Hills, qui ne portent pas ce nom. On ne compte que les vrais
+    // homonymes. Et on dédoublonne à l'affichage sur (nom, pays, position au dixième de
+    // degré) : GeoNames décrit souvent une même commune deux fois — la commune et son
+    // chef-lieu — avec des populations légèrement différentes, et la liste bégayait
+    // « Vernon (FR), Vernon (FR) ». Le dixième de degré (~11 km) sépare deux communes
+    // homonymes réelles sans séparer deux descriptions du même lieu.
+    const memeNom = trouves.filter((c: any[]) => normLieu(c[0]) === normLieu(nom));
+    const vus = new Set<string>();
+    const homonymes = memeNom.filter((c: any[]) => {
+      const cle = `${normLieu(c[0])}|${c[1]}|${c[2].toFixed(1)}|${c[3].toFixed(1)}`;
+      if (vus.has(cle)) return false;
+      vus.add(cle);
+      return true;
+    }).slice(1);
+
+    const autres = homonymes.length
+      ? `<p class="rl-autres">${L.ambiguous.replace("{n}", String(homonymes.length))} `
+        // Le pays seul ne départage pas : la France a plusieurs Vernon. La population, si.
+        + homonymes.slice(0, 3).map((c: any[]) =>
+            `<span>${c[0]} (${c[1]}${c[4] ? `, ${c[4].toLocaleString()} ${L.inhabitants}` : ""})</span>`).join(", ")
+        + "</p>"
+      : "";
+
+    blocLieu.innerHTML =
+      `<p class="rl-titre">${L.none.replace("{lieu}", `<strong>${nom}</strong> (${pays})`)}</p>`
+      + `<p class="rl-sous">${L.nearest}</p><ol class="rl-liste">${items}</ol>${autres}`
+      + `<p class="rl-src">${L.source}</p>`;
+    blocLieu.hidden = false;
+  }
+
+  function masquerBloc() {
+    blocLieu.hidden = true;
+    blocLieu.innerHTML = "";
+  }
+
+  function peutEtreUnLieu() {
+    const saisie = searchInput.value.trim();
+    if (!saisie) return masquerBloc();
+    const visibles = Array.from(tbody.querySelectorAll("tr"))
+      .some((r) => (r as HTMLElement).style.display !== "none");
+    // Le bloc ne parle QUE dans le silence : si des lignes répondent, le lecteur a trouvé.
+    if (visibles) return masquerBloc();
+    void repondreParLieu(saisie);
+  }
+
   [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => apply()));
-  searchInput.addEventListener("input", () => apply());
+  searchInput.addEventListener("input", () => { apply(); peutEtreUnLieu(); });
   apply(false);
+  peutEtreUnLieu();
 </script>
