@@ -660,44 +660,52 @@ const { variant, labels } = Astro.props;
       }
     }
 
-    // ── Cadrer sur la commune demandée ───────────────────────────────────────────────────
+    // ── Cadrer sur une commune ───────────────────────────────────────────────────────────
     // Le cadrage se CALCULE ici plutôt que d'être passé dans l'URL : la carte connaît les
     // points, elle sait donc jusqu'où ouvrir pour que les voisins tiennent dans l'image. Une
     // URL qui porterait un niveau de zoom mentirait dès qu'un site apparaît ou disparaît du
     // corpus, et deux pages se contrediraient sur « les plus proches ».
-    if (lieuDemande) {
-      const km = (aLon: number, aLat: number, bLon: number, bLat: number) => {
-        const r = Math.PI / 180;
-        const dLat = (bLat - aLat) * r, dLon = (bLon - aLon) * r;
-        const h = Math.sin(dLat / 2) ** 2
-          + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLon / 2) ** 2;
-        return 2 * 6371 * Math.asin(Math.sqrt(h));
-      };
+    //
+    // Une seule fonction pour les DEUX entrées — le lien venu du classement (?lieu=…) et la
+    // recherche posée sur la carte. Deux implémentations finiraient par cadrer différemment
+    // la même commune, et le lecteur ne saurait pas laquelle croire.
+    const km = (aLon: number, aLat: number, bLon: number, bLat: number) => {
+      const r = Math.PI / 180;
+      const dLat = (bLat - aLat) * r, dLon = (bLon - aLon) * r;
+      const h = Math.sin(dLat / 2) ** 2
+        + Math.cos(aLat * r) * Math.cos(bLat * r) * Math.sin(dLon / 2) ** 2;
+      return 2 * 6371 * Math.asin(Math.sqrt(h));
+    };
+    let repereCourant: any = null;
+
+    const cadrerSurLieu = (lat: number, lon: number, nom: string, anime = false) => {
       const proches = geo.features
         .map((f: any) => ({ c: f.geometry.coordinates as [number, number],
-                            d: km(lieuDemande.lon, lieuDemande.lat,
-                                  f.geometry.coordinates[0], f.geometry.coordinates[1]) }))
+                            d: km(lon, lat, f.geometry.coordinates[0], f.geometry.coordinates[1]) }))
         .sort((a: any, b: any) => a.d - b.d)
         .slice(0, 5);
 
       // Le repère de la commune n'est PAS une épingle de projet : c'est le point de vue du
       // lecteur. Il doit se distinguer au premier regard des sites notés, sinon on lui fait
       // croire qu'un data center est posé sur sa mairie.
+      // Un seul repère à la fois : deux recherches successives laisseraient deux « vous êtes
+      // ici » sur la carte, ce qui n'a aucun sens.
+      repereCourant?.remove();
       const repere = document.createElement("div");
       repere.className = "map-lieu-repere";
-      if (nomLieu) {
+      if (nom) {
         const etiquette = document.createElement("span");
-        // textContent, jamais innerHTML : ce nom vient de l'URL, donc du lecteur, donc
-        // potentiellement de n'importe qui lui ayant envoyé un lien.
-        etiquette.textContent = nomLieu;
+        // textContent, jamais innerHTML : ce nom vient de l'URL ou d'un dictionnaire
+        // externe, donc potentiellement de n'importe qui ayant envoyé un lien au lecteur.
+        etiquette.textContent = nom;
         repere.appendChild(etiquette);
       }
-      new maplibregl.Marker({ element: repere, anchor: "center" })
-        .setLngLat([lieuDemande.lon, lieuDemande.lat])
+      repereCourant = new maplibregl.Marker({ element: repere, anchor: "center" })
+        .setLngLat([lon, lat])
         .addTo(map);
 
       const cadre = new maplibregl.LngLatBounds();
-      cadre.extend([lieuDemande.lon, lieuDemande.lat]);
+      cadre.extend([lon, lat]);
       for (const p of proches) cadre.extend(p.c);
 
       // La légende et la barre de filtres sont POSÉES SUR la carte : un cadrage à marge
@@ -736,7 +744,162 @@ const { variant, labels } = Astro.props;
       [marges.left, marges.right] = borne(marges.left, marges.right, boite.clientWidth);
       // `maxZoom` protège le cas où un data center serait sur la commune même : sans lui, le
       // cadre serait un point et la carte plongerait au niveau de la rue.
-      map.fitBounds(cadre, { padding: marges, maxZoom: 11, duration: 0 });
+      map.fitBounds(cadre, { padding: marges, maxZoom: 11, duration: anime ? 700 : 0 });
+    };
+
+    if (lieuDemande) cadrerSurLieu(lieuDemande.lat, lieuDemande.lon, nomLieu);
+
+    // ── RECHERCHE SUR LA CARTE ───────────────────────────────────────────────────────────
+    // La carte n'en avait aucune. Le champ de l'en-tête existe bien sur cette page, mais il
+    // EMMÈNE le lecteur vers le classement : on pose une question géographique et on se
+    // retrouve devant un tableau. Pour « qu'y a-t-il autour de chez moi », c'est à l'envers.
+    //
+    // Une seule boîte, deux natures de réponse — comme au classement. Les projets d'abord :
+    // ils sont le contenu propre de la carte, déjà chargés, et une recherche de carte qui ne
+    // saurait pas trouver « Equinix GV2 » paraîtrait cassée. Les communes ensuite, via le
+    // même dictionnaire embarqué, chargé par tranche à la frappe — rien ne sort du
+    // navigateur.
+    if (isFull) {
+      const S = labels.search ?? {};
+      const normLieu = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+      const tranches = new Map<string, any[]>();
+      const chargerTranche = async (prefixe: string): Promise<any[]> => {
+        if (tranches.has(prefixe)) return tranches.get(prefixe)!;
+        try {
+          const r = await fetch(`/data/lieux/${prefixe.replace(/ /g, "_")}.json`);
+          const data = r.ok ? await r.json() : [];
+          tranches.set(prefixe, data);
+          return data;
+        } catch {
+          tranches.set(prefixe, []);
+          return [];
+        }
+      };
+
+      const ctlRecherche = document.createElement("div");
+      ctlRecherche.className = "map-search-ctl";
+      ctlRecherche.innerHTML =
+        `<label class="ms-field"><span class="sr-only">${S.label ?? "Rechercher"}</span>`
+        + `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"`
+        + ` stroke-width="2" stroke-linecap="round" aria-hidden="true">`
+        + `<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`
+        + `<input type="search" autocomplete="off" placeholder="${S.placeholder ?? ""}"`
+        + ` aria-label="${S.label ?? ""}" /></label>`
+        + `<ul class="ms-results" hidden></ul>`;
+      canvas.appendChild(ctlRecherche);
+      const champ = ctlRecherche.querySelector("input") as HTMLInputElement;
+      const liste = ctlRecherche.querySelector(".ms-results") as HTMLElement;
+
+      const fermer = () => { liste.hidden = true; liste.innerHTML = ""; };
+
+      let frappe = 0;
+      const proposer = async () => {
+        const brut = champ.value.trim();
+        const q = normLieu(brut);
+        if (q.length < 2) return fermer();
+        const jeton = ++frappe;
+
+        // Les projets viennent des points déjà en mémoire : aucune requête, réponse immédiate.
+        const projets = geo.features
+          .filter((f: any) => normLieu(
+            [f.properties.name, f.properties.municipality, f.properties.operator]
+              .filter(Boolean).join(" ")).includes(q))
+          .slice(0, 4)
+          .map((f: any) => ({
+            type: "dc" as const,
+            id: f.properties.id,
+            titre: f.properties.name,
+            sous: [f.properties.municipality, f.properties.country].filter(Boolean).join(" · "),
+            c: f.geometry.coordinates as [number, number],
+          }));
+
+        const candidats = await chargerTranche(q.slice(0, 2));
+        if (jeton !== frappe) return;                 // une frappe plus récente a pris la main
+        // Mêmes deux règles qu'au classement, pour la même raison : un nom exact bat un
+        // préfixe (sinon « Vernon » élit Vernon Hills), et à forme égale le plus peuplé
+        // gagne (la tranche arrive déjà triée ainsi).
+        const prefixes = candidats.filter((c: any[]) => normLieu(c[0]).startsWith(q));
+        const exacts = prefixes.filter((c: any[]) => normLieu(c[0]) === q);
+        const communes = (exacts.length
+          ? exacts.concat(prefixes.filter((c) => !exacts.includes(c)))
+          : prefixes)
+          .slice(0, 5)
+          .map((c: any[]) => ({ type: "lieu" as const, titre: c[0], sous: c[1],
+                                lat: c[2], lon: c[3] }));
+
+        const resultats = [...projets, ...communes];
+        if (!resultats.length) {
+          liste.innerHTML = `<li class="ms-vide">${S.none ?? ""}</li>`;
+          liste.hidden = false;
+          return;
+        }
+        liste.innerHTML = "";
+        resultats.forEach((r, i) => {
+          const li = document.createElement("li");
+          const b = document.createElement("button");
+          b.type = "button";
+          b.dataset.i = String(i);
+          // textContent : ces libellés viennent du corpus ET d'un dictionnaire externe.
+          const t1 = document.createElement("strong");
+          t1.textContent = r.titre;
+          const t2 = document.createElement("span");
+          t2.textContent = r.sous;
+          const marque = document.createElement("i");
+          marque.className = r.type === "dc" ? "ms-tag-dc" : "ms-tag-lieu";
+          marque.textContent = r.type === "dc" ? (S.project ?? "") : (S.town ?? "");
+          b.append(marque, t1, t2);
+          li.appendChild(b);
+          liste.appendChild(li);
+        });
+        liste.hidden = false;
+
+        liste.onclick = (e) => {
+          const b = (e.target as HTMLElement).closest("button");
+          if (!b) return;
+          const r = resultats[Number(b.dataset.i)];
+          const url = new URL(location.href);
+          if (r.type === "dc") {
+            // Un projet : on vole dessus ET on ouvre sa bulle, exactement comme le lien
+            // ?dc= du classement — une seule façon d'atteindre une fiche depuis la carte.
+            // Sans la bulle, le lecteur arrive sur une pastille parmi d'autres et doit
+            // deviner laquelle il a demandée.
+            // Zoom 11,5 : au-delà du seuil de regroupement, sinon la cible reste fondue
+            // dans un anneau et la bulle désigne un point qu'on ne voit pas.
+            repereCourant?.remove();   // le « vous êtes ici » d'une recherche précédente
+            repereCourant = null;
+            map.flyTo({ center: r.c, zoom: 11.5, duration: 700 });
+            const f = geo.features.find((ft: any) => ft.properties.id === r.id);
+            if (f) {
+              new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
+                .setLngLat(f.geometry.coordinates)
+                .setHTML(sitePopupHtml(f.properties))
+                .addTo(map);
+            }
+            url.searchParams.set("dc", r.id);
+            url.searchParams.delete("lieu"); url.searchParams.delete("nom");
+          } else {
+            cadrerSurLieu(r.lat, r.lon, r.titre, true);
+            url.searchParams.set("lieu", `${r.lat},${r.lon}`);
+            url.searchParams.set("nom", r.titre);
+            url.searchParams.delete("dc");
+          }
+          // Toute vue a une adresse partageable — c'est la règle du site, et elle vaut
+          // autant pour un cadrage de commune que pour un tri de classement.
+          history.replaceState(null, "", url);
+          champ.value = r.titre;
+          fermer();
+        };
+      };
+
+      champ.addEventListener("input", () => { void proposer(); });
+      champ.addEventListener("keydown", (e) => { if (e.key === "Escape") fermer(); });
+      // Un clic ailleurs referme : une liste de suggestions qui reste ouverte masque la
+      // carte qu'on vient d'ouvrir.
+      document.addEventListener("click", (e) => {
+        if (!ctlRecherche.contains(e.target as Node)) fermer();
+      });
+      if (nomLieu) champ.value = nomLieu;
     }
   });
 </script>

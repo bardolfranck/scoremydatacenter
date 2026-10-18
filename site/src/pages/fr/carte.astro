@@ -35,6 +35,15 @@ const nav = FR_NAV;
       mapPath: "/fr/carte",
       viewFiche: "Voir la fiche →",
       powerUnknown: "puissance non communiquée",
+      // La carte n'avait aucune recherche : le champ de l'en-tête EMMÈNE le lecteur vers le
+      // classement, ce qui est à l'envers pour une question géographique.
+      search: {
+        label: "Rechercher une commune ou un projet sur la carte",
+        placeholder: "Commune, projet, opérateur…",
+        project: "projet",
+        town: "commune",
+        none: "Aucune commune ni projet de ce nom.",
+      },
       legendGraded: "notes du site",
       legendDonut: "anneau = composition des notes · centre = nombre de sites",
       legendPower: "taille = puissance (MW) · petit point = non communiquée",

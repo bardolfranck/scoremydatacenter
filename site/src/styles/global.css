@@ -296,6 +296,40 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 @media (max-width: 480px) {
   .map-veille-ctl { left: 10px; right: 10px; top: 10px; border-radius: 14px; }
 }
+/* RECHERCHE SUR LA CARTE — posée SOUS la barre de filtres plutôt qu'à côté : la barre
+   passe déjà à la ligne sur un écran moyen, et un champ ajouté dedans l'aurait fait
+   déborder sur la carte qu'elle sert à lire. */
+/* Posée SOUS la barre de filtres, pas à côté : la barre porte sa phrase juridique
+   « en veille = pas noté » et occupe déjà la largeur utile. Un champ à sa droite la
+   recouvrait — on masquait une mention qu'un avis juridique impose d'afficher. */
+.map-search-ctl { position: absolute; top: 112px; left: 14px; z-index: 3; width: min(300px, calc(100% - 28px)); }
+.ms-field { display: flex; align-items: center; gap: 7px; padding: 7px 11px; border: 1px solid var(--line);
+  border-radius: 999px; background: rgba(255,255,255,0.96); backdrop-filter: blur(6px);
+  box-shadow: var(--shadow); color: var(--muted); }
+.ms-field input { flex: 1; min-width: 0; border: none; background: transparent; outline: none;
+  font: inherit; font-size: 0.85rem; color: var(--ink); }
+.ms-results { list-style: none; margin: 6px 0 0; padding: 4px; max-height: 320px; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: 12px; background: #fff; box-shadow: var(--shadow); }
+.ms-results button { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; width: 100%;
+  padding: 7px 9px; border: none; border-radius: 8px; background: transparent; cursor: pointer;
+  text-align: left; font: inherit; }
+.ms-results button:hover, .ms-results button:focus-visible { background: #eef3f9; }
+.ms-results strong { font-size: 0.86rem; font-weight: 650; }
+.ms-results span { grid-column: 2; font-size: 0.76rem; color: var(--muted); }
+/* La pastille dit de QUELLE nature est la réponse : un projet qu'on note, ou une commune
+   qui n'en a peut-être aucun. Sans elle, les deux se lisent pareil et le lecteur croit
+   que sa commune est un data center. */
+.ms-results i { grid-row: span 2; align-self: center; padding: 2px 7px; border-radius: 999px;
+  font-size: 0.62rem; font-style: normal; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase; }
+.ms-tag-dc { background: #e8eff7; color: var(--accent); }
+.ms-tag-lieu { background: #ececec; color: var(--ink-soft); }
+.ms-vide { padding: 9px 10px; font-size: 0.8rem; color: var(--muted); }
+@media (max-width: 720px) {
+  /* La barre de filtres passe à plusieurs lignes à cette taille : on descend d'autant. */
+  .map-search-ctl { top: 164px; right: 10px; left: 10px; width: auto; }
+}
+
 .maplibregl-popup-content { padding: 14px 16px; border-radius: var(--radius); box-shadow: var(--shadow); font-family: inherit; }
 .map-popup { display: grid; gap: 7px; font-size: 0.9rem; }
 .map-popup strong { font-size: 0.98rem; }
