@@ -858,7 +858,13 @@ const seoDesc = seoLead
       {related.length > 0 && (
         <nav class="fiche-related" aria-label={t.related.title}>
           <h2>{t.related.title}</h2>
-          <p class="fiche-related-sub">{t.related.sub}</p>
+          {/* La maille se nomme comme elle se nomme DANS CE PAYS — même dérivation que
+              l'étiquette de la relation juste en dessous (`regionFR` vs `region`). Deux
+              règles séparées pour la même question auraient divergé, et c'est déjà ce qui
+              s'est passé : la phrase annonçait « même département » sur une fiche du Texas. */}
+          <p class="fiche-related-sub">{t.related.sub.replace(
+            "{maille}",
+            dc.country === "FR" ? t.related.subMailleFR : t.related.subMaille)}</p>
           <ul>
             {related.map((r: any) => (
               <li>

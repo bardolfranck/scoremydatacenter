@@ -146,7 +146,13 @@ const t = {
   shareSuffix: ", selon ScoreMyDataCenter",
   related: {
     title: "D'autres sites à comparer",
-    sub: "Même opérateur, même département, ou simplement les plus proches — notés dans la même grille.",
+    // La phrase d'intro était figée au cas français : une fiche du Texas annonçait
+    // « même département » au-dessus de cartes qui disent « même région ». Le mot suit
+    // maintenant le pays, comme l'étiquette de la relation juste en dessous — une seule
+    // réponse à « comment s'appelle la maille ici ».
+    sub: "Même opérateur, {maille}, ou simplement les plus proches — notés dans la même grille.",
+    subMailleFR: "même département",
+    subMaille: "même région",
     seeAll: "Voir le classement complet →",
     // Sous le kilomètre, la coordonnée publiée (arrondie à ~1 km) ne mesure plus rien :
     // voir PLANCHER_KM dans DcFiche. `nearbyMi` n'a pas de pendant ici — la page française
