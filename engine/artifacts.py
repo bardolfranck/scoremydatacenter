@@ -178,6 +178,66 @@ def drag_fields(results: dict[str, dict], datacenters: dict[str, dict],
     return out
 
 
+_PAYS_MINIMAL_DISCERNEMENT = 20
+
+
+def pillar_scope_fields(results: dict[str, dict], datacenters: dict[str, dict],
+                        methodology: dict) -> dict[str, dict[str, str]]:
+    """Par fiche, par pilier : « site », « national » ou « pays_mince ».
+
+    Une sous-note peut être exacte et ne rien dire DE CE SITE-LÀ. Si le seul indicateur qui
+    la porte prend la même valeur partout dans le pays, la lettre décrit le pays, pas le
+    projet : la publier sans le dire laisse un élu croire que son site a été distingué de
+    ses voisins alors qu'aucune donnée ne les sépare.
+
+    « National » se DÉRIVE, jamais ne se décrète : un indicateur distingue dans un pays s'il
+    y prend au moins deux valeurs NOTÉES distinctes. Une liste tenue à la main dériverait en
+    silence au premier pays ajouté ou à la première source recâblée — et elle mentirait
+    exactement là où personne ne regarde. La mesure se fait sur le score normalisé, pas sur
+    la valeur brute : deux valeurs brutes qui tombent dans la même classe ne séparent rien
+    dans la note.
+
+    Sous `_PAYS_MINIMAL_DISCERNEMENT` fiches, le verdict n'est pas rendu : « deux valeurs
+    distinctes » y parlerait de l'effectif, pas de la donnée. Avec trois fiches, un indicateur
+    parfaitement national peut sembler distinguer — et l'inverse.
+    """
+    pays = {dc_id: datacenters[dc_id]["identity"].get("country") for dc_id in results}
+    n_pays: dict[str, int] = {}
+    for cc in pays.values():
+        n_pays[cc] = n_pays.get(cc, 0) + 1
+
+    valeurs: dict[tuple[str, str], set] = {}
+    for dc_id, r in results.items():
+        cc = pays[dc_id]
+        for iid, s in r["indicators"].items():
+            if s is not None:
+                valeurs.setdefault((iid, cc), set()).add(s)
+    distingue = {k: len(v) >= 2 for k, v in valeurs.items()}
+
+    par_pilier: dict[str, list[str]] = {}
+    for d in methodology["indicators"]:
+        if d.get("mvp"):
+            par_pilier.setdefault(d["pillar"], []).append(d["id"])
+
+    out: dict[str, dict[str, str]] = {}
+    for dc_id, r in results.items():
+        cc = pays[dc_id]
+        portee = {}
+        for pilier, ids in par_pilier.items():
+            detail = r["pillars"].get(pilier) or {}
+            if "score" not in detail:      # rien à agréger : l'état se lit déjà sur la note
+                continue
+            if n_pays.get(cc, 0) < _PAYS_MINIMAL_DISCERNEMENT:
+                portee[pilier] = "pays_mince"
+            elif any(distingue.get((i, cc)) for i in ids if r["indicators"].get(i) is not None):
+                portee[pilier] = "site"
+            else:
+                portee[pilier] = "national"
+        if portee:
+            out[dc_id] = portee
+    return out
+
+
 def _watchlist_kind(entry: dict) -> str:
     """Feature-level marker kind, derived from the entry's facts (facts stay untouched).
 
@@ -213,6 +273,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # BASE sub-scores; the band tightens against it. servable_band gates it to pipeline fiches only.
     base_ids = [d["id"] for d in base_definitions(methodology)]
     drags = drag_fields(results, datacenters, methodology)
+    portees = pillar_scope_fields(results, datacenters, methodology)
 
     def _present(dc_id: str) -> dict:
         ind = results[dc_id]["indicators"]
@@ -321,6 +382,10 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             # Calculé à chaque build depuis le classement des contributions — jamais stocké,
             # donc jamais périmé. Absent quand la fiche est trop mince (voir dominant_drag).
             **({"dominant_drag": drags[dc_id]} if dc_id in drags else {}),
+            # Portée de chaque sous-note : distingue-t-elle CE site, ou décrit-elle le pays ?
+            # Dérivée à chaque build sur tout le corpus (voir pillar_scope_fields) — jamais
+            # une liste d'indicateurs « nationaux » tenue à la main.
+            **({"pillar_scope": portees[dc_id]} if dc_id in portees else {}),
             "publication": dc["publication"],
             "score_history": dc["score_history"],
             # Contestation signal (A-21): sourced facts published next to the note,

@@ -16,6 +16,7 @@ import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct } from "../config/stats";
 import { operateurIdentifie } from "../config/operator";
+import { COUNTRY_NAME } from "../config/flags";
 import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
@@ -310,7 +311,44 @@ const pillarBasis = (pid: string): string => {
     const lbl = indMeta[vus[0].id]?.label;
     return `${t.pillarBasis.one} ${t.quoteOpen}${L(lbl) || vus[0].id}${t.quoteClose}`;
   }
-  return t.pillarBasis.some.replace("{k}", String(vus.length)).replace("{n}", String(ids.length));
+  return "";   // au-delà d'un seul point, ce sont les MANQUANTS qu'on nomme (voir pilierManque)
+};
+
+// CE QUI MANQUE, NOMMÉ. Le compte « 2 indicateurs sur 3 » disait le NOMBRE alors que c'est le
+// POIDS qui décide : deux piliers au même compte n'ont pas la même note, et le lecteur ne
+// pouvait pas le savoir. On nomme donc les absents au lieu de les compter.
+//
+// Aucun pourcentage, aucune jauge (Franck, 2026-10-20) : publier la couverture en poids
+// livrerait la calibration — le corpus expose 11 motifs de présence pour 6 poids en énergie,
+// 9 pour 4 en eau, et une douzaine de fiches suffisent à résoudre le système.
+//
+// Et aucun qualificatif : pas de « les plus déterminants », car la hiérarchie EST le poids.
+// Pour la même raison la liste suit l'ordre des ID, jamais l'ordre des poids — l'ordre seul
+// livrerait le classement qu'on refuse de publier.
+const notantsParPilier: Record<string, string[]> = {};
+for (const i of methodology.indicators as any[]) {
+  if (i.mvp) (notantsParPilier[i.pillar] ??= []).push(i.id);
+}
+const pilierManque = (pid: string): string => {
+  const ids = notantsParPilier[pid] ?? [];
+  const absents = ids
+    .filter((id) => !dc.indicators.some((x: any) => x.id === id && OBSERVE.includes(x.status)))
+    .sort();
+  if (!absents.length || absents.length === ids.length) return "";
+  const noms = absents.map((id) => L(indMeta[id]?.label) || id);
+  return `${t.pillarMissing} ${noms.join(", ")}.`;
+};
+
+// LA PORTÉE DE LA SOUS-NOTE : parle-t-elle de ce site, ou du pays ? Dérivée au build sur tout
+// le corpus (engine/artifacts.pillar_scope_fields) — jamais une liste écrite à la main, qui
+// dériverait au premier pays ajouté. Une lettre juste peut ne rien dire DE CE SITE-LÀ : si le
+// seul indicateur qui la porte prend la même valeur partout dans le pays, elle décrit le pays.
+const paysNom = COUNTRY_NAME[dc.country]?.[lang] ?? dc.country;
+const pilierPortee = (pid: string): string => {
+  const p = dc.pillar_scope?.[pid];
+  if (p === "national") return t.pillarScope.national.replace("{pays}", paysNom);
+  if (p === "pays_mince") return t.pillarScope.thin;
+  return "";
 };
 
 // --- JSON-LD : dire la fiche aux machines, sans prétendre plus que la page ---------------
@@ -670,7 +708,14 @@ const seoDesc = seoLead
           {pillars.map((p) => {
             const detail = dc.pillars[p.id];
             const dots = detail?.documentation?.dots;
-            const basis = pillarBasis(p.id);
+            const note = detail?.grade && detail.grade !== "insufficient_data";
+            // Une sous-note sans lettre n'a rien à qualifier : son état se lit sur le badge.
+            const portee = note ? pilierPortee(p.id) : "";
+            const basis = note ? pillarBasis(p.id) : "";
+            // Quand un seul indicateur porte la note, énumérer les absents revient à dire
+            // « tous les autres » : l'information est déjà dans la phrase du dessus, et le
+            // tableau « Indicateurs suivis » porte le détail ligne par ligne.
+            const manque = note && !basis ? pilierManque(p.id) : "";
             return (
               <div class="pillar-block">
               <div class="pillar-line">
@@ -691,7 +736,9 @@ const seoDesc = seoLead
                   </span>
                 ) : <span class="pillar-dots"></span>}
               </div>
+              {portee && <p class="pillar-scope">{portee}</p>}
               {basis && <p class="pillar-basis">{basis}</p>}
+              {manque && <p class="pillar-basis">{manque}</p>}
               </div>
             );
           })}

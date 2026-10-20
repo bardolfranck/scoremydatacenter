@@ -664,6 +664,13 @@
     "indicator": "W1",
     "country": "ZZ"
   },
+  "pillar_scope": {
+    "energy": "pays_mince",
+    "water": "pays_mince",
+    "land_biodiversity": "pays_mince",
+    "local_impact": "pays_mince",
+    "transparency_governance": "pays_mince"
+  },
   "publication": {
     "status": "published",
     "operator_response": {

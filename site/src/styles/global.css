@@ -1149,7 +1149,9 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-legend { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 0.66rem; color: var(--muted); }
 .fiche-pillars { display: grid; gap: 9px; }
 .pillar-line { display: flex; align-items: center; gap: 14px; }
-.pillar-name { flex: 0 0 220px; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; color: var(--ink-soft); }
+/* `flex: 0 0 220px` imposait 220px au nom seul : avec le badge et les pastilles la ligne
+   demandait ~318px dans une colonne de 280, et débordait — le badge de note était coupé. */
+.pillar-name { flex: 1 1 auto; min-width: 0; display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.9rem; color: var(--ink-soft); }
 .pillar-name .pillar-icon { color: var(--muted); }
 .pillar-dots { font-family: var(--font-mono); font-size: 0.8rem; letter-spacing: 1px; white-space: nowrap; }
 .pillar-dots .on { color: var(--ink-soft); }
@@ -1164,8 +1166,11 @@ sup a { color: var(--accent); font-weight: 750; }
    survol — un lecteur qui parcourt le tableau ne survole pas. */
 .ind-info-flag { display: block; margin-top: 2px; font-family: var(--font-mono); font-size: 0.62rem;
   letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
-.pillar-block { display: grid; gap: 2px; }
+.pillar-block { display: grid; gap: 2px; min-width: 0; }
 .pillar-basis { margin: 0 0 0 24px; font-size: 0.72rem; color: var(--muted); line-height: 1.3; }
+/* La portée dit si la lettre distingue CE site ou décrit le pays : c'est une réserve sur la
+   note, pas un détail de documentation — elle se lit avant les manquants, et plus haut. */
+.pillar-scope { margin: 1px 0 0 24px; font-size: 0.72rem; line-height: 1.3; color: var(--ink-soft); font-style: italic; }
 
 /* Top row: pillar sub-scores (the numbers) beside the narrative synthesis (the
    reading). Present only when the artifact carries a `synthesis`. */
