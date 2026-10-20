@@ -357,6 +357,19 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
             # et voir qu'elle ne repose pas sur la seule géographie.
             "zone_puissance": cellules[i][0] if cellules[i] else None,
             "groupe_usage": cellules[i][1] if cellules[i] else None,
+            # LES SOUS-NOTES, EN LETTRES SEULEMENT. Une note globale identique peut recouvrir
+            # deux profils opposés — bon sur l'eau et mauvais sur l'énergie, ou l'inverse — et
+            # c'est exactement ce qu'un comparateur doit montrer. Des lettres, jamais un poids
+            # ni une couverture : la grammaire de l'étiquette d'électroménager, pas la
+            # calibration. Les mêmes lettres sont déjà publiées sur chaque fiche.
+            #
+            # La PORTÉE voyage avec : une lettre peut décrire le pays et non le site (voir
+            # engine.artifacts.pillar_scope_fields). Sans elle, une colonne uniforme d'un bout
+            # à l'autre du tableau se lirait comme une coïncidence remarquable au lieu d'un
+            # indicateur qui ne sépare rien dans ce pays.
+            "piliers": {pid: d.get("grade") for pid, d in (f.get("pillars") or {}).items()
+                        if d.get("grade") in ("A", "B", "C", "D", "E")},
+            "piliers_portee": f.get("pillar_scope") or {},
         })
     # LARGEUR DE DOCUMENTATION du pays : la médiane des variables communes à un rapprochement.
     # C'est ce nombre qui dit au lecteur la finesse de la sélection qu'il obtient — 11 en

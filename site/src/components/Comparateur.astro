@@ -39,6 +39,11 @@ const t = lang === "fr" ? {
   identique: "Identique à", surLes: "sur les", varObs: "variables observées chez les deux",
   rapproche: "Le rapproche de", separe: "Les sépare",
   varPartagees: "variables partagées", ouvrirFiche: "Chaque nom ouvre sa fiche dans un nouvel onglet.",
+  piliers: { energy: "Énergie", water: "Eau", land_biodiversity: "Foncier", local_impact: "Local", transparency_governance: "Transpar." },
+  pilierNational: "note nationale — la même pour tous les sites notés dans ce pays",
+  pilierMince: "trop peu de sites notés dans ce pays pour établir si cette note distingue celui-ci",
+  pilierAbsent: "pas de note pour ce pilier",
+  pilierLegende: "Les colonnes de pilier portent la lettre de chaque sous-note. Une lettre en gris ne distingue pas ce site : elle vaut pour tout le pays.",
   ecartPuissance: "d'écart de puissance à l'intérieur du même ordre de grandeur.",
   rien: "Aucun site ne correspond.",
   mince: "Pays dont le corpus ne permet pas encore de comparaison",
@@ -69,6 +74,11 @@ const t = lang === "fr" ? {
   identique: "Identical to", surLes: "on the", varObs: "variables observed in both",
   rapproche: "Brings it close to", separe: "Sets them apart",
   varPartagees: "shared variables", ouvrirFiche: "Each name opens its page in a new tab.",
+  piliers: { energy: "Energy", water: "Water", land_biodiversity: "Land", local_impact: "Local", transparency_governance: "Transpar." },
+  pilierNational: "national grade — the same for every site graded in this country",
+  pilierMince: "too few sites graded in this country to establish whether this grade sets it apart",
+  pilierAbsent: "no grade for this pillar",
+  pilierLegende: "Pillar columns carry each sub-grade's letter. A grey letter does not set this site apart: it holds for the whole country.",
   ecartPuissance: "power gap within the same order of magnitude.",
   rien: "No site matches.",
   mince: "Countries whose corpus does not yet allow a comparison",
@@ -395,22 +405,47 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
       <span>${t.molette}</span></div>`;
   }
 
+  // UNE NOTE GLOBALE IDENTIQUE PEUT RECOUVRIR DEUX PROFILS OPPOSÉS. Deux sites notés C ne
+  // sont pas le même site : l'un peut être bon sur l'eau et mauvais sur l'énergie, l'autre
+  // l'inverse. C'est précisément ce qu'un comparateur doit montrer, et la lettre globale
+  // seule l'efface. Des lettres, jamais un poids ni une couverture.
+  const PILIERS = ["energy", "water", "land_biodiversity", "local_impact", "transparency_governance"];
+
   function tableau(a, c) {
     const pastille = (g) => (g && g.length === 1)
       ? `<span class="cmp-grade cmp-grade-sm" style="background:${gcol(g)}${g === "C" ? ";color:#4a3c00" : ""}">${g}</span>`
       : `<span class="cmp-na">–</span>`;
+    // Une lettre qui ne distingue pas ce site-là se montre SANS sa couleur : la couleur dit
+    // « voici ce site », et elle mentirait sur une note qui vaut pour tout le pays. Sans cette
+    // nuance, une colonne uniforme d'un bout à l'autre du tableau se lirait comme une
+    // coïncidence au lieu d'un indicateur qui ne sépare rien ici.
+    const cellulePilier = (s, pid) => {
+      const g = (s.piliers ?? {})[pid];
+      if (!g) return `<td class="cmp-pil"><span class="cmp-na" title="${t.pilierAbsent}">–</span></td>`;
+      const portee = (s.piliers_portee ?? {})[pid];
+      if (portee === "national" || portee === "pays_mince") {
+        const titre = portee === "national" ? t.pilierNational : t.pilierMince;
+        return `<td class="cmp-pil"><span class="cmp-grade cmp-grade-sm cmp-grade-nat" title="${titre}">${g}</span></td>`;
+      }
+      return `<td class="cmp-pil"><span class="cmp-grade cmp-grade-sm" style="background:${gcol(g)}${g === "C" ? ";color:#4a3c00" : ""}">${g}</span></td>`;
+    };
     const ligne = (s, moi) => `<tr${moi ? ' class="cmp-moi"' : ""}>
       <td><a href="${fiche(s.id)}" target="_blank" rel="noopener">${s.nom}</a></td>
       <td>${s.commune ?? ""}</td><td>${statut(s)}</td><td>${pastille(s.note)}</td>
+      ${PILIERS.map((pid) => cellulePilier(s, pid)).join("")}
       <td class="cmp-num">${s.puissance_mw ? nb(s.puissance_mw) + " MW" : "—"}</td>
       <td class="cmp-num">${moi ? "" : c.find((x) => x.id === s.id).variables_partagees}</td></tr>`;
     return `<div class="cmp-tab-wrap"><table class="cmp-table">
       <thead><tr><th>${lang === "fr" ? "Site" : "Site"}</th><th>${lang === "fr" ? "Commune" : "Municipality"}</th>
       <th>${lang === "fr" ? "État" : "Status"}</th><th>${lang === "fr" ? "Note" : "Grade"}</th>
+      ${PILIERS.map((pid) => `<th class="cmp-pil">${t.piliers[pid]}</th>`).join("")}
       <th class="cmp-num">${lang === "fr" ? "Puissance" : "Power"}</th>
       <th class="cmp-num">${t.varPartagees}</th></tr></thead>
       <tbody>${ligne(a, true)}${c.map((x) => ligne(BY[x.id], false)).join("")}</tbody>
-      </table><p class="cmp-note">${t.ouvrirFiche}</p></div>`;
+      </table>${[a, ...c.map((x) => BY[x.id])].some((s) =>
+          Object.values(s.piliers_portee ?? {}).some((p) => p === "national" || p === "pays_mince"))
+        ? `<p class="cmp-note">${t.pilierLegende}</p>` : ""}
+      <p class="cmp-note">${t.ouvrirFiche}</p></div>`;
   }
 
   $("#cmp-pays").addEventListener("change", (e) => charger(e.target.value));
@@ -466,6 +501,11 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   .cmp-grade { display: inline-grid; place-items: center; width: 36px; height: 36px;
     border-radius: 9px; color: #fff; font-weight: 850; font-size: 1.05rem; flex: 0 0 auto; }
   .cmp-grade-sm { width: 23px; height: 23px; font-size: .79rem; border-radius: 6px; }
+  /* La couleur dit « voici CE site ». Une sous-note qui vaut pour tout le pays ne la porte
+     donc pas : elle garde sa lettre, en gris, et son explication dans l'infobulle. */
+  .cmp-grade-nat { background: transparent; color: #8fa0b3; border: 1px dashed #c6d0da; font-weight: 700; }
+  .cmp-pil { text-align: center; }
+  .cmp-table th.cmp-pil { text-align: center; }
   .cmp-na { color: var(--na, #8fa0b3); }
 
   #cmp-result { margin-top: 16px; background: var(--surface, #fff); border: 1px solid var(--line);
