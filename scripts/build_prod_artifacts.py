@@ -164,15 +164,42 @@ def patch_context_maps() -> int:
     # attrape les classes. Les deux portées valent retrait de l'image : `hold` parce que la
     # coordonnée est fausse, `carte` parce qu'elle est juste mais pas à l'échelle du
     # bâtiment. Absent ou illisible = on sert : ne pas servir coûte une page amputée.
+    # 🔴 LA MÊME QUESTION, UN SEUL RÉPONDANT (corrigé 2026-10-20). Ici on lisait le fichier
+    # d'exceptions À LA MAIN pendant que le rendu média appelait le faisceau
+    # `coord_trust.coord_hold` — deux lectures de « cette coordonnée est-elle tenue ? », donc
+    # deux réponses. Neuf fiches françaises sont tombées dans l'écart : tenues par le
+    # faisceau, donc JAMAIS re-rendues, mais absentes du fichier d'exceptions, donc servies
+    # quand même. Elles publiaient une photo aérienne annotée sur un point que nous ne
+    # revendiquons plus — exactement ce que le garde du rendu existe pour empêcher.
+    #
+    # Le faisceau se DÉCLARE lui-même « partagé par le rendu média ET le gate de service » :
+    # il n'y avait qu'à l'appeler. Il lit le fichier d'exceptions ET les autres signaux, donc
+    # on ne perd rien en passant par lui — on gagne tout ce que le fichier seul ignorait.
+    # Corollaire : le jour où une coordonnée est corrigée, la carte revient d'elle-même.
     sans_carte: set[str] = set()
-    excs = CAL / "geo-audit" / "coord-hold-exceptions.json"
-    if excs.is_file():
-        try:
-            sans_carte = {k for k, v in json.loads(excs.read_text()).items()
-                          if not k.startswith("_") and isinstance(v, dict)
-                          and v.get("portee") in ("hold", "carte")}
-        except (ValueError, OSError):
-            sans_carte = set()
+    try:
+        from pipelines.geo_audit.coord_trust import coord_hold as _coord_hold
+    except Exception:  # noqa: BLE001
+        _coord_hold = None
+    if _coord_hold is None:
+        # Repli sur le fichier seul : même source, lue plus pauvrement. On ne retire pas
+        # TOUTES les cartes faute de faisceau — « ne pas servir coûte une page amputée » —
+        # mais on le DIT, parce qu'un garde dégradé en silence est un garde absent.
+        print("prod-artifacts: ⚠ coord_trust indisponible — retrait des cartes limité au "
+              "fichier d'exceptions (faisceau non consulté)", file=sys.stderr)
+        excs = CAL / "geo-audit" / "coord-hold-exceptions.json"
+        if excs.is_file():
+            try:
+                sans_carte = {k for k, v in json.loads(excs.read_text()).items()
+                              if not k.startswith("_") and isinstance(v, dict)
+                              and v.get("portee") in ("hold", "carte")}
+            except (ValueError, OSError):
+                sans_carte = set()
+    else:
+        for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
+            fid = f.stem
+            if _coord_hold(fid).get("hold"):
+                sans_carte.add(fid)
     # LA LANGUE DE L'IMAGE EST CELLE DE LA PAGE, jamais celle du pays de la fiche
     # (Franck, 2026-10-05). Les clés portent donc la langue — `ctx/{id}-{lang}-{hmac}.webp`,
     # le hmac calculé sur « id-lang » pour qu'une variante ne se devine pas depuis l'autre.
@@ -192,6 +219,12 @@ def patch_context_maps() -> int:
         if d["id"] in sans_carte:
             if d.pop("context_map", None) is not None:
                 write_json(f, d)
+            # On compte la carte EXISTANTE qu'on refuse de servir, pas le champ qu'on vient
+            # de retirer : les fiches sont reconstruites à neuf à chaque build, donc le champ
+            # est souvent déjà absent et le compteur restait à zéro. Un retrait silencieux
+            # est un retrait qu'on ne saura pas expliquer le jour où quelqu'un le remarque.
+            key_ctx = media_key(d["id"], secret).replace("sat/", "ctx/")
+            if par_langue.get(d["id"]) or key_ctx in confirmed:
                 retirees += 1
             continue
         key = media_key(d["id"], secret).replace("sat/", "ctx/")
@@ -218,7 +251,7 @@ def patch_context_maps() -> int:
         patched += 1
     if retirees:
         print(f"prod-artifacts: carte RETIRÉE sur {retirees} fiche(s) — coordonnée "
-              f"recalée ou non confirmée (geo-audit/coord-hold-exceptions.json)")
+              "constatée fausse ou non confirmée (faisceau pipelines.geo_audit.coord_trust)")
     return patched
 
 
