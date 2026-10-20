@@ -15,8 +15,9 @@ Missing-data semantics (the transparency floor, pre-mortem R3):
   has looked yet) is NOT a 0: it is dropped from the score and instead lowers
   coverage. A 0 for something we never read would be as false as an A of complacency
   (RED FLAG fix, decision Franck Bardol 2026-07-09). The insufficient_data escape
-  (overall pp coverage below parameters.min_coverage, OR no project-block indicator
-  looked at) prevents grading an operator on near-zero — or un-examined — information.
+  (overall pp coverage below parameters.axe_projet_couverture_min, OR no project-block
+  indicator looked at) prevents grading an operator on near-zero — or un-examined —
+  information.
 
 Only MVP indicators are scored; tier-3 out-of-MVP indicators are ignored for
 both score and confidence.
@@ -307,7 +308,11 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
                            if entries[d["id"]]["status"] != "not_collected")
     project_total_w = sum(d["weight_in_pillar"] for d in project_defs)
     project_looked = looked_project_w / project_total_w if project_total_w else 1.0
-    if coverage < params["min_coverage"] or project_looked < params["min_coverage"]:
+    # Seuil PROPRE à l'axe projet. Il portait le nom `min_coverage`, partagé avec la porte
+    # d'affichage des sous-notes par pilier (plus bas) : un seul nombre pour deux métiers sans
+    # rapport. Dédoublé le 2026-10-20, même valeur, comportement inchangé.
+    seuil_axe = params.get("axe_projet_couverture_min", params["min_coverage"])
+    if coverage < seuil_axe or project_looked < seuil_axe:
         project_process = {"grade": INSUFFICIENT_DATA, "coverage": round(coverage, 3)}
     else:
         pp_score = _aggregate(scored, pp_defs, pillar_weights)

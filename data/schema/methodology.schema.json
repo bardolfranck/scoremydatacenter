@@ -160,7 +160,13 @@
           "type": "number",
           "minimum": 0,
           "maximum": 1,
-          "description": "Below this weighted coverage, a grade becomes 'insufficient_data' instead of a letter — applied to the global project/process grade AND cascaded to every per-pillar display sub-score (a pillar is never given a punitive letter drawn from unknowns)."
+          "description": "DISPLAY GATE for the per-pillar sub-scores only: below this weighted coverage, a pillar's sub-score is withheld as 'insufficient_data' instead of showing its letter. It does NOT gate the project/process axis — that validity floor is axe_projet_couverture_min, split out because one number was quietly doing two unrelated jobs."
+        },
+        "axe_projet_couverture_min": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "VALIDITY FLOOR of the project/process axis: below this weighted coverage of the 7 project/process indicators — or if no project-block indicator has been looked at — the axis grade becomes 'insufficient_data' rather than a letter drawn from near-zero information. Split from min_coverage on 2026-10-20 at the same value (0.4), behaviour unchanged: the two uses had no reason to move together, and neutralising the display gate without splitting them crashes the engine."
         },
         "min_site_coverage": {
           "type": "number",
