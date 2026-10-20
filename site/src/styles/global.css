@@ -809,9 +809,50 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
   border-left: 3px solid var(--accent, #0f5fb8); border-radius: 6px; background: var(--card, #fff); }
 .rank-lieu .rl-titre { margin: 0 0 2px; font-size: 1.02rem; }
 .rank-lieu .rl-sous { margin: 0 0 8px; font-size: 0.85rem; color: var(--muted); }
-.rank-lieu .rl-liste { margin: 0; padding-left: 1.25rem; display: grid; gap: 5px; }
-.rank-lieu .rl-liste li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
-.rank-lieu .rl-ou { font-size: 0.82rem; color: var(--muted); }
+/* BANDEAU DE PILIERS — l'étiquette du pneu, appliquée à un data center : les mêmes
+   quatre mesures, toujours aux mêmes places, comparables sans lire. L'entête SERT de
+   légende : la poser en bas obligerait à faire l'aller-retour à chaque ligne. */
+.rank-lieu .rl-liste { margin: 0; padding-left: 1.25rem; display: grid; gap: 6px; }
+.rank-lieu .rl-liste li,
+.rank-lieu .rl-tete { display: grid; grid-template-columns: 1fr auto auto auto;
+  gap: 4px 12px; align-items: center; }
+.rank-lieu .rl-tete { padding-left: 1.25rem; margin: 0 0 3px; }
+.rank-lieu .rl-qui { min-width: 0; }
+.rank-lieu .rl-ou { font-size: 0.82rem; color: var(--muted); margin-left: 6px; }
+.rank-lieu .rl-cols { display: grid; grid-auto-flow: column; grid-auto-columns: 34px; gap: 3px; }
+.rank-lieu .rl-cell { display: flex; align-items: center; justify-content: center; height: 24px;
+  border-radius: 4px; background: var(--c, var(--grade-na)); color: #fff;
+  font-family: var(--font-mono); font-size: 0.78rem; font-weight: 800; }
+.rank-lieu .g-a { --c: var(--grade-a); } .rank-lieu .g-b { --c: var(--grade-b); }
+.rank-lieu .g-c { --c: var(--grade-c); } .rank-lieu .g-d { --c: var(--grade-d); }
+.rank-lieu .g-e { --c: var(--grade-e); }
+/* Une case non mesurée ne doit pas pouvoir se lire comme une note moyenne. */
+.rank-lieu .rl-vide { background: repeating-linear-gradient(135deg, #eef1f4 0 4px, #e3e8ed 4px 8px);
+  color: #9aa7b4; border: 1px dashed #c6d0da; font-weight: 600; }
+.rank-lieu .rl-entete { font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.02em;
+  text-transform: uppercase; color: var(--muted); }
+.rank-lieu .rl-entete > span { display: flex; flex-direction: column; align-items: center;
+  gap: 1px; line-height: 1.1; }
+.rank-lieu .rl-entete i { font-style: normal; }
+.rank-lieu .rl-entete svg { opacity: 0.75; }
+.rank-lieu .rl-noteconf { display: flex; align-items: center; gap: 5px; }
+.rank-lieu .rl-note { min-width: 22px; height: 24px; padding: 0 5px; border-radius: 5px;
+  background: var(--c, var(--grade-na)); color: #fff; font-family: var(--font-mono);
+  font-size: 0.8rem; font-weight: 800; line-height: 24px; text-align: center; }
+/* La confiance porte sur la note d'ensemble, jamais sur un pilier : elle reste à côté
+   de la lettre, et pas dans le bandeau. */
+.rank-lieu .rl-conf { display: flex; gap: 2px; }
+.rank-lieu .rl-conf i { width: 4px; height: 4px; border-radius: 50%; background: #c6d0da; }
+.rank-lieu .rl-conf.c3 i:nth-child(-n+3),
+.rank-lieu .rl-conf.c2 i:nth-child(-n+2),
+.rank-lieu .rl-conf.c1 i:nth-child(1) { background: #64748b; }
+@media (max-width: 620px) {
+  /* Sur un téléphone la grille à quatre colonnes déborde : le bandeau passe sous le nom,
+     et l'entête disparaît — il ne servirait plus de titre de colonne. */
+  .rank-lieu .rl-tete { display: none; }
+  .rank-lieu .rl-liste li { grid-template-columns: 1fr auto; row-gap: 5px; }
+  .rank-lieu .rl-qui { grid-column: 1 / -1; }
+}
 /* La distance est l'information, pas la décoration : elle est en chiffres tabulaires pour
    que les cinq lignes s'alignent à l'œil. */
 .rank-lieu .rl-km { margin-left: auto; font-family: var(--font-mono); font-size: 0.8rem;

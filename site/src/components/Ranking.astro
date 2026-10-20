@@ -10,6 +10,7 @@ import type { NavNode } from "../config/nav";
 import ScoreBadge from "./ScoreBadge.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
+import PillarIcon from "./PillarIcon.astro";
 import { readFileSync } from "node:fs";
 
 const { lang, t, nav, altHref, altLabel } = Astro.props as {
@@ -104,6 +105,33 @@ const haystack = (dc: any) => norm([dc.name, dc.operator, dc.municipality, dc.co
 // décidé pour l'exposition.
 const mapData = JSON.parse(
   readFileSync(new URL("../../public/data/map.geojson", import.meta.url), "utf8"));
+// ── BANDEAU DE PILIERS (Franck 2026-10-20, d'après l'étiquette européenne du pneu) ────────
+// Quatre mesures toujours aux mêmes places, qu'on compare sans lire. L'étiquette du pneu ne
+// dit pas quel pneu est le meilleur : elle donne les axes, l'acheteur arbitre. C'est notre
+// doctrine — on situe, on ne juge pas — et nous avions déjà l'étiquette sans la montrer.
+//
+// 🔴 LES COLONNES SE DÉRIVENT DE LA COUVERTURE, ELLES NE SE CHOISISSENT PAS. Une colonne
+// vide sur presque toutes les lignes ne compare rien : elle n'a aucun pouvoir séparateur et
+// finit par se lire comme un défaut d'affichage. Mesuré sur le corpus servi : foncier 84 %,
+// eau 74 %, énergie 32 %, impact local 10 % — et transparence 0,1 %, soit DEUX fiches.
+// L'écart entre le quatrième et le cinquième est de deux ordres de grandeur, donc tout seuil
+// entre 1 % et 9 % retient les mêmes quatre colonnes : le seuil ne décide de rien, c'est le
+// trou qui décide. Et le jour où la transparence se collecte, sa colonne revient seule.
+const COUVERTURE_MINIMALE = 0.05;
+const pilierCouverture = (pid: string) =>
+  scores.filter((d: any) => typeof (d.pillars?.[pid]?.grade) === "string"
+    && LETTER_RANK[d.pillars[pid].grade]).length / Math.max(1, scores.length);
+// Les noms d'icônes des piliers : ceux des fiches, pour qu'un lecteur qui a vu une fiche
+// retrouve les mêmes repères (c'est la moitié du contrat d'une étiquette : être apprise une
+// fois). `land_biodiversity` et `local_impact` portent des noms d'icône plus courts.
+const ICONE_PILIER: Record<string, string> = {
+  energy: "energy", water: "water", land_biodiversity: "land",
+  local_impact: "local", transparency_governance: "transparency",
+};
+const pilierBandeau = pillars
+  .filter((p: any) => pilierCouverture(p.id) >= COUVERTURE_MINIMALE)
+  .map((p: any) => ({ id: p.id, label: t.pillarShort[p.id], icone: ICONE_PILIER[p.id] }));
+
 const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   ((mapData as any).features ?? [])
     .filter((f: any) => f?.properties?.id && Array.isArray(f?.geometry?.coordinates))
@@ -181,7 +209,17 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
           jamais, puisqu'une frontière n'est pas un mot. Le bloc transforme l'absence en
           réponse. Il est VIDE au rendu et rempli par le navigateur : le dictionnaire de
           communes ne descend qu'à la demande, par tranche. */}
-      <div class="rank-lieu" id="rank-lieu" hidden data-labels={JSON.stringify(t.lieu)}></div>
+      {/* Les icônes sont rendues par un composant Astro, donc côté serveur : on en dépose un
+          exemplaire caché que le script clone. Les inliner en chaîne dans le script aurait
+          dupliqué le dessin des piliers à un second endroit. */}
+      <div class="rank-ico-bank" hidden aria-hidden="true">
+        {pilierBandeau.map((p) => (
+          <span data-pilier={p.id}><PillarIcon name={p.icone as any} size={13} /></span>
+        ))}
+      </div>
+      <div class="rank-lieu" id="rank-lieu" hidden
+           data-labels={JSON.stringify(t.lieu)}
+           data-piliers={JSON.stringify(pilierBandeau)}></div>
 
       <div class="rank-wrap">
         <table class="rank-table" id="rank-table">
@@ -377,6 +415,44 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   // on répond par les data centers les plus proches — en kilomètres, pas en mots.
   const blocLieu = document.getElementById("rank-lieu")!;
   const L = JSON.parse(blocLieu.dataset.labels || "{}");
+  // Le bandeau : les piliers retenus (dérivés de la couverture au build) et leurs icônes,
+  // clonées depuis l'exemplaire rendu côté serveur.
+  const PILIERS: { id: string; label: string; icone: string }[] =
+    JSON.parse(blocLieu.dataset.piliers || "[]");
+  const banque = document.querySelector(".rank-ico-bank");
+  const icone = (pid: string) =>
+    banque?.querySelector(`[data-pilier="${pid}"]`)?.innerHTML ?? "";
+  // Les lignes du tableau portent le RANG de la lettre (A=5 … E=1, -1 = pas de note) :
+  // on relit l'échelle dans l'autre sens plutôt que de republier les lettres une deuxième
+  // fois dans le DOM — une même valeur écrite à deux endroits finit par diverger.
+  const LETTRE: Record<string, string> = { "5": "A", "4": "B", "3": "C", "2": "D", "1": "E" };
+  const lettrePilier = (row: HTMLElement, pid: string) =>
+    LETTRE[row.getAttribute(`data-k-${pid}`) ?? ""] ?? null;
+
+  const enteteBandeau = () =>
+    `<span class="rl-cols rl-entete">` + PILIERS.map((p) =>
+      `<span title="${p.label}">${icone(p.id)}<i>${p.label}</i></span>`).join("") + `</span>`;
+
+  const bandeau = (row: HTMLElement) =>
+    `<span class="rl-cols">` + PILIERS.map((p) => {
+      const g = lettrePilier(row, p.id);
+      // 🔴 Une case vide ne doit JAMAIS se lire comme une note moyenne : hachurée, en
+      // pointillés, avec un tiret. C'est la différence entre « mal noté » et « non mesuré »,
+      // et c'est exactement celle qu'on passe nos journées à défendre ailleurs.
+      return g
+        ? `<span class="rl-cell g-${g.toLowerCase()}" title="${p.label} : ${g}">${g}</span>`
+        : `<span class="rl-cell rl-vide" title="${p.label} : ${L.notMeasured ?? ""}">–</span>`;
+    }).join("") + `</span>`;
+
+  // La confiance porte sur la note D'ENSEMBLE, pas sur chaque pilier : on ne la calcule pas
+  // par pilier, on se garde donc de la suggérer par pilier. Elle reste à droite, sur la note.
+  const noteEtConfiance = (row: HTMLElement) => {
+    const g = LETTRE[row.getAttribute("data-k-site") ?? ""] ?? null;
+    const c = parseInt(row.getAttribute("data-k-confidence") ?? "0", 10) || 0;
+    const puce = g ? `<span class="rl-note g-${g.toLowerCase()}">${g}</span>` : "";
+    const pts = `<span class="rl-conf c${c}" title="${L.docLevel ?? ""}"><i></i><i></i><i></i></span>`;
+    return `<span class="rl-noteconf">${puce}${g ? pts : ""}</span>`;
+  };
   // La normalisation doit être EXACTEMENT celle du générateur (scripts/build_gazetteer.py) :
   // c'est elle qui décide du nom de la tranche à télécharger. Deux normalisations qui
   // divergent rendraient des communes introuvables, et sans la moindre erreur à l'écran.
@@ -472,9 +548,11 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       const href = row.querySelector("a")?.getAttribute("href") ?? "#";
       const commune = row.dataset.commune || "";
       const drapeau = row.dataset.country || "";
-      return `<li><a href="${href}">${row.dataset.nom}</a>`
-        + `<span class="rl-ou">${commune}${commune && drapeau ? " · " : ""}${drapeau}</span>`
-        + `<b class="rl-km">${L.away.replace("{km}", fmtKm(d))}</b></li>`;
+      return `<li><span class="rl-qui"><a href="${href}">${row.dataset.nom}</a>`
+        + `<span class="rl-ou">${commune}${commune && drapeau ? " · " : ""}${drapeau}</span></span>`
+        + bandeau(row)
+        + `<b class="rl-km">${L.away.replace("{km}", fmtKm(d))}</b>`
+        + noteEtConfiance(row) + `</li>`;
     }).join("");
 
     // « 21 autres lieux portent ce nom » était faux : le compte ramassait tous les préfixes,
@@ -508,7 +586,12 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
 
     blocLieu.innerHTML =
       `<p class="rl-titre">${L.none.replace("{lieu}", `<strong>${nom}</strong> (${situe(region, pays)})`)}</p>`
-      + `<p class="rl-sous">${L.nearest}</p><ol class="rl-liste">${items}</ol>`
+      + `<p class="rl-sous">${L.nearest}</p>`
+      // La première cellule est VIDE et volontaire : elle tient la colonne des noms pour
+      // que l'entête tombe exactement au-dessus des cases, pas à gauche de la ligne.
+      + `<div class="rl-tete"><span></span>${enteteBandeau()}<span class="rl-km"></span>`
+      + `<span class="rl-entete rl-noteconf-h">${L.gradeDoc ?? ""}</span></div>`
+      + `<ol class="rl-liste">${items}</ol>`
       + `<a class="rl-carte" href="${versCarte}">${L.onMap.replace("{lieu}", nom)} ↗</a>`
       + autres
       + `<p class="rl-src">${L.source}</p>`;
