@@ -323,21 +323,33 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
     # Display sub-score per pillar (public scorecard): same per-block semantics as the
     # aggregate — `scored` already carries pp `missing` as 0 and pp `not_collected` as None.
     with_pp_zeroed = scored
-    # The insufficient_data escape CASCADES to sub-scores (methodology-lead
-    # review 2026-07-05): a pillar below the coverage floor is never given a
-    # punitive letter drawn from unknowns — saying "not enough data to grade
-    # the operator" while displaying "local impact: E" would be contradictory
-    # and attackable.
+    # PAS DE PORTE DE COUVERTURE ICI (Franck, 2026-10-20). Jusqu'à cette date une sous-note
+    # dont la couverture tombait sous `min_coverage` était remplacée par un tiret. L'argument
+    # était de ne pas infliger « une lettre punitive tirée d'inconnues » — mais cette lettre
+    # ÉTAIT DÉJÀ COMPTÉE dans la note de site publiée, au même poids. La cacher ne protégeait
+    # donc personne : elle privait le lecteur du seul pilier qui explique pourquoi la note
+    # globale n'est pas meilleure. Témoin : us-nebraska-colocation-center, sous-note énergie E
+    # — la pire des cinq, masquée sous une note de site C.
+    #
+    # Ce qu'on ne sait pas se dit en toutes lettres à côté de la note (les indicateurs
+    # manquants sont nommés sur la fiche), au lieu d'être signifié par un tiret muet — qui
+    # ressemblait exactement au tiret de « pilier jamais renseigné ».
     pillar_details = {}
     for pillar in pillar_weights:
         defs = [d for d in definitions if d["pillar"] == pillar]
         total_w = sum(d["weight_in_pillar"] for d in defs)
         filled_w = sum(d["weight_in_pillar"] for d in defs if per_indicator[d["id"]] is not None)
         pillar_coverage = filled_w / total_w
-        if pillar_coverage < params["min_coverage"]:
+        combined = _aggregate(with_pp_zeroed, defs, {pillar: 1.0})
+        if combined is None:
+            # RIEN À AGRÉGER — le seul cas où le tiret dit la vérité. Et la garde se pose ici,
+            # sur l'agrégat, pas sur la couverture : les deux ensembles ne coïncident pas. Un
+            # indicateur de polarité « ne peut que pénaliser » dans son état neutre est INERTE
+            # (il ne déplace pas la note) tout en comptant dans la couverture. fr-cloudata a un
+            # pilier dans ce cas : couverture 15 %, et pourtant aucune valeur à moyenner.
+            # Garder `filled_w == 0` faisait planter le moteur sur cette fiche-là.
             pillar_details[pillar] = {"grade": INSUFFICIENT_DATA, "coverage": round(pillar_coverage, 3)}
             continue
-        combined = _aggregate(with_pp_zeroed, defs, {pillar: 1.0})
         # A-25 reaches the sub-scores too: no A anywhere on a DC without operational proof.
         pillar_details[pillar] = _reserve_top_grade(_grade(combined, methodology), verified, methodology) \
             | {"coverage": round(pillar_coverage, 3)}

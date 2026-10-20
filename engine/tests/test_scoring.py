@@ -56,13 +56,48 @@ def test_beta_confidence_missing_cause(methodology, beta):
     assert c["causes"]["unverifiable_declarative"] == 0.0
 
 
-def test_insufficient_data_cascades_to_pillar_subscores(methodology, beta):
+def test_une_sous_note_calculee_est_affichee_quelle_que_soit_sa_couverture(methodology, beta):
+    """Une couverture basse ne retire plus la sous-note (Franck, 2026-10-20).
+
+    Jusqu'à cette date une sous-note sous `min_coverage` était remplacée par un tiret, pour
+    ne pas infliger « une lettre punitive tirée d'inconnues ». Mais cette lettre entrait DÉJÀ
+    dans la note de site publiée, au même poids : la cacher ne protégeait pas l'opérateur,
+    elle privait le lecteur du pilier qui explique la note. Ce qu'on ignore se dit en toutes
+    lettres à côté, pas par un tiret muet.
+    """
     pillars = score_datacenter(beta, methodology)["pillars"]
-    # a pillar below the coverage floor is never given a punitive letter drawn from unknowns
-    assert pillars["transparency_governance"] == {"grade": "insufficient_data", "coverage": 0.0}
-    assert pillars["energy"]["grade"] == "E"  # known and bad is still graded (coverage 0.602)
-    assert pillars["energy"]["coverage"] == 0.602
-    assert pillars["local_impact"]["coverage"] == 0.4  # exactly at the floor: graded
+    assert pillars["energy"]["coverage"] == 0.602 and pillars["energy"]["grade"] == "E"
+    # 0,4 était exactement le seuil ; il n'y a plus de seuil du tout.
+    assert pillars["local_impact"]["coverage"] == 0.4 and pillars["local_impact"]["grade"] == "E"
+    # couverture NULLE et pourtant une lettre — et c'est juste : T1 et T2 sont `missing`,
+    # c'est-à-dire LUS ET ABSENTS du dossier. Une opacité vérifiée est l'information même que
+    # le pilier transparence mesure, pas un trou de collecte. La couverture, elle, ne compte
+    # que les données substantielles : elle ne sait pas distinguer « rien lu » de « lu et vide ».
+    assert pillars["transparency_governance"]["coverage"] == 0.0
+    assert pillars["transparency_governance"]["grade"] == "E"
+
+
+def test_pas_de_lettre_quand_il_n_y_a_rien_a_agreger(methodology, beta):
+    """Le seul cas où le tiret dit la vérité — et la garde se pose sur l'AGRÉGAT.
+
+    Elle ne peut pas se poser sur la couverture : les deux ensembles ne coïncident pas. Un
+    indicateur de polarité « ne peut que pénaliser » dans son état neutre est INERTE (il ne
+    déplace pas la note) tout en comptant dans la couverture. Un pilier peut donc afficher
+    une couverture non nulle sans avoir une seule valeur à moyenner — c'est le cas de
+    fr-cloudata en production, et garder la couverture comme garde faisait planter le moteur
+    sur cette fiche-là (`NoneType __round__`).
+    """
+    import copy
+    muet = copy.deepcopy(beta)
+    for ind in muet["indicators"]:
+        if ind["id"] == "L1":                       # penalty_only : « aucune pénalité » = inerte
+            ind["value"], ind["status"] = "neutral", "measured"
+        elif ind["id"] in ("L2", "L3", "L4", "L5", "L6", "L7"):
+            ind["status"], ind["value"] = "not_collected", None
+    local = score_datacenter(muet, methodology)["pillars"]["local_impact"]
+    assert local["grade"] == "insufficient_data"
+    assert local["coverage"] > 0                     # la couverture, elle, n'est PAS nulle
+    assert "documentation" not in local              # pas de lettre, donc pas de pastille
 
 
 def test_alpha_pillar_subscores(methodology, alpha):
@@ -89,9 +124,12 @@ def test_documentation_accompanies_every_grade(methodology, alpha):
 
 def test_no_documentation_without_a_grade(methodology, beta):
     # insufficient_data means no letter — and therefore no documentation chip either.
+    # Porté sur l'AXE depuis le 2026-10-20 : les sous-notes par pilier ne sont plus retirées
+    # pour couverture basse, donc beta n'a plus de pilier sans lettre. Le cas « pilier sans
+    # rien à agréger » est figé par test_pas_de_lettre_quand_il_n_y_a_rien_a_agreger.
     r = score_datacenter(beta, methodology)
     assert r["grades"]["project_process"] == {"grade": "insufficient_data", "coverage": 0.0}
-    assert "documentation" not in r["pillars"]["transparency_governance"]
+    assert "documentation" not in r["grades"]["project_process"]
 
 
 def test_citable_quote_contrasts_when_a_pillar_is_worse(methodology, beta):
@@ -104,9 +142,17 @@ def test_citable_quote_contrasts_when_a_pillar_is_worse(methodology, beta):
         if ind["id"] == "E2": ind["value"] = "ample"
         if ind["id"] == "E3": ind["value"] = "low"
     q = score_datacenter(contrast, methodology)["citable_quote"]
-    # French guillemets carry non-breaking spaces (correct typography) -> normalize to compare.
-    assert q["fr"].replace(chr(0xa0), " ") == "Noté D sur le site, mais E sur « Impact local »."
-    assert q["en"] == "Rated D on site, but E on “Local impact”."
+    # ⚠️ EFFET NON PRÉVU AU BRIEF, EN ATTENTE D'ARBITRAGE (2026-10-20).
+    # Le pilier désigné est passé d'« Impact local » (E, score 12.0) à « Transparence &
+    # gouvernance » (E, score 0.0) : démasquer les sous-notes change l'ensemble dans lequel
+    # cette phrase choisit le pilier le plus bas. La phrase citable n'est pas de l'affichage,
+    # c'est la ligne qu'un journaliste copie — et elle voyage SANS son contexte, là où la
+    # fiche montre la sous-note à côté des indicateurs manquants nommés.
+    # Mesuré sur le corpus : 1 699 phrases sur 3 283 changent, et sur 815 fiches (27 % de
+    # celles qui désignent un pilier) le titre reposerait sur UN SEUL indicateur.
+    # Ici, sur une couverture de 0 % — légitime (T1/T2 lus et absents) mais mince à citer.
+    assert q["fr"].replace(chr(0xa0), " ") == "Noté D sur le site, mais E sur « Transparence & gouvernance »."
+    assert q["en"] == "Rated D on site, but E on “Transparency & governance”."
 
 
 def test_citable_quote_is_factual_without_a_worse_pillar(methodology, alpha):

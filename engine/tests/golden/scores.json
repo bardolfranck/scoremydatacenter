@@ -242,8 +242,18 @@
         }
       },
       "transparency_governance": {
-        "grade": "insufficient_data",
-        "coverage": 0.0
+        "grade": "E",
+        "score": 0.0,
+        "coverage": 0.0,
+        "documentation": {
+          "level": "low",
+          "score": 0.0,
+          "dots": 1,
+          "label": {
+            "fr": "documentation faible",
+            "en": "sparsely documented"
+          }
+        }
       }
     },
     "citable_quote": {
