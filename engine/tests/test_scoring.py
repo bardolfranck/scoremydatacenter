@@ -142,17 +142,39 @@ def test_citable_quote_contrasts_when_a_pillar_is_worse(methodology, beta):
         if ind["id"] == "E2": ind["value"] = "ample"
         if ind["id"] == "E3": ind["value"] = "low"
     q = score_datacenter(contrast, methodology)["citable_quote"]
-    # ⚠️ EFFET NON PRÉVU AU BRIEF, EN ATTENTE D'ARBITRAGE (2026-10-20).
-    # Le pilier désigné est passé d'« Impact local » (E, score 12.0) à « Transparence &
-    # gouvernance » (E, score 0.0) : démasquer les sous-notes change l'ensemble dans lequel
-    # cette phrase choisit le pilier le plus bas. La phrase citable n'est pas de l'affichage,
-    # c'est la ligne qu'un journaliste copie — et elle voyage SANS son contexte, là où la
-    # fiche montre la sous-note à côté des indicateurs manquants nommés.
-    # Mesuré sur le corpus : 1 699 phrases sur 3 283 changent, et sur 815 fiches (27 % de
-    # celles qui désignent un pilier) le titre reposerait sur UN SEUL indicateur.
-    # Ici, sur une couverture de 0 % — légitime (T1/T2 lus et absents) mais mince à citer.
+    # Le pilier désigné est passé d'« Impact local » à « Transparence & gouvernance » quand
+    # les sous-notes ont cessé d'être masquées (2026-10-20) : la phrase choisit le pilier le
+    # plus bas parmi celles qui sont notées, et démasquer change cet ensemble. Transparence
+    # est à 0.0 ici — T1 et T2 lus et absents du dossier, deux zéros vérifiés, donc une assise
+    # de deux indicateurs : le titre est recevable.
     assert q["fr"].replace(chr(0xa0), " ") == "Noté D sur le site, mais E sur « Transparence & gouvernance »."
     assert q["en"] == "Rated D on site, but E on “Transparency & governance”."
+
+
+def test_la_phrase_citable_ne_designe_pas_un_pilier_porte_par_un_seul_indicateur(methodology, beta):
+    """MONTRER ET METTRE EN AVANT SONT DEUX MÉTIERS (Franck, 2026-10-20).
+
+    Toutes les sous-notes s'affichent sur la fiche, sans plancher — mais là elles se lisent à
+    côté des indicateurs manquants, nommés. La phrase citable, elle, voyage seule et finit
+    dans un article. Mesuré avant la règle : 815 fiches sur 2 973 auraient donné un titre
+    reposant sur UN indicateur, parfois à 13 % du poids du pilier.
+
+    Ce n'est pas un plancher de couverture déguisé : la lettre reste publiée et comptée dans
+    la note, c'est le TITRE qui se tait et retombe sur la phrase factuelle.
+    """
+    import copy
+    from engine.scoring import _citable_quote
+    site = {"grade": "B"}
+    pp = {"grade": "C"}
+    piliers = {"water": {"grade": "E", "score": 10.0, "coverage": 0.3}}
+
+    seul = _citable_quote(site, pp, piliers, methodology, assise={"water": 1})
+    assert "Eau" not in seul["fr"] and "mais" not in seul["fr"], \
+        "un seul indicateur : le titre ne désigne pas le pilier"
+    assert seul["fr"] == "Noté B sur le site, C en projet & processus."
+
+    deux = _citable_quote(site, pp, piliers, methodology, assise={"water": 2})
+    assert deux["fr"].replace(chr(0xa0), " ") == "Noté B sur le site, mais E sur « Eau »."
 
 
 def test_citable_quote_is_factual_without_a_worse_pillar(methodology, alpha):

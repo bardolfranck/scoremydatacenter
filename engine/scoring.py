@@ -180,11 +180,27 @@ def _documentation(conf: dict) -> dict:
     }
 
 
-def _citable_quote(site: dict, project_process: dict, pillar_details: dict, methodology: dict) -> dict:
+_CITABLE_MIN_INDICATEURS = 2
+
+
+def _citable_quote(site: dict, project_process: dict, pillar_details: dict, methodology: dict,
+                   assise: dict[str, int] | None = None) -> dict:
     """The headline the journalist screenshots — GENERATED, never editorial, so it stays
     opposable: it only makes the contrast claim ('B overall, but E on water') when a graded
     pillar is strictly worse than the site letter; otherwise it states both notes factually.
-    No adjectives, same discipline as the grade (no 'close to X')."""
+    No adjectives, same discipline as the grade (no 'close to X').
+
+    MONTRER ET METTRE EN AVANT SONT DEUX MÉTIERS (Franck, 2026-10-20). Toutes les sous-notes
+    s'affichent sur la fiche, sans plancher — mais là elles se lisent à côté des indicateurs
+    manquants, nommés. Cette phrase-ci voyage SEULE, détachée de son contexte, et c'est elle
+    qui finit dans un article. Elle ne désigne donc un pilier que si au moins deux indicateurs
+    le portent. Mesuré avant la règle : sur 2 973 fiches qui désignaient un pilier, 815 (27 %)
+    l'auraient fait sur un seul indicateur, parfois à 13 % du poids du pilier.
+
+    Ce n'est PAS un plancher de couverture qui reviendrait par la fenêtre : la lettre reste
+    publiée et comptée, c'est le TITRE qui se tait. Sans `assise`, aucun filtre — l'ancien
+    comportement, pour les appels qui n'ont pas l'information.
+    """
     labels = {p["id"]: p["label"] for p in methodology["pillars"]}
     site_grade = site["grade"]
     # L'AXE SITE AUSSI PEUT ÊTRE RETIRÉ (seuil `min_site_coverage`, 2026-10-02). Cette phrase
@@ -197,7 +213,9 @@ def _citable_quote(site: dict, project_process: dict, pillar_details: dict, meth
             "fr": "Données insuffisantes pour noter ce site ; aucune note n'est publiée.",
             "en": "Insufficient data to grade this site; no grade is published.",
         }
-    graded = {pid: d for pid, d in pillar_details.items() if d["grade"] != INSUFFICIENT_DATA}
+    graded = {pid: d for pid, d in pillar_details.items()
+              if d["grade"] != INSUFFICIENT_DATA
+              and (assise is None or assise.get(pid, 0) >= _CITABLE_MIN_INDICATEURS)}
     if graded:
         worst_id = max(graded, key=lambda pid: (_GRADE_ORDER.index(graded[pid]["grade"]), -graded[pid]["score"]))
         worst = graded[worst_id]
@@ -363,7 +381,15 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
         "grades": {"site": site, "project_process": project_process},
         "confidence": _confidence(entries, definitions, pillar_weights, methodology),
         "pillars": pillar_details,
-        "citable_quote": _citable_quote(site, project_process, pillar_details, methodology),
+        # L'assise d'un pilier = le nombre d'indicateurs qui entrent RÉELLEMENT dans sa
+        # moyenne (`scored`), pas ceux qui comptent dans la couverture : un indicateur inerte
+        # est présent sans porter la note, et le titre doit parler de ce qui la porte.
+        "citable_quote": _citable_quote(
+            site, project_process, pillar_details, methodology,
+            assise={pilier: sum(1 for d in definitions
+                                if d["pillar"] == pilier and scored[d["id"]] is not None)
+                    for pilier in pillar_weights},
+        ),
         "indicators": {
             d["id"]: None if per_indicator[d["id"]] is None else round(per_indicator[d["id"]], 1)
             for d in definitions
