@@ -56,7 +56,9 @@ const orgLd = {
 const here = (Astro.url.pathname.replace(/\/+$/, "") || "/");
 const isActive = (href: string) => {
   if (href.includes("#")) return false;
-  const p = (href.replace(/\/+$/, "") || "/");
+  // « sur le chemin seulement » : la requête se retire AUSSI, sinon un lien de menu qui en
+  // porte une (voir `?v=2` sur Comparer, nav.ts) n'allumerait jamais son onglet.
+  const p = (href.split("?")[0].replace(/\/+$/, "") || "/");
   return p === here;
 };
 const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActive(c.href));

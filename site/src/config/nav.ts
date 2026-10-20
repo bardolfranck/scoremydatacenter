@@ -54,7 +54,16 @@ export const FR_NAV: NavNode[] = [
   // territoires ; il compare désormais des objets de même taille et de même métier.
   // ⚠️ Sans cette ligne la page répondait mais n'était atteignable que par son URL — une
   // page en production que personne ne peut trouver est une page qui n'existe pas.
-  { href: "/fr/comparer", label: "Comparer" },
+  // ⚠️ LE `?v=2` CONTOURNE UNE REDIRECTION MORTE QUI SURVIT DANS LES NAVIGATEURS.
+  // Entre le 2026-10-05 et le 2026-10-15, pendant que le comparateur était hors production,
+  // le site a servi `/fr/comparer/ → /fr/carte/ 301`. Un 301 est une redirection PERMANENTE :
+  // le navigateur la mémorise et la rejoue sans jamais redemander au serveur. Retirer la
+  // règle n'efface donc rien chez ceux qui l'ont déjà reçue — tout visiteur venu dans cette
+  // fenêtre de dix jours atterrit encore sur la carte en cliquant « Comparer ». Côté serveur
+  // la page répond 200 : il n'y a rien à corriger là, et rien qui permette d'annuler un 301.
+  // Le cache est indexé sur l'URL COMPLÈTE : une requête différente suffit à l'esquiver, sans
+  // changer la page ni son adresse canonique. À retirer quand ces caches auront expiré.
+  { href: "/fr/comparer/?v=2", label: "Comparer" },
   { href: "/fr/actu", label: "Actu" },
   { label: "Bibliothèque", children: [
     { href: "/fr/rapports/france", label: "Rapport — La France" },
