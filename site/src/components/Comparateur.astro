@@ -176,7 +176,16 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   const statut = (s) => lang === "fr" ? s.statut_fr : s.statut_en;
   const fiche = (id) => `${ficheBase}/${id}/`;
 
-  let PAYS = dispos[0].pays, D = null, BY = {}, ancre = null, vue = "carte", Plotly = null;
+  // 🔴 ON OUVRE SUR LA COMPARAISON, PAS SUR UNE CARTE (Franck 2026-10-20).
+  // La page demande « à quels projets celui-ci ressemble-t-il ? » et répondait par une carte :
+  // on cliquait « Comparer » et on tombait sur une carte de plus, la comparaison cachée
+  // derrière un onglet non sélectionné.
+  // Le tableau d'abord, parce qu'il NOMME les sites comparables avec leur commune, leur note,
+  // leur puissance et le nombre de variables partagées — c'est la réponse à la question posée.
+  // Les deux autres vues restent, et chacune défend une nuance : la carte montre que la
+  // ressemblance N'EST PAS géographique, la projection qu'elle n'est pas arbitraire. Mais on
+  // ne commence pas par la nuance : un élu ou un riverain vient chercher des noms.
+  let PAYS = dispos[0].pays, D = null, BY = {}, ancre = null, vue = "tab", Plotly = null;
 
   // Plotly est chargé À LA DEMANDE : 1,1 Mo n'ont rien à faire dans le chemin critique d'une
   // page qu'on peut ouvrir pour lire une seule liste. Et il est AUTO-HÉBERGÉ : un script tiers,
