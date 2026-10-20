@@ -109,7 +109,19 @@ const t = {
   },
   procedureSeeSource: "Procédure (voir source)",
   notApplicable: "non applicable",
-  indStatus: { measured: "Mesuré", announced: "Annoncé", missing: "Manquant" },
+  // DEUX ABSENCES OPPOSÉES PORTAIENT LE MÊME SILENCE. `missing` veut dire « nous avons lu le
+  // dossier, la donnée n'y est pas » — c'est un fait, et il compte comme un ZÉRO dans la note.
+  // `not_collected` veut dire « nous n'avons pas cherché » — c'est notre lacune, retirée du
+  // calcul. La fiche nommait le premier « Manquant » (ambigu : manquant pour qui ?) et ne
+  // nommait pas le second du tout : 48 135 lignes du corpus affichaient une case d'état VIDE.
+  indStatus: {
+    measured: "Mesuré", announced: "Annoncé", estimated: "Estimé",
+    missing: "Absent du dossier", not_collected: "Pas encore cherché",
+  },
+  indStatusHint: {
+    missing: "L'information a été cherchée dans le dossier public et ne s'y trouve pas. Elle compte comme un zéro dans la note.",
+    not_collected: "Nous n'avons pas encore cherché cette information. Elle est retirée du calcul, elle ne pénalise pas le site.",
+  },
   accessed: "consulté le",
   archived: "archivé",
   directionHint: { lower_is_better: "Plus la valeur est basse, mieux c'est.", higher_is_better: "Plus la valeur est haute, mieux c'est." },
@@ -138,7 +150,7 @@ const t = {
   opNone: "L'opérateur peut nous transmettre une réponse concernant cette fiche. Lorsqu'une réponse est reçue et publiable, elle apparaît ici, clairement attribuée et datée.",
   opNote: "Une erreur factuelle ? Utilisez « Signaler une erreur » en joignant une source ou un justificatif.",
   dataStateTitle: "État de la donnée disponible",
-  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} manquants.",
+  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} absents du dossier · {notCollected} pas encore cherchés.",
   contestationTitle: "Contestation & signal",
   contestationSub: "Faits sourcés — n'entrent pas dans la note.",
   press: "Presse : ",

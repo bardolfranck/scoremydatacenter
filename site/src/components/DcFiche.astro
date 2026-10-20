@@ -202,13 +202,18 @@ const dwell = dc.nearest_dwelling;
 const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
   + (dc.country ? ` · ${dc.country}` : "");
 
-const counts = { measured: 0, announced: 0, missing: 0 } as Record<string, number>;
+// L'ÉNUMÉRATION DOIT BOUCLER. Elle listait mesurés + annoncés + manquants et s'arrêtait là :
+// sur ce site-ci, 6 + 0 + 5 = 11 d'un total annoncé de 26. Les quinze autres — ceux que nous
+// n'avons pas cherchés — disparaissaient du compte, c'est-à-dire que la plus grosse part de
+// notre ignorance était la seule à ne pas être dite. Les estimations manquaient aussi.
+const counts = { measured: 0, announced: 0, estimated: 0, missing: 0, not_collected: 0 } as Record<string, number>;
 for (const ind of dc.indicators) counts[ind.status] = (counts[ind.status] ?? 0) + 1;
 const dataState = t.dataState
   .replace("{n}", String(dc.indicators.length))
-  .replace("{measured}", String(counts.measured))
+  .replace("{measured}", String(counts.measured + counts.estimated))
   .replace("{announced}", String(counts.announced))
-  .replace("{missing}", String(counts.missing));
+  .replace("{missing}", String(counts.missing))
+  .replace("{notCollected}", String(counts.not_collected));
 
 // Direct publication (2026-07-15, legal review): the permanent response space is
 // publication.operator_response — attributed, dated, shown whenever present.
@@ -835,14 +840,27 @@ const seoDesc = seoLead
                         <td class={ind.status === "missing" ? "ind-missing" : ""}>
                           {ind.proxies
                             ? <ul class="proxy-facts">{proxyFacts(ind.proxies).map((f) => <li>{f}</li>)}</ul>
-                            : ind.status === "missing" ? t.notDisclosed : `${indicatorValue(ind)}${unit ? " " + unit : ""}`}
+                            : ind.status === "missing" ? t.notDisclosed
+                            /* Une unité n'a de sens qu'accrochée à un nombre : sans cette
+                               garde la fiche écrivait « — PUE » et « — gCO2e/kWh », soit une
+                               unité pour une valeur qui n'existe pas. */
+                            : (() => { const v = indicatorValue(ind);
+                                       return v === "—" ? v : `${v}${unit ? " " + unit : ""}`; })()}
                         </td>
                         <td>
                           {band
                             ? <span class={`sense sense-${band.cls}`} title={band.label} role="img" aria-label={band.label}><i style={`width:${Math.round(ind.score)}%`}></i></span>
                             : <span class="sense-na" aria-label={t.notApplicable}>—</span>}
                         </td>
-                        <td><span class={`status-tag status-${ind.status}`}>{t.indStatus[ind.status]}</span></td>
+                        <td>
+                          <span class={`status-tag status-${ind.status}`}>{t.indStatus[ind.status] ?? ind.status}</span>
+                          {t.indStatusHint?.[ind.status] && (
+                            <span class="info" tabindex="0" role="note" aria-label={t.indStatusHint[ind.status]}>
+                              <span class="info-ico" set:html={icon("info", 12)}></span>
+                              <span class="info-tip">{t.indStatusHint[ind.status]}</span>
+                            </span>
+                          )}
+                        </td>
                         <td class="ind-source"><SourceLink source={ind.source} accessedLabel={t.accessed} archivedLabel={t.archived} /></td>
                       </tr>
                     );

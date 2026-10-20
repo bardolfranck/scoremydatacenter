@@ -1288,7 +1288,12 @@ sup a { color: var(--accent); font-weight: 750; }
 /* Power documentation status: an estimated figure wears the same prudence amber
    as « annoncé » — flagged, never served as a bare fact (measured>announced>estimated). */
 .pw-est { color: #8a6708; font-weight: 650; }
-.status-missing { color: var(--muted); }
+/* Les deux absences ne se valent pas et ne doivent pas se ressembler : « absent du dossier »
+   est un fait constaté qui compte comme un zéro ; « pas encore cherché » est notre lacune,
+   retirée du calcul. L'une pèse sur la note, l'autre non. */
+.status-missing { color: #8a5a2b; }
+.status-not_collected { color: var(--muted); font-weight: 600; }
+.status-estimated { color: #8a6708; }
 /* Status proof on the fiche meta line: confirmed = measured green (links to its source);
    not verified = muted, never alarming — it says « not yet proven », not « wrong ». */
 .st-ok { color: #7ed6a4; font-weight: 700; text-decoration: none; }  /* sits on the navy fiche sidebar */

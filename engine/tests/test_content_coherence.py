@@ -247,3 +247,43 @@ def test_ranking_states_its_denominator_and_version():
             f"{name} no longer states the percentile reference (N projects + methodology "
             "version) — a percentile without its denominator is a naked judgment (A-27)"
         )
+
+
+FICHE_PAGES = {
+    "en": REPO_ROOT / "site" / "src" / "pages" / "dc" / "[id].astro",
+    "fr": REPO_ROOT / "site" / "src" / "pages" / "fr" / "dc" / "[id].astro",
+}
+# Tout statut qu'un indicateur peut porter dans un artefact servi. Le corpus du 2026-10-20 en
+# produit cinq ; la liste est ici pour que l'ajout d'un sixième casse le build au lieu de
+# passer en silence.
+STATUTS_SERVIS = ("measured", "announced", "estimated", "missing", "not_collected")
+
+
+@pytest.mark.parametrize("lang", sorted(FICHE_PAGES))
+def test_chaque_statut_servi_a_un_libelle_sur_la_fiche(lang):
+    """UN ÉTAT SANS LIBELLÉ S'AFFICHE COMME UNE CASE VIDE, ET UNE CASE VIDE NE DIT RIEN.
+
+    `indStatus` ne nommait que trois statuts sur cinq. `not_collected` — 48 135 lignes du
+    corpus, la majorité du tableau — rendait une cellule d'état VIDE, indistinguable d'un
+    oubli de mise en page. Or c'est précisément la distinction qui compte pour le lecteur :
+    « absent du dossier » est un fait constaté qui pèse comme un zéro dans la note, « pas
+    encore cherché » est notre lacune et ne pénalise personne.
+    """
+    texte = FICHE_PAGES[lang].read_text()
+    bloc = texte.split("indStatus:", 1)[1].split("},", 1)[0]
+    for statut in STATUTS_SERVIS:
+        assert f"{statut}:" in bloc, f"[{lang}] le statut « {statut} » n'a pas de libellé"
+
+
+@pytest.mark.parametrize("lang", sorted(FICHE_PAGES))
+def test_l_enumeration_de_l_etat_des_donnees_boucle(lang):
+    """Une énumération qui ne fait pas son total ment par omission.
+
+    La phrase annonçait « 26 indicateurs suivis » puis en détaillait 11 : les quinze que nous
+    n'avons pas cherchés — la plus grosse part de notre ignorance — étaient les seuls à ne pas
+    être dits. Les estimations manquaient aussi.
+    """
+    texte = FICHE_PAGES[lang].read_text()
+    phrase = [l for l in texte.splitlines() if l.strip().startswith("dataState:")][0]
+    for champ in ("{n}", "{measured}", "{announced}", "{missing}", "{notCollected}"):
+        assert champ in phrase, f"[{lang}] {champ} absent de la phrase d'état des données"
