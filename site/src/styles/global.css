@@ -768,19 +768,24 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rank-country { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); }
 /* Double rail (A-27): SITE and OPERATOR stacked. Track = worse→better gradient in
    the official grade palette; the cursor marks the percentile position; the text
-   label carries the information (never color-only). Unproven operator axis: dashed
-   badge + hatched track, no fabricated cursor — the emptiness is the message. */
+   label carries the information (never color-only). When there is no position to
+   mark (operator axis unproven, provisional band), the track is NOT drawn at all:
+   a scale without a cursor carries no information and reads as a broken chart. The
+   sentence takes the track's column and says what we don't know. */
 /* keep the TD a real table-cell (display:grid on a td loses vertical-align and
    misaligns tall rows — seen live on ?q=google, 2026-07-15) */
 .rank-rails { min-width: 340px; }
 .rank-rails .rail + .rail { margin-top: 8px; }
 .rank-project { min-width: 190px; }
-.rail { display: grid; grid-template-columns: 72px 30px minmax(90px, 1fr) auto; align-items: center; gap: 10px; }
+/* colonne 2 : le badge à plage (loupe + axe A–E) mesure ~200px, pas 30 — figée, elle
+   débordait sur la phrase voisine. `auto` la laisse prendre sa taille réelle. */
+.rail { display: grid; grid-template-columns: 72px auto minmax(90px, 1fr) auto; align-items: center; gap: 10px; }
 .rail-axis { font-family: var(--font-mono); font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; color: var(--muted); }
 .rail-track { position: relative; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--grade-e), var(--grade-d), var(--grade-c), var(--grade-b), var(--grade-a)); }
 .rail-cursor { position: absolute; top: -3px; bottom: -3px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 1.5px #fff; }
-.rail-track-na { background: repeating-linear-gradient(45deg, #e7ecf1 0 6px, #f6f8fa 6px 12px); }
 .rail-label { font-size: 0.8rem; font-weight: 700; color: var(--ink-soft); white-space: nowrap; }
+/* sans piste, la phrase occupe la colonne de la piste : l'alignement des rails tient */
+.rail-label-na, .rail-label-prov { grid-column: 3 / -1; white-space: normal; }
 .rail-label-na { color: var(--muted); font-weight: 600; font-style: italic; }
 .rank-ref { margin: -10px 0 14px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
 /* Plain-language legend for project statuses (jargon "en instruction"… doesn't speak to everyone) */

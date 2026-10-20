@@ -291,10 +291,10 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                         produit « Google Bissen · dans les 3 % les moins bien notés » sous une
                         fiche qui disait ne pas savoir. */}
                     {bandOf(dc)
-                      ? <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-prov">{probableLabel(dc)}</span></Fragment>
+                      ? <span class="rail-label rail-label-prov">{probableLabel(dc)}</span>
                       : p
                       ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
-                      : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{dc.grades.site.grade === "en_attente" ? t.enAttenteLabel : t.naLabel}</span></Fragment>}
+                      : <span class="rail-label rail-label-na">{dc.grades.site.grade === "en_attente" ? t.enAttenteLabel : t.naLabel}</span>}
                   </div> ); })()}
                   {(() => { const p = pctInfo(ppPool, dc.grades.project_process, dc, "operator"); return (
                   <div class="rail">
@@ -313,7 +313,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                     />
                     {p
                       ? <Fragment><span class="rail-track" aria-hidden="true"><i class="rail-cursor" style={`left:${p.pos}%`}></i></span><span class="rail-label">{p.label}</span></Fragment>
-                      : <Fragment><span class="rail-track rail-track-na" aria-hidden="true"></span><span class="rail-label rail-label-na">{t.railUnproven}</span></Fragment>}
+                      : <span class="rail-label rail-label-na">{t.railUnproven}</span>}
                   </div> ); })()}
                 </td>
                 {pillars.map((p) => (
