@@ -19,12 +19,24 @@
 // l'ancre, c'est du dénigrement. Le comptage est donc toujours accompagné de sa portée.
 import plotlyUrl from "plotly.js-basic-dist-min/plotly-basic.min.js?url";
 import outlines from "../data/outlines.json";
+import { operateurIdentifie } from "../config/operator";
 
-const { lang, index, pays } = Astro.props as {
+const { lang, index, pays: paysBrut } = Astro.props as {
   lang: "fr" | "en";
   index: any;
   pays: Record<string, any>;
 };
+
+// « OPÉRATEUR NON IDENTIFIÉ » N'EST PAS UNE SOCIÉTÉ. Le prédicat partagé tranche la question
+// une seule fois pour tout le site (voir l'avertissement en tête de config/operator.ts : elle
+// était répondue par quatre listes divergentes, et c'est ça qui avait cassé). Le script de
+// cette page est `define:vars`, donc inline et sans import possible — on normalise ici, au
+// build, plutôt que de recopier une cinquième liste dans le script.
+const pays = Object.fromEntries(Object.entries(paysBrut).map(([cc, d]: [string, any]) => [cc, {
+  ...d,
+  sites: (d.sites ?? []).map((s: any) =>
+    operateurIdentifie(s.operateur) ? s : { ...s, operateur: null }),
+}]));
 
 const t = lang === "fr" ? {
   titre: "À quels projets celui-ci ressemble-t-il ?",
@@ -44,6 +56,7 @@ const t = lang === "fr" ? {
   pilierMince: "trop peu de sites notés dans ce pays pour établir si cette note distingue celui-ci",
   pilierAbsent: "pas de note pour ce pilier",
   pilierLegende: "Les colonnes de pilier portent la lettre de chaque sous-note. Une lettre en gris ne distingue pas ce site : elle vaut pour tout le pays.",
+  exploitant: "Exploitant", operateurInconnu: "non identifié",
   ecartPuissance: "d'écart de puissance à l'intérieur du même ordre de grandeur.",
   rien: "Aucun site ne correspond.",
   mince: "Pays dont le corpus ne permet pas encore de comparaison",
@@ -79,6 +92,7 @@ const t = lang === "fr" ? {
   pilierMince: "too few sites graded in this country to establish whether this grade sets it apart",
   pilierAbsent: "no grade for this pillar",
   pilierLegende: "Pillar columns carry each sub-grade's letter. A grey letter does not set this site apart: it holds for the whole country.",
+  exploitant: "Operator", operateurInconnu: "not identified",
   ecartPuissance: "power gap within the same order of magnitude.",
   rien: "No site matches.",
   mince: "Countries whose corpus does not yet allow a comparison",
@@ -181,6 +195,11 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   const loc = lang === "fr" ? "fr-FR" : "en-GB";
   const nb = (n) => new Intl.NumberFormat(loc).format(n);
   const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  // Tous ces tableaux sont assemblés en chaînes puis posés en innerHTML. Les noms viennent de
+  // registres d'entreprises et de l'OSM : « Johnson & Johnson » cassait déjà le balisage,
+  // et une raison sociale est précisément le genre de champ où un caractère se glisse.
+  const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const op = (v) => (!v || v === "unknown")
     ? (lang === "fr" ? "exploitant non documenté" : "operator not documented") : v;
   const statut = (s) => lang === "fr" ? s.statut_fr : s.statut_en;
@@ -196,6 +215,10 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   // ressemblance N'EST PAS géographique, la projection qu'elle n'est pas arbitraire. Mais on
   // ne commence pas par la nuance : un élu ou un riverain vient chercher des noms.
   let PAYS = dispos[0].pays, D = null, BY = {}, ancre = null, vue = "tab", Plotly = null;
+  // Sous cette part de sites renseignés, une colonne de pilier n'aide plus à comparer : sur
+  // les six lignes d'un tableau, elle a toutes les chances de ne porter qu'une seule valeur.
+  const PART_MINIMALE_COLONNE = 0.05;
+  let PILIERS_VUS = [];
 
   // Plotly est chargé À LA DEMANDE : 1,1 Mo n'ont rien à faire dans le chemin critique d'une
   // page qu'on peut ouvrir pour lire une seule liste. Et il est AUTO-HÉBERGÉ : un script tiers,
@@ -209,6 +232,17 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   function charger(code) {
     PAYS = code; D = pays[code];
     BY = Object.fromEntries(D.sites.map((s) => [s.id, s]));
+    // QUELLES COLONNES DE PILIER MÉRITENT LEUR PLACE, DANS CE PAYS. Une colonne sert à
+    // SÉPARER les sites du tableau ; renseignée sur 0,1 % du corpus, elle n'affiche que des
+    // tirets et prend la place de quelque chose d'utile. Mesuré le 2026-10-21 :
+    // transparence 3 sites sur 3 235, contre 70 % pour l'énergie, l'eau et le foncier, et
+    // 20 % pour l'impact local — qui discrimine encore, lui, et reste affiché.
+    //
+    // DÉRIVÉ, jamais une liste de piliers à cacher écrite à la main : celle-là serait fausse
+    // le jour où la transparence sera collectée, et personne ne la relirait. La colonne
+    // revient d'elle-même quand la donnée arrive.
+    PILIERS_VUS = PILIERS.filter((pid) =>
+      D.sites.filter((s) => (s.piliers ?? {})[pid]).length / D.sites.length >= PART_MINIMALE_COLONNE);
     const def = D.sites.find((s) => s.comparables.length >= 2) || D.sites[0];
     $("#cmp-q").value = "";
     $("#cmp-sugg").innerHTML = "";
@@ -223,7 +257,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
     ).slice(0, 7);
     box.innerHTML = hits.length ? hits.map((s) => `
       <button type="button" data-id="${s.id}">
-        <b>${s.commune ?? ""}</b><em>${s.nom ?? ""}</em>
+        <b>${esc(s.commune)}</b><em>${esc(s.nom)}</em>
         <span>${s.comparables.length}</span>
       </button>`).join("") : `<p class="cmp-vide">${t.rien}</p>`;
   }
@@ -285,8 +319,8 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
           return `<div class="cmp-item">
             <div class="cmp-item-head">
               <span class="cmp-grade cmp-grade-sm" style="background:${gcol(s.note)}${s.note === "C" ? ";color:#4a3c00" : ""}">${s.note && s.note.length === 1 ? s.note : "–"}</span>
-              <a href="${fiche(s.id)}" target="_blank" rel="noopener">${s.nom}</a>
-              <span class="cmp-item-meta">${s.commune ?? ""} · ${statut(s)}${s.puissance_mw ? " · " + nb(s.puissance_mw) + " MW" : ""}</span>
+              <a href="${fiche(s.id)}" target="_blank" rel="noopener">${esc(s.nom)}</a>
+              <span class="cmp-item-meta">${esc(s.commune)} · ${statut(s)}${s.puissance_mw ? " · " + nb(s.puissance_mw) + " MW" : ""}</span>
               <span class="cmp-item-var">${x.variables_partagees} ${t.varPartagees}</span>
             </div>
             <p>${x.indiscernables
@@ -325,7 +359,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
     const conf = { displaylogo: false, responsive: true, scrollZoom: true,
       modeBarButtonsToRemove: ["select2d", "lasso2d", "autoScale2d", "toggleSpikelines"] };
     const sel = new Set(c.map((x) => x.id));
-    const bulle = (s) => `<b>${s.nom}</b><br>${s.commune ?? ""} · ${statut(s)}` +
+    const bulle = (s) => `<b>${esc(s.nom)}</b><br>${esc(s.commune)} · ${statut(s)}` +
       (s.puissance_mw ? ` · ${nb(s.puissance_mw)} MW` : "") +
       `<br>${lang === "fr" ? "note" : "grade"} ${s.note}<extra></extra>`;
     // `scatter` et non `scattergl` : le canvas WebGL recouvre la couche SVG où Plotly dessine
@@ -429,23 +463,34 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
       }
       return `<td class="cmp-pil"><span class="cmp-grade cmp-grade-sm" style="background:${gcol(g)}${g === "C" ? ";color:#4a3c00" : ""}">${g}</span></td>`;
     };
+    // LA NOTE SE LIT EN CONCLUSION, PAS EN OUVERTURE (Franck, 2026-10-21). Placée en
+    // deuxième colonne, elle donnait le verdict avant ce qui le fonde — et le lecteur
+    // n'allait pas plus loin. On lit maintenant le détail, puis la lettre.
     const ligne = (s, moi) => `<tr${moi ? ' class="cmp-moi"' : ""}>
-      <td><a href="${fiche(s.id)}" target="_blank" rel="noopener">${s.nom}</a></td>
-      <td>${s.commune ?? ""}</td><td>${statut(s)}</td><td>${pastille(s.note)}</td>
-      ${PILIERS.map((pid) => cellulePilier(s, pid)).join("")}
+      <td><a href="${fiche(s.id)}" target="_blank" rel="noopener">${esc(s.nom)}</a></td>
+      <td>${esc(s.commune)}</td>
+      <td class="cmp-op">${s.operateur ? esc(s.operateur) : `<span class="cmp-na">${t.operateurInconnu}</span>`}</td>
+      <td>${statut(s)}</td>
       <td class="cmp-num">${s.puissance_mw ? nb(s.puissance_mw) + " MW" : "—"}</td>
-      <td class="cmp-num">${moi ? "" : c.find((x) => x.id === s.id).variables_partagees}</td></tr>`;
+      ${PILIERS_VUS.map((pid) => cellulePilier(s, pid)).join("")}
+      <td class="cmp-num">${moi ? "" : c.find((x) => x.id === s.id).variables_partagees}</td>
+      <td class="cmp-fin">${pastille(s.note)}</td></tr>`;
     return `<div class="cmp-tab-wrap"><table class="cmp-table">
       <thead><tr><th>${lang === "fr" ? "Site" : "Site"}</th><th>${lang === "fr" ? "Commune" : "Municipality"}</th>
-      <th>${lang === "fr" ? "État" : "Status"}</th><th>${lang === "fr" ? "Note" : "Grade"}</th>
-      ${PILIERS.map((pid) => `<th class="cmp-pil">${t.piliers[pid]}</th>`).join("")}
+      <th>${t.exploitant}</th>
+      <th>${lang === "fr" ? "État" : "Status"}</th>
       <th class="cmp-num">${lang === "fr" ? "Puissance" : "Power"}</th>
-      <th class="cmp-num">${t.varPartagees}</th></tr></thead>
+      ${PILIERS_VUS.map((pid) => `<th class="cmp-pil">${t.piliers[pid]}</th>`).join("")}
+      <th class="cmp-num">${t.varPartagees}</th>
+      <th class="cmp-fin">${lang === "fr" ? "Note" : "Grade"}</th></tr></thead>
       <tbody>${ligne(a, true)}${c.map((x) => ligne(BY[x.id], false)).join("")}</tbody>
       </table>${[a, ...c.map((x) => BY[x.id])].some((s) =>
-          Object.values(s.piliers_portee ?? {}).some((p) => p === "national" || p === "pays_mince"))
-        ? `<p class="cmp-note">${t.pilierLegende}</p>` : ""}
-      <p class="cmp-note">${t.ouvrirFiche}</p></div>`;
+          PILIERS_VUS.some((pid) => { const p = (s.piliers_portee ?? {})[pid];
+                                      return (s.piliers ?? {})[pid] && (p === "national" || p === "pays_mince"); }))
+        ? `<p class="cmp-note">${t.pilierLegende}</p>` : ""}</div>`;
+      // « Chaque nom ouvre sa fiche » n'est PAS répétée ici : la liste des comparables, juste
+      // en dessous, la porte déjà dans les trois vues. Les deux s'affichaient l'une sous
+      // l'autre, à trois lignes d'intervalle.
   }
 
   $("#cmp-pays").addEventListener("change", (e) => charger(e.target.value));
@@ -506,6 +551,9 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   .cmp-grade-nat { background: transparent; color: #8fa0b3; border: 1px dashed #c6d0da; font-weight: 700; }
   .cmp-pil { text-align: center; }
   .cmp-table th.cmp-pil { text-align: center; }
+  /* La note ferme la ligne : un filet la détache de ce qui la fonde. */
+  .cmp-fin { text-align: center; border-left: 1px solid #e3e9ee; }
+  .cmp-table th.cmp-fin { text-align: center; }
   .cmp-na { color: var(--na, #8fa0b3); }
 
   #cmp-result { margin-top: 16px; background: var(--surface, #fff); border: 1px solid var(--line);
