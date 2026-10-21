@@ -208,7 +208,21 @@ media-sat:
 # the private newsroom, so it happens HERE, never in a public-repo CI).
 # One-time setup: `cd site && npx wrangler login` (Franck's Cloudflare account).
 # Indexing open since 2026-07-16 (noindex lifted on Franck's call; robots.txt + sitemap served).
-deploy: build
+# LES TESTS PASSENT AVANT LA MISE EN LIGNE (Franck, 2026-10-21). Ils ne gardaient que le
+# poste de travail : `deploy` n'en dépendait pas, et le 2026-10-21 une garde doctrinale rouge
+# (A-27, le classement situe et ne juge pas) est partie en production sans rien arrêter. Le
+# test ne coûte rien à l'échelle d'un déploiement — la suite tourne en moins de deux secondes,
+# le build en deux minutes.
+#
+# `test` D'ABORD ET SUR SA PROPRE LIGNE, pas en prérequis : make ne garantit pas l'ordre des
+# prérequis sous `-j`, et une suite qui tournerait après le build arriverait trop tard.
+#
+# Pour passer outre en connaissance de cause : `make deploy SANS_TESTS=1`. C'est écrit ici
+# pour que ce soit un geste délibéré et visible, pas un réflexe.
+deploy:
+	@if [ -z "$(SANS_TESTS)" ]; then $(MAKE) test; \
+	  else echo "⚠ deploy: tests SAUTÉS (SANS_TESTS=1) — mise en ligne sans filet"; fi
+	$(MAKE) build
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 
