@@ -391,7 +391,10 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       // « mieux noté d'abord » elles finissaient dernières, ce qui est juste, mais en
       // inversant elles passaient EN TÊTE : un site dont on ignore la puissance s'affichait
       // comme le plus petit du classement, et une note « données insuffisantes » comme la
-      // pire. Elles restent en fin dans les deux sens, comme dans un tableur.
+      // bas de l'échelle. Elles restent en fin dans les deux sens, comme dans un tableur.
+      // (Le mot que j'avais écrit ici est dans la liste que surveille
+      // test_ranking_copy_situates_never_judges : le filet lit tout le fichier, commentaires
+      // compris. C'est volontairement grossier, et c'est très bien ainsi.)
       if ((va < 0) !== (vb < 0)) return va < 0 ? 1 : -1;
       return asc ? va - vb : vb - va;
     });
