@@ -57,6 +57,7 @@ const t = lang === "fr" ? {
   pilierAbsent: "pas de note pour ce pilier",
   pilierLegende: "Les colonnes de pilier portent la lettre de chaque sous-note. Une lettre en gris ne distingue pas ce site : elle vaut pour tout le pays.",
   exploitant: "Exploitant", operateurInconnu: "non identifié",
+  chargement: "Chargement de la vue…",
   ecartPuissance: "d'écart de puissance à l'intérieur du même ordre de grandeur.",
   rien: "Aucun site ne correspond.",
   mince: "Pays dont le corpus ne permet pas encore de comparaison",
@@ -93,6 +94,7 @@ const t = lang === "fr" ? {
   pilierAbsent: "no grade for this pillar",
   pilierLegende: "Pillar columns carry each sub-grade's letter. A grey letter does not set this site apart: it holds for the whole country.",
   exploitant: "Operator", operateurInconnu: "not identified",
+  chargement: "Loading the view…",
   ecartPuissance: "power gap within the same order of magnitude.",
   rien: "No site matches.",
   mince: "Countries whose corpus does not yet allow a comparison",
@@ -350,8 +352,14 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   async function dessiner() {
     const div = $("#cmp-canvas"), a = ancre, c = a.comparables;
     if (vue === "tab") { div.innerHTML = tableau(a, c); $("#cmp-legend").innerHTML = ""; return; }
+    // LE TABLEAU PART AVANT L'ATTENTE, PAS APRÈS. Plotly pèse 1,1 Mo et se télécharge ici :
+    // tant qu'il n'était pas arrivé, le tableau restait affiché sous l'onglet « ressemblance »
+    // pendant que la légende du graphique s'écrivait par-dessous — deux vues à l'écran en même
+    // temps, et un chevauchement sur les connexions lentes. On vide d'abord, on attend ensuite.
+    div.innerHTML = `<p class="cmp-chargement">${t.chargement}</p>`;
     const P = await plotly();
     P.purge(div);
+    div.innerHTML = "";
     const base = { margin: { l: 0, r: 0, t: 0, b: 0 }, paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)", showlegend: false, hovermode: "closest",
       font: { family: "Chivo, Inter, sans-serif", size: 11 },
@@ -565,7 +573,11 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   .cmp-tab { border: 0; background: transparent; padding: 11px 13px; font: inherit;
     font-size: .79rem; color: var(--muted); border-bottom: 3px solid transparent; cursor: pointer; }
   .cmp-tab.on { color: var(--accent); font-weight: 800; border-color: var(--accent); }
-  .cmp-canvas { height: 400px; background: #fff; }
+  /* La hauteur de la zone de vue est déclarée UNE fois et héritée par le tableau : les deux
+     la lisaient séparément, et au moindre écart le tableau débordait sur la légende et sur le
+     bloc suivant. `overflow: hidden` est la ceinture — plus rien ne peut sortir de la zone. */
+  .cmp-canvas { --cmp-h: 400px; height: var(--cmp-h); overflow: hidden; background: #fff; }
+  .cmp-chargement { margin: 0; padding: 18px; font-size: .8rem; color: var(--muted); }
   .cmp-leg { border-top: 1px solid var(--line); background: #fbfcfd; padding: 7px 18px;
     font-size: .71rem; color: #44586c; display: flex; gap: 14px; flex-wrap: wrap; }
 
@@ -590,7 +602,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   .cmp-gap { display: block; margin-top: 4px; font-size: .76rem; color: var(--grade-d, #cf6a1c); }
   .cmp-note { margin: 10px 0 0; font-size: .75rem; color: var(--muted); }
 
-  .cmp-tab-wrap { height: 100%; overflow: auto; padding: 8px 14px; }
+  .cmp-tab-wrap { max-height: var(--cmp-h, 400px); overflow: auto; padding: 8px 14px; }
   .cmp-table { width: 100%; border-collapse: collapse; font-size: .81rem; }
   .cmp-table th { text-align: left; color: #526375; font-size: .67rem; text-transform: uppercase;
     letter-spacing: .04em; padding: 7px 8px; }
@@ -612,7 +624,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
     .cmp { padding: 0 14px 40px; }
     .cmp-start { flex-direction: column; }
     .cmp-anc { flex-direction: column; }
-    .cmp-canvas { height: 330px; }
+    .cmp-canvas { --cmp-h: 330px; }
     .cmp-item-var { margin-left: 0; }
   }
 </style>
