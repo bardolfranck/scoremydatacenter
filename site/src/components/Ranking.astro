@@ -178,25 +178,14 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           <input type="search" id="rank-q" placeholder={t.searchPlaceholder} autocomplete="off" />
         </label>
-        <label>
-          {t.sortBy}
-          <select id="rank-sort">
-            <option value="site">{t.sortSite}</option>
-            <option value="operator">{t.sortOperator}</option>
-            {pillars.map((p) => <option value={p.id}>{t.pillarPrefix}{t.pillarShort[p.id]}</option>)}
-            <option value="confidence">{t.sortConfidence}</option>
-            <option value="power">{t.sortPower}</option>
-            <option value="year">{t.sortYear}</option>
-            <option value="country">{t.sortCountry}</option>
-          </select>
-        </label>
-        <label>
-          {t.order}
-          <select id="rank-order">
-            <option value="desc">{t.orderBest}</option>
-            <option value="asc">{t.orderWorst}</option>
-          </select>
-        </label>
+        {/* LES SÉLECTEURS « TRIER PAR » ET « ORDRE » SONT PARTIS (Franck, 2026-10-21) : depuis
+            que les en-têtes trient au clic, ils faisaient le même travail deux fois, et plus
+            mal — il fallait lire deux menus pour obtenir ce qu'un clic donne.
+            Chaque clé qu'ils proposaient a sa colonne : pays, note, les cinq piliers,
+            confiance, puissance. Sauf deux, et c'est pour ça qu'on les a mesurées :
+              · « note opérateur » portait sur 1 fiche de 3 283 — l'option ne triait rien ;
+              · la puissance n'avait pas de colonne : elle en a une maintenant, au lieu
+                d'être accolée au statut dans la même cellule. */}
         <label>
           {t.statusLabel}
           <select id="rank-status">
@@ -242,6 +231,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                 {t.thStatus}<span class="rank-th-ico" aria-hidden="true">?</span>
                 <span class="sr-only">{legendeStatuts}</span>
               </th>
+              <th data-tri="power">{t.thPower}</th>
               <th data-tri="site">{t.thRails}</th>
               {pillars.map((p) => <th data-tri={p.id}>{t.pillarShort[p.id]}</th>)}
               <th data-tri="confidence">{t.thConfidence}</th>
@@ -272,13 +262,16 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                 </td>
                 <td class="rank-country">{dc.country}</td>
                 {colonneAnnee && <td class="rank-year">{dc.expected_commissioning ?? <span title={t.yearUnknown}>—</span>}</td>}
-                <td set:html={(() => {
-                  const base = t.status[dc.project_status];
-                  if (!dc.power_mw) return `${base} · ${t.powerUnknown}`;
+                {/* Le statut et la puissance partageaient une cellule : « Annoncé · 15 MW ».
+                    La puissance a sa colonne pour qu'on puisse trier dessus — elle n'est pas
+                    publiée deux fois, elle a simplement changé de place. */}
+                <td>{t.status[dc.project_status]}</td>
+                <td class="rank-power" set:html={(() => {
+                  if (!dc.power_mw) return `<span title="${t.powerUnknown}">—</span>`;
                   const est = dc.power_mw_status === "estimated";
                   const r = (v: number) => Number(v.toPrecision(2));
                   const val = est ? `~${r(dc.power_mw)}` : dc.power_mw;
-                  return `${base} · ${val} MW${est ? ` · <span class="pw-est">${t.powerEstimated}</span>` : ""}`;
+                  return `${val} MW${est ? `<span class="pw-est"> ${t.powerEstimated}</span>` : ""}`;
                 })()}></td>
                 <td class="rank-rails">
                   {(() => { const p = pctInfo(sitePool, dc.grades.site, dc, "site"); return (
@@ -368,8 +361,11 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   // build-rendered rows. insufficient_data sorts as -1 (always last on "best first").
   const table = document.getElementById("rank-table") as HTMLTableElement;
   const tbody = table.querySelector("tbody")!;
-  const sortSel = document.getElementById("rank-sort") as HTMLSelectElement;
-  const orderSel = document.getElementById("rank-order") as HTMLSelectElement;
+  // L'état du tri vit ici, plus dans deux menus déroulants : ils doublonnaient les en-têtes
+  // cliquables. L'URL reste la mémoire partageable — ?tri= et ?ordre= n'ont pas changé, les
+  // liens déjà en circulation continuent de fonctionner.
+  let triCle = "site";
+  let triAsc = false;
   const statusSel = document.getElementById("rank-status") as HTMLSelectElement;
   const searchInput = document.getElementById("rank-q") as HTMLInputElement;
 
@@ -377,8 +373,8 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
   function apply(updateUrl = true) {
-    const key = sortSel.value;
-    const asc = orderSel.value === "asc";
+    const key = triCle;
+    const asc = triAsc;
     const status = statusSel.value;
     const q = norm(searchInput.value.trim());
     const rows = Array.from(tbody.querySelectorAll("tr"));
@@ -391,6 +387,12 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       }
       const va = parseFloat(a.getAttribute(`data-k-${key}`) ?? "-1");
       const vb = parseFloat(b.getAttribute(`data-k-${key}`) ?? "-1");
+      // UNE ABSENCE N'EST PAS UNE VALEUR EXTRÊME. Les lignes sans donnée portent -1 ; sur
+      // « mieux noté d'abord » elles finissaient dernières, ce qui est juste, mais en
+      // inversant elles passaient EN TÊTE : un site dont on ignore la puissance s'affichait
+      // comme le plus petit du classement, et une note « données insuffisantes » comme la
+      // pire. Elles restent en fin dans les deux sens, comme dans un tableur.
+      if ((va < 0) !== (vb < 0)) return va < 0 ? 1 : -1;
       return asc ? va - vb : vb - va;
     });
 
@@ -429,8 +431,8 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       // plus utile, qui est `desc` pour TOUTES les clés — y compris le pays, dont le tri
       // alphabétique est déjà câblé « A→Z sur desc » dans apply(). Un cas particulier ici
       // renvoyait le premier clic à l'envers : les États-Unis arrivaient avant la Suisse.
-      if (sortSel.value === key) orderSel.value = orderSel.value === "asc" ? "desc" : "asc";
-      else { sortSel.value = key; orderSel.value = "desc"; }
+      if (triCle === key) triAsc = !triAsc;
+      else { triCle = key; triAsc = false; }
       apply();
       marquerTri();
     };
@@ -444,20 +446,22 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
 
   function marquerTri() {
     for (const th of Array.from(table.querySelectorAll("th[data-tri]")) as HTMLElement[]) {
-      const actif = th.dataset.tri === sortSel.value;
+      const actif = th.dataset.tri === triCle;
       th.classList.toggle("is-tri", actif);
-      th.classList.toggle("is-asc", actif && orderSel.value === "asc");
-      if (actif) th.setAttribute("aria-sort", orderSel.value === "asc" ? "ascending" : "descending");
+      th.classList.toggle("is-asc", actif && triAsc);
+      if (actif) th.setAttribute("aria-sort", triAsc ? "ascending" : "descending");
       else th.removeAttribute("aria-sort");
     }
   }
 
   const params = new URLSearchParams(location.search);
-  if (params.get("tri")) sortSel.value = params.get("tri")!;
-  if (params.get("ordre") === "asc") orderSel.value = "asc";
+  if (params.get("tri")) triCle = params.get("tri")!;
+  if (params.get("ordre") === "asc") triAsc = true;
   if (params.get("statut")) statusSel.value = params.get("statut")!;
   if (params.get("q")) searchInput.value = params.get("q")!;
-  if (sortSel.selectedIndex < 0) sortSel.value = "site";
+  // Une clé inconnue (vieux lien, colonne retirée) retombe sur la note plutôt que de trier
+  // sur un attribut absent, ce qui rangeait toutes les lignes à égalité sans le dire.
+  if (!document.querySelector(`.rank-table th[data-tri="${triCle}"]`)) triCle = "site";
   if (statusSel.selectedIndex < 0) statusSel.value = "all";
 
   // ── RECHERCHE PAR LIEU ────────────────────────────────────────────────────────────────
@@ -664,7 +668,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     void repondreParLieu(saisie);
   }
 
-  [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => { apply(); marquerTri(); }));
+  statusSel.addEventListener("change", () => { apply(); marquerTri(); });
   searchInput.addEventListener("input", () => { apply(); peutEtreUnLieu(); });
   apply(false);
   marquerTri();
