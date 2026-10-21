@@ -22,6 +22,22 @@ const scores = scoresData as any[];
 const methodology = methodologyData as any;
 const pillars = methodology.pillars as any[];
 
+// UNE COLONNE VIDE À 99,5 % N'EST PAS UNE COLONNE (Franck, 2026-10-21). Mesuré sur le corpus
+// du jour : la mise en service est renseignée sur 17 fiches de 3 283 — et uniquement sur des
+// sites DÉJÀ EN SERVICE, pour qui la date est du passé. Zéro sur les 322 projets annoncés et
+// les 78 en instruction, c'est-à-dire exactement ceux pour qui elle compterait.
+//
+// Dérivé, pas retiré en dur : le jour où ces dates seront collectées, la colonne revient
+// seule. Une suppression écrite à la main, elle, ne se relit jamais.
+const PART_MINIMALE_COLONNE = 0.05;
+const colonneAnnee = scores.filter((d) => d.expected_commissioning != null).length
+  / Math.max(scores.length, 1) >= PART_MINIMALE_COLONNE;
+
+// La légende des statuts, rassemblée en une phrase : elle vit maintenant dans l'infobulle de
+// l'en-tête, pas en quatre lignes au-dessus du tableau.
+const legendeStatuts = [t.statusHelpTitre, ...Object.entries(t.status).map(
+  ([k, label]) => `${label} — ${t.statusHelp?.[k] ?? ""}`)].join("\n");
+
 const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
 const mapPath = lang === "fr" ? "/fr/carte" : "/map";
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
@@ -190,16 +206,6 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
         </label>
       </div>
 
-      <p class="rank-ref">{t.reference.replace("{n}", String(sitePool.length)).replace("{version}", methodology.version)}</p>
-
-      {t.statusHelp && (
-        <p class="rank-status-legend">
-          <span class="rsl-label">{t.statusHelpLabel}</span>
-          {Object.entries(t.status).map(([k, label]) => (
-            <span class="rsl-item"><b>{label}</b> — {t.statusHelp[k]}</span>
-          ))}
-        </p>
-      )}
       <p class="sr-only">{t.srSummary}</p>
 
       {/* RÉPONSE DE LIEU — le troisième état du classement. Il n'en avait que deux : des
@@ -227,12 +233,18 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
             <tr>
               <th>#</th>
               <th>{t.thProject}</th>
-              <th>{t.thCountry}</th>
-              <th>{t.thYear}</th>
-              <th>{t.thStatus}</th>
-              <th>{t.thRails}</th>
-              {pillars.map((p) => <th>{t.pillarShort[p.id]}</th>)}
-              <th>{t.thConfidence}</th>
+              <th data-tri="country">{t.thCountry}</th>
+              {colonneAnnee && <th data-tri="year">{t.thYear}</th>}
+              {/* La légende des statuts tenait quatre lignes sous les filtres, au-dessus du
+                  tableau, et repoussait les données vers le bas à chaque chargement. Elle est
+                  là où la question se pose : sur l'en-tête de la colonne. */}
+              <th class="rank-th-aide" tabindex="0" title={legendeStatuts}>
+                {t.thStatus}<span class="rank-th-ico" aria-hidden="true">?</span>
+                <span class="sr-only">{legendeStatuts}</span>
+              </th>
+              <th data-tri="site">{t.thRails}</th>
+              {pillars.map((p) => <th data-tri={p.id}>{t.pillarShort[p.id]}</th>)}
+              <th data-tri="confidence">{t.thConfidence}</th>
             </tr>
           </thead>
           <tbody>
@@ -259,7 +271,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                   <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
                 </td>
                 <td class="rank-country">{dc.country}</td>
-                <td class="rank-year">{dc.expected_commissioning ?? <span title={t.yearUnknown}>—</span>}</td>
+                {colonneAnnee && <td class="rank-year">{dc.expected_commissioning ?? <span title={t.yearUnknown}>—</span>}</td>}
                 <td set:html={(() => {
                   const base = t.status[dc.project_status];
                   if (!dc.power_mw) return `${base} · ${t.powerUnknown}`;
@@ -343,6 +355,10 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
         </table>
       </div>
       <p class="rank-note">{t.note}</p>
+      {/* La ligne de méthode est une note de bas de page, pas une entrée en matière : elle
+          s'intercalait entre les filtres et le tableau, où personne ne la lit et où elle
+          retarde la donnée. */}
+      <p class="rank-ref">{t.reference.replace("{n}", String(sitePool.length)).replace("{version}", methodology.version)}</p>
     </div>
   </section>
 </Base>
@@ -398,6 +414,41 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
       const query = params.toString();
       history.replaceState(null, "", query ? `?${query}` : location.pathname);
+    }
+  }
+
+  // TRIER EN CLIQUANT L'EN-TÊTE, comme dans un tableur (Franck, 2026-10-21). On pilote les
+  // deux sélecteurs existants plutôt que d'écrire un second tri : une seule implémentation,
+  // donc un seul comportement, et l'URL partageable reste la même.
+  for (const th of Array.from(table.querySelectorAll("th[data-tri]")) as HTMLElement[]) {
+    const key = th.dataset.tri!;
+    th.setAttribute("role", "button");
+    th.setAttribute("tabindex", "0");
+    const trier = () => {
+      // Re-cliquer la même colonne inverse l'ordre ; changer de colonne repart du sens le
+      // plus utile, qui est `desc` pour TOUTES les clés — y compris le pays, dont le tri
+      // alphabétique est déjà câblé « A→Z sur desc » dans apply(). Un cas particulier ici
+      // renvoyait le premier clic à l'envers : les États-Unis arrivaient avant la Suisse.
+      if (sortSel.value === key) orderSel.value = orderSel.value === "asc" ? "desc" : "asc";
+      else { sortSel.value = key; orderSel.value = "desc"; }
+      apply();
+      marquerTri();
+    };
+    th.addEventListener("click", trier);
+    th.addEventListener("keydown", (e) => {
+      if ((e as KeyboardEvent).key === "Enter" || (e as KeyboardEvent).key === " ") {
+        e.preventDefault(); trier();
+      }
+    });
+  }
+
+  function marquerTri() {
+    for (const th of Array.from(table.querySelectorAll("th[data-tri]")) as HTMLElement[]) {
+      const actif = th.dataset.tri === sortSel.value;
+      th.classList.toggle("is-tri", actif);
+      th.classList.toggle("is-asc", actif && orderSel.value === "asc");
+      if (actif) th.setAttribute("aria-sort", orderSel.value === "asc" ? "ascending" : "descending");
+      else th.removeAttribute("aria-sort");
     }
   }
 
@@ -613,8 +664,9 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     void repondreParLieu(saisie);
   }
 
-  [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => apply()));
+  [sortSel, orderSel, statusSel].forEach((el) => el.addEventListener("change", () => { apply(); marquerTri(); }));
   searchInput.addEventListener("input", () => { apply(); peutEtreUnLieu(); });
   apply(false);
+  marquerTri();
   peutEtreUnLieu();
 </script>

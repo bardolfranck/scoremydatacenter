@@ -85,9 +85,13 @@ const bandAria = band
 ---
 
 {band ? (
-  <div class="scorebadge scorebadge-band">
+  <div class={`scorebadge scorebadge-band${sizeClass ? ` scorebadge-band-${sizeClass}` : ""}`}>
+    {/* `lg` était codé en dur ici : la branche « bande » ignorait la taille demandée. Une
+        note provisoire sortait donc en loupe pleine taille partout, y compris dans la ligne
+        de classement qui demande `sm` — d'où des lettres deux fois plus grosses dès qu'on
+        filtrait sur un statut non opérationnel, la fiche voisine restant normale. */}
     <span class={`gradechip-loupe${band.wide ? " gradechip-loupe-wide" : ""}`} role="img" aria-label={bandAria}>
-      <span class={`gradechip lg grade-${band.central.toLowerCase()}`} aria-hidden="true">{band.central}</span>
+      <span class={`gradechip ${sizeClass || "lg"} grade-${band.central.toLowerCase()}`} aria-hidden="true">{band.central}</span>
     </span>
     <span class="scorebadge-lead-text">
       <span class={renderLabel ? "scorebadge-label" : "sr-only"}>{label}</span>
