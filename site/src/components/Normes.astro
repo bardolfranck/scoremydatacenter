@@ -77,6 +77,28 @@ const methHref = lang === "fr" ? "/fr/methodologie" : "/methodology";
       </div>
       <Fragment set:html={t.beyondP} />
 
+      {/* « Aucune norme ne mesure ça » était vrai des KPI, et trop large : l'ÉTAT, lui,
+          examine bien ces dimensions — à l'instruction, dossier par dossier. Le dire renforce
+          la page au lieu de l'affaiblir : la case vide n'est pas le sujet, c'est la mesure
+          publique et comparable. Bloc facultatif : une langue qui ne le fournit pas l'ignore. */}
+      {t.etatH2 && (
+        <Fragment>
+          <h2>{t.etatH2}</h2>
+          <Fragment set:html={t.etatIntro} />
+          <div class="fiche-ind-wrap">
+            <table class="meth-table">
+              <thead><tr><th>{t.etatCols.theirs}</th><th>{t.etatCols.ours}</th></tr></thead>
+              <tbody>
+                {t.etatRows.map((r: any) => (
+                  <tr><td set:html={r.theirs} /><td set:html={r.ours} /></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Fragment set:html={t.etatNote} />
+        </Fragment>
+      )}
+
       <p class="meth-rule" set:html={t.closeP}></p>
 
       <div class="meth-actions">
