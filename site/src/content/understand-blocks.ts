@@ -132,7 +132,22 @@ export const RICH_FR: Record<string, RichBlock> = {
       },
       {
         lead: "Après l'autorisation : les recours.",
-        body: "Les délais sont courts — en règle générale deux mois contre un permis de construire à compter de son affichage, quatre mois pour les tiers contre une autorisation environnementale à compter de sa publication. Passé ces délais, l'autorisation devient définitive.",
+        // ⚠️ DEUX MOIS, PAS QUATRE. Nous avons publié « quatre mois » jusqu'au 2026-10-22.
+        // C'était le délai en vigueur de 2017 à 2024, et la plupart des commentaires en ligne
+        // le répètent encore. Le décret n° 2024-423 du 10 mai 2024 l'a ramené à deux mois pour
+        // les décisions prises à compter du 1er septembre 2024 (art. R. 181-50 du code de
+        // l'environnement, vérifié sur Légifrance). L'erreur allait dans le pire sens : un
+        // riverain qui s'y fiait laissait passer son délai et perdait définitivement son
+        // recours. Toute reprise de ce chiffre se vérifie sur le texte, jamais sur un article.
+        body: "Les délais sont courts, et ils ne se rattrapent pas : deux mois contre un permis de construire à compter du premier jour de son affichage sur le terrain, deux mois également pour les tiers contre une autorisation environnementale, à compter de la dernière formalité accomplie — affichage en mairie ou publication sur le site de la préfecture (art. R. 181-50)<sup><a href='#src-droits-4'>4</a></sup>. Un recours contentieux doit en outre être notifié à l'auteur de la décision et au bénéficiaire, sous quinze jours, à peine d'irrecevabilité (art. R. 181-51).",
+      },
+      {
+        lead: "Une fois le site en service : la réclamation.",
+        body: "Passé les délais, l'autorisation est définitive — mais ses PRESCRIPTIONS ne le sont pas. Toute personne gênée peut déposer une réclamation auprès du préfet, à compter de la mise en service, pour contester « l'insuffisance ou l'inadaptation des prescriptions » : bruit des groupes froids, essais de groupes électrogènes, rejets, prélèvements d'eau. Le préfet a deux mois pour répondre de façon motivée, son silence vaut refus, et s'il juge la réclamation fondée il impose des prescriptions complémentaires (art. R. 181-52)<sup><a href='#src-droits-5'>5</a></sup>. C'est le seul levier qui reste quand la gêne se découvre à l'usage — et c'est le plus ignoré.",
+      },
+      {
+        lead: "Le piège de l'acheteur.",
+        body: "Qui achète ou loue un bien près d'une installation classée APRÈS l'affichage de son autorisation ne peut plus contester cette autorisation : la loi le déclare irrecevable (art. L. 514-6, III du code de l'environnement)<sup><a href='#src-droits-6'>6</a></sup>. Avant de signer près d'une zone d'activités, il vaut donc la peine de demander en mairie et en préfecture quelles autorisations y sont déjà affichées. La réclamation sur les prescriptions, elle, reste ouverte.",
       },
     ],
     takeaway:
@@ -141,6 +156,12 @@ export const RICH_FR: Record<string, RichBlock> = {
       { label: "Gossement Avocats, loi n° 2026-403, 2026", url: "https://www.gossement-avocats.com/blog/centres-de-donnees-data-centers-ce-que-change-la-loi-de-simplification-de-la-vie-economique/" },
       { label: "Actu-Environnement, décret du 3 mars 2026 (CNDP)", url: "https://www.actu-environnement.com/ae/news/cndp-projets-saisine-decret-data-centers-eolien-mer-raccordement-lignes-electrique-sous-marines-47625.php4" },
       { label: "Code de l'environnement, art. L.123-9", url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033038541" },
+      // Les trois sources ci-dessous renvoient au TEXTE, pas à un commentaire : c'est un
+      // commentaire périmé qui nous avait fait publier « quatre mois » (le délai d'avant le
+      // décret n° 2024-423 du 10 mai 2024, que la plupart des articles en ligne répètent encore).
+      { label: "Code de l'environnement, art. R. 181-50 — délai de recours des tiers, deux mois (décret n° 2024-423 du 10 mai 2024)", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000033929087" },
+      { label: "Code de l'environnement, art. R. 181-52 — réclamation auprès du préfet à compter de la mise en service", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000033929087" },
+      { label: "Code de l'environnement, art. L. 514-6, III — irrecevabilité des tiers installés après l'affichage", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006176598" },
     ],
   },
 
@@ -156,7 +177,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       },
       {
         q: "Le projet est déjà autorisé. C'est trop tard ?",
-        a: "Pour contester, les délais courent vite (voir <a href='#droits'>Droits et calendrier</a>). Mais il reste des leviers : demander la mise en place d'une instance de suivi, et la publication régulière des données d'exploitation promises au dossier.",
+        a: "Pour attaquer l'autorisation elle-même, oui, passé deux mois (voir <a href='#droits'>Droits et calendrier</a>). Mais l'autorisation définitive ne fige pas ses <b>prescriptions</b> : à compter de la mise en service, chacun peut déposer une réclamation auprès du préfet pour contester leur insuffisance — bruit, rejets, prélèvements d'eau — et le préfet doit répondre de façon motivée sous deux mois (art. R. 181-52). Restent aussi l'instance de suivi et la publication régulière des données d'exploitation promises au dossier.",
       },
       {
         q: "Qui contacter, concrètement ?",
