@@ -14,8 +14,8 @@ const items = (actu.items ?? []).filter((i: any) => i.approved === true).slice(0
 if (items.length === 0) return; // no strip when there is nothing fresh
 
 const L = lang === "fr"
-  ? { heading: "Dernières actus du secteur", seeAll: "Voir toute l'actu →", href: "/fr/actu", projet: "Projet" }
-  : { heading: "Latest sector news", seeAll: "See all news →", href: "/news", projet: "Project" };
+  ? { heading: "Dernières actus du secteur", seeAll: "Voir toute l'actu →", href: "/fr/actu/", projet: "Projet" }
+  : { heading: "Latest sector news", seeAll: "See all news →", href: "/news/", projet: "Project" };
 
 const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" });
 const fmt = (s?: string) => { if (!s) return ""; const d = new Date(s); return isNaN(+d) ? s : dtf.format(d); };

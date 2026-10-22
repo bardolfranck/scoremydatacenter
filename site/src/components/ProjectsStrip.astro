@@ -31,8 +31,8 @@ if (items.length === 0) return; // nothing fresh → no strip
 // where they appear in context — never to a non-existent fiche (that was a 404 bug).
 const mapPath = lang === "fr" ? "/fr/carte/" : "/map/";
 const L = lang === "fr"
-  ? { heading: "Nouveaux projets repérés", seeAll: "Voir la veille →", href: "/fr/carte", veille: "en veille" }
-  : { heading: "Newly flagged projects", seeAll: "See the watch →", href: "/map", veille: "watching" };
+  ? { heading: "Nouveaux projets repérés", seeAll: "Voir la veille →", href: "/fr/carte/", veille: "en veille" }
+  : { heading: "Newly flagged projects", seeAll: "See the watch →", href: "/map/", veille: "watching" };
 const place = (p: any) => [p.municipality, p.country].filter(Boolean).join(" · ");
 ---
 

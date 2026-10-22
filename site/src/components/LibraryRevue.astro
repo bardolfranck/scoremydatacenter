@@ -42,15 +42,15 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
     <p class="lib-section-kicker">{lang === "fr" ? "À la une · nos rapports" : "Featured · our reports"}</p>
     <div class="lib-real-grid">
       {(lang === "fr" ? [
-        { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france", slug: "france" },
-        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe. 134 sites.", href: "/fr/rapports/nederland", slug: "nederland" },
-        { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech", slug: "big-tech" },
-        { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques", slug: "banques" },
+        { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france/", slug: "france" },
+        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe. 134 sites.", href: "/fr/rapports/nederland/", slug: "nederland" },
+        { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech/", slug: "big-tech" },
+        { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques/", slug: "banques" },
       ] : [
-        { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france", slug: "france" },
-        { title: "Netherlands", sub: "Europe's most loaded grid. 134 sites.", href: "/reports/nederland", slug: "nederland" },
-        { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech", slug: "big-tech" },
-        { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks", slug: "banques" },
+        { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france/", slug: "france" },
+        { title: "Netherlands", sub: "Europe's most loaded grid. 134 sites.", href: "/reports/nederland/", slug: "nederland" },
+        { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech/", slug: "big-tech" },
+        { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks/", slug: "banques" },
       ]).map((r) => (
         <a class="lib-real-card" href={r.href}>
           {isWithdrawn(r.slug) ? (
