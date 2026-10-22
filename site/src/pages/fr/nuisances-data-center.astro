@@ -40,6 +40,27 @@ const t = {
   h1: "Les nuisances des data centers",
   lead: `Un data center se discute souvent sur son bilan global — l'électricité, le climat. Ce qui se vit depuis la rue est plus concret : du <strong>bruit</strong> en continu, des <strong>groupes électrogènes</strong> mis à l'essai, des <strong>cuves de carburant</strong>, de l'<strong>eau</strong> prélevée puis rejetée. Sur les 41 avis de l'<a href="${AE}" target="_blank" rel="noopener">autorité environnementale</a> que nous avons dépouillés, ce sont les groupes électrogènes qui reviennent le plus souvent, devant les cuves de carburant et le bruit.`,
 
+  questionsH2: "Les questions que l'on nous pose",
+  // Ces deux questions sont, mot pour mot, celles que Google remonte le plus autour des data
+  // centers. La page y répondait déjà en prose ; elle les pose désormais.
+  //
+  // 🔴 ON NE PUBLIE PAS DE « DISTANCE DE SÉCURITÉ ». Aucun texte n'en fixe, nous ne sommes pas
+  // une autorité sanitaire, et un chiffre inventé ici serait repris en réunion publique. On
+  // répond donc par ce qui est RÉELLEMENT encadré — l'émergence sonore — et par ce que nous
+  // mesurons nous-mêmes, en le disant.
+  questions: [
+    {
+      q: "À quelle distance d'un data center peut-on vivre tranquille&nbsp;?",
+      r: `<p>Il n'existe <strong>aucune distance réglementaire</strong> entre un data center et les habitations. Ce que la réglementation encadre, ce n'est pas l'éloignement mais l'<strong>émergence</strong> : de combien le bruit monte chez le voisin quand l'installation fonctionne. L'arrêté du 23 janvier 1997 admet en général <strong>+5&nbsp;dB(A) le jour et +3&nbsp;dB(A) la nuit</strong>.</p>
+      <p>La conséquence est contre-intuitive : <strong>la même machine n'a pas le même effet partout</strong>. Une campagne qui descend à 30&nbsp;dB(A) la nuit ne laisse presque aucune marge, là où une zone industrielle l'absorbe. Deux maisons à distance égale de deux sites identiques ne vivent donc pas la même chose.</p>
+      <p>C'est pourquoi nous publions la <strong>distance aux premières habitations</strong> sur chaque fiche quand nous l'avons : c'est le seul paramètre que personne ne peut corriger après coup, et il se lit avec le reste du dossier. <a href='/fr/carte'>Cherchez le site près de chez vous sur la carte</a>.</p>` },
+    {
+      q: "Vivre près d'un data center, est-ce risqué pour la santé&nbsp;?",
+      r: `<p>Nous ne sommes pas une autorité sanitaire et <strong>nous ne mesurons aucun effet sur la santé</strong> — l'affirmer ou le nier serait également malhonnête. Ce que nous pouvons dire tient aux faits versés aux dossiers.</p>
+      <p>Ce qui revient le plus souvent dans les avis d'autorité environnementale que nous avons dépouillés : les <strong>groupes électrogènes</strong>, les <strong>cuves de carburant</strong> et le <strong>bruit</strong>. Le bruit nocturne est le sujet le plus constant, parce qu'il est continu et qu'il n'a pas de répit — c'est ce qui distingue un data center d'un chantier ou d'une route.</p>
+      <p>Nous publions ces éléments <strong>à côté de la note, jamais dedans</strong>, et nous disons sur quoi ils reposent. Pour comprendre à quel moment ces questions se posent dans une procédure, voir <a href='/fr/comprendre#droits'>Droits et calendrier</a>.</p>` },
+  ],
+
   sections: [
     // ORDRE VOULU : groupes → cuves (et le carburant DANS les cuves) → eau → électricité.
     // Le carburant n'a pas de sens avant qu'on ait dit à quoi il sert.

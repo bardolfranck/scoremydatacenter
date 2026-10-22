@@ -37,6 +37,17 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
     // liste tomberait toujours en fin de page : l'ordre de lecture (constat → piliers → ce
     // qu'on en fait) se tient ici, pas dans l'ordre de déclaration d'un seul tableau.
     sectionsApres?: { h2: string; corps: string }[];
+    // LES QUESTIONS TELLES QU'ELLES SONT POSÉES. Nos pages répondaient déjà — mais sans jamais
+    // poser la question, et un moteur ne relie pas une réponse à une question absente. Les six
+    // questions que Google remonte comme « autres questions posées » (à quelle distance est-on
+    // tranquille, est-ce risqué pour la santé, pourquoi les gens sont contre…) trouvaient leur
+    // réponse dans nos pages, sans un seul titre pour les accrocher.
+    //
+    // ⚠️ UNE SEULE LISTE pour l'affichage ET pour le balisage FAQPage rendu plus bas : deux
+    // listes finiraient par diverger, et on publierait aux moteurs une réponse que la page
+    // n'affiche pas — exactement le motif qui fait sanctionner un site.
+    questionsH2?: string;
+    questions?: { q: string; r: string }[];
     // Replis « en savoir plus » : ce qui enrichit sans alourdir la lecture principale.
     details?: { resume: string; corps: string }[];
     apres?: string;                                 // note de pied éventuelle
@@ -44,6 +55,23 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
   nav: any; altHref: string; altLabel: string;
 };
 const slug = t.h1.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+// Le balisage attend du TEXTE, pas du balisage : on retire les liens et le gras de la réponse
+// affichée plutôt que d'en tenir une seconde version à la main.
+const texteSeul = (html: string) =>
+  html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
+      .replace(/&#39;|&rsquo;/g, "'").replace(/\s+/g, " ").trim();
+const faqJsonLd = t.questions?.length
+  ? {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: t.questions.map((x) => ({
+        "@type": "Question",
+        name: texteSeul(x.q),
+        acceptedAnswer: { "@type": "Answer", text: texteSeul(x.r) },
+      })),
+    }
+  : null;
 ---
 
 <Base
@@ -93,6 +121,18 @@ const slug = t.h1.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""
         </>
       ))}
 
+      {t.questions && t.questions.length > 0 && (
+        <>
+          {t.questionsH2 && <h2>{t.questionsH2}</h2>}
+          {t.questions.map((x) => (
+            <div class="pilier-qr">
+              <h3 set:html={x.q}></h3>
+              <Fragment set:html={x.r} />
+            </div>
+          ))}
+        </>
+      )}
+
       {t.details?.map((d) => (
         /* Un repli, pas une page de plus : le lecteur pressé lit la page, le lecteur curieux
            ouvre. Sans ça on choisit entre « trop léger » et « encyclopédie illisible ». */
@@ -103,6 +143,10 @@ const slug = t.h1.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""
       ))}
 
       {t.apres && <Fragment set:html={t.apres} />}
+
+      {faqJsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)}></script>
+      )}
     </div>
   </section>
 </Base>
@@ -122,6 +166,10 @@ const slug = t.h1.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""
      et elle ne décale pas le texte si elle manque (cas d'une section sans icône). */
   .h2-ico { display: flex; align-items: center; gap: 0.5rem; }
   .h2-ico-mark { flex: 0 0 auto; display: inline-flex; color: var(--accent, #0f5fb8); opacity: 0.85; }
+
+  /* Une question se lit comme une question : posée, détachée, suivie de sa réponse. */
+  .pilier-qr { margin: 1.4rem 0; }
+  .pilier-qr > h3 { margin: 0 0 0.4rem; font-size: 1.05rem; line-height: 1.35; }
 
   .pilier-plus { margin: 1.1rem 0; border-left: 3px solid var(--line, #e3e3e3); padding-left: 0.9rem; }
   .pilier-plus > summary { cursor: pointer; font-weight: 600; }

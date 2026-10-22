@@ -53,7 +53,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       {
         icon: "noise",
         lead: "Le bruit.",
-        body: "Le refroidissement fonctionne jour et nuit, et les générateurs de secours sont testés régulièrement. Les niveaux admis sont fixés par les autorisations du site — ils s'écrivent, donc se vérifient.",
+        body: "Le refroidissement fonctionne jour et nuit, et les générateurs de secours sont testés régulièrement. Les niveaux admis sont fixés par les autorisations du site — ils s'écrivent, donc se vérifient. Ce qui est encadré n'est d'ailleurs pas une distance, mais de combien le bruit monte chez le voisin : <a href='/fr/nuisances-data-center'>comment le bruit d'un projet se mesure, et à quelle distance on peut vivre tranquille</a>.",
       },
       {
         icon: "land",
@@ -245,7 +245,7 @@ export const RICH_EN: Record<string, RichBlock> = {
       {
         icon: "noise",
         lead: "Noise.",
-        body: "Cooling runs day and night, and backup generators are tested regularly. Permitted levels are set by the site's authorizations — they are written down, so they can be checked.",
+        body: "Cooling runs day and night, and backup generators are tested regularly. Permitted levels are set by the site's authorizations — they are written down, so they can be checked. What is regulated is not a distance but how much the noise rises at the neighbour's: <a href='/data-center-nuisances'>how a project's noise is assessed, and how far away is far enough</a>.",
       },
       {
         icon: "land",
