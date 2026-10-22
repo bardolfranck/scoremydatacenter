@@ -686,6 +686,19 @@ def main() -> int:
     dwell = patch_nearest_dwelling()
     print(f"prod-artifacts: nearest_dwelling on {dwell} fiches" if dwell
           else "prod-artifacts: nearest_dwelling skipped (no habitations sidecar — run make habitations)")
+    # CE COMPTE EST PUBLIÉ : il se dérive donc, il ne se recopie pas. La page « nuisances »
+    # annonçait « 1 565 sites » — l'effectif EUROPE d'une vieille version — alors que le
+    # corpus en comptait 3 283, et donnait la couverture de la distance pour 50 % quand elle
+    # est de 24 %. La page portait pourtant déjà la règle en commentaire : « les comptes fins
+    # ne sont pas publiés dans la prose, ils vieillissent ». Elle n'avait pas de source où
+    # puiser ; elle en a une. `nearest_dwelling` est posé ICI, après le scoring, donc
+    # engine/stats.py ne peut pas le voir : on complète stats.json une fois qu'il est écrit.
+    stats_path = ARTIFACTS_DIR / "stats.json"
+    if stats_path.exists():
+        st = json.loads(stats_path.read_text())
+        st.setdefault("derived", {})["n_nearest_dwelling"] = dwell
+        stats_path.write_text(json.dumps(st, ensure_ascii=False, indent=2) + "\n")
+        print(f"prod-artifacts: stats.derived.n_nearest_dwelling = {dwell}")
     dossiers = patch_dossier_environnemental()
     print(f"prod-artifacts: dossier environnemental sur {dossiers} fiches (avis d'autorité)")
     checked = patch_status_check()

@@ -12,6 +12,10 @@
 // must not take an émergence limit for a universal rule.
 import PagePilier from "../components/PagePilier.astro";
 import { EN_NAV } from "../config/nav";
+// Both published counts are DERIVED, never retyped — see the French page for the incident.
+import { STATS } from "../config/stats";
+const nSites = STATS.perimeters.monde.n_sites as number;
+const nDistance = (STATS.derived?.n_nearest_dwelling ?? 0) as number;
 
 const AE = "https://www.igedd.developpement-durable.gouv.fr/l-autorite-environnementale-r145.html";
 const MRAE = "https://www.mrae.developpement-durable.gouv.fr/";
@@ -64,7 +68,7 @@ const t = {
       corps: `<p>Some projects store fuel in quantity on site, lithium-ion batteries, sometimes hydrogen. The site then <strong>carries</strong> a hazard instead of merely enduring one — that is no longer a nuisance but a risk, handled in the hazard study. We publish these elements <strong>as information, next to the grade</strong>, for as long as coverage does not allow grading them without distorting comparison between sites.</p>` },
 
     { icone: "measure", h2: "Where our measurement stands",
-      corps: `<p>Our corpus holds <strong>1,565 sites</strong>. A <strong>distance to the nearest dwellings</strong> is available for <strong>784</strong> of them — the one exposure indicator we compute ourselves, the same way everywhere. The nuisance detail comes from the <strong>41 environmental opinions reviewed</strong>: projects that went through assessment, <strong>not the whole estate</strong>. These facts are published <strong>next to the grade, not inside it</strong>.</p>
+      corps: `<p>Our corpus holds <strong>${nSites.toLocaleString('en-GB')} sites</strong>. A <strong>distance to the nearest dwellings</strong> is available for <strong>${nDistance.toLocaleString('en-GB')}</strong> of them — the one exposure indicator we compute ourselves, the same way everywhere. The nuisance detail comes from the <strong>41 environmental opinions reviewed</strong>: projects that went through assessment, <strong>not the whole estate</strong>. These facts are published <strong>next to the grade, not inside it</strong>.</p>
       <p>See <a href='/acceptability-of-data-centers'>data center acceptability</a>, <a href='/map'>the map</a> and <a href='/methodology'>the method</a>.</p>` },
   ],
 

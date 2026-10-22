@@ -22,6 +22,13 @@
 // page lue par des élus, un ordre de grandeur sans source est pire que pas d'ordre de grandeur.
 import PagePilier from "../../components/PagePilier.astro";
 import { FR_NAV } from "../../config/nav";
+// LES DEUX COMPTES PUBLIÉS PLUS BAS SE DÉRIVENT, ils ne se recopient pas : la page annonçait
+// « 1 565 sites » — l'effectif EUROPE d'une version périmée — alors que le corpus en compte
+// plus du double, et donnait du même coup une couverture de la distance deux fois trop
+// flatteuse. La règle était pourtant écrite en tête de ce fichier.
+import { STATS } from "../../config/stats";
+const nSites = STATS.perimeters.monde.n_sites as number;
+const nDistance = (STATS.derived?.n_nearest_dwelling ?? 0) as number;
 
 const AE = "https://www.igedd.developpement-durable.gouv.fr/l-autorite-environnementale-r145.html";
 const MRAE = "https://www.mrae.developpement-durable.gouv.fr/";
@@ -76,7 +83,7 @@ const t = {
       corps: `<p>Certains projets stockent sur place du carburant en quantité, des batteries lithium-ion, voire de l'hydrogène. Le site <strong>porte</strong> alors un aléa, au lieu de seulement le subir — ce n'est plus une nuisance, c'est un risque, et il se traite dans l'étude de dangers. Nous publions ces éléments <strong>en information, à côté de la note</strong>, tant que la couverture ne permet pas de les noter sans fausser la comparaison entre sites.</p>` },
 
     { icone: "measure", h2: "Où en est la mesure, chez nous",
-      corps: `<p>Notre corpus compte <strong>1 565 sites</strong>. Une mesure de <strong>distance aux premières habitations</strong> est disponible sur <strong>784</strong> d'entre eux — c'est le seul indicateur d'exposition que nous calculons nous-mêmes, partout de la même façon. Le détail des nuisances, lui, vient des <strong>41 avis environnementaux dépouillés</strong> : les projets passés en évaluation, <strong>pas l'ensemble du parc</strong>. Ces faits sont publiés <strong>à côté de la note, pas dedans</strong>.</p>
+      corps: `<p>Notre corpus compte <strong>${nSites.toLocaleString('fr-FR')} sites</strong>. Une mesure de <strong>distance aux premières habitations</strong> est disponible sur <strong>${nDistance.toLocaleString('fr-FR')}</strong> d'entre eux — c'est le seul indicateur d'exposition que nous calculons nous-mêmes, partout de la même façon. Le détail des nuisances, lui, vient des <strong>41 avis environnementaux dépouillés</strong> : les projets passés en évaluation, <strong>pas l'ensemble du parc</strong>. Ces faits sont publiés <strong>à côté de la note, pas dedans</strong>.</p>
       <p>Voir <a href='/fr/acceptabilite-data-center'>l'acceptabilité des data centers</a>, <a href='/fr/carte'>la carte des sites</a> et <a href='/fr/methodologie'>la méthode</a>.</p>` },
   ],
 
