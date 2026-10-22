@@ -53,6 +53,16 @@ const orgLd = {
 // Mark the current section so the header shows where you are. Anchor links
 // (/#faq…) point back to a homepage section, never a standalone page, so they
 // never light up. Compare on the path only, trailing slash normalised.
+// UNE ADRESSE INTERNE SE TERMINE PAR UNE BARRE. Le site sert ses pages en dossiers :
+// /fr/classement redirige vers /fr/classement/. Comme le menu et le pied de page sont sur
+// les 6 660 pages, un href incomplet produit 6 660 redirections — et Google, qui les suit,
+// n'indexe pas l'URL d'origine. Relevé en Search Console le 2026-10-22 : 1 474 URLs dans ce
+// cas. On normalise ICI, au point de passage, plutôt que dans chaque table de liens : les
+// deux tables (nav.ts et le pied de page) divergeraient de toute façon.
+// Laissées intactes : les ancres, les requêtes, et tout ce qui n'est pas une adresse interne.
+const lienInterne = (h: string) =>
+  !h || !h.startsWith("/") || h.includes("#") || h.includes("?") || h.endsWith("/") ? h : `${h}/`;
+
 const here = (Astro.url.pathname.replace(/\/+$/, "") || "/");
 const isActive = (href: string) => {
   if (href.includes("#")) return false;
@@ -119,13 +129,13 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
               </summary>
               <div class="nav-menu">
                 {item.children.map((c) => (
-                  <a href={c.href} class:list={{ "is-active": isActive(c.href) }}
+                  <a href={lienInterne(c.href)} class:list={{ "is-active": isActive(c.href) }}
                      aria-current={isActive(c.href) ? "page" : undefined}>{c.label}</a>
                 ))}
               </div>
             </details>
           ) : (
-            <a class:list={["nav-link", { "is-active": isActive(item.href) }]} href={item.href}
+            <a class:list={["nav-link", { "is-active": isActive(item.href) }]} href={lienInterne(item.href)}
                aria-current={isActive(item.href) ? "page" : undefined}>{item.label}</a>
           )
         ))}
@@ -171,17 +181,17 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
         <p class="footer-lic">Engine AGPL-3.0 · Data: licence by source (ODbL, Licence Ouverte…) · Methodology CC BY-SA 4.0<br/>© 2026 Franck Bardol and contributors</p>
       </div>
       {(lang === "fr" ? [
-        ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Indices pays", "/fr/indices"], ["Les chiffres du parc", "/fr/chiffres"], ["Comprendre les data centers", "/fr/comprendre"]]],
-        ["Ressources", [["Méthodologie", "/fr/methodologie"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque"], ["API développeurs", "/fr/developpeurs"], ["FAQ", "/fr/#faq"]]],
+        ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Indices pays", "/fr/indices/"], ["Les chiffres du parc", "/fr/chiffres/"], ["Comprendre les data centers", "/fr/comprendre/"]]],
+        ["Ressources", [["Méthodologie", "/fr/methodologie/"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque/"], ["API développeurs", "/fr/developpeurs"], ["FAQ", "/fr/#faq"]]],
         ["À propos", [["Qui sommes-nous ?", "/fr/qui-sommes-nous"], ["Presse", "/fr/presse"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
       ] : [
-        ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Country index", "/indices"], ["Fleet figures", "/figures"], ["Understanding data centers", "/understand"]]],
-        ["Resources", [["Methodology", "/methodology"], ["Open model", "/#open"], ["Library", "/intelligence"], ["Developer API", "/developers"], ["FAQ", "/#faq"]]],
+        ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Country index", "/indices/"], ["Fleet figures", "/figures/"], ["Understanding data centers", "/understand/"]]],
+        ["Resources", [["Methodology", "/methodology/"], ["Open model", "/#open"], ["Library", "/intelligence/"], ["Developer API", "/developers"], ["FAQ", "/#faq"]]],
         ["About", [["Who we are", "/who-we-are"], ["Press", "/press"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
       ]).map(([heading, links]: any) => (
         <div class="footer-col">
           <h4>{heading}</h4>
-          <ul>{links.map(([label, href]: any) => <li><a href={href}>{label}</a></li>)}</ul>
+          <ul>{links.map(([label, href]: any) => <li><a href={lienInterne(href)}>{label}</a></li>)}</ul>
         </div>
       ))}
     </footer>
@@ -194,7 +204,7 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
         {lang === "fr"
           ? "Mesure d'audience : nous utilisons Google Analytics pour compter les visites et comprendre ce qui est lu. Aucun cookie n'est déposé sans votre accord."
           : "Audience measurement: we use Google Analytics to count visits and understand what gets read. No cookie is set without your consent."}
-        <a href={lang === "fr" ? "/fr/mentions-legales" : "/legal"}>
+        <a href={lienInterne(lang === "fr" ? "/fr/mentions-legales" : "/legal")}>
           {lang === "fr" ? "En savoir plus" : "Learn more"}</a>
       </p>
       <div class="consent-actions">

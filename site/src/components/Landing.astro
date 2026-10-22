@@ -366,7 +366,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               openMap: t.mapOpen,
               reserved: t.mapReserved,
               ficheBase: ficheBase,
-              mapPath: lang === "fr" ? "/fr/carte" : "/map",
+              mapPath: lang === "fr" ? "/fr/carte/" : "/map/",
               viewFiche: t.viewFiche,
               powerUnknown: lang === "fr" ? "puissance non communiquée" : "power not disclosed",
             }}
@@ -375,7 +375,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <div class="explore-col">
           <p class="explore-label">{t.exploreRankLabel}</p>
           {rankTeaser.map(({ dc, p }) => (
-            <a class="teaser-row" href={`${ficheBase}/${dc.id}`}>
+            <a class="teaser-row" href={`${ficheBase}/${dc.id}/`}>
               <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
                 confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
                 size="sm" naLabel={t.insufficient} />
@@ -388,7 +388,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <div class="explore-col">
           <p class="explore-label">{t.exploreLatestLabel}</p>
           {latest.map((dc: any) => (
-            <a class="teaser-row" href={`${ficheBase}/${dc.id}`}>
+            <a class="teaser-row" href={`${ficheBase}/${dc.id}/`}>
               <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
                 confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
                 size="sm" naLabel={t.insufficient} />
@@ -423,7 +423,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             </a>
         ))}
       </div>
-      <p><a class="teaser-more" href={lang === "fr" ? "/fr/indices" : "/indices"}>{lang === "fr" ? `Voir la carte et les ${idxTotal} pays` : `See the map and all ${idxTotal} countries`} →</a></p>
+      <p><a class="teaser-more" href={lang === "fr" ? "/fr/indices/" : "/indices/"}>{lang === "fr" ? `Voir la carte et les ${idxTotal} pays` : `See the map and all ${idxTotal} countries`} →</a></p>
     </div>
   </section>
 
@@ -473,7 +473,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <span>{t.confidenceExplain}</span>
           </li>
         </ul>
-        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{t.methodPedago} →</a>}
+        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/methodologie/" : "/methodology/"}>{t.methodPedago} →</a>}
       </div>
       <div class="weighting" aria-label={t.weightsAria}>
         <p class="weighting-caption">{t.weightsCaption}</p>
@@ -510,7 +510,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           {t.library.items.map((it: string) => <li>{it}</li>)}
         </ul>
       </div>
-      <a class="button button-primary home-lib-cta" href={lang === "fr" ? "/fr/bibliotheque" : "/intelligence"}>{t.library.cta} →</a>
+      <a class="button button-primary home-lib-cta" href={lang === "fr" ? "/fr/bibliotheque/" : "/intelligence/"}>{t.library.cta} →</a>
     </div>
   </section>
 

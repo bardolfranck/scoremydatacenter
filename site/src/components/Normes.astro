@@ -15,7 +15,7 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
   lang: "fr" | "en"; t: any; nav: NavNode[];
   altHref: string; altLabel: string;
 };
-const methHref = lang === "fr" ? "/fr/methodologie" : "/methodology";
+const methHref = lang === "fr" ? "/fr/methodologie/" : "/methodology/";
 ---
 
 <Base

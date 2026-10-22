@@ -89,7 +89,7 @@ const hasPlanned = tiles.some((t) => t.planned);
           {/* the set is rendered twice: the track translates by -50% and loops seamlessly */}
           <div class={`orbital-track otrack-${i}`}>
             {[0, 1].map((pass) => row.map((tile) => (
-              <a class="otile" href={`${ficheBase}/${tile.id}`}
+              <a class="otile" href={`${ficheBase}/${tile.id}/`}
                 tabindex={pass === 0 ? 0 : -1} aria-hidden={pass === 1 ? "true" : undefined}>
                 <img src={tile.thumb} alt="" loading="lazy" decoding="async" width="400" height="267" />
                 <span class={`otile-chip grade-${tile.grade.toLowerCase()}`}>{tile.grade}</span>

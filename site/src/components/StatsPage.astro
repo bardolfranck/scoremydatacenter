@@ -59,10 +59,10 @@ const parentKey = perimeter === "europe" || perimeter === "monde"
   : EUROPE_ISO.includes(perimeter) ? "europe"
   : (STATS as any).perimeters?.monde ? "monde" : "europe";
 const pathFor = (key: string) =>
-  key === defaultKey ? `${basePath}` : `${basePath}/${key.toLowerCase()}`;
+  key === defaultKey ? basePath : `${basePath}${key.toLowerCase()}/`;
 const altPathFor = (key: string) => {
   const altDefault = lang === "fr" ? "europe" : "FR";
-  return key === altDefault ? `${altBase}` : `${altBase}/${key.toLowerCase()}`;
+  return key === altDefault ? altBase : `${altBase}${key.toLowerCase()}/`;
 };
 
 const dateFmt = (iso: string | null) => {
@@ -134,7 +134,7 @@ function pointsSvg(points: number[][]): string | null {
   return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img">${dots}</svg>`;
 }
 const mapSvg = pointsSvg(peri.points);
-const mapHref = lang === "fr" ? "/fr/carte" : "/map";
+const mapHref = lang === "fr" ? "/fr/carte/" : "/map/";
 
 const ANCHORS: Record<string, string> = {
   grid_saturated: "reseau-sature", grid_queue_critical: "file-attente",
@@ -340,7 +340,7 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
                 </tbody>
               </table>
               <p class="stx-compclose">{v3.compare.close}</p>
-              <a class="stx-cta" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{v3.compare.cta}</a>
+              <a class="stx-cta" href={lang === "fr" ? "/fr/methodologie/" : "/methodology/"}>{v3.compare.cta}</a>
             </aside>
           )}
           {act.id === "dynamique" && (
@@ -438,7 +438,7 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
                   {exemplarBullets(kind, e).map((b) => <li>{b}</li>)}
                 </ul>
                 <p class="stx-crit">{(ex.crit as any)[kind]}</p>
-                <a class="stx-cta" href={`${ficheBase}/${e.id}`}>{ex.fiche}</a>
+                <a class="stx-cta" href={`${ficheBase}/${e.id}/`}>{ex.fiche}</a>
               </article>
             );
           })}
@@ -461,7 +461,7 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
           ))}
         </div>
         <p class="stx-gline">{v3.guarantee.line}</p>
-        <a class="stx-cta" href={lang === "fr" ? "/fr/methodologie" : "/methodology"}>{v3.guarantee.cta}</a>
+        <a class="stx-cta" href={lang === "fr" ? "/fr/methodologie/" : "/methodology/"}>{v3.guarantee.cta}</a>
       </div>
     </section>
 

@@ -50,12 +50,14 @@ if (_fleetPeri && (t as any).fleet) {
     const stat = _fleetPeri.stats?.[statId];
     const ind = _fleetInd(iid);
     if (stat && ind && ["measured", "announced", "verified"].includes(ind.status) && pred(ind.value)) {
+      // `base` n'a PAS de barre finale : elle est ajoutée une seule fois dans `href`, sinon
+      // le périmètre France produisait « /fr/chiffres//#… » et l'anglais « /figures//#… ».
       const base = lang === "fr"
         ? (dc.country === "FR" ? "/fr/chiffres" : `/fr/chiffres/${dc.country.toLowerCase()}`)
         : `/figures/${dc.country.toLowerCase()}`;
       fleetLine = {
         text: (t as any).fleet[statId].replace("{pct}", fmtPct(stat.pct, lang)),
-        href: `${base}#${anchorId}`,
+        href: `${base}/#${anchorId}`,
       };
       break;
     }
@@ -77,7 +79,7 @@ if (_idxEntry?.eligible) {
     text: lang === "fr"
       ? `Ce site est en ${cname} — indice site du pays : ${_idxEntry.grade}${res} (${score}).`
       : `This site is in ${cname} — the country's site index: ${_idxEntry.grade}${res} (${score}).`,
-    href: `${lang === "fr" ? "/fr" : ""}/indices?pays=${dc.country}`,
+    href: `${lang === "fr" ? "/fr" : ""}/indices/?pays=${dc.country}`,
   };
 }
 
@@ -120,8 +122,8 @@ const provLabel = bandWide
 const noteChip = (g: string) => `<span class="note-inline n-${g.toLowerCase()}">${g}</span>`;
 const bandChips = (b: string) => b.split("–").map(noteChip).join("–");
 const isDesalCountry = dc.country === "IL";
-const mapPath = lang === "fr" ? "/fr/carte" : "/map";
-const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}`;
+const mapPath = lang === "fr" ? "/fr/carte/" : "/map/";
+const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}/`;
 const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
 // The synthesis `lead` is per-language like the body. Back-compat: older records carry a bare
 // string (single language) — render it as-is until they are regenerated. New records carry
@@ -595,7 +597,7 @@ const seoDesc = seoLead
               d'apprendre ce qui tire CETTE note ; la question suivante est ce que valent les
               lettres. Sans ce lien, l'explication de la fiche et l'échelle vivent chacune de
               leur côté et personne ne passe de l'une à l'autre. */}
-          <a href={lang === "fr" ? "/fr/la-note-pas-a-pas" : "/the-grade-step-by-step"}>
+          <a href={lang === "fr" ? "/fr/la-note-pas-a-pas/" : "/the-grade-step-by-step/"}>
             {lang === "fr" ? "Ce que valent les lettres →" : "What the letters mean →"}
           </a>
         </p>
@@ -933,7 +935,7 @@ const seoDesc = seoLead
           <ul>
             {related.map((r: any) => (
               <li>
-                <a href={`${ficheBase}/${r.id}`}>
+                <a href={`${ficheBase}/${r.id}/`}>
                   <span class="fr-name">{r.name}</span>
                   <span class="fr-meta">
                     {[r.municipality,
@@ -949,7 +951,7 @@ const seoDesc = seoLead
               </li>
             ))}
           </ul>
-          <a class="fiche-related-all" href={lang === "fr" ? "/fr/classement" : "/ranking"}>{t.related.seeAll}</a>
+          <a class="fiche-related-all" href={lang === "fr" ? "/fr/classement/" : "/ranking/"}>{t.related.seeAll}</a>
         </nav>
       )}
 
@@ -1002,7 +1004,7 @@ const seoDesc = seoLead
           if (n.properties.id === mini.dataset.dc) continue;
           const el = document.createElement("a");
           el.className = "map-marker mini-neighbour";
-          el.href = `${ficheBase}/${n.properties.id}`;
+          el.href = `${ficheBase}/${n.properties.id}/`;
           el.title = n.properties.name;
           el.style.width = el.style.height = "24px";
           el.innerHTML = chipHtml(n.properties.grade_site);

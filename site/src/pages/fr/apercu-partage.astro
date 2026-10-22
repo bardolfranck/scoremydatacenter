@@ -35,7 +35,7 @@ const cards = Object.values(modules)
       <div class="og-grid">
         {cards.map((c: any) => (
           <figure class="og-card">
-            <a href={`/fr/dc/${c.id}`}>
+            <a href={`/fr/dc/${c.id}/`}>
               <img src={c.png} width="1200" height="630" loading="lazy" alt={`Carte de partage — ${c.name}`} />
             </a>
             <figcaption>{c.name}</figcaption>

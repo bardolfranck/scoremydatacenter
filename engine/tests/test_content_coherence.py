@@ -328,3 +328,29 @@ def test_les_blocs_comprendre_restent_a_parite_fr_en(marqueur, quoi):
         f"{quoi} : {n_fr} en français contre {n_en} en anglais — une langue a été enrichie "
         "sans l'autre (voir l'incident du délai de recours, 2026-10-22)"
     )
+
+
+NAV = REPO_ROOT / "site" / "src" / "config" / "nav.ts"
+
+
+def test_les_liens_de_navigation_finissent_par_une_barre_oblique():
+    """UN LIEN SANS BARRE FINALE EST UNE REDIRECTION, RÉPÉTÉE SUR CHAQUE PAGE.
+
+    Le site sert ses pages en dossiers : /fr/classement redirige vers /fr/classement/.
+    La navigation étant présente sur les 6 660 pages, un seul href incomplet produit 6 660
+    redirections — et Google, qui les suit, classe l'URL d'origine « page avec redirection »
+    et ne l'indexe pas. Relevé en Search Console le 2026-10-22 : 1 474 URLs dans ce cas,
+    tout le maillage interne passant par une redirection, pendant qu'une page importante
+    (/acceptability-of-data-centers/) n'avait JAMAIS été explorée. Le sitemap, lui, était
+    correct : c'est bien nos liens qui dépensaient le budget d'exploration.
+
+    Exceptions légitimes : une ancre (/fr/#faq) et une requête (/fr/comparer/?v=2), qui
+    portent déjà leur barre avant le # ou le ?.
+    """
+    texte = NAV.read_text()
+    fautifs = [h for h in re.findall(r'href: "(/[^"]*)"', texte)
+               if "#" not in h and "?" not in h and not h.endswith("/")]
+    assert not fautifs, (
+        "ces liens de navigation déclencheront une redirection sur chaque page du site : "
+        + ", ".join(fautifs)
+    )

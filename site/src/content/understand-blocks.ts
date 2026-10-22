@@ -53,7 +53,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       {
         icon: "noise",
         lead: "Le bruit.",
-        body: "Le refroidissement fonctionne jour et nuit, et les générateurs de secours sont testés régulièrement. Les niveaux admis sont fixés par les autorisations du site — ils s'écrivent, donc se vérifient. Ce qui est encadré n'est d'ailleurs pas une distance, mais de combien le bruit monte chez le voisin : <a href='/fr/nuisances-data-center'>comment le bruit d'un projet se mesure, et à quelle distance on peut vivre tranquille</a>.",
+        body: "Le refroidissement fonctionne jour et nuit, et les générateurs de secours sont testés régulièrement. Les niveaux admis sont fixés par les autorisations du site — ils s'écrivent, donc se vérifient. Ce qui est encadré n'est d'ailleurs pas une distance, mais de combien le bruit monte chez le voisin : <a href='/fr/nuisances-data-center/'>comment le bruit d'un projet se mesure, et à quelle distance on peut vivre tranquille</a>.",
       },
       {
         icon: "land",
@@ -174,11 +174,11 @@ export const RICH_FR: Record<string, RichBlock> = {
       // c'est celle que pose l'élu qui reçoit une pétition et veut comprendre.
       {
         q: "Des data centers se construisent-ils près de chez moi ?",
-        a: "Nous publions une note pour chaque site et chaque projet connu, avec ses sources. <a href='/fr/carte'>Cherchez votre commune sur la carte</a> ou <a href='/fr/classement'>parcourez le classement</a> : la fiche d'un projet dit ce qu'on sait de sa puissance, de son eau, de son sol et de son voisinage — et ce qu'on ignore. Un projet absent de nos données n'est pas un projet inexistant : il n'a pas encore été rendu public, ou nous ne l'avons pas encore vu.",
+        a: "Nous publions une note pour chaque site et chaque projet connu, avec ses sources. <a href='/fr/carte/'>Cherchez votre commune sur la carte</a> ou <a href='/fr/classement/'>parcourez le classement</a> : la fiche d'un projet dit ce qu'on sait de sa puissance, de son eau, de son sol et de son voisinage — et ce qu'on ignore. Un projet absent de nos données n'est pas un projet inexistant : il n'a pas encore été rendu public, ou nous ne l'avons pas encore vu.",
       },
       {
         q: "Pourquoi les gens sont-ils contre les data centers ?",
-        a: "Rarement par principe. Ce qui revient dans les dossiers et les mobilisations tient à quatre choses concrètes : l'<b>électricité</b> captée sur un réseau déjà contraint, l'<b>eau</b> de refroidissement dans des zones où elle manque, le <b>sol</b> artificialisé pour un bâtiment qui emploie peu, et le <b>bruit</b> continu pour les riverains les plus proches. S'y ajoute un sentiment d'asymétrie : la ressource est locale, la valeur part ailleurs. C'est précisément ce que la note mesure, pilier par pilier — voir <a href='/fr/nuisances-data-center'>les nuisances</a> pour ce qui se vit depuis la rue.",
+        a: "Rarement par principe. Ce qui revient dans les dossiers et les mobilisations tient à quatre choses concrètes : l'<b>électricité</b> captée sur un réseau déjà contraint, l'<b>eau</b> de refroidissement dans des zones où elle manque, le <b>sol</b> artificialisé pour un bâtiment qui emploie peu, et le <b>bruit</b> continu pour les riverains les plus proches. S'y ajoute un sentiment d'asymétrie : la ressource est locale, la valeur part ailleurs. C'est précisément ce que la note mesure, pilier par pilier — voir <a href='/fr/nuisances-data-center/'>les nuisances</a> pour ce qui se vit depuis la rue.",
       },
       {
         q: "Pourquoi les élus approuvent-ils ces projets ?",
@@ -244,7 +244,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       },
     ],
     closing:
-      "Et pour comparer les projets entre eux : notre <a href='/fr/carte'>carte</a>, notre <a href='/fr/classement'>classement</a> et la <a href='/fr/#method'>méthode complète</a> — c'est tout l'objet de ce site.",
+      "Et pour comparer les projets entre eux : notre <a href='/fr/carte/'>carte</a>, notre <a href='/fr/classement/'>classement</a> et la <a href='/fr/#method'>méthode complète</a> — c'est tout l'objet de ce site.",
   },
 };
 
@@ -266,7 +266,7 @@ export const RICH_EN: Record<string, RichBlock> = {
       {
         icon: "noise",
         lead: "Noise.",
-        body: "Cooling runs day and night, and backup generators are tested regularly. Permitted levels are set by the site's authorizations — they are written down, so they can be checked. What is regulated is not a distance but how much the noise rises at the neighbour's: <a href='/data-center-nuisances'>how a project's noise is assessed, and how far away is far enough</a>.",
+        body: "Cooling runs day and night, and backup generators are tested regularly. Permitted levels are set by the site's authorizations — they are written down, so they can be checked. What is regulated is not a distance but how much the noise rises at the neighbour's: <a href='/data-center-nuisances/'>how a project's noise is assessed, and how far away is far enough</a>.",
       },
       {
         icon: "land",
@@ -381,11 +381,11 @@ export const RICH_EN: Record<string, RichBlock> = {
     qas: [
       {
         q: "Are any data centers being built near me?",
-        a: "We publish a grade for every known site and project, with its sources. <a href='/map'>Search for your town on the map</a> or <a href='/ranking'>browse the ranking</a>: a project's page says what is known about its power, its water, its land and its surroundings — and what is not. A project missing from our data is not a project that does not exist: it has not been made public yet, or we have not seen it yet.",
+        a: "We publish a grade for every known site and project, with its sources. <a href='/map/'>Search for your town on the map</a> or <a href='/ranking/'>browse the ranking</a>: a project's page says what is known about its power, its water, its land and its surroundings — and what is not. A project missing from our data is not a project that does not exist: it has not been made public yet, or we have not seen it yet.",
       },
       {
         q: "Why are people against data centers?",
-        a: "Rarely on principle. What recurs in the files and in local campaigns comes down to four concrete things: <b>electricity</b> drawn from an already constrained grid, cooling <b>water</b> in areas that lack it, <b>land</b> sealed for a building that employs few people, and continuous <b>noise</b> for the closest neighbours. Added to that is a sense of asymmetry: the resource is local, the value leaves. That is exactly what the grade measures, pillar by pillar — see <a href='/data-center-nuisances'>nuisances</a> for what is lived from the street.",
+        a: "Rarely on principle. What recurs in the files and in local campaigns comes down to four concrete things: <b>electricity</b> drawn from an already constrained grid, cooling <b>water</b> in areas that lack it, <b>land</b> sealed for a building that employs few people, and continuous <b>noise</b> for the closest neighbours. Added to that is a sense of asymmetry: the resource is local, the value leaves. That is exactly what the grade measures, pillar by pillar — see <a href='/data-center-nuisances/'>nuisances</a> for what is lived from the street.",
       },
       {
         q: "Why do city councils approve data centers?",
@@ -451,6 +451,6 @@ export const RICH_EN: Record<string, RichBlock> = {
       },
     ],
     closing:
-      "And to compare projects with each other: our <a href='/fr/carte'>map</a>, our <a href='/fr/classement'>ranking</a> and the <a href='/#method'>full method</a> — that is what this site is for.",
+      "And to compare projects with each other: our <a href='/fr/carte/'>map</a>, our <a href='/fr/classement/'>ranking</a> and the <a href='/#method'>full method</a> — that is what this site is for.",
   },
 };
