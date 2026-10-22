@@ -287,3 +287,44 @@ def test_l_enumeration_de_l_etat_des_donnees_boucle(lang):
     phrase = [l for l in texte.splitlines() if l.strip().startswith("dataState:")][0]
     for champ in ("{n}", "{measured}", "{announced}", "{missing}", "{notCollected}"):
         assert champ in phrase, f"[{lang}] {champ} absent de la phrase d'état des données"
+
+
+BLOCS = REPO_ROOT / "site" / "src" / "content" / "understand-blocks.ts"
+
+
+def _moities() -> tuple[str, str]:
+    """Le fichier déclare RICH_FR puis RICH_EN : on compare les deux moitiés.
+
+    On part de RICH_FR et non du début : la déclaration de type qui précède contient elle
+    aussi `lead:`, `label:` et `q:`, et les compter faisait échouer le test sur un écart de
+    un — côté français, puisque le type est de ce côté-là de la coupure.
+    """
+    texte = BLOCS.read_text()
+    debut = texte.index("export const RICH_FR")
+    i = texte.index("export const RICH_EN")
+    return texte[debut:i], texte[i:]
+
+
+@pytest.mark.parametrize("marqueur,quoi", [
+    ("lead:", "points de contenu"),
+    ("{ label:", "sources citées"),
+    ("q:", "questions de la FAQ"),
+])
+def test_les_blocs_comprendre_restent_a_parite_fr_en(marqueur, quoi):
+    """DEUX LISTES PARALLÈLES FINISSENT TOUJOURS PAR DIVERGER.
+
+    RICH_FR et RICH_EN sont deux rédactions du même contenu. Le 2026-10-22 une correction
+    juridique — le délai de recours des tiers, DEUX mois et non quatre — a été portée en
+    français seulement : pendant quelques heures la page anglaise a continué d'annoncer un
+    délai faux, dans le sens qui fait perdre son recours au lecteur. Rien ne l'a signalé.
+
+    Ce test ne compare pas les textes (ils n'ont aucune raison de se correspondre mot à mot),
+    il compare les STRUCTURES : autant de points, de sources et de questions d'un côté que de
+    l'autre. Un ajout dans une seule langue casse le build.
+    """
+    fr, en = _moities()
+    n_fr, n_en = fr.count(marqueur), en.count(marqueur)
+    assert n_fr == n_en, (
+        f"{quoi} : {n_fr} en français contre {n_en} en anglais — une langue a été enrichie "
+        "sans l'autre (voir l'incident du délai de recours, 2026-10-22)"
+    )

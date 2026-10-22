@@ -167,6 +167,27 @@ export const RICH_FR: Record<string, RichBlock> = {
 
   faq: {
     qas: [
+      // LES QUATRE QUESTIONS TELLES QU'ELLES SONT TAPÉES. Google les remonte comme « autres
+      // questions posées » autour des data centers ; la page y répondait déjà, dispersées dans
+      // les blocs, sans jamais les poser. Les deux premières sont écrites DU POINT DE VUE de
+      // celui qui doute : « pourquoi les gens sont contre » n'est pas une question militante,
+      // c'est celle que pose l'élu qui reçoit une pétition et veut comprendre.
+      {
+        q: "Des data centers se construisent-ils près de chez moi ?",
+        a: "Nous publions une note pour chaque site et chaque projet connu, avec ses sources. <a href='/fr/carte'>Cherchez votre commune sur la carte</a> ou <a href='/fr/classement'>parcourez le classement</a> : la fiche d'un projet dit ce qu'on sait de sa puissance, de son eau, de son sol et de son voisinage — et ce qu'on ignore. Un projet absent de nos données n'est pas un projet inexistant : il n'a pas encore été rendu public, ou nous ne l'avons pas encore vu.",
+      },
+      {
+        q: "Pourquoi les gens sont-ils contre les data centers ?",
+        a: "Rarement par principe. Ce qui revient dans les dossiers et les mobilisations tient à quatre choses concrètes : l'<b>électricité</b> captée sur un réseau déjà contraint, l'<b>eau</b> de refroidissement dans des zones où elle manque, le <b>sol</b> artificialisé pour un bâtiment qui emploie peu, et le <b>bruit</b> continu pour les riverains les plus proches. S'y ajoute un sentiment d'asymétrie : la ressource est locale, la valeur part ailleurs. C'est précisément ce que la note mesure, pilier par pilier — voir <a href='/fr/nuisances-data-center'>les nuisances</a> pour ce qui se vit depuis la rue.",
+      },
+      {
+        q: "Pourquoi les élus approuvent-ils ces projets ?",
+        a: "Parce qu'un data center apporte de la fiscalité locale, des travaux, et parfois un réseau de chaleur ou une fibre. L'emploi, lui, est faible une fois le chantier terminé — c'est un bâtiment plein de machines, pas une usine. La vraie question n'est donc pas « pour ou contre » mais ce que la collectivité obtient en échange, et ce qu'elle écrit dans l'autorisation : les engagements qui ne sont pas inscrits ne sont pas opposables.",
+      },
+      {
+        q: "Que demander quand un data center veut s'installer ?",
+        a: "Trois chiffres d'abord, par écrit : la <b>puissance</b> en mégawatts, la <b>consommation d'eau</b> prévue et son mode de refroidissement, la <b>distance aux premières habitations</b>. Puis trois engagements : la récupération de la chaleur, le calendrier de dépôt, et ce qui sera <b>publié</b> une fois le site en service. La <a href='#questions'>checklist du bloc 3</a> tient sur une page, et <a href='#droits'>Droits et calendrier</a> dit à quel moment chaque question peut encore peser.",
+      },
       {
         q: "Un panneau d'enquête publique vient d'apparaître près de chez moi.",
         a: "Notez la date de fin : l'enquête dure au minimum 30 jours (voir <a href='#droits'>Droits et calendrier</a>). Vous pouvez déposer une observation écrite, en mairie ou en ligne, même sans habiter la commune. Une observation précise et factuelle pèse plus qu'une pétition de principe : appuyez-vous sur la <a href='#questions'>checklist du bloc 3</a>.",
@@ -326,7 +347,20 @@ export const RICH_EN: Record<string, RichBlock> = {
       },
       {
         lead: "After authorization: appeals.",
-        body: "Deadlines are short — as a general rule two months against a building permit from its posting, four months for third parties against an environmental authorization from its publication. Past those deadlines, the authorization becomes final.",
+        // ⚠️ TWO months, not four. We published "four" until 2026-10-22 — the figure in force
+        // from 2017 to 2024, which most online commentary still repeats. Decree no. 2024-423
+        // of 10 May 2024 cut it to two months for decisions taken from 1 September 2024
+        // (art. R. 181-50, checked on Légifrance). The error ran the worst way: a resident
+        // relying on it let the window close and lost the appeal for good.
+        body: "Deadlines are short, and they cannot be recovered: two months against a building permit from the first day it is posted on site, two months as well for third parties against an environmental authorization, counted from the last formality completed — posting at the town hall or publication on the prefecture's website (art. R. 181-50)<sup><a href='#src-rights-4'>4</a></sup>. A court appeal must also be notified to the author of the decision and to its beneficiary within fifteen days, or it is inadmissible (art. R. 181-51).",
+      },
+      {
+        lead: "Once the site is running: the claim.",
+        body: "Past the deadlines the authorization is final — but its PRESCRIPTIONS are not. Anyone affected can file a claim with the préfet, from the moment the site enters service, contesting the “insufficiency or inadequacy of the prescriptions”: noise from the chillers, generator tests, discharges, water abstraction. The préfet has two months to answer with reasons, silence counts as refusal, and where the claim is well founded he sets additional prescriptions (art. R. 181-52)<sup><a href='#src-rights-5'>5</a></sup>. It is the only lever left when the nuisance is discovered in use — and the most overlooked.",
+      },
+      {
+        lead: "The buyer's trap.",
+        body: "Anyone who buys or rents near a classified installation AFTER its authorization has been posted can no longer contest that authorization: the law rules them inadmissible (art. L. 514-6, III of the environment code)<sup><a href='#src-rights-6'>6</a></sup>. Before signing near an industrial zone, it is worth asking the town hall and the prefecture which authorizations are already posted there. The claim about prescriptions, however, stays open.",
       },
     ],
     takeaway:
@@ -335,11 +369,32 @@ export const RICH_EN: Record<string, RichBlock> = {
       { label: "Gossement Avocats, law no. 2026-403, 2026", url: "https://www.gossement-avocats.com/blog/centres-de-donnees-data-centers-ce-que-change-la-loi-de-simplification-de-la-vie-economique/" },
       { label: "Actu-Environnement, decree of March 3, 2026 (CNDP)", url: "https://www.actu-environnement.com/ae/news/cndp-projets-saisine-decret-data-centers-eolien-mer-raccordement-lignes-electrique-sous-marines-47625.php4" },
       { label: "Environment code, art. L.123-9", url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033038541" },
+      // These three point at the TEXT, not at commentary: it was outdated commentary that had
+      // us publish "four months" (the figure before decree no. 2024-423 of 10 May 2024).
+      { label: "Environment code, art. R. 181-50 — third-party appeal window, two months (decree no. 2024-423 of 10 May 2024)", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000033929087" },
+      { label: "Environment code, art. R. 181-52 — claim to the préfet from entry into service", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000033929087" },
+      { label: "Environment code, art. L. 514-6, III — third parties settling after the posting are inadmissible", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006176598" },
     ],
   },
 
   faq: {
     qas: [
+      {
+        q: "Are any data centers being built near me?",
+        a: "We publish a grade for every known site and project, with its sources. <a href='/map'>Search for your town on the map</a> or <a href='/ranking'>browse the ranking</a>: a project's page says what is known about its power, its water, its land and its surroundings — and what is not. A project missing from our data is not a project that does not exist: it has not been made public yet, or we have not seen it yet.",
+      },
+      {
+        q: "Why are people against data centers?",
+        a: "Rarely on principle. What recurs in the files and in local campaigns comes down to four concrete things: <b>electricity</b> drawn from an already constrained grid, cooling <b>water</b> in areas that lack it, <b>land</b> sealed for a building that employs few people, and continuous <b>noise</b> for the closest neighbours. Added to that is a sense of asymmetry: the resource is local, the value leaves. That is exactly what the grade measures, pillar by pillar — see <a href='/data-center-nuisances'>nuisances</a> for what is lived from the street.",
+      },
+      {
+        q: "Why do city councils approve data centers?",
+        a: "Because a data center brings local tax revenue, construction work, and sometimes a heat network or fibre. Employment, once the site is built, is low — it is a building full of machines, not a factory. So the real question is not “for or against” but what the community gets in exchange, and what it writes into the authorization: commitments that are not written down cannot be enforced.",
+      },
+      {
+        q: "What should we ask when a data center wants to come to town?",
+        a: "Three figures first, in writing: <b>power</b> in megawatts, planned <b>water consumption</b> and the cooling method, and the <b>distance to the nearest dwellings</b>. Then three commitments: heat recovery, the filing calendar, and what will be <b>published</b> once the site is running. The <a href='#questions'>block-3 checklist</a> fits on one page, and <a href='#rights'>Rights and timeline</a> says when each question can still carry weight.",
+      },
       {
         q: "A public-inquiry notice just appeared near my home.",
         a: "Note the end date: the inquiry lasts at least 30 days (see <a href='#rights'>Rights and timeline</a>). You can file a written observation, at the town hall or online, even if you do not live in the municipality. A precise, factual observation carries more weight than a petition of principle: lean on the <a href='#questions'>block-3 checklist</a>.",
@@ -350,7 +405,7 @@ export const RICH_EN: Record<string, RichBlock> = {
       },
       {
         q: "The project is already authorized. Is it too late?",
-        a: "To contest it, deadlines run fast (see <a href='#rights'>Rights and timeline</a>). But levers remain: ask for a monitoring body to be set up, and for regular publication of the operating data promised in the filing.",
+        a: "To attack the authorization itself, yes, past two months (see <a href='#rights'>Rights and timeline</a>). But a final authorization does not freeze its <b>prescriptions</b>: from the moment the site enters service, anyone can file a claim with the préfet contesting their insufficiency — noise, discharges, water abstraction — and the préfet must answer with reasons within two months (art. R. 181-52). Also left: asking for a monitoring body, and for regular publication of the operating data promised in the filing.",
       },
       {
         q: "Whom to contact, concretely?",

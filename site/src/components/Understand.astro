@@ -21,6 +21,26 @@ interface Props {
   rich?: Record<string, RichBlock>;
 }
 const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
+
+// LE BALISAGE FAQ EST DÉRIVÉ DES QUESTIONS AFFICHÉES, jamais tenu à part : la page répondait
+// aux questions que les moteurs remontent, sans jamais être déclarée comme y répondant. Une
+// seconde liste écrite à la main finirait par annoncer une réponse absente de la page — le
+// motif exact qui fait déclasser un site.
+const texteSeul = (html: string) =>
+  html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
+      .replace(/&#39;|&rsquo;/g, "'").replace(/\s+/g, " ").trim();
+const qas = Object.values(rich).flatMap((b: any) => b?.qas ?? []);
+const faqJsonLd = qas.length
+  ? {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: qas.map((x: any) => ({
+        "@type": "Question",
+        name: texteSeul(x.q),
+        acceptedAnswer: { "@type": "Answer", text: texteSeul(x.a) },
+      })),
+    }
+  : null;
 ---
 
 <Base
@@ -172,6 +192,10 @@ const { lang, t, checklist, whatIs, rich = {} } = Astro.props;
       </div>
     </div>
   </section>
+
+  {faqJsonLd && (
+    <script type="application/ld+json" set:html={JSON.stringify(faqJsonLd)}></script>
+  )}
 </Base>
 
 <script>
