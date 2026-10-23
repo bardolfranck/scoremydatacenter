@@ -58,6 +58,12 @@ export interface ProcedureCountry {
    * country works like theirs. No claim, no deadline — the frame only.
    */
   frame?: { fr: string; en: string };
+  /**
+   * Socle supranational dont ce pays hérite. "EU" = les garanties minimales des
+   * directives 2011/92 et 2003/4, écrites une seule fois dans eu.ts. Un socle est un
+   * PLANCHER : le bloc national le complète, il ne le remplace jamais.
+   */
+  inherits?: "EU";
   national?: ProcedureJurisdiction;
   subdivisions?: Record<string, ProcedureJurisdiction>;
 }

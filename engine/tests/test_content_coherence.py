@@ -364,14 +364,30 @@ PROCEDURE_DIR = REPO_ROOT / "site" / "src" / "content" / "procedure"
 # commentent le texte — et le commentaire vieillit sans le dire. Le 2026-10-22 nous
 # avons publié « quatre mois » pour le délai de recours des tiers : exact de 2017 à
 # 2024, faux depuis le décret n° 2024-423, et lu dans un commentaire.
+# Déclarer un hôte ici ne crée aucune affirmation : c'est le registre de l'endroit où la loi
+# d'un pays se LIT. On y inscrit donc aussi les pays dont la procédure reste à écrire, pour
+# que la lecture commence au bon endroit plutôt que sur le premier résultat venu.
 HOTES_DE_TEXTE = (
-    "legifrance.gouv.fr",      # France — version en vigueur
-    "nysenate.gov",            # État de New York — texte consolidé
+    "eur-lex.europa.eu",       # Union européenne — socle des directives
+    "legifrance.gouv.fr",      # France
+    "nysenate.gov",            # État de New York
     "law.cornell.edu",         # Cornell LII — reproduction du NYCRR
-    "eur-lex.europa.eu",       # Union européenne
-    "gesetze-im-internet.de",  # Allemagne — texte fédéral
+    "gesetze-im-internet.de",  # Allemagne (fédéral)
     "wetten.overheid.nl",      # Pays-Bas
     "legislation.gov.uk",      # Royaume-Uni
+    "boe.es",                  # Espagne
+    "fedlex.admin.ch",         # Suisse (fédéral — JAMAIS pour un permis cantonal)
+    "normattiva.it",           # Italie            — à écrire
+    "isap.sejm.gov.pl",        # Pologne           — à écrire
+    "riksdagen.se",            # Suède             — à écrire
+    "lovdata.no",              # Norvège           — à écrire
+    "ejustice.just.fgov.be",   # Belgique          — à écrire (régional)
+    "finlex.fi",               # Finlande          — à écrire
+    "retsinformation.dk",      # Danemark          — à écrire
+    "irishstatutebook.ie",     # Irlande           — à écrire
+    "legilux.public.lu",       # Luxembourg        — à écrire
+    "diariodarepublica.pt",    # Portugal          — à écrire
+    "ris.bka.gv.at",           # Autriche          — à écrire (fédéral + Länder)
 )
 
 
@@ -399,7 +415,20 @@ def test_toute_affirmation_de_procedure_porte_son_texte_source(fichier):
     """
     texte = fichier.read_text()
     n_affirmations = len(re.findall(r'\bcite: "', texte))
-    assert n_affirmations, f"{fichier.name} ne contient aucune affirmation"
+    if not n_affirmations:
+        # Un fichier SANS affirmation est légitime, et c'est même un résultat : la Suisse
+        # n'a aucun délai fédéral applicable à un permis de construire, et l'art. 50 PA
+        # (« 30 jours »), qui se trouve en deux clics, ne régit que la procédure FÉDÉRALE.
+        # Le citer serait le bon texte au mauvais périmètre. Mais un fichier vide doit
+        # alors le DIRE : aucune juridiction servie, et un cadre qui explique pourquoi.
+        assert "subdivisions: {}" in texte or "national:" not in texte, (
+            f"{fichier.name} n'a aucune affirmation mais sert quand même une juridiction"
+        )
+        assert "frame: {" in texte, (
+            f"{fichier.name} est vide sans dire pourquoi — un pays sans procédure publiable "
+            "doit porter le constat, sinon il se lit comme un oubli"
+        )
+        return
 
     for champ, motif in (("cite", r'cite: "[^"]{8,}"'),
                          ("url", r'url: "https://[^"]+"'),

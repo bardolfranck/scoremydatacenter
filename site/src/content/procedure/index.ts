@@ -2,60 +2,74 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 //
-// Registry of procedure files, one entry per country present in the corpus.
+// Registre des procédures, une entrée par pays présent dans le corpus.
 //
-// The registry is EXHAUSTIVE on purpose: a country we have not read is listed
-// with `null`, not left out. A gap we declare is countable and testable; a gap
-// we leave out is a gap nobody sees. `test_le_registre_des_procedures_couvre_le
-// _corpus` fails when a new country lands in the corpus without a line here, so
-// adding a country forces the choice — read the law, or declare the hole.
+// Le registre est EXHAUSTIF à dessein : un pays dont la loi n'est pas lue est inscrit à
+// `null`, il n'est pas omis. Un trou déclaré se compte et se rattrape ; un trou omis se
+// découvre chez le lecteur. `test_le_registre_des_procedures_couvre_le_corpus` échoue dès
+// qu'un pays arrive dans le corpus sans ligne ici : ajouter un pays force donc le choix —
+// lire la loi, ou déclarer le trou.
 import type { ProcedureCountry, ProcedureJurisdiction, ProjectStatus } from "./types";
+import { EU } from "./eu";
 import { FR } from "./fr";
 import { US } from "./us";
+import { DE } from "./de";
+import { NL } from "./nl";
+import { GB } from "./gb";
+import { ES } from "./es";
+import { CH } from "./ch";
 
 export type { ProcedureClaim, ProcedureJurisdiction, ProjectStatus } from "./types";
 
-/** null = country in the corpus, procedure not read yet. Never a silent miss. */
+/** null = pays présent au corpus, procédure pas encore lue. Jamais un oubli silencieux. */
 export const PROCEDURE: Record<string, ProcedureCountry | null> = {
-  FR,
   US,
-  // Declared gaps, in corpus order. Each one needs its own statutes read at
-  // source before it earns a file — the German draft (BImSchG + Landesrecht)
-  // and the Dutch one (Omgevingswet) are the two next in line.
-  DE: null,
-  NL: null,
-  GB: null,
+  FR,
+  DE,
+  NL,
+  GB,
+  ES,
+  CH,
+  // Trous DÉCLARÉS, dans l'ordre du corpus. Ces pays reçoivent déjà le socle européen
+  // (consultation d'au moins trente jours, publication de la décision et de ses motifs,
+  // accès au juge, information environnementale sous un mois) : ce qui leur manque est leur
+  // DÉLAI NATIONAL de recours, qu'aucune directive ne fixe. C'est une lecture par pays,
+  // dans l'ordre du poids au corpus : IT, PL, SE, NO, BE, FI, DK, IE, LU, PT, AT.
   IT: null,
   PL: null,
-  ES: null,
-  CH: null,
   SE: null,
   NO: null,
-  BE: null,
+  BE: null,  // comme la Suisse : permis régional (Flandre / Wallonie / Bruxelles)
   FI: null,
   DK: null,
   IE: null,
   LU: null,
   PT: null,
-  AT: null,
-  IL: null,
+  AT: null,  // fédéral : Baurecht des Länder
+  IL: null,  // hors Union, hors socle
 };
+
+/** Pays dont le bloc national complète le socle européen plutôt que de s'y substituer. */
+export const SOCLE_EUROPEEN = EU;
 
 export interface ResolvedProcedure {
   country: ProcedureCountry;
   jurisdiction: ProcedureJurisdiction;
-  /** The subdivision name when the procedure came from one, else null. */
+  /** Le socle hérité, à lire AVANT le bloc national — ou null. */
+  socle: ProcedureJurisdiction | null;
+  /** Le nom de la subdivision quand la procédure en vient, sinon null. */
   subdivision: string | null;
 }
 
 /**
- * The procedure that actually applies to one site — or null, which the page
- * must render as an explicit "we have not read this jurisdiction", never as
- * silence and never by falling back on another jurisdiction's rules.
+ * La procédure qui s'applique réellement à un site — ou null, que la page doit rendre
+ * comme un « nous n'avons pas lu cette juridiction » explicite, jamais comme un silence
+ * et jamais en retombant sur les règles d'une autre juridiction.
  *
- * A decentralised country NEVER falls back on its national block: in the United
- * States there is no federal data-center permit, so serving a "national"
- * procedure for an unread state would be inventing one.
+ * Un pays décentralisé ne retombe JAMAIS sur son bloc national : aux États-Unis aucun
+ * permis fédéral ne porte sur un data center, et en Suisse aucun délai fédéral ne porte
+ * sur un permis de construire. Servir un bloc « national » pour un État ou un canton non
+ * lu reviendrait à en inventer un.
  */
 export function resolveProcedure(
   country: string | null | undefined,
@@ -64,21 +78,38 @@ export function resolveProcedure(
   if (!country) return null;
   const entry = PROCEDURE[country];
   if (!entry) return null;
+  const socle = entry.inherits === "EU" ? EU : null;
 
   if (entry.decentralised) {
     const sub = adminArea ? entry.subdivisions?.[adminArea] : undefined;
-    return sub ? { country: entry, jurisdiction: sub, subdivision: adminArea! } : null;
+    return sub
+      ? { country: entry, jurisdiction: sub, socle, subdivision: adminArea! }
+      : null;
   }
   return entry.national
-    ? { country: entry, jurisdiction: entry.national, subdivision: null }
+    ? { country: entry, jurisdiction: entry.national, socle, subdivision: null }
     : null;
 }
 
-/** The one window open at this stage, or null when the stage has none written. */
+/**
+ * La fenêtre ouverte à ce stade. Le bloc national prime sur le socle : une transposition
+ * plus précise que la directive doit être celle qu'on lit.
+ */
 export function windowFor(
   resolved: ResolvedProcedure,
   status: ProjectStatus | string | null | undefined,
 ) {
   if (!status) return null;
-  return resolved.jurisdiction.windows[status as ProjectStatus] ?? null;
+  const s = status as ProjectStatus;
+  return resolved.jurisdiction.windows[s] ?? resolved.socle?.windows[s] ?? null;
+}
+
+/** Tous les délais applicables, socle d'abord puis national. */
+export function deadlinesFor(resolved: ResolvedProcedure) {
+  return [...(resolved.socle?.deadlines ?? []), ...resolved.jurisdiction.deadlines];
+}
+
+/** Comment obtenir le dossier, socle d'abord puis national. */
+export function documentsFor(resolved: ResolvedProcedure) {
+  return [...(resolved.socle?.documents ?? []), ...resolved.jurisdiction.documents];
 }
