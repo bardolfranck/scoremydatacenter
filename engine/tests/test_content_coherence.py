@@ -390,7 +390,24 @@ HOTES_DE_TEXTE = (
     "ris.bka.gv.at",           # Autriche
     "dziennikustaw.gov.pl",    # Pologne           — à écrire (ISAP bloque)
     "codex.vlaanderen.be",     # Flandre           — à écrire
-    "zh.ch",                   # canton de Zurich (zhlex)
+    # Recueils CANTONAUX suisses — un par canton, c'est la conséquence directe du fait
+    # qu'il n'existe pas de droit suisse du permis de construire.
+    "zh.ch",                   # Zurich (zhlex)
+    "belex.sites.be.ch",       # Berne
+    "bgs.zg.ch",               # Zoug
+    "bdlf.fr.ch",              # Fribourg
+    "silgeneve.ch",            # Genève
+    "srl.lu.ch",               # Lucerne
+    "lex.vs.ch",               # Valais
+    "gesetzessammlung.sg.ch",  # Saint-Gall
+    "gesetzessammlung.bs.ch",  # Bâle-Ville
+    "bgs.so.ch",               # Soleure
+    "rechtsbuch.tg.ch",        # Thurgovie
+    "rechtsbuch.sh.ch",        # Schaffhouse
+    "bl.clex.ch",              # Bâle-Campagne
+    "prestations.vd.ch",       # Vaud    — à écrire (application monopage)
+    "rsju.jura.ch",            # Jura    — à écrire (PDF de versions périmées)
+    "rl.ti.ch",                # Tessin  — à écrire
 )
 
 
