@@ -154,9 +154,14 @@ comparator-projection:
 
 prod-artifacts: validate-corpus
 	uv run python scripts/build_prod_artifacts.py
-	uv run python scripts/build_comparator.py
 	uv run python scripts/build_gazetteer.py
 	$(MAKE) scrub-grades
+# ⚠️ L'ORDRE EST LA MOITIÉ DU CORRECTIF (Franck, 2026-10-23). Le comparateur lit dc/*.json ;
+# construit AVANT le blanchiment, il republiait les lettres de pilier que la fiche retenait —
+# 387 fiches, dont les lettres d'Israël si le pays était comparé. Après le scrub, il n'a plus
+# accès à ce qu'on retient : la règle est portée par le fichier qu'il lit, pas par une
+# condition qu'il faudrait répéter ici. Ne pas le remonter.
+	uv run python scripts/build_comparator.py
 	-@if [ -f $$HOME/.smdc/media.env ]; then 	  while IFS= read -r kv; do case "$$kv" in ''|\#*) ;; *=*) export "$$kv" ;; esac; done < $$HOME/.smdc/media.env; 	  if [ -n "$$SMDC_MEDIA_BASE" ]; then 	    $(COLLECT).media.satellite --upload || echo "media-sat: non-fatal failure (voir logs)"; 	  else echo "media-sat: SMDC_MEDIA_BASE vide (activer R2 puis renseigner ~/.smdc/media.env)"; fi; 	else echo "media-sat: ~/.smdc/media.env absent — photos sat non générées"; fi
 	$(MAKE) sync-api-r2
 

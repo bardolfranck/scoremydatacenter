@@ -408,3 +408,118 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
         "label": {"fr": "note provisoire (plage) — se resserre à la livraison",
                   "en": "provisional grade (range) — narrows at delivery"},
     }
+
+
+# ---------------------------------------------------- RÈGLE C-BIS, ÉTENDUE AUX PILIERS
+# Franck Bardol, 2026-10-23. La règle C-bis (2026-10-16) a fait porter à la fenêtre large la
+# note PROBABLE du site : « probable D · fenêtre B–E » là où la puce disait « en attente ».
+# Elle s'est arrêtée au site. Les piliers, eux, ont continué d'être blanchis par la couche de
+# service — si bien qu'une fiche publiait une lettre probable en haut et cinq tirets en
+# dessous, SORTIES DU MÊME CALCUL SUR LES MÊMES MESURES. Le symptôme le plus net : la phrase
+# citable de us-stamp-data-center disait déjà « Noté D sur le site, mais E sur "Eau" » pendant
+# que le badge du pilier Eau n'affichait rien.
+#
+# Ici la même mécanique, bornée au périmètre d'un pilier : point renormalisé sur les
+# indicateurs de base PRÉSENTS de ce pilier, bornes en swinguant ses trous structurels,
+# plancher de statut, A réservé.
+#
+# LE SEUIL EST LE POINT DUR. Une lettre qui repose sur UNE mesure n'est pas une note de
+# pilier : c'est cette mesure, rhabillée en lettre. Sur STAMP, « Impact local » tiendrait à
+# L2 seul (ratio MW/habitants) — publier « probable C » ferait croire à une appréciation de
+# l'impact local alors qu'on ne connaît que la taille relative du projet. Deux mesures
+# présentes minimum, donc, et le pilier se tait en dessous : son compte d'indicateurs dit
+# déjà ce qu'il y a à dire.
+PILIER_MIN_PRESENT = 2
+
+
+def _pillar_point(defs: list[dict], scored: dict[str, float]) -> float:
+    """Moyenne pondérée des sous-scores d'UN pilier (poids intra-pilier), sur ce qui est posé."""
+    pairs = [(d["weight_in_pillar"], scored[d["id"]]) for d in defs
+             if scored.get(d["id"]) is not None]
+    if not pairs:
+        return 0.0
+    total = sum(w for w, _ in pairs)
+    return sum(w * s for w, s in pairs) / total
+
+
+def pillar_bands(status: str, present: dict, country: str, methodology: dict,
+                 pool: dict | None = None, confidence: str | None = None) -> dict:
+    """Ce qu'un pilier a le droit de montrer quand la lettre définitive est retenue.
+
+    Même contrat d'affichage que `servable_band`, pilier par pilier :
+      - statut non-pipeline → {} (une fiche en service garde ses lettres définitives, et une
+        bande ne doit jamais les recouvrir — c'est le pare-feu, il vaut aussi ici) ;
+      - moins de PILIER_MIN_PRESENT indicateurs de base présents → le pilier est absent du
+        résultat, pas « en attente » : on ne publie pas une lettre qui n'est qu'une mesure ;
+      - sinon un objet SANS clé `grade`, qui ne peut donc pas être glissé dans
+        `pillars.<id>.grade`, et qui porte `central` + `edges` + `band`.
+
+    `present` est le dictionnaire COMPLET des sous-scores de base de la fiche : la recherche
+    de voisins s'y fait sur toute la fiche (un voisin se choisit sur l'ensemble de ce qu'on
+    sait), seule l'agrégation est bornée au pilier.
+    """
+    if status not in PIPELINE_STATUSES:
+        return {}
+
+    base = base_definitions(methodology)
+    blind = _not_applicable(country, methodology)
+    floor = STATUS_FLOOR.get(status, _DEFAULT_FLOOR)
+
+    def reserved_letter(score: float) -> str:
+        g = grade_of(score, methodology)
+        return "B" if g == "A" else g
+
+    out: dict[str, dict] = {}
+    for pillar in dict.fromkeys(d["pillar"] for d in base):
+        defs = [d for d in base if d["pillar"] == pillar]
+        ids = {d["id"] for d in defs}
+        here = {i: v for i, v in present.items() if i in ids}
+        if len(here) < PILIER_MIN_PRESENT:
+            continue
+        swing = [d for d in defs if d["id"] not in here and d["id"] not in blind]
+
+        def fill(mode: str) -> float:
+            scored = dict(here)
+            for d in swing:
+                lo, hi = (neighbour_band(present, country, d["id"], d, pool)
+                          if pool is not None else extreme_subscores(d))
+                scored[d["id"]] = lo if mode == "worst" else hi
+            return _pillar_point(defs, scored)
+
+        kw, kb = fill("worst"), fill("best")
+        if (kb - kw) < floor:
+            mid = (kb + kw) / 2
+            kw, kb = mid - floor / 2, mid + floor / 2
+        kw, kb = max(0.0, kw), min(100.0, kb)
+
+        a_reserved = grade_of(kb, methodology) == "A"
+        worst_letter, best_letter = reserved_letter(kw), reserved_letter(kb)
+        central = reserved_letter(_pillar_point(defs, here))
+        edges = sorted({g for g in (worst_letter, best_letter) if g != central},
+                       key=GRADE_ORDER.index)
+        letters = sorted({central, *edges}, key=GRADE_ORDER.index)
+        plage = letters[0] if len(letters) == 1 else f"{letters[0]}–{letters[-1]}"
+        wide = (kb - kw) > floor + 1e-6
+        out[pillar] = {
+            # Même vocabulaire que la bande du site : « en_attente » = fenêtre plus large que
+            # l'irréductible, « provisional_band » = aussi serrée que ce stade le permet.
+            "kind": "en_attente" if wide else "provisional_band",
+            "provisional": True,
+            "wide": wide,
+            "central": central,
+            "edges": edges,
+            "band": plage,
+            "a_reserved": a_reserved,
+            "worst": round(kw, 1), "best": round(kb, 1),
+            "floor": floor, "width": round(kb - kw, 1),
+            "n_present": len(here), "n_base": len(defs),
+            "confidence": confidence or _coverage_confidence(band_n(present), methodology),
+            "label": {"fr": "sous-note probable — la plage se resserre à la collecte",
+                      "en": "probable sub-grade — the range narrows as data lands"},
+        }
+    return out
+
+
+def band_n(present: dict) -> int:
+    """Nombre d'indicateurs de base posés sur la fiche (pour le proxy de confiance)."""
+    return len(present)

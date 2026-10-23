@@ -57,6 +57,7 @@ const t = lang === "fr" ? {
   pilierAbsent: "pas de note pour ce pilier",
   pilierLegende: "Les colonnes de pilier portent la lettre de chaque sous-note. Une lettre en gris ne distingue pas ce site : elle vaut pour tout le pays.",
   exploitant: "Exploitant", operateurInconnu: "non identifié",
+  noteProbable: "Note probable — le dossier est incomplet, la note peut encore bouger dans la fenêtre {f}.",
   chargement: "Chargement de la vue…",
   ecartPuissance: "d'écart de puissance à l'intérieur du même ordre de grandeur.",
   rien: "Aucun site ne correspond.",
@@ -94,6 +95,7 @@ const t = lang === "fr" ? {
   pilierAbsent: "no grade for this pillar",
   pilierLegende: "Pillar columns carry each sub-grade's letter. A grey letter does not set this site apart: it holds for the whole country.",
   exploitant: "Operator", operateurInconnu: "not identified",
+  noteProbable: "Probable grade — the file is incomplete, the grade can still move within the {f} window.",
   chargement: "Loading the view…",
   ecartPuissance: "power gap within the same order of magnitude.",
   rien: "No site matches.",
@@ -274,7 +276,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
     const c = a.comparables;
     $("#cmp-anchor").innerHTML = `
       <div class="cmp-anc">
-        <span class="cmp-grade" style="background:${gcol(a.note)}${a.note === "C" ? ";color:#4a3c00" : ""}">${a.note && a.note.length === 1 ? a.note : "–"}</span>
+        <span class="cmp-grade${a.note_probable ? " cmp-grade-prob" : ""}" title="${a.note_probable ? t.noteProbable.replace("{f}", a.note_fenetre ?? a.note) : ""}" style="background:${gcol(a.note)}${a.note === "C" ? ";color:#4a3c00" : ""}">${a.note && a.note.length === 1 ? a.note : "–"}</span>
         <div>
           <h2>${a.nom}</h2>
           <p>${a.commune ?? ""} · ${op(a.operateur)}</p>
@@ -320,7 +322,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
             ? Math.max(a.puissance_mw, s.puissance_mw) / Math.min(a.puissance_mw, s.puissance_mw) : null;
           return `<div class="cmp-item">
             <div class="cmp-item-head">
-              <span class="cmp-grade cmp-grade-sm" style="background:${gcol(s.note)}${s.note === "C" ? ";color:#4a3c00" : ""}">${s.note && s.note.length === 1 ? s.note : "–"}</span>
+              <span class="cmp-grade cmp-grade-sm${s.note_probable ? " cmp-grade-prob" : ""}" title="${s.note_probable ? t.noteProbable.replace("{f}", s.note_fenetre ?? s.note) : ""}" style="background:${gcol(s.note)}${s.note === "C" ? ";color:#4a3c00" : ""}">${s.note && s.note.length === 1 ? s.note : "–"}</span>
               <a href="${fiche(s.id)}" target="_blank" rel="noopener">${esc(s.nom)}</a>
               <span class="cmp-item-meta">${esc(s.commune)} · ${statut(s)}${s.puissance_mw ? " · " + nb(s.puissance_mw) + " MW" : ""}</span>
               <span class="cmp-item-var">${x.variables_partagees} ${t.varPartagees}</span>
@@ -454,8 +456,8 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   const PILIERS = ["energy", "water", "land_biodiversity", "local_impact", "transparency_governance"];
 
   function tableau(a, c) {
-    const pastille = (g) => (g && g.length === 1)
-      ? `<span class="cmp-grade cmp-grade-sm" style="background:${gcol(g)}${g === "C" ? ";color:#4a3c00" : ""}">${g}</span>`
+    const pastille = (g, probable, fenetre) => (g && g.length === 1)
+      ? `<span class="cmp-grade cmp-grade-sm${probable ? " cmp-grade-prob" : ""}" title="${probable ? t.noteProbable.replace("{f}", fenetre ?? g) : ""}" style="background:${gcol(g)}${g === "C" ? ";color:#4a3c00" : ""}">${g}</span>`
       : `<span class="cmp-na">–</span>`;
     // Une lettre qui ne distingue pas ce site-là se montre SANS sa couleur : la couleur dit
     // « voici ce site », et elle mentirait sur une note qui vaut pour tout le pays. Sans cette
@@ -482,7 +484,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
       <td class="cmp-num">${s.puissance_mw ? nb(s.puissance_mw) + " MW" : "—"}</td>
       ${PILIERS_VUS.map((pid) => cellulePilier(s, pid)).join("")}
       <td class="cmp-num">${moi ? "" : c.find((x) => x.id === s.id).variables_partagees}</td>
-      <td class="cmp-fin">${pastille(s.note)}</td></tr>`;
+      <td class="cmp-fin">${pastille(s.note, s.note_probable, s.note_fenetre)}</td></tr>`;
     return `<div class="cmp-tab-wrap"><table class="cmp-table">
       <thead><tr><th>${lang === "fr" ? "Site" : "Site"}</th><th>${lang === "fr" ? "Commune" : "Municipality"}</th>
       <th>${t.exploitant}</th>
@@ -557,6 +559,13 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   /* La couleur dit « voici CE site ». Une sous-note qui vaut pour tout le pays ne la porte
      donc pas : elle garde sa lettre, en gris, et son explication dans l'infobulle. */
   .cmp-grade-nat { background: transparent; color: #8fa0b3; border: 1px dashed #c6d0da; font-weight: 700; }
+  /* Note PROBABLE (fiche pipeline dont la lettre définitive est retenue) : même lettre qu'une
+     note arrêtée, pas la même affirmation. Le trait discontinu est déjà la grammaire de la
+     loupe sur la fiche — on la réutilise ici plutôt que d'inventer un second signe. */
+  /* Un liseré INTÉRIEUR discontinu hérissait la pastille de 23 px — le signe criait plus fort
+     que la lettre. L'anneau se pose donc à l'extérieur, fin et neutre : il se lit à l'échelle
+     du tableau sans abîmer la pastille, qui reste la même partout sur le site. */
+  .cmp-grade-prob { outline: 1.5px dashed #9fb3c6; outline-offset: 2px; }
   .cmp-pil { text-align: center; }
   .cmp-table th.cmp-pil { text-align: center; }
   /* La note ferme la ligne : un filet la détache de ce qui la fonde. */

@@ -124,7 +124,14 @@ if (existsSync(DC_DIR)) {
     // ⚠️ NE S'APPLIQUE QU'À LA POPULATION (1). Une fiche « note en attente » hors veille garde
     // sa bande : ce qu'elle a le droit d'y montrer est un arbitrage d'affichage, pas de
     // publication — et il est ouvert.
-    if (isEnVeille(dc) && dc.provisional_band) { delete dc.provisional_band; changed = true; counts.bands++; }
+    // L'arbitrage « ouvert » ci-dessus a été tranché le 2026-10-23 : la règle C-bis vaut aussi
+    // pour les PILIERS, qui portent donc leur sous-note probable dans `pillar_bands`. Ce champ
+    // suit exactement la même hiérarchie que `provisional_band` — population (1) le perd
+    // entièrement, population (2) le garde.
+    if (isEnVeille(dc)) {
+      if (dc.provisional_band) { delete dc.provisional_band; changed = true; counts.bands++; }
+      if (dc.pillar_bands) { delete dc.pillar_bands; changed = true; }
+    }
     if (changed) { writeFileSync(p, JSON.stringify(dc, null, 2)); counts.dc++; }
   }
 }
@@ -145,7 +152,10 @@ if (existsSync(scoresPath)) {
     if (scrubPillars(r)) changed = true;
     // Même hiérarchie que sur la fiche : la bande voyage avec la ligne de classement depuis
     // l'option A, donc elle se blanchit ici aussi — population (1) seulement.
-    if (isEnVeille(r) && r.provisional_band) { delete r.provisional_band; changed = true; }
+    if (isEnVeille(r)) {
+      if (r.provisional_band) { delete r.provisional_band; changed = true; }
+      if (r.pillar_bands) { delete r.pillar_bands; changed = true; }
+    }
   }
   if (changed) writeFileSync(scoresPath, JSON.stringify(rows));
 }

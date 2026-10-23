@@ -729,6 +729,12 @@ const seoDesc = seoLead
           {pillars.map((p) => {
             const detail = dc.pillars[p.id];
             const dots = detail?.documentation?.dots;
+            // RÈGLE C-BIS ÉTENDUE AUX PILIERS (Franck, 2026-10-23). La fiche publiait une note
+            // probable en haut (« probable D, fenêtre B–E ») et cinq tirets en dessous, alors
+            // que les deux sortent du MÊME calcul sur les MÊMES mesures. Le pilier porte donc
+            // sa propre sous-note probable quand il tient sur au moins deux indicateurs
+            // présents ; en dessous il reste muet, et son compte d'indicateurs parle à sa place.
+            const sousBande = (dc as any).pillar_bands?.[p.id] ?? null;
             const note = detail?.grade && detail.grade !== "insufficient_data";
             // Une sous-note sans lettre n'a rien à qualifier : son état se lit sur le badge.
             const portee = note ? pilierPortee(p.id) : "";
@@ -744,6 +750,7 @@ const seoDesc = seoLead
                 <ScoreBadge
                   label={L(p.label)}
                   grade={detail}
+                  band={sousBande}
                   confidence={dc.confidence.level}
                   confidenceLabel={t.confidence[dc.confidence.level]}
                   renderConfidence={false}

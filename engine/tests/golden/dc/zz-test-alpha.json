@@ -144,6 +144,90 @@
       "en": "provisional grade (range) — narrows at delivery"
     }
   },
+  "pillar_bands": {
+    "energy": {
+      "kind": "provisional_band",
+      "provisional": true,
+      "wide": false,
+      "central": "B",
+      "edges": [],
+      "band": "B",
+      "a_reserved": true,
+      "worst": 74.0,
+      "best": 86.0,
+      "floor": 12.0,
+      "width": 12.0,
+      "n_present": 4,
+      "n_base": 4,
+      "confidence": "high",
+      "label": {
+        "fr": "sous-note probable — la plage se resserre à la collecte",
+        "en": "probable sub-grade — the range narrows as data lands"
+      }
+    },
+    "water": {
+      "kind": "provisional_band",
+      "provisional": true,
+      "wide": false,
+      "central": "B",
+      "edges": [],
+      "band": "B",
+      "a_reserved": true,
+      "worst": 71.1,
+      "best": 83.1,
+      "floor": 12.0,
+      "width": 12.0,
+      "n_present": 3,
+      "n_base": 3,
+      "confidence": "high",
+      "label": {
+        "fr": "sous-note probable — la plage se resserre à la collecte",
+        "en": "probable sub-grade — the range narrows as data lands"
+      }
+    },
+    "land_biodiversity": {
+      "kind": "provisional_band",
+      "provisional": true,
+      "wide": false,
+      "central": "B",
+      "edges": [],
+      "band": "B",
+      "a_reserved": true,
+      "worst": 86.0,
+      "best": 98.0,
+      "floor": 12.0,
+      "width": 12.0,
+      "n_present": 3,
+      "n_base": 3,
+      "confidence": "high",
+      "label": {
+        "fr": "sous-note probable — la plage se resserre à la collecte",
+        "en": "probable sub-grade — the range narrows as data lands"
+      }
+    },
+    "local_impact": {
+      "kind": "provisional_band",
+      "provisional": true,
+      "wide": false,
+      "central": "B",
+      "edges": [
+        "C"
+      ],
+      "band": "B–C",
+      "a_reserved": false,
+      "worst": 62.0,
+      "best": 74.0,
+      "floor": 12.0,
+      "width": 12.0,
+      "n_present": 5,
+      "n_base": 5,
+      "confidence": "high",
+      "label": {
+        "fr": "sous-note probable — la plage se resserre à la collecte",
+        "en": "probable sub-grade — the range narrows as data lands"
+      }
+    }
+  },
   "summary": {
     "fr": "Fixture de test (fictive) : campus moyen bien documenté — étages 1 et 2 renseignés, cas nominal du pipeline.",
     "en": "Test fixture (fictional): well-documented mid-size campus — tiers 1 and 2 filled, nominal pipeline case."

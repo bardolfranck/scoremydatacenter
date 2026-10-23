@@ -342,13 +342,44 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
                              if len(info) > 3 and not indiscernables else []),
                 "indiscernables": indiscernables,
             })
+        # 🔴 LA FICHE A RAISON — LE COMPARATEUR LA SUIT (Franck, 2026-10-23).
+        #
+        # Ce fichier se construisait AVANT `scrub-grades` et lisait donc les artefacts non
+        # blanchis : pendant des mois il a publié les lettres de pilier que la fiche du même
+        # site retenait. Relevé sur us-stamp-data-center — comparateur « energy E · water E ·
+        # land B · local_impact C », fiche « en attente » sur les cinq. 387 fiches dans ce cas.
+        # C'est exactement la classe de défaut pour laquelle le blanchiment existe, sur une
+        # surface qui n'était pas dans son périmètre.
+        #
+        # Double correctif : le Makefile construit désormais le comparateur APRÈS le scrub
+        # (donc une fiche en veille arrive ici déjà vidée, sans règle supplémentaire ici), et
+        # ce bloc lit la BANDE quand la lettre définitive est retenue. Le comparateur dit donc
+        # mot pour mot ce que dit la fiche : note probable du site, sous-notes probables des
+        # piliers qui en portent une, RIEN pour ceux qui se taisent (le pilier à une seule
+        # mesure n'a pas de sous-bande — il ne doit pas réapparaître ici par la bande arrière).
         g = (f.get("grades") or {}).get("site", {})
+        bande = f.get("provisional_band") or {}
+        sous_bandes = f.get("pillar_bands") or {}
+        retenue = isinstance(bande.get("central"), str)
+        if retenue:
+            note = bande["central"]
+            piliers = {pid: b["central"] for pid, b in sous_bandes.items()
+                       if isinstance(b.get("central"), str)}
+        else:
+            note = g.get("grade")
+            piliers = {pid: d.get("grade") for pid, d in (f.get("pillars") or {}).items()
+                       if d.get("grade") in ("A", "B", "C", "D", "E")}
         sites.append({
             "id": f["id"], "nom": f.get("name"), "commune": f.get("municipality"),
             "operateur": f.get("operator"), "statut": f.get("project_status"),
             "statut_fr": STATUT_FR.get(f.get("project_status"), f.get("project_status")),
             "statut_en": STATUT_EN.get(f.get("project_status"), f.get("project_status")),
-            "note": g.get("grade"), "puissance_mw": f.get("power_mw"),
+            # Même lettre, pas la même affirmation : « D » définitif et « D probable » ne se
+            # lisent pas pareil. Le drapeau voyage avec la lettre pour que le tableau puisse
+            # le marquer, au lieu de laisser croire à une note arrêtée.
+            "note": note, "note_probable": retenue or None,
+            "note_fenetre": bande.get("band") if retenue else None,
+            "puissance_mw": f.get("power_mw"),
             "confiance": round((f.get("confidence") or {}).get("score", 0) * 100),
             "xy": positions.get(f["id"]),
             "xy2": [round(float(xy[i, 0]), 4), round(float(xy[i, 1]), 4)],
@@ -367,8 +398,7 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
             # engine.artifacts.pillar_scope_fields). Sans elle, une colonne uniforme d'un bout
             # à l'autre du tableau se lirait comme une coïncidence remarquable au lieu d'un
             # indicateur qui ne sépare rien dans ce pays.
-            "piliers": {pid: d.get("grade") for pid, d in (f.get("pillars") or {}).items()
-                        if d.get("grade") in ("A", "B", "C", "D", "E")},
+            "piliers": piliers,
             "piliers_portee": f.get("pillar_scope") or {},
         })
     # LARGEUR DE DOCUMENTATION du pays : la médiane des variables communes à un rapprochement.

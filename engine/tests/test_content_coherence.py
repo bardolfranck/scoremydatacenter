@@ -10,6 +10,7 @@ quantitative claim on the landing pages must match the methodology and the
 engine constants. Change a parameter -> the build breaks until the copy is
 updated (and vice versa)."""
 
+import json
 import re
 from pathlib import Path
 
@@ -353,4 +354,163 @@ def test_les_liens_de_navigation_finissent_par_une_barre_oblique():
     assert not fautifs, (
         "ces liens de navigation déclencheront une redirection sur chaque page du site : "
         + ", ".join(fautifs)
+    )
+
+
+PROCEDURE_DIR = REPO_ROOT / "site" / "src" / "content" / "procedure"
+
+# Les seuls hôtes dont nous acceptons un lien dans un bloc « procédure » : ceux qui
+# servent le TEXTE. Un cabinet d'avocats, un blog spécialisé ou un guide ministériel
+# commentent le texte — et le commentaire vieillit sans le dire. Le 2026-10-22 nous
+# avons publié « quatre mois » pour le délai de recours des tiers : exact de 2017 à
+# 2024, faux depuis le décret n° 2024-423, et lu dans un commentaire.
+HOTES_DE_TEXTE = (
+    "legifrance.gouv.fr",      # France — version en vigueur
+    "nysenate.gov",            # État de New York — texte consolidé
+    "law.cornell.edu",         # Cornell LII — reproduction du NYCRR
+    "eur-lex.europa.eu",       # Union européenne
+    "gesetze-im-internet.de",  # Allemagne — texte fédéral
+    "wetten.overheid.nl",      # Pays-Bas
+    "legislation.gov.uk",      # Royaume-Uni
+)
+
+
+def _fichiers_de_procedure() -> list[Path]:
+    return sorted(p for p in PROCEDURE_DIR.glob("*.ts")
+                  if p.name not in ("types.ts", "index.ts"))
+
+
+def test_il_existe_au_moins_un_fichier_de_procedure():
+    """Garde-fou du test suivant : une boucle sur zéro fichier passe toujours."""
+    assert _fichiers_de_procedure(), f"aucun fichier de procédure dans {PROCEDURE_DIR}"
+
+
+@pytest.mark.parametrize("fichier", _fichiers_de_procedure(), ids=lambda p: p.stem)
+def test_toute_affirmation_de_procedure_porte_son_texte_source(fichier):
+    """LES BLOCS « PROCÉDURE » SONT LE SEUL ENDROIT OÙ NOUS DISONS QUOI FAIRE.
+
+    Ailleurs nous publions un fait et sa source ; ici nous disons à un élu ou à un riverain
+    qu'il lui reste deux mois, ou cinq jours ouvrés. Une erreur ne se lit pas comme une
+    erreur : elle se lit comme un délai, et le lecteur le laisse passer.
+
+    D'où la règle, vérifiée fichier par fichier : chaque affirmation porte l'article qui la
+    crée (`cite`), un lien vers le TEXTE et non vers un commentaire (`url`), et la date à
+    laquelle nous avons lu ce texte dans sa version en vigueur (`verified`).
+    """
+    texte = fichier.read_text()
+    n_affirmations = len(re.findall(r'\bcite: "', texte))
+    assert n_affirmations, f"{fichier.name} ne contient aucune affirmation"
+
+    for champ, motif in (("cite", r'cite: "[^"]{8,}"'),
+                         ("url", r'url: "https://[^"]+"'),
+                         ("verified", r'verified: "\d{4}-\d{2}-\d{2}"')):
+        trouves = re.findall(motif, texte)
+        assert len(trouves) == n_affirmations, (
+            f"{fichier.name} : {n_affirmations} affirmations mais {len(trouves)} champs "
+            f"`{champ}` valides — une affirmation sans sa trace n'est pas publiable"
+        )
+
+    for url in re.findall(r'url: "(https://[^"]+)"', texte):
+        assert any(h in url for h in HOTES_DE_TEXTE), (
+            f"{fichier.name} : {url} n'est pas un hôte qui sert le texte de loi. "
+            "Un commentaire vieillit sans le dire (incident « quatre mois », 2026-10-22)"
+        )
+
+
+@pytest.mark.parametrize("fichier", _fichiers_de_procedure(), ids=lambda p: p.stem)
+def test_les_affirmations_de_procedure_sont_bilingues(fichier):
+    """Même raison que la parité des blocs « Comprendre » : une correction portée dans une
+    seule langue laisse l'autre annoncer un délai faux, et rien ne le signale."""
+    texte = fichier.read_text()
+    n_fr, n_en = len(re.findall(r'^\s+fr: "', texte, re.M)), len(re.findall(r'^\s+en: "', texte, re.M))
+    assert n_fr == n_en, (
+        f"{fichier.name} : {n_fr} formulations françaises contre {n_en} anglaises"
+    )
+
+
+def test_le_registre_des_procedures_couvre_le_corpus():
+    """UN PAYS ABSENT DU REGISTRE EST UN TROU QUE PERSONNE NE VOIT.
+
+    Le registre liste les pays du corpus et NE SAUTE PAS ceux dont la procédure n'est pas
+    lue : il les déclare à `null`. Un trou déclaré se compte et se rattrape ; un trou omis
+    se découvre quand un lecteur néerlandais lit une procédure française.
+
+    Ce test lit les pays réellement servis et exige une ligne pour chacun. Un nouveau pays
+    dans le corpus casse donc le build, et impose le choix : lire la loi, ou déclarer le trou.
+    """
+    artefacts = REPO_ROOT / "site" / "public" / "data" / "dc"
+    fiches = sorted(artefacts.glob("*.json"))
+    if not fiches:
+        pytest.skip("artefacts non construits (corpus privé) — rien à confronter")
+
+    pays = {json.loads(p.read_text()).get("country") for p in fiches} - {None}
+    declares = set(re.findall(r'^  ([A-Z]{2})[:,]', (PROCEDURE_DIR / "index.ts").read_text(), re.M))
+    manquants = sorted(pays - declares)
+    assert not manquants, (
+        "ces pays sont servis sans ligne au registre des procédures : "
+        + ", ".join(manquants)
+        + " — ajoutez-les, à `null` si la loi n'est pas lue"
+    )
+
+
+def _lignes_comparateur(dossier: Path):
+    """Chaque ligne de site d'un fichier comparateur, quelle que soit sa profondeur."""
+    def descendre(o):
+        if isinstance(o, dict):
+            if "piliers" in o:
+                yield o
+                return
+            for v in o.values():
+                yield from descendre(v)
+        elif isinstance(o, list):
+            for v in o:
+                yield from descendre(v)
+    for f in sorted(dossier.glob("*.json")):
+        yield from descendre(json.loads(f.read_text()))
+
+
+def test_le_comparateur_ne_publie_aucune_lettre_que_la_fiche_retient():
+    """UNE LETTRE RETIRÉE DE LA FICHE NE DOIT REPARAÎTRE NULLE PART.
+
+    Le comparateur se construisait AVANT `scrub-grades` et lisait donc les artefacts non
+    blanchis. Mesuré le 2026-10-23 sur us-stamp-data-center : le comparateur publiait
+    « energy E · water E · land B · local_impact C » pendant que la fiche du même site
+    affichait « en attente » sur les cinq piliers — dont ce C d'impact local qu'on venait
+    justement de décider de taire, parce qu'il tient sur une seule mesure. 387 fiches
+    concernées, en production.
+
+    La règle « la fiche a raison, les agrégats la suivent » existait depuis le 2026-10-16 ;
+    le comparateur n'était simplement pas dans le périmètre du blanchiment. Ce test l'y met :
+    il confronte, site par site, ce que le comparateur publie à ce que la fiche servie publie.
+    """
+    artefacts = REPO_ROOT / "site" / "public" / "data"
+    comparateur, fiches = artefacts / "comparator", artefacts / "dc"
+    if not comparateur.exists() or not any(fiches.glob("*.json")):
+        pytest.skip("artefacts non construits (corpus privé) — rien à confronter")
+
+    servi = {}
+    for p in fiches.glob("*.json"):
+        d = json.loads(p.read_text())
+        bande = d.get("provisional_band") or {}
+        sous = d.get("pillar_bands") or {}
+        if isinstance(bande.get("central"), str):
+            # Lettre définitive retenue : la fiche ne publie que les sous-notes PROBABLES.
+            servi[d["id"]] = {pid: b["central"] for pid, b in sous.items()}
+        else:
+            servi[d["id"]] = {pid: v.get("grade") for pid, v in (d.get("pillars") or {}).items()
+                              if v.get("grade") in ("A", "B", "C", "D", "E")}
+
+    ecarts = []
+    for ligne in _lignes_comparateur(comparateur):
+        attendu = servi.get(ligne.get("id"))
+        if attendu is None:
+            continue
+        for pilier, lettre in (ligne.get("piliers") or {}).items():
+            if attendu.get(pilier) != lettre:
+                ecarts.append(f"{ligne['id']}/{pilier}: comparateur {lettre!r} "
+                              f"contre fiche {attendu.get(pilier)!r}")
+    assert not ecarts, (
+        f"{len(ecarts)} lettre(s) publiée(s) par le comparateur et retenue(s) par la fiche — "
+        "le comparateur se construit-il toujours APRÈS scrub-grades ? "
+        + "; ".join(ecarts[:5])
     )

@@ -24,7 +24,7 @@ from .showcase import build_showcase
 # -> band « en veille, provisoire » ; operational -> definitive letter, no band). servable_band is
 # the ONE gate (firewall test_plage_bands_firewall): operational -> None, so a band can never touch
 # an operational fiche's definitive grade. Written to a SEPARATE `provisional_band` field, never grades.
-from .plage_bands import build_reference_pool, servable_band, base_definitions
+from .plage_bands import build_reference_pool, servable_band, base_definitions, pillar_bands
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -290,13 +290,24 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             methodology, band_pool, confidence=results[dc_id]["confidence"]["level"],
         )
 
+    # Règle C-bis étendue aux piliers (Franck, 2026-10-23). Même porte, même pare-feu : les
+    # sous-bandes n'existent QUE là où une bande de site existe, donc jamais sur une fiche en
+    # service. Elles vivent dans leur propre champ `pillar_bands`, jamais dans `pillars.*.grade`.
+    def _pillar_bands(dc_id: str, dc: dict):
+        return pillar_bands(
+            dc["identity"]["project_status"], _present(dc_id), dc["identity"]["country"],
+            methodology, band_pool, confidence=results[dc_id]["confidence"]["level"],
+        )
+
     labels = {i["id"]: i["label"] for i in methodology["indicators"]}
     scores, features, audit = [], [], []
 
     for dc_id, dc in sorted(datacenters.items()):
         result = results[dc_id]
         band = _provisional_band(dc_id, dc)  # None for operational fiches (never a band)
-        band_field = {"provisional_band": band} if band else {}
+        pbands = _pillar_bands(dc_id, dc) if band else {}
+        band_field = {"provisional_band": band, **({"pillar_bands": pbands} if pbands else {})} \
+            if band else {}
         # La bande voyage DÉSORMAIS avec la ligne de classement (Franck, 2026-10-16, option A).
         # Elle vivait seulement sur dc/{id}.json « jusqu'à ce qu'on le demande » ; c'est demandé.
         # Raison : sous la règle C-bis la FICHE publie une note probable, et une surface qui ne

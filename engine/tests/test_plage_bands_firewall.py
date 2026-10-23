@@ -27,7 +27,10 @@ import json
 from pathlib import Path
 
 from engine.core import load_methodology
-from engine.plage_bands import servable_band, PIPELINE_STATUSES, build_reference_pool
+from engine.plage_bands import (
+    servable_band, PIPELINE_STATUSES, build_reference_pool,
+    pillar_bands, base_definitions, grade_of, GRADE_ORDER,
+)
 
 ENGINE = Path(__file__).resolve().parent.parent
 REPO = ENGINE.parent
@@ -194,3 +197,90 @@ def test_publication_signee_domine_laffichage_principe_pas_implementation():
     assert "veille.json" not in src, "plage_bands ne doit jamais consulter la liste de veille"
     for io_marker in ("open(", "read_text", "urllib", "requests", "json.load"):
         assert io_marker not in src, f"plage_bands doit rester pur (trouvé {io_marker!r})"
+
+
+# ---------------------------------------------------------- RÈGLE C-BIS AUX PILIERS (2026-10-23)
+def test_un_pilier_sur_une_seule_mesure_reste_muet():
+    """UNE LETTRE QUI TIENT SUR UNE MESURE EST CETTE MESURE, DÉGUISÉE EN LETTRE.
+
+    Cas fondateur : us-stamp-data-center, pilier « Impact local ». Le moteur lui donne un C
+    définitif — mais ce C repose sur L2 SEUL (le ratio MW/habitants). Le publier en sous-note
+    probable ferait lire « nous avons apprécié l'impact local » là où nous ne connaissons que
+    la taille relative du projet. Le pilier sort donc du résultat : il n'est pas « en attente »,
+    il est ABSENT, et le compte d'indicateurs de la fiche dit ce qu'il y a à dire.
+    """
+    methodology = load_methodology()
+    base = base_definitions(methodology)
+    local = [d["id"] for d in base if d["pillar"] == "local_impact"]
+    assert len(local) >= 2, "ce test suppose un pilier local à plusieurs indicateurs de base"
+
+    present = {local[0]: 60.0}
+    bands = pillar_bands("announced", present, "US", methodology, pool=None)
+    assert "local_impact" not in bands, (
+        "un pilier à une seule mesure présente ne doit porter AUCUNE sous-note probable"
+    )
+
+    present[local[1]] = 40.0
+    bands = pillar_bands("announced", present, "US", methodology, pool=None)
+    assert "local_impact" in bands, "à deux mesures présentes, le pilier doit parler"
+
+
+def test_une_sous_bande_ne_porte_jamais_de_cle_grade():
+    """Même invariant que la bande du site : l'objet ne doit pas pouvoir être glissé dans
+    `pillars.<id>.grade`. Il porte `central`, `edges` et `band` — jamais `grade`."""
+    methodology = load_methodology()
+    base = base_definitions(methodology)
+    eau = [d["id"] for d in base if d["pillar"] == "water"][:2]
+    bands = pillar_bands("announced", {eau[0]: 20.0, eau[1]: 0.0}, "US", methodology, pool=None)
+    assert bands, "le cas de test doit produire au moins une sous-bande"
+    for pid, b in bands.items():
+        assert "grade" not in b and "grade_site" not in b, f"{pid} porte une clé grade"
+        assert isinstance(b["central"], str) and b["central"] in GRADE_ORDER
+
+
+def test_une_fiche_en_service_na_aucune_sous_bande():
+    """LE PARE-FEU VAUT AUSSI POUR LES PILIERS.
+
+    Une fiche en service publie ses lettres DÉFINITIVES ; une bande de couverture ne doit
+    jamais les recouvrir. La règle existait pour la note du site, elle n'aurait eu aucun sens
+    d'être relâchée d'un cran plus bas.
+    """
+    methodology = load_methodology()
+    base = base_definitions(methodology)
+    eau = [d["id"] for d in base if d["pillar"] == "water"][:2]
+    present = {eau[0]: 20.0, eau[1]: 0.0}
+    assert pillar_bands("operational", present, "US", methodology, pool=None) == {}
+    assert pillar_bands("announced", present, "US", methodology, pool=None) != {}
+
+
+def test_la_sous_note_probable_ne_contredit_pas_la_lettre_du_moteur():
+    """LES DEUX SORTENT DU MÊME CALCUL : ELLES DOIVENT DIRE LA MÊME CHOSE.
+
+    C'est la raison d'être de toute l'extension. Avant le 2026-10-23 la fiche publiait une note
+    probable pour le SITE et cinq tirets pour les piliers, issus des mêmes mesures ; la phrase
+    citable, elle, annonçait déjà « noté D sur le site, mais E sur Eau ». Trois surfaces, trois
+    affirmations.
+
+    Le point renormalisé d'un pilier EST la lettre que le moteur lui donne quand il accepte de
+    la donner : si les deux divergeaient, l'une des deux mentirait. Ce test les confronte sur
+    une fiche fabriquée dont tous les piliers tiennent sur au moins deux mesures.
+    """
+    methodology = load_methodology()
+    base = base_definitions(methodology)
+    # Deux indicateurs posés par pilier, valeurs étagées pour balayer l'échelle.
+    present, valeurs = {}, [0.0, 20.0, 60.0, 100.0]
+    for n, pillar in enumerate(dict.fromkeys(d["pillar"] for d in base)):
+        for d in [d for d in base if d["pillar"] == pillar][:2]:
+            present[d["id"]] = valeurs[n % len(valeurs)]
+
+    bands = pillar_bands("announced", present, "ZZ", methodology, pool=None)
+    assert bands, "le cas de test doit produire des sous-bandes"
+    for pillar, b in bands.items():
+        defs = [d for d in base if d["pillar"] == pillar and d["id"] in present]
+        poids = sum(d["weight_in_pillar"] for d in defs)
+        point = sum(d["weight_in_pillar"] * present[d["id"]] for d in defs) / poids
+        attendu = grade_of(point, methodology)
+        attendu = "B" if attendu == "A" else attendu   # A-25 : réservé sur une fiche pipeline
+        assert b["central"] == attendu, (
+            f"{pillar} : sous-note probable {b['central']} contre {attendu} au point renormalisé"
+        )
