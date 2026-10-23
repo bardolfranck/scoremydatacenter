@@ -377,17 +377,20 @@ HOTES_DE_TEXTE = (
     "legislation.gov.uk",      # Royaume-Uni
     "boe.es",                  # Espagne
     "fedlex.admin.ch",         # Suisse (fédéral — JAMAIS pour un permis cantonal)
-    "normattiva.it",           # Italie            — à écrire
+    "normattiva.it",           # Italie
     "isap.sejm.gov.pl",        # Pologne           — à écrire
     "riksdagen.se",            # Suède             — à écrire
     "lovdata.no",              # Norvège           — à écrire
-    "ejustice.just.fgov.be",   # Belgique          — à écrire (régional)
+    "ejustice.just.fgov.be",   # Belgique (fédéral)
     "finlex.fi",               # Finlande          — à écrire
     "retsinformation.dk",      # Danemark          — à écrire
     "irishstatutebook.ie",     # Irlande           — à écrire
     "legilux.public.lu",       # Luxembourg        — à écrire
     "diariodarepublica.pt",    # Portugal          — à écrire
-    "ris.bka.gv.at",           # Autriche          — à écrire (fédéral + Länder)
+    "ris.bka.gv.at",           # Autriche
+    "dziennikustaw.gov.pl",    # Pologne           — à écrire (ISAP bloque)
+    "codex.vlaanderen.be",     # Flandre           — à écrire
+    "zh.ch",                   # canton de Zurich (zhlex)
 )
 
 

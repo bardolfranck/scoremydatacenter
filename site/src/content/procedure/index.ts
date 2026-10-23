@@ -18,6 +18,13 @@ import { NL } from "./nl";
 import { GB } from "./gb";
 import { ES } from "./es";
 import { CH } from "./ch";
+import { SE } from "./se";
+import { NO } from "./no";
+import { FI } from "./fi";
+import { DK } from "./dk";
+import { AT } from "./at";
+import { IT } from "./it";
+import { BE } from "./be";
 
 export type { ProcedureClaim, ProcedureJurisdiction, ProjectStatus } from "./types";
 
@@ -30,22 +37,28 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   GB,
   ES,
   CH,
-  // Trous DÉCLARÉS, dans l'ordre du corpus. Ces pays reçoivent déjà le socle européen
-  // (consultation d'au moins trente jours, publication de la décision et de ses motifs,
-  // accès au juge, information environnementale sous un mois) : ce qui leur manque est leur
-  // DÉLAI NATIONAL de recours, qu'aucune directive ne fixe. C'est une lecture par pays,
-  // dans l'ordre du poids au corpus : IT, PL, SE, NO, BE, FI, DK, IE, LU, PT, AT.
-  IT: null,
+  SE,
+  NO,
+  FI,
+  DK,
+  AT,
+  IT,
+  BE,
+  // Trous DÉCLARÉS. Ces pays reçoivent déjà le socle européen (consultation d'au moins
+  // trente jours, publication de la décision et de ses motifs, accès au juge, information
+  // environnementale sous un mois) ; ce qui leur manque est leur DÉLAI NATIONAL de recours,
+  // qu'aucune directive ne fixe.
+  //   PL (70 fiches) — ISAP ne sert que des PDF et bloque la lecture automatique ;
+  //                    à reprendre sur dziennikustaw.gov.pl.
+  //   IE (12)        — irishstatutebook ne sert que la version « as enacted » de l'art. 50
+  //                    de la loi de 2000, deux fois remaniée depuis. Publier huit semaines
+  //                    sur un texte non à jour serait l'erreur type du délai périmé.
+  //   LU (10) · PT (9) — non lus, simple ordre de passage.
+  //   IL (8)         — hors Union, donc hors socle : tout est à lire.
   PL: null,
-  SE: null,
-  NO: null,
-  BE: null,  // comme la Suisse : permis régional (Flandre / Wallonie / Bruxelles)
-  FI: null,
-  DK: null,
   IE: null,
   LU: null,
   PT: null,
-  AT: null,  // fédéral : Baurecht des Länder
   IL: null,  // hors Union, hors socle
 };
 
