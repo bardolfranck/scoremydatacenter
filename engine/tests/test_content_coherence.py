@@ -395,31 +395,33 @@ HOTES_DE_TEXTE = (
     "le.utah.gov",                  # Utah
     "sdlegislature.gov",            # Dakota du Sud
     "code.wvlegislature.gov",       # Virginie-Occidentale
-    "ilga.gov",                     # Illinois        — bloqué
+    "ilga.gov",                     # Illinois        — injoignable
     "legis.ga.gov",                 # Géorgie         — bloqué
-    "codes.ohio.gov",               # Ohio            — bloqué
-    "palegis.us",                   # Pennsylvanie    — bloqué
+    "codes.ohio.gov",               # Ohio
+    "legis.state.pa.us",            # Pennsylvanie
+    "palegis.us",                   # Pennsylvanie (nouveau domaine)
+    "oksenate.gov",                 # Oklahoma
     "njleg.state.nj.us",            # New Jersey      — bloqué
-    "ncleg.gov",                    # Caroline du Nord — bloqué
-    "leg.colorado.gov",             # Colorado        — bloqué
-    "malegislature.gov",            # Massachusetts   — bloqué
-    "oregonlegislature.gov",        # Oregon          — bloqué
-    "legislature.mi.gov",           # Michigan        — bloqué
+    "ncleg.gov",                    # Caroline du Nord
+    "leg.colorado.gov",             # Colorado
+    "malegislature.gov",            # Massachusetts
+    "oregonlegislature.gov",        # Oregon
+    "legislature.mi.gov",           # Michigan
     "iga.in.gov",                   # Indiana         — bloqué
-    "docs.legis.wisconsin.gov",     # Wisconsin       — bloqué
-    "oscn.net",                     # Oklahoma        — bloqué
+    "docs.legis.wisconsin.gov",     # Wisconsin
+    "oscn.net",                     # Oklahoma
     "legis.la.gov",                 # Louisiane       — bloqué
     "apps.legislature.ky.gov",      # Kentucky        — bloqué
-    "nebraskalegislature.gov",      # Nebraska        — bloqué
-    "leg.state.nv.us",              # Nevada          — bloqué
+    "nebraskalegislature.gov",      # Nebraska
+    "leg.state.nv.us",              # Nevada
     "nmonesource.com",              # Nouveau-Mexique — bloqué
-    "wyoleg.gov",                   # Wyoming         — bloqué
-    "gencourt.state.nh.us",         # New Hampshire   — bloqué
-    "legislature.idaho.gov",        # Idaho           — bloqué
-    "ndlegis.gov",                  # Dakota du Nord  — bloqué
+    "wyoleg.gov",                   # Wyoming
+    "gencourt.state.nh.us",         # New Hampshire
+    "legislature.idaho.gov",        # Idaho
+    "ndlegis.gov",                  # Dakota du Nord
     "capitol.hawaii.gov",           # Hawaï           — bloqué
     "akleg.gov",                    # Alaska          — bloqué
-    "rilegislature.gov",            # Rhode Island    — bloqué
+    "rilegislature.gov",            # Rhode Island
     "law.cornell.edu",         # Cornell LII — reproduction du NYCRR
     "gesetze-im-internet.de",  # Allemagne (fédéral)
     "wetten.overheid.nl",      # Pays-Bas

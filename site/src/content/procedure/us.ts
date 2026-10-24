@@ -16,23 +16,40 @@
 // environnemental SEQRA, audience obligatoire de l'agence de développement, recours
 // Article 78), lus au texte le 2026-10-23.
 //
-// 🔴 LE RÉSULTAT LE PLUS UTILE EST UN NÉGATIF. Cinq des vingt-deux juridictions lues — le
-// Texas, la Floride, le Minnesota, l'Arizona et le Montana — ne fixent AUCUN délai : la loi
-// dit « promptement » et s'arrête là. Un lecteur qui attend une réponse au Texas n'attend
-// rien de chiffrable, et c'est exactement ce qu'il faut lui dire plutôt que de le laisser
-// croire à une horloge. À l'autre bout, le Missouri et le Kansas répondent en trois jours
-// ouvrés, le Maryland en trente. Un facteur dix entre deux États du même pays.
+// 🔴 LE RÉSULTAT LE PLUS UTILE EST UN NÉGATIF. Dix des trente-huit juridictions lues — Texas,
+// Floride, Minnesota, Arizona, Montana, Ohio, Caroline du Nord, Wisconsin, Oklahoma, Dakota du
+// Nord — ne fixent AUCUN délai : la loi dit « promptement », ou « dès que possible en pratique »,
+// et s'arrête là. Le Texas le définit même en toutes lettres, « aussi vite que possible selon les
+// circonstances », ce qui ne se compte pas. Un lecteur de ces États n'attend rien de chiffrable,
+// et c'est exactement ce qu'il faut lui dire plutôt que de le laisser croire à une horloge.
 //
-// ⚠️ VINGT-NEUF JURIDICTIONS MANQUENT, et pour une raison qui n'est pas juridique : leurs
-// recueils officiels refusent l'accès automatisé depuis notre environnement (403, Cloudflare,
-// connexion refusée). Sont concernés, par poids de corpus : Illinois (82 fiches), Géorgie
-// (75), Ohio (71), Pennsylvanie (59), New Jersey (56), Caroline du Nord (42), Colorado (41),
-// Massachusetts (39), Oregon (38), Michigan (36), Indiana (28), Tennessee (28), Wisconsin
-// (26), Oklahoma (22), Louisiane (21), Kentucky (20), Nebraska (19), Nevada (17),
-// Nouveau-Mexique (11), Wyoming (10), New Hampshire (8), Idaho (8), Alabama (8), Arkansas
-// (8), Dakota du Nord (7), Hawaï (7), Mississippi (6), Alaska (4), Rhode Island (2).
-// Aucune n'est un trou de doctrine : ce sont des lectures à refaire depuis un accès qui
-// passe. Les hôtes officiels sont déjà déclarés dans le registre du test.
+// L'ÉCART ENTRE LES VINGT-HUIT AUTRES EST D'UN FACTEUR DIX : trois jours ouvrés au Missouri, au
+// Kansas et au Colorado ; quatre au Nebraska ; cinq dans huit États ; dix au Massachusetts, en
+// Utah, au Dakota du Sud, en Caroline du Sud et au Rhode Island ; quinze au Delaware et à
+// Washington DC ; trente au Maryland et au Wyoming.
+//
+// TROIS FORMES QU'AUCUN AUTRE PAYS DU CORPUS NE PORTE :
+//   · Pennsylvanie — le SILENCE vaut décision : passé cinq jours ouvrés sans réponse, la demande
+//     est réputée REFUSÉE, ce qui ouvre l'appel au lieu de laisser le demandeur attendre.
+//   · Idaho — le délai dépend du DOMICILE du demandeur : trois jours ouvrés pour un résident de
+//     l'Idaho, vingt et un jours pour tout le monde d'autre.
+//   · Colorado — la prolongation doit être constatée PAR ÉCRIT dans les trois jours initiaux, et
+//     ne peut porter le total au-delà de sept jours ouvrés.
+// Et deux formes vues en Europe mais pas ailleurs aux États-Unis : le Maine n'impose que
+// d'ACCUSER RÉCEPTION sous cinq jours ouvrés, le Connecticut ne chiffre que le REFUS.
+//
+// ⚠️ TREIZE JURIDICTIONS MANQUENT, et pour une raison qui n'est pas juridique : leurs recueils
+// officiels ne servent leur texte qu'à travers une application JavaScript, ou refusent l'accès
+// automatisé. Illinois (82 fiches, site injoignable même depuis une sortie américaine), Géorgie
+// (75, code publié sous licence par un éditeur privé), New Jersey (56), Indiana (28), Tennessee
+// (28), Louisiane (21), Kentucky (20), Nouveau-Mexique (11), Alabama (8), Arkansas (8), Hawaï
+// (7), Mississippi (6), Alaska (4). Aucune n'est un trou de doctrine : ce sont des lectures à
+// refaire, et les hôtes officiels sont déjà déclarés dans le registre du test.
+//
+// ⚠️ LE GÉOBLOCAGE EST LA VRAIE CONTRAINTE, PAS L'OUTIL. La plupart de ces recueils refusent les
+// adresses non américaines. Les trente-huit juridictions ci-dessous ont été lues depuis une
+// sortie réseau située aux États-Unis, par scripts/procedure_harvest.py : c'est la condition
+// matérielle du travail, elle est à reproduire pour les treize restantes.
 import type { ProcedureCountry } from "./types";
 
 export const US: ProcedureCountry = {
@@ -44,6 +61,310 @@ export const US: ProcedureCountry = {
     en: "In the United States no federal permit covers a data centre: the town or county authorises it, under its own state's law. And every state has its own public-records law — from three business days in Missouri to thirty in Maryland, and no deadline at all in Texas.",
   },
   subdivisions: {
+    "Colorado": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : trois jours ouvrés — la loi pose que le « délai raisonnable » est présumé de trois jours ouvrés ou moins. Une prolongation exige des circonstances atténuantes constatées PAR ÉCRIT dans ces trois jours, et ne peut dépasser sept jours ouvrés.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: three working days — the statute presumes a “reasonable time” to be three working days or less. An extension needs extenuating circumstances found IN WRITING within those three days, and cannot exceed seven working days.",
+          },
+          cite: "C.R.S. § 24-72-203(3)(b)",
+          url: "https://content.leg.colorado.gov/sites/default/files/images/olls/crs2023-title-24.pdf",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Idaho": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : trois jours ouvrés pour un RÉSIDENT de l'Idaho — vingt et un jours pour toute autre personne. Le droit d'accès y dépend du domicile du demandeur.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: three working days for an Idaho RESIDENT — twenty-one days for anyone else. Access here depends on where the requester lives.",
+          },
+          cite: "Idaho Code § 74-103(2)",
+          url: "https://legislature.idaho.gov/statutesrules/idstat/Title74/T74CH1/SECT74-103/",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Massachusetts": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : dix jours ouvrés à compter de la réception de la demande, et sans retard déraisonnable.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: ten business days following receipt of the request, and without unreasonable delay.",
+          },
+          cite: "M.G.L. c. 66, § 10(a)",
+          url: "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleX/Chapter66/Section10",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Michigan": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés pour accorder, refuser, accorder en partie, ou prolonger.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days to grant, deny, partly grant, or extend.",
+          },
+          cite: "MCL 15.235(2)",
+          url: "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-15-235",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Nebraska": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : quatre jours ouvrés au plus à compter de la réception effective — avec, dans le même délai, une estimation du coût des copies.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: no more than four business days after actual receipt — with, in the same period, an estimate of the cost of copies.",
+          },
+          cite: "Neb. Rev. Stat. § 84-712(4)",
+          url: "https://nebraskalegislature.gov/laws/statutes.php?statute=84-712",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Nevada": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : au plus tard à la fin du cinquième jour ouvré suivant la demande, écrite ou orale.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: no later than the end of the fifth business day after the request, written or oral.",
+          },
+          cite: "NRS 239.0107(1)",
+          url: "https://www.leg.state.nv.us/NRS/NRS-239.html",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "New Hampshire": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés pour communiquer le document, le refuser, ou écrire le temps qu'il faudra et pourquoi.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days to make the record available, deny the request, or state in writing how long it will take and why.",
+          },
+          cite: "RSA 91-A:4, IV(b)",
+          url: "https://www.gencourt.state.nh.us/rsa/html/VI/91-A/91-A-4.htm",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "North Carolina": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « aussi promptement que possible » — AUCUN nombre de jours.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “as promptly as possible” — NO number of days.",
+          },
+          cite: "N.C.G.S. § 132-6(a)",
+          url: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_132/GS_132-6.html",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "North Dakota": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : les documents sont ouverts « pendant les heures de bureau raisonnables » — la loi ne fixe AUCUN délai de réponse.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: records are open “during reasonable office hours” — the statute sets NO response deadline at all.",
+          },
+          cite: "N.D.C.C. § 44-04-18(1)",
+          url: "https://ndlegis.gov/cencode/t44c04.pdf",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Ohio": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « promptement préparés et mis à disposition », aux heures ouvrables raisonnables, les copies étant fournies « dans un délai raisonnable » — AUCUN nombre de jours.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “promptly prepared and made available” at all reasonable times during business hours, copies supplied “within a reasonable period of time” — NO number of days.",
+          },
+          cite: "Ohio Rev. Code § 149.43(B)(1)",
+          url: "https://codes.ohio.gov/ohio-revised-code/section-149.43",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Oklahoma": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « un accès prompt et raisonnable » — AUCUN nombre de jours. Un retard ne peut tenir qu'au temps de préparation des documents.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “prompt, reasonable access” — NO number of days. A delay may only be the time needed to prepare the documents.",
+          },
+          cite: "51 O.S. § 24A.5(6)",
+          url: "https://oksenate.gov/sites/default/files/2019-12/os51.pdf",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Oregon": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés pour accuser réception OU pour répondre complètement — l'administration choisit lequel des deux.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days to acknowledge receipt OR to complete the response — the agency picks which.",
+          },
+          cite: "ORS 192.329(2)",
+          url: "https://www.oregonlegislature.gov/bills_laws/ors/ors192.html",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Pennsylvania": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés au maximum. Et le silence vaut décision : passé ce délai sans réponse, la demande est RÉPUTÉE REFUSÉE — ce qui ouvre l'appel au lieu de laisser le demandeur attendre.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days at most. And silence is a decision: past that, with no answer, the request is DEEMED DENIED — which opens the appeal instead of leaving the requester waiting.",
+          },
+          cite: "65 P.S. § 67.901",
+          url: "https://www.legis.state.pa.us/WU01/LI/LI/US/HTM/2008/0/0003..HTM",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Rhode Island": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : dix jours ouvrés ; au-delà, l'administration doit expliquer par écrit, et de façon propre à la demande, le temps supplémentaire qu'il lui faut.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: ten business days; beyond that the body must explain in writing, specifically to that request, why it needs more time.",
+          },
+          cite: "R.I. Gen. Laws § 38-2-3(e)",
+          url: "https://webserver.rilegislature.gov/Statutes/TITLE38/38-2/38-2-3.HTM",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Wisconsin": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « dès que possible en pratique et sans retard » — AUCUN nombre de jours.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “as soon as practicable and without delay” — NO number of days.",
+          },
+          cite: "Wis. Stat. § 19.35(4)(a)",
+          url: "https://docs.legis.wisconsin.gov/statutes/statutes/19/ii/35",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "Wyoming": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : trente jours calendaires au plus à compter de la réception accusée ; sept jours ouvrés si l'administration doit signaler qu'elle ne détient pas le document. Un document immédiatement disponible se remet sur-le-champ.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: thirty calendar days at most from acknowledged receipt; seven business days where the entity must say it does not hold the record. A readily available record is released immediately.",
+          },
+          cite: "W.S. § 16-4-202(b) et (c)",
+          url: "https://www.wyoleg.gov/statutes/compress/title16.pdf",
+          verified: "2026-10-24",
+        },
+      ],
+    },
     "New York": {
       authority: {
         fr: "la commune ou le comté qui zone le terrain (agence chef de file au titre du SEQRA)",
