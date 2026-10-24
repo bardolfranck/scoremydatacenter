@@ -471,8 +471,33 @@ HOTES_DE_TEXTE = (
 
 
 def _fichiers_de_procedure() -> list[Path]:
+    # `absente.ts` est exclu À DESSEIN : c'est le texte qu'on sert quand on n'a PAS de
+    # juridiction, donc le seul fichier du dossier qui ne doit porter aucune affirmation
+    # sourcée. Il a sa propre garde, juste en dessous, qui vérifie l'inverse.
     return sorted(p for p in PROCEDURE_DIR.glob("*.ts")
-                  if p.name not in ("types.ts", "index.ts"))
+                  if p.name not in ("types.ts", "index.ts", "absente.ts"))
+
+
+def test_le_texte_d_absence_ne_cite_aucune_loi():
+    """ON NE SOURCE PAS CE QU'ON N'A PAS LU.
+
+    `absente.ts` dit au lecteur ce qui reste vrai quand la juridiction n'est pas lue : qui
+    décide, quel levier existe partout, et quelle question poser à notre place. Rien de tout
+    cela ne s'appuie sur un article — et si un `cite:` apparaissait ici, ce serait le signe
+    qu'une affirmation sourcée a glissé dans le texte du trou, là où personne ne la
+    vérifierait jamais.
+
+    Les fourchettes qu'il cite (« de trois jours ouvrés à trente ») sont DÉRIVÉES des
+    juridictions déjà lues, pas d'un texte : elles se recalculent, elles ne se citent pas.
+    """
+    texte = (PROCEDURE_DIR / "absente.ts").read_text()
+    assert 'cite: "' not in texte and "url: " not in texte, (
+        "absente.ts porte une citation : une affirmation sourcée a glissé dans le texte "
+        "servi quand il n'y a PAS de source"
+    )
+    n_fr = len(re.findall(r"^\s+fr: ", texte, re.M))
+    n_en = len(re.findall(r"^\s+en: ", texte, re.M))
+    assert n_fr == n_en and n_fr >= 9, f"parité FR/EN rompue : {n_fr} contre {n_en}"
 
 
 def test_il_existe_au_moins_un_fichier_de_procedure():
