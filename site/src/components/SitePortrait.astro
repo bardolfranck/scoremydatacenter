@@ -78,9 +78,11 @@ const inds: any[] = (dc.indicators ?? []).map((i: any) => ({ ...i, block: defByI
 const pose = (i: any) => i.status === "measured" || i.status === "announced" || i.status === "estimated";
 const poses = inds.filter(pose);
 const parPilier = (p: string) => poses.filter((i) => i.pillar === p);
-// Le dénominateur affiché est le bloc BASE (celui qui porte la sous-note) : le numérateur
-// doit l'être aussi, sinon on publie « 6 mesures sur 4 ».
-const baseParPilier = (p: string) => poses.filter((i) => i.pillar === p && i.block === "base");
+// Le compte doit décrire CE QUE LA LETTRE RÉSUME. Une sous-note de pilier est agrégée sur
+// tous ses indicateurs MVP, bloc projet et process compris — c'est pour ça que la
+// transparence de Fouju porte un A alors qu'elle n'a aucun indicateur de base. Compter la
+// base seule donnait « 0 sur 0 » sous une lettre bien fondée.
+const mvpParPilier = (p: string) => defs.filter((d: any) => d.mvp && d.pillar === p).length;
 
 const valeur = (i: any) => {
   const d = defById[i.id];
@@ -206,15 +208,15 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
       {pillars.map((p) => {
         const sous = dc.pillar_bands?.[p.id];
         const detail = dc.pillars?.[p.id];
-        // 🔴 MÊME RÈGLE QUE LA FICHE ET LE COMPARATEUR : quand la note du site est PROBABLE,
-        // un pilier ne montre que sa sous-note probable. Retomber sur la lettre définitive
-        // publierait ici ce que les deux autres surfaces retiennent — et le cas réel est
-        // Fouju, dont la transparence sortait « A » sans porter la moindre mesure de base.
-        const g = probable
-          ? (sous?.central ?? null)
-          : (/^[A-E]$/.test(detail?.grade ?? "") ? detail.grade : null);
-        const n = baseParPilier(p.id).length;
-        const total = defs.filter((d: any) => d.mvp && d.block === "base" && d.pillar === p.id).length;
+        // MÊME RÈGLE QUE LA FICHE, mot pour mot : la sous-note probable quand elle existe,
+        // sinon la lettre définitive du pilier. J'ai cru un instant devoir retenir la
+        // seconde — à tort : sur Fouju la transparence porte un A fondé sur T1 et T2, qui
+        // sont dans le bloc PROCESS. Mon dénominateur ne comptait que la base, affichait
+        // « 0 sur 0 », et j'ai conclu de mon propre bug d'affichage que la lettre était
+        // infondée. Le compte est corrigé plus bas ; la lettre n'avait pas à l'être.
+        const g = sous?.central ?? (/^[A-E]$/.test(detail?.grade ?? "") ? detail.grade : null);
+        const n = parPilier(p.id).length;
+        const total = mvpParPilier(p.id);
         return (
           <li class="pt-pillar">
             <PillarIcon name={pillarIconName[p.id]} size={18} />

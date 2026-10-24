@@ -705,27 +705,21 @@ def test_chaque_stade_de_procedure_porte_son_verbe():
     )
 
 
-def test_le_portrait_ne_republie_pas_une_lettre_que_la_fiche_retient():
-    """QUATRIÈME SURFACE, MÊME RÈGLE.
+def test_le_compte_du_portrait_decrit_ce_que_la_lettre_resume():
+    """UN COMPTE QUI NE DÉCRIT PAS SA LETTRE FAIT DOUTER DE LA LETTRE.
 
-    La fiche, le classement et le comparateur appliquent déjà « la lettre retenue
-    n'apparaît nulle part ». Le portrait est la quatrième surface à publier des lettres, et
-    il a reproduit le défaut dès son premier rendu : sur Fouju, le pilier Transparence
-    sortait un « A » définitif — alors que ce pilier ne porte AUCUN indicateur de base, donc
-    aucune sous-note probable, donc rien à montrer.
+    La sous-note d'un pilier est agrégée sur TOUS ses indicateurs MVP — bloc projet et
+    process compris. Le portrait affichait d'abord un dénominateur limité au bloc base : la
+    transparence de Fouju, dont la lettre A repose sur T1 et T2 (process), sortait donc
+    « 0 mesure sur 0 » sous un A parfaitement fondé. J'en ai conclu que la lettre était
+    infondée et je l'ai retirée — en cassant le seul pilier du corpus qui porte une note de
+    transparence.
 
-    Ce test lit le gabarit, pas une page : il exige que la lettre d'un pilier vienne de
-    `pillar_bands` dès qu'une bande existe, sans repli sur `pillars[].grade`.
+    Le compte doit décrire ce que la lettre résume, sinon il contredit la lettre, et c'est
+    le compte qui a tort.
     """
     gabarit = (REPO_ROOT / "site" / "src" / "components" / "SitePortrait.astro").read_text()
-    bloc = gabarit[gabarit.index("const sous = dc.pillar_bands"):]
-    bloc = bloc[: bloc.index("const n =")]
-    assert "probable" in bloc and "sous?.central" in bloc, (
-        "le portrait ne conditionne plus la lettre de pilier à l'existence d'une bande"
-    )
-    repli = bloc.index("detail.grade")
-    cond = bloc.index("probable")
-    assert cond < repli, (
-        "le repli sur la lettre définitive n'est plus gardé par la bande : le portrait "
-        "republierait ce que la fiche retient"
+    assert 'd.mvp && d.pillar === p' in gabarit and 'd.block === "base" && d.pillar' not in gabarit, (
+        "le dénominateur du portrait est revenu au seul bloc base : il décrira moins que ce "
+        "que la lettre du pilier résume"
     )
