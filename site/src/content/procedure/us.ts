@@ -44,13 +44,25 @@
 // le texte de § 50-18-71 en annexe de son guide officiel — ce n'est pas un commentaire qu'on
 // cite, c'est le texte, reproduit par l'autorité qui l'applique. La citation le dit.
 //
-// ⚠️ DIX JURIDICTIONS MANQUENT, et aucune pour une raison juridique :
-//   · Illinois (82 fiches) — ilga.gov ne répond pas, même depuis une sortie américaine.
-//     Le site semble hors service, pas fermé à nous.
-//   · Indiana (28), Tennessee (28), Kentucky (20), Nouveau-Mexique (11), Alabama (8),
-//     Arkansas (8), Hawaï (7), Mississippi (6), Alaska (4) — recueils rendus uniquement
-//     par JavaScript, ou code publié sous licence privée.
-// 202 fiches au total. Les hôtes officiels sont déclarés dans le registre du test.
+// 🔴 QUAND L'ÉTAT NE PUBLIE PAS SON CODE, L'AUTORITÉ QUI L'APPLIQUE LE REPRODUIT. Trois
+// États n'ont aucune source officielle libre de leur code — Géorgie, Arkansas, Nouveau-
+// Mexique. Mais leur procureur général (ou ministère de la Justice) reproduit le TEXTE de la
+// loi en annexe de son guide officiel. Ce n'est pas un commentaire qu'on cite : c'est le
+// texte, reproduit par l'autorité qui l'applique, et chaque citation nomme ce détour. C'est
+// la seule exception admise à la règle « jamais un commentaire », et elle est tenue par la
+// provenance explicite, pas par une tolérance.
+//
+// ⚠️ HUIT JURIDICTIONS MANQUENT (183 fiches), et aucune pour une raison de droit :
+//   · Illinois (82) — ilga.gov ne répond plus, racine comprise, même depuis une sortie américaine. Le site semble hors service — c'est le seul des huit qui se réglera tout seul.
+//   · Indiana (28) — l'application du code renvoie 404 sur toutes les routes de section ; le manuel officiel du Public Access Counselor date de 2016.
+//   · Tennessee (28) — code sous licence privée ; le Comptroller ne publie que des avis et des FAQ, pas le texte.
+//   · Kentucky (20) — chapitres à identifiants opaques, liste des sections rendue en JavaScript ; le procureur général ne publie que des décisions.
+//   · Alabama (8) — recueil entièrement en JavaScript.
+//   · Hawaii (7) — le délai de dix jours ouvrés vient des RÈGLES de l'Office of Information Practices, pas de la loi, et ces règles ne sont pas publiées en texte atteignable.
+//   · Mississippi (6) — code sous licence privée ; la commission d'éthique ne cite le texte que dans ses décisions.
+//   · Alaska (4) — recueil servi par une application Folio inaccessible.
+// Dans chaque cas, ce qui manque est un ACCÈS, pas une lecture : citer un commentaire aurait
+// été plus rapide, et c'est exactement l'erreur qui nous a coûté « quatre mois » en France.
 //
 // ⚠️ LE GÉOBLOCAGE EST LA VRAIE CONTRAINTE, PAS L'OUTIL. La plupart de ces recueils refusent les
 // adresses non américaines. Les trente-huit juridictions ci-dessous ont été lues depuis une
@@ -67,6 +79,44 @@ export const US: ProcedureCountry = {
     en: "In the United States no federal permit covers a data centre: the town or county authorises it, under its own state's law. And every state has its own public-records law — from three business days in Missouri to thirty in Maryland, and no deadline at all in Texas.",
   },
   subdivisions: {
+    "Arkansas": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : si le document est en cours d'utilisation ou archivé et donc indisponible au moment où un citoyen demande à le consulter, le dépositaire doit le certifier PAR ÉCRIT et fixer une date et une heure dans les trois jours ouvrés.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: if the record is in active use or storage and therefore unavailable when a citizen asks to examine it, the custodian must certify that IN WRITING and set a date and hour within three working days.",
+          },
+          cite: "A.C.A. § 25-19-105(e), reproduit intégralement en annexe du manuel FOIA du procureur général de l'Arkansas (22e éd., 2026)",
+          url: "https://media.ark.org/ag/APA-045-2026-FOIA-Handbook-22nd-Edition.pdf",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "New Mexico": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : la consultation doit être permise immédiatement ou dès que praticable, et au plus tard quinze jours après la demande écrite. Si elle n'est pas permise sous TROIS jours ouvrés, le dépositaire doit expliquer par écrit quand les documents seront disponibles. Et passé quinze jours sans accès, la demande PEUT ÊTRE RÉPUTÉE REFUSÉE — ce qui ouvre les recours.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: inspection must be permitted immediately or as soon as practicable, and no later than fifteen days after the written request. If it is not permitted within THREE business days, the custodian must explain in writing when the records will be available. And after fifteen days without access, the request MAY BE DEEMED DENIED — which opens the remedies.",
+          },
+          cite: "NMSA 1978, § 14-2-8(D) et § 14-2-11(A), reproduits intégralement en annexe du guide IPRA du ministère de la Justice du Nouveau-Mexique (9e éd., 2025)",
+          url: "https://nmdoj.gov/wp-content/uploads/NMDOJ-IPRA-Guide-Ninth-Edition-25.03.21.pdf",
+          verified: "2026-10-24",
+        },
+      ],
+    },
     "Georgia": {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",

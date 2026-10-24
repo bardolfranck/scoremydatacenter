@@ -403,6 +403,8 @@ HOTES_DE_TEXTE = (
     # annexe de son guide officiel. Ce n'est pas un commentaire qu'on cite : c'est le texte,
     # reproduit par l'autorité qui l'applique, et la citation nomme ce détour.
     "law.georgia.gov",              # Géorgie — texte reproduit par le procureur général
+    "media.ark.org",                # Arkansas — texte reproduit par le procureur général
+    "nmdoj.gov",                    # Nouveau-Mexique — texte reproduit par le ministère de la Justice
     "codes.ohio.gov",               # Ohio
     "legis.state.pa.us",            # Pennsylvanie
     "palegis.us",                   # Pennsylvanie (nouveau domaine)
