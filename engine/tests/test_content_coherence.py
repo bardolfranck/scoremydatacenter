@@ -401,7 +401,7 @@ HOTES_DE_TEXTE = (
     "legis.state.pa.us",            # Pennsylvanie
     "palegis.us",                   # Pennsylvanie (nouveau domaine)
     "oksenate.gov",                 # Oklahoma
-    "njleg.state.nj.us",            # New Jersey      — bloqué
+    "njleg.state.nj.us",            # New Jersey
     "ncleg.gov",                    # Caroline du Nord
     "leg.colorado.gov",             # Colorado
     "malegislature.gov",            # Massachusetts
@@ -410,7 +410,7 @@ HOTES_DE_TEXTE = (
     "iga.in.gov",                   # Indiana         — bloqué
     "docs.legis.wisconsin.gov",     # Wisconsin
     "oscn.net",                     # Oklahoma
-    "legis.la.gov",                 # Louisiane       — bloqué
+    "legis.la.gov",                 # Louisiane
     "apps.legislature.ky.gov",      # Kentucky        — bloqué
     "nebraskalegislature.gov",      # Nebraska
     "leg.state.nv.us",              # Nevada

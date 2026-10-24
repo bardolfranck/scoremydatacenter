@@ -38,13 +38,17 @@
 // Et deux formes vues en Europe mais pas ailleurs aux États-Unis : le Maine n'impose que
 // d'ACCUSER RÉCEPTION sous cinq jours ouvrés, le Connecticut ne chiffre que le REFUS.
 //
-// ⚠️ TREIZE JURIDICTIONS MANQUENT, et pour une raison qui n'est pas juridique : leurs recueils
-// officiels ne servent leur texte qu'à travers une application JavaScript, ou refusent l'accès
-// automatisé. Illinois (82 fiches, site injoignable même depuis une sortie américaine), Géorgie
-// (75, code publié sous licence par un éditeur privé), New Jersey (56), Indiana (28), Tennessee
-// (28), Louisiane (21), Kentucky (20), Nouveau-Mexique (11), Alabama (8), Arkansas (8), Hawaï
-// (7), Mississippi (6), Alaska (4). Aucune n'est un trou de doctrine : ce sont des lectures à
-// refaire, et les hôtes officiels sont déjà déclarés dans le registre du test.
+// ⚠️ ONZE JURIDICTIONS MANQUENT, et aucune pour une raison juridique :
+//   · Illinois (82 fiches) — ilga.gov ne répond pas, même depuis une sortie américaine.
+//     Le site semble hors service, pas fermé à nous.
+//   · Géorgie (75) — le code n'a pas de source officielle libre : l'Assemblée générale
+//     renvoie elle-même vers LexisNexis, qui le publie « on behalf of the Georgia General
+//     Assembly through a contractual arrangement ». L'accès public existe, mais il se
+//     protège par un CAPTCHA, et nous n'en résolvons pas.
+//   · Indiana (28), Tennessee (28), Kentucky (20), Nouveau-Mexique (11), Alabama (8),
+//     Arkansas (8), Hawaï (7), Mississippi (6), Alaska (4) — recueils rendus uniquement
+//     par JavaScript, ou code publié sous licence privée.
+// 277 fiches au total. Les hôtes officiels sont déclarés dans le registre du test.
 //
 // ⚠️ LE GÉOBLOCAGE EST LA VRAIE CONTRAINTE, PAS L'OUTIL. La plupart de ces recueils refusent les
 // adresses non américaines. Les trente-huit juridictions ci-dessous ont été lues depuis une
@@ -61,6 +65,44 @@ export const US: ProcedureCountry = {
     en: "In the United States no federal permit covers a data centre: the town or county authorises it, under its own state's law. And every state has its own public-records law — from three business days in Missouri to thirty in Maryland, and no deadline at all in Texas.",
   },
   subdivisions: {
+    "Louisiana": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : si le document est immédiatement disponible, il doit être remis SUR-LE-CHAMP. S'il est en cours d'utilisation, le dépositaire doit le certifier par écrit et fixer un jour et une heure dans les trois jours, samedis, dimanches et jours fériés non comptés.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: if the record is immediately available it must be handed over ON THE SPOT. If it is in active use, the custodian must certify that in writing and fix a day and hour within three days, excluding Saturdays, Sundays and legal holidays.",
+          },
+          cite: "La. R.S. 44:33(B)(1)",
+          url: "https://legis.la.gov/Legis/Law.aspx?d=99701",
+          verified: "2026-10-24",
+        },
+      ],
+    },
+    "New Jersey": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : sept jours ouvrés — quatorze si la demande est faite à des fins commerciales, et sept de plus dans certains cas, l'administration devant alors prévenir du délai supplémentaire dans les sept premiers jours. Délais portés par la réforme de 2024.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: seven business days — fourteen where the request is for a commercial purpose, and seven more in some cases, the custodian having to give notice of the extra time within the first seven days. Deadlines set by the 2024 reform.",
+          },
+          cite: "N.J.S.A. 47:1A-5(i)(1), tel que modifié par P.L.2024, c.16",
+          url: "https://pub.njleg.state.nj.us/Bills/2024/AL24/16_.HTM",
+          verified: "2026-10-24",
+        },
+      ],
+    },
     "Colorado": {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
