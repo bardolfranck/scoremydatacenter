@@ -647,3 +647,59 @@ def test_le_comparateur_ne_publie_aucune_lettre_que_la_fiche_retient():
         "le comparateur se construit-il toujours APRÈS scrub-grades ? "
         + "; ".join(ecarts[:5])
     )
+
+
+QUESTIONS = REPO_ROOT / "site" / "src" / "content" / "questions-derivees.ts"
+
+
+def test_une_question_par_indicateur_de_projet_et_aucune_pour_la_base():
+    """LA DISTINCTION QUI FAIT TOUT : UN TROU DU DOSSIER N'EST PAS UN TROU DE NOTRE MESURE.
+
+    Un indicateur du bloc PROJET/PROCESS non renseigné, c'est le porteur qui ne l'a pas
+    documenté — une question à lui poser. Un indicateur du bloc BASE non collecté, c'est
+    NOTRE trou : demander à un exploitant « quelle est l'intensité carbone du réseau local ? »
+    n'a aucun sens, c'est à nous de la mesurer.
+
+    La maquette du portrait tirait « à demander : quel poste de raccordement, quelle
+    capacité » de E2 — un indicateur de BASE. Surlignée, fausse, et présentée au lecteur
+    comme issue du dossier du porteur. Ce test interdit que ça revienne : chaque indicateur
+    projet/process du MVP porte sa question, aucun indicateur de base n'en porte.
+    """
+    texte = QUESTIONS.read_text()
+    declarees = set(re.findall(r"^  ([A-Z]\d+): \{", texte, re.M))
+    attendues = {i["id"] for i in load_methodology()["indicators"]
+                 if i.get("mvp") and i["block"] in ("project", "process")}
+    base = {i["id"] for i in load_methodology()["indicators"]
+            if i.get("mvp") and i["block"] == "base"}
+
+    manquantes = sorted(attendues - declarees)
+    assert not manquantes, (
+        "ces indicateurs du dossier n'ont pas de question : le portrait sera muet sur un "
+        "trou que le porteur DOIT combler — " + ", ".join(manquantes)
+    )
+    intruses = sorted(declarees & base)
+    assert not intruses, (
+        "ces indicateurs sont des mesures À NOUS, et le portrait les présenterait comme des "
+        "questions au porteur — " + ", ".join(intruses)
+    )
+
+
+def test_chaque_stade_de_procedure_porte_son_verbe():
+    """UNE QUESTION SANS SON VERBE EST UN VŒU.
+
+    « Quel volume d'eau par an ? » ne s'obtient pas de la même façon avant le dépôt du
+    dossier, pendant l'enquête, ou dix ans après la mise en service — et parfois ne s'obtient
+    plus du tout. Le verbe vient des fenêtres du dossier juridique ; il doit exister pour
+    CHAQUE statut que le corpus sait produire, sinon une fiche entière perd sa conjugaison.
+    """
+    texte = QUESTIONS.read_text()
+    verbes = set(re.findall(r"^  (\w+): \{$", texte[texte.index("export const VERBES"):], re.M))
+    artefacts = REPO_ROOT / "site" / "public" / "data" / "dc"
+    if not any(artefacts.glob("*.json")):
+        pytest.skip("artefacts non construits — rien à confronter")
+    statuts = {json.loads(p.read_text()).get("project_status") for p in artefacts.glob("*.json")}
+    manquants = sorted(s for s in statuts if s and s not in verbes)
+    assert not manquants, (
+        "ces statuts du corpus n'ont pas de verbe : leurs fiches poseraient des questions "
+        "sans dire quand les poser — " + ", ".join(manquants)
+    )
