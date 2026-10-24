@@ -703,3 +703,29 @@ def test_chaque_stade_de_procedure_porte_son_verbe():
         "ces statuts du corpus n'ont pas de verbe : leurs fiches poseraient des questions "
         "sans dire quand les poser — " + ", ".join(manquants)
     )
+
+
+def test_le_portrait_ne_republie_pas_une_lettre_que_la_fiche_retient():
+    """QUATRIÈME SURFACE, MÊME RÈGLE.
+
+    La fiche, le classement et le comparateur appliquent déjà « la lettre retenue
+    n'apparaît nulle part ». Le portrait est la quatrième surface à publier des lettres, et
+    il a reproduit le défaut dès son premier rendu : sur Fouju, le pilier Transparence
+    sortait un « A » définitif — alors que ce pilier ne porte AUCUN indicateur de base, donc
+    aucune sous-note probable, donc rien à montrer.
+
+    Ce test lit le gabarit, pas une page : il exige que la lettre d'un pilier vienne de
+    `pillar_bands` dès qu'une bande existe, sans repli sur `pillars[].grade`.
+    """
+    gabarit = (REPO_ROOT / "site" / "src" / "components" / "SitePortrait.astro").read_text()
+    bloc = gabarit[gabarit.index("const sous = dc.pillar_bands"):]
+    bloc = bloc[: bloc.index("const n =")]
+    assert "probable" in bloc and "sous?.central" in bloc, (
+        "le portrait ne conditionne plus la lettre de pilier à l'existence d'une bande"
+    )
+    repli = bloc.index("detail.grade")
+    cond = bloc.index("probable")
+    assert cond < repli, (
+        "le repli sur la lettre définitive n'est plus gardé par la bande : le portrait "
+        "republierait ce que la fiche retient"
+    )

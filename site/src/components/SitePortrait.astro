@@ -1,0 +1,504 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// LE PORTRAIT DU SITE — la même donnée, l'autre persona.
+//
+// La fiche technique s'adresse à qui sait lire vingt-six indicateurs : un exploitant, un
+// analyste, un assureur. Le portrait s'adresse à qui habite à côté, ou qui siège au conseil
+// municipal. Mêmes faits, mêmes sources, aucune donnée de plus — mais l'ordre, la langue et
+// la fin sont ceux d'une décision à prendre, pas d'un dossier à instruire. Les deux pages se
+// renvoient l'une à l'autre : confondre les deux publics, c'est en perdre un.
+//
+// 🔴 RIEN N'EST RÉDIGÉ À LA MAIN ICI. Les trois points décisifs sortent du facteur dominant
+// et des sous-notes ; les questions sortent de questions-derivees.ts (indicateur × état ×
+// stade) ; la procédure sort du dossier procedure/, et son ABSENCE a son propre texte, qui
+// dit ce qui reste vrai au lieu d'avouer notre retard. Une phrase écrite à la main ici
+// serait une affirmation que personne ne pourrait vérifier.
+import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
+import PillarIcon from "./PillarIcon.astro";
+import type { PillarIconName } from "./PillarIcon.astro";
+import methodologyData from "../../public/data/methodology.json";
+import { libelleValeur, libelleUnite } from "../config/indicatorValues";
+import { questionsPour } from "../content/questions-derivees";
+import { resolveProcedure, windowFor, deadlinesFor, documentsFor } from "../content/procedure";
+import { procedureAbsente } from "../content/procedure/absente";
+
+import printer from "@phosphor-icons/core/assets/regular/printer.svg?raw";
+import shareNetwork from "@phosphor-icons/core/assets/regular/share-network.svg?raw";
+import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw";
+import flagIcon from "@phosphor-icons/core/assets/regular/flag.svg?raw";
+import envelope from "@phosphor-icons/core/assets/regular/envelope-simple.svg?raw";
+import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
+import facebookLogo from "@phosphor-icons/core/assets/regular/facebook-logo.svg?raw";
+import linkedinLogo from "@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw";
+import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
+
+interface Props {
+  dc: any;
+  lang: "fr" | "en";
+  t: any;
+  nav: NavNode[];
+  altHref: string;
+  altLabel: string;
+}
+const { dc, lang, t, nav, altHref, altLabel } = Astro.props as Props;
+const L = (o: any) => (o && typeof o === "object" ? (lang === "fr" ? o.fr : o.en) : o);
+
+const methodology = methodologyData as any;
+const defs: any[] = methodology.indicators;
+const defById = Object.fromEntries(defs.map((d) => [d.id, d]));
+const pillars = methodology.pillars as any[];
+const pillarIconName: Record<string, PillarIconName> = {
+  energy: "energy", water: "water", land_biodiversity: "land",
+  local_impact: "local", transparency_governance: "transparency",
+};
+
+// ── La note. Même contrat que la fiche : la bande prime quand elle existe, et elle se
+// montre comme provisoire. Afficher la lettre définitive là où la fiche la retient serait
+// la contradiction qu'on vient de corriger partout ailleurs.
+const band = dc.provisional_band;
+const probable = typeof band?.central === "string";
+const lettre = probable ? band.central : dc.grades?.site?.grade;
+const lettreAffichable = typeof lettre === "string" && /^[A-E]$/.test(lettre);
+const fenetre: string | null = probable && band.band !== band.central ? band.band : null;
+const SCALE = ["A", "B", "C", "D", "E"];
+const bornes = fenetre ? fenetre.split("–") : null;
+// 🔴 Les classes `grade-x` de global.css ne peignent qu'À L'INTÉRIEUR de `.gradechip`.
+// Les poser seules donnait une pastille blanche sur blanc — invisible, et personne ne
+// l'aurait vu sur une page de test. On lit la variable CSS, qui est la vraie source.
+const fond = (g: string) => `background: var(--grade-${g.toLowerCase()})${g === "C" ? "; color:#4a3c00" : ""}`;
+const dansFenetre = (g: string) =>
+  !bornes || (SCALE.indexOf(g) >= SCALE.indexOf(bornes[0]) && SCALE.indexOf(g) <= SCALE.indexOf(bornes[1]));
+
+// ── Les indicateurs, rangés par ce qu'ils disent.
+const inds: any[] = (dc.indicators ?? []).map((i: any) => ({ ...i, block: defById[i.id]?.block ?? "base" }));
+const pose = (i: any) => i.status === "measured" || i.status === "announced" || i.status === "estimated";
+const poses = inds.filter(pose);
+const parPilier = (p: string) => poses.filter((i) => i.pillar === p);
+// Le dénominateur affiché est le bloc BASE (celui qui porte la sous-note) : le numérateur
+// doit l'être aussi, sinon on publie « 6 mesures sur 4 ».
+const baseParPilier = (p: string) => poses.filter((i) => i.pillar === p && i.block === "base");
+
+const valeur = (i: any) => {
+  const d = defById[i.id];
+  const u = d?.unit ? " " + libelleUnite(d.unit, lang) : "";
+  return typeof i.value === "number" ? `${i.value}${u}` : libelleValeur(i.id, i.value, lang);
+};
+
+// ── LES TROIS POINTS QUI DÉCIDERONT. Choisis, pas rédigés : le pilier que le moteur
+// désigne comme dominant d'abord, puis les piliers les mieux documentés. Un pilier sans
+// aucune mesure n'a rien à dire et ne prend pas la place d'un qui en a.
+const pilierDominant: string | null = dc.dominant_drag?.indicator
+  ? (defById[dc.dominant_drag.indicator]?.pillar ?? null) : null;
+const ordreDecisifs = [...pillars]
+  .filter((p) => parPilier(p.id).length > 0)
+  .sort((a, b) => {
+    if ((a.id === pilierDominant) !== (b.id === pilierDominant)) return a.id === pilierDominant ? -1 : 1;
+    return parPilier(b.id).length - parPilier(a.id).length;
+  })
+  .slice(0, 3);
+
+// Trois faits par point, pas six : le portrait n'est pas le tableau de la fiche. L'ordre
+// est dérivé — l'indicateur que le moteur désigne comme dominant d'abord, puis ce que le
+// TERRITOIRE impose (bloc base) avant ce que le porteur ANNONCE (bloc projet), parce que
+// c'est la distinction que le lecteur doit emporter.
+const FAITS_MAX = 3;
+const faitsDe = (p: string) =>
+  [...parPilier(p)]
+    .sort((a, b) => {
+      const dom = (i: any) => (i.id === dc.dominant_drag?.indicator ? 0 : 1);
+      if (dom(a) !== dom(b)) return dom(a) - dom(b);
+      const bloc = (i: any) => (i.block === "base" ? 0 : 1);
+      return bloc(a) - bloc(b);
+    })
+    .slice(0, FAITS_MAX);
+
+// ── LES QUESTIONS. Indicateur × état × stade, plus l'affûtage par combinaison.
+const questions = questionsPour(inds, dc.project_status, pilierDominant);
+
+// ── CE QUE NOUS N'AVONS PAS MESURÉ. Bloc BASE seulement : ce sont nos trous, pas ceux du
+// porteur, et les confondre ferait poser au lecteur une question qui n'a pas de destinataire.
+const nonMesures = inds
+  .filter((i) => i.block === "base" && (i.status === "not_collected" || i.status === "missing"))
+  .map((i) => ({ id: i.id, label: L(defById[i.id]?.label), verifie: i.status === "missing" }));
+
+// ── LA PROCÉDURE. Lue, ou bien son absence — qui n'est jamais un blanc.
+const proc = resolveProcedure(dc.country, dc.admin_area);
+const fenetreProc = proc ? windowFor(proc, dc.project_status) : null;
+const delais = proc ? deadlinesFor(proc) : [];
+const docs = proc ? documentsFor(proc) : [];
+const absente = proc ? null : procedureAbsente(dc.country);
+
+const STADES = ["announced", "permitting", "under_construction", "operational"];
+const stadeIdx = STADES.indexOf(dc.project_status);
+
+// ── LA PHOTO. La carte de contexte annotée, pas la vue brute : c'est elle qui porte
+// l'emprise, le cours d'eau et les anneaux de distance — ce qu'un tableau ne montre pas.
+const photo = dc.context_map?.urls?.[lang] ?? dc.satellite_image?.url ?? null;
+const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null;
+
+const ficheHref = lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
+const url = `https://scoremydatacenter.org${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
+const titre = `${dc.name} — ${t.kicker}`;
+const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
+---
+
+<Base
+  lang={lang}
+  title={`${titre} | ScoreMyDataCenter`}
+  description={t.metaDescription.replace("{name}", dc.name).replace("{place}", lieu)}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <article class="pt">
+    <header class="pt-head">
+      <div>
+        <p class="pt-kicker">{t.kicker}</p>
+        <h1>{dc.name}</h1>
+        <p class="pt-where">
+          {lieu}{dc.operator ? ` · ${dc.operator}` : ""} ·
+          <strong>{t.status[dc.project_status] ?? dc.project_status}</strong>
+        </p>
+      </div>
+      <p class="pt-mark">{t.tagline}</p>
+    </header>
+
+    <section class="pt-banner">
+      <div class="pt-grade">
+        <p class="pt-grade-label">{t.siteGrade}</p>
+        {lettreAffichable ? (
+          <span class={`pt-letter${probable ? " pt-letter-prob" : ""}`} style={fond(lettre)}>{lettre}</span>
+        ) : (
+          <span class="pt-letter pt-letter-none">—</span>
+        )}
+        {lettreAffichable && (
+          <p class="pt-scale" aria-hidden="true">
+            {SCALE.map((g) => (
+              <span class={`pt-step${dansFenetre(g) ? "" : " out"}`} style={fond(g)}>{g}</span>
+            ))}
+          </p>
+        )}
+        <p class="pt-grade-note">
+          {probable ? (fenetre ? t.probableWindow.replace("{w}", fenetre) : t.probable) : t.definitive}
+        </p>
+      </div>
+
+      <div class="pt-lead">
+        {dc.citable_quote && <p class="pt-quote">{L(dc.citable_quote)}</p>}
+        <p>{t.leadHelp}</p>
+      </div>
+
+      {photo && (
+        <figure class="pt-photo">
+          <img src={photo} alt={t.photoAlt.replace("{name}", dc.name)} loading="lazy" />
+          {photoCredit && <figcaption>{photoCredit}</figcaption>}
+        </figure>
+      )}
+    </section>
+
+    <h2>{t.pillarsTitle}</h2>
+    <ul class="pt-pillars">
+      {pillars.map((p) => {
+        const sous = dc.pillar_bands?.[p.id];
+        const detail = dc.pillars?.[p.id];
+        // 🔴 MÊME RÈGLE QUE LA FICHE ET LE COMPARATEUR : quand la note du site est PROBABLE,
+        // un pilier ne montre que sa sous-note probable. Retomber sur la lettre définitive
+        // publierait ici ce que les deux autres surfaces retiennent — et le cas réel est
+        // Fouju, dont la transparence sortait « A » sans porter la moindre mesure de base.
+        const g = probable
+          ? (sous?.central ?? null)
+          : (/^[A-E]$/.test(detail?.grade ?? "") ? detail.grade : null);
+        const n = baseParPilier(p.id).length;
+        const total = defs.filter((d: any) => d.mvp && d.block === "base" && d.pillar === p.id).length;
+        return (
+          <li class="pt-pillar">
+            <PillarIcon name={pillarIconName[p.id]} size={18} />
+            <span class="pt-pillar-name">{L(p.label)}</span>
+            {total > 0 && (
+              <span class="pt-pillar-count">{t.ofMeasures.replace("{n}", String(n)).replace("{total}", String(total))}</span>
+            )}
+            {g ? (
+              <span class={`pt-pg${sous ? " pt-letter-prob" : ""}`} style={fond(g)}>{g}</span>
+            ) : (
+              <span class="pt-pg pt-pg-none">{n > 0 ? "·" : "–"}</span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
+    <p class="pt-note">{t.pillarsNote}</p>
+
+    {ordreDecisifs.length > 0 && (
+      <>
+        <h2>{t.decisiveTitle}</h2>
+        <div class="pt-cards">
+          {ordreDecisifs.map((p) => {
+            const mesures = faitsDe(p.id);
+            const q = questions.find((x) => defById[x.id]?.pillar === p.id);
+            return (
+              <div class="pt-card">
+                <PillarIcon name={pillarIconName[p.id]} size={20} />
+                <div>
+                  <p class="pt-card-title">{L(p.label)}</p>
+                  <ul class="pt-facts">
+                    {mesures.map((i) => (
+                      <li><span class="pt-fact-label">{L(defById[i.id]?.label)} :</span> <strong>{valeur(i)}</strong></li>
+                    ))}
+                  </ul>
+                  {q && (
+                    <p class="pt-ask">
+                      <strong>{L(q.amorce)} :</strong> <mark>{L(q.texte)}</mark>
+                      <span class="pt-rule">{L(q.verbe)}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </>
+    )}
+
+    <h2>{t.streetTitle}</h2>
+    <div class="pt-cards">
+      <div class="pt-card">
+        <PillarIcon name="noise" size={20} />
+        <div>
+          <p class="pt-card-title">{t.noiseTitle}</p>
+          <p>{t.noiseBody}</p>
+          <p class="pt-ask">
+            {dc.nearest_dwelling?.distance_m != null
+              ? t.noiseDistance.replace("{m}", String(Math.round(dc.nearest_dwelling.distance_m)))
+              : t.noiseNoDistance}
+          </p>
+        </div>
+      </div>
+      <div class="pt-card">
+        <PillarIcon name="fuel" size={20} />
+        <div>
+          <p class="pt-card-title">{t.fuelTitle}</p>
+          <p>{t.fuelBody}</p>
+        </div>
+      </div>
+    </div>
+    <p class="pt-note">{t.healthDisclaimer}</p>
+
+    <div class="pt-two">
+      <section>
+        <h2>{t.unknownTitle}</h2>
+        {nonMesures.length > 0 ? (
+          <ul class="pt-unknown">
+            {nonMesures.map((m) => (
+              <li>{m.label}<span class="pt-rule">{m.verifie ? t.verifiedAbsent : t.notCollected}</span></li>
+            ))}
+          </ul>
+        ) : (
+          <p>{t.unknownNone}</p>
+        )}
+        <p class="pt-note">{t.unknownNote}</p>
+      </section>
+
+      <section>
+        <h2>{t.procedureTitle}</h2>
+        <div class="pt-proc">
+          <ol class="pt-stages" aria-label={t.procedureTitle}>
+            {STADES.map((s, k) => (
+              <li class={k === stadeIdx ? "on" : k < stadeIdx ? "done" : ""}>{t.status[s]}</li>
+            ))}
+          </ol>
+          {proc ? (
+            <>
+              <p class="pt-auth">{L(proc.jurisdiction.authority)}</p>
+              {fenetreProc && <p class="pt-window">{L(fenetreProc.text)}</p>}
+              {delais.map((d: any) => <p class="pt-deadline">{L(d.text)}</p>)}
+              {docs.map((d: any) => <p class="pt-doc">{L(d.text)}</p>)}
+              <p class="pt-cites">
+                {[...(fenetreProc ? [fenetreProc] : []), ...delais, ...docs].map((c: any, k: number) => (
+                  <>{k > 0 ? " · " : ""}<a href={c.url} rel="noopener">{c.cite}</a></>
+                ))}
+              </p>
+            </>
+          ) : (
+            <>
+              <p>{L(absente!.cadre)}</p>
+              <p>{L(absente!.levier)}</p>
+              <p class="pt-window">{L(absente!.question)}</p>
+            </>
+          )}
+        </div>
+      </section>
+    </div>
+
+    {questions.length > 0 && (
+      <>
+        <h2>{t.writeInTitle}</h2>
+        <div class="pt-writein">
+          <ul>
+            {questions.map((q) => (
+              <li>
+                <strong>{L(q.amorce)} :</strong> {L(q.texte)}
+                <span class="pt-rule">{q.id} · {L(q.verbe)}</span>
+              </li>
+            ))}
+          </ul>
+          <p class="pt-note">{t.writeInNote}</p>
+        </div>
+      </>
+    )}
+
+    <div class="pt-actions">
+      <p class="pt-cross">↔ <a href={ficheHref}>{t.technicalSheet}</a> — {t.technicalSheetSub}</p>
+      <button type="button" class="pt-bt" id="pt-print" title={t.print} aria-label={t.print}><Fragment set:html={printer} /></button>
+      <a class="pt-bt" href={`mailto:contact@scoremydatacenter.org?subject=${encodeURIComponent(t.signalSubject)}&body=${encodeURIComponent(url)}`} title={t.signal} aria-label={t.signal}><Fragment set:html={flagIcon} /></a>
+      <details class="pt-share">
+        <summary class="pt-bt" title={t.share} aria-label={t.share}><Fragment set:html={shareNetwork} /></summary>
+        <div class="pt-menu">
+          <a href={`mailto:?subject=${encodeURIComponent(titre)}&body=${encodeURIComponent(url)}`}><Fragment set:html={envelope} />{t.shareMail}</a>
+          <a href={`https://wa.me/?text=${encodeURIComponent(titre + " " + url)}`} target="_blank" rel="noopener"><Fragment set:html={whatsappLogo} />WhatsApp</a>
+          <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener"><Fragment set:html={facebookLogo} />Facebook</a>
+          <a href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`} target="_blank" rel="noopener"><Fragment set:html={linkedinLogo} />LinkedIn</a>
+          <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(titre)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener"><Fragment set:html={xLogo} />X</a>
+          <button type="button" id="pt-copy"><Fragment set:html={linkSimple} />{t.copyLink}</button>
+        </div>
+      </details>
+    </div>
+
+    <footer class="pt-foot">
+      <p>{t.howToRead}</p>
+      <p class="pt-src">{t.sourcesOn} <a href={ficheHref}>{ficheHref}</a></p>
+    </footer>
+  </article>
+</Base>
+
+<script is:inline define:vars={{ url }}>
+  document.getElementById("pt-print")?.addEventListener("click", () => window.print());
+  document.getElementById("pt-copy")?.addEventListener("click", async (e) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      const b = e.currentTarget;
+      b.setAttribute("data-copied", "1");
+      setTimeout(() => b.removeAttribute("data-copied"), 1800);
+    } catch { /* presse-papier refusé : le lien reste dans la barre d'adresse */ }
+  });
+</script>
+
+<style>
+  .pt { max-width: 62rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+  .pt-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem;
+             border-bottom: 2px solid var(--ink, #16202c); padding-bottom: .6rem; }
+  .pt-kicker { margin: 0; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase;
+               color: var(--blue, #0f5fb8); font-weight: 700; }
+  .pt-head h1 { margin: .1rem 0 .2rem; font-size: 1.9rem; letter-spacing: -.02em; }
+  .pt-where { margin: 0; color: var(--muted, #5a6b7d); }
+  .pt-mark { margin: 0; flex: 0 0 auto; font-size: .78rem; color: var(--muted, #5a6b7d); }
+
+  .pt-banner { display: grid; grid-template-columns: 9rem 1fr 15rem; gap: .9rem; margin: 1rem 0 1.2rem; }
+  .pt-grade { border: 1px solid var(--line, #dde3e9); border-radius: .5rem; padding: .7rem .5rem; text-align: center; }
+  .pt-grade-label { margin: 0 0 .4rem; font-size: .68rem; text-transform: uppercase;
+                    letter-spacing: .08em; color: var(--muted, #5a6b7d); }
+  .pt-letter { display: inline-grid; place-items: center; width: 3rem; height: 3rem; border-radius: .55rem;
+               color: #fff; font: 800 1.7rem/1 ui-monospace, monospace; }
+  /* Trait discontinu = note PROBABLE. Même grammaire que la loupe de la fiche et que
+     l'anneau du comparateur : trois surfaces, un seul signe. */
+  .pt-letter-prob { border: 2px dashed #fff; outline: 1px solid currentColor; }
+  .pt-letter-none { background: #f1f5f9; border: 1px dashed #9fb3c6; color: #8b98a8; }
+  .pt-scale { display: flex; gap: 2px; justify-content: center; margin: .4rem 0 0; }
+  .pt-step { display: inline-grid; place-items: center; width: 1rem; height: 1rem; border-radius: .2rem;
+             color: #fff; font: 700 .6rem/1 ui-monospace, monospace; }
+  .pt-step.out { background: #c9d4de !important; }
+  .pt-grade-note { margin: .4rem 0 0; font-size: .74rem; font-style: italic; color: var(--muted, #5a6b7d); }
+
+  .pt-lead { border-left: 3px solid var(--blue, #0f5fb8); background: var(--tint, #f5f9ff);
+             padding: .7rem .9rem; border-radius: 0 .5rem .5rem 0; }
+  .pt-quote { margin: 0 0 .4rem; font-size: 1.05rem; font-weight: 700; }
+  .pt-lead p { margin: 0; color: var(--ink2, #3c4a59); }
+
+  .pt-photo { margin: 0; border: 1px solid var(--line, #dde3e9); border-radius: .5rem; overflow: hidden; }
+  .pt-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pt-photo figcaption { font-size: .62rem; color: var(--muted, #78879a); padding: .2rem .35rem;
+                         border-top: 1px solid var(--line, #eef2f6); }
+
+  .pt h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
+           color: var(--muted, #5a6b7d); margin: 1.4rem 0 .5rem; padding-bottom: .25rem;
+           border-bottom: 1px solid var(--line, #e3e9ee); }
+
+  .pt-pillars { list-style: none; margin: 0; padding: 0; display: grid;
+                grid-template-columns: repeat(5, 1fr); gap: .5rem; }
+  .pt-pillar { display: flex; align-items: center; gap: .4rem; border: 1px solid var(--line, #dde3e9);
+               border-radius: .5rem; padding: .45rem .5rem; }
+  .pt-pillar-name { flex: 1; font-size: .8rem; font-weight: 650; }
+  .pt-pillar-count { font-size: .62rem; color: var(--muted, #9fb3c6); }
+  .pt-pg { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: .25rem;
+           color: #fff; font: 800 .78rem/1 ui-monospace, monospace; }
+  .pt-pg-none { background: #f1f5f9; border: 1px dashed #9fb3c6; color: #8b98a8; }
+
+  .pt-cards { display: grid; gap: .5rem; }
+  .pt-card { display: grid; grid-template-columns: 1.4rem 1fr; gap: .6rem;
+             border: 1px solid var(--line, #dde3e9); border-radius: .5rem; padding: .6rem .7rem; }
+  .pt-card-title { margin: 0 0 .2rem; font-weight: 700; }
+  .pt-card p { margin: .2rem 0; }
+  .pt-facts { margin: .2rem 0; padding-left: 1rem; }
+  .pt-fact-label { color: var(--ink2, #3c4a59); }
+  .pt-ask { margin-top: .35rem !important; }
+  .pt-ask mark { background: #fff3cd; padding: 0 .15rem; }
+  .pt-rule { display: block; font-size: .68rem; color: var(--muted, #8b98a8); margin-top: .15rem; }
+
+  .pt-note { font-size: .78rem; color: var(--muted, #78879a); margin: .4rem 0 0; }
+  .pt-two { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .pt-unknown { margin: 0; padding-left: 1.1rem; }
+
+  .pt-proc { border: 1px solid var(--line, #dde3e9); border-radius: .5rem; padding: .6rem .8rem;
+             background: var(--tint2, #f7fafc); }
+  .pt-stages { list-style: none; display: flex; margin: 0 0 .5rem; padding: 0; }
+  .pt-stages li { flex: 1; text-align: center; font-size: .68rem; padding: .25rem .1rem;
+                  border-top: 3px solid var(--line, #dde3e9); color: var(--muted, #8b98a8); }
+  .pt-stages li.on { border-top-color: var(--blue, #0f5fb8); color: var(--blue, #0f5fb8); font-weight: 800; }
+  .pt-stages li.done { border-top-color: #9fb3c6; color: var(--muted, #5a6b7d); }
+  .pt-auth { margin: 0 0 .3rem; font-weight: 650; }
+  .pt-window { font-weight: 650; }
+  .pt-cites { font-size: .68rem; color: var(--muted, #78879a); margin-top: .4rem; }
+
+  .pt-writein { border: 1px solid var(--blue, #0f5fb8); border-radius: .5rem; padding: .6rem .8rem;
+                background: var(--tint, #f3f8ff); }
+  .pt-writein ul { margin: 0; padding-left: 1.1rem; }
+  .pt-writein li { margin-bottom: .3rem; }
+
+  .pt-actions { display: flex; align-items: center; gap: .4rem; margin-top: 1.2rem;
+                border-top: 1px solid var(--line, #e3e9ee); padding-top: .7rem; position: relative; }
+  .pt-cross { flex: 1; margin: 0; font-size: .85rem; }
+  .pt-bt { display: inline-grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid #d6dfe8;
+           border-radius: .35rem; background: #fbfcfd; color: #44586c; cursor: pointer; list-style: none; }
+  .pt-bt :global(svg) { width: 1rem; height: 1rem; }
+  .pt-share { position: relative; }
+  .pt-share summary::-webkit-details-marker { display: none; }
+  .pt-menu { position: absolute; right: 0; bottom: 2.4rem; background: #fff; border: 1px solid #d6dfe8;
+             border-radius: .5rem; box-shadow: 0 .4rem 1.1rem rgba(16,32,44,.16); padding: .25rem;
+             min-width: 10rem; z-index: 5; }
+  .pt-menu a, .pt-menu button { display: flex; align-items: center; gap: .45rem; width: 100%;
+             padding: .3rem .5rem; border: 0; background: none; border-radius: .3rem;
+             font-size: .82rem; color: inherit; text-decoration: none; cursor: pointer; text-align: left; }
+  .pt-menu a:hover, .pt-menu button:hover { background: var(--tint, #f3f8ff); }
+  .pt-menu :global(svg) { width: .9rem; height: .9rem; flex: 0 0 .9rem; }
+  .pt-menu button[data-copied] { color: var(--blue, #0f5fb8); font-weight: 700; }
+
+  .pt-foot { margin-top: 1rem; border-top: 1px solid var(--line, #e3e9ee); padding-top: .6rem;
+             font-size: .78rem; color: var(--muted, #78879a); }
+  .pt-foot p { margin: .2rem 0; }
+
+  @media (max-width: 52rem) {
+    .pt-banner, .pt-two { grid-template-columns: 1fr; }
+    .pt-pillars { grid-template-columns: repeat(2, 1fr); }
+    .pt-photo { order: 3; }
+  }
+  /* Le portrait est fait pour être IMPRIMÉ et posé sur une table de conseil municipal :
+     recto-verso assumé, navigation et actions retirées. */
+  @media print {
+    .pt-actions, .pt-mark { display: none; }
+    .pt { max-width: none; padding: 0; }
+  }
+</style>

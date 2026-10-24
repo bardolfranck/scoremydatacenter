@@ -651,6 +651,13 @@ const seoDesc = seoLead
         </div>
       </div>
 
+      {/* PASSERELLE VERS L'AUTRE PERSONA. La fiche parle à qui lit vingt-six indicateurs ;
+          le portrait parle à qui habite à côté. Mêmes faits, mêmes sources — l'un n'est pas
+          une version simplifiée de l'autre, et c'est pour ça que le lien est explicite. */}
+      <a class="fiche-portrait-link" href={`${ficheBase}/${dc.id}/portrait/`}>
+        {t.portraitLink}<span>{t.portraitLinkSub}</span>
+      </a>
+
       <div class="fiche-share">
         <span class="fiche-share-label">{t.share}</span>
         <div class="fiche-share-icons">

@@ -1,0 +1,58 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Site portrait, EN: thin page — the template lives in SitePortrait.astro.
+import SitePortrait from "../../../components/SitePortrait.astro";
+import { EN_NAV } from "../../../config/nav";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
+  return Object.values(modules).map((m: any) => ({ params: { id: m.default.id }, props: { dc: m.default } }));
+}
+const { dc } = Astro.props as { dc: any };
+
+const t = {
+  tagline: "Independent observatory",
+  kicker: "Site portrait",
+  metaDescription: "{name} ({place}): what the project changes for the community, what is still to ask for, and until when — a readable portrait of the site.",
+  status: { announced: "announced", permitting: "under review", under_construction: "under construction", operational: "operating" },
+  siteGrade: "Site grade",
+  probable: "probable grade",
+  probableWindow: "probable grade · window {w}",
+  definitive: "settled grade",
+  leadHelp: "This page says the same thing as the technical sheet, in the order of a decision to take: what weighs, what is missing, and what is still worth asking for while it can still be asked.",
+  photoAlt: "Annotated aerial view of {name}: footprint, watercourse and distances",
+  pillarsTitle: "The five pillars behind the grade",
+  ofMeasures: "{n} of {total} measures",
+  pillarsNote: "A pillar with no letter rests on too few measures to defend one. We publish the count rather than a letter we could not stand behind.",
+  decisiveTitle: "The points that will decide",
+  streetTitle: "What this looks like from the street",
+  noiseTitle: "Noise — continuous, day and night",
+  noiseBody: "Cooling runs permanently and standby generators are tested on a schedule. What is regulated is not a distance but how far the noise rises at the neighbour's.",
+  noiseDistance: "The nearest recorded dwelling is {m} m from the reference point. That is a straight-line distance, never a noise measurement: the acoustic study in the file is still to be demanded — it is the one that sets enforceable values.",
+  noiseNoDistance: "We hold neither a nearest-dwelling distance nor an acoustic study for this site. Both are obtainable: the study is a document in the file.",
+  fuelTitle: "Standby generators and their fuel",
+  fuelBody: "A facility like this keeps standby generators and the tanks that feed them. They are what gets tested, what gets smelled, and what triggers its own permitting. Their number, their fuel and the volume stored are in the file where one exists.",
+  healthDisclaimer: "We measure no health effect and we do not claim to. We publish what is in the file, and what is not.",
+  unknownTitle: "What we have not measured",
+  unknownNone: "Every base measure for this site is filled in.",
+  verifiedAbsent: "verified absent from the file we read",
+  notCollected: "not yet collected by us",
+  unknownNote: "These gaps are ours, not the developer's: they say where our measurement stops, and they do not penalise the site.",
+  procedureTitle: "Where the procedure stands",
+  writeInTitle: "What to get written into the approval",
+  writeInNote: "Commitments that are not in the approval cannot be enforced: what is not written cannot be demanded later. Each line comes from one measure in the file, named beside it.",
+  technicalSheet: "Technical sheet",
+  technicalSheetSub: "the measures one by one, their values and their sources",
+  print: "Print",
+  share: "Share",
+  shareMail: "By email",
+  copyLink: "Copy the link",
+  signal: "Report an error",
+  signalSubject: "Correction or response — site portrait",
+  howToRead: "How to read this portrait. The letter summarises five pillars — energy, water, land, local impact, openness. Where it is probable, the window says how much is still unknown, and it narrows as measures land. Every fact comes from a public source, cited on the technical sheet.",
+  sourcesOn: "Measures, values and sources:",
+};
+---
+<SitePortrait dc={dc} lang="en" t={t} nav={EN_NAV} altHref={`/fr/dc/${dc.id}/portrait/`} altLabel="FR" />
