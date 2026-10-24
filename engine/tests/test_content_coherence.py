@@ -371,6 +371,55 @@ HOTES_DE_TEXTE = (
     "eur-lex.europa.eu",       # Union européenne — socle des directives
     "legifrance.gouv.fr",      # France
     "nysenate.gov",            # État de New York
+    # Recueils d'ÉTAT américains — un par État, conséquence directe de l'absence de permis
+    # fédéral. Ceux marqués « bloqué » refusent l'accès automatisé depuis notre environnement
+    # (403, Cloudflare, connexion refusée) : la loi est lisible, pas le site.
+    "leginfo.legislature.ca.gov",   # Californie
+    "law.lis.virginia.gov",         # Virginie
+    "statutes.capitol.texas.gov",   # Texas
+    "app.leg.wa.gov",               # Washington
+    "flsenate.gov",                 # Floride
+    "revisor.mn.gov",               # Minnesota
+    "legis.iowa.gov",               # Iowa
+    "azleg.gov",                    # Arizona
+    "revisor.mo.gov",               # Missouri
+    "mgaleg.maryland.gov",          # Maryland
+    "scstatehouse.gov",             # Caroline du Sud
+    "delcode.delaware.gov",         # Delaware
+    "legislature.vermont.gov",      # Vermont
+    "code.dccouncil.gov",           # District de Columbia
+    "legislature.maine.gov",        # Maine
+    "ksrevisor.gov",                # Kansas
+    "mca.legmt.gov",                # Montana
+    "cga.ct.gov",                   # Connecticut
+    "le.utah.gov",                  # Utah
+    "sdlegislature.gov",            # Dakota du Sud
+    "code.wvlegislature.gov",       # Virginie-Occidentale
+    "ilga.gov",                     # Illinois        — bloqué
+    "legis.ga.gov",                 # Géorgie         — bloqué
+    "codes.ohio.gov",               # Ohio            — bloqué
+    "palegis.us",                   # Pennsylvanie    — bloqué
+    "njleg.state.nj.us",            # New Jersey      — bloqué
+    "ncleg.gov",                    # Caroline du Nord — bloqué
+    "leg.colorado.gov",             # Colorado        — bloqué
+    "malegislature.gov",            # Massachusetts   — bloqué
+    "oregonlegislature.gov",        # Oregon          — bloqué
+    "legislature.mi.gov",           # Michigan        — bloqué
+    "iga.in.gov",                   # Indiana         — bloqué
+    "docs.legis.wisconsin.gov",     # Wisconsin       — bloqué
+    "oscn.net",                     # Oklahoma        — bloqué
+    "legis.la.gov",                 # Louisiane       — bloqué
+    "apps.legislature.ky.gov",      # Kentucky        — bloqué
+    "nebraskalegislature.gov",      # Nebraska        — bloqué
+    "leg.state.nv.us",              # Nevada          — bloqué
+    "nmonesource.com",              # Nouveau-Mexique — bloqué
+    "wyoleg.gov",                   # Wyoming         — bloqué
+    "gencourt.state.nh.us",         # New Hampshire   — bloqué
+    "legislature.idaho.gov",        # Idaho           — bloqué
+    "ndlegis.gov",                  # Dakota du Nord  — bloqué
+    "capitol.hawaii.gov",           # Hawaï           — bloqué
+    "akleg.gov",                    # Alaska          — bloqué
+    "rilegislature.gov",            # Rhode Island    — bloqué
     "law.cornell.edu",         # Cornell LII — reproduction du NYCRR
     "gesetze-im-internet.de",  # Allemagne (fédéral)
     "wetten.overheid.nl",      # Pays-Bas
