@@ -38,17 +38,19 @@
 // Et deux formes vues en Europe mais pas ailleurs aux États-Unis : le Maine n'impose que
 // d'ACCUSER RÉCEPTION sous cinq jours ouvrés, le Connecticut ne chiffre que le REFUS.
 //
-// ⚠️ ONZE JURIDICTIONS MANQUENT, et aucune pour une raison juridique :
+// 🔴 LA GÉORGIE A DEMANDÉ UN DÉTOUR, ET IL EST NOMMÉ DANS LA CITATION. L'État n'a aucune
+// source officielle libre de son code : l'Assemblée générale renvoie vers LexisNexis, qui le
+// publie sous contrat et protège l'accès par un CAPTCHA. Mais le procureur général REPRODUIT
+// le texte de § 50-18-71 en annexe de son guide officiel — ce n'est pas un commentaire qu'on
+// cite, c'est le texte, reproduit par l'autorité qui l'applique. La citation le dit.
+//
+// ⚠️ DIX JURIDICTIONS MANQUENT, et aucune pour une raison juridique :
 //   · Illinois (82 fiches) — ilga.gov ne répond pas, même depuis une sortie américaine.
 //     Le site semble hors service, pas fermé à nous.
-//   · Géorgie (75) — le code n'a pas de source officielle libre : l'Assemblée générale
-//     renvoie elle-même vers LexisNexis, qui le publie « on behalf of the Georgia General
-//     Assembly through a contractual arrangement ». L'accès public existe, mais il se
-//     protège par un CAPTCHA, et nous n'en résolvons pas.
 //   · Indiana (28), Tennessee (28), Kentucky (20), Nouveau-Mexique (11), Alabama (8),
 //     Arkansas (8), Hawaï (7), Mississippi (6), Alaska (4) — recueils rendus uniquement
 //     par JavaScript, ou code publié sous licence privée.
-// 277 fiches au total. Les hôtes officiels sont déclarés dans le registre du test.
+// 202 fiches au total. Les hôtes officiels sont déclarés dans le registre du test.
 //
 // ⚠️ LE GÉOBLOCAGE EST LA VRAIE CONTRAINTE, PAS L'OUTIL. La plupart de ces recueils refusent les
 // adresses non américaines. Les trente-huit juridictions ci-dessous ont été lues depuis une
@@ -65,6 +67,25 @@ export const US: ProcedureCountry = {
     en: "In the United States no federal permit covers a data centre: the town or county authorises it, under its own state's law. And every state has its own public-records law — from three business days in Missouri to thirty in Maryland, and no deadline at all in Texas.",
   },
   subdivisions: {
+    "Georgia": {
+      authority: {
+        fr: "la commune ou le comté qui zone le terrain",
+        en: "the town or county that zones the land",
+      },
+      windows: {},
+      deadlines: [],
+      documents: [
+        {
+          text: {
+            fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite, ou même orale, au titre de la loi d'accès aux documents de l'État. Le délai : trois jours ouvrés au plus. Si une partie seulement des documents est prête, l'administration doit livrer ceux-là dans le délai, et fournir dans ce même délai la description des autres et un calendrier.",
+            en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a request, written or even oral, under the state's public-records law. The deadline: three business days at most. Where only some records are ready, the agency must produce those within the period, and within that same period give a description of the rest and a timeline.",
+          },
+          cite: "O.C.G.A. § 50-18-71(b)(1)(A), reproduit intégralement en annexe du guide officiel du procureur général de Géorgie",
+          url: "https://law.georgia.gov/document/document/citizens-guide-open-government/download",
+          verified: "2026-10-24",
+        },
+      ],
+    },
     "Louisiana": {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",

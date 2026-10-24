@@ -396,7 +396,13 @@ HOTES_DE_TEXTE = (
     "sdlegislature.gov",            # Dakota du Sud
     "code.wvlegislature.gov",       # Virginie-Occidentale
     "ilga.gov",                     # Illinois        — injoignable
-    "legis.ga.gov",                 # Géorgie         — bloqué
+    "legis.ga.gov",                 # Géorgie (l'Assemblée ne publie pas le code)
+    # EXCEPTION MOTIVÉE — la Géorgie n'a AUCUNE source officielle libre de son code :
+    # l'Assemblée générale renvoie vers LexisNexis, qui le publie sous contrat et protège
+    # l'accès par un CAPTCHA. Le procureur général, lui, REPRODUIT le texte de la loi en
+    # annexe de son guide officiel. Ce n'est pas un commentaire qu'on cite : c'est le texte,
+    # reproduit par l'autorité qui l'applique, et la citation nomme ce détour.
+    "law.georgia.gov",              # Géorgie — texte reproduit par le procureur général
     "codes.ohio.gov",               # Ohio
     "legis.state.pa.us",            # Pennsylvanie
     "palegis.us",                   # Pennsylvanie (nouveau domaine)
