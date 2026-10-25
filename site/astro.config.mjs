@@ -26,7 +26,11 @@ export default defineConfig({
   devToolbar: { enabled: false },
   integrations: [sitemap({
     serialize(item) {
-      const m = item.url.match(/\/dc\/([^/]+)\/?$/);
+      // Le portrait lit le MÊME artefact que la fiche : il bouge quand elle bouge, donc il
+      // porte la même date. Sans ce `(?:portrait\/)?`, les 6 566 portraits partaient sans
+      // lastmod — soit la moitié du site, et justement la moitié toute neuve, celle qu'on a
+      // le plus besoin de faire explorer.
+      const m = item.url.match(/\/dc\/([^/]+)\/(?:portrait\/)?$/) ?? item.url.match(/\/dc\/([^/]+)$/);
       const when = m && lastmodById[m[1]];
       if (when) item.lastmod = new Date(`${when}T00:00:00Z`).toISOString();
       return item;

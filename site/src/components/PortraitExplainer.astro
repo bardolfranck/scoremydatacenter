@@ -15,6 +15,11 @@
 import Base from "../layouts/Base.astro";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
+// Deux intentions, deux icônes. L'œil qui PARCOURT (le riverain, l'élu : il veut voir ce
+// qui le concerne) et la loupe qui INSPECTE (l'analyste : il veut le détail et sa source).
+// Le choix n'est pas décoratif — il dit lequel des deux va plus loin dans la matière.
+import eyeIcon from "@phosphor-icons/core/assets/regular/eye.svg?raw";
+import magnifierIcon from "@phosphor-icons/core/assets/regular/magnifying-glass-plus.svg?raw";
 
 interface Props {
   lang: "fr" | "en";
@@ -42,16 +47,16 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as Props;
     <h2>{t.twoTitle}</h2>
     <div class="px-two">
       <section class="px-col">
-        <h3>{t.portraitFor}</h3>
+        <h3><span class="px-ico" aria-hidden="true" set:html={eyeIcon} />{t.portraitFor}</h3>
         <p>{t.portraitWho}</p>
         <ul>{t.portraitBullets.map((b: string) => <li set:html={b} />)}</ul>
-        <p class="px-demo"><a href={t.demoPortraitHref}>{t.demoPortraitLabel}</a></p>
+        <p class="px-demo"><a href={t.demoPortraitHref} target="_blank" rel="noopener">{t.demoPortraitLabel} ↗</a></p>
       </section>
       <section class="px-col px-col-alt">
-        <h3>{t.sheetFor}</h3>
+        <h3><span class="px-ico" aria-hidden="true" set:html={magnifierIcon} />{t.sheetFor}</h3>
         <p>{t.sheetWho}</p>
         <ul>{t.sheetBullets.map((b: string) => <li set:html={b} />)}</ul>
-        <p class="px-demo"><a href={t.demoSheetHref}>{t.demoSheetLabel}</a></p>
+        <p class="px-demo"><a href={t.demoSheetHref} target="_blank" rel="noopener">{t.demoSheetLabel} ↗</a></p>
       </section>
     </div>
     <p class="px-note">{t.notSimplified}</p>
@@ -84,7 +89,7 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as Props;
     <p class="px-note">{t.examplesIntro}</p>
     <ul class="px-examples">
       {t.examples.map((e: any) => (
-        <li><a href={e.href}>{e.name}</a> — {e.why}</li>
+        <li><a href={e.href} target="_blank" rel="noopener">{e.name} ↗</a> — {e.why}</li>
       ))}
     </ul>
   </article>
@@ -97,7 +102,9 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as Props;
   .px h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
            color: var(--muted, #5a6b7d); margin: 2rem 0 .6rem; padding-bottom: .25rem;
            border-bottom: 1px solid var(--line, #e3e9ee); }
-  .px h3 { font-size: 1rem; margin: 0 0 .3rem; }
+  .px h3 { font-size: 1rem; margin: 0 0 .3rem; display: flex; align-items: center; gap: .4rem; }
+  .px-ico { display: inline-flex; color: var(--blue, #0f5fb8); }
+  .px-ico :global(svg) { width: 1.15rem; height: 1.15rem; }
   .px-two { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
   .px-col { border: 1px solid var(--line, #dde3e9); border-radius: .5rem; padding: .8rem .9rem;
             background: var(--tint, #f3f8ff); }
