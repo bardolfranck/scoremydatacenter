@@ -53,6 +53,12 @@ const ANCHORS: Record<string, [number, number]> = {
   GB: [-2.2, 53.0], IE: [-8.3, 53.3], IT: [12.5, 42.9], LU: [6.6, 49.5],
   NL: [5.4, 52.8], NO: [8.7, 61.0], PL: [19.3, 52.1], PT: [-8.4, 39.4],
   SE: [15.5, 60.0],
+  // 🔴 LES ÉTATS-UNIS MANQUAIENT, et avec eux le plus gros corpus du site : 1 718 sites,
+  // plus de la moitié de ce que nous notons. Le filtre `ANCHORS[iso]` plus bas les écartait
+  // SANS RIEN DIRE — la note C des États-Unis existait dans le tableau juste en dessous,
+  // mais sa carte prétendait que le pays n'était pas noté. Israël manquait pour la même
+  // raison. Un pays du corpus sans ancre fait désormais échouer le build (voir plus bas).
+  US: [-98.5, 39.5], IL: [34.9, 31.5],
 };
 
 // Crowded coastline fix: these markers hang LEFT of their anchor (into the
@@ -64,19 +70,34 @@ const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : S
 
 // Markers are server-computed (grade, score, dots) — the client script only
 // places them; no grade logic ever runs front-side.
+// ⚠️ PLUS DE DISPARITION SILENCIEUSE. Un pays présent dans l'indice mais absent d'ANCHORS
+// sortait de la carte sans un mot : c'est exactement la famille de défauts où la donnée
+// existe et où seul l'affichage la perd. Le build s'arrête maintenant, en nommant le pays.
+const sansAncre = Object.keys(INDICES.countries as Record<string, any>).filter((iso) => !ANCHORS[iso]);
+if (sansAncre.length) {
+  throw new Error(
+    `IndicesMap : ${sansAncre.join(", ")} figure(nt) dans l'indice pays mais n'a (n'ont) pas ` +
+    "d'ancre cartographique. Ajoutez-la dans ANCHORS — un pays noté qui n'apparaît pas sur " +
+    "sa propre carte laisse croire qu'il n'est pas noté.",
+  );
+}
+
 const markers = Object.entries(INDICES.countries as Record<string, any>)
-  .filter(([iso]) => ANCHORS[iso])
   .map(([iso, e]) => ({
     iso,
     lon: ANCHORS[iso][0],
     lat: ANCHORS[iso][1],
     side: HANG_LEFT.has(iso) ? "right" : "left",
-    eligible: !!e.eligible,
-    grade: e.eligible ? e.grade : null,
+    // `eligible` ne suffit PAS : Israël est éligible au calcul mais sa note est retenue
+    // (« en_attente »), et son score est absent. Le marqueur affichait donc la chaîne
+    // « en_attente » dans une pastille sans couleur, et le mot « undefined » comme score.
+    // Un pays dont la lettre est retenue porte la puce neutre, comme partout ailleurs.
+    eligible: !!e.eligible && /^[A-E]$/.test(e.grade ?? ""),
+    grade: /^[A-E]$/.test(e.grade ?? "") ? e.grade : null,
     reserved: e.eligible && e.reserved_from === "A",
-    score: e.eligible ? fmtScore(e.score) : null,
-    dots: e.eligible ? DOTS[e.documentation.band] : null,
-    title: e.eligible
+    score: typeof e.score === "number" ? fmtScore(e.score) : null,
+    dots: e.documentation?.band ? DOTS[e.documentation.band] : null,
+    title: /^[A-E]$/.test(e.grade ?? "")
       ? `${iso} — ${e.grade}${e.reserved_from === "A" ? ` · ${T.reserved}` : ""} · ${fmtScore(e.score)} · n=${e.n} · doc ${e.documentation.band}`
       : `${iso} — ${T.veille} (n=${e.n})`,
   }));
