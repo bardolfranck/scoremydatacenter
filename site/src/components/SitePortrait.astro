@@ -147,6 +147,10 @@ const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null
 const photoCaveat = L(dc.context_map?.caveat) ?? null;
 
 const ficheHref = lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
+// Le pied de page affichait le seul chemin (« /fr/dc/ch-cdrom-le-noirmont/ »). Un portrait
+// est fait pour être IMPRIMÉ et posé sur une table : sur papier, un chemin sans domaine ne
+// mène nulle part. L'adresse s'écrit donc en entier, celle qu'on peut recopier.
+const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
 const url = `https://scoremydatacenter.org${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
 const titre = `${dc.name} — ${t.kicker}`;
 const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
@@ -389,7 +393,7 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 
     <footer class="pt-foot">
       <p>{t.howToRead}</p>
-      <p class="pt-src">{t.sourcesOn} <a href={ficheHref}>{ficheHref}</a></p>
+      <p class="pt-src">{t.sourcesOn} <a href={ficheHref}>{ficheUrl}</a></p>
     </footer>
   </article>
 </Base>
