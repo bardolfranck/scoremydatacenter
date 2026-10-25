@@ -45,11 +45,13 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as Props;
         <h3>{t.portraitFor}</h3>
         <p>{t.portraitWho}</p>
         <ul>{t.portraitBullets.map((b: string) => <li set:html={b} />)}</ul>
+        <p class="px-demo"><a href={t.demoPortraitHref}>{t.demoPortraitLabel}</a></p>
       </section>
       <section class="px-col px-col-alt">
         <h3>{t.sheetFor}</h3>
         <p>{t.sheetWho}</p>
         <ul>{t.sheetBullets.map((b: string) => <li set:html={b} />)}</ul>
+        <p class="px-demo"><a href={t.demoSheetHref}>{t.demoSheetLabel}</a></p>
       </section>
     </div>
     <p class="px-note">{t.notSimplified}</p>
@@ -107,6 +109,11 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as Props;
   .px :global(a:not(.px-btn)) { color: var(--blue, #0d568f); font-weight: 650;
     text-decoration: underline; text-underline-offset: .15em; }
   .px :global(a:not(.px-btn):hover) { text-decoration-thickness: 2px; }
+  /* L'exemple est le MÊME site des deux côtés : c'est ce qui démontre que les deux pages
+     ne sont pas deux niveaux de détail, mais deux lectures. Deux sites différents auraient
+     illustré ; un seul démontre. */
+  .px-demo { margin: .7rem 0 0; padding-top: .5rem; border-top: 1px solid rgba(90,107,125,.22);
+    font-size: .88rem; }
   .px-note { font-size: .85rem; color: var(--muted, #78879a); }
   .px-adds { display: grid; gap: .5rem; }
   .px-add { display: grid; grid-template-columns: 1.4rem 1fr; gap: .6rem;

@@ -340,7 +340,10 @@ h1 { max-width: 16ch; font-size: clamp(2.6rem, 4.6vw, 5rem); line-height: 1.0; l
 .map-popup-pillar { display: grid; justify-items: center; gap: 4px; }
 .map-popup-pillar > span { color: var(--muted); font-size: 0.6rem; font-weight: 700; text-transform: uppercase; text-align: center; }
 .map-popup-quote { color: var(--ink-soft); font-size: 0.82rem; font-weight: 700; line-height: 1.35; }
-.map-popup-link { color: var(--accent); font-size: 0.84rem; font-weight: 750; }
+.map-popup-link { display: block; margin-top: 4px; color: var(--accent); font-size: 0.84rem; font-weight: 750; }
+/* Second lien de la bulle : la fiche technique, offerte sous le portrait. Plus discret,
+   parce qu'il répond à une question qui vient après — « et les indicateurs ? ». */
+.map-popup-link-alt { font-weight: 400; opacity: .85; }
 .map-popup-link:hover { text-decoration: underline; }
 /* Watchlist « En veille » — distinct neutral marker, never a grade chip (A-19) */
 /* Watchlist "announced" pins are now a NATIVE symbol layer (GPU-locked, no zoom-swim,
@@ -884,13 +887,18 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rank-table th[data-tri].is-tri.is-asc::after { content: " \25B2"; }
 .rank-project strong { display: block; font-size: 0.98rem; }
 .rank-project strong a:hover { color: var(--accent); text-decoration: underline; }
-.rank-project span { color: var(--muted); font-size: 0.82rem; }
+/* QUATRE LIGNES, TOUJOURS LES MÊMES. Le nom, le lieu et l'exploitant, le portrait, la
+   carte. Le `span` était inline : selon la longueur du nom d'exploitant, « Site portrait »
+   remontait sur la ligne du lieu ou descendait seul, et deux lignes voisines n'avaient pas
+   la même forme. Une ligne de tableau qui change de silhouette d'une ligne à l'autre se
+   parcourt mal — l'œil ne peut plus viser. */
+.rank-project span { display: block; color: var(--muted); font-size: 0.82rem; }
 .rank-grade { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 .rank-note { margin-top: 14px; color: var(--muted); font-size: 0.84rem; }
 /* Ranking ↔ map coupling */
 .rank-map-cta { display: inline-flex; align-items: center; margin-top: 8px; color: var(--accent); font-weight: 750; font-size: 0.95rem; }
 .rank-map-cta:hover { text-decoration: underline; }
-.rank-map-link { display: inline-block; margin-top: 4px; color: var(--accent); font-size: 0.8rem; font-weight: 650; }
+.rank-map-link { display: block; margin-top: 4px; color: var(--accent); font-size: 0.8rem; font-weight: 650; }
 .rank-map-link:hover { text-decoration: underline; }
 
 /* Understanding data centers — 7-block pedagogy grid */
@@ -1239,8 +1247,8 @@ sup a { color: var(--accent); font-weight: 750; }
    sens. Un lecteur qui tombe sur la mauvaise des deux doit voir l'autre sans la chercher. */
 /* Second lien de ligne au classement : même discrétion que « voir sur la carte ». Il
    ouvre l'autre lecture du même site, il ne concurrence pas le nom. */
-.rank-portrait-link { font-size: .78rem; color: var(--blue, #0d568f); text-decoration: none;
-  margin-right: .6rem; white-space: nowrap; }
+.rank-portrait-link { display: block; margin-top: 4px; font-size: .8rem; font-weight: 650;
+  color: var(--accent); text-decoration: none; white-space: nowrap; }
 .rank-portrait-link:hover { text-decoration: underline; }
 .fiche-portrait-link { display: block; border: 1px solid var(--blue, #0f5fb8); border-radius: 8px;
   padding: 10px 12px; margin-bottom: 14px; background: var(--tint, #f3f8ff);

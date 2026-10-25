@@ -227,6 +227,12 @@ deploy:
 	@if [ -z "$(SANS_TESTS)" ]; then $(MAKE) test; \
 	  else echo "⚠ deploy: tests SAUTÉS (SANS_TESTS=1) — mise en ligne sans filet"; fi
 	$(MAKE) build
+# 🔴 DERNIÈRE BARRIÈRE. Le 2026-10-25 un `astro build` lancé seul (pour gagner 150 s de
+# rebuild) a produit un dist contenant les 3 283 fiches JSON COMPLÈTES : le blanchiment
+# anti-pillage ne tourne que dans `make build`. Seule la limite de fichiers de Cloudflare
+# a empêché la publication, par hasard. Aucun test ne peut voir ça — ils tournent avant le
+# build. La vérification porte donc sur ce qui PART, juste avant que ça parte.
+	uv run python scripts/check_dist_pruned.py
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 

@@ -33,7 +33,11 @@ import { EN_NAV } from "../config/nav";
       mapPath: "/map",
       // La bulle mène au PORTRAIT, pas à la fiche : un pin est un lieu, et un
       // lieu est là où quelqu'un habite. La fiche reste à un clic depuis le portrait.
-      viewFiche: "View the portrait →",
+      // DOUBLE ENTRÉE. Le portrait d'abord — un pin est un lieu — mais la fiche reste
+      // offerte : elle est indexée par Google depuis des mois, et retirer son seul lien
+      // depuis la carte reviendrait à démailler ce qui marche déjà.
+      viewPortrait: "View the portrait →",
+      viewFiche: "View the technical sheet →",
       powerUnknown: "power not disclosed",
       search: {
         label: "Search a town or a project on the map",

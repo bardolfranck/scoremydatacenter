@@ -35,7 +35,11 @@ const nav = FR_NAV;
       mapPath: "/fr/carte",
       // La bulle mène au PORTRAIT, pas à la fiche : un pin est un lieu, et un
       // lieu est là où quelqu'un habite. La fiche reste à un clic depuis le portrait.
-      viewFiche: "Voir le portrait →",
+      // DOUBLE ENTRÉE. Le portrait d'abord — un pin est un lieu — mais la fiche reste
+      // offerte : elle est indexée par Google depuis des mois, et retirer son seul lien
+      // depuis la carte reviendrait à démailler ce qui marche déjà.
+      viewPortrait: "Voir le portrait →",
+      viewFiche: "Voir la fiche technique →",
       powerUnknown: "puissance non communiquée",
       // La carte n'avait aucune recherche : le champ de l'en-tête EMMÈNE le lecteur vers le
       // classement, ce qui est à l'envers pour une question géographique.
