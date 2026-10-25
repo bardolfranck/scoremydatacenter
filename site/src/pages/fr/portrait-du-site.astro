@@ -1,0 +1,78 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// FR « Le portrait du site » : page mince, gabarit dans PortraitExplainer.astro.
+import PortraitExplainer from "../../components/PortraitExplainer.astro";
+import { FR_NAV } from "../../config/nav";
+
+const t = {
+  title: "Le portrait du site — ScoreMyDataCenter",
+  metaDescription: "Chaque data center a deux pages chez nous : la fiche technique et le portrait du site. Mêmes faits, deux lecteurs — l'analyste et le riverain.",
+  tagline: "Observatoire indépendant",
+  h1: "Le portrait du site",
+  lead: "Chaque site noté a <strong>deux pages</strong> chez nous. Les mêmes faits, les mêmes sources, pas une donnée de plus — mais deux lecteurs qui n'ont ni le même temps, ni la même question. Confondre les deux, c'est en perdre un.",
+
+  twoTitle: "Deux pages, deux lecteurs",
+  portraitFor: "Le portrait du site",
+  portraitWho: "Pour qui habite à côté, siège au conseil municipal, ou couvre le sujet.",
+  portraitBullets: [
+    "Ce qui <strong>pèse le plus</strong> sur la note, en trois points",
+    "Où en est la procédure, et <strong>jusqu'à quand</strong> on peut encore agir",
+    "Ce qu'il reste à demander, <strong>et à qui</strong>",
+    "Fait pour être imprimé et posé sur une table",
+  ],
+  sheetFor: "La fiche technique",
+  sheetWho: "Pour qui lit des indicateurs : exploitant, analyste, assureur, bureau d'études.",
+  sheetBullets: [
+    "Les <strong>vingt-six indicateurs</strong>, un par un",
+    "Chaque valeur avec <strong>sa source et sa date</strong>",
+    "L'état de chaque mesure : mesurée, annoncée, absente du dossier",
+    "Les sites comparables, notés sur la même grille",
+  ],
+  notSimplified: "Le portrait n'est pas une version simplifiée de la fiche. Il ne retire rien : il range autrement, et il va jusqu'à la question que la fiche ne pose pas — « et maintenant, qu'est-ce que je fais ? ».",
+
+  addsTitle: "Ce que le portrait ajoute",
+  adds: [
+    {
+      icon: "measure",
+      title: "Les points qui décideront",
+      body: "Trois, pas vingt-six. Choisis par le calcul, pas par nous : le facteur que le moteur désigne comme dominant d'abord, puis ce que le <strong>territoire impose</strong> avant ce que le <strong>porteur annonce</strong>. La distinction compte : l'un ne se négocie pas, l'autre si.",
+    },
+    {
+      icon: "transparency",
+      title: "Où en est la procédure, et jusqu'à quand",
+      body: "Le délai de recours, la fenêtre d'observation, la voie de réclamation une fois le site en service — lus <strong>dans le texte de loi du pays ou de l'État concerné</strong>, jamais dans un commentaire. Quand nous ne l'avons pas lu, nous le disons et nous indiquons quoi demander à sa place.",
+    },
+    {
+      icon: "local",
+      title: "Ce qu'il reste à demander",
+      body: "Chaque question sort d'un indicateur que le dossier ne renseigne pas, et elle se conjugue au temps de la procédure : « à demander avant le dépôt », « à verser à l'enquête », « à faire inscrire dans l'autorisation », « à réclamer au titre des prescriptions ». Une question sans son verbe est un vœu.",
+    },
+  ],
+
+  refuseTitle: "Ce qu'il ne fait pas",
+  refuse: [
+    "<strong>Aucune affirmation sur la santé.</strong> Nous ne mesurons pas d'effet sanitaire et nous ne prétendons pas le faire. Nous publions ce qui figure au dossier, et ce qui n'y figure pas.",
+    "<strong>Aucune phrase écrite à la main.</strong> Tout ce que vous lisez sur un portrait est dérivé des mêmes données que la fiche. Une phrase rédigée au cas par cas serait une affirmation que personne ne pourrait vérifier — et elle serait surlignée, donc crue.",
+    "<strong>Aucune lettre que la fiche retient.</strong> Quand la note d'un site ou d'un pilier n'est pas publiable, elle n'apparaît pas davantage ici. Les deux pages disent la même chose, ou elles ne disent rien.",
+  ],
+
+  madeTitle: "Comment il est fabriqué",
+  madeBody: "Le portrait et la fiche lisent <strong>le même artefact</strong>, produit par le même calcul. Rien n'est saisi deux fois, donc rien ne peut diverger. Les questions viennent d'une table « indicateur × état × stade » ; la procédure d'un dossier où chaque affirmation porte son article de loi, un lien vers le texte et la date à laquelle nous l'avons lu. Quand une juridiction n'est pas lue, le portrait ne l'invente pas : il dit ce qui reste vrai sans elle. <a href=\"/fr/methodologie/\">La méthode</a> et <a href=\"/fr/la-note-pas-a-pas/\">la note pas à pas</a> détaillent le calcul.",
+
+  findTitle: "Trouver le portrait d'un site",
+  findBody: "Il n'y a pas de liste des portraits : il y en a un par site noté, et on l'atteint par le site. Partez du lieu, ou de la note.",
+  mapHref: "/fr/carte/",
+  mapLabel: "Chercher sur la carte →",
+  rankHref: "/fr/classement/",
+  rankLabel: "Parcourir le classement →",
+  examplesIntro: "Trois exemples, trois situations différentes :",
+  examples: [
+    { href: "/fr/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju", why: "projet en instruction en Seine-et-Marne : la fenêtre d'observation est ouverte, et la procédure française est lue en entier." },
+    { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "projet annoncé aux États-Unis : audience obligatoire de l'agence de développement, examen SEQRA, recours à quatre mois." },
+    { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "un État dont nous n'avons pas encore lu la loi : le portrait dit ce qui reste vrai, et quoi demander à la place." },
+  ],
+};
+---
+<PortraitExplainer lang="fr" t={t} nav={FR_NAV} altHref="/site-portrait/" altLabel="EN" />

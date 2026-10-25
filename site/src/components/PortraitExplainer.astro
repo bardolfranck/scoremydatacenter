@@ -1,0 +1,124 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// « Le portrait du site » — la page qui porte l'entrée de menu.
+//
+// Elle est sous EXPLORER et non sous Comprendre, et la raison tient en une phrase : elle se
+// termine en envoyant chercher son site. Une page qui explique une page serait de la
+// pédagogie ; une page qui finit par « trouvez le vôtre » est un outil d'exploration, au
+// même titre que la carte et le classement.
+//
+// Gabarit partagé FR/EN : tout le texte vit dans `t`, côté page mince, pour que la parité
+// des deux langues reste vérifiable d'un coup d'œil (et par test).
+import Base from "../layouts/Base.astro";
+import type { NavNode } from "../config/nav";
+import PillarIcon from "./PillarIcon.astro";
+
+interface Props {
+  lang: "fr" | "en";
+  t: any;
+  nav: NavNode[];
+  altHref: string;
+  altLabel: string;
+}
+const { lang, t, nav, altHref, altLabel } = Astro.props as Props;
+---
+
+<Base
+  lang={lang}
+  title={t.title}
+  description={t.metaDescription}
+  tagline={t.tagline}
+  altHref={altHref}
+  altLabel={altLabel}
+  nav={nav}
+>
+  <article class="px">
+    <h1>{t.h1}</h1>
+    <p class="px-lead" set:html={t.lead} />
+
+    <h2>{t.twoTitle}</h2>
+    <div class="px-two">
+      <section class="px-col">
+        <h3>{t.portraitFor}</h3>
+        <p>{t.portraitWho}</p>
+        <ul>{t.portraitBullets.map((b: string) => <li set:html={b} />)}</ul>
+      </section>
+      <section class="px-col px-col-alt">
+        <h3>{t.sheetFor}</h3>
+        <p>{t.sheetWho}</p>
+        <ul>{t.sheetBullets.map((b: string) => <li set:html={b} />)}</ul>
+      </section>
+    </div>
+    <p class="px-note">{t.notSimplified}</p>
+
+    <h2>{t.addsTitle}</h2>
+    <div class="px-adds">
+      {t.adds.map((a: any) => (
+        <div class="px-add">
+          <PillarIcon name={a.icon} size={20} />
+          <div>
+            <p class="px-add-title">{a.title}</p>
+            <p set:html={a.body} />
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <h2>{t.refuseTitle}</h2>
+    <ul class="px-refuse">{t.refuse.map((r: string) => <li set:html={r} />)}</ul>
+
+    <h2>{t.madeTitle}</h2>
+    <p set:html={t.madeBody} />
+
+    <h2>{t.findTitle}</h2>
+    <p>{t.findBody}</p>
+    <p class="px-cta">
+      <a class="px-btn" href={t.mapHref}>{t.mapLabel}</a>
+      <a class="px-btn" href={t.rankHref}>{t.rankLabel}</a>
+    </p>
+    <p class="px-note">{t.examplesIntro}</p>
+    <ul class="px-examples">
+      {t.examples.map((e: any) => (
+        <li><a href={e.href}>{e.name}</a> — {e.why}</li>
+      ))}
+    </ul>
+  </article>
+</Base>
+
+<style>
+  .px { max-width: 46rem; margin: 0 auto; padding: 1.8rem 1rem 3rem; }
+  .px h1 { font-size: 2rem; letter-spacing: -.02em; margin: 0 0 .5rem; }
+  .px-lead { font-size: 1.1rem; color: var(--ink2, #3c4a59); margin: 0 0 1.4rem; }
+  .px h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
+           color: var(--muted, #5a6b7d); margin: 2rem 0 .6rem; padding-bottom: .25rem;
+           border-bottom: 1px solid var(--line, #e3e9ee); }
+  .px h3 { font-size: 1rem; margin: 0 0 .3rem; }
+  .px-two { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+  .px-col { border: 1px solid var(--line, #dde3e9); border-radius: .5rem; padding: .8rem .9rem;
+            background: var(--tint, #f3f8ff); }
+  .px-col-alt { background: #fbfcfd; }
+  .px-col ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+  .px-col li { margin-bottom: .25rem; }
+  /* Un lien qui ne se voit pas n'est pas un lien. La page sort du gabarit des pages de
+     contenu, donc elle ne reçoit pas leur style d'ancre : il faut le poser ici. */
+  .px :global(a:not(.px-btn)) { color: var(--blue, #0d568f); font-weight: 650;
+    text-decoration: underline; text-underline-offset: .15em; }
+  .px :global(a:not(.px-btn):hover) { text-decoration-thickness: 2px; }
+  .px-note { font-size: .85rem; color: var(--muted, #78879a); }
+  .px-adds { display: grid; gap: .5rem; }
+  .px-add { display: grid; grid-template-columns: 1.4rem 1fr; gap: .6rem;
+            border: 1px solid var(--line, #dde3e9); border-radius: .5rem; padding: .6rem .8rem; }
+  .px-add-title { margin: 0 0 .15rem; font-weight: 700; }
+  .px-add p { margin: 0; }
+  .px-refuse { padding-left: 1.1rem; }
+  .px-refuse li { margin-bottom: .35rem; }
+  .px-cta { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .px-btn { display: inline-block; padding: .45rem .9rem; border-radius: .4rem;
+            background: var(--blue, #0f5fb8); color: #fff; text-decoration: none; font-weight: 700; }
+  .px-examples { padding-left: 1.1rem; }
+  .px-examples li { margin-bottom: .25rem; }
+  @media (max-width: 40rem) { .px-two { grid-template-columns: 1fr; } }
+</style>

@@ -28,6 +28,10 @@ export const FR_NAV: NavNode[] = [
   { label: "Explorer", children: [
     { href: "/fr/carte/", label: "Carte" },
     { href: "/fr/classement/", label: "Classement" },
+    // Le portrait est un OUTIL D'EXPLORATION, pas de la pédagogie : la page explique les
+    // deux lectures d'un site et finit par envoyer chercher le sien. Sous « Comprendre »
+    // elle aurait expliqué une page ; sous « Explorer » elle en ouvre 6 566.
+    { href: "/fr/portrait-du-site/", label: "Portrait du site" },
     { href: "/fr/indices/", label: "Indices pays" },
     { href: "/fr/chiffres/", label: "Les chiffres" },
   ]},
@@ -86,6 +90,7 @@ export const EN_NAV: NavNode[] = [
   { label: "Explore", children: [
     { href: "/map/", label: "Map" },
     { href: "/ranking/", label: "Ranking" },
+    { href: "/site-portrait/", label: "Site portrait" },
     { href: "/indices/", label: "Country index" },
     { href: "/figures/", label: "Figures" },
   ]},
