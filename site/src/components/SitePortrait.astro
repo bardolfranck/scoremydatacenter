@@ -141,6 +141,10 @@ const stadeIdx = STADES.indexOf(dc.project_status);
 // l'emprise, le cours d'eau et les anneaux de distance — ce qu'un tableau ne montre pas.
 const photo = dc.context_map?.urls?.[lang] ?? dc.satellite_image?.url ?? null;
 const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null;
+// La mise en garde voyage avec l'image : les anneaux sont des tampons de distance, pas un
+// zonage réglementaire. Elle n'était pas affichée — une image annotée sans sa mise en garde
+// se lit comme une carte officielle.
+const photoCaveat = L(dc.context_map?.caveat) ?? null;
 
 const ficheHref = lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
 const url = `https://scoremydatacenter.org${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
@@ -197,8 +201,21 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 
       {photo && (
         <figure class="pt-photo">
-          <img src={photo} alt={t.photoAlt.replace("{name}", dc.name)} loading="lazy" />
-          {photoCredit && <figcaption>{photoCredit}</figcaption>}
+          {/* LA VUE EST TROP PETITE POUR ÊTRE LUE, et c'est inhérent : l'image fait
+              1200 px de large, le bandeau lui en donne 240. Elle porte pourtant ce qu'aucun
+              tableau ne montre — l'emprise, le cours d'eau, les premières maisons. La loupe
+              rend sa résolution native au survol ; le clic ouvre l'image entière, pour le
+              tactile et pour qui veut l'examiner vraiment. */}
+          <a class="pt-photo-zone" href={photo} target="_blank" rel="noopener"
+             data-zoom={photo} aria-label={t.photoOpen}>
+            <img src={photo} alt={t.photoAlt.replace("{name}", dc.name)} loading="lazy" />
+            <span class="pt-lens" aria-hidden="true"></span>
+            <span class="pt-photo-hint" aria-hidden="true">{t.photoHint}</span>
+          </a>
+          <figcaption>
+            {photoCaveat && <span class="pt-photo-caveat">{photoCaveat}</span>}
+            {photoCredit}
+          </figcaption>
         </figure>
       )}
     </section>
@@ -378,6 +395,43 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 </Base>
 
 <script is:inline define:vars={{ url }}>
+  // LOUPE SUR LA VUE AÉRIENNE. L'image est servie à 1 200 px et affichée à ~240 : la loupe
+  // la rend à sa résolution native sous le curseur. Le facteur se CALCULE à partir des
+  // dimensions réelles — le figer aurait menti le jour où une image sort dans un autre
+  // format. Sans souris (tactile, clavier), le lien ouvre l'image entière : la loupe est un
+  // confort, jamais le seul accès.
+  document.querySelectorAll("[data-zoom]").forEach((zone) => {
+    const img = zone.querySelector("img");
+    const lens = zone.querySelector(".pt-lens");
+    if (!img || !lens) return;
+    lens.style.backgroundImage = `url("${zone.dataset.zoom}")`;
+    const suivre = (e) => {
+      const r = zone.getBoundingClientRect();
+      const nw = img.naturalWidth, nh = img.naturalHeight;
+      if (!nw || !nh || nw <= r.width) return;    // rien à agrandir
+      // L'image est en `object-fit: cover` : elle est mise à l'échelle pour REMPLIR le
+      // cadre, et débordée puis centrée sur l'axe le plus long. Tabler sur « l'image
+      // occupe exactement le cadre » marche tant que les deux rapports coïncident — et
+      // ment dès qu'une vue sort dans un autre format. On refait donc le calcul du
+      // navigateur : échelle de couverture, décalage de centrage, puis position native.
+      const s = Math.max(r.width / nw, r.height / nh);
+      const ox = (r.width - nw * s) / 2, oy = (r.height - nh * s) / 2;
+      const x = e.clientX - r.left, y = e.clientY - r.top;
+      if (x < 0 || y < 0 || x > r.width || y > r.height) return;
+      const d = lens.offsetWidth || 176;
+      lens.style.backgroundSize = `${nw}px ${nh}px`;          // résolution native
+      lens.style.backgroundPosition =
+        `${-((x - ox) / s - d / 2)}px ${-((y - oy) / s - d / 2)}px`;
+      lens.style.left = `${x - d / 2}px`;
+      lens.style.top = `${y - d / 2}px`;
+      zone.setAttribute("data-on", "1");
+    };
+    zone.addEventListener("mousemove", suivre);
+    zone.addEventListener("pointermove", (e) => { if (e.pointerType !== "touch") suivre(e); });
+    zone.addEventListener("mouseleave", () => zone.removeAttribute("data-on"));
+    zone.addEventListener("pointerleave", () => zone.removeAttribute("data-on"));
+  });
+
   document.getElementById("pt-print")?.addEventListener("click", () => window.print());
   document.getElementById("pt-copy")?.addEventListener("click", async (e) => {
     try {
@@ -420,10 +474,20 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
   .pt-quote { margin: 0 0 .4rem; font-size: 1.05rem; font-weight: 700; }
   .pt-lead p { margin: 0; color: var(--ink2, #3c4a59); }
 
-  .pt-photo { margin: 0; border: 1px solid var(--line, #dde3e9); border-radius: .5rem; overflow: hidden; }
+  .pt-photo { margin: 0; border: 1px solid var(--line, #dde3e9); border-radius: .5rem;
+              overflow: hidden; display: flex; flex-direction: column; }
+  .pt-photo-zone { position: relative; display: block; flex: 1; overflow: hidden; cursor: zoom-in; }
   .pt-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .pt-lens { position: absolute; pointer-events: none; opacity: 0; width: 9rem; height: 9rem;
+    border-radius: 50%; border: 2px solid #fff; box-shadow: 0 .2rem .9rem rgba(16,32,44,.4);
+    background-repeat: no-repeat; transition: opacity .12s; z-index: 2; }
+  .pt-photo-zone[data-on] .pt-lens { opacity: 1; }
+  .pt-photo-hint { position: absolute; left: 0; right: 0; bottom: 0; padding: .2rem .35rem;
+    font-size: .6rem; color: #fff; background: rgba(16,32,44,.62); text-align: center; }
+  .pt-photo-zone[data-on] .pt-photo-hint { opacity: 0; }
   .pt-photo figcaption { font-size: .62rem; color: var(--muted, #78879a); padding: .2rem .35rem;
                          border-top: 1px solid var(--line, #eef2f6); }
+  .pt-photo-caveat { display: block; color: var(--ink2, #5a6b7d); margin-bottom: .1rem; }
 
   .pt h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .1em;
            color: var(--muted, #5a6b7d); margin: 1.4rem 0 .5rem; padding-bottom: .25rem;
@@ -500,7 +564,7 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
   /* Le portrait est fait pour être IMPRIMÉ et posé sur une table de conseil municipal :
      recto-verso assumé, navigation et actions retirées. */
   @media print {
-    .pt-actions, .pt-mark { display: none; }
+    .pt-actions, .pt-mark, .pt-lens, .pt-photo-hint { display: none; }
     .pt { max-width: none; padding: 0; }
   }
 </style>
