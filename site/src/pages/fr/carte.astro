@@ -33,7 +33,9 @@ const nav = FR_NAV;
       range: "plage",
       ficheBase: "/fr/dc",
       mapPath: "/fr/carte",
-      viewFiche: "Voir la fiche →",
+      // La bulle mène au PORTRAIT, pas à la fiche : un pin est un lieu, et un
+      // lieu est là où quelqu'un habite. La fiche reste à un clic depuis le portrait.
+      viewFiche: "Voir le portrait →",
       powerUnknown: "puissance non communiquée",
       // La carte n'avait aucune recherche : le champ de l'en-tête EMMÈNE le lecteur vers le
       // classement, ce qui est à l'envers pour une question géographique.

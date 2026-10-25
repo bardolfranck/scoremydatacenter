@@ -1237,6 +1237,11 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-share-icons { display: flex; flex-wrap: wrap; gap: 8px; }
 /* Passerelle fiche ↔ portrait : deux publics, deux pages, un lien explicite dans les deux
    sens. Un lecteur qui tombe sur la mauvaise des deux doit voir l'autre sans la chercher. */
+/* Second lien de ligne au classement : même discrétion que « voir sur la carte ». Il
+   ouvre l'autre lecture du même site, il ne concurrence pas le nom. */
+.rank-portrait-link { font-size: .78rem; color: var(--blue, #0d568f); text-decoration: none;
+  margin-right: .6rem; white-space: nowrap; }
+.rank-portrait-link:hover { text-decoration: underline; }
 .fiche-portrait-link { display: block; border: 1px solid var(--blue, #0f5fb8); border-radius: 8px;
   padding: 10px 12px; margin-bottom: 14px; background: var(--tint, #f3f8ff);
   font-weight: 700; color: var(--blue, #0d568f); text-decoration: none; }

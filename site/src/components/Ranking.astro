@@ -258,6 +258,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                 <td class="rank-project">
                   <strong><a href={`${ficheBase}/${dc.id}/`}>{dc.name}</a></strong>
                   <span>{dc.municipality} — {dc.operator}{dc.id.startsWith("zz-") ? ` · ${t.fixture}` : ""}</span>
+                  <a class="rank-portrait-link" href={`${ficheBase}/${dc.id}/portrait/`}>{t.viewPortrait} →</a>
                   <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
                 </td>
                 <td class="rank-country">{dc.country}</td>
