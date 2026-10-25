@@ -361,7 +361,7 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
             {questions.map((q) => (
               <li>
                 <strong>{L(q.amorce)} :</strong> {L(q.texte)}
-                <span class="pt-rule">{q.id} · {L(q.verbe)}</span>
+                <span class="pt-rule">{L(q.verbe)}</span>
               </li>
             ))}
           </ul>

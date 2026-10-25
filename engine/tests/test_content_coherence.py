@@ -723,3 +723,33 @@ def test_le_compte_du_portrait_decrit_ce_que_la_lettre_resume():
         "le dénominateur du portrait est revenu au seul bloc base : il décrira moins que ce "
         "que la lettre du pilier résume"
     )
+
+
+PORTRAIT = REPO_ROOT / "site" / "src" / "components" / "SitePortrait.astro"
+
+
+def test_le_portrait_n_expose_jamais_un_code_d_indicateur():
+    """NOTRE TAXONOMIE N'EST PAS DU CONTENU PUBLIC.
+
+    Le portrait affichait « F4 », « T1 », « W4 » à côté de chaque question, et une phrase
+    expliquait au lecteur que « chaque ligne vient d'un indicateur du dossier, nommé à
+    côté ». Deux fautes en une : ces codes ne veulent rien dire pour un riverain, et ils
+    livrent la structure de notre grille à qui voudrait la recopier — la même grille que
+    l'anti-pillage protège partout ailleurs.
+
+    Un portrait pose des questions en français. D'où elles sortent nous regarde.
+    """
+    gabarit = PORTRAIT.read_text()
+    fuites = re.findall(r"\{q\.id\}|\{m\.id\}|\{i\.id\}", gabarit)
+    assert not fuites, (
+        "le portrait rend un identifiant d'indicateur : " + ", ".join(sorted(set(fuites)))
+    )
+
+    for page in (REPO_ROOT / "site" / "src" / "pages" / "fr" / "dc" / "[id]" / "portrait.astro",
+                 REPO_ROOT / "site" / "src" / "pages" / "dc" / "[id]" / "portrait.astro"):
+        texte = page.read_text()
+        for aveu in ("indicateur du dossier", "named beside", "comes from one measure"):
+            assert aveu not in texte, (
+                f"{page.name} explique au lecteur d'où viennent les lignes : "
+                f"« {aveu} ». La provenance interne ne se raconte pas."
+            )
