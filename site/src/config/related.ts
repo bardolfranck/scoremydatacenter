@@ -3,7 +3,7 @@
 //
 // Internal-linking helper: for a given fiche, pick a handful of "related" sites
 // so every fiche links to its neighbours. These are STATIC, crawlable <a> links —
-// unlike the mini-map's client-side pins — which weave the 1,400+ fiches into a
+// unlike the mini-map's client-side pins — which weave the whole corpus of fiches into a
 // topical mesh (crawl paths + contextual relevance + real UX). Deterministic.
 //
 // Order of relevance (Franck 2026-09-22): same operator → same region (same country,

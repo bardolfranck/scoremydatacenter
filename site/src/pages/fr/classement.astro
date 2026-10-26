@@ -7,8 +7,12 @@ import Ranking from "../../components/Ranking.astro";
 import { FR_NAV } from "../../config/nav";
 
 const t = {
-  pageTitle: "Classement des data centers A–E — 1 400+ sites notés",
-  metaDescription: "Classez 1 400+ data centers par leur note d'acceptabilité A–E — tri par opérateur, pilier, pays ou confiance. Observatoire indépendant, méthode ouverte.",
+  // Titre et description portent une PROMESSE, pas un inventaire : un compte vieillit à
+  // chaque collecte (« 1 400+ » affichait encore 1 400 pour 2 195 sites notés), et un
+  // « tous les sites » promettrait une exhaustivité qu'on n'a pas. « Site par site » dit
+  // l'unité sans la quantité — et c'est aussi le registre où le site est déjà trouvé.
+  pageTitle: "Quels data centers passent, lesquels échouent ?",
+  metaDescription: "La note d'acceptabilité A–E, site par site : énergie, eau, sol, impact local. Sourcée, publique, gratuite. Triez par opérateur, pilier ou pays et trouvez celui qui est près de chez vous.",
   tagline: "Observatoire indépendant",
   title: "Classement des projets notés",
   lede: "Triez par note, pilier ou confiance — chaque vue a une adresse partageable. Une note ne s'affiche jamais sans son niveau de confiance.",

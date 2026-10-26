@@ -753,3 +753,57 @@ def test_le_portrait_n_expose_jamais_un_code_d_indicateur():
                 f"{page.name} explique au lecteur d'où viennent les lignes : "
                 f"« {aveu} ». La provenance interne ne se raconte pas."
             )
+
+
+# --- Un compte de corpus ne tient pas dans un titre ------------------------------
+# Vu en prod (2026-10-26) : « Classement des data centers A–E — 1 400+ sites notés »,
+# en titre ET en meta description des deux pages classement, alors que le corpus servait
+# 2 195 sites notés. Ce chiffre était juste le jour où il a été écrit ; il a vieilli en
+# silence, dans la première ligne du snippet Google, là où personne ne relit.
+#
+# La règle qui en sort : un titre et une description portent une PROMESSE, pas un
+# inventaire. L'unité (« site par site ») ne vieillit pas ; le compte, oui. Et le compte
+# exact, s'il doit paraître, se dérive du corpus — il ne se tape pas à la main.
+
+COMPTE_EN_DUR = re.compile(r"\d[\d  ,.]{2,}\+?\s*(?:sites?|data[  -]?centers?|fiches?)", re.I)
+
+
+def _entetes_de_pages():
+    """(fichier, champ, valeur) pour chaque pageTitle/metaDescription des pages du site."""
+    for page in (REPO_ROOT / "site" / "src" / "pages").rglob("*.astro"):
+        for champ, valeur in re.findall(
+            r"\b(pageTitle|metaDescription)\s*:\s*\"((?:[^\"\\]|\\.)*)\"", page.read_text()
+        ):
+            yield page, champ, valeur
+
+
+def test_aucun_titre_ni_description_n_annonce_un_compte_de_corpus():
+    fautes = [
+        f"{page.relative_to(REPO_ROOT)} · {champ} : « {COMPTE_EN_DUR.search(valeur).group(0).strip()} »"
+        for page, champ, valeur in _entetes_de_pages()
+        if COMPTE_EN_DUR.search(valeur)
+    ]
+    assert not fautes, (
+        "un compte de corpus est écrit en dur dans un en-tête de page — il vieillira sans "
+        "que rien ne le signale, et c'est ce que Google affiche :\n" + "\n".join(fautes)
+    )
+
+
+def test_le_garde_fou_du_compte_mord_vraiment():
+    # test négatif : les deux formulations retirées le 2026-10-26, et leurs variantes
+    # plausibles, doivent être attrapées — sinon le garde-fou ne garde rien.
+    for ancienne in (
+        "Classement des data centers A–E — 1 400+ sites notés",
+        "Data-center ranking A–E — 1,400+ sites scored",
+        "Classez 1 400+ data centers par leur note d'acceptabilité A–E",
+        "2 195 fiches notées",
+        "Rank 3,283 datacenters",
+    ):
+        assert COMPTE_EN_DUR.search(ancienne), f"le garde-fou laisse passer « {ancienne} »"
+    # et il ne doit PAS mordre sur une norme ni sur la formule qui remplace le compte
+    for innocente in (
+        "PUE, ISO/IEC 30134, Green Grid, ETSI — la première note d'acceptabilité, site par site",
+        "La note d'acceptabilité A–E, site par site : énergie, eau, sol, impact local.",
+        "Quels data centers passent, lesquels échouent ?",
+    ):
+        assert not COMPTE_EN_DUR.search(innocente), f"le garde-fou mord à tort sur « {innocente} »"
