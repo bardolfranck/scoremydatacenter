@@ -129,17 +129,34 @@ def main() -> int:
         missing = meth_ids - set(inds)
         if missing:
             problems.append(f"GATE 1 {label}: indicateurs absents {sorted(missing)}")
-        # GATE 8 — project/process not_collected sur published
-        if (dc.get("publication") or {}).get("status") == "published":
-            for iid in scored_pp:
-                if inds.get(iid, {}).get("status") == "not_collected":
-                    problems.append(f"GATE 8 {label}: {iid} not_collected sur une fiche publiée")
-        # SCORING — aucune exception (le contrôle qui aurait attrapé le KeyError E6)
+        # SCORING — aucune exception (le contrôle qui aurait attrapé le KeyError E6).
+        # Remonté AVANT la GATE 8 : celle-ci a maintenant besoin de la note dérivée, et une
+        # fiche non scorable est déjà signalée ici — on ne la juge pas deux fois.
+        note_axe_projet = None
         try:
-            score_datacenter(dc, methodology)
+            note_axe_projet = score_datacenter(dc, methodology)["grades"]["project_process"].get("grade")
             scored += 1
         except Exception as e:  # noqa: BLE001
             problems.append(f"SCORING {label}: {type(e).__name__}: {str(e)[:120]}")
+
+        # 🔴 GATE 8 — RÉ-ANCRÉE SUR LA NOTE DÉRIVÉE (arbitrage Franck 2026-10-26).
+        # Elle ne se déclenchait que sur `publication.status == "published"` : un champ qui
+        # vaut `draft` sur 3 267 fiches servies sur 3 267, et `published` sur aucune. Le gate
+        # était désarmé par la valeur par défaut de son propre interrupteur, dans les DEUX
+        # implémentations — celle-ci et celle d'engine/validate.py — qui disaient bien la même
+        # chose, et la même chose était « ne rien faire ».
+        #
+        # On ne stocke que les DÉCISIONS, on dérive le reste. « Servie » et « lettre retenue »
+        # sont des décisions, portées ailleurs (présence du fichier, data/veille.json,
+        # provisional_band). La complétude se CALCULE : on demande à score_datacenter, déjà
+        # appelé ci-dessus, si l'axe projet gagne vraiment une lettre.
+        if note_axe_projet in ("A", "B", "C", "D", "E"):
+            for iid in scored_pp:
+                if inds.get(iid, {}).get("status") == "not_collected":
+                    problems.append(
+                        f"GATE 8 {label}: {iid} not_collected alors que l'axe projet gagne un {note_axe_projet} "
+                        "— une lettre de projet ne repose pas sur un indicateur jamais collecté"
+                    )
 
     # GATE POSITION — deux fiches au même point sans adjudication. Il vit ICI, sur le corpus
     # réel, et pas seulement dans `make validate` qui ne voit que les 2 fixtures : c'est la

@@ -71,25 +71,57 @@ def test_gate8_missing_project_needs_read_trace_when_dossier_available(data_copy
     assert any("GATE 8" in p and "F5" in p for p in problems), problems
 
 
-def test_gate8_not_collected_cannot_be_published(data_copy):
-    """`not_collected` is a draft-only state — it can never reach a published DC."""
+def test_gate8_une_lettre_projet_ne_repose_pas_sur_un_non_collecte(data_copy):
+    """Un indicateur jamais collecté sous un axe projet qui GAGNE une lettre : refusé."""
     target, edit = data_copy
     edit("datacenters/zz-test-alpha.json",
          lambda dc: _set(dc, "E4", status="not_collected"))
     problems = run_gates(target)
-    assert any("GATE 8" in p and "E4" in p and "published" in p for p in problems), problems
+    assert any("GATE 8" in p and "E4" in p for p in problems), problems
 
 
-def test_gate8_allows_not_collected_in_draft(data_copy):
-    """The same not_collected in a DRAFT DC is fine — it only blocks publication."""
+def test_gate8_se_tait_quand_l_axe_projet_ne_gagne_aucune_lettre(data_copy):
+    """L'INVERSE de l'ancien test, et c'est tout le changement du 2026-10-26.
+
+    L'ancienne version affirmait : « le même not_collected sur une fiche DRAFT passe — il ne
+    bloque que la publication ». C'était le cœur du défaut. `publication.status` valait
+    `draft` sur les 3 267 fiches servies et `published` sur aucune : le gate ne se
+    déclenchait jamais, et ce test certifiait ce silence comme un comportement voulu.
+
+    La règle ne regarde plus un drapeau, elle regarde ce que la fiche AFFIRME. Une fiche dont
+    l'axe projet tombe sous le seuil de couverture ne revendique aucune lettre — elle publie
+    « données insuffisantes », ce qui est vrai — donc ses manques ne flattent personne et le
+    gate se tait. C'est l'exemption, et elle est dérivée, pas déclarée.
+    """
     target, edit = data_copy
 
-    def to_draft_with_notcollected(dc):
-        dc["publication"]["status"] = "draft"
-        _set(dc, "E4", status="not_collected")
-    edit("datacenters/zz-test-alpha.json", to_draft_with_notcollected)
+    def vider_l_axe_projet(dc):
+        for iid in ("E4", "E7", "F4", "F5", "L4", "L5", "T1", "T2", "W4"):
+            _set(dc, iid, status="not_collected")
+    edit("datacenters/zz-test-alpha.json", vider_l_axe_projet)
     problems = run_gates(target)
     assert not any("GATE 8" in p for p in problems), problems
+
+
+def test_gate8_ne_lit_plus_jamais_publication_status(data_copy):
+    """Le verdict doit être IDENTIQUE que la fiche soit `draft` ou `published`.
+
+    C'est la décision de Franck du 2026-10-26 gravée : on ne stocke que les décisions, et
+    « complet » n'en est pas une. Si ce test tombe, c'est qu'un drapeau a repris la main sur
+    une mesure — exactement le défaut qui a tenu le gate désarmé pendant toute la vie du
+    projet.
+    """
+    verdicts = {}
+    for statut in ("draft", "published"):
+        target, edit = data_copy
+
+        def modifier(dc, statut=statut):
+            dc["publication"]["status"] = statut
+            _set(dc, "E4", status="not_collected")
+        edit("datacenters/zz-test-alpha.json", modifier)
+        verdicts[statut] = sorted(p for p in run_gates(target) if "GATE 8" in p)
+    assert verdicts["draft"] == verdicts["published"], verdicts
+    assert verdicts["draft"], "le gate doit mordre dans les deux cas, pas se taire dans les deux"
 
 
 def test_gate8_exempts_informational_indicators_in_both_implementations():

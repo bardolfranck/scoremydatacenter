@@ -506,6 +506,21 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     scored_pp_ids = {i["id"] for i in indicators
                      if i["block"] in ("project", "process") and i["mvp"] and not i.get("informational")}
 
+    def _axe_projet_note(dc: dict, methodology: dict) -> bool:
+        """L'axe projet gagne-t-il une lettre ? DÉRIVÉ, jamais lu dans un champ.
+
+        On passe par `score_datacenter`, le même code qui produit l'artefact servi : si la
+        règle réimplémentait la couverture, elle dériverait de l'affichage (vérifié — un
+        comptage naïf donnait 3 fautes là où le calcul pondéré du moteur en donne 1).
+        Une fiche au jeu d'indicateurs incomplet n'est pas scorable ; le contrôle de schéma
+        l'a déjà signalée, donc on ne la juge pas deux fois.
+        """
+        try:
+            note = score_datacenter(dc, methodology)["grades"]["project_process"].get("grade")
+        except (KeyError, TypeError, ValueError):
+            return False
+        return note in ("A", "B", "C", "D", "E")
+
     for path in datacenter_paths(data_dir):
         dc = load_json(path)
         label = path.name
@@ -549,12 +564,35 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
                     "dossier, but carries no source proving it was read — attach the read-trace, or mark it "
                     "'not_collected' until harvested. An E of non-extraction is as false as an A of complacency."
                 )
-            # (b) `not_collected` is a transitory draft state — it can never reach the published repo.
-            if e["id"] in scored_pp_ids and e["status"] == "not_collected" and dc["publication"]["status"] == "published":
+            # (b) 🔴 CETTE RÈGLE A ÉTÉ MORTE PENDANT TOUTE LA VIE DU PROJET (constaté 2026-10-26).
+            #     Elle ne se déclenchait que si `publication.status == "published"`. Or ce champ
+            #     vaut `draft` sur les 3 267 fiches servies et sur les 3 824 de la source qui le
+            #     portent — AUCUNE n'est `published`. Le garde-fou était désarmé par la valeur
+            #     par défaut de son propre interrupteur, et rien ne le signalait.
+            #
+            #     Le défaut de fond : « publié » et « complet » partageaient un seul booléen. Le
+            #     site publie 3 267 fiches et n'en considère aucune comme publiée, donc armer la
+            #     règle telle quelle aurait refusé 3 266 fiches sur 3 267 (médiane : 9 manques
+            #     sur 9) — ce n'est pas une barrière à rallumer, c'est la spécification d'un
+            #     corpus qu'on n'a pas.
+            #
+            #     ON NE STOCKE QUE LES DÉCISIONS, ON DÉRIVE LE RESTE (arbitrage Franck
+            #     2026-10-26). « Servie ou non » et « lettre retenue ou non » sont des décisions,
+            #     portées ailleurs et correctement (présence du fichier, `data/veille.json`,
+            #     `provisional_band`). La COMPLÉTUDE, elle, n'est pas une décision : elle se
+            #     calcule. La règle demande donc à `score_datacenter` — la source unique de la
+            #     dérivation, celle qui produit l'artefact — si l'axe projet gagne vraiment une
+            #     lettre, au lieu de croire un drapeau que personne ne met à jour.
+            #
+            #     Ce qu'elle interdit désormais : une LETTRE sur l'axe projet alors qu'un de ses
+            #     indicateurs notés n'a jamais été collecté. Une fiche sans axe projet reste
+            #     parfaitement valide — elle affiche « données insuffisantes », ce qui est vrai.
+            if e["id"] in scored_pp_ids and e["status"] == "not_collected" and _axe_projet_note(dc, methodology):
                 problems.append(
-                    f"GATE 8: {label}: {e['id']} is 'not_collected' but the DC is published — every project/"
-                    "process indicator must be harvested (announced/measured) or verified-absent (missing) "
-                    "before publication"
+                    f"GATE 8: {label}: {e['id']} is 'not_collected' while the project axis EARNS a "
+                    "letter — a project grade may not rest on an indicator that was never collected. "
+                    "Harvest it (announced/measured), or mark it 'missing' (verified absent) with its "
+                    "read-trace."
                 )
 
         # Gate 9 — L2 power provenance (memo signed Franck 2026-07-19): a 'measured' L2 may
