@@ -34,3 +34,18 @@
 # désormais comparables que s'ils partagent leur groupe de puissance ET leur groupe d'usage ;
 # la ressemblance territoriale ne fait plus que CLASSER à l'intérieur de cette cellule.
 # Les redirections vers la carte sont donc retirées.
+
+# UNE FICHE RENOMMÉE LAISSE UN TROU, COMME UNE FICHE FUSIONNÉE. Relevé en Search Console le
+# 2026-10-26 dans les « Not found (404) » : l'ancienne adresse du projet de Fouju, servie et
+# indexée sous son nom de porteurs, renvoyait 404 alors que la fiche existe toujours — elle a
+# simplement été renommée d'après sa commune. Un lecteur, un moteur ou un élu qui avait ce
+# lien tombait sur rien.
+#
+# Le `*` couvre la fiche ET son portrait : les deux URL existent désormais sous le nouveau
+# nom, et une redirection par chemin les reprend toutes les deux.
+#
+# ⚠️ Cette ligne est un RATTRAPAGE, pas une procédure. Renommer une fiche doit s'accompagner
+# de sa redirection dans le même geste : ici, personne n'y a pensé, et c'est Google qui nous
+# l'a dit six jours plus tard.
+/fr/dc/fr-campus-ia-coentreprise-mgx-mistral-ai-nvidia-et-bpifrance/* /fr/dc/fr-campus-ia-fouju/:splat 301
+/dc/fr-campus-ia-coentreprise-mgx-mistral-ai-nvidia-et-bpifrance/* /dc/fr-campus-ia-fouju/:splat 301
