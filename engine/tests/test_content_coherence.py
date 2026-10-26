@@ -768,13 +768,24 @@ def test_le_portrait_n_expose_jamais_un_code_d_indicateur():
 COMPTE_EN_DUR = re.compile(r"\d[\d  ,.]{2,}\+?\s*(?:sites?|data[  -]?centers?|fiches?)", re.I)
 
 
+# Deux formes coexistent dans les pages : un objet `t` ({pageTitle, metaDescription}) pour
+# les pages qui partagent un gabarit FR/EN, et les props `title=`/`description=` passées
+# directement à <Base> pour les pages minces. Le garde-fou doit voir LES DEUX — il a d'abord
+# été écrit sur la seule première forme, et la carte, qui emploie la seconde, lui est passée
+# sous le nez (2026-10-26). Un gate qui ne voit pas toute sa grille ne garde rien.
+_FORMES = (
+    r"\b(pageTitle|metaDescription)\s*:\s*\"((?:[^\"\\]|\\.)*)\"",
+    r"^\s*(title|description)=\"((?:[^\"\\]|\\.)*)\"",
+)
+
+
 def _entetes_de_pages():
-    """(fichier, champ, valeur) pour chaque pageTitle/metaDescription des pages du site."""
+    """(fichier, champ, valeur) pour chaque titre/description de page, les deux formes."""
     for page in (REPO_ROOT / "site" / "src" / "pages").rglob("*.astro"):
-        for champ, valeur in re.findall(
-            r"\b(pageTitle|metaDescription)\s*:\s*\"((?:[^\"\\]|\\.)*)\"", page.read_text()
-        ):
-            yield page, champ, valeur
+        texte = page.read_text()
+        for forme in _FORMES:
+            for champ, valeur in re.findall(forme, texte, re.M):
+                yield page, champ, valeur
 
 
 def test_aucun_titre_ni_description_n_annonce_un_compte_de_corpus():
@@ -807,3 +818,17 @@ def test_le_garde_fou_du_compte_mord_vraiment():
         "Quels data centers passent, lesquels échouent ?",
     ):
         assert not COMPTE_EN_DUR.search(innocente), f"le garde-fou mord à tort sur « {innocente} »"
+
+
+def test_le_garde_fou_voit_les_deux_formes_d_en_tete():
+    """Mutation vivante : le garde-fou doit couvrir la carte, qui n'utilise pas `t`."""
+    vus = {page.name for page, _, _ in _entetes_de_pages()}
+    for mince in ("carte.astro", "map.astro"):
+        assert mince in vus, (
+            f"{mince} n'est plus lu par le garde-fou des en-têtes — c'est par là que "
+            "« 1 400+ » serait revenu"
+        )
+    champs = {champ for _, champ, _ in _entetes_de_pages()}
+    assert {"title", "description"} <= champs and {"pageTitle", "metaDescription"} <= champs, (
+        f"le garde-fou ne voit plus les deux formes d'en-tête : {sorted(champs)}"
+    )
