@@ -470,8 +470,8 @@
     {
       "id": "F4",
       "label": {
-        "fr": "Surface au sol du projet",
-        "en": "Project ground footprint"
+        "fr": "Surface au sol du site",
+        "en": "Site ground footprint"
       },
       "pillar": "land_biodiversity",
       "block": "project",

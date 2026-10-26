@@ -2,6 +2,32 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.3.0 (errata) — 2026-10-26 — F4 : c'est la PARCELLE, pas le bâti
+
+- **Décision (Franck Bardol, 2026-10-26)** : F4 mesure l'emprise au sol du **SITE** — le terrain
+  mobilisé par le projet, bâtiments ET voiries, parkings, poste électrique, bassins — et non la
+  seule empreinte des bâtiments. Libellé et description précisés dans les deux langues.
+  **Aucun poids, aucun seuil, aucune valeur ne change : pas une note du corpus ne bouge.**
+- **Pourquoi maintenant.** La collecte a buté dessus. L'ancien libellé, « Surface au sol du
+  projet », se lit dans les deux sens, et les deux chiffres figurent côte à côte dans un même
+  avis d'autorité environnementale : Meudon donne « emprise totale de 22 178 m² » ET « emprise
+  au sol du bâti d'environ 8 640 m² ». L'extracteur des registres AE, lui, traduit déjà
+  `emprise_sol_m2` par « Building footprint » — il avait tranché dans l'autre sens, seul.
+- **Trois raisons, et la deuxième se vérifie.** (1) Le précédent : la seule autre valeur du
+  corpus, Fouju = 70 ha, est sourcée « Le projet se développera sur environ 70 hectares » — le
+  terrain. (2) **Les seuils le prouvent** : F4 note à 5 / 20 / 50 ha, quand l'emprise BÂTIE d'un
+  data center fait 0,5 à 3 ha. Sous la convention « bâti », toutes les fiches tombent dans la
+  première bande à 100 et les bandes 20 et 50 ne sont jamais atteintes — une échelle dont les
+  trois quarts supérieurs sont inatteignables n'est pas une échelle. (3) Le pilier est le
+  foncier : ce qui est artificialisé, c'est le site, pas l'empreinte de la toiture.
+- ⚠️ **Conséquence pour la promotion des registres AE** : on promeut `parcelle_ha`, jamais
+  `emprise_sol_m2`. Les deux existent dans les mêmes fichiers (13 et 14 occurrences) ; prendre
+  le second remplirait F4 d'empreintes de toiture, mettrait tout le corpus à 100 et ferait
+  passer Fouju pour l'anomalie à corriger.
+- La version ne bouge pas : une clarification de libellé qui ne déplace aucun score n'est pas un
+  changement de méthode, et bumper aurait périmé l'historique de 3 267 fiches sans raison.
+- Signataire : Franck Bardol, arbitrage rendu en session (agent-codeur-site).
+
 ## 0.3.0 — 2026-10-06 — indicateurs INFORMATIONNELS : publier un fait de contexte sans le noter
 
 - **Décision (Franck Bardol, arbitrage délégué à agent-codeur-site, 2026-10-06)** : le porteur du

@@ -641,12 +641,12 @@
     {
       "id": "F4",
       "label": {
-        "fr": "Surface au sol du projet",
-        "en": "Project ground footprint"
+        "fr": "Surface au sol du site",
+        "en": "Site ground footprint"
       },
       "description": {
-        "fr": "L'emprise au sol du projet en hectares : plus elle est étendue, plus l'impact foncier est fort.",
-        "en": "The project's ground footprint in hectares: the larger, the greater the land impact."
+        "fr": "L'emprise au sol du SITE en hectares — le terrain mobilisé par le projet (bâtiments, voiries, parkings, poste électrique, bassins), pas la seule empreinte des bâtiments : plus elle est étendue, plus l'impact foncier est fort.",
+        "en": "The SITE's ground footprint in hectares — the land the project takes up (buildings, roads, parking, substation, retention basins), not the building print alone: the larger, the greater the land impact."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.15,
