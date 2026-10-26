@@ -34,8 +34,17 @@ const AE = "https://www.igedd.developpement-durable.gouv.fr/l-autorite-environne
 const MRAE = "https://www.mrae.developpement-durable.gouv.fr/";
 
 const t = {
-  title: "Les nuisances des data centers — bruit, groupes électrogènes, carburant, eau | ScoreMyDataCenter",
-  metaDescription: "Bruit, groupes électrogènes de secours, cuves de carburant, prélèvements d'eau : quelles nuisances locales un data center fait-il peser, et à partir de quand ? Ce que documentent les avis environnementaux.",
+  // 🔴 LE TITRE MENAIT AVEC LE MOT QUI N'EST PAS CHERCHÉ (Search Console, 28 j au 2026-10-26).
+  // Cette page récolte 32 impressions et 0 clic, et la liste ENTIÈRE de ses requêtes parle de
+  // bruit : « réduction du bruit data center », « acoustique data center », « bruit data
+  // center », « insonorisation data center », « data centre generator noise control »…
+  // AUCUNE ne contient « nuisance ». Mesuré le même jour sur Trends : « data center nuisance »
+  // vaut 1 au mondial et 0 en France comme aux États-Unis — c'est un mot, pas une requête ;
+  // « data center noise » vaut 37 et 34. « Nuisances » reste notre réflexe de langue, pas
+  // celui du lecteur : il dit bruit, acoustique, insonorisation.
+  // L'URL ne bouge pas — elle est indexée, et le titre pèse bien plus qu'un slug.
+  title: "Le bruit d'un data center — combien, à quelle distance, ce qui est écrit",
+  metaDescription: "Le bruit d'un data center : refroidissement en continu, groupes électrogènes à l'essai, cuves de carburant, eau prélevée. Combien, à quelle distance, et ce que les avis environnementaux documentent vraiment.",
   tagline: "Observatoire indépendant",
   h1: "Les nuisances des data centers",
   lead: `Un data center se discute souvent sur son bilan global — l'électricité, le climat. Ce qui se vit depuis la rue est plus concret : du <strong>bruit</strong> en continu, des <strong>groupes électrogènes</strong> mis à l'essai, des <strong>cuves de carburant</strong>, de l'<strong>eau</strong> prélevée puis rejetée. Sur les 41 avis de l'<a href="${AE}" target="_blank" rel="noopener">autorité environnementale</a> que nous avons dépouillés, ce sont les groupes électrogènes qui reviennent le plus souvent, devant les cuves de carburant et le bruit.`,

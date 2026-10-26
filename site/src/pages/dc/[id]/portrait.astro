@@ -15,7 +15,9 @@ const { dc } = Astro.props as { dc: any };
 const t = {
   tagline: "Independent observatory",
   kicker: "Site portrait",
-  metaDescription: "{name} ({place}): what the project changes for the community, what is still to ask for, and until when — a readable portrait of the site.",
+  // See fr/dc/[id]/portrait.astro: the title angle, led by a measured term.
+  seoAngle: "noise, water, land",
+  metaDescription: "{name}, {place}: how loud, how close, the water, the land, and what the project changes for the community. What to get written into the permit, and until when.",
   status: { announced: "announced", permitting: "under review", under_construction: "under construction", operational: "operating" },
   siteGrade: "Site grade",
   probable: "probable grade",

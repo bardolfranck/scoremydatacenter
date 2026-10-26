@@ -472,10 +472,10 @@ const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceR
 // une note qui n'affirme jamais plus que ce qu'on publie (plage, « en attente »).
 // ⚠️ La commune est répétée même quand le nom la contient (« Campus IA Fouju, data center à
 // Fouju ») : la redondance coûte quelques caractères, l'absence coûtait la requête.
-const seoLieu = dc.municipality
+const seoLieuSansRegion = dc.municipality
   ? (lang === "fr" ? `data center à ${dc.municipality}` : `data center in ${dc.municipality}`)
-    + (dc.admin_area ? ` (${dc.admin_area})` : "")
-  : (lang === "fr" ? "data center" : "data center");
+  : "data center";
+const seoLieu = seoLieuSansRegion + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
 // 🔴 LE TITRE ÉTAIT COUPÉ AVANT LA NOTE — SUR 100 % DES FICHES (Search Console, 2026-10-23).
 // Mesuré : médiane 92 caractères, p90 109, max 142, quand Google en affiche ~60. Le lecteur
 // voyait « Digital Realty Frankfurt FRA28 (Closed), data center in Frankf… » et JAMAIS
@@ -489,13 +489,20 @@ const seoLieu = dc.municipality
 //
 // LA DATE SORT DU TITRE. Elle coûtait 25 caractères, n'était jamais affichée, et la fraîcheur
 // se dit déjà par `lastmod` au sitemap et par la date en clair sur la page.
-const seoTitre = `${dc.name} — ${seoGrade} | ${seoLieu}`;
-const seoTitle = seoTitre.length <= 65
-  ? seoTitre
-  // Repli quand le nom est long : on garde nom + note, le lieu passe à la trappe plutôt que
-  // de faire disparaître la note. Un titre coupé sur le lieu reste lisible ; coupé sur la
-  // note, il ne dit plus rien de nous.
-  : `${dc.name} — ${seoGrade}`;
+// 🔴 LE REPLI SUPPRIMAIT LE LIEU SUR 57 % DU CORPUS — 1 882 fiches (mesuré 2026-10-26).
+// L'ordre (nom, note, lieu) reste celui du 2026-10-23 et il est bon. Ce qui était faux est
+// l'étape « si > 65, j'efface le lieu » : 65 caractères est une limite d'AFFICHAGE, Google
+// indexe et classe sur le titre ENTIER. Tronquer coûte de la lisibilité sur la dernière
+// partie ; supprimer coûte le classement sur « data center {commune} » — c'est-à-dire la
+// SEULE intention française mesurée (huit des dix suggestions de Google sur « data center »
+// sont des communes à projet ; personne ne cherche une note).
+//
+// On dégrade donc dans l'ordre du moins coûteux, et le lieu ne part jamais : la région entre
+// parenthèses d'abord (-815 fiches au-dessus de la limite), et c'est tout.
+const seoTitle = [
+  `${dc.name} — ${seoGrade} | ${seoLieu}`,
+  `${dc.name} — ${seoGrade} | ${seoLieuSansRegion}`,
+].find((s) => s.length <= 65) ?? `${dc.name} — ${seoGrade} | ${seoLieuSansRegion}`;
 // La meta reprend l'accroche générée du contrat d'artefact plutôt qu'un gabarit : c'est une
 // phrase écrite pour CE site, donc un extrait SERP qui dit quelque chose.
 const seoLead = dc.synthesis?.site?.lead?.[lang];

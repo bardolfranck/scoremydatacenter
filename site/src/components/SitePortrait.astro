@@ -154,12 +154,38 @@ const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
 const url = `https://scoremydatacenter.org${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
 const titre = `${dc.name} — ${t.kicker}`;
 const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
+
+// 🔴 LE TITRE NE PORTAIT NI LA CATÉGORIE NI LE LIEU (audit de demande, 2026-10-26).
+// « Campus IA Fouju — Portrait du site | ScoreMyDataCenter » : « portrait du site » est notre
+// jargon — zéro recherche — et le suffixe de marque mangeait vingt caractères que Google
+// affiche déjà sous le titre. Mesuré le même jour : la demande française est faite de noms de
+// communes (huit des dix suggestions de Google sur « data center » sont des villes à projet),
+// et « data center noise » vaut 37 au mondial, 34 aux États-Unis, sans qu'aucun de nos titres
+// ne le porte.
+//
+// ⚠️ LE PORTRAIT NE PEUT PAS COPIER LE TITRE DE LA FICHE : deux URLs du même site avec le même
+// titre se cannibalisent. Il porte donc le MÊME lieu et un angle DIFFÉRENT — celui que la page
+// tient réellement, puisqu'elle a une section « Le bruit — continu, jour et nuit ». La note
+// reste à la fiche, le vécu au portrait.
+//
+// Le lieu ne disparaît jamais : 65 caractères est une limite d'affichage, pas d'indexation.
+// On dégrade dans l'ordre du moins coûteux — la région, puis l'angle.
+const ptLieuCourt = dc.municipality
+  ? (lang === "fr" ? `data center à ${dc.municipality}` : `data center in ${dc.municipality}`)
+  : "data center";
+const ptLieu = ptLieuCourt + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
+const ptSep = lang === "fr" ? " : " : ": ";
+const seoTitle = [
+  `${dc.name} — ${ptLieu}${ptSep}${t.seoAngle}`,
+  `${dc.name} — ${ptLieuCourt}${ptSep}${t.seoAngle}`,
+  `${dc.name} — ${ptLieuCourt}`,
+].find((s) => s.length <= 65) ?? `${dc.name} — ${ptLieuCourt}`;
 ---
 
 <Base
   lang={lang}
-  title={`${titre} | ScoreMyDataCenter`}
-  description={t.metaDescription.replace("{name}", dc.name).replace("{place}", lieu)}
+  title={seoTitle}
+  description={t.metaDescription.replace("{name}", dc.name).replace("{place}", ptLieu)}
   tagline={t.tagline}
   altHref={altHref}
   altLabel={altLabel}

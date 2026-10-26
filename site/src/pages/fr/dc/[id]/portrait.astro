@@ -15,7 +15,10 @@ const { dc } = Astro.props as { dc: any };
 const t = {
   tagline: "Observatoire indépendant",
   kicker: "Portrait du site",
-  metaDescription: "{name} ({place}) : ce que le projet change pour la commune, ce qui reste à demander, et jusqu'à quand — portrait lisible du site.",
+  // L'angle du titre (voir SitePortrait.astro) : trois mots qui disent ce que la page tient
+  // vraiment, et dont le premier est un terme mesuré que nous ne portions nulle part.
+  seoAngle: "bruit, eau, terrain",
+  metaDescription: "{name}, {place} : le bruit en continu, l'eau, le terrain, et ce que le projet change pour la commune. Ce qu'il reste à faire écrire dans l'autorisation, et jusqu'à quand.",
   status: { announced: "annoncé", permitting: "en instruction", under_construction: "en chantier", operational: "en service" },
   siteGrade: "Note du site",
   probable: "note probable",

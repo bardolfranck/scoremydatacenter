@@ -776,6 +776,10 @@ COMPTE_EN_DUR = re.compile(r"\d[\d  ,.]{2,}\+?\s*(?:sites?|data[  -]?centers?|
 _FORMES = (
     r"\b(pageTitle|metaDescription)\s*:\s*\"((?:[^\"\\]|\\.)*)\"",
     r"^\s*(title|description)=\"((?:[^\"\\]|\\.)*)\"",
+    # Troisième forme, trouvée en retitrant les pages bruit : `title:` à la racine d'un objet
+    # `t`, sans le préfixe `page`. L'indentation de deux espaces suffit à l'isoler d'un
+    # `title:` imbriqué (une source, un graphique) — vérifié : 41 en-têtes, zéro faux positif.
+    r"^  (title|description)\s*:\s*\"((?:[^\"\\]|\\.)*)\"",
 )
 
 

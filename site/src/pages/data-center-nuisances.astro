@@ -21,8 +21,10 @@ const AE = "https://www.igedd.developpement-durable.gouv.fr/l-autorite-environne
 const MRAE = "https://www.mrae.developpement-durable.gouv.fr/";
 
 const t = {
-  title: "Data center nuisances — noise, backup generators, fuel, water | ScoreMyDataCenter",
-  metaDescription: "Noise, backup generators, fuel tanks, water abstraction: what local nuisances does a data center impose, and from what point? What environmental assessments actually document.",
+  // See fr/nuisances-data-center.astro: every query this page earns is about noise, not one
+  // contains "nuisance". The word leads the title now; the URL stays, it is indexed.
+  title: "Data center noise — how loud, how close, and what the permit says",
+  metaDescription: "Data center noise: cooling that never stops, backup generators under test, fuel tanks, water abstracted. How loud, how close, and what environmental assessments actually document.",
   tagline: "Independent observatory",
   h1: "Data center nuisances",
   lead: `A data center is usually argued over its global balance sheet — electricity, climate. What is experienced from the street is more concrete: continuous <strong>noise</strong>, <strong>backup generators</strong> under test, <strong>fuel tanks</strong>, <strong>water</strong> abstracted and discharged. Across the 41 French <a href="${AE}" target="_blank" rel="noopener">environmental authority</a> opinions we reviewed, backup generators come up most often, ahead of fuel tanks and noise.`,
