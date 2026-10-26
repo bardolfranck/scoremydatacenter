@@ -233,6 +233,7 @@ deploy:
 # a empêché la publication, par hasard. Aucun test ne peut voir ça — ils tournent avant le
 # build. La vérification porte donc sur ce qui PART, juste avant que ça parte.
 	uv run python scripts/check_dist_pruned.py
+	uv run python scripts/check_no_legislation.py
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 
