@@ -62,17 +62,32 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   //                    nous. Substance présumée : CPTA art. 58, ~trois mois. NE PAS retenter un simple
   //                    curl (le serveur « debout » ne veut pas dire réparé) : rouvrir quand l'action
   //                    data `GetConsolidacaoByDiplomaFrag` répond et que l'art. 58 se lit au texte.
-  //   IL (8)         — hors Union, donc hors socle : tout est à lire. TROU DÉCLARÉ
-  //                    (WORLD, 2026-10-27, mesuré) : le texte faisant foi est l'hébreu
-  //                    (Reshumot / base Knesset), et la Knesset GÉOBLOQUE hors d'Israël
-  //                    (« temporarily inaccessible from your location », vérifié au
-  //                    navigateur réel depuis la France) ; gov.il refuse nos requêtes (403)
-  //                    et ne sert de toute façon que des extraits en traduction « non
-  //                    officielle » ; les copies anglaises complètes (Adalah, FAOLEX, NLI)
-  //                    sont des recueils TIERS qui vieillissent sans le dire — pas des
-  //                    sources. Aucun hôte proposable à HOTES_DE_TEXTE tant que le texte
-  //                    en vigueur n'est pas LISIBLE depuis chez nous : IL reste null,
-  //                    plutôt qu'un délai sourcé sur un texte qu'on n'a pas lu.
+  //   IL (8)         — hors Union, donc hors socle : tout est à lire. TROU DÉCLARÉ,
+  //                    instruit deux fois (WORLD, 2026-10-27, la 2e sous VPN IL) :
+  //                    · LE BLOCAGE, tel qu'il est : main.knesset.gov.il et fs.knesset.gov.il
+  //                      répondent HTTP/2 247 + challenge JS Reblaze depuis notre infra, et
+  //                      « temporarily inaccessible from your location » au navigateur réel
+  //                      depuis la France ; gov.il 403, et ne sert de toute façon que des
+  //                      extraits en traduction « non officielle ». Copies anglaises complètes
+  //                      (Adalah, FAOLEX, NLI) = recueils tiers — pas des sources. Le re-test
+  //                      utile : ces hôtes répondent SANS VPN et SANS challenge — pas qu'un
+  //                      curl passe.
+  //                    · LE FAIT ARCHITECTURAL (épargne la recherche au prochain passage) :
+  //                      il n'existe PAS de consolidé officiel — le bouton « לחוק המלא » du
+  //                      registre officiel (apps/legislation, loi 2000613, statut תקף,
+  //                      171 tiqqunim référencés ספר החוקים) pointe vers he.wikisource.org.
+  //                      Wikisource lisible partout mais REFUSÉ comme hôte : la Knesset qui
+  //                      pointe n'est pas une autorité qui PUBLIE (précédent Géorgie/Arkansas
+  //                      = « reproduit par l'autorité qui l'applique »), un wiki vieillit sans
+  //                      que `verified` le voie, et l'url publiée doit s'ouvrir CHEZ LE LECTEUR
+  //                      — une Knesset géobloquée est un lien mort pour le riverain.
+  //                    · LA RÉPONSE DE FOND, connue mais NON CITABLE (à confirmer le jour où
+  //                      un hôte passe, jamais à servir d'ici là) : §152(a)(1) de חוק התכנון
+  //                      והבנייה תשכ"ה-1965 → ערר sous 30 JOURS de la notification devant la
+  //                      ועדת ערר (refus de permis ou rejet d'opposition §149(a) ; section
+  //                      amendée jusqu'à תשפ"ה) ; 2e étage = עתירה מנהלית ~45 jours (תקנות
+  //                      בתי משפט לעניינים מינהליים, 2000). Un trou qui sait ce qu'il cherche
+  //                      se rattrape en une passe.
   PT: null,
   IL: null,  // hors Union, hors socle — trou déclaré, voir en-tête
 };
