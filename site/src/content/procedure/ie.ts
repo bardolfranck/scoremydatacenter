@@ -9,10 +9,12 @@
 //
 // PIÈGE DE LA VERSION ÉVITÉ : l'art. 50 du Planning and Development Act 2000 (le texte « as enacted »
 // que sert irishstatutebook pour les lois primaires) est PÉRIMÉ — le Planning and Development Act 2024
-// (loi n° 34 de 2024) a refondu le contentieux. Sa Partie 9 (judicial review) est EN VIGUEUR (S.I.
-// 662/2024 ; dispositions de délai commencées depuis le 1er août 2025, circulaire de commencement
-// gov.ie « Ch 1 of Part 9 Judicial Review » 2025-03), elle supprime l'étape du leave et porte le délai
-// à l'art. 281. On cite donc le texte en vigueur (art. 281 PDA 2024), pas l'art. 50 de 2000.
+// (loi n° 34 de 2024) a refondu le contentieux. Les articles 278 à 290 (dont l'art. 281) sont EN VIGUEUR
+// depuis le 1er août 2025, commencés par le Planning and Development Act 2024 (Commencement) (No. 3)
+// Order 2025 (S.I. No. 379 of 2025), art. 2(b) — établi par la TABLE DE COMMENCEMENT officielle de l'ISBC
+// (irishstatutebook.ie/eli/isbc/2024_34.html), vérifiée au texte (le S.I. 662/2024 ne commence, lui, que
+// les art. 1 à 5 et la Partie 26 — il NE porte PAS la Partie 9). La Partie 9 supprime l'étape du leave et
+// porte le délai à l'art. 281. On cite donc le texte en vigueur (art. 281 PDA 2024), pas l'art. 50 de 2000.
 // Le texte de l'art. 281 « as enacted » EST le texte en vigueur : loi récente, art. 281 non amendé
 // depuis (consolidation revisedacts.lawreform.ie identique). Lu sur irishstatutebook.ie le 2026-10-27.
 //

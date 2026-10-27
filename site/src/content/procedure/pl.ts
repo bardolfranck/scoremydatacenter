@@ -39,6 +39,15 @@ export const PL: ProcedureCountry = {
         url: "https://dziennikustaw.gov.pl/D2025000169101.pdf",
         verified: "2026-10-27",
       },
+      {
+        text: {
+          fr: "Faire appel dans le délai SUSPEND l'exécution de la décision : les travaux ne peuvent pas démarrer tant que l'appel est pendant, sauf si la décision a reçu la force exécutoire immédiate.",
+          en: "Filing the appeal in time SUSPENDS the decision: works cannot start while the appeal is pending, unless the decision was given immediate enforceability.",
+        },
+        cite: "Ustawa z dnia 14 czerwca 1960 r. — Kodeks postępowania administracyjnego, art. 130 § 2 (exception : § 3)",
+        url: "https://dziennikustaw.gov.pl/D2025000169101.pdf",
+        verified: "2026-10-27",
+      },
     ],
     documents: [],
   },
