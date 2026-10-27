@@ -57,12 +57,19 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   //   PT (9)         — non lu ; diariodarepublica.pt en panne serveur (504 CloudFront) au
   //                    2026-10-27. Substance connue (CPTA art. 58, trois mois) mais pas vérifiée
   //                    au texte en vigueur → maintenu null tant que la source n'est pas lisible.
-  //   IL (8)         — hors Union, donc hors socle : tout est à lire ; aucun hôte officiel
-  //                    israélien dans HOTES_DE_TEXTE (gov.il ne sert que des extraits en
-  //                    traduction « non officielle ») → à confier à data-pipeline-WORLD, Franck
-  //                    signe l'ajout d'hôte.
+  //   IL (8)         — hors Union, donc hors socle : tout est à lire. TROU DÉCLARÉ
+  //                    (WORLD, 2026-10-27, mesuré) : le texte faisant foi est l'hébreu
+  //                    (Reshumot / base Knesset), et la Knesset GÉOBLOQUE hors d'Israël
+  //                    (« temporarily inaccessible from your location », vérifié au
+  //                    navigateur réel depuis la France) ; gov.il refuse nos requêtes (403)
+  //                    et ne sert de toute façon que des extraits en traduction « non
+  //                    officielle » ; les copies anglaises complètes (Adalah, FAOLEX, NLI)
+  //                    sont des recueils TIERS qui vieillissent sans le dire — pas des
+  //                    sources. Aucun hôte proposable à HOTES_DE_TEXTE tant que le texte
+  //                    en vigueur n'est pas LISIBLE depuis chez nous : IL reste null,
+  //                    plutôt qu'un délai sourcé sur un texte qu'on n'a pas lu.
   PT: null,
-  IL: null,  // hors Union, hors socle
+  IL: null,  // hors Union, hors socle — trou déclaré, voir en-tête
 };
 
 /** Pays dont le bloc national complète le socle européen plutôt que de s'y substituer. */
