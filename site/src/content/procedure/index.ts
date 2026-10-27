@@ -54,9 +54,14 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   // trente jours, publication de la décision et de ses motifs, accès au juge, information
   // environnementale sous un mois) ; ce qui leur manque est leur DÉLAI NATIONAL de recours,
   // qu'aucune directive ne fixe.
-  //   PT (9)         — non lu ; diariodarepublica.pt en panne serveur (504 CloudFront) au
-  //                    2026-10-27. Substance connue (CPTA art. 58, trois mois) mais pas vérifiée
-  //                    au texte en vigueur → maintenu null tant que la source n'est pas lisible.
+  //   PT (9)         — non lu. Au 2026-10-27, diariodarepublica.pt RÉPOND (plus de 504) mais sa
+  //                    couche data est cassée : l'action du SPA `GetConsolidacaoByDiplomaFrag`
+  //                    renvoie net::ERR_ABORTED, la page reste bloquée sur « A carregar alterações… »,
+  //                    et data.dre.pt (export statique) redirige vers ce même SPA et bloque curl.
+  //                    Le texte consolidé EN VIGUEUR n'est donc pas lisible — blocage CHEZ DRE, pas chez
+  //                    nous. Substance présumée : CPTA art. 58, ~trois mois. NE PAS retenter un simple
+  //                    curl (le serveur « debout » ne veut pas dire réparé) : rouvrir quand l'action
+  //                    data `GetConsolidacaoByDiplomaFrag` répond et que l'art. 58 se lit au texte.
   //   IL (8)         — hors Union, donc hors socle : tout est à lire. TROU DÉCLARÉ
   //                    (WORLD, 2026-10-27, mesuré) : le texte faisant foi est l'hébreu
   //                    (Reshumot / base Knesset), et la Knesset GÉOBLOQUE hors d'Israël
