@@ -25,6 +25,9 @@ import { DK } from "./dk";
 import { AT } from "./at";
 import { IT } from "./it";
 import { BE } from "./be";
+import { LU } from "./lu";
+import { PL } from "./pl";
+import { IE } from "./ie";
 
 export type { ProcedureClaim, ProcedureJurisdiction, ProjectStatus } from "./types";
 
@@ -44,20 +47,20 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   AT,
   IT,
   BE,
+  LU,
+  PL,
+  IE,
   // Trous DÉCLARÉS. Ces pays reçoivent déjà le socle européen (consultation d'au moins
   // trente jours, publication de la décision et de ses motifs, accès au juge, information
   // environnementale sous un mois) ; ce qui leur manque est leur DÉLAI NATIONAL de recours,
   // qu'aucune directive ne fixe.
-  //   PL (70 fiches) — ISAP ne sert que des PDF et bloque la lecture automatique ;
-  //                    à reprendre sur dziennikustaw.gov.pl.
-  //   IE (12)        — irishstatutebook ne sert que la version « as enacted » de l'art. 50
-  //                    de la loi de 2000, deux fois remaniée depuis. Publier huit semaines
-  //                    sur un texte non à jour serait l'erreur type du délai périmé.
-  //   LU (10) · PT (9) — non lus, simple ordre de passage.
-  //   IL (8)         — hors Union, donc hors socle : tout est à lire.
-  PL: null,
-  IE: null,
-  LU: null,
+  //   PT (9)         — non lu ; diariodarepublica.pt en panne serveur (504 CloudFront) au
+  //                    2026-10-27. Substance connue (CPTA art. 58, trois mois) mais pas vérifiée
+  //                    au texte en vigueur → maintenu null tant que la source n'est pas lisible.
+  //   IL (8)         — hors Union, donc hors socle : tout est à lire ; aucun hôte officiel
+  //                    israélien dans HOTES_DE_TEXTE (gov.il ne sert que des extraits en
+  //                    traduction « non officielle ») → à confier à data-pipeline-WORLD, Franck
+  //                    signe l'ajout d'hôte.
   PT: null,
   IL: null,  // hors Union, hors socle
 };
