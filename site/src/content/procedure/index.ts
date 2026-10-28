@@ -25,6 +25,9 @@ import { DK } from "./dk";
 import { AT } from "./at";
 import { IT } from "./it";
 import { BE } from "./be";
+import { LU } from "./lu";
+import { PL } from "./pl";
+import { IE } from "./ie";
 
 export type { ProcedureClaim, ProcedureJurisdiction, ProjectStatus } from "./types";
 
@@ -44,22 +47,49 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   AT,
   IT,
   BE,
+  LU,
+  PL,
+  IE,
   // Trous DÉCLARÉS. Ces pays reçoivent déjà le socle européen (consultation d'au moins
   // trente jours, publication de la décision et de ses motifs, accès au juge, information
   // environnementale sous un mois) ; ce qui leur manque est leur DÉLAI NATIONAL de recours,
   // qu'aucune directive ne fixe.
-  //   PL (70 fiches) — ISAP ne sert que des PDF et bloque la lecture automatique ;
-  //                    à reprendre sur dziennikustaw.gov.pl.
-  //   IE (12)        — irishstatutebook ne sert que la version « as enacted » de l'art. 50
-  //                    de la loi de 2000, deux fois remaniée depuis. Publier huit semaines
-  //                    sur un texte non à jour serait l'erreur type du délai périmé.
-  //   LU (10) · PT (9) — non lus, simple ordre de passage.
-  //   IL (8)         — hors Union, donc hors socle : tout est à lire.
-  PL: null,
-  IE: null,
-  LU: null,
+  //   PT (9)         — non lu. Au 2026-10-27, diariodarepublica.pt RÉPOND (plus de 504) mais sa
+  //                    couche data est cassée : l'action du SPA `GetConsolidacaoByDiplomaFrag`
+  //                    renvoie net::ERR_ABORTED, la page reste bloquée sur « A carregar alterações… »,
+  //                    et data.dre.pt (export statique) redirige vers ce même SPA et bloque curl.
+  //                    Le texte consolidé EN VIGUEUR n'est donc pas lisible — blocage CHEZ DRE, pas chez
+  //                    nous. Substance présumée : CPTA art. 58, ~trois mois. NE PAS retenter un simple
+  //                    curl (le serveur « debout » ne veut pas dire réparé) : rouvrir quand l'action
+  //                    data `GetConsolidacaoByDiplomaFrag` répond et que l'art. 58 se lit au texte.
+  //   IL (8)         — hors Union, donc hors socle : tout est à lire. TROU DÉCLARÉ,
+  //                    instruit deux fois (WORLD, 2026-10-27, la 2e sous VPN IL) :
+  //                    · LE BLOCAGE, tel qu'il est : main.knesset.gov.il et fs.knesset.gov.il
+  //                      répondent HTTP/2 247 + challenge JS Reblaze depuis notre infra, et
+  //                      « temporarily inaccessible from your location » au navigateur réel
+  //                      depuis la France ; gov.il 403, et ne sert de toute façon que des
+  //                      extraits en traduction « non officielle ». Copies anglaises complètes
+  //                      (Adalah, FAOLEX, NLI) = recueils tiers — pas des sources. Le re-test
+  //                      utile : ces hôtes répondent SANS VPN et SANS challenge — pas qu'un
+  //                      curl passe.
+  //                    · LE FAIT ARCHITECTURAL (épargne la recherche au prochain passage) :
+  //                      il n'existe PAS de consolidé officiel — le bouton « לחוק המלא » du
+  //                      registre officiel (apps/legislation, loi 2000613, statut תקף,
+  //                      171 tiqqunim référencés ספר החוקים) pointe vers he.wikisource.org.
+  //                      Wikisource lisible partout mais REFUSÉ comme hôte : la Knesset qui
+  //                      pointe n'est pas une autorité qui PUBLIE (précédent Géorgie/Arkansas
+  //                      = « reproduit par l'autorité qui l'applique »), un wiki vieillit sans
+  //                      que `verified` le voie, et l'url publiée doit s'ouvrir CHEZ LE LECTEUR
+  //                      — une Knesset géobloquée est un lien mort pour le riverain.
+  //                    · LA RÉPONSE DE FOND, connue mais NON CITABLE (à confirmer le jour où
+  //                      un hôte passe, jamais à servir d'ici là) : §152(a)(1) de חוק התכנון
+  //                      והבנייה תשכ"ה-1965 → ערר sous 30 JOURS de la notification devant la
+  //                      ועדת ערר (refus de permis ou rejet d'opposition §149(a) ; section
+  //                      amendée jusqu'à תשפ"ה) ; 2e étage = עתירה מנהלית ~45 jours (תקנות
+  //                      בתי משפט לעניינים מינהליים, 2000). Un trou qui sait ce qu'il cherche
+  //                      se rattrape en une passe.
   PT: null,
-  IL: null,  // hors Union, hors socle
+  IL: null,  // hors Union, hors socle — trou déclaré, voir en-tête
 };
 
 /** Pays dont le bloc national complète le socle européen plutôt que de s'y substituer. */
