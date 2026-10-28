@@ -30,5 +30,14 @@ jobs:
       - name: Tests
         run: make test
 
-      - name: Build (validate -> score -> site)
-        run: make build
+      # 🔴 PAS d'étape `make build` ici — décision Franck, 2026-10-28.
+      # La CI checkoute le dépôt PUBLIC seul ; le corpus vit dans smdc-newsroom (privé).
+      # `make build` tombait donc toujours sur son repli `score` et construisait le site sur
+      # ZÉRO fiche : un build qui ne valide pas ce qu'on publie. Il est resté vert tant qu'il
+      # plantait sur rien, puis rouge 29 runs d'affilée dès qu'une page a lu un périmètre
+      # qu'un corpus vide n'émet pas — bloquant toutes les PR pour un défaut qui n'existait
+      # pas en production. Le vrai garde-fou est ailleurs, et il est tenu : `make deploy`
+      # lance la suite PUIS le build, en local, sur le corpus réel, AVANT toute mise en ligne.
+      # Ne pas réintroduire cette étape en donnant le dépôt privé à la CI : les PR de forks
+      # exécutent du code non relu, et NEWSROOM_TOKEN y donnerait accès au corpus entier.
+      # Ce qui n'est donc plus couvert ici : une page .astro cassée n'est vue qu'au deploy.
