@@ -14,6 +14,26 @@ export const STATS = statsData as any;
 /** Perimeter slugs are URL segments: "europe" or a lowercase ISO country. */
 export const perimeterKeys = (): string[] => Object.keys(STATS.perimeters);
 
+/** Le compte publié d'un périmètre, ou `null` quand ce périmètre n'existe pas.
+ *  🔴 DEUX ABSENCES RÉELLES, pas des cas d'école : `monde` n'est émis que s'il DIFFÈRE de
+ *  l'Europe (voir `perimeterLabel`), et un build SANS corpus — le checkout public seul, donc
+ *  la CI — n'émet aucun périmètre. Une page qui imprime ce chiffre doit donc se lire SANS lui.
+ *  Un compte absent n'est jamais un 0 et jamais un chiffre de repli : un `?? 0` publierait
+ *  « 0 sites » comme une mesure, ce qui est faux et muet. Un vrai 0 est replié sur `null` pour
+ *  la même raison — « notre corpus compte 0 sites » n'est pas une phrase qu'on sert. */
+export const perimeterSites = (slug: string): number | null => {
+  const n = STATS.perimeters?.[slug]?.n_sites;
+  return typeof n === "number" && n > 0 ? n : null;
+};
+
+/** Même contrat pour les comptes DÉRIVÉS de l'engine (`derived.n_nearest_dwelling`…) :
+ *  présent et non nul, ou `null`. Le remplir d'un 0 par défaut est le défaut « l'absence
+ *  ressemble à zéro » — la lecture ratée se publie alors comme une couverture nulle. */
+export const derivedCount = (key: string): number | null => {
+  const n = STATS.derived?.[key];
+  return typeof n === "number" && n > 0 ? n : null;
+};
+
 export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
   US: { fr: "États-Unis", en: "United States" }, IL: { fr: "Israël", en: "Israel" },
   AT: { fr: "Autriche", en: "Austria" }, BE: { fr: "Belgique", en: "Belgium" },

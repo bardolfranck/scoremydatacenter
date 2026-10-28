@@ -836,3 +836,97 @@ def test_le_garde_fou_voit_les_deux_formes_d_en_tete():
     assert {"title", "description"} <= champs and {"pageTitle", "metaDescription"} <= champs, (
         f"le garde-fou ne voit plus les deux formes d'en-tête : {sorted(champs)}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Un compte de corpus ABSENT ne se remplit pas (2026-10-28, décision Franck).
+# Le défaut n'était pas une faute de copie mais une lecture NON GARDÉE : la page
+# nuisances lisait `STATS.perimeters.monde.n_sites` en dur, alors que `monde` n'est
+# émis QUE s'il diffère de l'Europe — et qu'un build sans corpus (le checkout public
+# seul, donc la CI) n'émet aucun périmètre. Résultat : `n_sites` of undefined, build
+# cassé, CI rouge 29 runs d'affilée depuis le 2026-10-23T14:29. Le repli tentant,
+# `?? 0`, aurait été pire que le plantage : il publie « 0 sites » et « disponible
+# sur 0 d'entre eux » comme des MESURES — l'absence déguisée en zéro, en prose, en
+# deux langues, sans que rien ne crie.
+# ---------------------------------------------------------------------------
+
+_SOURCES_SITE = sorted((REPO_ROOT / "site" / "src").rglob("*.astro")) + sorted(
+    (REPO_ROOT / "site" / "src").rglob("*.ts")
+)
+
+# `monde` est le seul périmètre dont l'émission est CONDITIONNELLE (voir `perimeterLabel`) :
+# le déréférencer par son nom, c'est parier sur une publication qui n'est pas garantie.
+PERIMETRE_CONDITIONNEL = re.compile(r"""STATS\.perimeters(?:\.monde\b|\[\s*["']monde["']\s*\])""")
+
+# Un compte replié sur 0 : le `?? 0` / `|| 0` qui change une absence en mesure nulle.
+COMPTE_REPLIE_SUR_ZERO = re.compile(
+    r"""(?:\.n_sites|STATS\.derived\??\.[A-Za-z_]\w*)\s*(?:\?\?|\|\|)\s*0"""
+)
+
+
+def _fautes_de_compte(sources):
+    for chemin, texte in sources:
+        for motif, quoi in (
+            (PERIMETRE_CONDITIONNEL, "déréférence `monde`, qui n'est émis que s'il diffère de l'Europe"),
+            (COMPTE_REPLIE_SUR_ZERO, "replie un compte sur 0 — l'absence publiée comme une mesure"),
+        ):
+            trouve = motif.search(texte)
+            if trouve:
+                yield f"{chemin} : {quoi} (« {trouve.group(0)} »)"
+
+
+def test_aucune_page_ne_lit_un_compte_de_corpus_sans_garde():
+    fautes = list(
+        _fautes_de_compte(
+            (f.relative_to(REPO_ROOT), f.read_text())
+            for f in _SOURCES_SITE
+            if f.name != "test_content_coherence.py"
+        )
+    )
+    assert not fautes, (
+        "un compte de corpus est lu sans garde — le build casse quand le périmètre manque, "
+        "et un repli à 0 publierait l'absence comme une mesure. Passer par "
+        "`perimeterSites()` / `derivedCount()`, qui rendent `null` :\n" + "\n".join(fautes)
+    )
+
+
+def test_le_garde_fou_des_comptes_mord_vraiment():
+    # test négatif : les deux lignes retirées le 2026-10-28 doivent être attrapées, sinon
+    # ce garde-fou ne garde rien. (C'est la leçon de l'en-tête non testé : une règle écrite
+    # mais non mordante laisse passer exactement ce qu'elle prétend interdire.)
+    for ancienne in (
+        "const nSites = STATS.perimeters.monde.n_sites as number;",
+        "const nDistance = (STATS.derived?.n_nearest_dwelling ?? 0) as number;",
+        'const n = STATS.perimeters["monde"].n_sites;',
+        "const n = peri.n_sites || 0;",
+    ):
+        assert list(_fautes_de_compte([("essai.astro", ancienne)])), (
+            f"le garde-fou laisse passer « {ancienne} »"
+        )
+    # et il ne mord NI sur les accesseurs, NI sur les replis à 0 qui ne sont pas des comptes
+    for innocente in (
+        'const nSites = perimeterSites("monde");',
+        'const nDistance = derivedCount("n_nearest_dwelling");',
+        "const pct = peri.n_sites ? Math.round((1000 * op) / peri.n_sites) / 10 : 0;",
+        "const score = view.pct ?? 0;",
+        "const op = peri.by_status?.operational ?? 0;",
+    ):
+        assert not list(_fautes_de_compte([("essai.astro", innocente)])), (
+            f"le garde-fou mord à tort sur « {innocente} »"
+        )
+
+
+@pytest.mark.parametrize(
+    "page",
+    ["pages/data-center-nuisances.astro", "pages/fr/nuisances-data-center.astro"],
+)
+def test_la_page_nuisances_a_une_phrase_sans_chiffre(page):
+    """Tolérer l'absence, c'est avoir une phrase qui se lit SANS le compte — pas un 0."""
+    texte = (REPO_ROOT / "site" / "src" / page).read_text()
+    assert "perimeterSites(" in texte and "derivedCount(" in texte, (
+        f"{page} ne passe plus par les accesseurs gardés"
+    )
+    assert "!== null" in texte, (
+        f"{page} n'a plus de branche pour le compte absent — sans elle, « tolérer » veut dire "
+        "planter au build, ou servir un chiffre de repli"
+    )
