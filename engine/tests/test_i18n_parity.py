@@ -488,6 +488,191 @@ def test_la_dette_i18n_ne_remonte_jamais():
     )
 
 
+NAV_TS = REPO_ROOT / "site" / "src" / "config" / "nav.ts"
+
+
+def _menu(langue: str) -> list[tuple]:
+    """La FORME du menu d'une langue : la suite de ses nœuds, sans les mots.
+
+    Un groupe sort en `("groupe", n)`, un lien en `("lien", "page"|"ancre")`. Ni les
+    libellés ni les slugs ne sont comparés — ce sont justement les deux choses qui DOIVENT
+    différer d'une langue à l'autre. Ce qui ne doit pas différer, c'est la liste des gestes
+    offerts au visiteur et leur NATURE : un lien de page d'un côté et une ancre de la page
+    d'accueil de l'autre, c'est l'anglais qui décroche — l'en-tête de `nav.ts` le promet
+    (« Same action → same destination as FR ») et rien ne le vérifiait.
+    """
+    texte = NAV_TS.read_text(encoding="utf-8")
+    debut = texte.index(f"export const {langue}_NAV")
+    fin = texte.index("\n];", debut)
+    # 🔴 Les commentaires d'abord : ce fichier porte un paragraphe entier de `href` mis en
+    # commentaire (le comparateur retiré puis remis au menu). Les compter serait compter des
+    # entrées qui ne s'affichent pas.
+    lignes = []
+    for ligne in texte[debut:fin].splitlines():
+        c = debut_de_commentaire(ligne)
+        lignes.append(ligne if c == -1 else ligne[:c])
+    region = "\n".join(lignes)
+
+    noeuds: list[tuple] = []
+    profondeur = 0
+    enfants = 0
+    for jeton in re.finditer(r'children:\s*\[|href:\s*"([^"]*)"|\]', region):
+        t = jeton.group(0)
+        if t.startswith("children"):
+            profondeur = 1
+            enfants = 0
+        elif t == "]":
+            if profondeur == 1:
+                noeuds.append(("groupe", enfants))
+                profondeur = 0
+        else:
+            href = jeton.group(1)
+            nature = "ancre" if "#" in href else "page"
+            if profondeur == 1:
+                enfants += 1
+                noeuds.append(("enfant", nature))
+            else:
+                noeuds.append(("lien", nature))
+    return noeuds
+
+
+def test_le_menu_offre_les_memes_gestes_dans_les_deux_langues():
+    """Le menu de chaque langue doit proposer les mêmes entrées, de la même nature.
+
+    C'est le seul élément de ce dépôt qui s'affiche sur les 16 783 pages, et il vivait en
+    deux listes tenues à la main sans que rien ne les compare. L'en-tête de `nav.ts` promet
+    « Map and Ranking are real EN pages, not homepage anchors or FR fallbacks » : une
+    promesse écrite en commentaire, que ce test transforme en garantie.
+    """
+    langues = [lg.upper() for lg in _langues_vivantes()]
+    reference = _menu(langues[0])
+    assert reference, "le menu de la langue de référence est vide — le relevé ne lit plus nav.ts"
+    for lg in langues[1:]:
+        autre = _menu(lg)
+        assert len(autre) == len(reference), (
+            f"{lg}_NAV a {len(autre)} nœuds contre {len(reference)} pour {langues[0]}_NAV : "
+            f"une langue offre un geste que l'autre n'offre pas"
+        )
+        for i, (a, b) in enumerate(zip(reference, autre)):
+            assert a == b, (
+                f"{lg}_NAV diffère de {langues[0]}_NAV au nœud {i} : {b} contre {a}. Un lien "
+                f"de page d'un côté et une ancre de l'accueil de l'autre, c'est exactement la "
+                f"façon dont l'anglais a décroché deux fois."
+            )
+
+
+def test_le_garde_du_menu_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une entrée EN repliée sur une ancre de l'accueil."""
+    faux = tmp_path / "nav.ts"
+    texte = NAV_TS.read_text(encoding="utf-8")
+    faux.write_text(texte.replace('{ href: "/ranking/", label: "Ranking" }',
+                                  '{ href: "/#ranking", label: "Ranking" }', 1), encoding="utf-8")
+    monkeypatch.setitem(globals(), "NAV_TS", faux)
+    with pytest.raises(AssertionError, match="décroché"):
+        test_le_menu_offre_les_memes_gestes_dans_les_deux_langues()
+
+
+# 🔴 LA SURFACE QUI SE TRADUIT, déclarée par ses POINTS D'ENTRÉE (périmètre signé par
+# Franck le 2026-10-29) : la fiche, le portrait, et le menu « Comprendre ». Pas la
+# bibliothèque, pas les rapports, pas le mur Actu, pas qui-sommes-nous.
+#
+# Le reste du site garde sa dette, et c'est assumé : y câbler une table ne servirait AUCUNE
+# langue nouvelle. Mais sur cette surface-ci l'exigence est absolue — zéro branche nue, sur
+# la FERMETURE TRANSITIVE des imports, pas seulement sur les fichiers nommés. C'est ce que
+# le cliquet seul ne garantit pas : un composant endetté qu'on importerait DEPUIS la fiche
+# ferait entrer sa dette dans la surface traduite sans faire remonter aucun total.
+SURFACE_TRADUITE = (
+    "components/DcFiche.astro",
+    "components/SitePortrait.astro",
+    "layouts/Base.astro",
+    "pages/fr/acceptabilite-data-center.astro",
+    "pages/fr/notation-data-center.astro",
+    "pages/fr/nuisances-data-center.astro",
+    "pages/fr/comprendre.astro",
+    "pages/fr/normes.astro",
+    "pages/fr/methodologie.astro",
+    "pages/fr/sources.astro",
+    "pages/fr/glossaire.astro",
+    "pages/fr/la-note-pas-a-pas.astro",
+    "pages/fr/portrait-du-site.astro",
+)
+
+
+# Le volume minimal qu'un relevé honnête doit ramener. Une constante, et non un nombre écrit
+# dans le test : la contre-épreuve l'abaisse pour éprouver l'AUTRE garantie — sans quoi elle
+# ne prouverait que le garde-fou de volume, en croyant prouver le compte de branches.
+_SEUIL_FERMETURE = 40
+
+
+def _fermeture(entrees) -> set[str]:
+    """Tous les fichiers atteignables par import depuis ces points d'entrée."""
+    vus: set[str] = set()
+    pile = list(entrees)
+    while pile:
+        rel = pile.pop()
+        if rel in vus:
+            continue
+        for candidat in (rel, rel + ".ts", rel + ".astro"):
+            chemin = SRC_SITE / candidat
+            if chemin.is_file():
+                break
+        else:
+            continue
+        if candidat in vus:
+            continue
+        vus.add(candidat)
+        for imp in re.findall(r'from "(\.[^"]+)"', chemin.read_text(encoding="utf-8")):
+            try:
+                pile.append(str((chemin.parent / imp).resolve().relative_to(SRC_SITE.resolve())))
+            except ValueError:
+                pass
+    return vus
+
+
+def test_la_surface_traduite_est_a_zero_branche_nue():
+    """Sur la surface qui se traduit, aucun fichier ne choisit plus ses mots par test de langue.
+
+    Le cliquet dit que le reste du site ne s'aggrave pas ; ce test-ci dit que la surface où
+    le néerlandais va passer est PRÊTE. Les deux sont nécessaires : un fichier peut être en
+    règle avec le cliquet (son compte n'a pas monté) et faire quand même entrer dix branches
+    dans la fiche le jour où on l'y importe.
+    """
+    fichiers = sorted(_fermeture(SURFACE_TRADUITE))
+    assert len(fichiers) > _SEUIL_FERMETURE, (
+        f"la fermeture ne ramène que {len(fichiers)} fichiers — le relevé ne suit plus les "
+        f"imports, et un test qui ne voit plus rien ne garde rien"
+    )
+    fautifs = {}
+    for rel in fichiers:
+        nues = _branches_nues(SRC_SITE / rel)
+        if nues:
+            fautifs[rel] = nues
+    assert not fautifs, (
+        "la surface traduite a repris des branches nues :\n"
+        + "\n".join(l for nues in fautifs.values() for l in nues)
+        + "\n\nUne chaîne choisie par `lang === \"fr\"` est une chaîne qu'une langue "
+        "nouvelle ne trouvera pas. Ou bien elle rejoint la table de sa surface, ou bien "
+        "elle déclare ce qu'elle est (`i18n:route`, `i18n:format`, `i18n:donnee`)."
+    )
+
+
+def test_le_garde_de_la_surface_traduite_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une phrase remise en ternaire dans le gabarit de la fiche."""
+    faux_src = tmp_path / "src"
+    for rel in ("components", "content", "layouts", "pages/fr", "config"):
+        (faux_src / rel).mkdir(parents=True, exist_ok=True)
+    gabarit = faux_src / "components" / "DcFiche.astro"
+    gabarit.write_text(
+        '---\nconst x = lang === "fr" ? "voisinage" : "neighbourhood";\n---\n', encoding="utf-8"
+    )
+    monkeypatch.setitem(globals(), "SRC_SITE", faux_src)
+    monkeypatch.setitem(globals(), "SURFACE_TRADUITE", ("components/DcFiche.astro",))
+    # le seuil de volume protège d'un relevé muet : on l'abaisse pour éprouver l'autre garde
+    monkeypatch.setitem(globals(), "_SEUIL_FERMETURE", 0)
+    with pytest.raises(AssertionError, match="repris des branches nues"):
+        test_la_surface_traduite_est_a_zero_branche_nue()
+
+
 def test_le_total_annonce_en_tete_est_le_bon():
     """L'en-tête de `DETTE_I18N` annonce un total : il doit être celui de la table.
 
