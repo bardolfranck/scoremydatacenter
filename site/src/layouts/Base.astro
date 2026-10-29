@@ -4,6 +4,7 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import "../styles/global.css";
 import { isGroup, type NavNode } from "../config/nav";
+import { CHROME } from "../content/chrome";
 
 interface Props {
   lang: "en" | "fr";
@@ -16,6 +17,15 @@ interface Props {
   ogImage?: string; // absolute URL of the social card
 }
 const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = Astro.props;
+// Le chrome est sur TOUTES les pages — donc sur chaque page d'une langue nouvelle. Ses mots
+// vivent dans `content/chrome.ts`, une fois par langue, et non en ternaires dispersés : un
+// lecteur néerlandais verrait sinon « Refuser » et « Accepter » sous une fiche néerlandaise.
+// Les colonnes du pied de page y portent libellés ET slugs ensemble — un libellé traduit sans
+// son slug laisserait un menu néerlandais pointer vers des URL françaises.
+// ⚠️ Ne pas expliquer tout ceci en commentaire JSX dans le corps : un `{/* … */}` devant le
+// `.map()` du pied de page décale l'indentation rendue d'un espace sur les 13 168 pages, et
+// un diff de non-régression se met alors à mentir sur ce qu'il a vraiment vérifié.
+const c = CHROME[lang];
 const altLang = lang === "en" ? "fr" : "en";
 const home = lang === "en" ? "/" : "/fr/";
 
@@ -44,9 +54,7 @@ const orgLd = {
   name: "ScoreMyDataCenter",
   url: "https://scoremydatacenter.org",
   logo: "https://scoremydatacenter.org/assets/smdc-logo.svg",
-  description: lang === "fr"
-    ? "Observatoire indépendant du risque d'acceptabilité des data centers."
-    : "Independent observatory of data-center acceptability risk.",
+  description: c.baseline,
   founder: { "@type": "Person", name: "Franck Bardol" },
 };
 
@@ -87,7 +95,7 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="ScoreMyDataCenter" />
-    <meta property="og:locale" content={lang === "fr" ? "fr_FR" : "en_GB"} />
+    <meta property="og:locale" content={c.ogLocale} />
     <meta property="og:image" content={ogImageResolved} />
     <meta property="og:image:alt" content={title} />
     <meta name="twitter:card" content="summary_large_image" />
@@ -108,14 +116,14 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
           <span class="brand-tagline">{tagline}</span>
         </span>
       </a>
-      <form class="header-search" action={lang === "fr" ? "/fr/classement" : "/ranking"} method="get" role="search">
+      <form class="header-search" action={c.search.action} method="get" role="search">
         {/* Le libellé promettait « un site, un opérateur, un pays » — jamais une commune,
             qui est pourtant la façon dont un riverain ou un élu arrive ici. Depuis le
             dictionnaire de lieux (2026-10-18), taper un nom de commune RÉPOND, même quand
             elle n'a aucun data center : on annonce donc ce que la boîte sait faire. */}
         <input type="search" name="q"
-          placeholder={lang === "fr" ? "Rechercher une commune, un site, un opérateur…" : "Search a town, a site, an operator…"}
-          aria-label={lang === "fr" ? "Rechercher une commune ou un projet noté" : "Search a town or a scored project"} />
+          placeholder={c.search.placeholder}
+          aria-label={c.search.aria} />
       </form>
       <nav class="main-nav" aria-label="Site sections">
         {nav.map((item) => (
@@ -175,23 +183,13 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
     <footer class="site-footer footer-v2">
       <div class="footer-brand">
         <span class="footer-name">Score<span class="brand-my">My</span>DataCenter</span>
-        <p>{lang === "fr"
-          ? "Observatoire indépendant du risque d'acceptabilité des data centers."
-          : "Independent observatory of data-center acceptability risk."}</p>
+        <p>{c.baseline}</p>
         <p class="footer-lic">Engine AGPL-3.0 · Data: licence by source (ODbL, Licence Ouverte…) · Methodology CC BY-SA 4.0<br/>© 2026 Franck Bardol and contributors</p>
       </div>
-      {(lang === "fr" ? [
-        ["Explorer", [["Carte", "/fr/carte"], ["Classement", "/fr/classement"], ["Indices pays", "/fr/indices/"], ["Les chiffres du parc", "/fr/chiffres/"], ["Comprendre les data centers", "/fr/comprendre/"]]],
-        ["Ressources", [["Méthodologie", "/fr/methodologie/"], ["Modèle ouvert", "/fr/#open"], ["Bibliothèque", "/fr/bibliotheque/"], ["API développeurs", "/fr/developpeurs"], ["FAQ", "/fr/#faq"]]],
-        ["À propos", [["Qui sommes-nous ?", "/fr/qui-sommes-nous"], ["Presse", "/fr/presse"], ["Contact", "/fr/contact"], ["Mentions légales", "/fr/mentions-legales"]]],
-      ] : [
-        ["Explore", [["Map", "/map"], ["Ranking", "/ranking"], ["Country index", "/indices/"], ["Fleet figures", "/figures/"], ["Understanding data centers", "/understand/"]]],
-        ["Resources", [["Methodology", "/methodology/"], ["Open model", "/#open"], ["Library", "/intelligence/"], ["Developer API", "/developers"], ["FAQ", "/#faq"]]],
-        ["About", [["Who we are", "/who-we-are"], ["Press", "/press"], ["Contact", "/contact"], ["Legal notices", "/legal"]]],
-      ]).map(([heading, links]: any) => (
+      {c.footer.map(({ heading, links }) => (
         <div class="footer-col">
           <h4>{heading}</h4>
-          <ul>{links.map(([label, href]: any) => <li><a href={lienInterne(href)}>{label}</a></li>)}</ul>
+          <ul>{links.map(({ label, href }) => <li><a href={lienInterne(href)}>{label}</a></li>)}</ul>
         </div>
       ))}
     </footer>
@@ -199,19 +197,17 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
          is set until the visitor clicks Accept. Choice kept 6 months, revocable
          from the legal-notices page (CNIL guidelines). -->
     <div class="consent-banner" id="consent-banner" hidden role="dialog" aria-live="polite"
-      aria-label={lang === "fr" ? "Consentement à la mesure d'audience" : "Audience-measurement consent"}>
+      aria-label={c.consent.aria}>
       <p class="consent-text">
-        {lang === "fr"
-          ? "Mesure d'audience : nous utilisons Google Analytics pour compter les visites et comprendre ce qui est lu. Aucun cookie n'est déposé sans votre accord."
-          : "Audience measurement: we use Google Analytics to count visits and understand what gets read. No cookie is set without your consent."}
-        <a href={lienInterne(lang === "fr" ? "/fr/mentions-legales" : "/legal")}>
-          {lang === "fr" ? "En savoir plus" : "Learn more"}</a>
+        {c.consent.text}
+        <a href={lienInterne(c.consent.moreHref)}>
+          {c.consent.more}</a>
       </p>
       <div class="consent-actions">
         <button class="button button-secondary" type="button" data-consent="denied">
-          {lang === "fr" ? "Refuser" : "Decline"}</button>
+          {c.consent.decline}</button>
         <button class="button button-secondary" type="button" data-consent="granted">
-          {lang === "fr" ? "Accepter" : "Accept"}</button>
+          {c.consent.accept}</button>
       </div>
     </div>
     <script is:inline>

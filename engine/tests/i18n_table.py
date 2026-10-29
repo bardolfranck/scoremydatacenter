@@ -179,3 +179,33 @@ def chemins(litteral: str) -> set[str]:
         i += 1
 
     return sortie
+
+
+def debut_de_commentaire(ligne: str) -> int:
+    """L'indice du premier `//` de la ligne qui ouvre VRAIMENT un commentaire, sinon -1.
+
+    🔴 Le `//` de `https://scoremydatacenter.org` n'en est pas un. Un détecteur naïf sautait
+    donc toute ligne portant une URL avant son test de langue — et sautait avec elle une
+    branche réelle (`SitePortrait.astro:154`, trouvée le 2026-10-29). Un garde qui ignore une
+    ligne sur un détail de ponctuation ne dit plus ce qu'il prétend compter.
+
+    Ne raisonne que sur UNE ligne : un `lang === "fr"` enfermé dans un `/* … */` étalé sur
+    plusieurs lignes serait compté comme nu. Aucun cas aujourd'hui, et mieux vaut un garde
+    qui compte une branche de trop qu'un qui en oublie.
+    """
+    chaine = None
+    i = 0
+    while i < len(ligne):
+        c = ligne[i]
+        if chaine:
+            if c == "\\":
+                i += 2
+                continue
+            if c == chaine:
+                chaine = None
+        elif c in "\"'`":
+            chaine = c
+        elif ligne[i : i + 2] == "//":
+            return i
+        i += 1
+    return -1

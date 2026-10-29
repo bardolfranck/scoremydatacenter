@@ -15,22 +15,37 @@ import re
 import pytest
 
 from engine.core import REPO_ROOT
-from engine.tests.i18n_table import bloc, chemins
+from engine.tests.i18n_table import bloc, chemins, debut_de_commentaire
 
 PAGES = REPO_ROOT / "site" / "src" / "pages"
 
-# Une paire dont la copie a QUITTÉ les deux pages pour un module partagé : la parité s'y lit
-# entre les blocs par langue, et non plus entre deux littéraux `t` tenus à la main.
-# La fiche a ouvert la voie le 2026-10-29 (127 clés, écrites deux fois jusque-là).
-TABLES_PARTAGEES: dict[str, tuple] = {
-    "fr/dc/[id].astro": (REPO_ROOT / "site" / "src" / "content" / "fiche.ts", "FR"),
-    "dc/[id].astro": (REPO_ROOT / "site" / "src" / "content" / "fiche.ts", "EN"),
+CONTENU = REPO_ROOT / "site" / "src" / "content"
+LANGUES_TS = CONTENU / "langues.ts"
+
+# Les tables de chaînes PARTAGÉES : un module qui porte la copie une fois par langue, au lieu
+# de deux littéraux `t` tenus à la main dans deux pages. La fiche a ouvert la voie le
+# 2026-10-29 ; le chrome a suivi. Leur parité se vérifie entre blocs de langue, pas entre
+# pages — c'est `test_les_tables_partagees_portent_les_memes_cles` qui s'en charge.
+TABLES_MODULES: dict[str, str] = {
+    "fiche.ts": "la copie de la fiche",
+    "chrome.ts": "le chrome, présent sur toutes les pages",
+}
+# Asymétries VOULUES dans un module partagé, par dernier segment de chemin.
+# `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont atteignables
+# que si `lang === "en"` ET le pays compte ses distances en miles (`PAYS_EN_MILES = {US}`,
+# DcFiche.astro) — la table FR ne peut donc structurellement pas en avoir besoin, et fiche.ts
+# le dit déjà. 🔴 Invisible jusqu'au 2026-10-29 : le relevé se faisait ligne par ligne, et
+# `relation: { operator: …, nearbyMi: … }` tient sur une seule ligne.
+ASYMETRIES_MODULES: dict[str, set[str]] = {
+    "fiche.ts": {"nearbyMi", "nearbyUnderMi"},
 }
 
 # (FR page, EN twin, compare t keys?) — routes differ by design (localised slugs).
 PAIRS = [
     ("fr/index.astro", "index.astro", True),
-    ("fr/dc/[id].astro", "dc/[id].astro", True),
+    # La copie de la fiche a quitté les deux pages pour `content/fiche.ts` (2026-10-29) :
+    # sa parité se vérifie entre blocs de langue, par le test des tables partagées.
+    ("fr/dc/[id].astro", "dc/[id].astro", False),
     ("fr/classement.astro", "ranking.astro", True),
     ("fr/carte.astro", "map.astro", False),          # inline labels, no t object
     ("fr/methodologie.astro", "methodology.astro", True),
@@ -89,15 +104,21 @@ EXTRA_OK: dict[str, set[str]] = {
 # repeats under every block, and listing each full path would be a list that rots.
 EXTRA_OK_IMBRIQUE: dict[str, set[str]] = {
     "understand.astro": {"tag"},
-    # `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont
-    # atteignables que si `lang === "en"` ET le pays compte ses distances en miles
-    # (`PAYS_EN_MILES = {US}`, DcFiche.astro) — la table FR ne peut donc structurellement
-    # pas en avoir besoin, et le code le dit déjà dans fiche.ts.
-    # 🔴 Cette asymétrie était INVISIBLE jusqu'au 2026-10-29 : le relevé des clés se faisait
-    # ligne par ligne, et `relation: { operator: …, nearbyMi: … }` tient sur une seule ligne,
-    # donc seul le parent était compté. Le relevé caractère par caractère la montre.
-    "dc/[id].astro": {"nearbyMi", "nearbyUnderMi"},
 }
+
+
+def _langues_vivantes() -> list[str]:
+    """Les langues DÉCLARÉES vivantes, lues à leur source unique (`content/langues.ts`).
+
+    Pas une liste recopiée ici : une langue en cours d'écriture n'est pas encore vivante, et
+    c'est `langues.ts` qui décide. Recopier la liste dans le test, c'est la même faute que de
+    recopier une table — elle finirait par ne plus dire la même chose.
+    """
+    m = re.search(r"LANGUES_VIVANTES = \[([^\]]*)\]", LANGUES_TS.read_text(encoding="utf-8"))
+    assert m, "LANGUES_VIVANTES introuvable — le garde ne sait plus quelles langues comparer"
+    langues = re.findall(r'"(\w+)"', m.group(1))
+    assert len(langues) >= 2, f"une seule langue vivante ({langues}) : rien à comparer"
+    return langues
 
 
 def _t_keys(page: str) -> set[str]:
@@ -105,12 +126,8 @@ def _t_keys(page: str) -> set[str]:
 
     Top-level keys alone let a whole nested group drift unseen: the fiche's two literals
     differed by ten lines and nobody could tell whether that was wrapping or a missing
-    group. Paths answer it. The copy is read from the page's `t` literal, or — once a pair
-    has moved its copy out — from the shared module named in TABLES_PARTAGEES.
+    group. Paths answer it.
     """
-    if page in TABLES_PARTAGEES:
-        fichier, declaration = TABLES_PARTAGEES[page]
-        return chemins(bloc(fichier.read_text(encoding="utf-8"), declaration))
     return chemins(bloc((PAGES / page).read_text(encoding="utf-8"), "t"))
 
 
@@ -194,10 +211,42 @@ def test_paired_t_objects_share_their_keys():
         )
 
 
+def test_les_tables_partagees_portent_les_memes_cles():
+    """Chaque module de chaînes partagé doit porter les mêmes clés dans toutes les langues.
+
+    Une table à deux endroits finit par mentir ; une table à UN endroit avec un bloc par
+    langue ne mentira que si personne ne la compare. C'est ce test qui la compare, et c'est
+    lui qui mord — pas le type TypeScript, puisque `astro build` tourne sans `astro check`
+    (une clé absente rendrait `undefined` en silence dans la page).
+    """
+    langues = _langues_vivantes()
+    for fichier, quoi in TABLES_MODULES.items():
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        exempt = ASYMETRIES_MODULES.get(fichier, set())
+        tables = {
+            lg: {k for k in chemins(bloc(texte, lg.upper())) if k.split(".")[-1] not in exempt}
+            for lg in langues
+        }
+        reference, cles_ref = langues[0], tables[langues[0]]
+        for lg in langues[1:]:
+            manquantes = sorted(cles_ref - tables[lg])
+            intruses = sorted(tables[lg] - cles_ref)
+            assert not manquantes, (
+                f"{fichier} ({quoi}) — {lg.upper()} n'a pas {len(manquantes)} clé(s) que "
+                f"{reference.upper()} porte : {manquantes[:8]}. Servie telle quelle, la page "
+                f"rendrait `undefined` : pas une erreur, un blanc."
+            )
+            assert not intruses, (
+                f"{fichier} ({quoi}) — {lg.upper()} porte {len(intruses)} clé(s) inconnue(s) "
+                f"de {reference.upper()} : {intruses[:8]}. Une clé renommée d'un seul côté est "
+                f"le piège muet : la rubrique disparaît sans que rien ne casse."
+            )
+
+
 # Un garde non éprouvé est une piste d'audit qui ment : on rejoue la dérive qu'il interdit.
 # La clé RENOMMÉE est le cas qui compte le plus — c'est le seul qui ne crie pas, parce que
 # la page continue de se construire et rend `undefined` à l'endroit de la rubrique.
-TABLE_FICHE = REPO_ROOT / "site" / "src" / "content" / "fiche.ts"
+TABLE_FICHE = CONTENU / "fiche.ts"
 
 
 def _derive_le_bloc_en(texte: str, transformation) -> str:
@@ -223,22 +272,142 @@ def test_le_garde_de_parite_mord_vraiment(nom, derive, tmp_path, monkeypatch):
     texte = TABLE_FICHE.read_text(encoding="utf-8")
     mute = _derive_le_bloc_en(texte, derive)
     assert mute != texte, f"la dérive « {nom} » n'a rien changé : le test ne prouve rien"
-    faux = tmp_path / "fiche.ts"
-    faux.write_text(mute, encoding="utf-8")
-    # On patche l'entrée de TABLES_PARTAGEES, pas un chemin d'import en dur : selon la façon
-    # dont pytest collecte ce fichier, ce chemin change de nom et le patch échouerait — une
-    # contre-épreuve qui ne s'exécute pas ne prouve rien non plus.
-    monkeypatch.setitem(TABLES_PARTAGEES, "dc/[id].astro", (faux, "EN"))
+    # On écrit la table dérivée dans un dossier jetable et on y fait pointer CONTENU : selon
+    # la façon dont pytest collecte ce fichier, un chemin d'import en dur change de nom et le
+    # patch échouerait — une contre-épreuve qui ne s'exécute pas ne prouve rien non plus.
+    (tmp_path / "fiche.ts").write_text(mute, encoding="utf-8")
+    (tmp_path / "chrome.ts").write_text(
+        (CONTENU / "chrome.ts").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    monkeypatch.setitem(globals(), "CONTENU", tmp_path)
     with pytest.raises(AssertionError):
-        test_paired_t_objects_share_their_keys()
+        test_les_tables_partagees_portent_les_memes_cles()
 
 
-GABARIT_FICHE = REPO_ROOT / "site" / "src" / "components" / "DcFiche.astro"
+SRC_SITE = REPO_ROOT / "site" / "src"
+GABARIT_FICHE = SRC_SITE / "components" / "DcFiche.astro"
 _TEST_DE_LANGUE = re.compile(r'lang === "fr"')
 # Quatre seaux, et un seul contient des mots. Pas d'heuristique sur le contenu de la chaîne :
 # « carte » n'a pas de barre oblique et reste un chemin, tandis que « Carte » est un mot —
 # seule une déclaration explicite les distingue sûrement, et elle se relit.
 _DECLARE = re.compile(r"i18n:(route|format|donnee)")
+
+
+def _branches_nues(chemin) -> list[str]:
+    """Les tests de langue d'un fichier qui ne déclarent pas ce qu'ils sont.
+
+    Une occurrence DANS un commentaire ne compte pas : ce fichier-ci et `fiche.ts` parlent du
+    motif `lang === "fr" ? … : …` pour l'expliquer, et un garde qui compte sa propre
+    documentation crie pour rien — on finit par baisser le chiffre au lieu de le lire.
+    """
+    nues = []
+    for n, ligne in enumerate(chemin.read_text(encoding="utf-8").splitlines(), 1):
+        m = _TEST_DE_LANGUE.search(ligne)
+        if not m or _DECLARE.search(ligne):
+            continue
+        commentaire = debut_de_commentaire(ligne)
+        if commentaire != -1 and commentaire < m.start():
+            continue
+        nues.append(f"  {chemin.relative_to(SRC_SITE)}:{n}  {ligne.strip()[:100]}")
+    return nues
+
+
+# 🔴 UNE DETTE, PAS DES EXEMPTIONS. Chaque ligne est un fichier qui choisit encore ses mots
+# par un test de langue, avec le nombre exact de branches nues qu'il lui reste. Le chiffre
+# doit être EXACT : quand on en retire, on le baisse, et il ne peut jamais remonter. Un
+# fichier NOUVEAU n'est pas dans la liste, donc il doit naître à zéro.
+#
+# C'est ce qui remplace « on fera le reste plus tard » par une quantité qu'on voit diminuer.
+# État au 2026-10-29, après la fiche ET le chrome : 104 branches nues dans 27 fichiers.
+DETTE_I18N: dict[str, int] = {
+    "components/AboutSection.astro": 1,
+    "components/ActuFeed.astro": 6,
+    "components/ActuStrip.astro": 2,
+    "components/Comparateur.astro": 12,
+    "components/CountryRing.astro": 2,
+    "components/DevelopersPage.astro": 1,
+    "components/DossierEnvironnemental.astro": 5,
+    "components/FeedbackBand.astro": 1,
+    "components/IndicesMap.astro": 1,
+    "components/IndicesPage.astro": 5,
+    "components/KeyReveal.astro": 1,
+    "components/Landing.astro": 14,
+    "components/LibraryIndex.astro": 2,
+    "components/LibraryRevue.astro": 7,
+    "components/Normes.astro": 1,
+    "components/PressPage.astro": 1,
+    "components/ProjectsStrip.astro": 2,
+    "components/Ranking.astro": 3,
+    "components/ReportDownload.astro": 6,
+    "components/SatelliteWall.astro": 1,
+    "components/SitePortrait.astro": 5,
+    "components/StatsPage.astro": 11,
+    "config/indicatorValues.ts": 2,
+    "config/reportStatus.ts": 1,
+    "config/stats.ts": 6,
+    "pages/og/indices/[key].png.ts": 4,
+    "pages/og/stats/[key].png.ts": 1,
+}
+
+
+def _sources_site() -> list:
+    return sorted(
+        [p for p in SRC_SITE.rglob("*.astro")] + [p for p in SRC_SITE.rglob("*.ts")]
+    )
+
+
+def test_la_dette_i18n_ne_remonte_jamais():
+    """Le cliquet : un fichier déjà fait reste à zéro, et la dette ne peut que baisser.
+
+    Sans ce test, « les autres fichiers suivront » est une intention. Avec lui, c'est un
+    nombre : chaque mot sorti d'un gabarit fait baisser un chiffre qui ne remonte pas, et un
+    fichier nouveau ne peut pas naître avec de la prose en dur.
+    """
+    trop, a_baisser, nouveaux = [], [], []
+    for p in _sources_site():
+        rel = str(p.relative_to(SRC_SITE))
+        nues = _branches_nues(p)
+        attendu = DETTE_I18N.get(rel)
+        if attendu is None:
+            if nues:
+                nouveaux.append((rel, nues))
+        elif len(nues) > attendu:
+            trop.append((rel, attendu, len(nues), nues[attendu:]))
+        elif len(nues) < attendu:
+            a_baisser.append((rel, attendu, len(nues)))
+
+    messages = []
+    for rel, nues in nouveaux:
+        messages.append(
+            f"{rel} n'est pas dans la dette et porte {len(nues)} test(s) de langue nus :\n"
+            + "\n".join(nues)
+        )
+    for rel, attendu, trouve, surplus in trop:
+        messages.append(
+            f"{rel} : la dette dit {attendu}, j'en trouve {trouve}. La dette ne remonte pas.\n"
+            + "\n".join(surplus)
+        )
+    for rel, attendu, trouve in a_baisser:
+        messages.append(
+            f"{rel} : la dette dit {attendu}, il n'en reste que {trouve} — baissez le chiffre "
+            f"dans DETTE_I18N (ou retirez la ligne si c'est 0). Un cliquet qui garde un vieux "
+            f"chiffre autorise la prose à revenir jusque-là."
+        )
+    assert not messages, "\n\n".join(messages) + (
+        "\n\nUn MOT va dans une table de chaînes (il se traduit). Une route, un format ou un "
+        "champ bilingue de la donnée reste sur place et se déclare `/* i18n:route */`, "
+        "`/* i18n:format */` ou `/* i18n:donnee */`."
+    )
+
+
+def test_le_cliquet_de_dette_mord_dans_les_deux_sens(tmp_path, monkeypatch):
+    """Contre-épreuve : le cliquet doit voir une dette qui remonte ET une dette périmée."""
+    monkeypatch.setitem(DETTE_I18N, "components/Landing.astro", 13)  # on en déclare un de moins
+    with pytest.raises(AssertionError, match="ne remonte pas"):
+        test_la_dette_i18n_ne_remonte_jamais()
+    monkeypatch.setitem(DETTE_I18N, "components/Landing.astro", 99)  # on en déclare trop
+    with pytest.raises(AssertionError, match="baissez le chiffre"):
+        test_la_dette_i18n_ne_remonte_jamais()
 
 
 def test_le_gabarit_de_la_fiche_ne_choisit_plus_de_mot_par_test_de_langue():
