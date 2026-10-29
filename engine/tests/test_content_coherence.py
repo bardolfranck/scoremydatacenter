@@ -17,6 +17,7 @@ from pathlib import Path
 import pytest
 
 from engine.core import REPO_ROOT, load_methodology
+from engine.tests.i18n_table import bloc as bloc_i18n
 
 PAGES = {
     "en": (REPO_ROOT / "site" / "src" / "pages" / "index.astro").read_text(),
@@ -75,7 +76,11 @@ _SITE = REPO_ROOT / "site" / "src" / "pages"
 FIREWALL_SOURCES = {
     "landing-fr": PAGES["fr"],
     "mentions-legales": (_SITE / "fr" / "mentions-legales.astro").read_text(),
-    "methodologie": (_SITE / "fr" / "methodologie.astro").read_text(),
+    # 🔴 La phrase du pare-feu vivait dans la page ; sa copie est partie dans
+    # `content/methodologie.ts` le 2026-10-29, et c'est ce test qui l'a dit en tombant. Un
+    # garde ancré sur un CHEMIN surveille un fichier, pas une garantie : viser le module,
+    # c'est viser les deux langues d'un coup (la page EN n'était pas dans cette liste).
+    "methodologie": (_SITE.parent / "content" / "methodologie.ts").read_text(),
     "readme": (REPO_ROOT / "README.md").read_text(),
 }
 
@@ -250,17 +255,22 @@ def test_ranking_states_its_denominator_and_version():
         )
 
 
-FICHE_PAGES = {
-    "en": REPO_ROOT / "site" / "src" / "pages" / "dc" / "[id].astro",
-    "fr": REPO_ROOT / "site" / "src" / "pages" / "fr" / "dc" / "[id].astro",
-}
+#  La copie de la fiche vivait dans les deux pages ; depuis le 2026-10-29 elle vit une seule
+#  fois dans `content/fiche.ts`, un bloc par langue. On lit donc la TABLE et non la page —
+#  et par le lecteur partagé, pour qu'une table amputée crie au lieu de paraître complète.
+FICHE_TABLE = REPO_ROOT / "site" / "src" / "content" / "fiche.ts"
+FICHE_LANGUES = ("en", "fr")
+
+
+def _copie_fiche(lang: str) -> str:
+    return bloc_i18n(FICHE_TABLE.read_text(encoding="utf-8"), lang.upper())
 # Tout statut qu'un indicateur peut porter dans un artefact servi. Le corpus du 2026-10-20 en
 # produit cinq ; la liste est ici pour que l'ajout d'un sixième casse le build au lieu de
 # passer en silence.
 STATUTS_SERVIS = ("measured", "announced", "estimated", "missing", "not_collected")
 
 
-@pytest.mark.parametrize("lang", sorted(FICHE_PAGES))
+@pytest.mark.parametrize("lang", FICHE_LANGUES)
 def test_chaque_statut_servi_a_un_libelle_sur_la_fiche(lang):
     """UN ÉTAT SANS LIBELLÉ S'AFFICHE COMME UNE CASE VIDE, ET UNE CASE VIDE NE DIT RIEN.
 
@@ -270,13 +280,13 @@ def test_chaque_statut_servi_a_un_libelle_sur_la_fiche(lang):
     « absent du dossier » est un fait constaté qui pèse comme un zéro dans la note, « pas
     encore cherché » est notre lacune et ne pénalise personne.
     """
-    texte = FICHE_PAGES[lang].read_text()
+    texte = _copie_fiche(lang)
     bloc = texte.split("indStatus:", 1)[1].split("},", 1)[0]
     for statut in STATUTS_SERVIS:
         assert f"{statut}:" in bloc, f"[{lang}] le statut « {statut} » n'a pas de libellé"
 
 
-@pytest.mark.parametrize("lang", sorted(FICHE_PAGES))
+@pytest.mark.parametrize("lang", FICHE_LANGUES)
 def test_l_enumeration_de_l_etat_des_donnees_boucle(lang):
     """Une énumération qui ne fait pas son total ment par omission.
 
@@ -284,7 +294,7 @@ def test_l_enumeration_de_l_etat_des_donnees_boucle(lang):
     n'avons pas cherchés — la plus grosse part de notre ignorance — étaient les seuls à ne pas
     être dits. Les estimations manquaient aussi.
     """
-    texte = FICHE_PAGES[lang].read_text()
+    texte = _copie_fiche(lang)
     phrase = [l for l in texte.splitlines() if l.strip().startswith("dataState:")][0]
     for champ in ("{n}", "{measured}", "{announced}", "{missing}", "{notCollected}"):
         assert champ in phrase, f"[{lang}] {champ} absent de la phrase d'état des données"
@@ -926,7 +936,20 @@ def test_la_page_nuisances_a_une_phrase_sans_chiffre(page):
     assert "perimeterSites(" in texte and "derivedCount(" in texte, (
         f"{page} ne passe plus par les accesseurs gardés"
     )
-    assert "!== null" in texte, (
-        f"{page} n'a plus de branche pour le compte absent — sans elle, « tolérer » veut dire "
-        "planter au build, ou servir un chiffre de repli"
+    # 🔴 La branche du compte absent a quitté la page pour `content/nuisances.ts` : les deux
+    # pages composaient la MÊME phrase, chacune chez elle, avec son propre `toLocaleString`.
+    # La garantie n'a pas changé de nature, seulement d'adresse — et elle est désormais
+    # vérifiée UNE fois pour les deux langues, au lieu de deux fois par page.
+    module = (REPO_ROOT / "site" / "src" / "content" / "nuisances.ts").read_text()
+    assert "!== null" in module, (
+        "content/nuisances.ts n'a plus de branche pour le compte absent — sans elle, "
+        "« tolérer » veut dire planter au build, ou servir un chiffre de repli"
+    )
+    assert module.count("avec:") >= 2 and module.count("sans:") >= 2, (
+        "les deux langues doivent chacune porter leur variante SANS chiffre : sans elle, "
+        "la langue concernée replante au build dès qu'un compte manque"
+    )
+    assert "nuisances(" in texte, (
+        f"{page} ne passe plus par le helper qui choisit la variante — elle a dû recomposer "
+        f"la phrase sur place, et la garantie n'est plus gardée qu'ici"
     )

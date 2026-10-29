@@ -3,8 +3,11 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 // FR fiche: thin page — the template lives in DcFiche.astro (shared FR/EN, i18n §13),
-// this file only carries the French copy (t) and the route.
+// this file only carries the route. The copy used to live here as a 127-key `t` literal,
+// with its English twin in the EN page: two hand-held copies of one list. It now lives once,
+// in content/fiche.ts, where a test checks the parity instead of hoping for it.
 import DcFiche from "../../../components/DcFiche.astro";
+import { FICHE } from "../../../content/fiche";
 import { FR_NAV } from "../../../config/nav";
 import { toLite, buildRelated, coordsFromGeojson, type Related } from "../../../config/related";
 import fs from "node:fs";
@@ -27,158 +30,7 @@ export async function getStaticPaths() {
 
 const { dc, related, geo } = Astro.props as { dc: any; related: Related[]; geo: [number, number] | null };
 
-const t = {
-  tagline: "Observatoire indépendant",
-  metaDescription: "Fiche {name} ({municipality}) : note du site et note projet & processus A–E, sous-scores par pilier, indicateurs sourcés — observatoire indépendant.",
-  kicker: "Fiche projet",
-  fleet: {
-    grid_saturated: "Ce site fait partie des {pct} du parc raccordés à un poste électrique déjà saturé.",
-    water_stress_high: "Ce site fait partie des {pct} du parc implantés dans un bassin en stress hydrique fort.",
-    soil_artificialized: "Ce site fait partie des {pct} du parc bâtis sur des sols déjà artificialisés.",
-    cta: "Les chiffres du parc →",
-  },
-  status: { announced: "Annoncé", permitting: "En instruction (permitting)", under_construction: "En construction", operational: "En service" },
-  statusCheck: {
-    verified: "statut vérifié",
-    networksSingular: "réseau interconnecté",
-    networksPlural: "réseaux interconnectés",
-    verifiedTip: "Confirmé automatiquement le {date} : {n} réseau(x) interconnecté(s) dans ce bâtiment (source PeeringDB). Vérification chaque semaine.",
-    unverified: "statut non vérifié",
-    unverifiedTip: "Statut issu de sources publiques, pas encore confirmé par un signal indépendant. Vérification automatique chaque semaine.",
-  },
-  operatorLabel: "Opérateur :",
-  operatorFromRegister: "Identifié automatiquement dans le registre des entreprises (SIRENE)",
-  developerDeclared: "activité déclarée :",
-  developerRegister: "registre des entreprises",
-  dwellLabel: "Premières habitations :",
-  dwellBuildingShort: "bâtiment d'habitation (OpenStreetMap)",
-  dwellBuilding: "Distance au bâtiment d'habitation le plus proche recensé dans OpenStreetMap, mesurée depuis les coordonnées du site (valeur approchée, jamais un relevé de bruit).",
-  dwellLanduseShort: "zone résidentielle (OpenStreetMap)",
-  dwellLanduse: "Aucun bâtiment d'habitation n'est encore recensé ici : la distance vise la zone résidentielle la plus proche, moins précise qu'une maison.",
-  powerUnknown: "puissance non communiquée",
-  powerEstimated: "estimé",
-  commissioning: "mise en service",
-  siteScore: "Note du site",
-  ppScore: "Note projet & processus",
-  naLabel: "données insuffisantes",
-  reserved: "A réservé — se prouve en exploitation",
-  confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
-  confidenceNote: { high: "dossier largement sourcé", medium: "dossier partiellement sourcé", low: "dossier peu sourcé" },
-  confGlobal: "Confiance documentaire globale",
-  openFullMap: "Ouvrir la grande carte ↗",
-  miniMapAria: "Carte centrée sur ce site",
-  miniMapTitle: "Territoire & voisins",
-  satCaption: "Vue aérienne — {municipality}. Source :",
-  satAlt: "Vue aérienne du site {name}",
-  satStatusChip: { announced: "Site en projet", permitting: "Site en projet", under_construction: "En construction" },
-  satStatusNote: "l'image satellite peut être antérieure au projet : le terrain visible ici peut ne pas encore accueillir le data center",
-  synthEmptyNote: "Dossier peu sourcé ({pct} % de confiance documentaire) : nous ne notons pas l'inconnu, et nous ne rédigeons pas de lecture d'ensemble sans faits suffisants. Cette lecture pourra évoluer si de nouvelles informations publiques ou vérifiables deviennent disponibles.",
-  share: "Partager",
-  shareOn: "Partager sur",
-  shareMail: "Partager par e-mail",
-  copyLink: "Copier le lien",
-  copied: "Lien copié",
-  download: "Télécharger l'image du score",
-  signal: "Signaler une erreur",
-  signalSubject: "Correction ou réponse",
-  signalBody: "Fiche concernée : {url}\nNature de la demande : [ ] Correction d'une donnée [ ] Réponse de l'opérateur [ ] Autre\nInformation concernée :\nCorrection ou réponse proposée :\nSource ou justificatif :\nNom et qualité du demandeur :\nLien éventuel avec le projet ou l'opérateur :\n",
-  signalNote: "Corrige un fait, avec sa source — <strong>une preuve est requise</strong>.",
-  methodology: "Méthodologie",
-  portraitLink: "Portrait du site →",
-  portraitLinkSub: "la même donnée, écrite pour un élu ou un riverain",
-  subscoresTitle: "Sous-scores par pilier",
-  subscoresSub: "Un pilier mêle le subi et le choisi ; une note n'est pas la moyenne des piliers.",
-  whyAria: "Pourquoi la note ne se déduit pas des piliers",
-  whyTip: "Les deux notes (site, projet) séparent les indicateurs selon qu'ils sont subis ou choisis — toutes thématiques confondues et pondérés. Les piliers, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages ne se recouvrent pas : la note du site ne se lit pas comme la moyenne des piliers affichés.",
-  legendDoc: "documentation disponible",
-  synthTitle: "Synthèse du projet",
-  synthSub: "la lecture d'ensemble, derrière les lettres",
-  synthProjectTag: "Projet & processus",
-  synthSiteTag: "Site",
-  quoteOpen: "« ",
-  quoteClose: " »",
-  indicatorsTitle: "Indicateurs suivis",
-  th: { indicator: "Indicateur", value: "Valeur", reading: "Lecture", state: "État", source: "Source" },
-  explanation: "Explication",
-  notDisclosed: "Non communiqué",
-  // Sur quoi la note d'un pilier repose RÉELLEMENT. Un pilier mince est aujourd'hui
-  // renormalisé en silence : le lecteur ne voit pas qu'un seul point le porte.
-  pillarBasis: { one: "1 seul indicateur publié :", some: "{k} indicateurs publiés sur {n}" },
-  pillarMissing: "Manquent :",
-  pillarScope: {
-    national: "Note nationale — la même pour tous les sites notés dans ce pays ({pays}).",
-    thin: "Trop peu de sites notés dans ce pays pour établir si cette note le distingue.",
-  },
-  procedureSeeSource: "Procédure (voir source)",
-  notApplicable: "non applicable",
-  // DEUX ABSENCES OPPOSÉES PORTAIENT LE MÊME SILENCE. `missing` veut dire « nous avons lu le
-  // dossier, la donnée n'y est pas » — c'est un fait, et il compte comme un ZÉRO dans la note.
-  // `not_collected` veut dire « nous n'avons pas cherché » — c'est notre lacune, retirée du
-  // calcul. La fiche nommait le premier « Manquant » (ambigu : manquant pour qui ?) et ne
-  // nommait pas le second du tout : 48 135 lignes du corpus affichaient une case d'état VIDE.
-  indStatus: {
-    measured: "Mesuré", announced: "Annoncé", estimated: "Estimé",
-    missing: "Absent du dossier", not_collected: "Pas encore cherché",
-  },
-  indStatusHint: {
-    missing: "L'information a été cherchée dans le dossier public et ne s'y trouve pas. Elle compte comme un zéro dans la note.",
-    not_collected: "Nous n'avons pas encore cherché cette information. Elle est retirée du calcul, elle ne pénalise pas le site.",
-  },
-  accessed: "consulté le",
-  archived: "archivé",
-  directionHint: { lower_is_better: "Plus la valeur est basse, mieux c'est.", higher_is_better: "Plus la valeur est haute, mieux c'est." },
-  hintDedupe: "mieux c'est",
-  sense: { good: "favorable", mid: "moyen", bad: "défavorable" },
-  proxy: {
-    inquiryHeld: "Enquête publique tenue",
-    inquiryNone: "Pas d'enquête publique",
-    envOpinion: {
-      favorable: "Avis de l'autorité environnementale : favorable",
-      favorable_with_reservations: "Avis de l'autorité environnementale : favorable avec réserves",
-      unfavorable: "Avis de l'autorité environnementale : défavorable",
-      none: "Avis de l'autorité environnementale : aucun requis/rendu",
-    },
-    cndpYes: "Saisine de la CNDP",
-    cndpNo: "Pas de saisine de la CNDP",
-    appeals: "Recours contentieux :",
-    council: {
-      favorable: "Délibérations du conseil : favorables",
-      mixed: "Délibérations du conseil : mitigées",
-      unfavorable: "Délibérations du conseil : défavorables",
-      none_recorded: "Délibérations du conseil : aucune enregistrée",
-    },
-  },
-  opTitle: "Réponse de l'opérateur",
-  opNone: "L'opérateur peut nous transmettre une réponse concernant cette fiche. Lorsqu'une réponse est reçue et publiable, elle apparaît ici, clairement attribuée et datée.",
-  opNote: "Une erreur factuelle ? Utilisez « Signaler une erreur » en joignant une source ou un justificatif.",
-  dataStateTitle: "État de la donnée disponible",
-  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} absents du dossier · {notCollected} pas encore cherchés.",
-  contestationTitle: "Contestation & signal",
-  contestationSub: "Faits sourcés — n'entrent pas dans la note.",
-  press: "Presse : ",
-  selfReported: "auto-déclaré",
-  historyTitle: "Historique de la note",
-  histSite: "Note du site à cette date",
-  histPp: "Note projet & processus à cette date",
-  scoredOn: "Scoré le",
-  shareText: "{name} — Note du site : {grade}",
-  shareSuffix: ", selon ScoreMyDataCenter",
-  related: {
-    title: "D'autres sites à comparer",
-    // La phrase d'intro était figée au cas français : une fiche du Texas annonçait
-    // « même département » au-dessus de cartes qui disent « même région ». Le mot suit
-    // maintenant le pays, comme l'étiquette de la relation juste en dessous — une seule
-    // réponse à « comment s'appelle la maille ici ».
-    sub: "Même opérateur, {maille}, ou simplement les plus proches — notés dans la même grille.",
-    subMailleFR: "même département",
-    subMaille: "même région",
-    seeAll: "Voir le classement complet →",
-    // Sous le kilomètre, la coordonnée publiée (arrondie à ~1 km) ne mesure plus rien :
-    // voir PLANCHER_KM dans DcFiche. `nearbyMi` n'a pas de pendant ici — la page française
-    // reste métrique, même pour un site américain.
-    relation: { operator: "même opérateur :", region: "même région", regionFR: "même département", nearby: "à {km} km", nearbyUnder: "à moins d'un kilomètre" },
-  },
-};
+const t = FICHE.fr;
 ---
 
 <DcFiche geo={geo} dc={dc} related={related} lang="fr" t={t} nav={FR_NAV} altHref={`/dc/${dc.id}/`} altLabel="EN" />

@@ -3,69 +3,12 @@
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import Understand from "../../components/Understand.astro";
-import { FR_NAV } from "../../config/nav";
 import { CHECKLIST_FR } from "../../content/questions";
 import { WHATIS_FR } from "../../content/what-is-a-dc";
 import { RICH_FR } from "../../content/understand-blocks";
+import { COMPRENDRE } from "../../content/comprendre";
 
-const t = {
-  title: "Comprendre les data centers, sans jargon — ScoreMyDataCenter",
-  description:
-    "Ce qu'un data center change vraiment près de chez vous : ordres de grandeur, impact local, les bonnes questions à poser, vos droits, le calendrier. En clair, sans jargon.",
-  tagline: "Observatoire indépendant",
-  altHref: "/understand/",
-  altLabel: "EN",
-  nav: FR_NAV,
-  pageTitle: "Comprendre les data centers",
-  lede:
-    "Pour l'élu qui reçoit l'appel d'un cabinet, le riverain qui découvre un panneau d'enquête publique, le journaliste qui débute sur le sujet : l'essentiel, sans jargon. Ce qui se cache derrière les chiffres.",
-  pendingLabel: "Texte en préparation",
-  whyLabel: "Pourquoi :",
-  takeawayLabel: "À retenir —",
-  sourcesLabel: "Sources :",
-  seeMore: "Voir plus…",
-  seeLess: "Réduire",
-  tocAria: "Sommaire",
-  blocks: [
-    {
-      anchor: "quoi",
-      title: "C'est quoi, un data center ?",
-      slot: "whatis",
-    },
-    {
-      anchor: "commune",
-      title: "Pourquoi ça concerne ma commune",
-      slot: "rich",
-    },
-    {
-      anchor: "questions",
-      title: "Les bonnes questions à poser",
-      body: "La checklist qui épouse nos piliers de notation : énergie, eau, foncier, impact local, transparence.",
-      featured: true,
-      slot: "checklist",
-    },
-    {
-      anchor: "bon-projet",
-      title: "C'est quoi, un « bon » projet ?",
-      slot: "rich",
-    },
-    {
-      anchor: "droits",
-      title: "Droits et calendrier",
-      slot: "rich",
-    },
-    {
-      anchor: "faq",
-      title: "Questions pratiques",
-      slot: "rich",
-    },
-    {
-      anchor: "aller-plus-loin",
-      title: "Aller plus loin",
-      slot: "rich",
-    },
-  ],
-};
+const t = COMPRENDRE.fr;
 ---
 
 <Understand lang="fr" t={t} checklist={CHECKLIST_FR} whatIs={WHATIS_FR} rich={RICH_FR} />
