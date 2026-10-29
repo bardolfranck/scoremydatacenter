@@ -32,7 +32,7 @@ const FR = {
     soil_artificialized: "Ce site fait partie des {pct} du parc bâtis sur des sols déjà artificialisés.",
     cta: "Les chiffres du parc →",
   },
-  status: { announced: "Annoncé", permitting: "En instruction (permitting)", under_construction: "En construction", operational: "En service" },
+  status: { announced: "Annoncé", permitting: "En instruction (permitting)", under_construction: "En construction", operational: "En service", unknown: "Statut non établi" },
   statusCheck: {
     verified: "statut vérifié",
     networksSingular: "réseau interconnecté",
@@ -234,7 +234,7 @@ const EN: typeof FR = {
     soil_artificialized: "This site is among the {pct} of the fleet built on already-artificialized soil.",
     cta: "Fleet figures →",
   },
-  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational", unknown: "Status not established" },
   statusCheck: {
     verified: "status verified",
     networksSingular: "network interconnected",

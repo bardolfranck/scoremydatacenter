@@ -8,7 +8,7 @@ import json
 import re
 from datetime import date
 
-from engine.core import DATA_DIR, load_methodology, load_datacenters
+from engine.core import DATA_DIR, REPO_ROOT, load_methodology, load_datacenters
 from engine.scoring import history_entry_fields, score_datacenter
 from engine.score import _changed
 from engine.validate import STALE_METHODOLOGY_REMEDY, run_gates
@@ -403,3 +403,160 @@ def test_gate5_judges_only_the_journal_head_and_lets_history_keep_old_versions(d
     # …mais une tête périmée, si : c'est l'état servi qui serait calculé sous l'ancienne grille.
     edit(ALPHA, lambda d: d["score_history"][-1].update(methodology_version="0.0.1"))
     assert any(STALE_METHODOLOGY_REMEDY in p for p in run_gates(root, TODAY))
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# GATE STATUT — « en service » est une AFFIRMATION, et elle doit avoir une source.
+# Trois fois le même défaut avant que ce gate existe : le lot DCmag (6 faux operational d'un
+# annuaire curé), les 361 invérifiables, puis 8 fiches irlandaises de licence EPA où la valeur
+# était forcée dans l'entrée du run. Chaque fois trouvé À LA MAIN, par quelqu'un qui pensait
+# à regarder. Ces contre-épreuves fixent ce que le gate refuse — un gate non éprouvé est une
+# piste d'audit qui ment.
+# ─────────────────────────────────────────────────────────────────────────────────────────
+
+def _corpus_statut(racine, fiches: dict[str, str], verdicts: dict[str, str]):
+    """Un corpus jouet : {id: project_status} + le sidecar {id: verdict}."""
+    dossier = racine / "datacenters"
+    if dossier.is_dir():
+        # 🔴 Repartir PROPRE : la première version empilait, et les fiches du cas précédent
+        # restaient « en service » sans être dans le nouveau sidecar — le test suivant
+        # échouait sur un défaut qu'il n'avait pas écrit.
+        for vieux in dossier.iterdir():
+            vieux.unlink()
+    dossier.mkdir(parents=True, exist_ok=True)
+    for fid, statut in fiches.items():
+        (dossier / f"{fid}.json").write_text(
+            json.dumps({"id": fid, "identity": {"project_status": statut}}), encoding="utf-8")
+    (racine / "status-proof").mkdir(parents=True, exist_ok=True)
+    (racine / "status-proof" / "status_check.json").write_text(
+        json.dumps({"fiches": {k: {"verdict": v} for k, v in verdicts.items()}}), encoding="utf-8")
+
+
+def test_statut_gate_refuse_une_fiche_de_plus_sans_source(tmp_path, monkeypatch):
+    """Le cliquet empêche la fiche SUIVANTE — c'est tout son objet.
+
+    Il ne prétend pas que les fiches déjà servies soient justes : il empêche qu'il y en ait
+    une de plus. Et on ne remplace pas une affirmation non sourcée par une autre (la leçon
+    des 35 : un flip de masse vers `announced` fabriquerait de faux « annoncés » sur de vrais
+    sites en service). Elles baissent par la preuve, fiche à fiche.
+    """
+    from engine.validate import statut_gate
+    import engine.validate as validate
+
+    _corpus_statut(tmp_path, {"xx-un": "operational"}, {"xx-un": "unverified"})
+    monkeypatch.setattr(validate, "STATUT_NON_SOURCE", 1)
+    assert statut_gate(tmp_path) == [], "au niveau du cliquet, le gate se tait"
+
+    _corpus_statut(tmp_path, {"xx-un": "operational", "xx-deux": "operational"},
+                   {"xx-un": "unverified", "xx-deux": "unverified"})
+    violations = statut_gate(tmp_path)
+    assert any("1 fiche(s) de plus" in v and "xx-deux" in v for v in violations), violations
+
+
+def test_statut_gate_mord_aussi_quand_le_compte_BAISSE(tmp_path, monkeypatch):
+    """Un cliquet dont le chiffre n'est plus exact laisse la place à une régression muette.
+
+    Même discipline que la dette i18n : si le compte descend sans que le nombre suive, il
+    reste de la marge pour qu'une fiche non sourcée revienne sans rien casser.
+    """
+    from engine.validate import statut_gate
+    import engine.validate as validate
+
+    _corpus_statut(tmp_path, {"xx-un": "operational"}, {"xx-un": "verified"})
+    monkeypatch.setattr(validate, "STATUT_NON_SOURCE", 1)
+    violations = statut_gate(tmp_path)
+    assert any("baisser `STATUT_NON_SOURCE` à 0" in v for v in violations), violations
+
+
+def test_statut_gate_accepte_les_deux_preuves_et_une_seule_suffit(tmp_path, monkeypatch):
+    """Les réseaux interconnectés dans le bâtiment, OU une source qui cite le stade.
+
+    `live_signal` compte comme `verified` : les deux sont des signaux d'exploitation. En
+    revanche `unverified` veut dire « on a cherché et rien trouvé » — ce n'est pas une preuve,
+    et ce n'est pas non plus la même chose qu'une fiche jamais mesurée, qui n'apparaît pas du
+    tout dans le sidecar.
+    """
+    from engine.validate import statut_gate
+    import engine.validate as validate
+
+    monkeypatch.setattr(validate, "STATUT_NON_SOURCE", 0)
+    _corpus_statut(tmp_path, {"xx-res": "operational", "xx-sig": "operational"},
+                   {"xx-res": "verified", "xx-sig": "live_signal"})
+    assert statut_gate(tmp_path) == [], "une preuve PeeringDB suffit"
+
+    _corpus_statut(tmp_path, {"xx-prov": "operational"}, {"xx-prov": "unverified"})
+    assert statut_gate(tmp_path), "sans provenance, la fiche compte"
+    (tmp_path / "datacenters" / "xx-prov.provenance.json").write_text(json.dumps(
+        {"project_status_provenance": {"to": "operational",
+                                       "source": {"title": "t", "url": "https://exemple.test"},
+                                       "date": "2026-10-29"}}), encoding="utf-8")
+    assert statut_gate(tmp_path) == [], "une provenance qui cite sa source suffit aussi"
+
+
+def test_statut_gate_voit_une_fiche_jamais_mesuree(tmp_path, monkeypatch):
+    """Une fiche « en service » absente du sidecar n'est pas une fiche propre.
+
+    C'est le même piège que le gate géo : il suffirait de ne pas relancer la mesure après un
+    onboarding pour passer sans être vu. Elle compte comme non sourcée — le refus est le bon —
+    mais le gate le NOMME, sinon un onboarding sans mesure ressemble à une mesure propre.
+    """
+    from engine.validate import statut_gate
+    import engine.validate as validate
+
+    monkeypatch.setattr(validate, "STATUT_NON_SOURCE", 0)
+    _corpus_statut(tmp_path, {"xx-neuve": "operational"}, {})
+    violations = statut_gate(tmp_path)
+    assert any("jamais été mesurées" in v and "xx-neuve" in v for v in violations), violations
+
+
+def test_statut_gate_inerte_sans_newsroom(tmp_path, monkeypatch):
+    """Sans corpus privé monté, ce gate n'a rien à protéger — même nuance que le gate géo.
+
+    Le gate géo a été câblé en exigeant son sidecar : vert en local, rouge dans toute CI et
+    tout clone frais, et il a bloqué la PR d'un coéquipier sur un sujet sans rapport. Un gate
+    qui échoue là où il ne peut rien protéger finit par être désactivé — et c'est alors le
+    vrai cas qui passe.
+    """
+    from engine.validate import statut_gate
+    from engine.core import DATA_DIR
+
+    monkeypatch.setenv("NEWSROOM_CAL", str(tmp_path / "jamais-monte"))
+    assert statut_gate(DATA_DIR) == [], "sans newsroom, le gate se tait"
+
+    newsroom = tmp_path / "newsroom-sans-sidecar"
+    newsroom.mkdir()
+    monkeypatch.setenv("NEWSROOM_CAL", str(newsroom))
+    assert any("sidecar" in v for v in statut_gate(DATA_DIR)), (
+        "avec un newsroom monté, un sidecar manquant est un vrai manquement"
+    )
+
+
+def test_aucun_gate_ne_reste_debranche():
+    """Tout `*_gate` d'`engine.validate` doit être APPELÉ par `scripts/validate_corpus.py`.
+
+    🔴 C'est le défaut que ce dépôt a déjà payé DEUX fois, et son propre commentaire le dit :
+    « le gate avait toutes ses dents, braquées sur le vide ». Le gate géo existait depuis le
+    2026-09-29, câblé dans `run_gates()` — donc dans `make validate`, qui ne voit que les deux
+    fixtures du dépôt : son contrôle de couverture comparait 1 447 fiches mesurées à 2 et
+    passait trivialement, tandis que le gate de déploiement, seul à voir le corpus réel, ne
+    l'appelait pas. Même histoire pour le gate POSITION.
+
+    La liste des gates appelés était tenue à la main, à côté des gates qui existent — une
+    liste à deux endroits finit par mentir, et ici le mensonge est silencieux : le gate neuf
+    passe la revue, il est même testé, et il ne tourne jamais sur le corpus servi.
+    """
+    import inspect
+    import engine.validate as validate
+
+    gates = {
+        nom for nom, obj in vars(validate).items()
+        if nom.endswith("_gate") and inspect.isfunction(obj) and not nom.startswith("_")
+    }
+    assert gates, "aucun gate trouvé dans engine.validate — le relevé ne cherche plus"
+    source = (REPO_ROOT / "scripts" / "validate_corpus.py").read_text(encoding="utf-8")
+    debranches = sorted(g for g in gates if f"{g}(" not in source)
+    assert not debranches, (
+        f"{debranches} existe(nt) dans engine.validate mais n'est/ne sont appelé(s) nulle part "
+        f"dans scripts/validate_corpus.py — donc jamais sur le corpus SERVI. Un gate débranché "
+        f"a toutes ses dents, braquées sur le vide."
+    )

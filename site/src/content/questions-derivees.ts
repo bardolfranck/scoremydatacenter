@@ -21,7 +21,12 @@
 //     juridique : sans lui, une question est un vœu ; avec lui, c'est une action datée.
 
 export type EtatIndicateur = "not_collected" | "missing";
-export type StadeProjet = "announced" | "permitting" | "under_construction" | "operational";
+export type StadeProjet =
+  | "announced"
+  | "permitting"
+  | "under_construction"
+  | "operational"
+  | "unknown";
 
 /** Une question par indicateur du bloc projet/process. Aucune pour le bloc base. */
 export const QUESTIONS: Record<string, { fr: string; en: string }> = {
@@ -80,6 +85,12 @@ export const VERBES: Record<StadeProjet, { fr: string; en: string }> = {
     fr: "à réclamer auprès de l'autorité — le site fonctionne, seules les prescriptions sont encore opposables",
     en: "to claim from the authority — the site is running, only its operating conditions still bite",
   },
+  // 🔴 Le stade n'est pas établi : on ne dit donc NI « le site fonctionne » NI « le chantier
+  // a commencé ». On dit à qui demander, et quoi.
+  unknown: {
+    fr: "à demander à l'autorité — rien de public ne dit où en est ce site, et c'est la première chose à faire établir",
+    en: "to ask the authority — no public source says where this site stands, and that is the first thing to have established",
+  },
 };
 
 /**
@@ -134,7 +145,10 @@ export function questionsPour(
   const valeurs: Record<string, unknown> = {};
   for (const i of indicateurs) if (i.value != null) valeurs[i.id] = i.value;
 
-  const verbe = VERBES[(stade as StadeProjet) ?? "operational"] ?? VERBES.operational;
+  // 🔴 LE REPLI ÉTAIT `operational`, et il affirmait donc « le site fonctionne » pour un
+  // stade qu'aucune source ne porte — l'absence qui se lit comme la valeur la plus engageante.
+  // Le repli est désormais `unknown`, qui n'affirme rien.
+  const verbe = VERBES[(stade as StadeProjet) ?? "unknown"] ?? VERBES.unknown;
 
   const retenues = indicateurs.filter(
     (i) => (i.block === "project" || i.block === "process")

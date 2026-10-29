@@ -438,7 +438,7 @@ const { variant, labels } = Astro.props;
         watchlistNote: "Les projets « En veille » ne sont pas notés. Cette rubrique décrit uniquement des faits publics issus de sources identifiées.",
         extSourceNote: "Source externe citée à titre documentaire.",
         status: { announced: "Annoncé", permitting: "En instruction",
-                  under_construction: "En construction", operational: "En service" },
+                  under_construction: "En construction", operational: "En service", unknown: "Statut non établi" },
       }, labels.watch ?? {});
       const WATCH_STATUS: Record<string, string> = W.status;
       const GREY = "#c3d0dc", STROKE = "#ffffff", INK = "#33475c";

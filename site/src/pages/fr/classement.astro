@@ -47,7 +47,7 @@ const t = {
   orderWorst: "Moins bien noté d'abord",
   statusLabel: "Statut",
   statusAll: "Tous",
-  status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service" },
+  status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service", unknown: "Statut non établi" },
   statusHelpLabel: "Les statuts",
   statusHelpTitre: "Ce que veut dire chaque statut",
   statusHelp: {
@@ -55,6 +55,8 @@ const t = {
     permitting: "dossier à l'examen des autorités (permis, enquête publique)",
     under_construction: "le chantier a démarré",
     operational: "en fonctionnement",
+    // 🔴 On ne dit pas « nous ne savons pas » : on dit ce qui MANQUE, et où le chercher.
+    unknown: "stade non établi : aucune source publique ne dit où en est ce site",
   },
   thProject: "Projet",
   thCountry: "Pays",
