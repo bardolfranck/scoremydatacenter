@@ -43,6 +43,8 @@ import cloud from "@phosphor-icons/core/assets/regular/cloud.svg?raw";
 import clipboardText from "@phosphor-icons/core/assets/regular/clipboard-text.svg?raw";
 import scales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
+import { DOSSIER } from "../content/dossier";
+import type { Langue } from "../content/langues";
 
 const { dossier, lang = "fr" } = Astro.props;
 const avis = (dossier?.opinions ?? []).filter((a: any) => a?.facts?.length || a?.authority_recommendations?.length);
@@ -50,54 +52,7 @@ const avis = (dossier?.opinions ?? []).filter((a: any) => a?.facts?.length || a?
 const ICO = (raw: string, size = 16) =>
   raw.replace("<svg", `<svg width="${size}" height="${size}" aria-hidden="true" focusable="false"`);
 
-const t = lang === "fr" ? {
-  kicker: "Ce que déclare le dossier environnemental",
-  lire: "lire l'avis (PDF)", pages: "p.", petitionnaire: "pétitionnaire",
-  // Les rubriques DÉCRIVENT, elles ne qualifient pas. « Groupes électrogènes et fioul »
-  // plutôt que « nuisances » : nommer une nuisance serait notre verdict, et c'est exactement
-  // ce que ce bloc s'interdit. Le lecteur conclut, l'autorité écrit, nous rapportons.
-  secours: "Groupes électrogènes et fioul", bruit: "Bruit relevé", voisinage: "Voisinage",
-  energie: "Énergie et chaleur", eau: "Eau et refroidissement", emissions: "Émissions",
-  emploi: "Emploi", emprise: "Emprise et bâti", icpe: "Classement ICPE",
-  reserves: "Réserves de l'autorité", autresNiv: "Autres niveaux cités dans l'avis",
-  periode: "", jour: "Jour", nuit: "Nuit", mesure: "Mesure", autres: "Les autres dans l'avis",
-  caveatGroupes: "puissance de secours — ce n'est pas la puissance consommée par le site",
-  bruitNote: "État relevé dans l'étude d'impact, avant exploitation.",
-  pasUneNote: "Ces chiffres ne sont pas une note.",
-  pasUneNoteSuite: " Ils proviennent du dossier déposé par le pétitionnaire et de l'avis de l'autorité environnementale ; nous les rapportons avec leur phrase et leur page, nous ne les évaluons pas.",
-  bloc: "Ce bloc n'existe que pour les projets soumis à évaluation environnementale — une minorité des sites.",
-  absence: "Son absence ne signifie pas l'absence d'impact",
-  absenceSuite: " : elle indique qu'aucun document public exploitable n'a été identifié dans notre corpus à ce jour.",
-  niveauxLabel: "Niveaux relevés", emergenceLabel: "Émergence",
-  avisPluriel: "avis d'autorité environnementale rendus sur ce site",
-  sansDate: "date non confirmée",
-  explication: "Explication",
-  differe: "diffère d'un dossier à l'autre",
-  differeNote: "Ce site a fait l'objet de plusieurs dossiers. Les valeurs qui ne sont pas les mêmes de l'un à l'autre sont signalées, et affichées côte à côte avec leur date. Un écart peut venir d'un projet redimensionné, d'une tranche différente, ou d'une donnée corrigée : l'avis ne dit pas laquelle, et nous ne le devinons pas.",
-  icpeTip: "Installation classée pour la protection de l'environnement : le régime qui encadre, autorise et contrôle une activité pouvant présenter un risque ou une gêne. Chaque numéro désigne l'activité visée dans la nomenclature nationale. Être classé ne veut pas dire être dangereux : cela veut dire être encadré, et donc contrôlé.",
-} : {
-  kicker: "What the environmental case file states",
-  lire: "read the opinion (PDF)", pages: "p.", petitionnaire: "applicant",
-  secours: "Generators and fuel", bruit: "Measured noise", voisinage: "Neighbourhood",
-  energie: "Energy and heat", eau: "Water and cooling", emissions: "Emissions",
-  emploi: "Employment", emprise: "Footprint and buildings", icpe: "ICPE classification",
-  reserves: "Authority's reservations", autresNiv: "Other levels cited in the opinion",
-  periode: "", jour: "Day", nuit: "Night", mesure: "Measure", autres: "The others in the opinion",
-  caveatGroupes: "backup power — this is not the power the site draws",
-  bruitNote: "State recorded in the impact assessment, before operation.",
-  pasUneNote: "These figures are not a grade.",
-  pasUneNoteSuite: " They come from the file submitted by the applicant and from the environmental authority's opinion; we report them with their sentence and page, we do not assess them.",
-  bloc: "This block exists only for projects subject to environmental assessment — a minority of sites.",
-  absence: "Its absence does not mean an absence of impact",
-  absenceSuite: ": it means no usable public document has been identified in our corpus to date.",
-  niveauxLabel: "Recorded levels", emergenceLabel: "Emergence",
-  avisPluriel: "environmental authority opinions issued on this site",
-  sansDate: "date not confirmed",
-  explication: "Explanation",
-  differe: "differs between filings",
-  differeNote: "This site has been the subject of several filings. Values that are not the same from one to the next are flagged, and shown side by side with their date. A gap may come from a resized project, a different phase, or a corrected figure: the opinion does not say which, and we do not guess.",
-  icpeTip: "ICPE — the French regime that authorises, frames and inspects an activity liable to create a risk or a nuisance. Each number designates the activity concerned in the national nomenclature. Being classified does not mean being dangerous: it means being regulated, and therefore inspected.",
-};
+const t = DOSSIER[lang as Langue];
 
 // La nomenclature ICPE, pour l'habitant. Un numéro nu ne dit rien à personne : « 3110 » doit
 // se lire « la combustion des groupes électrogènes ». Intitulés repris de la nomenclature
@@ -122,16 +77,17 @@ const ICPE: Record<string, { fr: string; en: string }> = {
             en: "Waste storage facility" },
 };
 
-const loc = lang === "fr" ? "fr-FR" : "en-GB";
+const loc = t.locale;
 // Les deux sources ne datent pas pareil : le registre régional donne « 30/03/2022 », l'index
 // national « 2022-04-01 ». Une fiche qui porte trois avis affichait donc trois formats.
 const DATE = (d?: string) => {
   if (!d) return "";
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
-  if (m) return lang === "fr" ? `${m[3]}/${m[2]}/${m[1]}` : d;
-  const f = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);
-  if (f) return lang === "fr" ? d : `${f[3]}-${f[2]}-${f[1]}`;
-  return d;
+  const iso = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d);
+  const jma = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(d);
+  // Même sortie qu'avant, mais le motif est DÉCLARÉ par la langue au lieu d'être choisi ici.
+  if (!iso && !jma) return d;
+  const [a, m, j] = iso ? [iso[1], iso[2], iso[3]] : [jma![3], jma![2], jma![1]];
+  return t.datePattern.replace("{a}", a).replace("{m}", m).replace("{j}", j);
 };
 const NUM = (v: any) => typeof v === "number"
   ? v.toLocaleString(loc, { maximumFractionDigits: 2 })
@@ -353,7 +309,7 @@ const borne = (b: any) => !b ? null
                 {plusieurs && <span class="de-val-d">{s._date}</span>}
                 {s.vals.length === 1
                   ? <><span class="de-v">{Val(s.vals[0])}</span><span class="de-p">{t.pages}{s.vals[0].page_pdf}</span></>
-                  : <span class="de-v de-multi">{`${s.vals.length} ${lang === "fr" ? "valeurs" : "values"}`}</span>}
+                  : <span class="de-v de-multi">{t.valeursMultiples.replace("{n}", String(s.vals.length))}</span>}
               </span>
             ))}
           </span>

@@ -17,6 +17,10 @@
 import type { Langue } from "./langues";
 
 const FR = {
+  // Le chemin de la page « Méthode » dans cette langue : un SLUG localisé, pas un mot.
+  // Il était choisi par un `lang === "fr" ?` dans le composant — l'endroit où une langue
+  // nouvelle ne va pas le chercher.
+  methHref: "/fr/methodologie/",
   title: "Les normes — où nous nous situons — ScoreMyDataCenter",
   metaDescription: "Ce que la filière data center mesure déjà (PUE, ISO/IEC 30134, Green Grid, ETSI) — et la case vide que nous occupons : la première note d'acceptabilité indépendante, site par site.",
   tagline: "Observatoire indépendant",
@@ -88,6 +92,10 @@ const FR = {
 };
 
 const EN: typeof FR = {
+  // Le chemin de la page « Méthode » dans cette langue : un SLUG localisé, pas un mot.
+  // Il était choisi par un `lang === "fr" ?` dans le composant — l'endroit où une langue
+  // nouvelle ne va pas le chercher.
+  methHref: "/methodology/",
   title: "The standards — where we sit — ScoreMyDataCenter",
   metaDescription: "What the data center industry already measures (PUE, ISO/IEC 30134, Green Grid, ETSI) — and the empty seat we take: the first independent acceptability score, site by site.",
   tagline: "Independent observatory",

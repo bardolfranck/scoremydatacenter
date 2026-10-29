@@ -145,7 +145,10 @@ export function libelleValeur(indicateur: string, valeur: unknown, lang: string)
   if (typeof valeur !== "string") return String(valeur);
   const l = VALEURS[indicateur]?.[valeur];
   if (!l) return valeur;
-  return lang === "fr" ? l.fr : l.en;
+  // 🔴 Un libellé qui MANQUE dans la langue rend la valeur BRUTE, jamais l'anglais : une
+  // langue à moitié remplie se lirait sinon comme une langue complète, et le trou ne se
+  // verrait nulle part. Même règle que « données insuffisantes » plutôt qu'une lettre.
+  return l[lang as keyof typeof l] ?? valeur;
 }
 
 /** L'unité dans la langue de la page ; inchangée si c'est une notation. */
@@ -193,6 +196,22 @@ const GENTILES: Record<string, { fr: string; en: string }> = {
   FI: { fr: "finlandais", en: "Finnish" },
 };
 
+/** Les deux phrases du bloc « ce qui tire la note », un motif par langue.
+ *
+ *  🔴 Elles étaient en ternaire dans la fonction : deux phrases entières invisibles à qui
+ *  cherche les textes du site. Les trous `{facteur}` `{pct}` `{gentile}` laissent l'ORDRE
+ *  libre — une langue peut placer le gentilé avant le chiffre.
+ *
+ *  ⚠️ L'espace avant le `%` est ici une espace ORDINAIRE, alors que `config/stats.ts` met
+ *  une espace fine insécable (U+202F) au même endroit. L'incohérence est ANTÉRIEURE et
+ *  recopiée telle quelle : la corriger changerait ce qui est affiché, et ce lot ne doit rien
+ *  changer. À trancher à part.
+ */
+const PHRASES: Record<"fr" | "en", { ici: string; part: string }> = {
+  fr: { ici: "Ce qui pèse le plus ici : {facteur}.", part: "{base} Premier facteur pour {pct} % des sites {gentile} que nous avons notés." },
+  en: { ici: "What weighs most here: {facteur}.", part: "{base} Leading factor for {pct}% of the {gentile} sites we have graded." },
+};
+
 /** La phrase « ce qui pèse le plus ici », ou null si on n'a pas de mots sûrs pour ce facteur. */
 export function phraseFacteurDominant(
   drag: { indicator?: string; country?: string; country_share?: number } | null | undefined,
@@ -200,9 +219,9 @@ export function phraseFacteurDominant(
 ): string | null {
   const mots = drag?.indicator ? FACTEUR_DOMINANT[drag.indicator] : undefined;
   if (!mots) return null;
-  const fr = lang === "fr";
-  const facteur = fr ? mots.fr : mots.en;
-  const base = fr ? `Ce qui pèse le plus ici : ${facteur}.` : `What weighs most here: ${facteur}.`;
+  const lg = lang as "fr" | "en";
+  const facteur = mots[lg];
+  const base = PHRASES[lg].ici.replace("{facteur}", facteur);
   // La part n'est servie que si le pays a assez de fiches pour qu'elle veuille dire quelque
   // chose (le moteur l'omet sinon). Elle ne révèle rien des seuils : c'est la distribution
   // des faiblesses dans le pays, et elle dit au lecteur la chose utile — la contrainte est
@@ -216,7 +235,8 @@ export function phraseFacteurDominant(
   // au-dessus de tant, « peu fréquent » en dessous) ; la formulation neutre est vraie aux deux
   // bouts et laisse le lecteur conclure — 83 % se lit comme une contrainte de pays, 1 % comme
   // une singularité. Décrire le fait, ne pas le juger : la même règle que partout ailleurs.
-  return fr
-    ? `${base} Premier facteur pour ${pct} % des sites ${g.fr} que nous avons notés.`
-    : `${base} Leading factor for ${pct}% of the ${g.en} sites we have graded.`;
+  return PHRASES[lg].part
+    .replace("{base}", base)
+    .replace("{pct}", String(pct))
+    .replace("{gentile}", g[lg]);
 }

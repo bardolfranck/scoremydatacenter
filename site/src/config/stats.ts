@@ -62,24 +62,41 @@ export const REGION_NAMES: Record<string, string> = {
  *  dans deux fichiers — et une liste à deux endroits finit toujours par diverger. */
 export const EUROPE_ISO: string[] = (STATS as any).scopes?.europe ?? [];
 
+/** Les périmètres qui ne sont pas des pays : un libellé par langue, comme COUNTRY_NAMES.
+ *  « Monde » était en ternaire dans la fonction — un mot dans une expression, donc un mot
+ *  qu'une langue nouvelle ne trouve pas. */
+const PERIMETRES: Record<string, Record<Lang, string>> = {
+  monde: { fr: "Monde", en: "World" },
+};
+
 export function perimeterLabel(key: string, lang: Lang): string {
   if (key === "europe") return "Europe";
   // Agrégat « tout le corpus » (Franck, 2026-10-16). Publié seulement quand il DIFFÈRE de
   // l'Europe : sinon le sélecteur proposerait deux fois les mêmes chiffres sous deux noms.
-  if (key === "monde") return lang === "fr" ? "Monde" : "World";
+  if (key === "monde") return PERIMETRES[key][lang];
   return COUNTRY_NAMES[key]?.[lang] ?? key;
 }
 
 /** Number formatting — whole numbers only (Franck 2026-07-16: the decimal
  * adds nothing). Sub-1% shares render "<1 %" — rounding 0.8 up to 1 would
  * overstate by a quarter. */
+/** Les règles de FORME de chaque langue. L'espace avant le `%` est une règle typographique
+ *  du français, pas une décision de code — comme l'espace avant le deux-points dans
+ *  `content/commun.ts`. Et c'est une ESPACE FINE INSÉCABLE (U+202F) : elle a été copiée
+ *  d'ici, pas retapée, parce qu'une espace ordinaire à sa place changerait l'affichage de
+ *  toutes les pages de chiffres sans qu'une relecture le voie.
+ *  Le motif sert les deux cas d'avant (« <1 % » et « 12 % ») : une langue nouvelle déclare
+ *  UNE ligne, au lieu de trois ternaires répartis dans deux fonctions. */
+const FORMES: Record<Lang, { pourcent: string; locale: string }> = {
+  fr: { pourcent: "{v} %", locale: "fr-FR" },
+  en: { pourcent: "{v}%", locale: "en-GB" },
+};
 export const fmtPct = (pct: number, lang: Lang): string => {
-  if (pct > 0 && pct < 1) return lang === "fr" ? `<1 %` : "<1%";
-  const v = Math.round(pct);
-  return lang === "fr" ? `${v} %` : `${v}%`;
+  const v = pct > 0 && pct < 1 ? "<1" : String(Math.round(pct));
+  return FORMES[lang].pourcent.replace("{v}", v);
 };
 export const fmtInt = (n: number, lang: Lang): string =>
-  n.toLocaleString(lang === "fr" ? "fr-FR" : "en-GB");
+  n.toLocaleString(FORMES[lang].locale);
 
 /** Source lines — institutions live HERE, resolved per country (cadrage §4.10:
  * regulatory concepts never reach the punch phrase). `default` covers every
@@ -127,10 +144,17 @@ export function sourceLine(statId: string, countries: string[], lang: Lang): str
   if (!map) return "";
   if (map.FR && countries.length === 1 && countries[0] === "FR") return map.FR[lang];
   if (map.FR && countries.includes("FR")) {
-    return lang === "fr" ? `${map.default[lang]} · ${map.FR.fr} (France)` : `${map.default[lang]} · ${map.FR.en} (France)`;
+    // 🔴 Les deux côtés du ternaire d'avant écrivaient LA MÊME phrase : seul l'indice de
+    // langue changeait (`map.FR.fr` / `map.FR.en`). Une branche qui ne décide rien coûte
+    // quand même une ligne à chaque langue nouvelle, et cache qu'il n'y a rien à décider.
+    return `${map.default[lang]} · ${map.FR[lang]} (France)`;
   }
   return map.default[lang];
 }
+
+/** La charnière entre le fait qui tire vers le haut et celui qui tire vers le bas. C'est un
+ *  MOT, et il était en ternaire au point d'assemblage de la phrase. */
+const CHARNIERE: Record<Lang, string> = { fr: " — mais ", en: " — but " };
 
 /** Punch phrases — {pct}/{num}/{n}/{mw}/{projects}… get substituted. Neutral
  * wording only: the constraint speaks, never a national regulatory concept. */
@@ -421,7 +445,7 @@ export function composeStory(peri: any, sectionId: string, lang: Lang): string |
   const up = bonus ? _esc(FRAGMENTS[bonus.id].up![lang]) : null;
   const down = friction ? _esc(FRAGMENTS[friction.id].down![lang]) : null;
   const cap = (x: string) => x.charAt(0).toUpperCase() + x.slice(1);
-  const joiner = lang === "fr" ? " — mais " : " — but ";
+  const joiner = CHARNIERE[lang];
   if (up && down) return `<span class="up">${cap(up)}</span>${joiner}<span class="down">${down}</span>.`;
   if (up) return `<span class="up">${cap(up)}</span>.`;
   if (down) return `<span class="down">${cap(down)}</span>.`;

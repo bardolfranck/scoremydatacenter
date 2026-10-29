@@ -43,6 +43,7 @@ TABLES_MODULES: dict[str, str] = {
     "sources.ts": "la page « Sources & licences »",
     "glossaire.ts": "le glossaire",
     "portrait-explainer.ts": "la page qui EXPLIQUE le portrait (le portrait est dans portrait.ts)",
+    "dossier.ts": "le bloc « dossier environnemental » de la fiche",
 }
 # Asymétries VOULUES dans un module partagé, par dernier segment de chemin.
 # `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont atteignables
@@ -405,8 +406,12 @@ def _branches_nues(chemin) -> list[str]:
 # fichier NOUVEAU n'est pas dans la liste, donc il doit naître à zéro.
 #
 # C'est ce qui remplace « on fera le reste plus tard » par une quantité qu'on voit diminuer.
-# État au 2026-10-29, après la fiche, le chrome et le portrait : 99 branches nues
-# dans 26 fichiers.
+#
+# 🔴 LE TOTAL CI-DESSOUS EST VÉRIFIÉ PAR UN TEST, et il l'est depuis qu'il a eu tort. Un
+# en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
+# reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
+# qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
+# État au 2026-10-29, après la fiche, le chrome, le portrait et la surface « Comprendre » : 85 branches nues dans 22 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/AboutSection.astro": 1,
     "components/ActuFeed.astro": 6,
@@ -414,7 +419,6 @@ DETTE_I18N: dict[str, int] = {
     "components/Comparateur.astro": 12,
     "components/CountryRing.astro": 2,
     "components/DevelopersPage.astro": 1,
-    "components/DossierEnvironnemental.astro": 5,
     "components/FeedbackBand.astro": 1,
     "components/IndicesMap.astro": 1,
     "components/IndicesPage.astro": 5,
@@ -422,16 +426,13 @@ DETTE_I18N: dict[str, int] = {
     "components/Landing.astro": 14,
     "components/LibraryIndex.astro": 2,
     "components/LibraryRevue.astro": 7,
-    "components/Normes.astro": 1,
     "components/PressPage.astro": 1,
     "components/ProjectsStrip.astro": 2,
     "components/Ranking.astro": 3,
     "components/ReportDownload.astro": 6,
     "components/SatelliteWall.astro": 1,
     "components/StatsPage.astro": 11,
-    "config/indicatorValues.ts": 2,
     "config/reportStatus.ts": 1,
-    "config/stats.ts": 6,
     "pages/og/indices/[key].png.ts": 4,
     "pages/og/stats/[key].png.ts": 1,
 }
@@ -484,6 +485,30 @@ def test_la_dette_i18n_ne_remonte_jamais():
         "\n\nUn MOT va dans une table de chaînes (il se traduit). Une route, un format ou un "
         "champ bilingue de la donnée reste sur place et se déclare `/* i18n:route */`, "
         "`/* i18n:format */` ou `/* i18n:donnee */`."
+    )
+
+
+def test_le_total_annonce_en_tete_est_le_bon():
+    """L'en-tête de `DETTE_I18N` annonce un total : il doit être celui de la table.
+
+    🔴 Il avait tort. La ligne disait « 99 branches dans 26 fichiers » quand la table en
+    portait 85 dans 22 — un commentaire ne suit pas une table toute seule. Les gardes
+    comptent ce qui est publié, jamais le commentaire qui le JUSTIFIE : celui-ci est
+    désormais compté.
+    """
+    texte = __file__ and open(__file__, encoding="utf-8").read()
+    m = re.search(r"État au [\d-]+.*?: (\d+) branches nues dans (\d+) fichiers", texte)
+    assert m, (
+        "la ligne « État au … : N branches nues dans M fichiers » a disparu de l'en-tête de "
+        "DETTE_I18N — sans elle, personne ne lit le total, et le cliquet perd son compteur"
+    )
+    annonce_branches, annonce_fichiers = int(m.group(1)), int(m.group(2))
+    assert annonce_branches == sum(DETTE_I18N.values()), (
+        f"l'en-tête annonce {annonce_branches} branches, la table en porte "
+        f"{sum(DETTE_I18N.values())}"
+    )
+    assert annonce_fichiers == len(DETTE_I18N), (
+        f"l'en-tête annonce {annonce_fichiers} fichiers, la table en porte {len(DETTE_I18N)}"
     )
 
 
