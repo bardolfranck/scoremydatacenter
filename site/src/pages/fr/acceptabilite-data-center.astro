@@ -11,55 +11,9 @@
 // précisément qu'un A est vert.
 import PagePilier from "../../components/PagePilier.astro";
 import { FR_NAV } from "../../config/nav";
+import { ACCEPTABILITE } from "../../content/acceptabilite";
 
-const t = {
-  title: "L'acceptabilité des data centers — définition, enjeux, mesure | ScoreMyDataCenter",
-  metaDescription: "Qu'est-ce que l'acceptabilité d'un data center ? Définition, les cinq dimensions (énergie, eau, foncier, impact local, transparence) et comment elle se mesure, projet par projet.",
-  tagline: "Observatoire indépendant",
-  h1: "L'acceptabilité des data centers",
-  lead: "L'acceptabilité d'un data center, c'est le degré auquel un projet peut s'implanter sur un territoire sans que ses effets — sur l'énergie, l'eau, le foncier, le voisinage — n'excèdent ce que la collectivité est prête à accepter. Elle ne se décrète pas : elle se <strong>mesure</strong>, projet par projet.",
-
-  sections: [
-    { h2: "Pourquoi la question se pose maintenant",
-      corps: "<p>La vague de projets liés à l'intelligence artificielle concentre, sur quelques territoires, des besoins en électricité, en eau de refroidissement et en foncier sans précédent. Un bâtiment qui demande cent mégawatts ne se discute pas comme un entrepôt : il engage le réseau électrique d'une région, parfois la ressource en eau d'un bassin, et il s'installe pour trente ans.</p><p>L'acceptabilité est devenue la question qui décide si un projet se fait, se déplace, ou s'enlise. Elle se joue rarement sur l'argument global — le climat, les données — et presque toujours sur du concret local : <em>qu'est-ce que ça change, ici ?</em></p>" },
-  ],
-
-  // « Cinq dimensions, qui sont nos cinq piliers de notation » — l'intitulé dit l'articulation :
-  // ce sont les mêmes cinq axes qu'on retrouve, notés, sur chaque fiche.
-  piliersH2: "Cinq dimensions, qui sont nos cinq piliers de notation",
-  piliers: [
-    { icone: "energy", titre: "Énergie",
-      corps: "l'électricité <strong>prélevée par le site</strong>, et ce que le réseau local peut encore donner. Un poste déjà saturé ne se double pas d'un claquement de doigts : c'est souvent le raccordement, et non le bâtiment, qui fixe le calendrier d'un projet." },
-    { icone: "water", titre: "Eau",
-      corps: "le volume <strong>consommé</strong> pour refroidir et ce qui est <strong>rejeté</strong> — avec quel traitement, dans quel milieu. Un bassin déjà sous tension l'été ne lit pas un prélèvement comme un bassin abondant." },
-    { icone: "land", titre: "Foncier et biodiversité",
-      corps: "le terrain sur lequel le site s'implante. <strong>Une terre agricole ne porte pas le même coût qu'une friche industrielle réhabilitée</strong> : la seconde répare, la première retire. S'y ajoutent les espaces protégés et les continuités écologiques du voisinage immédiat." },
-    { icone: "local", titre: "Impact local et capacité d'absorption",
-      corps: "ce que le territoire peut encaisser. <strong>Un gigaprojet sur une commune rurale n'est pas la même chose qu'un centre de calcul en milieu urbain</strong> : même puissance, même bruit, mais pas le même nombre d'habitants pour l'absorber, ni le même tissu pour en profiter." },
-    { icone: "transparency", titre: "Transparence et gouvernance",
-      corps: "ce que le porteur publie, et comment il associe le territoire. Un dossier consultable et une concertation réelle ne font pas un bon projet, mais leur absence pèse — c'est le seul pilier qui parle de la <em>conduite</em> plutôt que des effets." },
-  ],
-
-  sectionsApres: [
-    { h2: "Comment elle se mesure",
-      corps: "<p>Nous attribuons à chaque projet <strong>deux notes de <span class='note-inline n-a'>A</span> à <span class='note-inline n-e'>E</span></strong> — une pour le <strong>site</strong>, le contexte qu'il subit et n'a pas choisi, une pour le <strong>projet et le processus</strong>, ce que l'opérateur décide. Chaque note est accompagnée d'un <strong>niveau de confiance</strong> qui dit sur combien d'éléments sourcés elle repose.</p><p>Une absence de donnée ne devient jamais un <span class='note-inline n-a'>A</span> : sous un seuil de couverture, nous écrivons « données insuffisantes » plutôt qu'une lettre. Sans cette règle, le site le moins transparent serait le mieux noté. Le détail du calcul est public : <a href='/fr/methodologie/'>la méthode</a>, et <a href='/fr/la-note-pas-a-pas/'>la note, pas à pas</a>.</p>" },
-    { h2: "Les nuisances, l'autre moitié du sujet",
-      corps: "<p>L'acceptabilité se décide aussi sur ce qui s'entend et se voit depuis la rue : le bruit de la ventilation, les essais de groupes électrogènes, les cuves de carburant, le trafic de chantier. Ces éléments ne sont pas des détails de dossier — ce sont les premiers motifs d'opposition relevés dans les avis environnementaux.</p><p>Nous les publions <strong>en faits, à côté de la note</strong> : voir <strong><a href='/fr/nuisances-data-center/'>les nuisances des data centers</a></strong>.</p>" },
-    // ⚠️ NE PAS RETIRER : citer la série ISO/IEC 30134 est notre ancrage normatif — il dit ce
-    // que nous mesurons ET ce que nous ne prétendons pas faire (pas d'ACV).
-    { h2: "Un ancrage normatif, pas une opinion",
-      corps: "<p>Nous mesurons des indicateurs <strong>normalisés</strong> — efficacité énergétique, usage de l'eau — dans l'esprit de la série <strong>ISO/IEC 30134</strong> sur les indicateurs de performance des data centers. Nous ne produisons <strong>pas</strong> d'analyse de cycle de vie : nous rendons comparables des faits sourcés. Voir <a href='/fr/normes/'>les normes et où nous nous situons</a>.</p>" },
-    { h2: "Ce que l'acceptabilité n'est pas",
-      corps: "<p>Ce n'est pas un avis pour ou contre les data centers. Un territoire peut accueillir un projet lourd dans de bonnes conditions, et un petit projet peut être mal placé. Nous ne disons pas s'il faut construire : nous disons <strong>ce que coûte cet endroit-là, pour ce projet-là</strong>, avec la même grille pour tous.</p><p>Voir <a href='/fr/carte/'>la carte des sites</a> et <a href='/fr/classement/'>le classement</a>.</p>" },
-  ],
-
-  details: [
-    { resume: "En savoir plus — pourquoi deux notes, et pas une seule",
-      corps: "<p>Un même projet mêle ce qu'il <strong>subit</strong> — un réseau saturé, un bassin en tension, une terre agricole — et ce qu'il <strong>choisit</strong> : son efficacité, son mode de refroidissement, sa transparence. Fondre les deux dans une lettre unique laisserait un dossier exemplaire racheter un terrain mal choisi, ou l'inverse.</p><p>D'où la séparation : un opérateur ne peut rien à la note de <strong>site</strong>, il est entièrement responsable de celle du <strong>projet</strong>. Et un élu qui compare deux implantations possibles regarde la première ; un riverain qui juge un exploitant regarde la seconde.</p>" },
-    { resume: "En savoir plus — qui décide, en France",
-      corps: "<p>Un projet de cette taille passe par un <strong>permis de construire</strong> délivré par la commune, souvent par une <strong>autorisation environnementale</strong> instruite par la préfecture, et par un <strong>raccordement</strong> négocié avec le gestionnaire de réseau. L'<strong>autorité environnementale</strong> rend un avis public sur l'étude d'impact, et le public est consulté.</p><p>Personne, dans cette chaîne, ne produit de note comparable d'un site à l'autre : chaque dossier est instruit seul, dans son département. C'est exactement le vide que cet observatoire occupe.</p>" },
-  ],
-};
+const t = ACCEPTABILITE.fr;
 ---
 
 <PagePilier lang="fr" t={t} nav={FR_NAV} altHref="/acceptability-of-data-centers" altLabel="EN" />

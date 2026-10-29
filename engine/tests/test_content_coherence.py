@@ -76,7 +76,11 @@ _SITE = REPO_ROOT / "site" / "src" / "pages"
 FIREWALL_SOURCES = {
     "landing-fr": PAGES["fr"],
     "mentions-legales": (_SITE / "fr" / "mentions-legales.astro").read_text(),
-    "methodologie": (_SITE / "fr" / "methodologie.astro").read_text(),
+    # 🔴 La phrase du pare-feu vivait dans la page ; sa copie est partie dans
+    # `content/methodologie.ts` le 2026-10-29, et c'est ce test qui l'a dit en tombant. Un
+    # garde ancré sur un CHEMIN surveille un fichier, pas une garantie : viser le module,
+    # c'est viser les deux langues d'un coup (la page EN n'était pas dans cette liste).
+    "methodologie": (_SITE.parent / "content" / "methodologie.ts").read_text(),
     "readme": (REPO_ROOT / "README.md").read_text(),
 }
 
@@ -932,7 +936,20 @@ def test_la_page_nuisances_a_une_phrase_sans_chiffre(page):
     assert "perimeterSites(" in texte and "derivedCount(" in texte, (
         f"{page} ne passe plus par les accesseurs gardés"
     )
-    assert "!== null" in texte, (
-        f"{page} n'a plus de branche pour le compte absent — sans elle, « tolérer » veut dire "
-        "planter au build, ou servir un chiffre de repli"
+    # 🔴 La branche du compte absent a quitté la page pour `content/nuisances.ts` : les deux
+    # pages composaient la MÊME phrase, chacune chez elle, avec son propre `toLocaleString`.
+    # La garantie n'a pas changé de nature, seulement d'adresse — et elle est désormais
+    # vérifiée UNE fois pour les deux langues, au lieu de deux fois par page.
+    module = (REPO_ROOT / "site" / "src" / "content" / "nuisances.ts").read_text()
+    assert "!== null" in module, (
+        "content/nuisances.ts n'a plus de branche pour le compte absent — sans elle, "
+        "« tolérer » veut dire planter au build, ou servir un chiffre de repli"
+    )
+    assert module.count("avec:") >= 2 and module.count("sans:") >= 2, (
+        "les deux langues doivent chacune porter leur variante SANS chiffre : sans elle, "
+        "la langue concernée replante au build dès qu'un compte manque"
+    )
+    assert "nuisances(" in texte, (
+        f"{page} ne passe plus par le helper qui choisit la variante — elle a dû recomposer "
+        f"la phrase sur place, et la garantie n'est plus gardée qu'ici"
     )

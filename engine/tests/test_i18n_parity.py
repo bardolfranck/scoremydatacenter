@@ -31,6 +31,18 @@ TABLES_MODULES: dict[str, str] = {
     "chrome.ts": "le chrome, présent sur toutes les pages",
     "portrait.ts": "la copie du portrait de site",
     "commun.ts": "les phrases servies par plusieurs surfaces",
+    # La surface EXPLICATIVE, sortie des pages le 2026-10-29 (périmètre signé par Franck :
+    # fiche + portrait + le menu « Comprendre », rien d'autre). Chaque module portait sa
+    # copie en littéral DANS CHACUNE des deux pages ; ici il n'y a qu'un endroit.
+    "acceptabilite.ts": "la page de concept « L'acceptabilité »",
+    "notation.ts": "la page de concept « La notation »",
+    "nuisances.ts": "la page de concept « Les nuisances »",
+    "comprendre.ts": "la page « Comprendre les data centers »",
+    "normes.ts": "la page « Les normes · où on se situe »",
+    "methodologie.ts": "la page « Méthode »",
+    "sources.ts": "la page « Sources & licences »",
+    "glossaire.ts": "le glossaire",
+    "portrait-explainer.ts": "la page qui EXPLIQUE le portrait (le portrait est dans portrait.ts)",
 }
 # Asymétries VOULUES dans un module partagé, par dernier segment de chemin.
 # `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont atteignables
@@ -38,8 +50,13 @@ TABLES_MODULES: dict[str, str] = {
 # DcFiche.astro) — la table FR ne peut donc structurellement pas en avoir besoin, et fiche.ts
 # le dit déjà. 🔴 Invisible jusqu'au 2026-10-29 : le relevé se faisait ligne par ligne, et
 # `relation: { operator: …, nearbyMi: … }` tient sur une seule ligne.
+# `contextNotice` / `inFranceLabel` / `tag` : l'anglais signale ce qui est spécifique à la
+# France à un lecteur qui n'y est pas ; le français n'a structurellement pas ce besoin. Le
+# gabarit teste ces clés (`t.x && …`), donc leur absence côté FR ne rend rien. Déclarées ici
+# depuis que la copie a quitté les pages (elles vivaient dans `EXTRA_OK`, par page).
 ASYMETRIES_MODULES: dict[str, set[str]] = {
     "fiche.ts": {"nearbyMi", "nearbyUnderMi"},
+    "comprendre.ts": {"contextNotice", "inFranceLabel", "tag"},
 }
 
 # (FR page, EN twin, compare t keys?) — routes differ by design (localised slugs).
@@ -50,10 +67,10 @@ PAIRS = [
     ("fr/dc/[id].astro", "dc/[id].astro", False),
     ("fr/classement.astro", "ranking.astro", True),
     ("fr/carte.astro", "map.astro", False),          # inline labels, no t object
-    ("fr/methodologie.astro", "methodology.astro", True),
+    ("fr/methodologie.astro", "methodology.astro", False),
     ("fr/mentions-legales.astro", "legal.astro", False),  # t.sections carry prose, headings differ per language
     ("fr/contact.astro", "contact.astro", False),
-    ("fr/comprendre.astro", "understand.astro", True),
+    ("fr/comprendre.astro", "understand.astro", False),
     ("fr/comprendre/one-pager.astro", "understand/one-pager.astro", False),
     ("fr/bibliotheque.astro", "intelligence.astro", True),
     ("fr/bibliotheque/tous.astro", "intelligence/all.astro", True),
@@ -63,15 +80,15 @@ PAIRS = [
     # page nuisances — n'étaient gardées par rien. Une liste de paires tenue à côté des
     # pages réelles finit par mentir ; voir le test de complétude en bas de ce fichier, qui
     # ferme désormais la classe.
-    ("fr/acceptabilite-data-center.astro", "acceptability-of-data-centers.astro", True),
+    ("fr/acceptabilite-data-center.astro", "acceptability-of-data-centers.astro", False),
     ("fr/actu.astro", "news.astro", True),
-    ("fr/glossaire.astro", "glossary.astro", True),
-    ("fr/normes.astro", "standards.astro", True),
-    ("fr/notation-data-center.astro", "data-center-rating.astro", True),
-    ("fr/nuisances-data-center.astro", "data-center-nuisances.astro", True),
-    ("fr/portrait-du-site.astro", "site-portrait.astro", True),
+    ("fr/glossaire.astro", "glossary.astro", False),
+    ("fr/normes.astro", "standards.astro", False),
+    ("fr/notation-data-center.astro", "data-center-rating.astro", False),
+    ("fr/nuisances-data-center.astro", "data-center-nuisances.astro", False),
+    ("fr/portrait-du-site.astro", "site-portrait.astro", False),
     ("fr/presse.astro", "press.astro", False),            # prose en dur dans le gabarit
-    ("fr/sources.astro", "sources.astro", True),
+    ("fr/sources.astro", "sources.astro", False),
     # Copie sortie des deux pages vers `content/portrait.ts` (2026-10-29) : sa parité se
     # vérifie entre blocs de langue, par le test des tables partagées.
     ("fr/dc/[id]/portrait.astro", "dc/[id]/portrait.astro", False),
@@ -88,6 +105,25 @@ PAIRS = [
     ("fr/rapports/france.astro", "reports/france.astro", False),
     ("fr/rapports/nederland.astro", "reports/nederland.astro", False),
 ]
+# Les pages dont la COPIE A QUITTÉ la page pour un module partagé. Leur paire est à
+# `compare=False`, mais pas pour la même raison que « prose en dur dans le gabarit » : leur
+# parité est gardée AILLEURS, entre blocs de langue. Sans cette table, les deux raisons se
+# confondraient dans un même `False`, et une table réinstallée en littéral dans une page
+# repasserait inaperçue — c'est `test_une_page_migree_ne_reprend_pas_sa_copie` qui l'interdit.
+COPIE_EN_MODULE: dict[str, str] = {
+    "fr/acceptabilite-data-center.astro": "acceptabilite.ts",
+    "fr/glossaire.astro": "glossaire.ts",
+    "fr/normes.astro": "normes.ts",
+    "fr/notation-data-center.astro": "notation.ts",
+    "fr/nuisances-data-center.astro": "nuisances.ts",
+    "fr/portrait-du-site.astro": "portrait-explainer.ts",
+    "fr/sources.astro": "sources.ts",
+    "fr/comprendre.astro": "comprendre.ts",
+    "fr/methodologie.astro": "methodologie.ts",
+    "fr/dc/[id].astro": "fiche.ts",
+    "fr/dc/[id]/portrait.astro": "portrait.ts",
+}
+
 # Pages sans jumelle, et pourquoi. Toute autre page doit figurer dans PAIRS — c'est le test
 # de complétude qui l'exige, et c'est ce qui empêche la liste ci-dessus de rester en arrière.
 SANS_JUMELLE: dict[str, str] = {
@@ -101,14 +137,14 @@ SANS_JUMELLE: dict[str, str] = {
 # `blocks.*.tag` carries that same "France" flag inside the nested blocks: it only became
 # visible when this test started reading NESTED paths (2026-10-29) — the top-level-only
 # comparison had never seen it. Same asymmetry, same reason, just one level down.
-EXTRA_OK: dict[str, set[str]] = {
-    "understand.astro": {"contextNotice", "inFranceLabel"},
-}
+# 🔴 VIDE, et c'est voulu : la seule asymétrie de page connue (understand.astro) a suivi sa
+# copie dans `content/comprendre.ts` et se déclare maintenant dans `ASYMETRIES_MODULES`. Une
+# exemption laissée là après le départ de ce qu'elle exemptait ne garde plus rien et peut
+# dispenser une dérive future du même nom.
+EXTRA_OK: dict[str, set[str]] = {}
 # Nested paths exempted for the same reason, matched on their LAST segment: the France flag
 # repeats under every block, and listing each full path would be a list that rots.
-EXTRA_OK_IMBRIQUE: dict[str, set[str]] = {
-    "understand.astro": {"tag"},
-}
+EXTRA_OK_IMBRIQUE: dict[str, set[str]] = {}
 
 
 def _langues_vivantes() -> list[str]:
@@ -245,6 +281,53 @@ def test_les_tables_partagees_portent_les_memes_cles():
                 f"de {reference.upper()} : {intruses[:8]}. Une clé renommée d'un seul côté est "
                 f"le piège muet : la rubrique disparaît sans que rien ne casse."
             )
+
+
+def test_une_page_migree_ne_reprend_pas_sa_copie():
+    """Une page dont la copie est partie en module ne doit pas se remettre à la porter.
+
+    🔴 C'est ce qui donne un SENS à son `compare=False`. Deux raisons très différentes
+    partagent ce même `False` : « cette page n'a pas d'objet `t` » et « sa parité est gardée
+    ailleurs ». Sans ce test, quelqu'un qui réinstalle un littéral `const t = {…}` dans l'une
+    des pages migrées sortirait sa copie de TOUTE surveillance — le garde de paires l'ignore
+    (False), le garde de modules ne regarde pas les pages — et l'anglais pourrait décrocher
+    exactement comme il l'a fait deux fois avant que ce fichier existe.
+    """
+    for page, module in COPIE_EN_MODULE.items():
+        for chemin in (page, dict(((f, e) for f, e, _ in PAIRS))[page]):
+            texte = (PAGES / chemin).read_text(encoding="utf-8")
+            assert "const t = {" not in texte, (
+                f"{chemin} porte de nouveau un littéral `const t = {{…}}` alors que sa copie "
+                f"vit dans `content/{module}`. Sa paire est à `compare=False` : ce littéral "
+                f"n'est gardé par RIEN. Remettre la copie dans le module, ou repasser la "
+                f"paire à `True`."
+            )
+            assert f'content/{module.removesuffix(".ts")}"' in texte, (
+                f"{chemin} n'importe plus `content/{module}` — soit la copie est repartie "
+                f"ailleurs sans que cette table le dise, soit la page ne sert plus la table "
+                f"gardée. Dans les deux cas `COPIE_EN_MODULE` ne décrit plus la réalité."
+            )
+
+
+def test_le_garde_des_pages_migrees_mord_vraiment(tmp_path, monkeypatch):
+    """On rejoue la régression : un littéral remis dans une page migrée."""
+    page = "fr/comprendre.astro"
+    faux = tmp_path / page
+    faux.parent.mkdir(parents=True, exist_ok=True)
+    texte = (PAGES / page).read_text(encoding="utf-8")
+    faux.write_text(texte.replace("const t = COMPRENDRE.fr;", "const t = {\n  h1: \"…\",\n};"), encoding="utf-8")
+    # l'autre page de la paire reste celle du dépôt : on ne teste qu'un côté à la fois
+    for autre in (PAGES / "understand.astro",):
+        (tmp_path / autre.name).write_text(autre.read_text(encoding="utf-8"), encoding="utf-8")
+    # 🔴 `setitem(globals(), …)` et NON `setattr("engine.tests.test_i18n_parity.PAGES", …)` :
+    # la cible par chemin pointé a importé un AUTRE objet module que celui où tourne le test,
+    # la rustine s'est posée sur le jumeau, le faux a été lu depuis le dépôt réel — et la
+    # contre-épreuve est passée sans mordre. C'est la contre-épreuve qui l'a dit ; une
+    # rustine qui ne prend pas ne se voit nulle part ailleurs.
+    monkeypatch.setitem(globals(), "PAGES", tmp_path)
+    monkeypatch.setitem(globals(), "COPIE_EN_MODULE", {page: "comprendre.ts"})
+    with pytest.raises(AssertionError, match="littéral"):
+        test_une_page_migree_ne_reprend_pas_sa_copie()
 
 
 # Un garde non éprouvé est une piste d'audit qui ment : on rejoue la dérive qu'il interdit.

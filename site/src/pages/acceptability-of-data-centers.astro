@@ -8,51 +8,9 @@
 // the fiches and the map.
 import PagePilier from "../components/PagePilier.astro";
 import { EN_NAV } from "../config/nav";
+import { ACCEPTABILITE } from "../content/acceptabilite";
 
-const t = {
-  title: "Data center acceptability — definition, issues, how it is measured | ScoreMyDataCenter",
-  metaDescription: "What is data center acceptability? Definition, the five dimensions (energy, water, land, local impact, transparency) and how it is measured, project by project.",
-  tagline: "Independent observatory",
-  h1: "The acceptability of data centers",
-  lead: "A data center's acceptability is the extent to which a project can be built on a territory without its effects — on energy, water, land and neighbours — exceeding what the community is willing to accept. It is not declared; it is <strong>measured</strong>, project by project.",
-
-  sections: [
-    { h2: "Why the question is being asked now",
-      corps: "<p>The wave of AI-driven projects concentrates unprecedented demand for electricity, cooling water and land on a handful of territories. A building that asks for a hundred megawatts is not discussed like a warehouse: it commits a region's grid, sometimes a catchment's water, and it settles in for thirty years.</p><p>Acceptability has become the question that decides whether a project gets built, moved, or stalls. It rarely turns on the global argument — climate, data — and almost always on something local and concrete: <em>what does this change, here?</em></p>" },
-  ],
-
-  piliersH2: "Five dimensions, which are our five scoring pillars",
-  piliers: [
-    { icone: "energy", titre: "Energy",
-      corps: "the electricity <strong>drawn by the site</strong>, and what the local grid can still give. A substation already at capacity is not duplicated overnight: it is often the grid connection, not the building, that sets a project's schedule." },
-    { icone: "water", titre: "Water",
-      corps: "the volume <strong>consumed</strong> for cooling and what is <strong>discharged</strong> — with what treatment, into what environment. A catchment already under summer stress does not read an abstraction the way an abundant one does." },
-    { icone: "land", titre: "Land and biodiversity",
-      corps: "the ground the site is built on. <strong>Farmland does not carry the same cost as a rehabilitated industrial brownfield</strong>: the second repairs, the first removes. Protected areas and the ecological corridors next door add to it." },
-    { icone: "local", titre: "Local impact and absorption capacity",
-      corps: "what the territory can take. <strong>A giga-project in a rural municipality is not the same thing as a compute centre in a city</strong>: same power, same noise, but not the same number of residents to absorb it, nor the same economic fabric to benefit from it." },
-    { icone: "transparency", titre: "Transparency and governance",
-      corps: "what the developer publishes, and how it involves the territory. A readable file and genuine consultation do not make a good project, but their absence weighs — it is the only pillar about <em>conduct</em> rather than effects." },
-  ],
-
-  sectionsApres: [
-    { h2: "How it is measured",
-      corps: "<p>We give every project <strong>two grades from <span class='note-inline n-a'>A</span> to <span class='note-inline n-e'>E</span></strong> — one for the <strong>site</strong>, the context it endures and did not choose, one for the <strong>project and process</strong>, what the operator decides. Each grade comes with a <strong>confidence level</strong> stating how many sourced elements it rests on.</p><p>Missing data never becomes an <span class='note-inline n-a'>A</span>: below a coverage threshold we write “insufficient data” instead of a letter. Without that rule, the least transparent site would be the best graded. The calculation is public: <a href='/methodology/'>the method</a> and <a href='/the-grade-step-by-step/'>the grade, step by step</a>.</p>" },
-    { h2: "Nuisances, the other half of the subject",
-      corps: "<p>Acceptability is also decided on what is heard and seen from the street: cooling noise, generator testing, fuel tanks, construction traffic. These are not file details — they are the first grounds for opposition we find in environmental opinions.</p><p>We publish them <strong>as facts, next to the grade</strong>: see <strong><a href='/data-center-nuisances/'>data center nuisances</a></strong>.</p>" },
-    { h2: "A normative anchor, not an opinion",
-      corps: "<p>We measure <strong>standardised</strong> indicators — energy efficiency, water usage — in the spirit of the <strong>ISO/IEC 30134</strong> series on data center performance indicators. We do <strong>not</strong> produce a life-cycle assessment: we make sourced facts comparable. See <a href='/standards/'>the standards and where we stand</a>.</p>" },
-    { h2: "What acceptability is not",
-      corps: "<p>It is not a verdict for or against data centers. A territory can host a heavy project under good conditions, and a small project can be badly placed. We do not say whether to build: we say <strong>what this particular place costs, for this particular project</strong>, with the same grid for everyone.</p><p>See <a href='/map/'>the map</a> and <a href='/ranking/'>the ranking</a>.</p>" },
-  ],
-
-  details: [
-    { resume: "More — why two grades rather than one",
-      corps: "<p>A project mixes what it <strong>endures</strong> — a saturated grid, a stressed catchment, farmland — with what it <strong>chooses</strong>: its efficiency, its cooling, its transparency. Merging both into a single letter would let an exemplary file buy off a badly chosen site, or the reverse.</p><p>Hence the split: an operator can do nothing about the <strong>site</strong> grade; it is entirely responsible for the <strong>project</strong> one. An elected official comparing two possible locations looks at the first; a resident judging an operator looks at the second.</p>" },
-    { resume: "More — who decides, and where",
-      corps: "<p>A project this size needs a <strong>building permit</strong> from the municipality, usually an <strong>environmental authorisation</strong> from the state services, and a <strong>grid connection</strong> negotiated with the network operator. An <strong>environmental authority</strong> issues a public opinion on the impact assessment, and the public is consulted.</p><p>Nobody in that chain produces a grade comparable from one site to the next: every file is examined alone, in its own district. That gap is exactly what this observatory fills.</p>" },
-  ],
-};
+const t = ACCEPTABILITE.en;
 ---
 
 <PagePilier lang="en" t={t} nav={EN_NAV} altHref="/fr/acceptabilite-data-center" altLabel="FR" />
