@@ -43,7 +43,7 @@ const t = {
   orderWorst: "Lowest graded first",
   statusLabel: "Status",
   statusAll: "All",
-  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational" },
+  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational", unknown: "Status not established" },
   statusHelpLabel: "The statuses",
   statusHelpTitre: "What each status means",
   statusHelp: {
@@ -51,6 +51,8 @@ const t = {
     permitting: "under review by the authorities (permit, public inquiry)",
     under_construction: "construction has started",
     operational: "up and running",
+    // 🔴 On ne dit pas « nous ne savons pas » : on dit ce qui MANQUE, et où le chercher.
+    unknown: "stage not established: no public source says where this site stands",
   },
   thProject: "Project",
   thCountry: "Country",

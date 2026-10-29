@@ -673,6 +673,106 @@ def test_le_garde_de_la_surface_traduite_mord_vraiment(tmp_path, monkeypatch):
         test_la_surface_traduite_est_a_zero_branche_nue()
 
 
+STATUTS_TS = CONTENU / "statuts.ts"
+# Le volume minimal qu'un relevé honnête ramène — en constante, pour que la contre-épreuve
+# puisse l'abaisser et éprouver l'AUTRE garantie (leçon du 2026-10-29).
+_SEUIL_TABLES_STATUT = 14
+
+
+def _statuts_declares() -> list[str]:
+    """Le vocabulaire des statuts, lu à sa source unique (`content/statuts.ts`)."""
+    texte = STATUTS_TS.read_text(encoding="utf-8")
+    pipeline = re.search(r"PIPELINE = \[([^\]]*)\]", texte)
+    assert pipeline, "PIPELINE introuvable dans statuts.ts"
+    valeurs = re.findall(r'"(\w+)"', pipeline.group(1))
+    suite = re.search(r"STATUTS = \[\.\.\.PIPELINE,([^\]]*)\]", texte)
+    assert suite, "STATUTS introuvable dans statuts.ts"
+    return valeurs + re.findall(r'"(\w+)"', suite.group(1))
+
+
+def _tables_de_statut() -> list[tuple[str, int, set[str]]]:
+    """Toutes les tables qui LIBELLENT un statut, CHERCHÉES dans le code.
+
+    🔴 Pas une liste tenue à la main : il y en avait seize, dans seize fichiers, et c'est
+    précisément parce que personne ne les avait comptées qu'une valeur pouvait manquer dans
+    l'une d'elles sans que rien ne casse — la page affiche alors la valeur BRUTE, en anglais,
+    au milieu d'une page française.
+
+    Reconnaître une table de statuts sans la nommer : ses clés doivent être INCLUSES dans le
+    vocabulaire déclaré, et elle doit libeller `operational`. Ce qui écarte, sans liste
+    d'exceptions : la table des couleurs du comparateur (son vocabulaire est autre —
+    `abandoned`, `decommissioned`, `litigation`…), la table des statuts d'INDICATEUR
+    (`measured`/`estimated`), et la puce satellite, qui ne parle QUE des projets et n'a donc
+    pas à libeller `operational`.
+    """
+    vocabulaire = set(_statuts_declares())
+    trouvees = []
+    for chemin in sorted(SRC_SITE.rglob("*")):
+        if chemin.suffix not in (".ts", ".astro") or not chemin.is_file():
+            continue
+        texte = chemin.read_text(encoding="utf-8")
+        for m in re.finditer(r'announced:\s*[`"\']', texte):
+            ouverture = texte.rfind("{", 0, m.start())
+            if ouverture < 0:
+                continue
+            profondeur, j = 0, ouverture
+            while j < len(texte):
+                if texte[j] == "{":
+                    profondeur += 1
+                elif texte[j] == "}":
+                    profondeur -= 1
+                    if profondeur == 0:
+                        break
+                j += 1
+            bloc = texte[ouverture : j + 1]
+            cles = set(re.findall(r'(\w+):\s*[`"\']', bloc))
+            if not cles <= vocabulaire or "operational" not in cles:
+                continue
+            ligne = texte[:ouverture].count("\n") + 1
+            trouvees.append((str(chemin.relative_to(SRC_SITE)), ligne, cles))
+    return trouvees
+
+
+def test_chaque_table_de_statut_libelle_chaque_statut():
+    """Aucune table ne doit oublier un statut — une valeur sans libellé s'affiche BRUTE.
+
+    C'est le piège de `?? dc.project_status` : il n'y a pas d'erreur, il y a « unknown » en
+    anglais dans l'en-tête d'une fiche française. [[absence-ressemble-a-zero]] appliqué au
+    vocabulaire.
+    """
+    vocabulaire = _statuts_declares()
+    tables = _tables_de_statut()
+    assert len(tables) >= _SEUIL_TABLES_STATUT, (
+        f"seulement {len(tables)} table(s) de statut trouvée(s) — le relevé ne cherche plus, "
+        f"et un relevé qui ne trouve rien ne garde rien"
+    )
+    fautives = [
+        (f, n, sorted(set(vocabulaire) - cles)) for f, n, cles in tables
+        if set(vocabulaire) - cles
+    ]
+    assert not fautives, "des tables de statut n'en libellent pas tous :\n" + "\n".join(
+        f"  {f}:{n} — manque {manquants}" for f, n, manquants in fautives
+    )
+
+
+def test_le_garde_des_tables_de_statut_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : un statut retiré d'UNE des seize tables."""
+    faux = tmp_path / "content"
+    faux.mkdir(parents=True)
+    (faux / "statuts.ts").write_text(
+        STATUTS_TS.read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    (faux / "fiche.ts").write_text(
+        'const FR = { status: { announced: "A", permitting: "P", '
+        'under_construction: "C", operational: "O" } };\n', encoding="utf-8"
+    )
+    monkeypatch.setitem(globals(), "SRC_SITE", tmp_path)
+    monkeypatch.setitem(globals(), "STATUTS_TS", faux / "statuts.ts")
+    monkeypatch.setitem(globals(), "_SEUIL_TABLES_STATUT", 0)
+    with pytest.raises(AssertionError, match="manque"):
+        test_chaque_table_de_statut_libelle_chaque_statut()
+
+
 def test_le_total_annonce_en_tete_est_le_bon():
     """L'en-tête de `DETTE_I18N` annonce un total : il doit être celui de la table.
 

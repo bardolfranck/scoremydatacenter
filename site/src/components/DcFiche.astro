@@ -74,6 +74,11 @@ const methodology = methodologyData as any;
 // SITE du pays de cette fiche, avec sa réserve A-25 si elle s'applique.
 import indicesData from "../../public/data/indices.json";
 import { COUNTRY_NAMES } from "../config/indices";
+// 🔴 « pas operational » n'est pas « est un projet ». La note sous l'image satellite
+// (« le terrain visible ici peut ne pas encore accueillir le data center ») sortait dès que
+// le statut n'était pas `operational` — donc aussi pour un statut NON ÉTABLI, ce qui en
+// faisait une affirmation. `enProjet` teste l'appartenance au cycle de vie DÉCLARÉ.
+import { enProjet } from "../content/statuts";
 const _idxEntry = (indicesData as any).countries?.[dc.country];
 let idxLine: { text: string; href: string } | null = null;
 if (_idxEntry?.eligible) {
@@ -648,13 +653,13 @@ const seoDesc = seoLead
             <a href={dc.satellite_image.url} target="_blank" rel="noopener">
               <img src={dc.satellite_image.thumb} alt={(t as any).satAlt?.replace("{name}", dc.name) ?? dc.name}
                 width="400" height="267" loading="lazy" />
-              {dc.project_status !== "operational" && (t as any).satStatusChip?.[dc.project_status] && (
+              {enProjet(dc.project_status) && (t as any).satStatusChip?.[dc.project_status] && (
                 <span class="fiche-sat-chip">{(t as any).satStatusChip[dc.project_status]}</span>
               )}
             </a>
             <figcaption>
               {(t as any).satCaption?.replace("{municipality}", dc.municipality ?? "")} {dc.satellite_image.credit}
-              {dc.project_status !== "operational" && (t as any).satStatusNote && (
+              {enProjet(dc.project_status) && (t as any).satStatusNote && (
                 <> — {(t as any).satStatusNote}</>
               )}
             </figcaption>
