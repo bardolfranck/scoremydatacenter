@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
 from engine.validate import (_schema_errors, geo_gate, operator_gate, position_gate,  # noqa: E402
-                             prose_gate)
+                             prose_gate, statut_gate)
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -180,6 +180,12 @@ def main() -> int:
     # servi — `validation/` (cohorte scellée) n'est pas dans `paths`, donc hors portée par
     # construction et non par exception.
     problems += operator_gate(paths)
+    # GATE STATUT — « en service » est une AFFIRMATION, et elle doit avoir une source. Même
+    # raison d'être ici que les trois au-dessus : le défaut vit dans le corpus SERVI. Il porte
+    # un cliquet (`STATUT_NON_SOURCE`) au compte exact des fiches qui l'affirment sans source,
+    # et il empêche la suivante. Trois fois le même défaut avant qu'il existe, trouvé à la
+    # main chaque fois — dont 8 fiches irlandaises de licence EPA le 2026-10-29.
+    problems += statut_gate(CAL)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "

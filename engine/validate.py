@@ -435,6 +435,121 @@ def geo_gate(data_dir: Path) -> list[str]:
     return out
 
 
+# 🔴 LE CLIQUET DE STATUT — le compte EXACT des fiches servies qui affirment « en service »
+# sans qu'aucune source ne le dise. Arbitrage Franck du 2026-10-29 : « operational repasse en
+# non-mesuré, plus un cliquet au compte exact des fiches déjà servies dans ce cas ».
+#
+# Pourquoi un COMPTE et pas une liste de dérogations comme `GEO_WAIVERS` : parce qu'il y en a
+# 1 197. Une liste de 1 197 entrées ne se relit pas, donc ne garde rien ; un nombre qui ne peut
+# que baisser, si. C'est la forme déjà éprouvée sur la dette i18n.
+#
+# CE QU'IL EMPÊCHE, et qui est arrivé trois fois : qu'une fiche NOUVELLE naisse en affirmant
+# « en service » sans source. Le défaut a été trouvé à la main chaque fois — le lot DCmag
+# (6 faux), les 361 invérifiables, puis les 8 fiches irlandaises de licence EPA du 2026-10-29,
+# où le statut était forcé dans l'entrée du run. Une licence d'émissions prouve une
+# installation autorisée, pas un site qui tourne.
+#
+# CE QU'IL NE DIT PAS : que les 1 197 soient fausses. Elles sont NON ÉTABLIES, ce qui n'est pas
+# la même chose — et on ne remplace pas une affirmation non sourcée par une autre (la leçon des
+# 35 : un flip de masse vers `announced` fabriquerait de faux « annoncés » sur de vrais sites en
+# service). Elles baissent par la preuve, fiche à fiche, jamais par lot.
+#
+# DEUX FAÇONS D'ÊTRE SOURCÉ, et une seule suffit :
+#   · le sidecar hebdomadaire de preuve de statut dit `verified` — des réseaux sont
+#     interconnectés DANS ce bâtiment (PeeringDB) ; c'est une preuve intrinsèque d'exploitation ;
+#   · la fiche porte un `project_status_provenance` qui justifie `operational` avec sa source.
+STATUT_NON_SOURCE = 1197
+
+
+def statut_gate(data_dir: Path) -> list[str]:
+    """Refuse qu'une fiche de plus affirme « en service » sans source.
+
+    Mesure dehors, décision dedans — comme le gate géo : la preuve PeeringDB demande du
+    réseau, elle est produite par `pipelines.status_proof` dans un sidecar, et ce gate ne fait
+    que lire et refuser.
+    """
+    newsroom = Path(os.environ.get("NEWSROOM_CAL",
+                                   Path(__file__).resolve().parents[2] / "smdc-newsroom" / "calibration"))
+    # 🔴 LE CORPUS COMPTÉ DOIT ÊTRE CELUI QUE LE SIDECAR DÉCRIT. Première version : sidecar
+    # du newsroom, corpus de `data_dir` — donc, validé depuis le dépôt public (2 fiches de
+    # fixture, aucune en service), un compte de 0 contre un cliquet de 1197, et le gate
+    # réclamait de baisser le cliquet. Un gate qui compare deux populations différentes ne
+    # mesure rien ; il faisait rougir `test_repository_data_passes_all_gates`, c'est-à-dire la
+    # CI et tout clone frais.
+    racine = next((r for r in (data_dir, newsroom)
+                   if (r / "status-proof" / "status_check.json").is_file()), None)
+    sidecar = None if racine is None else racine / "status-proof" / "status_check.json"
+    if sidecar is None:
+        # Même nuance que le gate géo : sans newsroom monté, `data_dir` est le jeu de fixtures
+        # du dépôt et il n'y a pas de corpus réel à protéger. Exiger le sidecar ferait rougir
+        # la CI et tout clone frais sur une mesure qui demande du réseau et un corpus privé.
+        if not newsroom.is_dir():
+            return []
+        return ["GATE STATUT: sidecar status_check.json absent — lancer "
+                "`python -m pipelines.status_proof.run` avant d'onboarder"]
+    rapport = load_json(sidecar)
+    # Le verdict du sidecar, pas un booléen : `verified` (des réseaux sont interconnectés dans
+    # ce bâtiment) et `live_signal` (un signal d'exploitation observé) sont des preuves ;
+    # `unverified` dit qu'on a CHERCHÉ et rien trouvé — ce n'est pas la même chose qu'une
+    # fiche jamais mesurée, qui n'apparaît pas du tout.
+    verifiees = {fid for fid, f in (rapport.get("fiches") or {}).items()
+                 if f.get("verdict") in ("verified", "live_signal")}
+
+    sans_source: list[str] = []
+    for path in datacenter_paths(racine):
+        dc = load_json(path)
+        if (dc.get("identity") or {}).get("project_status") != "operational":
+            continue
+        if path.stem in verifiees:
+            continue
+        cote = path.with_name(path.stem + ".provenance.json")
+        prov = (load_json(cote) if cote.is_file() else {}).get("project_status_provenance") or {}
+        if prov.get("to") == "operational" and prov.get("source"):
+            continue
+        sans_source.append(path.stem)
+
+    out: list[str] = []
+    n = len(sans_source)
+    if n > STATUT_NON_SOURCE:
+        nouvelles = n - STATUT_NON_SOURCE
+        out.append(
+            f"GATE STATUT: {nouvelles} fiche(s) de plus affirment « en service » sans source "
+            f"({n} contre un cliquet à {STATUT_NON_SOURCE}). Une licence, un annuaire ou un "
+            f"défaut d'ingestion ne prouvent pas l'exploitation : poser "
+            f"`project_status: \"unknown\"`, ou écrire un `project_status_provenance` qui cite "
+            f"sa source. Dernières arrivées : {sorted(sans_source)[-5:]}"
+        )
+    elif n < STATUT_NON_SOURCE:
+        # Le cliquet mord DANS LES DEUX SENS : un compte qui baisse sans que le nombre suive
+        # laisse de la place pour une régression future sans rien casser. Même discipline que
+        # la dette i18n — le chiffre doit rester EXACT pour rester un instrument.
+        out.append(
+            f"GATE STATUT: plus que {n} fiches sans source pour un cliquet à "
+            f"{STATUT_NON_SOURCE} — baisser `STATUT_NON_SOURCE` à {n} dans engine/validate.py "
+            f"pour que le cliquet garde sa place"
+        )
+
+    # Couverture : la mesure ne porte que sur les fiches « en service » — c'est son objet.
+    # On la compare donc à CELLES-LÀ, et non au corpus entier : comparer au corpus ferait
+    # crier le gate en permanence, et un gate qui crie toujours ne dit plus rien.
+    # Une fiche en service jamais mesurée est déjà comptée comme non sourcée plus haut : le
+    # refus est le bon. Mais on le NOMME, sinon un onboarding sans relance de la mesure
+    # ressemble à une mesure propre.
+    mesurees = set(rapport.get("fiches") or {})
+    en_service = {p.stem for p in datacenter_paths(racine)
+                  if (load_json(p).get("identity") or {}).get("project_status") == "operational"}
+    jamais = sorted(en_service - mesurees)
+    if jamais:
+        out.append(f"GATE STATUT: preuve de statut périmée — {len(jamais)} fiche(s) « en "
+                   f"service » n'ont jamais été mesurées ({jamais[:5]}) ; relancer "
+                   f"`pipelines.status_proof.run`")
+    if not out:
+        print(f"GATE STATUT: {n} fiches servies affirment « en service » sans source "
+              f"(cliquet {STATUT_NON_SOURCE}, il ne peut que baisser) — ce gate empêche la "
+              f"{n + 1}ᵉ, il ne certifie pas les {n}", file=sys.stderr)
+    return out
+
+
 def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]:
     """Return the list of gate violations (empty = all gates pass)."""
     today = today or date.today()
@@ -683,6 +798,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
             seen_watch_ids.add(entry["id"])
 
     problems += geo_gate(data_dir)
+    problems += statut_gate(data_dir)
 
     return problems
 
