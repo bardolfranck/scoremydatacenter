@@ -40,8 +40,41 @@ PAIRS = [
     ("fr/comprendre/one-pager.astro", "understand/one-pager.astro", False),
     ("fr/bibliotheque.astro", "intelligence.astro", True),
     ("fr/bibliotheque/tous.astro", "intelligence/all.astro", True),
+    # 🔴 Les 22 paires ci-dessous ont été AJOUTÉES le 2026-10-29. Jusque-là la liste en
+    # déclarait 11 sur 33 : le garde censé empêcher l'EN de décrocher couvrait un tiers des
+    # pages, et les 22 autres — dont les quatre rapports, les indices, les chiffres et la
+    # page nuisances — n'étaient gardées par rien. Une liste de paires tenue à côté des
+    # pages réelles finit par mentir ; voir le test de complétude en bas de ce fichier, qui
+    # ferme désormais la classe.
+    ("fr/acceptabilite-data-center.astro", "acceptability-of-data-centers.astro", True),
+    ("fr/actu.astro", "news.astro", True),
+    ("fr/glossaire.astro", "glossary.astro", True),
+    ("fr/normes.astro", "standards.astro", True),
+    ("fr/notation-data-center.astro", "data-center-rating.astro", True),
+    ("fr/nuisances-data-center.astro", "data-center-nuisances.astro", True),
+    ("fr/portrait-du-site.astro", "site-portrait.astro", True),
+    ("fr/presse.astro", "press.astro", False),            # prose en dur dans le gabarit
+    ("fr/sources.astro", "sources.astro", True),
+    ("fr/dc/[id]/portrait.astro", "dc/[id]/portrait.astro", True),
+    ("fr/indices.astro", "indices.astro", False),         # gabarit IndicesPage, pas d'objet t
+    ("fr/comparer.astro", "compare.astro", False),        # gabarit ComparerPage, pas d'objet t
+    ("fr/chiffres/index.astro", "figures/index.astro", False),        # gabarit StatsPage
+    ("fr/chiffres/[perimetre].astro", "figures/[perimeter].astro", False),  # gabarit StatsPage
+    ("fr/developpeurs.astro", "developers.astro", False),      # gabarit DevelopersPage
+    ("fr/developpeurs/cle.astro", "developers/key.astro", False),   # gabarit KeyReveal
+    ("fr/la-note-pas-a-pas.astro", "the-grade-step-by-step.astro", False),  # prose en dur
+    ("fr/qui-sommes-nous.astro", "who-we-are.astro", False),   # prose en dur
+    ("fr/rapports/banques.astro", "reports/banks.astro", False),     # gabarit ReportDownload
+    ("fr/rapports/big-tech.astro", "reports/big-tech.astro", False),
+    ("fr/rapports/france.astro", "reports/france.astro", False),
+    ("fr/rapports/nederland.astro", "reports/nederland.astro", False),
 ]
-# FR-only internal tooling, exempt from parity: fr/apercu-partage.astro (OG preview gallery).
+# Pages sans jumelle, et pourquoi. Toute autre page doit figurer dans PAIRS — c'est le test
+# de complétude qui l'exige, et c'est ce qui empêche la liste ci-dessus de rester en arrière.
+SANS_JUMELLE: dict[str, str] = {
+    "fr/apercu-partage.astro": "outil interne FR (galerie d'aperçus OG), rien à traduire",
+    "404.astro": "la page 404 d'Astro est servie à la racine pour toutes les langues",
+}
 
 # Deliberate asymmetries: keys one language needs and the other, by design, does not.
 # understand (EN) flags the France-centric content ("In France" tags + context notice);
@@ -56,6 +89,14 @@ EXTRA_OK: dict[str, set[str]] = {
 # repeats under every block, and listing each full path would be a list that rots.
 EXTRA_OK_IMBRIQUE: dict[str, set[str]] = {
     "understand.astro": {"tag"},
+    # `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont
+    # atteignables que si `lang === "en"` ET le pays compte ses distances en miles
+    # (`PAYS_EN_MILES = {US}`, DcFiche.astro) — la table FR ne peut donc structurellement
+    # pas en avoir besoin, et le code le dit déjà dans fiche.ts.
+    # 🔴 Cette asymétrie était INVISIBLE jusqu'au 2026-10-29 : le relevé des clés se faisait
+    # ligne par ligne, et `relation: { operator: …, nearbyMi: … }` tient sur une seule ligne,
+    # donc seul le parent était compté. Le relevé caractère par caractère la montre.
+    "dc/[id].astro": {"nearbyMi", "nearbyUnderMi"},
 }
 
 
@@ -80,6 +121,54 @@ def _sans_exemptions(cles: set[str], page: str) -> set[str]:
         c for c in cles
         if c not in nus and c.split(".")[0] not in nus and c.split(".")[-1] not in feuilles
     }
+
+
+def _pages_du_disque() -> set[str]:
+    """Toutes les pages `.astro`, chemin relatif à `pages/`, sauf les générateurs d'images.
+
+    `og/**` ne rend pas une page lisible : ce sont des PNG dessinés. Leur texte bilingue est
+    un vrai sujet, mais il ne se garde pas par parité de clés — il n'y a pas d'objet `t`.
+    """
+    return {
+        str(p.relative_to(PAGES))
+        for p in PAGES.rglob("*.astro")
+        if not str(p.relative_to(PAGES)).startswith("og/")
+    }
+
+
+def test_toute_page_est_declaree_dans_la_liste_des_paires():
+    """LA LISTE DES PAIRES NE DOIT PAS RESTER EN ARRIÈRE DES PAGES RÉELLES.
+
+    Le 2026-10-29 : **33 paires de pages sur le disque, 11 déclarées**. Le garde censé
+    empêcher l'anglais de décrocher ne regardait qu'un tiers du site — et les deux tiers
+    muets contenaient les quatre rapports, les indices, les chiffres, et la page nuisances.
+    Rien ne criait, parce que le garde ne parcourait que SA liste : une énumération tenue à
+    côté de la réalité qu'elle prétend décrire, c'est-à-dire une liste qui finit par mentir.
+
+    Désormais une page nouvelle doit se déclarer — en paire, ou dans SANS_JUMELLE avec sa
+    raison. L'oubli casse la suite au lieu de laisser une page sans garde.
+    """
+    declarees = {fr for fr, _, _ in PAIRS} | {en for _, en, _ in PAIRS} | set(SANS_JUMELLE)
+    orphelines = sorted(_pages_du_disque() - declarees)
+    assert not orphelines, (
+        f"{len(orphelines)} page(s) ne sont déclarées nulle part :\n"
+        + "\n".join(f"  · {p}" for p in orphelines)
+        + "\n\nAjoutez la paire dans PAIRS (avec `compare=False` si la page porte sa prose "
+        "en dur dans un gabarit), ou la page dans SANS_JUMELLE avec sa raison. Une page non "
+        "déclarée n'est gardée par rien, et son anglais peut décrocher sans que ça se voie."
+    )
+
+
+def test_une_liste_de_paires_perimee_ne_passe_pas(monkeypatch):
+    """Contre-épreuve : une page retirée de la liste doit être signalée.
+
+    C'est exactement la panne vécue — la page existait, la liste l'ignorait, le garde se
+    taisait. Si ce test-ci ne mord pas, le précédent ne garantit rien.
+    """
+    ampute = [p for p in PAIRS if p[0] != "fr/actu.astro"]
+    monkeypatch.setitem(globals(), "PAIRS", ampute)
+    with pytest.raises(AssertionError, match="déclarées nulle part"):
+        test_toute_page_est_declaree_dans_la_liste_des_paires()
 
 
 def test_every_fr_page_has_its_en_twin():
