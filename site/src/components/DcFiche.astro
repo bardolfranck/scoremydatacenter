@@ -52,7 +52,7 @@ if (_fleetPeri && (t as any).fleet) {
     if (stat && ind && ["measured", "announced", "verified"].includes(ind.status) && pred(ind.value)) {
       // `base` n'a PAS de barre finale : elle est ajoutée une seule fois dans `href`, sinon
       // le périmètre France produisait « /fr/chiffres//#… » et l'anglais « /figures//#… ».
-      const base = lang === "fr"
+      const base = /* i18n:route */ lang === "fr"
         ? (dc.country === "FR" ? "/fr/chiffres" : `/fr/chiffres/${dc.country.toLowerCase()}`)
         : `/figures/${dc.country.toLowerCase()}`;
       fleetLine = {
@@ -73,18 +73,22 @@ const _idxEntry = (indicesData as any).countries?.[dc.country];
 let idxLine: { text: string; href: string } | null = null;
 if (_idxEntry?.eligible) {
   const cname = (COUNTRY_NAMES as any)[dc.country]?.[lang] ?? dc.country;
-  const score = lang === "fr" ? String(_idxEntry.score).replace(".", ",") : String(_idxEntry.score);
-  const res = _idxEntry.reserved_from === "A" ? (lang === "fr" ? " · A réservé" : " · A reserved") : "";
+  // La virgule décimale est un FORMAT, pas un mot : elle suit la locale et n'a rien à faire
+  // dans la table — une langue nouvelle n'aurait pas à décider comment on écrit « 3,4 ».
+  const score = /* i18n:format */ lang === "fr" ? String(_idxEntry.score).replace(".", ",") : String(_idxEntry.score);
+  const res = _idxEntry.reserved_from === "A" ? t.idx.reserved : "";
   idxLine = {
-    text: lang === "fr"
-      ? `Ce site est en ${cname} — indice site du pays : ${_idxEntry.grade}${res} (${score}).`
-      : `This site is in ${cname} — the country's site index: ${_idxEntry.grade}${res} (${score}).`,
-    href: `${lang === "fr" ? "/fr" : ""}/indices/?pays=${dc.country}`,
+    text: t.idx.line
+      .replace("{country}", cname)
+      .replace("{grade}", _idxEntry.grade)
+      .replace("{reserved}", res)
+      .replace("{score}", score),
+    href: `${/* i18n:route */ lang === "fr" ? "/fr" : ""}/indices/?pays=${dc.country}`,
   };
 }
 
 const SITE_ORIGIN = "https://scoremydatacenter.org";
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const ficheBase = /* i18n:route */ lang === "fr" ? "/fr/dc" : "/dc";
 // En-veille: the public grade is withheld ("note en attente") — the site is
 // visible with its facts, but no letter is shown anywhere (leak-safe by data
 // scrub). For desalination-dominant countries (Israel now) we carry the
@@ -114,15 +118,14 @@ const isEnAttente = !hasLoupe && (dc.grades?.site?.grade === "en_attente" || pba
 // phrase longue du moteur (« la plage se resserre à la collecte ») prenait trois lignes dans
 // la barre latérale et disait ce que le bloc « pourquoi cette note ? » explique en entier.
 const provLabel = bandWide
-  ? (lang === "fr"
-      ? `note probable : ${pband.central}${pband.band && pband.band !== pband.central ? `, fenêtre ${pband.band}` : ""}`
-      : `probable grade: ${pband.central}${pband.band && pband.band !== pband.central ? `, window ${pband.band}` : ""}`)
-  : lang === "fr" ? "provisoire · s'affine avec la donnée" : "provisional · narrows as data lands";
+  ? t.prov.probable.replace("{central}", pband.central)
+      + (pband.band && pband.band !== pband.central ? t.prov.window.replace("{band}", pband.band) : "")
+  : t.prov.narrowing;
 // Les lettres citées dans la prose portent leur couleur (.note-inline, global.css).
 const noteChip = (g: string) => `<span class="note-inline n-${g.toLowerCase()}">${g}</span>`;
 const bandChips = (b: string) => b.split("–").map(noteChip).join("–");
 const isDesalCountry = dc.country === "IL";
-const mapPath = lang === "fr" ? "/fr/carte/" : "/map/";
+const mapPath = /* i18n:route */ lang === "fr" ? "/fr/carte/" : "/map/";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}/`;
 const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
 // The synthesis `lead` is per-language like the body. Back-compat: older records carry a bare
@@ -130,7 +133,8 @@ const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
 // {fr,en,…}, resolved by the active locale exactly like the body, so adding a language is a locale,
 // not a code change (i18n §13: "la langue suit le pays").
 const Lead = (block: any) => (typeof block?.lead === "string" ? block.lead : L(block?.lead));
-const fmtDate = (iso: string | null) => (iso ? (lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
+// L'ordre des composantes d'une date est un FORMAT, pas un mot.
+const fmtDate = (iso: string | null) => (iso ? (/* i18n:format */ lang === "fr" ? iso.split("-").reverse().join("/") : iso) : "");
 
 const pillarIconName: Record<string, PillarIconName> = {
   energy: "energy",
@@ -366,13 +370,13 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Place",
   name: dc.name,
-  url: `${SITE_ORIGIN}${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/`,
+  url: `${SITE_ORIGIN}${/* i18n:route */ lang === "fr" ? "/fr" : ""}/dc/${dc.id}/`,
   // 🔴 Le balisage est la pire des quatre fuites : il AFFIRME à une machine, sans prose
   // autour pour nuancer, que l'exploitant de ce site est une société nommée « opérateur non
   // identifié ». C'est ce qui était publié sur 162 fiches jusqu'au 2026-10-17. Même prédicat
   // que l'affichage : une seule réponse à « l'opérateur est-il identifié ? ».
   ...(operateurIdentifie(dc.operator)
-    ? { additionalProperty: [{ "@type": "PropertyValue", name: lang === "fr" ? "Opérateur" : "Operator", value: dc.operator }] }
+    ? { additionalProperty: [{ "@type": "PropertyValue", name: t.schemaOperator, value: dc.operator }] }
     : {}),
   address: {
     "@type": "PostalAddress",
@@ -391,13 +395,13 @@ const jsonLd = {
 
 // Fil d'Ariane : il dit la place de la fiche dans le site, et c'est aussi ce qui permet à un
 // moteur d'afficher « ScoreMyDataCenter › Carte › {commune} » plutôt qu'une URL nue.
-const racine = `${SITE_ORIGIN}${lang === "fr" ? "/fr" : ""}`;
+const racine = `${SITE_ORIGIN}${/* i18n:route */ lang === "fr" ? "/fr" : ""}`;
 const filAriane = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   itemListElement: [
     { "@type": "ListItem", position: 1, name: "ScoreMyDataCenter", item: `${racine}/` },
-    { "@type": "ListItem", position: 2, name: lang === "fr" ? "Carte" : "Map", item: `${racine}/${lang === "fr" ? "carte" : "map"}/` },
+    { "@type": "ListItem", position: 2, name: t.breadcrumbMap, item: `${racine}/${/* i18n:route */ lang === "fr" ? "carte" : "map"}/` },
     { "@type": "ListItem", position: 3, name: dc.name, item: `${racine}/dc/${dc.id}/` },
   ],
 };
@@ -449,17 +453,17 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
   // Fenêtre large : le titre annonce la note PROBABLE. Écrire « note en attente » au-dessus
   // d'une page qui affiche « probable E » rejouerait exactement la contradiction SERP↔page
   // constatée le 2026-09-30.
-  ? (lang === "fr" ? `note probable ${seoBand.central}` : `probable grade ${seoBand.central}`)
+  ? t.seo.probable.replace("{central}", seoBand.central)
   : seoBand.kind === "en_attente"
-  ? (lang === "fr" ? "note en attente" : "grade pending")
+  ? t.seo.pending
   : seoBand.kind === "provisional_band" && seoBand.band
-    ? (lang === "fr" ? `note provisoire ${seoBand.band}` : `provisional grade ${seoBand.band}`)
+    ? t.seo.provisional.replace("{band}", seoBand.band)
     // L'axe site peut lui aussi être retiré faute de données (seuil `min_site_coverage`,
     // 2026-10-02). Sans ce cas, le titre sortait « note insufficient_data » — l'énumération
     // interne, en anglais, dans l'onglet du navigateur et dans les résultats de recherche.
     : dc.grades.site.grade === "insufficient_data"
-      ? (lang === "fr" ? "données insuffisantes" : "insufficient data")
-      : (lang === "fr" ? `note ${dc.grades.site.grade}` : `grade ${dc.grades.site.grade}`);
+      ? t.seo.insufficient
+      : t.seo.grade.replace("{grade}", dc.grades.site.grade);
 const seoPlaceRaw = dc.municipality ?? dc.admin_area ?? dc.country ?? "";
 // « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
 // est du bruit qui mange la largeur utile du titre en SERP.
@@ -473,7 +477,7 @@ const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceR
 // ⚠️ La commune est répétée même quand le nom la contient (« Campus IA Fouju, data center à
 // Fouju ») : la redondance coûte quelques caractères, l'absence coûtait la requête.
 const seoLieuSansRegion = dc.municipality
-  ? (lang === "fr" ? `data center à ${dc.municipality}` : `data center in ${dc.municipality}`)
+  ? t.seo.place.replace("{municipality}", dc.municipality)
   : "data center";
 const seoLieu = seoLieuSansRegion + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
 // 🔴 LE TITRE ÉTAIT COUPÉ AVANT LA NOTE — SUR 100 % DES FICHES (Search Console, 2026-10-23).
@@ -508,7 +512,7 @@ const seoTitle = [
 const seoLead = dc.synthesis?.site?.lead?.[lang];
 const seoDesc = seoLead
   ? `${seoLead} — ${dc.name}, ${seoLieu}. ${seoGrade.charAt(0).toUpperCase()}${seoGrade.slice(1)}, `
-    + (lang === "fr" ? "indicateurs sourcés, observatoire indépendant." : "sourced indicators, independent observatory.")
+    + t.seo.tail
   : t.metaDescription.replace("{name}", dc.name).replace("{municipality}", dc.municipality);
 ---
 
@@ -545,7 +549,7 @@ const seoDesc = seoLead
             {/* Developer-when-known (Franck 2026-09-25): a SOURCED register fact, never our verdict —
                 the declared NAF activity + register link. Only present when R&D signed the case. */}
             {dc.developer_source && (
-              <span class="fiche-dev"> — {t.developerDeclared} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{lang === "fr" ? dc.developer_source.activity_fr : dc.developer_source.activity_en}</a> <span class="dev-reg">({t.developerRegister})</span></span>
+              <span class="fiche-dev"> — {t.developerDeclared} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{/* i18n:donnee */ lang === "fr" ? dc.developer_source.activity_fr : dc.developer_source.activity_en}</a> <span class="dev-reg">({t.developerRegister})</span></span>
             )}
           </p>
         )}
@@ -576,14 +580,14 @@ const seoDesc = seoLead
                l'explication : le bloc qui dit d'où elle vient est plus bas dans la page et
                rien n'y menait. Une ancre, pas un repli — le bloc reste lisible pour qui
                arrive par la recherche ou imprime la page. */
-            <a class="fiche-why" href="#note-probable">{lang === "fr" ? "pourquoi cette note ?" : "why this grade?"}</a>
+            <a class="fiche-why" href="#note-probable">{t.whyLink}</a>
           )}
           </>
         ) : (
           <ScoreBadge
             label={t.siteScore}
             grade={pband?.kind === "en_attente" ? { ...dc.grades.site, grade: "en_attente" } : dc.grades.site}
-            enAttenteLabel={lang === "fr" ? "Note en attente" : "Grade pending"}
+            enAttenteLabel={t.pending.label}
             confidence={dc.confidence.level}
             confidenceLabel={t.confidence[dc.confidence.level]}
             documentationLabel={siteDocLabel}
@@ -618,8 +622,8 @@ const seoDesc = seoLead
               d'apprendre ce qui tire CETTE note ; la question suivante est ce que valent les
               lettres. Sans ce lien, l'explication de la fiche et l'échelle vivent chacune de
               leur côté et personne ne passe de l'une à l'autre. */}
-          <a href={lang === "fr" ? "/fr/la-note-pas-a-pas/" : "/the-grade-step-by-step/"}>
-            {lang === "fr" ? "Ce que valent les lettres →" : "What the letters mean →"}
+          <a href={/* i18n:route */ lang === "fr" ? "/fr/la-note-pas-a-pas/" : "/the-grade-step-by-step/"}>
+            {t.lettersLink}
           </a>
         </p>
       )}
@@ -691,10 +695,8 @@ const seoDesc = seoLead
       {ctxUrl && (
         <figure class="fiche-ctx">
           <a href={ctxUrl} target="_blank" rel="noopener"
-             aria-label={lang === "fr" ? "Ouvrir la carte de contexte en grand" : "Open the context map full size"}>
-            <img src={ctxUrl} alt={lang === "fr"
-              ? `Vue aérienne annotée de ${dc.name} à ${dc.municipality ?? ""} : emprise, cours d'eau, poste électrique et logements les plus proches, avec les distances mesurées.`
-              : `Annotated aerial view of ${dc.name} in ${dc.municipality ?? ""}: footprint, watercourse, substation and nearest dwellings, with measured distances.`}
+             aria-label={t.ctxMap.aria}>
+            <img src={ctxUrl} alt={t.ctxMap.alt.replace("{name}", dc.name).replace("{municipality}", dc.municipality ?? "")}
               width="1200" height="900" loading="lazy" />
           </a>
         </figure>
@@ -703,25 +705,19 @@ const seoDesc = seoLead
         /* Une note probable sans explication est une note ferme mal écrite : si la page montre
            « probable E · distribué E–C », elle doit dire d'où vient le E et pourquoi il bouge.
            Court volontairement — le détail du calcul vit dans « la note, pas à pas ». */
-        <section class="fiche-enveille" id="note-probable" aria-label={lang === "fr" ? "Note probable" : "Probable grade"}>
-          <p class="fiche-enveille-k">{lang === "fr" ? "Note probable, fenêtre large" : "Probable grade, wide window"}</p>
-          <p class="fiche-enveille-lead" set:html={lang === "fr"
-            ? `Ce projet n'est pas en service : nous publions une note probable ${noteChip(pband.central)} et la plage dans laquelle elle peut encore bouger ${bandChips(pband.band)}. La note probable est calculée sur les seuls indicateurs déjà sourcés ; la plage dit ce que les indicateurs manquants pourraient encore changer. Elle est ici plus large que d'ordinaire — c'est la mesure de ce qui manque, pas un doute sur le calcul. Elle se resserrera à mesure que le dossier se remplit.`
-            : `This project is not in service: we publish a probable grade ${noteChip(pband.central)} and the range it can still move within ${bandChips(pband.band)}. The probable grade is computed on the sourced indicators alone; the range says what the missing ones could still change. It is wider than usual here — that width measures what is missing, not doubt about the calculation. It narrows as the file fills in.`} />
+        <section class="fiche-enveille" id="note-probable" aria-label={t.probable.aria}>
+          <p class="fiche-enveille-k">{t.probable.title}</p>
+          <p class="fiche-enveille-lead" set:html={t.probable.lead.replace("{central}", noteChip(pband.central)).replace("{band}", bandChips(pband.band))} />
         </section>
       )}
       {isEnAttente && (
-        <section class="fiche-enveille" aria-label={lang === "fr" ? "Note en attente" : "Grade pending"}>
-          <p class="fiche-enveille-k">{lang === "fr" ? "Note en attente" : "Grade pending"}</p>
-          <p class="fiche-enveille-lead">{lang === "fr"
-            ? "Ce site est suivi mais pas encore noté publiquement : les données de site sont trop minces pour une note nominative solide, et une note ne se publie qu'après relecture et droit de réponse. Les faits ci-dessous sont sourcés ; ils ne constituent pas un verdict."
-            : "This site is tracked but not yet publicly graded: site-level data is too thin for a robust nominative grade, and a grade is published only after review and right of reply. The facts below are sourced; they are not a verdict."}</p>
+        <section class="fiche-enveille" aria-label={t.pending.label}>
+          <p class="fiche-enveille-k">{t.pending.label}</p>
+          <p class="fiche-enveille-lead">{t.pending.lead}</p>
           {isDesalCountry && (
             <div class="fiche-enveille-note">
-              <p class="fiche-enveille-note-k">{lang === "fr" ? "Eau & dessalement — comment lire ce site" : "Water & desalination — how to read this site"}</p>
-              <p>{lang === "fr"
-                ? "Israël s'approvisionne majoritairement en eau dessalée. Le stress hydrique du bassin (WRI Aqueduct) n'est donc pas assimilé à une ponction certaine de la ressource locale par ce site. Mais l'impact n'est pas effacé, il est déplacé : le dessalement consomme beaucoup d'électricité — sur un réseau fortement carboné (gaz) — et rejette de la saumure (impact marin non encore quantifié). Aucun passe-droit : le pilier énergie tient, l'externalité est signalée. Cette lecture évoluera sur preuve de la source d'eau et du refroidissement du site."
-                : "Israel's water supply is majority desalinated. Basin water stress (WRI Aqueduct) is therefore not treated as a certain drawdown of the local resource by this site. But the impact isn't erased — it is shifted: desalination is highly electricity-intensive (on a carbon-heavy, gas-based grid) and discharges brine (marine impact not yet quantified). No free pass: the energy pillar stands, the externality is flagged. This reading will evolve on proof of the site's water source and cooling."}</p>
+              <p class="fiche-enveille-note-k">{t.desal.title}</p>
+              <p>{t.desal.body}</p>
             </div>
           )}
         </section>
@@ -827,7 +823,7 @@ const seoDesc = seoLead
       )}
 
       {idxLine && (
-        <p class="fiche-idxline">{idxLine.text} <a href={idxLine.href}>{lang === "fr" ? "Voir l'indice pays" : "See the country index"} →</a></p>
+        <p class="fiche-idxline">{idxLine.text} <a href={idxLine.href}>{t.idx.cta} →</a></p>
       )}
 
       {/* L'avis d'autorité environnementale, À CÔTÉ de la note et jamais dedans : il arrive
@@ -865,7 +861,7 @@ const seoDesc = seoLead
                               porteur de projet à l'endroit exact où le lecteur cherche la note,
                               et qu'on lui donnerait le crédit qu'on vient de lui refuser. */}
                           {indMeta[ind.id]?.informational && (
-                            <span class="ind-info-flag">{lang === "fr" ? "non noté · fait contextuel" : "not scored · contextual fact"}</span>
+                            <span class="ind-info-flag">{t.notScoredFlag}</span>
                           )}
                           {tip && (
                             <span class="info" tabindex="0" role="note" aria-label={`${t.explanation}: ${tip}`}>
@@ -986,7 +982,7 @@ const seoDesc = seoLead
               </li>
             ))}
           </ul>
-          <a class="fiche-related-all" href={lang === "fr" ? "/fr/classement/" : "/ranking/"}>{t.related.seeAll}</a>
+          <a class="fiche-related-all" href={/* i18n:route */ lang === "fr" ? "/fr/classement/" : "/ranking/"}>{t.related.seeAll}</a>
         </nav>
       )}
 

@@ -173,6 +173,56 @@ const FR = {
     // reste métrique, même pour un site américain.
     relation: { operator: "même opérateur :", region: "même région", regionFR: "même département", nearby: "à {km} km", nearbyUnder: "à moins d'un kilomètre" },
   },
+
+  // ——— Chaînes rapatriées du gabarit, 2026-10-29 ————————————————————————————————
+  // Elles étaient choisies par un `lang === "fr" ? … : …` dans DcFiche.astro, hors de cette
+  // table : une langue nouvelle n'aurait trouvé ici que les deux tiers de la page, et le
+  // reste n'aurait eu aucun endroit où s'écrire. « Note en attente » y était écrit TROIS
+  // fois (lignes 586, 714, 715) — trois copies à faire vieillir ensemble.
+  notScoredFlag: "non noté · fait contextuel",
+  lettersLink: "Ce que valent les lettres →",
+  whyLink: "pourquoi cette note ?",
+  breadcrumbMap: "Carte",
+  schemaOperator: "Opérateur",
+  idx: {
+    line: "Ce site est en {country} — indice site du pays : {grade}{reserved} ({score}).",
+    reserved: " · A réservé",
+    cta: "Voir l'indice pays",
+  },
+  // Le libellé du badge dit le FAIT, rien de plus : « note probable : D, fenêtre C–E ».
+  prov: {
+    probable: "note probable : {central}",
+    window: ", fenêtre {band}",
+    narrowing: "provisoire · s'affine avec la donnée",
+  },
+  // Le titre SERP annonce la note TELLE QU'ON LA PUBLIE — probable, en attente, provisoire,
+  // ou la lettre — jamais plus que ce que la page affirme (contradiction SERP↔page, 09-30).
+  seo: {
+    probable: "note probable {central}",
+    pending: "note en attente",
+    provisional: "note provisoire {band}",
+    insufficient: "données insuffisantes",
+    grade: "note {grade}",
+    place: "data center à {municipality}",
+    tail: "indicateurs sourcés, observatoire indépendant.",
+  },
+  ctxMap: {
+    aria: "Ouvrir la carte de contexte en grand",
+    alt: "Vue aérienne annotée de {name} à {municipality} : emprise, cours d'eau, poste électrique et logements les plus proches, avec les distances mesurées.",
+  },
+  probable: {
+    aria: "Note probable",
+    title: "Note probable, fenêtre large",
+    lead: "Ce projet n'est pas en service : nous publions une note probable {central} et la plage dans laquelle elle peut encore bouger {band}. La note probable est calculée sur les seuls indicateurs déjà sourcés ; la plage dit ce que les indicateurs manquants pourraient encore changer. Elle est ici plus large que d'ordinaire — c'est la mesure de ce qui manque, pas un doute sur le calcul. Elle se resserrera à mesure que le dossier se remplit.",
+  },
+  pending: {
+    label: "Note en attente",
+    lead: "Ce site est suivi mais pas encore noté publiquement : les données de site sont trop minces pour une note nominative solide, et une note ne se publie qu'après relecture et droit de réponse. Les faits ci-dessous sont sourcés ; ils ne constituent pas un verdict.",
+  },
+  desal: {
+    title: "Eau & dessalement — comment lire ce site",
+    body: "Israël s'approvisionne majoritairement en eau dessalée. Le stress hydrique du bassin (WRI Aqueduct) n'est donc pas assimilé à une ponction certaine de la ressource locale par ce site. Mais l'impact n'est pas effacé, il est déplacé : le dessalement consomme beaucoup d'électricité — sur un réseau fortement carboné (gaz) — et rejette de la saumure (impact marin non encore quantifié). Aucun passe-droit : le pilier énergie tient, l'externalité est signalée. Cette lecture évoluera sur preuve de la source d'eau et du refroidissement du site.",
+  },
 };
 
 const EN: typeof FR = {
@@ -315,6 +365,49 @@ const EN: typeof FR = {
     // `nearbyMi` sert aux pays qui comptent leurs distances en miles (voir PAYS_EN_MILES
     // dans DcFiche) : la même phrase, l'unité du lieu.
     relation: { operator: "same operator:", region: "same region", regionFR: "same département", nearby: "{km} km away", nearbyMi: "{mi} miles away", nearbyUnder: "less than 1 km away", nearbyUnderMi: "less than a mile away" },
+  },
+
+  // Strings brought back from the template (2026-10-29) — see the FR block for the why.
+  notScoredFlag: "not scored · contextual fact",
+  lettersLink: "What the letters mean →",
+  whyLink: "why this grade?",
+  breadcrumbMap: "Map",
+  schemaOperator: "Operator",
+  idx: {
+    line: "This site is in {country} — the country's site index: {grade}{reserved} ({score}).",
+    reserved: " · A reserved",
+    cta: "See the country index",
+  },
+  prov: {
+    probable: "probable grade: {central}",
+    window: ", window {band}",
+    narrowing: "provisional · narrows as data lands",
+  },
+  seo: {
+    probable: "probable grade {central}",
+    pending: "grade pending",
+    provisional: "provisional grade {band}",
+    insufficient: "insufficient data",
+    grade: "grade {grade}",
+    place: "data center in {municipality}",
+    tail: "sourced indicators, independent observatory.",
+  },
+  ctxMap: {
+    aria: "Open the context map full size",
+    alt: "Annotated aerial view of {name} in {municipality}: footprint, watercourse, substation and nearest dwellings, with measured distances.",
+  },
+  probable: {
+    aria: "Probable grade",
+    title: "Probable grade, wide window",
+    lead: "This project is not in service: we publish a probable grade {central} and the range it can still move within {band}. The probable grade is computed on the sourced indicators alone; the range says what the missing ones could still change. It is wider than usual here — that width measures what is missing, not doubt about the calculation. It narrows as the file fills in.",
+  },
+  pending: {
+    label: "Grade pending",
+    lead: "This site is tracked but not yet publicly graded: site-level data is too thin for a robust nominative grade, and a grade is published only after review and right of reply. The facts below are sourced; they are not a verdict.",
+  },
+  desal: {
+    title: "Water & desalination — how to read this site",
+    body: "Israel's water supply is majority desalinated. Basin water stress (WRI Aqueduct) is therefore not treated as a certain drawdown of the local resource by this site. But the impact isn't erased — it is shifted: desalination is highly electricity-intensive (on a carbon-heavy, gas-based grid) and discharges brine (marine impact not yet quantified). No free pass: the energy pillar stands, the externality is flagged. This reading will evolve on proof of the site's water source and cooling.",
   },
 };
 

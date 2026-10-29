@@ -144,6 +144,59 @@ def test_le_garde_de_parite_mord_vraiment(nom, derive, tmp_path, monkeypatch):
         test_paired_t_objects_share_their_keys()
 
 
+GABARIT_FICHE = REPO_ROOT / "site" / "src" / "components" / "DcFiche.astro"
+_TEST_DE_LANGUE = re.compile(r'lang === "fr"')
+# Quatre seaux, et un seul contient des mots. Pas d'heuristique sur le contenu de la chaîne :
+# « carte » n'a pas de barre oblique et reste un chemin, tandis que « Carte » est un mot —
+# seule une déclaration explicite les distingue sûrement, et elle se relit.
+_DECLARE = re.compile(r"i18n:(route|format|donnee)")
+
+
+def test_le_gabarit_de_la_fiche_ne_choisit_plus_de_mot_par_test_de_langue():
+    """Dans la fiche, un `lang === "fr"` ne doit plus produire un MOT.
+
+    « Note en attente » y était écrit TROIS fois — trois copies à faire vieillir ensemble, et
+    une langue nouvelle aurait eu trois endroits à remplir pour une seule phrase. Les 33
+    chaînes qui vivaient là ont rejoint `content/fiche.ts` le 2026-10-29.
+
+    Ce qui reste légitime dans le gabarit, et doit se déclarer :
+      · `i18n:route`  — un CHEMIN (`/fr/carte/` contre `/map/`) ;
+      · `i18n:format` — un FORMAT (virgule décimale, ordre des composantes d'une date) ;
+      · `i18n:donnee` — un champ BILINGUE DE LA DONNÉE (`activity_fr` / `activity_en`) : le
+        texte vient du corpus, pas de nous, et il n'a rien à faire dans une table d'interface.
+    Aucun des trois n'est un mot que nous écrivons, et une langue nouvelle n'a rien à en dire.
+    """
+    nues = []
+    for n, ligne in enumerate(GABARIT_FICHE.read_text(encoding="utf-8").splitlines(), 1):
+        if _TEST_DE_LANGUE.search(ligne) and not _DECLARE.search(ligne):
+            nues.append(f"  {GABARIT_FICHE.name}:{n}  {ligne.strip()[:100]}")
+    assert not nues, (
+        f"{len(nues)} test(s) de langue non déclaré(s) dans le gabarit de la fiche.\n"
+        + "\n".join(nues)
+        + "\n\nUn MOT va dans `site/src/content/fiche.ts` (il se traduit, et une langue "
+        "nouvelle doit l'y trouver). Une route, un format ou un champ de la donnée reste ici "
+        "et se déclare `/* i18n:route */`, `/* i18n:format */` ou `/* i18n:donnee */`."
+    )
+
+
+def test_le_garde_du_gabarit_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une chaîne remise en dur dans le gabarit doit être vue.
+
+    C'est la régression qui guette — on répare une phrase à l'endroit où elle s'affiche, en
+    ternaire, parce que c'est là qu'on la lit. La langue suivante ne la trouverait jamais.
+    """
+    rechute = GABARIT_FICHE.read_text(encoding="utf-8").replace(
+        "{t.notScoredFlag}",
+        '{lang === "fr" ? "non noté · fait contextuel" : "not scored · contextual fact"}',
+        1,
+    )
+    faux = tmp_path / "DcFiche.astro"
+    faux.write_text(rechute, encoding="utf-8")
+    monkeypatch.setitem(globals(), "GABARIT_FICHE", faux)
+    with pytest.raises(AssertionError, match="non déclaré"):
+        test_le_gabarit_de_la_fiche_ne_choisit_plus_de_mot_par_test_de_langue()
+
+
 def test_la_lecture_de_table_refuse_une_extraction_tronquee():
     """La post-condition du scanner, éprouvée : un littéral sans `;` final doit crier.
 
