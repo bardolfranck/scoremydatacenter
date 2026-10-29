@@ -43,6 +43,8 @@ const methodology = methodologyData as any;
 // v2 hero (Franck GO 2026-07-15): the corpus at a glance — every figure computed
 // from the build's own artifacts, never hand-written; no invented trends.
 import { readFileSync } from "node:fs";
+import { chiffresAccueil } from "../content/accueil";
+import type { Langue } from "../content/langues";
 const real = scores.filter((d: any) => !d.id.startsWith("zz-"));
 const dcFiles = import.meta.glob("../../public/data/dc/*.json", { eager: true });
 const dcAll = Object.values(dcFiles).map((m: any) => (m as any).default).filter((d: any) => !d.id.startsWith("zz-"));
@@ -133,8 +135,12 @@ const latest = [...real]
   .filter((d: any) => typeof d.power_mw === "number")
   .sort((a: any, b: any) => b.power_mw - a.power_mw)
   .slice(0, 5);
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
-const rankPath = lang === "fr" ? "/fr/classement" : "/ranking";
+// Les trois chiffres de « pourquoi maintenant », calculés au build : la table porte les
+// phrases, le module porte le remplissage (périmètre et format compris, qui diffèrent par
+// langue). Les deux pages composaient la même chose, chacune chez elle.
+const chiffres = chiffresAccueil(lang as Langue);
+const ficheBase = t.chemins.fiche;
+const rankPath = t.chemins.classement;
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
 
 // The "money shot" (brief 2026-07-12 #3): a real published case whose fiche
@@ -186,7 +192,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
       <h1 set:html={t.heroTitle}></h1>
       <p class="hero-lede">{t.heroLede}</p>
       {t.heroStandards && (
-        <p class="hero-standards" set:html={t.heroStandards.replace("{n}", real.length.toLocaleString(lang === "fr" ? "fr-FR" : "en-US"))}></p>
+        <p class="hero-standards" set:html={t.heroStandards.replace("{n}", real.length.toLocaleString(t.formes.locale))}></p>
       )}
       <ul class="hero-checks">
         {t.heroChecks.map((c: string) => <li set:html={c}></li>)}
@@ -245,7 +251,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   <section class="why-now" aria-label={t.whyNowAria}>
     <div class="why-now-inner">
       <div class="why-stats">
-        {t.whyNowStats.map((stat: any) => (
+        {chiffres.map((stat: any) => (
           <div class="stat">
             {/* Final value lives in the HTML (no-JS / SEO / reduced-motion baseline);
                 the count-up only replays it once on scroll-in. Sources never animate. */}
@@ -325,7 +331,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               // a front-page pick that hides its rule is an editorial choice in disguise.
               <p class="demo-why">{t.demo.why
                 .replace("{place}", demoPlace ?? demo.country)
-                .replace("{score}", lang === "fr" ? String(demo.grades.site.score).replace(".", ",") : String(demo.grades.site.score))
+                .replace("{score}", String(demo.grades.site.score).replace(".", t.formes.decimale))
                 .replace("{n}", String(showcase.n_scored))}</p>
             )}
           </div>
@@ -366,9 +372,9 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               openMap: t.mapOpen,
               reserved: t.mapReserved,
               ficheBase: ficheBase,
-              mapPath: lang === "fr" ? "/fr/carte/" : "/map/",
+              mapPath: t.chemins.carte,
               viewFiche: t.viewFiche,
-              powerUnknown: lang === "fr" ? "puissance non communiquée" : "power not disclosed",
+              powerUnknown: t.powerUnknown,
             }}
           />
         </div>
@@ -407,23 +413,21 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
   <section class="section" id="indices" aria-labelledby="indices-title">
     <div class="section-inner">
       <div class="section-heading">
-        <h2 id="indices-title">{lang === "fr" ? "Le classement des pays" : "The country ranking"}</h2>
-        <p>{lang === "fr"
-          ? "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets."
-          : "This index aggregates SITE grades (the territorial context: grid, water, land, hazards). It grades neither operators nor how projects are run."}</p>
+        <h2 id="indices-title">{t.indices.h2}</h2>
+        <p>{t.indices.lead}</p>
       </div>
       <div class="home-idx-rows">
         {idxTop5.map(([iso, e]) => (
-            <a class="home-idx-row" href={`${lang === "fr" ? "/fr" : ""}/indices?pays=${iso}`}>
+            <a class="home-idx-row" href={`${t.chemins.indicesPays}${iso}`}>
               <span class={`idx-chip idx-g${e.grade}`}>{e.grade}</span>
               <span class="home-idx-name">{countryFlag(iso)} {(COUNTRY_NAMES as any)[iso]?.[lang] ?? iso}
-                <small>{e.reserved_from === "A" ? (lang === "fr" ? "A réservé · " : "A reserved · ") : ""}n = {e.n} · doc {e.documentation.band}</small>
+                <small>{e.reserved_from === "A" ? t.indices.reserve : ""}n = {e.n} · doc {e.documentation.band}</small>
               </span>
-              <span class="home-idx-score">{lang === "fr" ? String(e.score).replace(".", ",") : e.score}</span>
+              <span class="home-idx-score">{String(e.score).replace(".", t.formes.decimale)}</span>
             </a>
         ))}
       </div>
-      <p><a class="teaser-more" href={lang === "fr" ? "/fr/indices/" : "/indices/"}>{lang === "fr" ? `Voir la carte et les ${idxTotal} pays` : `See the map and all ${idxTotal} countries`} →</a></p>
+      <p><a class="teaser-more" href={t.chemins.indices}>{t.indices.plus.replace("{n}", String(idxTotal))} →</a></p>
     </div>
   </section>
 
@@ -473,7 +477,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
             <span>{t.confidenceExplain}</span>
           </li>
         </ul>
-        {t.methodPedago && <a class="method-pedago" href={lang === "fr" ? "/fr/methodologie/" : "/methodology/"}>{t.methodPedago} →</a>}
+        {t.methodPedago && <a class="method-pedago" href={t.chemins.methodologie}>{t.methodPedago} →</a>}
       </div>
       <div class="weighting" aria-label={t.weightsAria}>
         <p class="weighting-caption">{t.weightsCaption}</p>
@@ -510,7 +514,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
           {t.library.items.map((it: string) => <li>{it}</li>)}
         </ul>
       </div>
-      <a class="button button-primary home-lib-cta" href={lang === "fr" ? "/fr/bibliotheque/" : "/intelligence/"}>{t.library.cta} →</a>
+      <a class="button button-primary home-lib-cta" href={t.chemins.bibliotheque}>{t.library.cta} →</a>
     </div>
   </section>
 

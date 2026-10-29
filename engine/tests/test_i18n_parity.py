@@ -44,6 +44,11 @@ TABLES_MODULES: dict[str, str] = {
     "glossaire.ts": "le glossaire",
     "portrait-explainer.ts": "la page qui EXPLIQUE le portrait (le portrait est dans portrait.ts)",
     "dossier.ts": "le bloc « dossier environnemental » de la fiche",
+    # L'ACCUEIL, entré dans le périmètre le 2026-10-29 : « bien entendu la Home Page en NL
+    # aussi, c'est évident — un hollandais arrive sur la home et veut la voir traduite »
+    # (Franck). Il porte aussi les mots des quatre bandeaux, qui ne recevaient que `lang`.
+    "accueil.ts": "la copie de la page d'accueil, bandeaux compris",
+    "feedback.ts": "le bandeau « votre avis » (accueil + revue de la bibliothèque)",
 }
 # Asymétries VOULUES dans un module partagé, par dernier segment de chemin.
 # `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont atteignables
@@ -62,7 +67,7 @@ ASYMETRIES_MODULES: dict[str, set[str]] = {
 
 # (FR page, EN twin, compare t keys?) — routes differ by design (localised slugs).
 PAIRS = [
-    ("fr/index.astro", "index.astro", True),
+    ("fr/index.astro", "index.astro", False),
     # La copie de la fiche a quitté les deux pages pour `content/fiche.ts` (2026-10-29) :
     # sa parité se vérifie entre blocs de langue, par le test des tables partagées.
     ("fr/dc/[id].astro", "dc/[id].astro", False),
@@ -112,6 +117,7 @@ PAIRS = [
 # confondraient dans un même `False`, et une table réinstallée en littéral dans une page
 # repasserait inaperçue — c'est `test_une_page_migree_ne_reprend_pas_sa_copie` qui l'interdit.
 COPIE_EN_MODULE: dict[str, str] = {
+    "fr/index.astro": "accueil.ts",
     "fr/acceptabilite-data-center.astro": "acceptabilite.ts",
     "fr/glossaire.astro": "glossaire.ts",
     "fr/normes.astro": "normes.ts",
@@ -411,26 +417,19 @@ def _branches_nues(chemin) -> list[str]:
 # en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
 # reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
 # qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
-# État au 2026-10-29, après la fiche, le chrome, le portrait et la surface « Comprendre » : 85 branches nues dans 22 fichiers.
+# État au 2026-10-29, après la fiche, le chrome, le portrait, « Comprendre » et l'ACCUEIL : 62 branches nues dans 15 fichiers.
 DETTE_I18N: dict[str, int] = {
-    "components/AboutSection.astro": 1,
     "components/ActuFeed.astro": 6,
-    "components/ActuStrip.astro": 2,
     "components/Comparateur.astro": 12,
-    "components/CountryRing.astro": 2,
     "components/DevelopersPage.astro": 1,
-    "components/FeedbackBand.astro": 1,
     "components/IndicesMap.astro": 1,
     "components/IndicesPage.astro": 5,
     "components/KeyReveal.astro": 1,
-    "components/Landing.astro": 14,
     "components/LibraryIndex.astro": 2,
     "components/LibraryRevue.astro": 7,
     "components/PressPage.astro": 1,
-    "components/ProjectsStrip.astro": 2,
     "components/Ranking.astro": 3,
     "components/ReportDownload.astro": 6,
-    "components/SatelliteWall.astro": 1,
     "components/StatsPage.astro": 11,
     "config/reportStatus.ts": 1,
     "pages/og/indices/[key].png.ts": 4,
@@ -595,6 +594,10 @@ SURFACE_TRADUITE = (
     "pages/fr/glossaire.astro",
     "pages/fr/la-note-pas-a-pas.astro",
     "pages/fr/portrait-du-site.astro",
+    # L'accueil est entré dans le périmètre le 2026-10-29. Il amène ses quatre bandeaux, qui
+    # ne recevaient que `lang` et portaient donc chacun sa petite table en ternaire.
+    "pages/fr/index.astro",
+    "pages/index.astro",
 )
 
 
@@ -852,11 +855,18 @@ def test_le_total_annonce_en_tete_est_le_bon():
 
 
 def test_le_cliquet_de_dette_mord_dans_les_deux_sens(tmp_path, monkeypatch):
-    """Contre-épreuve : le cliquet doit voir une dette qui remonte ET une dette périmée."""
-    monkeypatch.setitem(DETTE_I18N, "components/Landing.astro", 13)  # on en déclare un de moins
+    """Contre-épreuve : le cliquet doit voir une dette qui remonte ET une dette périmée.
+
+    🔴 Le fichier éprouvé est PRIS DANS LA TABLE, il n'est plus nommé en dur. La version
+    d'avant visait `components/Landing.astro` — qui est passé à zéro et a quitté la table le
+    2026-10-29, emportant la contre-épreuve avec lui. Une contre-épreuve qui nomme sa cible
+    meurt le jour où on répare cette cible, c'est-à-dire exactement quand on y touche.
+    """
+    cible, compte = next(iter(sorted(DETTE_I18N.items())))
+    monkeypatch.setitem(DETTE_I18N, cible, compte - 1)  # on en déclare un de moins
     with pytest.raises(AssertionError, match="ne remonte pas"):
         test_la_dette_i18n_ne_remonte_jamais()
-    monkeypatch.setitem(DETTE_I18N, "components/Landing.astro", 99)  # on en déclare trop
+    monkeypatch.setitem(DETTE_I18N, cible, compte + 99)  # on en déclare trop
     with pytest.raises(AssertionError, match="baissez le chiffre"):
         test_la_dette_i18n_ne_remonte_jamais()
 

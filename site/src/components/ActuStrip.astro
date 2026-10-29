@@ -7,17 +7,17 @@
 // the site is alive, without turning the home into a feed. 3 latest PUBLISHABLE
 // items, dated, projects flagged; links out to the source, "see all" → /actu.
 import actu from "../../public/data/actu/latest.json";
+import { ACCUEIL } from "../content/accueil";
+import type { Langue } from "../content/langues";
 interface Props { lang: "fr" | "en"; }
 const { lang } = Astro.props;
 
 const items = (actu.items ?? []).filter((i: any) => i.approved === true).slice(0, 3);
 if (items.length === 0) return; // no strip when there is nothing fresh
 
-const L = lang === "fr"
-  ? { heading: "Dernières actus du secteur", seeAll: "Voir toute l'actu →", href: "/fr/actu/", projet: "Projet" }
-  : { heading: "Latest sector news", seeAll: "See all news →", href: "/news/", projet: "Project" };
+const L = ACCUEIL[lang as Langue].blocs.actu;
 
-const dtf = new Intl.DateTimeFormat(lang === "fr" ? "fr-FR" : "en-GB", { day: "numeric", month: "short" });
+const dtf = new Intl.DateTimeFormat(L.locale, { day: "numeric", month: "short" });
 const fmt = (s?: string) => { if (!s) return ""; const d = new Date(s); return isNaN(+d) ? s : dtf.format(d); };
 ---
 
