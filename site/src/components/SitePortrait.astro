@@ -35,6 +35,7 @@ import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?
 import facebookLogo from "@phosphor-icons/core/assets/regular/facebook-logo.svg?raw";
 import linkedinLogo from "@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw";
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
+import { COMMUN } from "../content/commun";
 
 interface Props {
   dc: any;
@@ -45,7 +46,8 @@ interface Props {
   altLabel: string;
 }
 const { dc, lang, t, nav, altHref, altLabel } = Astro.props as Props;
-const L = (o: any) => (o && typeof o === "object" ? (lang === "fr" ? o.fr : o.en) : o);
+const cm = COMMUN[lang];
+const L = (o: any) => (o && typeof o === "object" ? (/* i18n:donnee */ lang === "fr" ? o.fr : o.en) : o);
 
 const methodology = methodologyData as any;
 const defs: any[] = methodology.indicators;
@@ -146,12 +148,12 @@ const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null
 // se lit comme une carte officielle.
 const photoCaveat = L(dc.context_map?.caveat) ?? null;
 
-const ficheHref = lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
+const ficheHref = /* i18n:route */ lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
 // Le pied de page affichait le seul chemin (« /fr/dc/ch-cdrom-le-noirmont/ »). Un portrait
 // est fait pour être IMPRIMÉ et posé sur une table : sur papier, un chemin sans domaine ne
 // mène nulle part. L'adresse s'écrit donc en entier, celle qu'on peut recopier.
 const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
-const url = `https://scoremydatacenter.org${lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
+const url = `https://scoremydatacenter.org${/* i18n:route */ lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
 const titre = `${dc.name} — ${t.kicker}`;
 const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 
@@ -171,10 +173,10 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 // Le lieu ne disparaît jamais : 65 caractères est une limite d'affichage, pas d'indexation.
 // On dégrade dans l'ordre du moins coûteux — la région, puis l'angle.
 const ptLieuCourt = dc.municipality
-  ? (lang === "fr" ? `data center à ${dc.municipality}` : `data center in ${dc.municipality}`)
-  : "data center";
+  ? cm.place.replace("{municipality}", dc.municipality)
+  : cm.placeFallback;
 const ptLieu = ptLieuCourt + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
-const ptSep = lang === "fr" ? " : " : ": ";
+const ptSep = cm.colon;
 const seoTitle = [
   `${dc.name} — ${ptLieu}${ptSep}${t.seoAngle}`,
   `${dc.name} — ${ptLieuCourt}${ptSep}${t.seoAngle}`,

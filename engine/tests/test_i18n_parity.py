@@ -29,6 +29,8 @@ LANGUES_TS = CONTENU / "langues.ts"
 TABLES_MODULES: dict[str, str] = {
     "fiche.ts": "la copie de la fiche",
     "chrome.ts": "le chrome, présent sur toutes les pages",
+    "portrait.ts": "la copie du portrait de site",
+    "commun.ts": "les phrases servies par plusieurs surfaces",
 }
 # Asymétries VOULUES dans un module partagé, par dernier segment de chemin.
 # `nearbyMi` / `nearbyUnderMi` : la même phrase, l'unité du lieu. Elles ne sont atteignables
@@ -70,7 +72,9 @@ PAIRS = [
     ("fr/portrait-du-site.astro", "site-portrait.astro", True),
     ("fr/presse.astro", "press.astro", False),            # prose en dur dans le gabarit
     ("fr/sources.astro", "sources.astro", True),
-    ("fr/dc/[id]/portrait.astro", "dc/[id]/portrait.astro", True),
+    # Copie sortie des deux pages vers `content/portrait.ts` (2026-10-29) : sa parité se
+    # vérifie entre blocs de langue, par le test des tables partagées.
+    ("fr/dc/[id]/portrait.astro", "dc/[id]/portrait.astro", False),
     ("fr/indices.astro", "indices.astro", False),         # gabarit IndicesPage, pas d'objet t
     ("fr/comparer.astro", "compare.astro", False),        # gabarit ComparerPage, pas d'objet t
     ("fr/chiffres/index.astro", "figures/index.astro", False),        # gabarit StatsPage
@@ -318,7 +322,8 @@ def _branches_nues(chemin) -> list[str]:
 # fichier NOUVEAU n'est pas dans la liste, donc il doit naître à zéro.
 #
 # C'est ce qui remplace « on fera le reste plus tard » par une quantité qu'on voit diminuer.
-# État au 2026-10-29, après la fiche ET le chrome : 104 branches nues dans 27 fichiers.
+# État au 2026-10-29, après la fiche, le chrome et le portrait : 99 branches nues
+# dans 26 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/AboutSection.astro": 1,
     "components/ActuFeed.astro": 6,
@@ -340,7 +345,6 @@ DETTE_I18N: dict[str, int] = {
     "components/Ranking.astro": 3,
     "components/ReportDownload.astro": 6,
     "components/SatelliteWall.astro": 1,
-    "components/SitePortrait.astro": 5,
     "components/StatsPage.astro": 11,
     "config/indicatorValues.ts": 2,
     "config/reportStatus.ts": 1,

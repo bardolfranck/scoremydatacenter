@@ -18,6 +18,9 @@ import { STATS, fmtPct } from "../config/stats";
 import { operateurIdentifie } from "../config/operator";
 import { COUNTRY_NAME } from "../config/flags";
 import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
+// La phrase de lieu est servie par la fiche ET par le portrait : elle vit donc une fois,
+// dans content/commun.ts, et non dans les deux tables.
+import { COMMUN } from "../content/commun";
 
 import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
 import whatsappLogo from "@phosphor-icons/core/assets/regular/whatsapp-logo.svg?raw";
@@ -37,6 +40,8 @@ const { dc, lang, t, nav, altHref, altLabel, related = [], geo = null } = Astro.
 
 // T0 « Les chiffres du parc » : la ligne contextuelle — ce site situé dans les
 // agrégats de SON pays (jamais un jugement, une position dans le parc).
+const cm = COMMUN[lang];
+
 const _fleetPeri = (STATS as any).perimeters?.[dc.country];
 const _fleetInd = (iid: string) => (dc.indicators || []).find((i: any) => i.id === iid);
 const _FLEET_RULES: [string, string, (v: any) => boolean, string][] = [
@@ -477,8 +482,8 @@ const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceR
 // ⚠️ La commune est répétée même quand le nom la contient (« Campus IA Fouju, data center à
 // Fouju ») : la redondance coûte quelques caractères, l'absence coûtait la requête.
 const seoLieuSansRegion = dc.municipality
-  ? t.seo.place.replace("{municipality}", dc.municipality)
-  : "data center";
+  ? cm.place.replace("{municipality}", dc.municipality)
+  : cm.placeFallback;
 const seoLieu = seoLieuSansRegion + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
 // 🔴 LE TITRE ÉTAIT COUPÉ AVANT LA NOTE — SUR 100 % DES FICHES (Search Console, 2026-10-23).
 // Mesuré : médiane 92 caractères, p90 109, max 142, quand Google en affiche ~60. Le lecteur

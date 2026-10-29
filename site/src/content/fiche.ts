@@ -203,7 +203,6 @@ const FR = {
     provisional: "note provisoire {band}",
     insufficient: "données insuffisantes",
     grade: "note {grade}",
-    place: "data center à {municipality}",
     tail: "indicateurs sourcés, observatoire indépendant.",
   },
   ctxMap: {
@@ -389,7 +388,6 @@ const EN: typeof FR = {
     provisional: "provisional grade {band}",
     insufficient: "insufficient data",
     grade: "grade {grade}",
-    place: "data center in {municipality}",
     tail: "sourced indicators, independent observatory.",
   },
   ctxMap: {
