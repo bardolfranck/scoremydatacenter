@@ -773,6 +773,60 @@ def test_le_garde_des_tables_de_statut_mord_vraiment(tmp_path, monkeypatch):
         test_chaque_table_de_statut_libelle_chaque_statut()
 
 
+def test_le_vocabulaire_des_statuts_est_le_meme_dans_la_donnee_et_a_l_affichage():
+    """Le schéma des fiches et la table d'affichage doivent dire le MÊME vocabulaire.
+
+    🔴 Le vocabulaire a DEUX sources, et c'est le schéma qui l'a rappelé : `unknown` a été
+    déclaré côté affichage (`content/statuts.ts`) et posé sur 8 fiches, et le gate de corpus
+    a refusé les 8 — « 'unknown' is not one of [...] ». Le refus était le bon ; ce qui
+    manquait, c'est le lien. Sans ce test, l'inverse serait silencieux : une valeur admise par
+    le schéma, posée sur des fiches, et sans libellé nulle part → la valeur brute s'affiche.
+
+    Le schéma de la WATCHLIST reste volontairement plus étroit (pas de `unknown`) : une
+    entrée en veille est un projet qu'une source publique décrit, donc son stade est déclaré.
+    L'asymétrie est écrite ici pour être relue, pas découverte.
+    """
+    import json
+
+    schema = json.loads(
+        (REPO_ROOT / "data" / "schema" / "datacenter.schema.json").read_text(encoding="utf-8")
+    )
+    noeud = schema["properties"]["identity"]["properties"]["project_status"]
+    assert sorted(noeud["enum"]) == sorted(_statuts_declares()), (
+        f"le schéma admet {sorted(noeud['enum'])} et l'affichage déclare "
+        f"{sorted(_statuts_declares())} — une valeur admise sans libellé s'affiche BRUTE, "
+        f"une valeur libellée sans être admise fait refuser la fiche au gate de corpus"
+    )
+
+    veille = json.loads(
+        (REPO_ROOT / "data" / "schema" / "watchlist.schema.json").read_text(encoding="utf-8")
+    )
+    enum_veille = set(_enum_statut_watchlist(veille))
+    assert enum_veille < set(_statuts_declares()), (
+        "la watchlist doit rester un SOUS-ENSEMBLE strict du vocabulaire des fiches ; si elle "
+        "s'élargit, la raison de l'asymétrie a changé et ce test doit être réécrit"
+    )
+    assert "unknown" not in enum_veille, (
+        "`unknown` dans la watchlist : si une entrée en veille peut avoir un stade non "
+        "établi, la raison écrite dans ce test ne tient plus"
+    )
+
+
+def _enum_statut_watchlist(schema: dict) -> list[str]:
+    """L'enum de statut du schéma de veille, où qu'il soit niché."""
+    pile = [schema]
+    while pile:
+        noeud = pile.pop()
+        if isinstance(noeud, dict):
+            cible = noeud.get("project_status")
+            if isinstance(cible, dict) and "enum" in cible:
+                return cible["enum"]
+            pile.extend(v for v in noeud.values() if isinstance(v, (dict, list)))
+        elif isinstance(noeud, list):
+            pile.extend(v for v in noeud if isinstance(v, (dict, list)))
+    raise AssertionError("enum project_status introuvable dans le schéma de veille")
+
+
 def test_le_total_annonce_en_tete_est_le_bon():
     """L'en-tête de `DETTE_I18N` annonce un total : il doit être celui de la table.
 

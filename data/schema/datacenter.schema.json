@@ -84,7 +84,8 @@
             "announced",
             "permitting",
             "under_construction",
-            "operational"
+            "operational",
+            "unknown"
           ]
         },
         "vintage": {
