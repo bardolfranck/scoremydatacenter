@@ -149,23 +149,28 @@ const FR = {
     "Fixture de test fictive, montrée pour le format — les premières fiches réelles françaises sont en préparation.",
   whyNowAria: "Pourquoi maintenant",
   whyNow: {
-    // 🔴 LE PÉRIMÈTRE EST UN CHOIX ÉDITORIAL PAR LANGUE, et il était dans une const de
-    // page, donc invisible au garde de parité : le français montre la FRANCE, l'anglais
-    // montre l'EUROPE. Déclaré ici pour qu'une langue nouvelle choisisse le sien au lieu
-    // d'hériter de celui de la page qu'on a copiée.
-    perimetre: "FR",
+    // 🔴 RÈGLE SIGNÉE PAR FRANCK (2026-10-30) : « même trio partout, périmètre = le pays de
+    // la langue, Europe en repli ». Avant, les deux accueils ne disaient pas la même chose —
+    // le français publiait le PUE, l'anglais le stress hydrique — et personne ne l'avait vu
+    // parce que ces trois chiffres vivaient dans une const de PAGE, hors de l'objet `t`.
+    //
+    // LE TRIO EST CELUI QUE LA MESURE AUTORISE, pas un choix de goût. Mesuré sur stats.json :
+    // `water_stress_high` existe dans TOUS les périmètres ; `grid_saturated` et
+    // `pue_published` dans FR, NL et Europe seulement. Les trois sont des PARTS, donc jamais
+    // un zéro trompeur.
+    // 🔴 Et `pipeline` sort du trio pour cette raison exacte : aux Pays-Bas il vaut 0 MW —
+    // un trou de collecte, pas une absence de projets. L'accueil néerlandais aurait publié
+    // « 0 MW annoncés en pipeline », c'est-à-dire une lecture ratée présentée comme une
+    // mesure. Le chiffre reste sur la page « Les chiffres du parc », où son n est visible.
+    perimetre: "FR" as string,
     repli: "europe" as string | null,
-    // 🔴 ET LES TROIS CHIFFRES NE SONT PAS LES MÊMES D'UNE LANGUE À L'AUTRE (le français
-    // publie le PUE, l'anglais le stress hydrique). Rien ne disait que c'était voulu.
-    // Recopiés tels quels — ce lot ne change rien à ce qui est publié — et remontés à
-    // Franck : c'est une décision de contenu, pas une coquille à réparer en passant.
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} sur poste électrique saturé",
       attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#reseau-sature" },
     { genre: "vue", id: "pue_published", figure: "{big} publient leur PUE",
       attribution: "Les chiffres du parc · déclarations opérateurs · n = {n}", url: "/fr/chiffres#pue-publie" },
-    { genre: "pipeline", figure: "{mw} MW annoncés en pipeline",
-      attribution: "Les chiffres du parc · {projects} projets pas encore en service", url: "/fr/chiffres#pipeline-mw" },
+    { genre: "vue", id: "water_stress_high", figure: "{big} en zone de stress hydrique fort",
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#stress-hydrique" },
     ],
   },
   whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
@@ -454,16 +459,17 @@ const EN: typeof FR = {
     "Fictional test fixture, shown for format only — the first real French scorecards are in preparation.",
   whyNowAria: "Why now",
   whyNow: {
-    // Le périmètre de cette langue — voir le bloc FR pour le pourquoi.
+    // L'anglais n'est le pays de personne : son périmètre est l'Europe, qui est aussi le
+    // repli des autres langues (règle Franck, 2026-10-30).
     perimetre: "europe",
     repli: null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} on already-saturated substations",
-      attribution: "Fleet figures · grid operators' data · n = {n}", url: "/figures#reseau-sature" },
+      attribution: "Fleet figures · {src} · n = {n}", url: "/figures#reseau-sature" },
+    { genre: "vue", id: "pue_published", figure: "{big} publish their PUE",
+      attribution: "Fleet figures · operators' declarations · n = {n}", url: "/figures#pue-publie" },
     { genre: "vue", id: "water_stress_high", figure: "{big} under high water stress",
       attribution: "Fleet figures · WRI Aqueduct · n = {n}", url: "/figures#stress-hydrique" },
-    { genre: "pipeline", figure: "{mw} MW announced in the pipeline",
-      attribution: "Fleet figures · {projects} projects not yet in service", url: "/figures#pipeline-mw" },
     ],
   },
   whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",
@@ -669,6 +675,12 @@ export function chiffresAccueil(lang: Langue) {
         url: e.url,
       });
       continue;
+    }
+    // 🔴 Un `genre` inconnu ARRÊTE le build au lieu de faire disparaître un chiffre en
+    // silence. Sans ça, une faute de frappe dans la table retirerait une des trois cases de
+    // l'accueil sans rien casser — l'absence qui ressemble à un choix.
+    if (e.genre !== "vue") {
+      throw new Error(`accueil: genre de chiffre inconnu « ${e.genre} » (id ${e.id ?? "?"})`);
     }
     const v = statView(peri, e.id, lang as Lang);
     if (!v) continue;
