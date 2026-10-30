@@ -5,6 +5,10 @@
 // dedicated /fr/qui-sommes-nous page (i18n §13: one block per language, no drift).
 
 export const FR_ABOUT = {
+  // Le chemin de la page « Méthode » dans cette langue : un slug localisé, pas un mot.
+  // Il était choisi par un ternaire dans `AboutSection.astro`, qui sert DEUX surfaces
+  // (l'accueil et qui-sommes-nous) — donc un endroit où aucune des deux ne le voyait.
+  methodePath: "/fr/methodologie/",
   aboutTitle: "Qui sommes-nous ?",
   aboutPhotoAlt: "Franck Bardol, fondateur de ScoreMyDataCenter",
   aboutPhotoCaption: "Franck Bardol, fondateur de ScoreMyDataCenter",
@@ -60,6 +64,10 @@ export const FR_ABOUT = {
 };
 
 export const EN_ABOUT = {
+  // Le chemin de la page « Méthode » dans cette langue : un slug localisé, pas un mot.
+  // Il était choisi par un ternaire dans `AboutSection.astro`, qui sert DEUX surfaces
+  // (l'accueil et qui-sommes-nous) — donc un endroit où aucune des deux ne le voyait.
+  methodePath: "/methodology/",
   aboutTitle: "Who we are",
   aboutPhotoAlt: "Franck Bardol, founder of ScoreMyDataCenter",
   aboutPhotoCaption: "Franck Bardol, founder of ScoreMyDataCenter",

@@ -17,6 +17,8 @@ import iconChartUp from "@phosphor-icons/core/assets/regular/chart-line-up.svg?r
 import iconBookOpen from "@phosphor-icons/core/assets/regular/book-open.svg?raw";
 import iconBank from "@phosphor-icons/core/assets/regular/bank.svg?raw";
 import iconCertificate from "@phosphor-icons/core/assets/regular/certificate.svg?raw";
+import { ACCUEIL } from "../content/accueil";
+import type { Langue } from "../content/langues";
 
 interface Props {
   lang: "en" | "fr";
@@ -117,7 +119,7 @@ const chainIcon = (name: string, size = 22) =>
       <div class="ia-closing">
         <p set:html={t.ia.closing}></p>
         <div class="ia-closing-actions">
-          <a class="button button-primary" href={lang === "fr" ? "/fr/methodologie/" : "/methodology/"}>{t.ia.closingCta} →</a>
+          <a class="button button-primary" href={t.methodePath}>{t.ia.closingCta} →</a>
           <a class="ia-github" href={t.teamCtaUrl} target="_blank" rel="noopener">{t.teamCta}</a>
         </div>
       </div>

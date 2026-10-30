@@ -16,6 +16,8 @@
 // freezes it. Images are lazy and served from the media domain (A-28 credit
 // is burned into each file, so the credit travels even when embedded).
 import showcaseData from "../../public/data/home_showcase.json";
+import { ACCUEIL } from "../content/accueil";
+import type { Langue } from "../content/langues";
 
 interface Props {
   lang: "fr" | "en";
@@ -53,7 +55,7 @@ const PIPELINE = ["announced", "permitting", "under_construction"];
 const ROWS = 3;
 const PER_ROW = 13;
 
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const ficheBase = ACCUEIL[lang as Langue].blocs.mur.fiche;
 const tiles = (SHOWCASE.wall_candidates as string[])
   .map((id) => dcById[id])
   .filter((dc: any) => dc?.satellite_image?.thumb)

@@ -19,10 +19,13 @@ import pytest
 from engine.core import REPO_ROOT, load_methodology
 from engine.tests.i18n_table import bloc as bloc_i18n
 
-PAGES = {
-    "en": (REPO_ROOT / "site" / "src" / "pages" / "index.astro").read_text(),
-    "fr": (REPO_ROOT / "site" / "src" / "pages" / "fr" / "index.astro").read_text(),
-}
+# 🔴 La copie de l'accueil a quitté les deux pages pour `content/accueil.ts` le 2026-10-29
+# (la home doit exister en néerlandais — « un hollandais arrive sur la home et veut la voir
+# traduite », Franck). Ces gardes étaient ancrés sur un CHEMIN de page : ils ont tous les
+# deux sauté, ce qui est le bon comportement. Ils visent désormais le bloc de LANGUE du
+# module — donc exactement la même matière, à sa nouvelle adresse.
+_ACCUEIL = (REPO_ROOT / "site" / "src" / "content" / "accueil.ts").read_text()
+PAGES = {lang: bloc_i18n(_ACCUEIL, lang.upper()) for lang in ("en", "fr")}
 
 
 @pytest.fixture(scope="module")

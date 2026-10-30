@@ -6,6 +6,8 @@
 // the form POSTs straight to a Google Form backend (responses land in Franck's
 // account); testimonials are only ever published manually, with the explicit
 // consent checkbox ticked. Honeypot field for bots; no cookie, no tracker.
+import { FEEDBACK } from "../content/feedback";
+import type { Langue } from "../content/langues";
 interface Props {
   lang: "en" | "fr";
 }
@@ -17,35 +19,7 @@ const ENTRY = { useful: "entry.1688955439", missing: "entry.2059619893", name: "
 const CONSENT_VALUE =
   "J'accepte que ce témoignage soit publié sur scoremydatacenter.org avec mon nom et ma fonction";
 
-const t = lang === "fr" ? {
-  kicker: "Votre avis",
-  title: "Notre travail vous est utile ? Dites-le. Il manque quelque chose ? Dites-le aussi.",
-  usefulLabel: "Qu'est-ce qui vous est utile dans ScoreMyDataCenter ?",
-  usefulHint: "La carte, une note, la méthode, un rapport… dites-le avec vos mots.",
-  missingLabel: "Et qu'est-ce qui vous manque ?",
-  missingHint: "facultatif",
-  nameLabel: "Votre nom et votre fonction",
-  namePlaceholder: "Ex. : Marie Dupont, élue municipale",
-  consentLabel: "J'accepte que ce témoignage soit publié avec mon nom et ma fonction.",
-  consentNote: "Sans cette case, votre message nous parvient quand même — il reste privé.",
-  submit: "Envoyer",
-  thanks: "Merci ! Votre avis est bien parti — nous lisons tout.",
-  error: "L'envoi a échoué. Réessayez, ou écrivez-nous : contact@scoremydatacenter.org",
-} : {
-  kicker: "Your feedback",
-  title: "Is our work useful to you? Say it. Is something missing? Say that too.",
-  usefulLabel: "What do you find useful in ScoreMyDataCenter?",
-  usefulHint: "The map, a grade, the method, a report… in your own words.",
-  missingLabel: "And what's missing?",
-  missingHint: "optional",
-  nameLabel: "Your name and role",
-  namePlaceholder: "E.g.: Marie Dupont, city councillor",
-  consentLabel: "I agree that this testimonial may be published with my name and role.",
-  consentNote: "Without this box your message still reaches us — it just stays private.",
-  submit: "Send",
-  thanks: "Thank you! Your feedback is on its way — we read everything.",
-  error: "Sending failed. Try again, or write to us: contact@scoremydatacenter.org",
-};
+const t = FEEDBACK[lang as Langue];
 ---
 
 <section class="feedback-band" aria-labelledby="feedback-title">

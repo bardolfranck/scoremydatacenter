@@ -51,7 +51,11 @@ def test_every_map_surface_goes_through_the_component():
 def test_home_block_carries_the_insert():
     # The home top-5 block renders index grades without the map — the insert
     # text must still frame them (amendement: everywhere the index shows).
-    text = _read("components/Landing.astro")
+    # 🔴 L'encart vivait en ternaire DANS le gabarit ; il est parti dans
+    # `content/accueil.ts` avec le reste des mots de l'accueil (2026-10-29). Un garde ancré
+    # sur le fichier où une phrase s'AFFICHE lâche dès qu'on sort la phrase du gabarit — ce
+    # qu'il doit viser, c'est l'endroit où elle VIT.
+    text = _read("content/accueil.ts")
     assert _FR_TOKEN in text and _EN_TOKEN in text
 
 
