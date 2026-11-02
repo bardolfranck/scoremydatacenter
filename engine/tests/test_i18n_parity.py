@@ -168,6 +168,20 @@ def _langues_vivantes() -> list[str]:
     return langues
 
 
+def _langues_declarees() -> list[str]:
+    """Toutes les langues qui ont une table, SERVIES OU NON — lues à leur source unique.
+
+    Une langue en préparation (`nl` depuis le 2026-11-02) a ses clés gardées comme une
+    langue vivante : c'est ce qui l'empêche de dériver pendant les semaines où elle s'écrit.
+    Ce qu'elle n'a pas, c'est une page qui la sert.
+    """
+    texte = LANGUES_TS.read_text(encoding="utf-8")
+    vivantes = _langues_vivantes()
+    m = re.search(r"LANGUES_EN_PREPARATION = \[([^\]]*)\]", texte)
+    preparation = re.findall(r'"(\w+)"', m.group(1)) if m else []
+    return vivantes + [lg for lg in preparation if lg not in vivantes]
+
+
 def _t_keys(page: str) -> set[str]:
     """The NESTED key paths of a page's copy — `a`, `a.b`, `a.b.c`.
 
@@ -266,7 +280,10 @@ def test_les_tables_partagees_portent_les_memes_cles():
     lui qui mord — pas le type TypeScript, puisque `astro build` tourne sans `astro check`
     (une clé absente rendrait `undefined` en silence dans la page).
     """
-    langues = _langues_vivantes()
+    # 🔴 Les langues DÉCLARÉES, pas seulement les vivantes : une langue en préparation qui
+    # dérive pendant sa rédaction arrive incomplète le jour où on l'ouvre, et c'est le pire
+    # moment pour s'en apercevoir.
+    langues = _langues_declarees()
     for fichier, quoi in TABLES_MODULES.items():
         texte = (CONTENU / fichier).read_text(encoding="utf-8")
         exempt = ASYMETRIES_MODULES.get(fichier, set())
@@ -828,6 +845,119 @@ def _enum_statut_watchlist(schema: dict) -> list[str]:
         elif isinstance(noeud, list):
             pile.extend(v for v in noeud if isinstance(v, (dict, list)))
     raise AssertionError("enum project_status introuvable dans le schéma de veille")
+
+
+def test_une_langue_ne_devient_vivante_que_traduite():
+    """Une langue ne passe en PRÉPARATION → VIVANTE que si ses valeurs ne sont plus le français.
+
+    🔴 C'est le garde qui protège la mise en ligne du néerlandais. Ses 740 chaînes ont été
+    créées le 2026-11-02 en COPIANT le texte français — à dessein : un traducteur natif a
+    besoin de la source en place. Mais une copie du français dans un bloc nommé `nl` est
+    exactement ce qui part en ligne sans que personne ne le voie, et en une seule fois.
+    Ajouter `nl` à `LANGUES_VIVANTES` sans l'avoir traduite fait donc ROUGIR la suite.
+
+    Le seuil n'est pas zéro : des valeurs restent légitimement identiques d'une langue à
+    l'autre — un sigle (« PUE »), une URL, un nom propre, « data center » en néerlandais.
+    On refuse une langue dont la MAJORITÉ des chaînes est encore celle du français.
+    """
+    vivantes = _langues_vivantes()
+    reference = vivantes[0]
+    for lg in vivantes[1:]:
+        identiques = total = 0
+        for fichier in TABLES_MODULES:
+            texte = (CONTENU / fichier).read_text(encoding="utf-8")
+            try:
+                ref = _valeurs(bloc(texte, reference.upper()))
+                autre = _valeurs(bloc(texte, lg.upper()))
+            except AssertionError:
+                continue
+            for cle, val in ref.items():
+                if cle in autre:
+                    total += 1
+                    identiques += int(autre[cle] == val)
+        if not total:
+            continue
+        part = identiques / total
+        assert part < 0.5, (
+            f"la langue {lg.upper()} est déclarée VIVANTE mais {round(100 * part)} % de ses "
+            f"{total} chaînes sont encore identiques au {reference.upper()} "
+            f"({identiques} sur {total}). Une table copiée n'est pas une table traduite : "
+            f"la remettre dans `LANGUES_EN_PREPARATION` jusqu'à la relecture native."
+        )
+
+
+def test_le_garde_de_traduction_mord_vraiment(monkeypatch):
+    """Contre-épreuve : on déclare `nl` vivante alors qu'elle porte encore le français."""
+    declarees = _langues_declarees()
+    if "nl" not in declarees:
+        pytest.skip("aucune langue en préparation à éprouver")
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "nl"])
+    with pytest.raises(AssertionError, match="encore identiques"):
+        test_une_langue_ne_devient_vivante_que_traduite()
+
+
+def _valeurs(litteral: str) -> dict[str, str]:
+    """Les chaînes d'un littéral, par chemin de clé — pour comparer deux langues.
+
+    Même discipline que `chemins()` : lecture caractère par caractère, une clé n'est reconnue
+    que là où une clé peut commencer. On ne relève que les valeurs de type CHAÎNE ; un nombre
+    ou un booléen n'a pas à différer d'une langue à l'autre.
+    """
+    import engine.tests.i18n_table as it
+
+    sortie: dict[str, str] = {}
+    prefixe: list[str] = []
+    pile: list[tuple[str, str | None]] = []
+    attente: str | None = None
+    attend_cle = False
+    i = it._saute_blanc_et_commentaires(litteral, 0)
+    while i < len(litteral):
+        i = it._saute_blanc_et_commentaires(litteral, i)
+        if i >= len(litteral):
+            break
+        c = litteral[i]
+        if c in "{[":
+            pile.append(("obj" if c == "{" else "arr", attente))
+            if attente is not None:
+                prefixe.append(attente)
+            attente, attend_cle = None, c == "{"
+            i += 1
+            continue
+        if c in "}]":
+            if pile:
+                _, seg = pile.pop()
+                if seg is not None and prefixe and prefixe[-1] == seg:
+                    prefixe.pop()
+            attente = None
+            attend_cle = bool(pile) and pile[-1][0] == "obj"
+            i += 1
+            continue
+        if c in "\"'`":
+            fin = it._fin_de_chaine(litteral, i)
+            apres = it._saute_blanc_et_commentaires(litteral, fin)
+            if attend_cle and apres < len(litteral) and litteral[apres] == ":":
+                nom = litteral[i + 1 : fin - 1]
+                attente, attend_cle = nom, False
+                i = apres + 1
+                continue
+            if attente is not None:
+                sortie[".".join(prefixe + [attente])] = litteral[i + 1 : fin - 1]
+            i = fin
+            continue
+        m = it._IDENT.match(litteral, i)
+        if m:
+            apres = it._saute_blanc_et_commentaires(litteral, m.end())
+            if attend_cle and apres < len(litteral) and litteral[apres] == ":":
+                attente, attend_cle = m.group(), False
+                i = apres + 1
+                continue
+            i = m.end()
+            continue
+        if c == ",":
+            attente = None
+            attend_cle = bool(pile) and pile[-1][0] == "obj"
+        i += 1
+    return sortie
 
 
 def test_le_total_annonce_en_tete_est_le_bon():

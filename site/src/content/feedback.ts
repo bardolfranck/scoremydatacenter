@@ -15,7 +15,7 @@
 // 🔴 Le type ne garde RIEN au build (`astro build` sans `astro check`) : le garde qui mord
 // est `engine/tests/test_i18n_parity.py`.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   kicker: "Votre avis",
@@ -49,5 +49,28 @@ const EN: typeof FR = {
   error: "Sending failed. Try again, or write to us: contact@scoremydatacenter.org",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  kicker: "Votre avis",
+  title: "Notre travail vous est utile ? Dites-le. Il manque quelque chose ? Dites-le aussi.",
+  usefulLabel: "Qu'est-ce qui vous est utile dans ScoreMyDataCenter ?",
+  usefulHint: "La carte, une note, la méthode, un rapport… dites-le avec vos mots.",
+  missingLabel: "Et qu'est-ce qui vous manque ?",
+  missingHint: "facultatif",
+  nameLabel: "Votre nom et votre fonction",
+  namePlaceholder: "Ex. : Marie Dupont, élue municipale",
+  consentLabel: "J'accepte que ce témoignage soit publié avec mon nom et ma fonction.",
+  consentNote: "Sans cette case, votre message nous parvient quand même — il reste privé.",
+  submit: "Envoyer",
+  thanks: "Merci ! Votre avis est bien parti — nous lisons tout.",
+  error: "L'envoi a échoué. Réessayez, ou écrivez-nous : contact@scoremydatacenter.org",
+};
+
 /** La copie du bandeau d'avis : `FEEDBACK[lang]`. */
-export const FEEDBACK: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const FEEDBACK: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

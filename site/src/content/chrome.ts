@@ -17,7 +17,7 @@
 // Comme pour `fiche.ts` : le type ne garde rien au build (`astro build` tourne sans
 // `astro check`), c'est `engine/tests/test_i18n_parity.py` qui mord.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   // La même phrase sert la description schema.org de l'organisation ET l'accroche du pied de
@@ -101,5 +101,54 @@ const EN: typeof FR = {
   },
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  // La même phrase sert la description schema.org de l'organisation ET l'accroche du pied de
+  // page. Elle était écrite deux fois dans Base.astro, à 130 lignes d'écart.
+  baseline: "Observatoire indépendant du risque d'acceptabilité des data centers.",
+  ogLocale: "fr_FR",
+  search: {
+    action: "/fr/classement",
+    placeholder: "Rechercher une commune, un site, un opérateur…",
+    aria: "Rechercher une commune ou un projet noté",
+  },
+  footer: [
+    { heading: "Explorer", links: [
+      { label: "Carte", href: "/fr/carte" },
+      { label: "Classement", href: "/fr/classement" },
+      { label: "Indices pays", href: "/fr/indices/" },
+      { label: "Les chiffres du parc", href: "/fr/chiffres/" },
+      { label: "Comprendre les data centers", href: "/fr/comprendre/" },
+    ] },
+    { heading: "Ressources", links: [
+      { label: "Méthodologie", href: "/fr/methodologie/" },
+      { label: "Modèle ouvert", href: "/fr/#open" },
+      { label: "Bibliothèque", href: "/fr/bibliotheque/" },
+      { label: "API développeurs", href: "/fr/developpeurs" },
+      { label: "FAQ", href: "/fr/#faq" },
+    ] },
+    { heading: "À propos", links: [
+      { label: "Qui sommes-nous ?", href: "/fr/qui-sommes-nous" },
+      { label: "Presse", href: "/fr/presse" },
+      { label: "Contact", href: "/fr/contact" },
+      { label: "Mentions légales", href: "/fr/mentions-legales" },
+    ] },
+  ],
+  consent: {
+    aria: "Consentement à la mesure d'audience",
+    text: "Mesure d'audience : nous utilisons Google Analytics pour compter les visites et comprendre ce qui est lu. Aucun cookie n'est déposé sans votre accord.",
+    moreHref: "/fr/mentions-legales",
+    more: "En savoir plus",
+    decline: "Refuser",
+    accept: "Accepter",
+  },
+};
+
 /** Le chrome servi au gabarit : `CHROME[lang]`. */
-export const CHROME: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const CHROME: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

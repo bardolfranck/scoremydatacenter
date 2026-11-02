@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   tagline: "Observatoire indépendant",
@@ -111,5 +111,60 @@ const EN: typeof FR = {
   sourcesOn: "Measures, values and sources:",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  tagline: "Observatoire indépendant",
+  kicker: "Portrait du site",
+  // L'angle du titre (voir SitePortrait.astro) : trois mots qui disent ce que la page tient
+  // vraiment, et dont le premier est un terme mesuré que nous ne portions nulle part.
+  seoAngle: "bruit, eau, terrain",
+  metaDescription: "{name}, {place} : le bruit en continu, l'eau, le terrain, et ce que le projet change pour la commune. Ce qu'il reste à faire écrire dans l'autorisation, et jusqu'à quand.",
+  status: { announced: "annoncé", permitting: "en instruction", under_construction: "en chantier", operational: "en service", unknown: "non établi" },
+  siteGrade: "Note du site",
+  probable: "note probable",
+  probableWindow: "note probable · fenêtre {w}",
+  definitive: "note définitive",
+  leadHelp: "Cette page dit la même chose que la fiche technique, dans l'ordre d'une décision à prendre : ce qui pèse, ce qui manque, et ce qu'il reste à demander pendant que c'est encore possible.",
+  photoAlt: "Vue aérienne annotée de {name} : emprise, cours d'eau et distances",
+  photoHint: "Survolez pour agrandir · cliquez pour l'image entière",
+  photoOpen: "Ouvrir la vue aérienne en grand",
+  pillarsTitle: "Les cinq piliers de la note",
+  ofMeasures: "{n} mesure(s) sur {total}",
+  pillarsNote: "Un pilier qui ne porte pas de lettre repose sur trop peu de mesures pour en défendre une. Nous publions le compte plutôt qu'une lettre indéfendable.",
+  decisiveTitle: "Les points qui décideront",
+  streetTitle: "Ce qui se vit depuis la rue",
+  noiseTitle: "Le bruit — continu, jour et nuit",
+  noiseBody: "Le refroidissement tourne en permanence et les groupes de secours sont testés régulièrement. Ce qui est encadré n'est pas une distance mais de combien le bruit monte chez le voisin.",
+  noiseDistance: "La première habitation recensée est à {m} m du point de référence. C'est une distance à vol d'oiseau, jamais une mesure de bruit : l'étude acoustique du dossier reste à exiger, c'est elle qui fixe les valeurs opposables.",
+  noiseNoDistance: "Nous n'avons ni distance à la première habitation, ni étude acoustique pour ce site. Les deux s'obtiennent : l'étude est une pièce du dossier.",
+  fuelTitle: "Les groupes électrogènes et leur carburant",
+  fuelBody: "Un site de cette nature garde des groupes de secours et les cuves qui les alimentent. Ce sont eux qu'on teste, qu'on sent, et qui déclenchent un encadrement propre. Leur nombre, leur carburant et le volume stocké figurent au dossier quand il existe.",
+  healthDisclaimer: "Nous ne mesurons aucun effet sur la santé et nous ne prétendons pas le faire. Nous publions ce qui figure au dossier, et ce qui n'y figure pas.",
+  unknownTitle: "Ce que nous n'avons pas mesuré",
+  unknownNone: "Toutes les mesures de base de ce site sont renseignées.",
+  verifiedAbsent: "vérifié absent du dossier lu",
+  notCollected: "pas encore collecté par nous",
+  unknownNote: "Ces manques sont les nôtres, pas ceux du porteur : ils disent où notre mesure s'arrête, et ils ne pénalisent pas le site.",
+  procedureTitle: "Où en est la procédure",
+  writeInTitle: "À faire écrire dans l'autorisation",
+  writeInNote: "Les engagements qui ne figurent pas dans l'arrêté ne sont pas opposables : ce qui n'est pas écrit ne pourra pas être exigé plus tard.",
+  technicalSheet: "Fiche technique du projet",
+  technicalSheetSub: "les indicateurs un par un, leurs valeurs et leurs sources",
+  print: "Imprimer",
+  share: "Partager",
+  shareMail: "Par courriel",
+  copyLink: "Copier le lien",
+  signal: "Signaler une erreur",
+  signalSubject: "Correction ou réponse — portrait du site",
+  howToRead: "Comment lire ce portrait. La lettre résume cinq piliers — énergie, eau, foncier, impact local, transparence. Chaque fait vient d'une source publique, citée sur la fiche technique.",
+  sourcesOn: "Indicateurs, valeurs et sources :",
+};
+
 /** La table servie au gabarit : `PORTRAIT[lang]`. */
-export const PORTRAIT: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const PORTRAIT: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

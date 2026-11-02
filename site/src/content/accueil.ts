@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 // `nav` n'est pas de la copie : c'est la structure du menu, que le gabarit lit dans `t`. La
 // source reste unique (`config/nav.ts`) ; une langue nouvelle y déclarera son menu.
 import { FR_NAV, EN_NAV } from "../config/nav";
@@ -645,8 +645,338 @@ const EN: typeof FR = {
   contactCta: "Contact",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  // ── Les BANDEAUX de l'accueil. Ces quatre composants ne reçoivent que `lang` : ils
+  // portaient donc chacun sa petite table en ternaire, invisible à qui cherche les textes du
+  // site. Ils ne s'affichent QUE sur l'accueil, et leurs mots vivent donc ici, avec les
+  // autres mots de l'accueil — un seul fichier à traduire pour toute la page.
+  blocs: {
+    actu: { heading: "Dernières actus du secteur", seeAll: "Voir toute l'actu →", href: "/fr/actu/", projet: "Projet", locale: "fr-FR" },
+    projets: { heading: "Nouveaux projets repérés", seeAll: "Voir la veille →", href: "/fr/carte/", veille: "en veille", carte: "/fr/carte/" },
+    // `{n}` et `{pays}` laissent l'ORDRE libre : une langue peut mettre le nombre après.
+    pays: { label: "pays suivis", aria: "{n} pays suivis : {pays}" },
+    mur: { fiche: "/fr/dc" },
+  },
+
+  // ── Ce que l'accueil choisissait encore par un test de langue, dans le gabarit.
+  // Les CHEMINS d'abord : des slugs localisés, pas des mots. Ils vivent avec la copie pour
+  // la même raison que les liens du pied de page (`content/chrome.ts`) — une langue nouvelle
+  // déclare ses adresses, elle ne modifie pas le gabarit.
+  chemins: {
+    fiche: "/fr/dc",
+    classement: "/fr/classement",
+    carte: "/fr/carte/",
+    indices: "/fr/indices/",
+    indicesPays: "/fr/indices?pays=",
+    methodologie: "/fr/methodologie/",
+    bibliotheque: "/fr/bibliotheque/",
+  },
+  // Puis les FORMES : la locale des nombres et le séparateur décimal sont des propriétés de
+  // la langue, comme l'espace avant le deux-points.
+  formes: { locale: "fr-FR", decimale: "," },
+  // Et enfin les MOTS, qui étaient en ternaire au point d'affichage — l'endroit où une
+  // langue nouvelle ne va jamais les chercher.
+  indices: {
+    h2: "Le classement des pays",
+    lead: "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets.",
+    reserve: "A réservé · ",
+    plus: "Voir la carte et les {n} pays",
+  },
+  powerUnknown: "puissance non communiquée",
+
+  title: "ScoreMyDataCenter — la note publique d'acceptabilité des data centers",
+  description:
+    "L'acceptabilité des data centers : notée, sourcée, publique. Une note A–E par site, avec ses sources, sa confiance et une méthode ouverte.",
+  altHref: "/",
+  altLabel: "EN",
+  tagline: "Observatoire indépendant",
+  nav: FR_NAV,
+  heroEyebrow: "Observatoire indépendant & public",
+  heroTitle: "Un data center ne se pose plus n'importe où.<br><span class='hero-red'>Mesurons son risque.</span>",
+  heroLede:
+    "Les data centers transforment nos territoires. Eau, énergie, foncier, impact local, transparence : ScoreMyDataCenter évalue publiquement le score d'acceptabilité de chaque projet, selon une méthode ouverte et des faits sourcés.",
+  heroStandards:
+    "Nous sommes indépendants. Nous appliquons les standards de la filière — <strong>PUE</strong> (ISO/IEC&nbsp;30134), énergie, carbone — puis nous mesurons ce qu'ils ignorent : <strong>l'eau, le sol, le territoire</strong>. On obtient un nutri-score pour {n} sites réels.",
+  heroChecks: [
+    "La note est <strong>gratuite</strong>",
+    "La méthode est <strong>publique</strong> (v0.1.0 gelée)",
+    "Les sources sont <strong>vérifiables</strong>",
+  ],
+  corpus: {
+    aria: "Le corpus en un coup d'œil",
+    label: "Le corpus en un coup d'œil",
+    noted: "projets notés",
+    countries: "pays couverts",
+    stress: "sites en zone de stress hydrique fort ou en crise d'eau",
+    watch: "projets « en veille » (oppositions, moratoires)",
+    scaleNote: "<strong>Une note A–E pour le site</strong> — ce que le lieu impose : eau, réseau, foncier, voisinage. Et une <strong>seconde note, projet &amp; processus</strong>, pour ce que le porteur annonce et documente : elle n'est calculable que lorsque le dossier du projet est public, ce qui reste rare. Toujours affichées avec leur confiance documentaire.",
+  },
+  manifesto: {
+    aria: "Notre manifeste",
+    line1: "Un critique note un film sans l'accord du studio. Un journaliste publie son enquête sans celui de ceux qu'elle dérange. ScoreMyDataCenter s'inscrit dans cette tradition : la liberté de critique et la contribution au débat d'intérêt général.",
+    contractLead: "Notre contrat en échange :",
+    contract: "une méthode publique, des faits sourcés, des mots mesurés, et un droit permanent à la correction et à la réponse.",
+    link: "Lire pourquoi",
+  },
+  mattersTitle: "Pourquoi ça compte",
+  mattersSub: "Un data center n'est pas qu'un bâtiment informatique : c'est un projet qui mobilise des ressources vitales et engage un territoire.",
+  matters: [
+    { icon: "water", title: "Ressource en eau", body: "<strong>{stress} sites sur {mesures}</strong> sont en zone de stress hydrique fort ou en crise d'eau. L'eau pèse lourd dans les notes du corpus.", href: "/fr/carte/", link: "Voir la carte" },
+    { icon: "energy", title: "Réseau électrique", body: "La saturation des réseaux freine les raccordements et dégrade les scores. Des choix d'implantation lourds de conséquences.", href: "/fr/carte/", link: "Voir la carte" },
+    { icon: "land", title: "Territoires & biodiversité", body: "Artificialisation, sols, biodiversité : des impacts locaux qui comptent autant que les mégawatts.", href: "/fr/comprendre/", link: "Comprendre les enjeux" },
+    { icon: "transparency", title: "Transparence", body: "<strong>{noPower} projets sur {total}</strong> ne communiquent pas leur puissance. Nous notons sur les documents publics — l'opacité ne paie jamais.", href: "/fr/methodologie/", link: "Comprendre la méthode" },
+  ],
+  principlesTitle: "Notre méthode, en 4 principes",
+  exploreTitle: "Explorer les scores",
+  exploreSub: "Cherchez. Comparez. Comprenez.",
+  exploreMapLabel: "Carte des projets",
+  exploreRankLabel: "Classement — position dans la distribution",
+  exploreRankMore: "Voir le classement complet",
+  exploreLatestLabel: "Les plus puissants suivis",
+  exploreLatestMore: "Voir tous les sites",
+  searchPlaceholder: "Rechercher un site, un opérateur, un pays…",
+  library: {
+    title: "Intelligence Library — l'analyse par-dessus les scores",
+    coverTitle: "State of Data Center Acceptability in Europe",
+    lede: "Le site dit combien. Nos analyses disent où ça va, et ce que ça veut dire.",
+    items: ["Tendances pays et Europe", "Risques par thème — eau, énergie, foncier, transparence", "Benchmarks opérateurs"],
+    cta: "Découvrir les analyses",
+  },
+  whoTitle: "Pour qui ? Pour agir.",
+  whoSub: "Un même accès, des usages différents — chaque profil a son point d'entrée.",
+  who: [
+    { name: "Citoyens", line: "Le projet près de chez vous, en clair — la carte.", href: "/fr/carte/" },
+    { name: "Journalistes", line: "Des faits sourcés, citables, avec leurs archives.", href: "/fr/classement/" },
+    { name: "Élus", line: "Comparer votre commune, préparer le débat.", href: "/fr/classement/" },
+    { name: "ONG", line: "Oppositions et moratoires — la couche veille.", href: "/fr/carte?veille=tout" },
+    { name: "Chercheurs", line: "La méthode, les données, tout se recalcule.", href: "/fr/methodologie/" },
+    { name: "Opérateurs", line: "Corriger, répondre — et améliorer le projet réel.", href: "/fr/contact/" },
+  ],
+  heroScaleLabel: "L'échelle d'acceptabilité",
+  ctaScores: "Voir les notes",
+  mapOpen: "Ouvrir la carte",
+  mapReserved: "· A réservé",
+  viewFiche: "Voir la fiche →",
+  ctaMethod: "Lire la méthode",
+  panelAria: "Exemple de fiche de score",
+  siteScore: "Site",
+  operatorScore: "Opérateur",
+  insufficient: "données insuffisantes",
+  confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
+  fixtureNote:
+    "Fixture de test fictive, montrée pour le format — les premières fiches réelles françaises sont en préparation.",
+  whyNowAria: "Pourquoi maintenant",
+  whyNow: {
+    // 🔴 RÈGLE SIGNÉE PAR FRANCK (2026-10-30) : « même trio partout, périmètre = le pays de
+    // la langue, Europe en repli ». Avant, les deux accueils ne disaient pas la même chose —
+    // le français publiait le PUE, l'anglais le stress hydrique — et personne ne l'avait vu
+    // parce que ces trois chiffres vivaient dans une const de PAGE, hors de l'objet `t`.
+    //
+    // LE TRIO EST CELUI QUE LA MESURE AUTORISE, pas un choix de goût. Mesuré sur stats.json :
+    // `water_stress_high` existe dans TOUS les périmètres ; `grid_saturated` et
+    // `pue_published` dans FR, NL et Europe seulement. Les trois sont des PARTS, donc jamais
+    // un zéro trompeur.
+    // 🔴 Et `pipeline` sort du trio pour cette raison exacte : aux Pays-Bas il vaut 0 MW —
+    // un trou de collecte, pas une absence de projets. L'accueil néerlandais aurait publié
+    // « 0 MW annoncés en pipeline », c'est-à-dire une lecture ratée présentée comme une
+    // mesure. Le chiffre reste sur la page « Les chiffres du parc », où son n est visible.
+    perimetre: "FR" as string,
+    repli: "europe" as string | null,
+    stats: [
+    { genre: "vue", id: "grid_saturated", figure: "{big} sur poste électrique saturé",
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#reseau-sature" },
+    { genre: "vue", id: "pue_published", figure: "{big} publient leur PUE",
+      attribution: "Les chiffres du parc · déclarations opérateurs · n = {n}", url: "/fr/chiffres#pue-publie" },
+    { genre: "vue", id: "water_stress_high", figure: "{big} en zone de stress hydrique fort",
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#stress-hydrique" },
+    ],
+  },
+  whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
+  missionLine:
+    "Notre mission : mesurer, sourcer et rendre publique l'acceptabilité de chaque projet de data center. Ancrer le débat dans les faits.",
+  whyTitle: "Pourquoi cet observatoire",
+  whyMotto: "Nous ne demandons pas la permission de publier nos notes. Nous nous imposons la méthode.",
+  whyLede: "Un data center de 900 MW s'annonce près de chez vous. Où lire, clairement, ce qu'il vaut ? Son impact local ?",
+  whyBody:
+    "Les cartes existantes alignent des caractéristiques techniques ; les observatoires de contestation comptent les conflits. Personne ne met à plat, projet par projet, la réalité de chaque dossier : une note, des sources, une méthode que chacun peut vérifier et refaire. C'est ce vide que ScoreMyDataCenter comble : <span class='hl-red'>la première note d'acceptabilité indépendante, publique et opposable</span> — une notation factuelle, sourcée et méthodique, publiée au titre de la contribution au débat d'intérêt général. Et une échelle qui engage : <b>le <i class='gl gl-a'>A</i> se prouve en exploitation, il ne se promet pas</b> — les promesses, même excellentes, plafonnent en <i class='gl gl-b'>B</i> ; seule la preuve vérifiée fait le <i class='gl gl-a'>A</i>. Notre mission : <b>scorer tous les data centers</b> — méthodiquement, publiquement, un dossier à la fois.",
+  ...FR_ABOUT,
+  principlesAria: "Principes",
+  principles: [
+    { title: "Méthode publique", body: "Grille de notation ouverte, versionnée, citable. Quiconque peut refaire chaque note." },
+    { title: "Données traçables", body: "Chaque valeur pointe vers sa source. L'annoncé n'est jamais fusionné avec le mesuré." },
+    { title: "Correction et réponse de l'opérateur", body: "Une donnée semble inexacte ? Elle peut être signalée avec sa source. Après vérification, la fiche est corrigée et la modification datée. L'opérateur peut également transmettre une réponse, publiée dans un espace dédié." },
+    { title: "Indépendance", body: "Les entités notées ne paient jamais leur note. Aucune influence, ni pour ni contre : la note suit la méthode." },
+  ],
+  scoresTitle: "Derniers projets notés",
+  scoresLede:
+    "Une page citable par projet : deux notes, cinq sous-scores par pilier, confiance documentaire, sources et historique complet.",
+  demo: {
+    kicker: "La note, en train de se faire",
+    caption: "Cas réel : {name} — les cinq piliers, la note du site, puis la lettre. Méthode publique, données sourcées.",
+    sr: "Animation : la fiche de {name} se note — les cinq sous-scores de pilier apparaissent, la note du site se remplit, puis la lettre s'estampille.",
+    replay: "Rejouer",
+    why: "Pourquoi ce site ? Sa note ({score}/100) est la plus proche de la médiane des {n} sites du corpus : c'est le site le plus ordinaire d'Europe, ni vitrine ni cas d'école. La règle de sélection est mécanique et publiée.",
+  },
+  status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service", unknown: "Statut non établi" },
+  fixtureTag: "Fixture de test fictive",
+  pillarShort: {
+    energy: "Énergie",
+    water: "Eau",
+    land_biodiversity: "Foncier",
+    local_impact: "Local",
+    transparency_governance: "Transp.",
+  },
+  repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
+  methodTitle: "Une méthode, deux notes, toujours avec la confiance.",
+  methodLede:
+    "26 indicateurs en 5 piliers, séparés entre ce que le projet <span class='term'>subit</span> et ce que l'opérateur <span class='term'>choisit</span>. La grille, ses poids et ses seuils sont <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>publics et téléchargeables</a>.",
+  methodPedago: "Comprendre la note, pas à pas",
+  siteScoreExplain: "Le contexte que le projet <span class='term'>subit</span> : intensité carbone du réseau électrique, stress hydrique, foncier, tissu local et économie de la commune.",
+  operatorScoreExplain: "Les leviers que l'opérateur <span class='term'>choisit</span> : efficacité énergétique, refroidissement, emplois, concertation, transparence.",
+  confidenceTitle: "Confiance documentaire",
+  confidenceExplain:
+    "Une note ne s'affiche jamais sans elle. Sous 40 % de couverture, on écrit « données insuffisantes ». On ne note pas l'inconnu.",
+  weightsAria: "Poids des piliers",
+  weightsCaption: "Poids du pilier dans la note globale",
+  weightsNote: "Méthodologie publique, versionnée et datée — antériorité vérifiable.",
+  openTitle: "On ouvre la vérité.",
+  openLede: "La couche qui fabrique le jugement est ouverte : méthode, données et moteur, vérifiables par quiconque.",
+  openCta: "Voir le code sur GitHub",
+  openCols: [
+    {
+      title: "Méthode, données et moteur ouverts",
+      body: "Moteur <span class='lic' tabindex='0'>AGPL<span class='info-tip'>Le code du moteur est libre : quiconque l'améliore doit repartager ses améliorations.</span></span>, données publiées <span class='lic' tabindex='0'>ODbL<span class='info-tip'>Base de données ouverte : réutilisable librement, à condition de citer la source et de partager à l'identique.</span></span>, méthodologie <span class='lic' tabindex='0'>CC BY-SA<span class='info-tip'>Contenu libre : réutilisable en citant l'auteur et en partageant aux mêmes conditions.</span></span>. Le code est <a href='https://github.com/bardolfranck/scoremydatacenter'>public sur GitHub</a> : n'importe qui peut refaire chaque note, en toute rigueur.",
+    },
+    {
+      title: "On aide le projet, jamais la note",
+      body: "Les entités notées ne paient jamais leur note publique. Un opérateur peut faire analyser son projet ; mais la note ne bouge que si le projet réel change — jamais parce qu'il a payé. « Il paie, la note monte » est structurellement exclu.",
+    },
+    {
+      title: "Journal d'audit public",
+      body: "Chaque notation, révision et correction est datée, versionnée et justifiée. Une note ne bouge jamais en silence.",
+    },
+    {
+      title: "Contributions gouvernées",
+      body: "Les corrections de données sont gratuites et relues. Pour empêcher qu'on manipule une note, nos règles de détection sont publiques dans leur principe ; leurs seuils chiffrés, eux, restent confidentiels — les afficher reviendrait à donner le mode d'emploi pour passer entre les mailles.",
+    },
+  ],
+  redline: "Notre engagement : la note d'un projet et sa justification sont <b>publiques et gratuites, pour toujours</b>.",
+  faqTitle: "Questions fréquentes",
+  faq: [
+    {
+      // RENVOI CROISÉ, PAS DOUBLON (Franck, 2026-10-22) : la procédure est traitée en entier
+      // dans « Droits et calendrier » sur /fr/comprendre. Cette entrée répond à la question
+      // telle qu'elle se pose — « un projet arrive, par où commencer ? » — en trois lignes,
+      // et renvoie. Le reste de cette FAQ parle de NOTRE note ; celle-ci parle de leur projet.
+      q: "Un projet est annoncé près de chez moi. Par où commencer ?",
+      a: "Par le calendrier, parce qu'il décide de tout : la même question posée en concertation peut changer le projet, posée après l'autorisation elle ne change plus rien. Les délais de recours sont de <b>deux mois</b> — à compter du premier jour d'affichage pour un permis de construire, de la dernière formalité accomplie pour une autorisation environnementale. Et quand le site fonctionne déjà, il reste la réclamation au préfet sur les <i>prescriptions</i> (bruit, rejets, eau). Tout le parcours, étape par étape, est dans <a href='/fr/comprendre#droits'>Droits et calendrier</a>, avec les textes.",
+    },
+    {
+      q: "Le nutri-score des DC. Comment un data center est-il noté ?",
+      a: "Chaque projet reçoit deux notes <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> — une pour le site, une pour l'opérateur — à partir de 26 indicateurs répartis en 5 piliers (énergie, eau, foncier, impact local, transparence). Un score chiffré est calculé puis traduit en lettre, exactement comme pour le nutri-score alimentaire que tout le monde connaît ; à côté, un niveau de confiance indique si la note repose sur des données solides ou fragiles.",
+    },
+    {
+      q: "Qu'est-ce qui sépare un data center noté A d'un data center noté B ?",
+      a: "Le nombre de piliers en tension, et leur gravité. <b>A</b> : aucune faiblesse marquée sur les piliers publiés de la fiche. <b>B</b> : solide, avec une ombre. <b>C</b> : deux tensions nettes. <b>D</b> et <b>E</b> : plusieurs piliers dans le rouge, ou une tension majeure à elle seule. Comme pour le nutri-score alimentaire, la lettre résume plusieurs critères d'un coup — et un seul critère très mauvais suffit à la tirer vers le bas. Une précision qui compte : le plafond ne se lève que sur preuve vérifiée par un tiers, et <b>aucun site d'Europe n'atteint A aujourd'hui</b>.",
+    },
+    {
+      q: "Pourquoi ne publiez-vous pas les seuils chiffrés de la note ?",
+      a: "Pour que la note ne soit pas truquable. Nous publions la grille, les poids des 5 piliers, les sources de chaque indicateur et, sur chaque fiche, le facteur qui pèse le plus sur la note — donc ce qui compte et dans quel sens. Nous ne publions pas la position exacte des seuils : avec elle, un porteur de projet pourrait viser la lettre au lieu de viser le terrain. La méthode est vérifiable, la recette n'est pas optimisable.",
+    },
+    {
+      q: "Que veulent dire les deux notes, « site » et « opérateur » ?",
+      a: "La note site évalue ce que le projet subit — territoire, eau, réseau, foncier — quel que soit celui qui le porte. La note opérateur évalue ce qu'il choisit — efficacité, concertation, transparence, engagements. On sépare le terrain des décisions.",
+    },
+    {
+      q: "Puis-je faire noter le projet près de chez moi ?",
+      a: "Oui. Suggérez-le via la <a href='#contact'>page Contact</a> : nous priorisons les dossiers les plus documentés et les plus discutés. Précision d'indépendance : nous ne notons jamais sur commande d'une partie, ni pour ni contre — la note suit la méthode, pas le demandeur.",
+    },
+    {
+      q: "D'où viennent les données ?",
+      a: "De sources publiques : réseau électrique, eau, foncier, INSEE, registres, presse locale. Chaque valeur affichée pointe vers sa source, et la méthode est ouverte : n'importe qui peut refaire le calcul.",
+    },
+    {
+      q: "Pourquoi les projets américains n'ont-ils pas (encore) de note ?",
+      a: "Parce que la profondeur suit la donnée. Une note exige des seuils calibrés pays par pays (réseau électrique, eau, foncier, registres, procédures) et un canal de correction et de réponse opérationnel — c'est le cas aujourd'hui en Europe. Aux États-Unis, nous publions d'abord la couche « en veille » : oppositions citoyennes ✋🏼 et moratoires ⏸️ — des faits sourcés, jamais une note. Les premières notes américaines viendront quand les données et la calibration seront au niveau, pas avant : nous ne notons pas l'inconnu.",
+    },
+    {
+      q: "Un opérateur peut-il payer pour améliorer sa note ?",
+      a: "Non, jamais. Les entités notées ne paient pas leur note. La note d'un projet et sa justification sont publiques et gratuites, pour toujours.",
+    },
+    {
+      q: "Pourquoi aucun data center n'a-t-il (encore) la note <i class='gl gl-a'>A</i> ?",
+      a: "Parce qu'un <i class='gl gl-a'>A</i> se prouve, il ne se promet pas : il est réservé aux valeurs vérifiées en exploitation. Un dossier entièrement déclaratif, même excellent, plafonne en <i class='gl gl-b'>B</i> — « annoncé ≠ mesuré ». Un opérateur obtient son <i class='gl gl-a'>A</i> en apportant une preuve tierce (déclaration EED au régulateur, audit ISO/IEC 30134 par un organisme accrédité — jamais une page marketing) via le canal public de correction : la donnée passe alors d'« annoncée » à « mesurée », le plafond saute, et le re-score est tracé au journal d'audit. Le <i class='gl gl-a'>A</i> ne s'achète pas et ne se déclare pas : il se démontre. Et la preuve fait monter la note projet & processus — jamais celle du site : le territoire est subi, il ne se prouve pas.",
+    },
+    {
+      q: "Pourquoi nous publions sans demander la permission",
+      a: "Un critique note un film sans l'accord du studio. Un journaliste publie son enquête sans celui de ceux qu'elle dérange. ScoreMyDataCenter s'inscrit dans cette tradition : la liberté de critique et la contribution au débat d'intérêt général. La note relève de la liberté de critique ; sa solidité dépend de la transparence de la méthode, de la qualité des sources et de la mesure des mots. Nous ne demandons pas la permission de publier une évaluation indépendante. En échange, nous nous imposons une méthode publique, des faits sourcés, des mots mesurés et un droit permanent à la correction et à la réponse.",
+    },
+    {
+      q: "Et si une donnée est inexacte, ou si l'opérateur n'est pas d'accord ?",
+      a: "Deux outils distincts : la correction factuelle — toute donnée est corrigée sur preuve, la modification est datée, et si le calcul est affecté la note est recalculée à version de méthode constante — et la réponse de l'opérateur, publiée dans un espace dédié, clairement attribuée et datée. La publication d'une réponse ne modifie pas automatiquement la note : celle-ci évolue uniquement lorsque des faits nouveaux ou corrigés changent le résultat obtenu par la méthode.",
+    },
+    {
+      q: "Un opérateur peut-il demander le retrait de sa fiche ?",
+      a: "Une donnée fausse est corrigée sur preuve, et l'opérateur peut transmettre une réponse publiée à côté de la note. Mais une note sourcée et méthodique ne se retire pas sur demande : la retirer parce qu'elle déplaît reviendrait à la vendre en creux. La note reste ; la contradiction s'ajoute.",
+    },
+    {
+      q: "La note est-elle un verdict définitif ?",
+      a: "Non : c'est une note de risque d'acceptabilité, assortie d'un niveau de confiance, et elle peut évoluer avec le projet. Le score chiffré est publié pour rendre le calcul transparent, mais c'est la lettre <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> qui fait foi — la note applique une grille experte, sourcée et versionnée ; elle ne prétend pas à l'exactitude d'un oracle.",
+    },
+    {
+      q: "La note évolue-t-elle avec le progrès technique ? Un data center bien noté aujourd'hui le sera-t-il encore dans dix ans ?",
+      a: "Oui, et c'est voulu. Une note change pour deux raisons : le projet évolue (nouvelles données), ou l'étalon évolue avec l'état de l'art. Nos seuils s'ancrent sur des normes qui se durcissent avec le temps (ISO, réglementation européenne) : un <i class='gl gl-a'>A</i> signifie toujours « le meilleur atteignable aujourd'hui », pas « le meilleur de 2026 ». Sans cela, tout le monde finirait <i class='gl gl-a'>A</i> à mesure que la technologie progresse — c'est précisément pourquoi l'étiquette énergie européenne a été remise à zéro en 2021, quand presque tous les appareils étaient devenus A+++. Chaque note est donc datée et rattachée à une version de méthode : un data center excellent en 2026 pourra être « moyen » aux standards de 2036 — et c'est exactement le rôle du score : récompenser le progrès, et signaler ce qui vieillit.",
+    },
+    {
+      q: "Qui sont les acteurs de la filière data center ?",
+      a: "Plusieurs familles, qui se croisent souvent sur un même projet. <b>Développeurs et aménageurs</b> : ils trouvent le terrain, obtiennent les autorisations et le raccordement, puis vendent ou louent. <b>Opérateurs de colocation</b> : ils exploitent des data centers et y louent de l'espace, de l'énergie et de la connectivité à leurs clients. <b>Hyperscalers</b> : les géants du cloud, qui construisent et exploitent leurs propres campus. <b>Néoclouds IA</b> : des fournisseurs spécialisés qui louent de la puissance de calcul pour l'intelligence artificielle. <b>Énergéticiens et gestionnaires de réseau</b> : ils produisent et fournissent l'électricité, et raccordent le site (RTE pour le transport, Enedis pour la distribution). <b>Constructeurs et équipementiers</b> : ils bâtissent et fournissent refroidissement, alimentation de secours, serveurs. <b>Collectivités et État</b> : la commune ou l'intercommunalité fixe les règles d'urbanisme et délivre en général le permis de construire ; le préfet instruit l'autorisation environnementale. <b>Investisseurs et foncières</b> : fonds et sociétés immobilières qui financent ou possèdent les murs.",
+    },
+    {
+      q: "Comment distinguer les acteurs de la filière : développeur ou opérateur ?",
+      a: "Le développeur prépare le terrain et le bâtiment (foncier, permis, raccordement) puis le vend ou le loue ; l'opérateur fait tourner les serveurs dedans et vend l'hébergement à des clients. L'analogie : le promoteur immobilier et l'hôtelier — l'un construit l'hôtel, l'autre le fait vivre. Les deux à la fois, ça existe ? Oui, et c'est même le modèle dominant des gros : Data4, Equinix, Digital Realty développent et opèrent leurs campus. Les purs développeurs sont plutôt les entrants immobiliers : H&DC, Prologis, Goodman, Segro, Altarea — ils viennent de la logistique ou de la promotion. Un site annoncé par un développeur est donc, par nature, un projet immobilier, pas un data center en service.",
+    },
+    {
+      q: "Qui parle à la commune, et qui n'y parle jamais ?",
+      a: "Cinq rôles — et surtout : qui parle au territoire, et qui ne lui parle jamais. <b>Le développeur</b> (ou aménageur) monte l'opération — foncier, permis, raccordement — construit, puis vend ou loue. C'est lui qui vient voir le maire, au début ; souvent il disparaît une fois le permis obtenu. <b>Le propriétaire</b> détient les murs (une foncière, un fonds) : il ne parle à personne localement, mais c'est lui qui encaisse. <b>L'opérateur</b> commercialise — il loue salles, énergie et connectivité à des clients : c'est le nom affiché sur la fiche, et l'interlocuteur du territoire une fois le site en service. <b>L'exploitant</b> fait tourner le bâtiment au quotidien (refroidissement, électricité, maintenance), souvent un prestataire sous-traitant invisible du public — mais c'est lui qui gère le bruit et les groupes de secours, donc ce qui gêne les riverains. <b>Le client final</b> loue les salles ou la puissance (une banque, un hyperscaler, un néocloud qui revend encore derrière) : il ne parle jamais à la commune et son nom est rarement public. Chez les gros, les trois premiers rôles sont souvent la même entreprise — Data4, Equinix, Digital Realty développent et exploitent leurs campus ; chez les entrants venus de l'immobilier, ils sont séparés. <b>Ce que ça change pour un élu :</b> celui qui promet les emplois et la chaleur récupérée n'est pas celui qui les livrera, et celui qui consomme vraiment n'est presque jamais dans la salle.",
+    },
+    {
+      q: "Quelles sont les étapes d'un projet de data center, de l'annonce à la mise en service ?",
+      a: "En France, schématiquement : 1) l'annonce et, parfois, une concertation préalable ; 2) le dépôt des demandes — permis de construire et, le plus souvent, autorisation environnementale au titre des installations classées (ICPE) ; 3) l'instruction : avis de l'autorité environnementale, puis enquête publique ; 4) la décision : permis délivré par le maire (ou par le préfet dans certains cas), autorisation environnementale par arrêté préfectoral ; 5) les délais de recours ; 6) les travaux, souvent par phases ; 7) la mise en service, puis les contrôles pendant l'exploitation. Les étapes peuvent se chevaucher, et un projet peut s'arrêter à chacune d'elles. Les droits du public à chaque étape : <a href='/fr/comprendre#droits'>Droits et calendrier</a>.",
+    },
+    {
+      q: "Qu'est-ce qu'un « moratoire » sur les data centers ? Est-ce que ça arrête un projet ?",
+      a: "Le mot recouvre des réalités très différentes. Un vœu ou une délibération politique demandant une pause n'a pas, à lui seul, d'effet juridique sur une autorisation déjà délivrée. Il existe en revanche un outil juridique : le <b>sursis à statuer</b>. Quand un plan local d'urbanisme est en cours d'élaboration ou de révision, la commune peut différer sa réponse à une demande de permis, pour deux ans au plus (code de l'urbanisme, art. L.424-1). Une pause générale à l'échelle nationale supposerait, elle, un texte de loi ou de règlement. Sur ce site, un moratoire est signalé comme un fait sourcé, jamais comme une note.",
+    },
+    {
+      q: "Qui peut arrêter un chantier ? Que peut décider le tribunal administratif ?",
+      a: "Plusieurs voies, aux effets différents. <b>Le tribunal administratif</b> : un recours contre un permis ou une autorisation n'arrête pas les travaux à lui seul. Pour les suspendre rapidement, il faut un <b>référé-suspension</b>, accordé seulement en cas d'urgence et de doute sérieux sur la légalité (code de justice administrative, art. L.521-1). Sur le fond, le juge peut annuler l'autorisation, ou laisser au porteur de projet un délai pour corriger une irrégularité qui peut l'être (code de l'urbanisme, art. L.600-5-1). Ces décisions peuvent en principe être contestées en appel, puis devant le Conseil d'État. <b>Le maire ou le préfet</b> : ils peuvent ordonner l'interruption de travaux réalisés sans autorisation ou non conformes (code de l'urbanisme, art. L.480-2) ; pour une installation classée, le préfet peut mettre en demeure l'exploitant, puis suspendre l'activité (code de l'environnement, art. L.171-8). <b>Le porteur de projet</b>, enfin, peut suspendre ou abandonner, pour des raisons financières, techniques ou commerciales.",
+    },
+    {
+      q: "Un projet suspendu ou en moratoire peut-il redémarrer ?",
+      a: "Oui, dans plusieurs cas : le sursis à statuer prend fin (à son terme, la commune doit se prononcer dans les deux mois si le demandeur confirme sa demande) ; une suspension est levée par le juge ; l'autorisation est régularisée ; une annulation est infirmée en appel ; ou le porteur dépose un nouveau dossier. À l'inverse, un permis de construire se périme : en règle générale si les travaux ne commencent pas dans les trois ans, ou s'ils sont interrompus plus d'un an ; ce délai peut être prolongé deux fois d'un an (code de l'urbanisme, art. R.424-17 et R.424-21). Un projet à l'arrêt n'est donc pas forcément un projet abandonné — c'est pourquoi nous ne le retirons jamais sans source.",
+    },
+    {
+      q: "Que veut dire « annoncé » sur une fiche ?",
+      a: "Que le data center n'est pas encore en service : projet rendu public, en cours d'autorisation ou en travaux. Tant qu'il n'est pas en service, il ne reçoit pas de note définitive mais une fourchette provisoire, calculée sur ce que le territoire subit.",
+    },
+    {
+      q: "Qui êtes-vous, et comment restez-vous indépendants ?",
+      a: "Un observatoire indépendant fondé par Franck Bardol. La méthode est ouverte, les entités notées ne paient pas, et notre fonctionnement est détaillé dans la section <a href='#open'>Modèle ouvert</a>.",
+    },
+  ],
+  contactTitle: "Suggérer un projet, ou joindre l'observatoire.",
+  contactCta: "Contact",
+};
+
 /** La table servie au gabarit : `ACCUEIL[lang]`. */
-export const ACCUEIL: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const ACCUEIL: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };
 
 /**
  * Les trois chiffres de « pourquoi maintenant », remplis — `chiffresAccueil(lang)`.

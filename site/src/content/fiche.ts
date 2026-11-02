@@ -19,8 +19,10 @@
 // décimale, ordre de date) — ce ne sont pas des mots à traduire, et une langue nouvelle n'a
 // rien à en dire. Ils restent en code, dans le gabarit.
 
-export const LANGUES_FICHE = ["fr", "en"] as const;
-export type LangueFiche = (typeof LANGUES_FICHE)[number];
+// 🔴 CETTE TABLE DÉCLARAIT SA PROPRE LISTE DE LANGUES (`LANGUES_FICHE`), à côté de celle de
+// `content/langues.ts`. Une liste à deux endroits ment : ouvrir le néerlandais demandait de
+// la rallonger ici AUSSI, et rien ne l'aurait signalé. Retirée le 2026-11-02 au moment
+// d'ajouter `nl` — la source est unique.
 
 const FR = {
   tagline: "Observatoire indépendant",
@@ -411,4 +413,213 @@ const EN: typeof FR = {
 
 /** La table servie au gabarit. `FICHE[lang]` remplace le littéral que chaque
  *  page portait en double. */
-export const FICHE: Record<LangueFiche, typeof FR> = { fr: FR, en: EN };
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  tagline: "Observatoire indépendant",
+  metaDescription: "Fiche {name} ({municipality}) : note du site et note projet & processus A–E, sous-scores par pilier, indicateurs sourcés — observatoire indépendant.",
+  kicker: "Fiche projet",
+  fleet: {
+    grid_saturated: "Ce site fait partie des {pct} du parc raccordés à un poste électrique déjà saturé.",
+    water_stress_high: "Ce site fait partie des {pct} du parc implantés dans un bassin en stress hydrique fort.",
+    soil_artificialized: "Ce site fait partie des {pct} du parc bâtis sur des sols déjà artificialisés.",
+    cta: "Les chiffres du parc →",
+  },
+  status: { announced: "Annoncé", permitting: "En instruction (permitting)", under_construction: "En construction", operational: "En service", unknown: "Statut non établi" },
+  statusCheck: {
+    verified: "statut vérifié",
+    networksSingular: "réseau interconnecté",
+    networksPlural: "réseaux interconnectés",
+    verifiedTip: "Confirmé automatiquement le {date} : {n} réseau(x) interconnecté(s) dans ce bâtiment (source PeeringDB). Vérification chaque semaine.",
+    unverified: "statut non vérifié",
+    unverifiedTip: "Statut issu de sources publiques, pas encore confirmé par un signal indépendant. Vérification automatique chaque semaine.",
+  },
+  operatorLabel: "Opérateur :",
+  operatorFromRegister: "Identifié automatiquement dans le registre des entreprises (SIRENE)",
+  developerDeclared: "activité déclarée :",
+  developerRegister: "registre des entreprises",
+  dwellLabel: "Premières habitations :",
+  dwellBuildingShort: "bâtiment d'habitation (OpenStreetMap)",
+  dwellBuilding: "Distance au bâtiment d'habitation le plus proche recensé dans OpenStreetMap, mesurée depuis les coordonnées du site (valeur approchée, jamais un relevé de bruit).",
+  dwellLanduseShort: "zone résidentielle (OpenStreetMap)",
+  dwellLanduse: "Aucun bâtiment d'habitation n'est encore recensé ici : la distance vise la zone résidentielle la plus proche, moins précise qu'une maison.",
+  powerUnknown: "puissance non communiquée",
+  powerEstimated: "estimé",
+  commissioning: "mise en service",
+  siteScore: "Note du site",
+  ppScore: "Note projet & processus",
+  naLabel: "données insuffisantes",
+  reserved: "A réservé — se prouve en exploitation",
+  confidence: { high: "confiance : haute", medium: "confiance : moyenne", low: "confiance : faible" },
+  confidenceNote: { high: "dossier largement sourcé", medium: "dossier partiellement sourcé", low: "dossier peu sourcé" },
+  confGlobal: "Confiance documentaire globale",
+  openFullMap: "Ouvrir la grande carte ↗",
+  miniMapAria: "Carte centrée sur ce site",
+  miniMapTitle: "Territoire & voisins",
+  satCaption: "Vue aérienne — {municipality}. Source :",
+  satAlt: "Vue aérienne du site {name}",
+  satStatusChip: { announced: "Site en projet", permitting: "Site en projet", under_construction: "En construction" },
+  satStatusNote: "l'image satellite peut être antérieure au projet : le terrain visible ici peut ne pas encore accueillir le data center",
+  synthEmptyNote: "Dossier peu sourcé ({pct} % de confiance documentaire) : nous ne notons pas l'inconnu, et nous ne rédigeons pas de lecture d'ensemble sans faits suffisants. Cette lecture pourra évoluer si de nouvelles informations publiques ou vérifiables deviennent disponibles.",
+  share: "Partager",
+  shareOn: "Partager sur",
+  shareMail: "Partager par e-mail",
+  copyLink: "Copier le lien",
+  copied: "Lien copié",
+  download: "Télécharger l'image du score",
+  signal: "Signaler une erreur",
+  signalSubject: "Correction ou réponse",
+  signalBody: "Fiche concernée : {url}\nNature de la demande : [ ] Correction d'une donnée [ ] Réponse de l'opérateur [ ] Autre\nInformation concernée :\nCorrection ou réponse proposée :\nSource ou justificatif :\nNom et qualité du demandeur :\nLien éventuel avec le projet ou l'opérateur :\n",
+  signalNote: "Corrige un fait, avec sa source — <strong>une preuve est requise</strong>.",
+  methodology: "Méthodologie",
+  portraitLink: "Portrait du site →",
+  portraitLinkSub: "la même donnée, écrite pour un élu ou un riverain",
+  subscoresTitle: "Sous-scores par pilier",
+  subscoresSub: "Un pilier mêle le subi et le choisi ; une note n'est pas la moyenne des piliers.",
+  whyAria: "Pourquoi la note ne se déduit pas des piliers",
+  whyTip: "Les deux notes (site, projet) séparent les indicateurs selon qu'ils sont subis ou choisis — toutes thématiques confondues et pondérés. Les piliers, eux, regroupent chaque thématique en mêlant subi et choisi. Les deux découpages ne se recouvrent pas : la note du site ne se lit pas comme la moyenne des piliers affichés.",
+  legendDoc: "documentation disponible",
+  synthTitle: "Synthèse du projet",
+  synthSub: "la lecture d'ensemble, derrière les lettres",
+  synthProjectTag: "Projet & processus",
+  synthSiteTag: "Site",
+  quoteOpen: "« ",
+  quoteClose: " »",
+  indicatorsTitle: "Indicateurs suivis",
+  th: { indicator: "Indicateur", value: "Valeur", reading: "Lecture", state: "État", source: "Source" },
+  explanation: "Explication",
+  notDisclosed: "Non communiqué",
+  // Sur quoi la note d'un pilier repose RÉELLEMENT. Un pilier mince est aujourd'hui
+  // renormalisé en silence : le lecteur ne voit pas qu'un seul point le porte.
+  pillarBasis: { one: "1 seul indicateur publié :", some: "{k} indicateurs publiés sur {n}" },
+  pillarMissing: "Manquent :",
+  pillarScope: {
+    national: "Note nationale — la même pour tous les sites notés dans ce pays ({pays}).",
+    thin: "Trop peu de sites notés dans ce pays pour établir si cette note le distingue.",
+  },
+  procedureSeeSource: "Procédure (voir source)",
+  notApplicable: "non applicable",
+  // DEUX ABSENCES OPPOSÉES PORTAIENT LE MÊME SILENCE. `missing` veut dire « nous avons lu le
+  // dossier, la donnée n'y est pas » — c'est un fait, et il compte comme un ZÉRO dans la note.
+  // `not_collected` veut dire « nous n'avons pas cherché » — c'est notre lacune, retirée du
+  // calcul. La fiche nommait le premier « Manquant » (ambigu : manquant pour qui ?) et ne
+  // nommait pas le second du tout : 48 135 lignes du corpus affichaient une case d'état VIDE.
+  indStatus: {
+    measured: "Mesuré", announced: "Annoncé", estimated: "Estimé",
+    missing: "Absent du dossier", not_collected: "Pas encore cherché",
+  },
+  indStatusHint: {
+    missing: "L'information a été cherchée dans le dossier public et ne s'y trouve pas. Elle compte comme un zéro dans la note.",
+    not_collected: "Nous n'avons pas encore cherché cette information. Elle est retirée du calcul, elle ne pénalise pas le site.",
+  },
+  accessed: "consulté le",
+  archived: "archivé",
+  directionHint: { lower_is_better: "Plus la valeur est basse, mieux c'est.", higher_is_better: "Plus la valeur est haute, mieux c'est." },
+  hintDedupe: "mieux c'est",
+  sense: { good: "favorable", mid: "moyen", bad: "défavorable" },
+  proxy: {
+    inquiryHeld: "Enquête publique tenue",
+    inquiryNone: "Pas d'enquête publique",
+    envOpinion: {
+      favorable: "Avis de l'autorité environnementale : favorable",
+      favorable_with_reservations: "Avis de l'autorité environnementale : favorable avec réserves",
+      unfavorable: "Avis de l'autorité environnementale : défavorable",
+      none: "Avis de l'autorité environnementale : aucun requis/rendu",
+    },
+    cndpYes: "Saisine de la CNDP",
+    cndpNo: "Pas de saisine de la CNDP",
+    appeals: "Recours contentieux :",
+    council: {
+      favorable: "Délibérations du conseil : favorables",
+      mixed: "Délibérations du conseil : mitigées",
+      unfavorable: "Délibérations du conseil : défavorables",
+      none_recorded: "Délibérations du conseil : aucune enregistrée",
+    },
+  },
+  opTitle: "Réponse de l'opérateur",
+  opNone: "L'opérateur peut nous transmettre une réponse concernant cette fiche. Lorsqu'une réponse est reçue et publiable, elle apparaît ici, clairement attribuée et datée.",
+  opNote: "Une erreur factuelle ? Utilisez « Signaler une erreur » en joignant une source ou un justificatif.",
+  dataStateTitle: "État de la donnée disponible",
+  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} absents du dossier · {notCollected} pas encore cherchés.",
+  contestationTitle: "Contestation & signal",
+  contestationSub: "Faits sourcés — n'entrent pas dans la note.",
+  press: "Presse : ",
+  selfReported: "auto-déclaré",
+  historyTitle: "Historique de la note",
+  histSite: "Note du site à cette date",
+  histPp: "Note projet & processus à cette date",
+  scoredOn: "Scoré le",
+  shareText: "{name} — Note du site : {grade}",
+  shareSuffix: ", selon ScoreMyDataCenter",
+  related: {
+    title: "D'autres sites à comparer",
+    // La phrase d'intro était figée au cas français : une fiche du Texas annonçait
+    // « même département » au-dessus de cartes qui disent « même région ». Le mot suit
+    // maintenant le pays, comme l'étiquette de la relation juste en dessous — une seule
+    // réponse à « comment s'appelle la maille ici ».
+    sub: "Même opérateur, {maille}, ou simplement les plus proches — notés dans la même grille.",
+    subMailleFR: "même département",
+    subMaille: "même région",
+    seeAll: "Voir le classement complet →",
+    // Sous le kilomètre, la coordonnée publiée (arrondie à ~1 km) ne mesure plus rien :
+    // voir PLANCHER_KM dans DcFiche. `nearbyMi` n'a pas de pendant ici — la page française
+    // reste métrique, même pour un site américain.
+    relation: { operator: "même opérateur :", region: "même région", regionFR: "même département", nearby: "à {km} km", nearbyUnder: "à moins d'un kilomètre" },
+  },
+
+  // ——— Chaînes rapatriées du gabarit, 2026-10-29 ————————————————————————————————
+  // Elles étaient choisies par un `lang === "fr" ? … : …` dans DcFiche.astro, hors de cette
+  // table : une langue nouvelle n'aurait trouvé ici que les deux tiers de la page, et le
+  // reste n'aurait eu aucun endroit où s'écrire. « Note en attente » y était écrit TROIS
+  // fois (lignes 586, 714, 715) — trois copies à faire vieillir ensemble.
+  notScoredFlag: "non noté · fait contextuel",
+  lettersLink: "Ce que valent les lettres →",
+  whyLink: "pourquoi cette note ?",
+  breadcrumbMap: "Carte",
+  schemaOperator: "Opérateur",
+  idx: {
+    line: "Ce site est en {country} — indice site du pays : {grade}{reserved} ({score}).",
+    reserved: " · A réservé",
+    cta: "Voir l'indice pays",
+  },
+  // Le libellé du badge dit le FAIT, rien de plus : « note probable : D, fenêtre C–E ».
+  prov: {
+    probable: "note probable : {central}",
+    window: ", fenêtre {band}",
+    narrowing: "provisoire · s'affine avec la donnée",
+  },
+  // Le titre SERP annonce la note TELLE QU'ON LA PUBLIE — probable, en attente, provisoire,
+  // ou la lettre — jamais plus que ce que la page affirme (contradiction SERP↔page, 09-30).
+  seo: {
+    probable: "note probable {central}",
+    pending: "note en attente",
+    provisional: "note provisoire {band}",
+    insufficient: "données insuffisantes",
+    grade: "note {grade}",
+    tail: "indicateurs sourcés, observatoire indépendant.",
+  },
+  ctxMap: {
+    aria: "Ouvrir la carte de contexte en grand",
+    alt: "Vue aérienne annotée de {name} à {municipality} : emprise, cours d'eau, poste électrique et logements les plus proches, avec les distances mesurées.",
+  },
+  probable: {
+    aria: "Note probable",
+    title: "Note probable, fenêtre large",
+    lead: "Ce projet n'est pas en service : nous publions une note probable {central} et la plage dans laquelle elle peut encore bouger {band}. La note probable est calculée sur les seuls indicateurs déjà sourcés ; la plage dit ce que les indicateurs manquants pourraient encore changer. Elle est ici plus large que d'ordinaire — c'est la mesure de ce qui manque, pas un doute sur le calcul. Elle se resserrera à mesure que le dossier se remplit.",
+  },
+  pending: {
+    label: "Note en attente",
+    lead: "Ce site est suivi mais pas encore noté publiquement : les données de site sont trop minces pour une note nominative solide, et une note ne se publie qu'après relecture et droit de réponse. Les faits ci-dessous sont sourcés ; ils ne constituent pas un verdict.",
+  },
+  desal: {
+    title: "Eau & dessalement — comment lire ce site",
+    body: "Israël s'approvisionne majoritairement en eau dessalée. Le stress hydrique du bassin (WRI Aqueduct) n'est donc pas assimilé à une ponction certaine de la ressource locale par ce site. Mais l'impact n'est pas effacé, il est déplacé : le dessalement consomme beaucoup d'électricité — sur un réseau fortement carboné (gaz) — et rejette de la saumure (impact marin non encore quantifié). Aucun passe-droit : le pilier énergie tient, l'externalité est signalée. Cette lecture évoluera sur preuve de la source d'eau et du refroidissement du site.",
+  },
+};
+
+export const FICHE: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

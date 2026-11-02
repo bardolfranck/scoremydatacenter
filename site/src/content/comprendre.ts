@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 // 🔴 `nav` n'est PAS de la copie : c'est la structure du menu, et la table la porte parce
 // que le gabarit `Understand.astro` la lit dans `t`. Elle vivait dans la page, où le menu
 // de la bonne langue était à portée ; ici il faut l'importer — mais la source reste unique
@@ -152,5 +152,71 @@ const EN = {
   ],
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  title: "Comprendre les data centers, sans jargon — ScoreMyDataCenter",
+  description:
+    "Ce qu'un data center change vraiment près de chez vous : ordres de grandeur, impact local, les bonnes questions à poser, vos droits, le calendrier. En clair, sans jargon.",
+  tagline: "Observatoire indépendant",
+  altHref: "/understand/",
+  altLabel: "EN",
+  nav: FR_NAV,
+  pageTitle: "Comprendre les data centers",
+  lede:
+    "Pour l'élu qui reçoit l'appel d'un cabinet, le riverain qui découvre un panneau d'enquête publique, le journaliste qui débute sur le sujet : l'essentiel, sans jargon. Ce qui se cache derrière les chiffres.",
+  pendingLabel: "Texte en préparation",
+  whyLabel: "Pourquoi :",
+  takeawayLabel: "À retenir —",
+  sourcesLabel: "Sources :",
+  seeMore: "Voir plus…",
+  seeLess: "Réduire",
+  tocAria: "Sommaire",
+  blocks: [
+    {
+      anchor: "quoi",
+      title: "C'est quoi, un data center ?",
+      slot: "whatis",
+    },
+    {
+      anchor: "commune",
+      title: "Pourquoi ça concerne ma commune",
+      slot: "rich",
+    },
+    {
+      anchor: "questions",
+      title: "Les bonnes questions à poser",
+      body: "La checklist qui épouse nos piliers de notation : énergie, eau, foncier, impact local, transparence.",
+      featured: true,
+      slot: "checklist",
+    },
+    {
+      anchor: "bon-projet",
+      title: "C'est quoi, un « bon » projet ?",
+      slot: "rich",
+    },
+    {
+      anchor: "droits",
+      title: "Droits et calendrier",
+      slot: "rich",
+    },
+    {
+      anchor: "faq",
+      title: "Questions pratiques",
+      slot: "rich",
+    },
+    {
+      anchor: "aller-plus-loin",
+      title: "Aller plus loin",
+      slot: "rich",
+    },
+  ],
+};
+
 /** La table servie au gabarit : `COMPRENDRE[lang]`. */
-export const COMPRENDRE = { fr: FR, en: EN } satisfies Record<Langue, unknown>;
+export const COMPRENDRE = { fr: FR, en: EN, nl: NL } satisfies Record<LangueDeclaree, unknown>;

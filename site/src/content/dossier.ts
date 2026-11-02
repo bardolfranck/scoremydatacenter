@@ -16,7 +16,7 @@
 // 🔴 Le type ne garde RIEN au build (`astro build` sans `astro check`) : une clé absente
 // rend `undefined` en silence. Le garde qui mord est `engine/tests/test_i18n_parity.py`.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   kicker: "Ce que déclare le dossier environnemental",
@@ -81,5 +81,48 @@ const EN: typeof FR = {
   locale: "en-GB",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  kicker: "Ce que déclare le dossier environnemental",
+  lire: "lire l'avis (PDF)", pages: "p.", petitionnaire: "pétitionnaire",
+  // Les rubriques DÉCRIVENT, elles ne qualifient pas. « Groupes électrogènes et fioul »
+  // plutôt que « nuisances » : nommer une nuisance serait notre verdict, et c'est exactement
+  // ce que ce bloc s'interdit. Le lecteur conclut, l'autorité écrit, nous rapportons.
+  secours: "Groupes électrogènes et fioul", bruit: "Bruit relevé", voisinage: "Voisinage",
+  energie: "Énergie et chaleur", eau: "Eau et refroidissement", emissions: "Émissions",
+  emploi: "Emploi", emprise: "Emprise et bâti", icpe: "Classement ICPE",
+  reserves: "Réserves de l'autorité", autresNiv: "Autres niveaux cités dans l'avis",
+  periode: "", jour: "Jour", nuit: "Nuit", mesure: "Mesure", autres: "Les autres dans l'avis",
+  caveatGroupes: "puissance de secours — ce n'est pas la puissance consommée par le site",
+  bruitNote: "État relevé dans l'étude d'impact, avant exploitation.",
+  pasUneNote: "Ces chiffres ne sont pas une note.",
+  pasUneNoteSuite: " Ils proviennent du dossier déposé par le pétitionnaire et de l'avis de l'autorité environnementale ; nous les rapportons avec leur phrase et leur page, nous ne les évaluons pas.",
+  bloc: "Ce bloc n'existe que pour les projets soumis à évaluation environnementale — une minorité des sites.",
+  absence: "Son absence ne signifie pas l'absence d'impact",
+  absenceSuite: " : elle indique qu'aucun document public exploitable n'a été identifié dans notre corpus à ce jour.",
+  niveauxLabel: "Niveaux relevés", emergenceLabel: "Émergence",
+  avisPluriel: "avis d'autorité environnementale rendus sur ce site",
+  sansDate: "date non confirmée",
+  explication: "Explication",
+  differe: "diffère d'un dossier à l'autre",
+  differeNote: "Ce site a fait l'objet de plusieurs dossiers. Les valeurs qui ne sont pas les mêmes de l'un à l'autre sont signalées, et affichées côte à côte avec leur date. Un écart peut venir d'un projet redimensionné, d'une tranche différente, ou d'une donnée corrigée : l'avis ne dit pas laquelle, et nous ne le devinons pas.",
+  icpeTip: "Installation classée pour la protection de l'environnement : le régime qui encadre, autorise et contrôle une activité pouvant présenter un risque ou une gêne. Chaque numéro désigne l'activité visée dans la nomenclature nationale. Être classé ne veut pas dire être dangereux : cela veut dire être encadré, et donc contrôlé.",
+  // Le mot est dans la table comme les autres : il était en ternaire au point d'affichage,
+  // là où on le lit — l'endroit où une langue nouvelle ne le trouve jamais.
+  valeursMultiples: "{n} valeurs",
+  // 🔴 LE FORMAT EST UNE PROPRIÉTÉ DE LA LANGUE, pas une branche de code. Les deux sources
+  // ne datent pas pareil (le registre régional donne « 30/03/2022 », l'index national
+  // « 2022-04-01 ») : la date est donc toujours recomposée dans le motif de la langue.
+  // Un néerlandais écrira `{j}-{m}-{a}` sans toucher au composant.
+  datePattern: "{j}/{m}/{a}",
+  locale: "fr-FR",
+};
+
 /** La copie du bloc dossier : `DOSSIER[lang]`. */
-export const DOSSIER: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const DOSSIER: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };
