@@ -550,6 +550,51 @@ def statut_gate(data_dir: Path) -> list[str]:
     return out
 
 
+# 🔴 LE FILIGRANE DE BROUILLON NE DOIT PAS POUVOIR REVENIR DANS LE CORPUS SERVI.
+# Pendant des mois, 3 113 fiches sur 3 275 ont porté dans leur résumé « BROUILLON … — à
+# vérifier avant tout usage » / « DRAFT … — verify before use », et 1 702 disaient même
+# « interne, hors corpus servi » alors qu'elles étaient servies et notées. Franck a fait
+# nettoyer le 2026-10-30 puis le 2026-11-02 : le corpus est à ZÉRO.
+#
+# Ce gate existe pour que ça reste vrai. Le point d'écriture est un gabarit de pipeline
+# (`pipelines/*/country.py`) : une vague suivante peut le réintroduire sans que personne ne
+# relise 3 275 résumés. Un nettoyage sans gate est une fenêtre qui se rouvre.
+#
+# PAS DE CLIQUET ICI, et c'est voulu : le compte est à 0, donc la règle est « aucun », ce qui
+# est plus simple à lire qu'un nombre et ne demande pas d'être tenu à jour.
+#
+# ⚠️ Les deux langues ne nomment pas la sonde pareil — « PROBE » en anglais, « SONDE » en
+# français. Un motif qui n'en connaît qu'un laisse la moitié du corpus derrière lui : mesuré
+# le 2026-11-02, le relevé s'arrêtait à 566 fiches sur 2 268 SANS RIEN SIGNALER.
+FILIGRANES = re.compile(
+    r"BROUILLON|\bDRAFT\b|^DEV\s+—|À vérifier|à vérifier|Verify before|verify before"
+    r"|\bPROBE\b|\bSONDE\b|interne, hors corpus servi|internal, outside the served corpus",
+    re.IGNORECASE | re.MULTILINE)
+
+
+def filigrane_gate(paths: list[Path]) -> list[str]:
+    """Aucun résumé SERVI ne doit porter une mention de brouillon.
+
+    Son mandat s'arrête au corpus servi : `validation/` (cohorte scellée) et les `.draft` en
+    attente n'y sont pas, donc hors portée par construction et non par exception.
+    """
+    out: list[str] = []
+    for path in paths:
+        resume = ((load_json(path).get("identity") or {}).get("summary") or {})
+        for langue, texte in sorted(resume.items()):
+            if not isinstance(texte, str):
+                continue
+            m = FILIGRANES.search(texte)
+            if m:
+                out.append(
+                    f"GATE FILIGRANE: {path.stem!r} ({langue}) porte « {m.group(0)} » dans son "
+                    f"résumé : « {texte[:70]}… ». Un résumé servi ne dit pas qu'il est un "
+                    f"brouillon — le gabarit doit DÉRIVER sa phrase des champs de la fiche "
+                    f"(lieu + exploitant), pas recopier un boilerplate de pipeline"
+                )
+    return out
+
+
 def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]:
     """Return the list of gate violations (empty = all gates pass)."""
     today = today or date.today()
@@ -799,6 +844,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
 
     problems += geo_gate(data_dir)
     problems += statut_gate(data_dir)
+    problems += filigrane_gate(datacenter_paths(data_dir))
 
     return problems
 

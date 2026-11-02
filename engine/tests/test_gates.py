@@ -560,3 +560,57 @@ def test_aucun_gate_ne_reste_debranche():
         f"dans scripts/validate_corpus.py — donc jamais sur le corpus SERVI. Un gate débranché "
         f"a toutes ses dents, braquées sur le vide."
     )
+
+
+def test_filigrane_gate_refuse_un_resume_de_brouillon(tmp_path):
+    """Un résumé servi ne dit pas qu'il est un brouillon — dans les DEUX langues.
+
+    3 113 fiches sur 3 275 l'ont dit pendant des mois, et 1 702 affirmaient même « interne,
+    hors corpus servi » alors qu'elles étaient servies ET notées. Le corpus est à zéro depuis
+    le 2026-11-02 ; ce gate est ce qui l'y maintient, parce que le point d'écriture est un
+    gabarit de pipeline qu'une vague suivante peut réintroduire sans relecture.
+    """
+    from engine.validate import filigrane_gate
+
+    def fiche(nom, fr, en):
+        p = tmp_path / f"{nom}.json"
+        p.write_text(json.dumps(
+            {"id": nom, "identity": {"summary": {"fr": fr, "en": en}}}), encoding="utf-8")
+        return p
+
+    propre = fiche("xx-propre", "Data center à Anvers — Untel.", "Data center in Antwerp — Untel.")
+    assert filigrane_gate([propre]) == [], "une phrase dérivée des champs passe"
+
+    # 🔴 Les deux mots de la sonde, parce qu'ils DIFFÈRENT : un motif qui ne connaît que
+    # « PROBE » laissait 1 702 fiches derrière lui, et le relevé s'arrêtait à 566 sur 2 268
+    # sans rien signaler. C'est le total attendu qui l'a dit, pas le gate.
+    for nom, fr, en, attendu in [
+        ("xx-fr", "BROUILLON pré-rempli par le pipeline spatial BE — à vérifier.", "ok", "BROUILLON"),
+        ("xx-en", "ok", "DRAFT pre-filled by the BE spatial pipeline — verify before any use.", "DRAFT"),
+        ("xx-sonde", "BROUILLON US v1 — SONDE (eGRID) — interne, hors corpus servi.", "ok", "BROUILLON"),
+        ("xx-probe", "ok", "US DRAFT v1 — PROBE (eGRID) — internal, outside the served corpus.", "DRAFT"),
+    ]:
+        violations = filigrane_gate([fiche(nom, fr, en)])
+        assert violations, f"{nom} : le filigrane {attendu} doit être refusé"
+        assert nom in violations[0] and "brouillon" in violations[0]
+
+
+def test_filigrane_gate_ne_mord_pas_sur_une_phrase_innocente(tmp_path):
+    """Contre-épreuve de faux positif : le gate ne doit pas refuser une prose légitime.
+
+    « verify » et « draft » existent dans la langue courante ; le motif est ancré sur les
+    FORMES du filigrane (mot entier, mentions de sonde, phrase de clôture), pas sur une
+    sous-chaîne. Un gate qui mord à tort finit désactivé, et c'est alors le vrai cas qui passe.
+    """
+    from engine.validate import filigrane_gate
+
+    for innocente in (
+        "Data center à Draguignan — Untel.",          # « Dra… » n'est pas « DRAFT »
+        "Data center in Verifield — Untel.",          # « Verif… » n'est pas « verify before »
+        "Data center à Sondernach — Untel.",          # « Sonder… » n'est pas « SONDE »
+    ):
+        p = tmp_path / "xx-innocente.json"
+        p.write_text(json.dumps({"id": "xx-innocente",
+                                 "identity": {"summary": {"fr": innocente, "en": innocente}}}),
+                     encoding="utf-8")
+        assert filigrane_gate([p]) == [], f"faux positif sur « {innocente} »"
