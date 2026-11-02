@@ -146,64 +146,64 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
-  title: "Sources & licences — ScoreMyDataCenter",
-  metaDescription: "Toutes les données qui alimentent nos notes, fiches et indices : la source, ce qu'elle alimente, sa licence. Méthode ouverte — la réponse publique à « quelles données utilisez-vous ? ».",
-  tagline: "Observatoire indépendant",
-  h1: "Sources & licences",
+  title: "Bronnen & licenties — ScoreMyDataCenter",
+  metaDescription: "Alle gegevens achter onze cijfers, fiches en indexen: de bron, wat ze voedt, haar licentie. Open methode — het publieke antwoord op ‘welke gegevens gebruiken jullie?’.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "Bronnen & licenties",
   intro:
-    "<p>Notre méthode est ouverte. Voici <strong>chaque source</strong> qui alimente une note, une fiche ou un indice pays — ce qu'elle apporte, et sous quelle licence. C'est la réponse, publique et complète, à « quelles données utilisez-vous ? ».</p>",
-  boundaryTitle: "Ce qu'on publie, et où s'arrête la ligne",
+    "<p>Onze methode is open. Dit is <strong>elke bron</strong> die een cijfer, een fiche of een landenindex voedt — wat ze aanlevert, en onder welke licentie. Het publieke, volledige antwoord op ‘welke gegevens gebruiken jullie?’.</p>",
+  boundaryTitle: "Wat we publiceren, en waar de grens ligt",
   boundaryBody:
-    "<p>Ce registre liste nos sources au niveau de chaque <strong>pilier et indicateur</strong>. C'est la couche ouverte.</p><p>La provenance valeur-par-valeur d'un site précis (quelle source pour quel chiffre, mesuré ou estimé) est notre <strong>couche opérationnelle</strong>. La compilation, l'export et la fraîcheur en masse sont le <strong>produit</strong> (notre API).</p>",
-  cols: { source: "Source", feeds: "Ce qu'elle alimente", license: "Licence" },
+    "<p>Dit register noemt onze bronnen op het niveau van elke <strong>pijler en indicator</strong>. Dat is de open laag.</p><p>De herkomst waarde-per-waarde van één specifieke site (welke bron voor welk getal, gemeten of geschat) is onze <strong>operationele laag</strong>. Compilatie, export en versheid in bulk zijn het <strong>product</strong> (onze API).</p>",
+  cols: { source: "Bron", feeds: "Wat ze voedt", license: "Licentie" },
   groups: [
-    { title: "Identité & localisation du site", rows: [
-      { source: "DCWatch (Hubblo)", url: "https://dcwatch.hubblo.org", feeds: "Un des points de départ du corpus : nom, opérateur, coordonnées, puissance annoncée, statut du projet — que notre pipeline re-dérive et vérifie ensuite.", license: "<strong>ODbL</strong>" },
-      { source: "Carte DCmag", url: "https://carte.dcmag.fr", feeds: "Localisation et statut des projets annoncés (projet ou site en service), recoupés fiche par fiche.", license: "Carte publique" },
-      { source: "PeeringDB", url: "https://www.peeringdb.com", feeds: "Vérification hebdomadaire du statut « en service » : réseaux interconnectés dans le bâtiment.", license: "Données publiques PeeringDB" },
-      { source: "Répertoire SIRENE (INSEE)", url: "https://annuaire-entreprises.data.gouv.fr", feeds: "Identification de l'opérateur quand elle manque (registre des entreprises).", license: "Licence Ouverte" },
-      { source: "geo.api.gouv.fr", url: "https://geo.api.gouv.fr", feeds: "Commune et département (re-dérivés des coordonnées).", license: "Licence Ouverte" },
-      { source: "OpenStreetMap · OpenFreeMap", url: "https://www.openstreetmap.org/copyright", feeds: "Fond de carte.", license: "<strong>ODbL</strong>" },
-      { source: "Esri World Imagery", url: "https://www.esri.com", feeds: "Photographie satellite des fiches.", license: "© Esri (attribution sur l'image)" },
+    { title: "Identiteit & locatie van de site", rows: [
+      { source: "DCWatch (Hubblo)", url: "https://dcwatch.hubblo.org", feeds: "Een van de vertrekpunten van het corpus: naam, exploitant, coördinaten, aangekondigd vermogen, projectstatus — die onze pipeline daarna opnieuw afleidt en verifieert.", license: "<strong>ODbL</strong>" },
+      { source: "DCmag-kaart", url: "https://carte.dcmag.fr", feeds: "Locatie en status van aangekondigde projecten (project of site in bedrijf), fiche per fiche gekruist.", license: "Publieke kaart" },
+      { source: "PeeringDB", url: "https://www.peeringdb.com", feeds: "Wekelijkse controle van de status ‘in bedrijf’: netwerken die in het gebouw interconnecteren.", license: "Publieke PeeringDB-gegevens" },
+      { source: "SIRENE-register (INSEE)", url: "https://annuaire-entreprises.data.gouv.fr", feeds: "Identificatie van de exploitant wanneer die ontbreekt (Frans ondernemingsregister).", license: "Licence Ouverte" },
+      { source: "geo.api.gouv.fr", url: "https://geo.api.gouv.fr", feeds: "Gemeente en departement (opnieuw afgeleid uit de coördinaten).", license: "Licence Ouverte" },
+      { source: "OpenStreetMap · OpenFreeMap", url: "https://www.openstreetmap.org/copyright", feeds: "Basiskaart.", license: "<strong>ODbL</strong>" },
+      { source: "Esri World Imagery", url: "https://www.esri.com", feeds: "Satellietbeeld op de fiches.", license: "© Esri (vermelding op het beeld)" },
     ]},
-    { title: "Pilier Énergie", rows: [
-      { source: "RTE — eCO2mix", url: "https://www.rte-france.com/eco2mix", feeds: "Intensité carbone du mix électrique régional.", license: "Licence Ouverte" },
-      { source: "RTE — Caparéseau · S3REnR", url: "https://www.capareseau.fr", feeds: "Capacité et proximité de raccordement.", license: "Licence Ouverte" },
-      { source: "RTE · ODRÉ", url: "https://odre.opendatasoft.com", feeds: "Congestion et file d'attente réseau.", license: "Licence Ouverte" },
-      { source: "Dossiers ICPE · presse", feeds: "PUE annoncé (déclaratif, noté avec prudence).", license: "Documents publics" },
+    { title: "Pijler Energie", rows: [
+      { source: "RTE — eCO2mix", url: "https://www.rte-france.com/eco2mix", feeds: "Koolstofintensiteit van de regionale elektriciteitsmix.", license: "Licence Ouverte" },
+      { source: "RTE — Caparéseau · S3REnR", url: "https://www.capareseau.fr", feeds: "Aansluitcapaciteit en -nabijheid.", license: "Licence Ouverte" },
+      { source: "RTE · ODRÉ", url: "https://odre.opendatasoft.com", feeds: "Netcongestie en wachtrij voor aansluiting.", license: "Licence Ouverte" },
+      { source: "ICPE-dossiers · pers", feeds: "Aangekondigde PUE (declaratief, met voorzichtigheid beoordeeld).", license: "Publieke documenten" },
     ]},
-    { title: "Pilier Eau", rows: [
-      { source: "ZRE (arrêtés préfectoraux) · Propluvia", url: "https://propluvia.developpement-durable.gouv.fr", feeds: "Stress hydrique et restrictions de la zone.", license: "Réglementaire / Licence Ouverte" },
-      { source: "Hub'Eau", url: "https://hubeau.eaufrance.fr", feeds: "État de la masse d'eau.", license: "Licence Ouverte" },
-      { source: "BNPE · Hub'Eau", url: "https://bnpe.eaufrance.fr", feeds: "Pression de prélèvement du bassin.", license: "Licence Ouverte" },
-      { source: "Dossiers ICPE", feeds: "Refroidissement et volume d'eau annoncé.", license: "Documents publics" },
+    { title: "Pijler Water", rows: [
+      { source: "ZRE (prefectorale besluiten) · Propluvia", url: "https://propluvia.developpement-durable.gouv.fr", feeds: "Waterstress en beperkingen in de zone.", license: "Regelgevend / Licence Ouverte" },
+      { source: "Hub'Eau", url: "https://hubeau.eaufrance.fr", feeds: "Toestand van het waterlichaam.", license: "Licence Ouverte" },
+      { source: "BNPE · Hub'Eau", url: "https://bnpe.eaufrance.fr", feeds: "Onttrekkingsdruk op het stroomgebied.", license: "Licence Ouverte" },
+      { source: "ICPE-dossiers", feeds: "Koeling en aangekondigd watervolume.", license: "Publieke documenten" },
     ]},
-    { title: "Pilier Foncier & biodiversité", rows: [
-      { source: "INPN · Natura 2000 · ZNIEFF", url: "https://inpn.mnhn.fr", feeds: "Recouvrement et distance aux zones protégées.", license: "Licence Ouverte" },
-      { source: "Cerema · RPG", url: "https://www.cerema.fr", feeds: "Statut du sol (artificialisé, agricole, naturel).", license: "Licence Ouverte" },
-      { source: "SRADDET · INPN (TVB)", feeds: "Continuités écologiques (trame verte et bleue).", license: "Données publiques régionales" },
-      { source: "Permis · dossiers ICPE", feeds: "Surface au sol du projet.", license: "Documents publics" },
+    { title: "Pijler Bodem & biodiversiteit", rows: [
+      { source: "INPN · Natura 2000 · ZNIEFF", url: "https://inpn.mnhn.fr", feeds: "Overlap met en afstand tot beschermde gebieden.", license: "Licence Ouverte" },
+      { source: "Cerema · RPG", url: "https://www.cerema.fr", feeds: "Status van de grond (verhard, landbouw, natuur).", license: "Licence Ouverte" },
+      { source: "SRADDET · INPN (TVB)", feeds: "Ecologische verbindingen (groenblauwe dooradering).", license: "Publieke regionale gegevens" },
+      { source: "Vergunningen · ICPE-dossiers", feeds: "Grondoppervlak van het project.", license: "Publieke documenten" },
     ]},
-    { title: "Pilier Impact local", rows: [
-      { source: "INSEE", url: "https://www.insee.fr", feeds: "Profil socio-économique et capacité d'absorption de la commune.", license: "Licence Ouverte" },
-      { source: "Géorisques", url: "https://www.georisques.gouv.fr", feeds: "Aléa technologique / Seveso environnant.", license: "Licence Ouverte" },
-      { source: "Presse · communiqués · délibérations", feeds: "Emplois et retombées annoncés, contestation observée, position des élus — <strong>faits sourcés, jamais l'article republié</strong>.", license: "Liens + extraits courts" },
+    { title: "Pijler Lokale impact", rows: [
+      { source: "INSEE", url: "https://www.insee.fr", feeds: "Sociaal-economisch profiel en absorptievermogen van de gemeente.", license: "Licence Ouverte" },
+      { source: "Géorisques", url: "https://www.georisques.gouv.fr", feeds: "Technologisch / Seveso-risico in de omgeving.", license: "Licence Ouverte" },
+      { source: "Pers · persberichten · raadsnotulen", feeds: "Aangekondigde banen en baten, waargenomen verzet, standpunt van de bestuurders — <strong>gedocumenteerde feiten, nooit het artikel herpubliceerd</strong>.", license: "Links + korte citaten" },
     ]},
-    { title: "Transparence & gouvernance", rows: [
-      { source: "Enquêtes publiques · concertation", feeds: "Consentement et gouvernance du projet.", license: "Documents publics" },
+    { title: "Transparantie & governance", rows: [
+      { source: "Openbare raadplegingen · inspraak", feeds: "Instemming en governance van het project.", license: "Publieke documenten" },
     ]},
-    { title: "Vérification & couverture hors-France", rows: [
-      { source: "Registres EED / RVO (Pays-Bas)", feeds: "Puissances-vérité et source de vérification (les premières notes A d'Europe).", license: "Registre ouvert" },
-      { source: "Eurostat (NUTS)", url: "https://ec.europa.eu/eurostat", feeds: "Pont revenu / usage des sols pour les pays hors-France.", license: "Réutilisation libre (Eurostat)" },
-      { source: "datacentertracker.org", url: "https://www.datacentertracker.org", feeds: "Cas nord-américains.", license: "<strong>CC BY</strong>" },
-      { source: "GDELT", url: "https://www.gdeltproject.org", feeds: "Filet de découverte des contestations (veille, précision au tri éditorial).", license: "Domaine public" },
+    { title: "Verificatie & dekking buiten Frankrijk", rows: [
+      { source: "EED- / RVO-registers (Nederland)", feeds: "Werkelijke vermogens en verificatiebron (de eerste A's van Europa).", license: "Open register" },
+      { source: "Eurostat (NUTS)", url: "https://ec.europa.eu/eurostat", feeds: "Brug voor inkomen / landgebruik voor landen buiten Frankrijk.", license: "Vrij hergebruik (Eurostat)" },
+      { source: "datacentertracker.org", url: "https://www.datacentertracker.org", feeds: "Noord-Amerikaanse gevallen.", license: "<strong>CC BY</strong>" },
+      { source: "GDELT", url: "https://www.gdeltproject.org", feeds: "Vangnet voor het ontdekken van verzet (monitoring; precisie bij de redactionele triage).", license: "Publiek domein" },
     ]},
   ],
-  closeP: "Une note ne repose que sur des <strong>faits sourcés</strong>. Chaque valeur d'une fiche renvoie à son origine ; sous 40 % de couverture documentaire, nous écrivons « données insuffisantes » plutôt que de noter l'inconnu.",
+  closeP: "Een cijfer steunt uitsluitend op <strong>gedocumenteerde feiten</strong>. Elke waarde op een fiche verwijst naar haar herkomst; onder 40 % documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van het onbekende te beoordelen.",
   methodHref: "/fr/methodologie/",
-  ctaMethod: "Voir notre méthode →",
+  ctaMethod: "Bekijk onze methode →",
   backHref: "/fr/",
-  backLabel: "← Retour à l'accueil",
+  backLabel: "← Terug naar de startpagina",
 };
 
 /** La table servie au gabarit : `SOURCES[lang]`. */
