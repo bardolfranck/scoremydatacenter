@@ -229,7 +229,7 @@ const NL: typeof FR = {
   metaDescription: "Het geluid van een datacenter: continue koeling, noodaggregaten op proef, brandstoftanks, onttrokken water. Hoeveel, op welke afstand, en wat milieuadviezen werkelijk documenteren.",
   tagline: "Onafhankelijk observatorium",
   h1: "De hinder van datacenters",
-  lead: `Een datacenter wordt vaak besproken op zijn totale balans — de elektriciteit, het klimaat. Wat je vanaf de straat meemaakt, is concreter: continu <strong>geluid</strong>, <strong>noodaggregaten</strong> op proef, <strong>brandstoftanks</strong>, <strong>water</strong> dat wordt onttrokken en geloosd. In de 41 adviezen van de <a href="${AE}" target="_blank" rel="noopener">Franse milieuautoriteit</a> die we hebben doorgenomen, komen de noodaggregaten het vaakst terug, vóór de brandstoftanks en het geluid.`,
+  lead: `Een datacenter wordt vaak besproken op zijn totale balans — de elektriciteit, het klimaat. Wat je vanaf de straat meemaakt, is concreter: continu <strong>geluid</strong>, <strong>noodaggregaten</strong> op proef, <strong>brandstoftanks</strong>, <strong>water</strong> dat wordt onttrokken en geloosd. In de 41 adviezen van de <a href="${AE}" target="_blank" rel="noopener">Franse autorité environnementale</a> die we hebben doorgenomen, komen de noodaggregaten het vaakst terug, vóór de brandstoftanks en het geluid.`,
 
   questionsH2: "De vragen die men ons stelt",
   questions: [
@@ -285,7 +285,7 @@ const NL: typeof FR = {
       corps: `<p>Ze is niet te horen en niet te ruiken, maar zij beslist vaak. Een aansluiting met groot vermogen verbruikt netcapaciteit die de andere behoeften van het gebied — industrie, wonen, vervoer — jarenlang niet meer zullen hebben, en haar wachtrij telt in jaren. Het is ook wat de vloot aggregaten zo groot maakt: hoe krachtiger de site, hoe zwaarder zijn reserve.</p>` },
 
     { icone: "hidden", h2: "Het ‘verborgene’",
-      corps: `<p>Een exploitant presenteert zich met zijn energie-efficiëntie. Hij zet zelden zijn noodaggregaten, zijn tanks of de akoestische modellering die de milieuautoriteit hem vraagt in de etalage. <strong>De kloof tussen een communicatiefolder en de inhoud van een beoordelingsdossier is op zichzelf informatie</strong> — en dat is het materiaal van deze pagina.</p>` },
+      corps: `<p>Een exploitant presenteert zich met zijn energie-efficiëntie. Hij zet zelden zijn noodaggregaten, zijn tanks of de akoestische modellering die de autorité environnementale hem vraagt in de etalage. <strong>De kloof tussen een communicatiefolder en de inhoud van een beoordelingsdossier is op zichzelf informatie</strong> — en dat is het materiaal van deze pagina.</p>` },
 
     { icone: "hazard", h2: "Wanneer de site zelf een risico draagt",
       corps: `<p>Sommige projecten slaan ter plaatse grote hoeveelheden brandstof op, lithium-ionbatterijen, soms waterstof. De site <strong>draagt</strong> dan een gevaar, in plaats van het alleen te ondergaan — dat is geen hinder meer, dat is een risico, en het hoort thuis in de veiligheidsstudie. We publiceren deze elementen <strong>als informatie, naast het cijfer</strong>, zolang de dekking niet toelaat ze te beoordelen zonder de vergelijking tussen sites te vertekenen.</p>` },
@@ -297,7 +297,7 @@ const NL: typeof FR = {
 
   details: [
     { resume: "Meer weten — wat is zo’n milieuadvies waard?",
-      corps: `<p>Voor projecten van deze omvang moet de initiatiefnemer in Frankrijk een <strong>milieueffectrapportage</strong> opstellen. Een instantie die losstaat van de dienst die de vergunning zal verlenen, onderzoekt die en brengt een <strong>openbaar advies</strong> uit: de <a href="${AE}" target="_blank" rel="noopener">milieuautoriteit</a>, in de regio’s meestal een <a href="${MRAE}" target="_blank" rel="noopener">mission régionale d’autorité environnementale (MRAe)</a>.</p>
+      corps: `<p>Voor projecten van deze omvang moet de initiatiefnemer in Frankrijk een <strong>milieueffectrapport (MER)</strong> opstellen. Een instantie die losstaat van de dienst die de vergunning zal verlenen, onderzoekt die en brengt een <strong>openbaar advies</strong> uit: de <a href="${AE}" target="_blank" rel="noopener">autorité environnementale</a>, in de regio’s meestal een <a href="${MRAE}" target="_blank" rel="noopener">mission régionale d’autorité environnementale (MRAe)</a>.</p>
       <p>Wat dit advies <strong>is</strong>: een expertise over de <em>kwaliteit van het dossier</em> en over hoe het project het milieu meeneemt, met aanbevelingen. Wat het <strong>niet</strong> is: een vergunning, en ook geen weigering. Het advies beslist niet over het project.</p>
       <p>Toch is het niet decoratief. De initiatiefnemer moet er <strong>schriftelijk op antwoorden</strong>, en advies én antwoord worden <strong>bij het dossier voor het publiek gevoegd</strong>; de overheid die de vergunning verleent, moet haar beslissing in het licht van die stukken motiveren. In de praktijk dwingt een advies dat een lacune aanwijst tot aanvulling van het dossier, en het dient bestuurders en omwonenden tot steun tijdens de raadpleging. <strong>Het is het nuttigste document om te lezen vóór u zich een mening over een project vormt</strong> — en het is onze grondstof.</p>` },
 
