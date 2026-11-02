@@ -886,12 +886,23 @@ def test_une_langue_ne_devient_vivante_que_traduite():
         )
 
 
-def test_le_garde_de_traduction_mord_vraiment(monkeypatch):
-    """Contre-épreuve : on déclare `nl` vivante alors qu'elle porte encore le français."""
-    declarees = _langues_declarees()
-    if "nl" not in declarees:
-        pytest.skip("aucune langue en préparation à éprouver")
-    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "nl"])
+def test_le_garde_de_traduction_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une langue vivante aux valeurs copiées fait rougir le garde.
+
+    🔴 Éprouvé sur une table FABRIQUÉE, pas sur l'état réel de `nl` : la première version
+    de ce canari supposait `nl` non traduite — il a cassé le jour où la traduction a
+    dépassé 50 %, c'est-à-dire exactement quand tout allait bien. Un canari qui dépend
+    de l'avancement du travail mesure l'avancement, pas le garde.
+    """
+    fausse = tmp_path / "fausse-table.ts"
+    fausse.write_text(
+        'const FR = {\n  a: "bonjour",\n  b: "le monde",\n};\n\n'
+        'const XX: typeof FR = {\n  a: "bonjour",\n  b: "le monde",\n};\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "CONTENU", tmp_path)
+    monkeypatch.setitem(globals(), "TABLES_MODULES", {"fausse-table.ts": "table fabriquée"})
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "xx"])
     with pytest.raises(AssertionError, match="encore identiques"):
         test_une_langue_ne_devient_vivante_que_traduite()
 
