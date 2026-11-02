@@ -853,22 +853,30 @@ def _enum_statut_watchlist(schema: dict) -> list[str]:
 
 
 def test_une_langue_ne_devient_vivante_que_traduite():
-    """Une langue ne passe en PRÉPARATION → VIVANTE que si ses valeurs ne sont plus le français.
+    """Une langue ne passe en PRÉPARATION → VIVANTE que si CHAQUE module est traduit.
 
     🔴 C'est le garde qui protège la mise en ligne du néerlandais. Ses 740 chaînes ont été
     créées le 2026-11-02 en COPIANT le texte français — à dessein : un traducteur natif a
     besoin de la source en place. Mais une copie du français dans un bloc nommé `nl` est
     exactement ce qui part en ligne sans que personne ne le voie, et en une seule fois.
-    Ajouter `nl` à `LANGUES_VIVANTES` sans l'avoir traduite fait donc ROUGIR la suite.
+
+    🔴 ET IL SE COMPTE PAR MODULE, PAS EN BLOC. Première version : un ratio AGRÉGÉ sur toute
+    la surface. Le traducteur a prévenu, et la mesure lui a donné raison plus durement qu'il
+    ne le disait — au 2026-11-02, l'agrégat tombait à **15 %**, donc « traduite », pendant que
+    `glossaire.ts` (20 chaînes sur 20) et `dossier.ts` (38 sur 38) étaient ENCORE
+    INTÉGRALEMENT EN FRANÇAIS. Douze modules traduits payaient pour les quatre autres. Une
+    moyenne sur des parties indépendantes ne dit rien de la pire d'entre elles : c'est la
+    même faute que de compter des fiches mesurées au lieu de comparer des ensembles
+    [[gate-deux-populations-meme-racine]].
 
     Le seuil n'est pas zéro : des valeurs restent légitimement identiques d'une langue à
-    l'autre — un sigle (« PUE »), une URL, un nom propre, « data center » en néerlandais.
-    On refuse une langue dont la MAJORITÉ des chaînes est encore celle du français.
+    l'autre — un sigle (« PUE »), une URL, un nom propre, « data center » en néerlandais. On
+    refuse un MODULE dont la majorité des chaînes est encore celle du français.
     """
     vivantes = _langues_vivantes()
     reference = vivantes[0]
     for lg in vivantes[1:]:
-        identiques = total = 0
+        fautifs: list[tuple[str, int, int]] = []
         for fichier in TABLES_MODULES:
             texte = (CONTENU / fichier).read_text(encoding="utf-8")
             try:
@@ -876,19 +884,27 @@ def test_une_langue_ne_devient_vivante_que_traduite():
                 autre = _valeurs(bloc(texte, lg.upper()))
             except AssertionError:
                 continue
-            for cle, val in ref.items():
-                if cle in autre:
-                    total += 1
-                    identiques += int(autre[cle] == val)
-        if not total:
-            continue
-        part = identiques / total
-        assert part < 0.5, (
-            f"la langue {lg.upper()} est déclarée VIVANTE mais {round(100 * part)} % de ses "
-            f"{total} chaînes sont encore identiques au {reference.upper()} "
-            f"({identiques} sur {total}). Une table copiée n'est pas une table traduite : "
-            f"la remettre dans `LANGUES_EN_PREPARATION` jusqu'à la relecture native."
+            communes = [c for c in ref if c in autre]
+            if not communes:
+                continue
+            identiques = sum(1 for c in communes if autre[c] == ref[c])
+            if identiques / len(communes) >= _SEUIL_MODULE_TRADUIT:
+                fautifs.append((fichier, identiques, len(communes)))
+        assert not fautifs, (
+            f"la langue {lg.upper()} est déclarée VIVANTE mais {len(fautifs)} module(s) ont "
+            f"leurs chaînes encore identiques au {reference.upper()} :\n"
+            + "\n".join(
+                f"  · {f} — {i} sur {t} ({round(100 * i / t)} %)" for f, i, t in fautifs
+            )
+            + f"\n\nUne table copiée n'est pas une table traduite. Remettre {lg.upper()} dans "
+            f"`LANGUES_EN_PREPARATION` jusqu'à ce que CHAQUE module soit écrit : un module "
+            f"oublié sert du français sous pavillon étranger, sur toutes ses pages."
         )
+
+
+# La part de chaînes identiques au-delà de laquelle un module n'est pas traduit. Par MODULE :
+# un agrégat laisserait les modules écrits payer pour les modules oubliés.
+_SEUIL_MODULE_TRADUIT = 0.5
 
 
 def test_le_garde_de_traduction_mord_vraiment(tmp_path, monkeypatch):
