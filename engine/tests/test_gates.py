@@ -733,3 +733,43 @@ def test_une_coordonnee_tenue_ne_sert_AUCUNE_lettre(tmp_path):
     props = json.loads((data / "map.geojson").read_text())["features"][0]["properties"]
     assert props["grade_site"] == "en_attente", props
     assert "coord tenue 1" in r.stdout, f"le log doit distinguer la population : {r.stdout}"
+
+
+def test_une_coord_juste_mais_pas_au_batiment_GARDE_sa_note():
+    """`portee` sépare deux défauts, et le booléen seul les confond.
+
+    🔴 RÉGRESSION QUE J'AI MISE EN PRODUCTION le 2026-11-02 : j'ai câblé la rétention de la
+    lettre sur `coord_hold(fid)["hold"]`, alors que le faisceau le dit dans sa propre
+    docstring — « le gate de service ne suspend la NOTE que si portee == "hold" ; "carte"
+    sert la note ». Cinq fiches dont la coordonnée est JUSTE ont perdu leur lettre, dont
+    `de-tkrz-greven-grv1`, que j'ai présentée comme la preuve que le gate fonctionnait.
+
+    La table de vérité est éprouvée ici, sans build ni corpus privé : c'est le PRÉDICAT qui
+    porte la doctrine, pas un `if` recopié dans un script.
+    """
+    from engine.validate import retient_la_note
+
+    assert retient_la_note({"hold": True, "portee": "hold"}) is True
+    # le cas qui a cassé : coordonnée juste au km, image retirée, NOTE SERVIE
+    assert retient_la_note({"hold": True, "portee": "carte"}) is False
+    assert retient_la_note({"hold": False, "portee": None}) is False
+    # une portée inconnue ne retient PAS : on ne suspend une note que sur un constat nommé
+    assert retient_la_note({"hold": True, "portee": "inconnue"}) is False
+    assert retient_la_note({}) is False
+
+
+def test_le_build_appelle_le_predicat_au_lieu_de_le_reecrire():
+    """Le script de build doit APPELER `retient_la_note`, pas recopier sa condition.
+
+    C'est la même exigence que « aucun gate ne reste débranché » : une doctrine recopiée dans
+    un script dérive du jour où on la corrige à un seul endroit. Ici elle a déjà dérivé une
+    fois — dans l'autre sens, le script ayant pris le booléen au lieu de la portée.
+    """
+    source = (REPO_ROOT / "scripts" / "build_prod_artifacts.py").read_text(encoding="utf-8")
+    assert "retient_la_note(" in source, (
+        "le build ne passe plus par `retient_la_note` : s'il reteste `portee` lui-même, la "
+        "doctrine vit à deux endroits et l'un des deux finira par mentir"
+    )
+    assert 'get("hold")' not in source.split("retient_la_note(verdict)")[1], (
+        "le build reteste `hold` APRÈS le prédicat : une seule lecture, ou aucune"
+    )

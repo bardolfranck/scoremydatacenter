@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root, so
 
 from engine.artifacts import build_artifacts
 from engine.core import ARTIFACTS_DIR, load_datacenters, load_methodology, load_watchlist
+from engine.validate import retient_la_note  # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL", Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
 
@@ -177,6 +178,7 @@ def patch_context_maps() -> int:
     # on ne perd rien en passant par lui — on gagne tout ce que le fichier seul ignorait.
     # Corollaire : le jour où une coordonnée est corrigée, la carte revient d'elle-même.
     sans_carte: set[str] = set()
+    sans_note: set[str] = set()      # sous-ensemble : portee == "hold" seulement
     lettres_retenues: set[str] = set()
     try:
         from pipelines.geo_audit.coord_trust import coord_hold as _coord_hold
@@ -199,8 +201,23 @@ def patch_context_maps() -> int:
     else:
         for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
             fid = f.stem
-            if _coord_hold(fid).get("hold"):
+            verdict = _coord_hold(fid)
+            if verdict.get("hold"):
                 sans_carte.add(fid)
+                # 🔴 `portee` SÉPARE DEUX DÉFAUTS, et le booléen seul les confond. Le faisceau
+                # le dit dans sa propre docstring : « le gate de service ne suspend la NOTE que
+                # si portee == "hold" — "carte" sert la note ».
+                #   · "hold"  = coordonnée FAUSSE : ni carte ni note fiables.
+                #   · "carte" = coordonnée juste au km mais pas à l'échelle du bâtiment : pas de
+                #               carte, mais la NOTE est SERVIE. La re-mesure est bonne, seul le
+                #               point d'annotation à 100 m ne l'est pas (TKRZ, adresse dans un
+                #               complexe multi-bâtiments).
+                # J'ai câblé la rétention sur le booléen le 2026-11-02 et retenu la lettre de
+                # CINQ fiches dont la coordonnée est juste — dont `de-tkrz-greven-grv1`, que
+                # j'ai présentée comme la preuve que le gate marchait. La doctrine était écrite,
+                # en mots, dans la fonction que j'appelais.
+                if retient_la_note(verdict):
+                    sans_note.add(fid)
     # LA LANGUE DE L'IMAGE EST CELLE DE LA PAGE, jamais celle du pays de la fiche
     # (Franck, 2026-10-05). Les clés portent donc la langue — `ctx/{id}-{lang}-{hmac}.webp`,
     # le hmac calculé sur « id-lang » pour qu'une variante ne se devine pas depuis l'autre.
@@ -238,15 +255,16 @@ def patch_context_maps() -> int:
             # fausse est un bruit BIDIRECTIONNEL — un recalage peut faire MONTER la note
             # (DATA4). Le remède reste la reposition ; ceci empêche seulement de publier une
             # lettre pendant qu'on ne sait pas d'où elle vient.
-            d["grade_withheld"] = {
+            if d["id"] in sans_note:
+                d["grade_withheld"] = {
                 "reason": "coord_hold",
                 "detail": "coordonnée tenue par le faisceau geo_audit.coord_trust "
                           "(fausse, ou juste mais pas à l'échelle du bâtiment) : les "
                           "indicateurs de point ne sont pas revendiqués",
-            }
+                }
+                lettres_retenues.add(d["id"])
             d.pop("context_map", None)
             write_json(f, d)
-            lettres_retenues.add(d["id"])
             # On compte la carte EXISTANTE qu'on refuse de servir, pas le champ qu'on vient
             # de retirer : les fiches sont reconstruites à neuf à chaque build, donc le champ
             # est souvent déjà absent et le compteur restait à zéro. Un retrait silencieux
@@ -281,13 +299,16 @@ def patch_context_maps() -> int:
         print(f"prod-artifacts: carte RETIRÉE sur {retirees} fiche(s) — coordonnée "
               "constatée fausse ou non confirmée (faisceau pipelines.geo_audit.coord_trust)")
     if lettres_retenues:
-        print(f"prod-artifacts: LETTRE RETENUE sur {len(lettres_retenues)} fiche(s) — même "
-              f"faisceau, même raison : {sorted(lettres_retenues)[:4]}… Le blanchiment "
-              f"(scrub-grades) la retire de la fiche, du classement et de la carte.")
-    elif sans_carte:
-        # Un garde qui ne retient rien alors qu'il y a des coordonnées tenues est un garde
-        # qui a cessé de fonctionner. On le DIT plutôt que de passer en silence.
-        print("prod-artifacts: ⚠ des coordonnées sont tenues mais AUCUNE lettre n'a été "
+        print(f"prod-artifacts: LETTRE RETENUE sur {len(lettres_retenues)} fiche(s) "
+              f"(portée « hold » = coordonnée FAUSSE ; les {len(sans_carte) - len(sans_note)} "
+              f"en portée « carte » gardent leur note, seule l'image part) : "
+              f"{sorted(lettres_retenues)[:4]}…")
+    elif sans_note:
+        # Un garde qui ne retient rien alors qu'il y a des coordonnées FAUSSES est un garde
+        # qui a cessé de fonctionner. On le DIT plutôt que de passer en silence. (Des
+        # coordonnées tenues en portée « carte » sans lettre retenue, en revanche, c'est le
+        # comportement attendu.)
+        print("prod-artifacts: ⚠ des coordonnées sont FAUSSES mais AUCUNE lettre n'a été "
               "retenue — vérifier le marquage `grade_withheld`", file=sys.stderr)
     return patched
 

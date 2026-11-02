@@ -155,21 +155,13 @@ GEO_WAIVERS = {
     # réaction quand rien ne retient la lettre, et une mauvaise maintenant qu'elle l'est.
     # LEVÉE = reposition par la lane EU (chantier sous-traité le 2026-11-02 : le dossier de
     # permis GeoHive devrait porter une adresse ou une parcelle).
-    # ⚠️ TEXTE CORRIGÉ LE MÊME JOUR : la première version décrivait un état déjà périmé
-    # (« 5 indicateurs suspendus »). La lane EU avait entre-temps RECALÉ le point sur le
-    # dossier de permis et re-mesuré les huit indicateurs depuis la bonne position. Une
-    # dérogation qui décrit un état faux est pire qu'absente : elle fait croire qu'on a
-    # regardé. Ce qu'elle dit doit être vrai le jour où on la relit.
-    "ie-k2-strategic-infrastructure-ireland-limited":
-        "2026-11-02 — RECALÉE : coordonnée = point autoritaire du permis FW19A/0089 "
-        "(GeoHive, Ballycoolin Business Park, Dublin 15), les 8 indicateurs de point "
-        "re-mesurés depuis ce point. Le signalement vient d'une mesure ANTÉRIEURE au "
-        "recalage (sidecar du 2026-11-02 matin, ancien point à 104 m du centroïde GeoNames). "
-        "La lettre reste retenue tant que le faisceau tient la coordonnée. "
-        "LEVÉE = relancer `pipelines.geo_audit.centroid_check` + l'audit bâtiment au NOUVEAU "
-        "point : si `on_building`, le signalement disparaît et cette entrée doit être "
-        "SUPPRIMÉE ; si `off_building`, elle est remplacée par une dérogation motivée sur la "
-        "mesure (faux positif du détecteur sur un vrai DC en petite localité).",
+    # ie-k2-strategic-infrastructure-ireland-limited : DÉROGATION SUPPRIMÉE le 2026-11-02,
+    # sa condition de levée étant remplie. La lane EU a recalé le point sur le dossier de
+    # permis FW19A/0089 ; la re-mesure donne `near_building` à 24,1 m d'un bâtiment OSM
+    # (way/1340216913) QUI EST TAGGÉ data centre — donc le vrai site K2. Le détecteur la
+    # classe « faux positif sur un vrai bâtiment », plus « fabriquée », et `coord_hold` ne
+    # la tient plus du tout : sa lettre revient d'elle-même au prochain build.
+    # Une dérogation qu'on garde après la levée de sa condition est une exception silencieuse.
     "pl-orange-polska-bia-ystok": "2026-10-17 — Orange Polska Białystok, vrai DC (opérateur connu) ; "
                                   "coordonnée = déclaration PeeringDB « Kościelna 10 », à 58 m du n° 8 "
                                   "(dernier numéro cartographié de cette rue) et à 120 m du centre GeoNames ; "
@@ -641,6 +633,25 @@ FILIGRANES = re.compile(
     r"BROUILLON|\bDRAFT\b|^DEV\s+—|À vérifier|à vérifier|Verify before|verify before"
     r"|\bPROBE\b|\bSONDE\b|interne, hors corpus servi|internal, outside the served corpus",
     re.IGNORECASE | re.MULTILINE)
+
+
+def retient_la_note(verdict: dict) -> bool:
+    """La note est-elle retenue pour cette coordonnée ? — le prédicat, à UN endroit.
+
+    `coord_hold` rend `{hold, portee, reason}` et `portee` sépare deux défauts que le booléen
+    seul confond. La docstring du faisceau le dit : « le gate de service ne suspend la NOTE
+    que si portee == "hold" — "carte" sert la note ».
+      · "hold"  = coordonnée FAUSSE : ni carte ni note fiables.
+      · "carte" = juste au km mais pas à l'échelle du bâtiment : pas de carte, NOTE SERVIE.
+                  La re-mesure est bonne, seul le point d'annotation à 100 m ne l'est pas.
+
+    🔴 J'ai câblé la rétention sur `verdict["hold"]` le 2026-11-02 et retenu la lettre de CINQ
+    fiches dont la coordonnée est juste — dont `de-tkrz-greven-grv1`, que j'ai présentée comme
+    la preuve que le gate marchait. La doctrine était écrite, en mots, dans la fonction que
+    j'appelais ; j'ai pris le booléen. Le prédicat vit donc ici, avec sa table de vérité
+    éprouvée, et le build l'APPELLE au lieu de la réécrire.
+    """
+    return bool(verdict.get("hold")) and verdict.get("portee") == "hold"
 
 
 def filigrane_gate(paths: list[Path]) -> list[str]:
