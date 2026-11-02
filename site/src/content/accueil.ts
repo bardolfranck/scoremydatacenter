@@ -924,7 +924,7 @@ const NL: typeof FR = {
     },
     {
       q: "Wat is een ‘moratorium’ op datacenters? Stopt dat een project?",
-      a: "Het woord dekt heel verschillende ladingen. Een politieke motie of raadsbeslissing die om een pauze vraagt, heeft op zichzelf geen juridisch effect op een al verleende vergunning. Er bestaat in Frankrijk wél een juridisch instrument: het <b>sursis à statuer</b> (aanhouden van de beslissing). Wanneer een lokaal bestemmingsplan wordt opgesteld of herzien, kan de gemeente haar antwoord op een vergunningsaanvraag uitstellen, voor ten hoogste twee jaar (Franse stedenbouwwet, art. L.424-1). Een algemene pauze op nationale schaal zou een wet of een besluit vergen. Op deze site wordt een moratorium gemeld als een gedocumenteerd feit, nooit als een cijfer.",
+      a: "Het woord dekt heel verschillende ladingen. Een politieke motie of raadsbeslissing die om een pauze vraagt, heeft op zichzelf geen juridisch effect op een al verleende vergunning. Er bestaat in Frankrijk wél een juridisch instrument: het <b>sursis à statuer</b> (aanhouden van de beslissing). Wanneer een lokaal stedenbouwkundig plan wordt opgesteld of herzien, kan de gemeente haar antwoord op een vergunningsaanvraag uitstellen, voor ten hoogste twee jaar (Franse stedenbouwwet, art. L.424-1). Een algemene pauze op nationale schaal zou een wet of een besluit vergen. Op deze site wordt een moratorium gemeld als een gedocumenteerd feit, nooit als een cijfer.",
     },
     {
       q: "Wie kan een bouwplaats stilleggen? Wat kan de bestuursrechter beslissen?",
