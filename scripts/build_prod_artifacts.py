@@ -177,6 +177,7 @@ def patch_context_maps() -> int:
     # on ne perd rien en passant par lui — on gagne tout ce que le fichier seul ignorait.
     # Corollaire : le jour où une coordonnée est corrigée, la carte revient d'elle-même.
     sans_carte: set[str] = set()
+    lettres_retenues: set[str] = set()
     try:
         from pipelines.geo_audit.coord_trust import coord_hold as _coord_hold
     except Exception:  # noqa: BLE001
@@ -217,8 +218,35 @@ def patch_context_maps() -> int:
     for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
         d = json.loads(f.read_text())
         if d["id"] in sans_carte:
-            if d.pop("context_map", None) is not None:
-                write_json(f, d)
+            # 🔴 LA LETTRE EST RETENUE AUSSI, PAS SEULEMENT LA CARTE (Franck, 2026-11-02 :
+            # « la lettre retenue, et bâtis le gate par fiche »). Une coordonnée tenue par le
+            # faisceau est une coordonnée que nous ne revendiquons plus ; or jusqu'à huit
+            # indicateurs de POINT se calculent depuis elle (E6, F1, F2, L1, L3, W1, W2, W3).
+            # On retirait la photo — l'affirmation la plus visible — en continuant de publier
+            # la lettre, c'est-à-dire l'affirmation la plus citée.
+            #
+            # Mesuré sur `ie-k2-strategic-infrastructure-ireland-limited`, publique deux
+            # jours avec un C bâti sur cinq de ces indicateurs, sur un point que le détecteur
+            # classe « centre de commune, hors bâtiment ».
+            #
+            # MÊME QUESTION, MÊME RÉPONDANT : on n'interroge pas le sidecar de centroïde
+            # ici, on appelle `coord_hold`, comme le rendu média et le retrait de carte. Deux
+            # lectures de « cette coordonnée est-elle tenue ? » ont déjà coûté neuf fiches
+            # françaises le 2026-10-20.
+            #
+            # ⚠️ Retenir n'est PAS corriger, et ce n'est pas la direction prudente : une coord
+            # fausse est un bruit BIDIRECTIONNEL — un recalage peut faire MONTER la note
+            # (DATA4). Le remède reste la reposition ; ceci empêche seulement de publier une
+            # lettre pendant qu'on ne sait pas d'où elle vient.
+            d["grade_withheld"] = {
+                "reason": "coord_hold",
+                "detail": "coordonnée tenue par le faisceau geo_audit.coord_trust "
+                          "(fausse, ou juste mais pas à l'échelle du bâtiment) : les "
+                          "indicateurs de point ne sont pas revendiqués",
+            }
+            d.pop("context_map", None)
+            write_json(f, d)
+            lettres_retenues.add(d["id"])
             # On compte la carte EXISTANTE qu'on refuse de servir, pas le champ qu'on vient
             # de retirer : les fiches sont reconstruites à neuf à chaque build, donc le champ
             # est souvent déjà absent et le compteur restait à zéro. Un retrait silencieux
@@ -252,6 +280,15 @@ def patch_context_maps() -> int:
     if retirees:
         print(f"prod-artifacts: carte RETIRÉE sur {retirees} fiche(s) — coordonnée "
               "constatée fausse ou non confirmée (faisceau pipelines.geo_audit.coord_trust)")
+    if lettres_retenues:
+        print(f"prod-artifacts: LETTRE RETENUE sur {len(lettres_retenues)} fiche(s) — même "
+              f"faisceau, même raison : {sorted(lettres_retenues)[:4]}… Le blanchiment "
+              f"(scrub-grades) la retire de la fiche, du classement et de la carte.")
+    elif sans_carte:
+        # Un garde qui ne retient rien alors qu'il y a des coordonnées tenues est un garde
+        # qui a cessé de fonctionner. On le DIT plutôt que de passer en silence.
+        print("prod-artifacts: ⚠ des coordonnées sont tenues mais AUCUNE lettre n'a été "
+              "retenue — vérifier le marquage `grade_withheld`", file=sys.stderr)
     return patched
 
 

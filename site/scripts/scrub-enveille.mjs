@@ -60,10 +60,20 @@ const isEnVeille = (o) =>
 // servi, pas recalculé ici — le moteur est seul juge de la bande (servable_band),
 // ce script ne fait que propager SA décision aux agrégats.
 const isBandWithheld = (o) => o?.provisional_band?.kind === SENTINEL;
-const isWithheld = (o) => isEnVeille(o) || isBandWithheld(o);
+// Déclencheur (3) : COORDONNÉE TENUE (Franck, 2026-11-02 — « la lettre retenue, et bâtis le
+// gate par fiche »). Le build marque `grade_withheld.reason = "coord_hold"` sur les fiches
+// dont le faisceau `geo_audit.coord_trust` ne revendique plus la coordonnée. Jusqu'à HUIT
+// indicateurs de point se calculent depuis elle (E6, F1, F2, L1, L3, W1, W2, W3) : on
+// retirait la photo — l'affirmation la plus visible — en continuant de publier la lettre,
+// c'est-à-dire la plus citée. Mesuré sur une fiche irlandaise publique deux jours avec un C
+// bâti sur cinq de ces indicateurs, sur un point classé « centre de commune, hors bâtiment ».
+// Comme pour (2), la DÉCISION est prise en amont ; ce script ne fait que la propager.
+const isCoordWithheld = (o) => typeof o?.grade_withheld?.reason === "string";
+const isWithheld = (o) => isEnVeille(o) || isBandWithheld(o) || isCoordWithheld(o);
 
 let scrubbedIds = new Set();
-let bandIds = new Set();        // population (2), pour un log qui distingue les deux
+let bandIds = new Set();        // population (2), pour un log qui distingue les trois
+let coordIds = new Set();       // population (3) : coordonnée tenue
 let counts = { dc: 0, scores: 0, geojson: 0, indices: 0, bands: 0 };
 
 // Pillar sub-grades are notes too — a lone "land: B" on an en-veille fiche leaks
@@ -88,7 +98,8 @@ if (existsSync(DC_DIR)) {
     try { dc = JSON.parse(readFileSync(p, "utf8")); } catch { continue; }
     if (!isWithheld(dc)) continue;
     scrubbedIds.add(dc.id);
-    if (!isEnVeille(dc)) bandIds.add(dc.id);
+    if (!isEnVeille(dc) && isBandWithheld(dc)) bandIds.add(dc.id);
+    else if (!isEnVeille(dc) && isCoordWithheld(dc)) coordIds.add(dc.id);
     let changed = false;
     if (dc.grades?.site && dc.grades.site.grade !== SENTINEL) {
       dc.grades.site.grade = SENTINEL;
@@ -216,7 +227,7 @@ if (existsSync(statsPath)) {
 }
 
 console.log(
-  `[scrub-grades] retenues: ${scrubbedIds.size} (veille ${scrubbedIds.size - bandIds.size} + note-en-attente ${bandIds.size})`
+  `[scrub-grades] retenues: ${scrubbedIds.size} (veille ${scrubbedIds.size - bandIds.size - coordIds.size} + note-en-attente ${bandIds.size} + coord tenue ${coordIds.size})`
   + ` | blanchi → dc:${counts.dc} scores:${counts.scores} geojson:${counts.geojson} bandes-veille:${counts.bands} indices:${counts.indices} stats-perimeters:${counts.stats || 0}`
 );
 

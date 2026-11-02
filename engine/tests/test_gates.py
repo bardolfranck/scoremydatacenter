@@ -675,3 +675,61 @@ def test_geo_gate_refuse_un_sidecar_qui_a_mesure_PLUS_que_le_corpus(tmp_path, mo
     ecrire(len(ids) + 99, ids[:-1])
     violations = geo_gate(DATA_DIR)
     assert any("JAMAIS été mesurées" in v and ids[-1] in v for v in violations), violations
+
+def test_une_coordonnee_tenue_ne_sert_AUCUNE_lettre(tmp_path):
+    """Bout en bout : `grade_withheld` posé au build ⇒ plus de lettre nulle part.
+
+    Franck, 2026-11-02 : « la lettre retenue, et bâtis le gate par fiche ». La décision est
+    prise en amont (le faisceau `coord_trust.coord_hold` dit si la coordonnée est tenue, le
+    build pose `grade_withheld`) ; ce test vérifie que le blanchiment la PROPAGE — à la
+    fiche, au classement ET à la carte. C'est la règle déjà écrite dans le script : « une
+    lettre qu'on refuse de montrer sur la fiche n'apparaît NULLE PART ».
+
+    🔴 Pourquoi un test de bout en bout et pas une lecture du code : la population (2) a
+    précisément fui comme ça. La fiche retirait la lettre, le classement et la carte la
+    publiaient quand même — Google Bissen affiché « note en attente » sur sa page et
+    « Site D · dans les 3 % les moins bien notés » au classement, le même jour.
+    """
+    import subprocess
+
+    data = tmp_path / "site" / "public" / "data"
+    (data / "dc").mkdir(parents=True)
+    fiche = {
+        "id": "xx-coord-tenue", "country": "IE", "name": "Test",
+        "grades": {"site": {"grade": "C", "score": 56.0}},
+        "pillars": {"land": {"grade": "B", "score": 70.0}},
+        "grade_withheld": {"reason": "coord_hold", "detail": "coordonnée tenue"},
+    }
+    (data / "dc" / "xx-coord-tenue.json").write_text(json.dumps(fiche), encoding="utf-8")
+    # 🔴 LES FORMES SONT CELLES DES ARTEFACTS RÉELS, relues dans `site/public/data` : une
+    # ligne de classement porte `grades.site.grade` (pas un `grade` plat) et un point de
+    # carte porte `grade_site`. Ma première version inventait un `{"grade": "C"}` plat : le
+    # blanchiment ne le touchait pas — à juste titre — et le test serait passé le jour où le
+    # script aurait eu un chemin pour cette forme. Une fixture qui ne ressemble pas à
+    # l'artefact ne prouve rien.
+    (data / "scores.json").write_text(json.dumps(
+        [{"id": "xx-coord-tenue", "country": "IE",
+          "grades": {"site": {"grade": "C", "score": 56.0}},
+          "grade_withheld": {"reason": "coord_hold"}}]), encoding="utf-8")
+    (data / "map.geojson").write_text(json.dumps({"type": "FeatureCollection", "features": [
+        {"type": "Feature",
+         "properties": {"id": "xx-coord-tenue", "country": "IE", "grade_site": "C"},
+         "geometry": {"type": "Point", "coordinates": [0, 0]}}]}), encoding="utf-8")
+
+    script = REPO_ROOT / "site" / "scripts" / "scrub-enveille.mjs"
+    cible = tmp_path / "site" / "scripts" / "scrub-enveille.mjs"
+    cible.parent.mkdir(parents=True, exist_ok=True)
+    cible.write_text(script.read_text(encoding="utf-8"), encoding="utf-8")
+    r = subprocess.run(["node", str(cible)], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+
+    servi = json.loads((data / "dc" / "xx-coord-tenue.json").read_text())
+    assert servi["grades"]["site"]["grade"] == "en_attente", servi["grades"]
+    assert "score" not in servi["grades"]["site"], "le SCORE redonne la lettre : il part aussi"
+    assert servi["pillars"]["land"]["grade"] == "en_attente", "les lettres de pilier aussi"
+
+    classement = json.loads((data / "scores.json").read_text())[0]["grades"]["site"]
+    assert classement["grade"] == "en_attente" and "score" not in classement, classement
+    props = json.loads((data / "map.geojson").read_text())["features"][0]["properties"]
+    assert props["grade_site"] == "en_attente", props
+    assert "coord tenue 1" in r.stdout, f"le log doit distinguer la population : {r.stdout}"

@@ -141,6 +141,35 @@ GEO_WAIVERS = {
     # déclarée, impossible à confirmer au bâtiment faute du n° 10.
     # La dérogation reste donc PRUDENTE et les indicateurs de point restent neutralisés : on ne
     # repositionne pas vers une cible qu'on ne peut pas désigner. Aucun recalage à faire ici.
+    # 🔴 DÉROGATION AVEC REMÈDE EN PLACE, pas une exception de confort (2026-11-02).
+    # Cette fiche est publique depuis le 2026-10-30 avec un C bâti sur cinq indicateurs de
+    # point ; le re-run du détecteur l'a classée « géo fabriquée probable » (GeoNames à 104 m
+    # du centre de Ballycoolen, hors bâtiment) et la coordonnée n'a PAS changé — c'est la
+    # mesure qui ne l'avait jamais vue, le sidecar du jour du deploy datant de dix jours.
+    # Ce qui rend la dérogation tenable, et c'est la condition : la LETTRE est désormais
+    # retenue mécaniquement (`grade_withheld` posé au build sur toute coordonnée tenue par
+    # `coord_trust.coord_hold`, propagé par `scrub-grades` à la fiche, au classement et à la
+    # carte), la carte de contexte l'était déjà, et les cinq indicateurs de point sont
+    # suspendus dans la source. La fiche ne publie donc plus aucune valeur issue de ce point.
+    # Sans cette dérogation le gate gèle TOUT le site pour une fiche — ce qui est la bonne
+    # réaction quand rien ne retient la lettre, et une mauvaise maintenant qu'elle l'est.
+    # LEVÉE = reposition par la lane EU (chantier sous-traité le 2026-11-02 : le dossier de
+    # permis GeoHive devrait porter une adresse ou une parcelle).
+    # ⚠️ TEXTE CORRIGÉ LE MÊME JOUR : la première version décrivait un état déjà périmé
+    # (« 5 indicateurs suspendus »). La lane EU avait entre-temps RECALÉ le point sur le
+    # dossier de permis et re-mesuré les huit indicateurs depuis la bonne position. Une
+    # dérogation qui décrit un état faux est pire qu'absente : elle fait croire qu'on a
+    # regardé. Ce qu'elle dit doit être vrai le jour où on la relit.
+    "ie-k2-strategic-infrastructure-ireland-limited":
+        "2026-11-02 — RECALÉE : coordonnée = point autoritaire du permis FW19A/0089 "
+        "(GeoHive, Ballycoolin Business Park, Dublin 15), les 8 indicateurs de point "
+        "re-mesurés depuis ce point. Le signalement vient d'une mesure ANTÉRIEURE au "
+        "recalage (sidecar du 2026-11-02 matin, ancien point à 104 m du centroïde GeoNames). "
+        "La lettre reste retenue tant que le faisceau tient la coordonnée. "
+        "LEVÉE = relancer `pipelines.geo_audit.centroid_check` + l'audit bâtiment au NOUVEAU "
+        "point : si `on_building`, le signalement disparaît et cette entrée doit être "
+        "SUPPRIMÉE ; si `off_building`, elle est remplacée par une dérogation motivée sur la "
+        "mesure (faux positif du détecteur sur un vrai DC en petite localité).",
     "pl-orange-polska-bia-ystok": "2026-10-17 — Orange Polska Białystok, vrai DC (opérateur connu) ; "
                                   "coordonnée = déclaration PeeringDB « Kościelna 10 », à 58 m du n° 8 "
                                   "(dernier numéro cartographié de cette rue) et à 120 m du centre GeoNames ; "
