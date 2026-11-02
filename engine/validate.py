@@ -141,6 +141,24 @@ GEO_WAIVERS = {
     # déclarée, impossible à confirmer au bâtiment faute du n° 10.
     # La dérogation reste donc PRUDENTE et les indicateurs de point restent neutralisés : on ne
     # repositionne pas vers une cible qu'on ne peut pas désigner. Aucun recalage à faire ici.
+    # 🔴 DÉROGATION AVEC REMÈDE EN PLACE, pas une exception de confort (2026-11-02).
+    # Cette fiche est publique depuis le 2026-10-30 avec un C bâti sur cinq indicateurs de
+    # point ; le re-run du détecteur l'a classée « géo fabriquée probable » (GeoNames à 104 m
+    # du centre de Ballycoolen, hors bâtiment) et la coordonnée n'a PAS changé — c'est la
+    # mesure qui ne l'avait jamais vue, le sidecar du jour du deploy datant de dix jours.
+    # Ce qui rend la dérogation tenable, et c'est la condition : la LETTRE est désormais
+    # retenue mécaniquement (`grade_withheld` posé au build sur toute coordonnée tenue par
+    # `coord_trust.coord_hold`, propagé par `scrub-grades` à la fiche, au classement et à la
+    # carte), la carte de contexte l'était déjà, et les cinq indicateurs de point sont
+    # suspendus dans la source. La fiche ne publie donc plus aucune valeur issue de ce point.
+    # Sans cette dérogation le gate gèle TOUT le site pour une fiche — ce qui est la bonne
+    # réaction quand rien ne retient la lettre, et une mauvaise maintenant qu'elle l'est.
+    # LEVÉE = reposition par la lane EU (chantier sous-traité le 2026-11-02 : le dossier de
+    # permis GeoHive devrait porter une adresse ou une parcelle).
+    "ie-k2-strategic-infrastructure-ireland-limited":
+        "2026-11-02 — coordonnée = géocode du centre de Ballycoolen (GeoNames 104 m, hors "
+        "bâtiment) ; lettre RETENUE et carte retirée mécaniquement, 5 indicateurs de point "
+        "suspendus ; levée = reposition EU depuis le dossier de permis GeoHive",
     "pl-orange-polska-bia-ystok": "2026-10-17 — Orange Polska Białystok, vrai DC (opérateur connu) ; "
                                   "coordonnée = déclaration PeeringDB « Kościelna 10 », à 58 m du n° 8 "
                                   "(dernier numéro cartographié de cette rue) et à 120 m du centre GeoNames ; "
