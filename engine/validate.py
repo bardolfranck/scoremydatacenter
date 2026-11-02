@@ -155,10 +155,21 @@ GEO_WAIVERS = {
     # réaction quand rien ne retient la lettre, et une mauvaise maintenant qu'elle l'est.
     # LEVÉE = reposition par la lane EU (chantier sous-traité le 2026-11-02 : le dossier de
     # permis GeoHive devrait porter une adresse ou une parcelle).
+    # ⚠️ TEXTE CORRIGÉ LE MÊME JOUR : la première version décrivait un état déjà périmé
+    # (« 5 indicateurs suspendus »). La lane EU avait entre-temps RECALÉ le point sur le
+    # dossier de permis et re-mesuré les huit indicateurs depuis la bonne position. Une
+    # dérogation qui décrit un état faux est pire qu'absente : elle fait croire qu'on a
+    # regardé. Ce qu'elle dit doit être vrai le jour où on la relit.
     "ie-k2-strategic-infrastructure-ireland-limited":
-        "2026-11-02 — coordonnée = géocode du centre de Ballycoolen (GeoNames 104 m, hors "
-        "bâtiment) ; lettre RETENUE et carte retirée mécaniquement, 5 indicateurs de point "
-        "suspendus ; levée = reposition EU depuis le dossier de permis GeoHive",
+        "2026-11-02 — RECALÉE : coordonnée = point autoritaire du permis FW19A/0089 "
+        "(GeoHive, Ballycoolin Business Park, Dublin 15), les 8 indicateurs de point "
+        "re-mesurés depuis ce point. Le signalement vient d'une mesure ANTÉRIEURE au "
+        "recalage (sidecar du 2026-11-02 matin, ancien point à 104 m du centroïde GeoNames). "
+        "La lettre reste retenue tant que le faisceau tient la coordonnée. "
+        "LEVÉE = relancer `pipelines.geo_audit.centroid_check` + l'audit bâtiment au NOUVEAU "
+        "point : si `on_building`, le signalement disparaît et cette entrée doit être "
+        "SUPPRIMÉE ; si `off_building`, elle est remplacée par une dérogation motivée sur la "
+        "mesure (faux positif du détecteur sur un vrai DC en petite localité).",
     "pl-orange-polska-bia-ystok": "2026-10-17 — Orange Polska Białystok, vrai DC (opérateur connu) ; "
                                   "coordonnée = déclaration PeeringDB « Kościelna 10 », à 58 m du n° 8 "
                                   "(dernier numéro cartographié de cette rue) et à 120 m du centre GeoNames ; "
