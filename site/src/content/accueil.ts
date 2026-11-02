@@ -920,7 +920,7 @@ const NL: typeof FR = {
     },
     {
       q: "Wat zijn de stappen van een datacenterproject, van aankondiging tot ingebruikname?",
-      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaande inspraak; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de autorité environnementale, dan openbare raadpleging; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de werken, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen#rechten'>Rechten en kalender</a>.",
+      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaande inspraak; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de milieuautoriteit, dan openbare raadpleging; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de werken, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen#rechten'>Rechten en kalender</a>.",
     },
     {
       q: "Wat is een ‘moratorium’ op datacenters? Stopt dat een project?",
