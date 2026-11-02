@@ -35,7 +35,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
 from engine.validate import (_schema_errors, geo_gate, operator_gate, position_gate,  # noqa: E402
-                             prose_gate, statut_gate, filigrane_gate)
+                             prose_gate, statut_gate, filigrane_gate,
+                             verdict_perime_gate, orphelins_gate)
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -191,6 +192,15 @@ def main() -> int:
     # gate est ce qui l'y maintient. Le point d'écriture est un gabarit de pipeline : une
     # vague suivante peut le réintroduire sans que personne ne relise 3 275 résumés.
     problems += filigrane_gate(paths)
+    # GATE VERDICT — un verdict mesuré à une coordonnée que la fiche ne porte plus n'est pas
+    # un verdict. Deux incidents du 2026-11-02, dans les deux sens : une dérogation écrite à
+    # la main pour un verdict trop VIEUX, et la note d'un doublon posée sur un parking parce
+    # qu'une re-mesure avait EFFACÉ le constat sans toucher la coordonnée.
+    problems += verdict_perime_gate(CAL)
+    # GATE ORPHELIN — un artefact sans fiche republie la page d'une fiche retirée. Vécu le
+    # 2026-11-02 : l'artefact du doublon est resté après le retrait, et les pages de fiche
+    # sont énumérées en balayant ce dossier.
+    problems += orphelins_gate(CAL)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "
