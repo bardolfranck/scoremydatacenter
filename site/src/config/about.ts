@@ -121,3 +121,61 @@ export const EN_ABOUT = {
     "An observatory built to last",
   ],
 };
+
+// ── NÉERLANDAIS — rédigé par agent-rapports (NL temps 3) ; le câblage (spread dans
+// l'accueil NL + page over-ons) est au harnais. Même forme que FR/EN, 13 clés.
+export const NL_ABOUT = {
+  methodePath: "/nl/methodologie/",
+  aboutTitle: "Over ons",
+  aboutPhotoAlt: "Franck Bardol, oprichter van ScoreMyDataCenter",
+  aboutPhotoCaption: "Franck Bardol, oprichter van ScoreMyDataCenter",
+  aboutLinkedinUrl: "https://www.linkedin.com/in/franckbardol/",
+  ia: {
+    heading: "AI in dienst van de methode, niet in de plaats van de mens.",
+    sub: "Omdat <strong class=\"hero-red\">een nutri-score berekenen voor alle datacenters van Europa zich niet laat improviseren</strong>. Een architectuur van gespecialiseerde agenten verwerkt tienduizenden bronnen om elk datacenter rigoureus te beoordelen — onder menselijke controle.",
+    steps: [
+      { icon: "collect", title: "Verzamelen", body: "De agenten sporen de nuttige publieke bronnen op: reglementaire dossiers, institutionele data, documenten van exploitanten, kaarten, lokale besluiten en persartikelen." },
+      { icon: "structure", title: "Structureren", body: "Ze zetten die heterogene bronnen om in vergelijkbare gegevens: vermogen, water, grond, net, inspraak, transparantie, projectstatus." },
+      { icon: "verify", title: "Verifiëren", body: "Ze kruisen de informatie, signaleren tegenstrijdigheden, benoemen ontbrekende gegevens en bewaren de bron van elk feit." },
+      { icon: "compute", title: "Berekenen", body: "Ze passen op elk project dezelfde methode toe, herberekenen de cijfers en controleren of drempels, regels en waarborgen worden nageleefd." },
+      { icon: "watch", title: "Bewaken", body: "Ze detecteren veranderingen: een nieuwe vergunning, een beroep, een projectwijziging, een gepubliceerd getal, een evolutie van het net of van de lokale context." },
+      { icon: "publish", title: "De publicatie voorbereiden", body: "Ze maken een eerste feitelijke synthese en markeren fragiele formuleringen. De eindvalidatie, de arbitrages en de publicatie blijven mijn verantwoordelijkheid." },
+    ],
+    humanTitle: "Menselijke verantwoordelijkheid",
+    humanBody: "Ik bepaal de strategie, de methodes, de ESG-wegingen en de publicatieregels. Ik arbitreer complexe gevallen, beslecht meningsverschillen, orkestreer de gespecialiseerde AI-agenten en sta achter elk gepubliceerd cijfer. Agenten stellen voor, de mens beslist.",
+    closing: "<strong>AI maakt het mogelijk om op de schaal van het corpus te werken. De methode, de arbitrages en de verantwoordelijkheid blijven menselijk.</strong>",
+    closingCta: "Begrijp onze methode",
+  },
+  teamCta: "Zin om mee te doen? Draag bij op GitHub ↗",
+  teamCtaUrl: "https://github.com/bardolfranck/scoremydatacenter",
+  aboutHeadline: "Een onafhankelijk observatorium.",
+  founderLine: "ScoreMyDataCenter is het werk van <strong>Franck Bardol</strong>. Op het snijpunt van AI-infrastructuur, ethiek en publieke besluitvorming.",
+  founderHeading: "De oprichter",
+  aboutPledges: [
+    { icon: "verify", text: "<strong>Onafhankelijk</strong>: geen financiering door exploitanten, geen belangenconflict." },
+    { icon: "publish", text: "<strong>Publiek</strong>: methode, bronnen en cijfers voor iedereen toegankelijk." },
+    { icon: "human", text: "<strong>Open</strong>: correcties en weerwoord mogelijk voor elk beoordeeld project." },
+  ],
+  founderFacts: [
+    { icon: "gradcap", text: "Geassocieerd hoogleraar (Universiteit van Genève, onder meer) · onafhankelijk AI-expert voor de <strong>Europese Commissie</strong>" },
+    { icon: "users", text: "Erkend als een van <a href=\"https://www.usinenouvelle.com/article/portraits-les-mediateurs-de-l-ia.N650229\" target=\"_blank\" rel=\"noopener\">de 100 Franse AI-experts</a> · medewerker aan het <strong>rapport-Villani</strong> over de Franse AI-strategie" },
+    { icon: "chartup", text: "Eerste loopbaan in de zakenbank als hoofd kwantitatief onderzoek: <strong>rigoureuze, verdedigbare scores bouwen is zijn oorspronkelijke vak</strong>" },
+    { icon: "book", text: "Auteur van <a href=\"https://www.lgdj.fr/concevoir-une-ia-responsable-9782297287678.html\" target=\"_blank\" rel=\"noopener\">“Concevoir une IA responsable — Pourquoi ce n'est jamais ‘juste un outil’ ? Manuel d'éthique de terrain”</a> (LGDJ), <a href=\"https://www.amazon.fr/High-performance-Algorithmic-Trading-Machine-Learning/dp/9365893895\" target=\"_blank\" rel=\"noopener\">“High-Performance Algorithmic Trading using AI”</a> en <a href=\"https://www.amazon.fr/Baby-Sitters-lIA-syndrome-Reprenez-attention-ebook/dp/B0GX34RW3P\" target=\"_blank\" rel=\"noopener\">“Les Baby-Sitters de l'IA”</a>" },
+    { icon: "bank", text: "Oprichter van <a href=\"https://www.meetup.com/paris-machine-learning-applications-group/\" target=\"_blank\" rel=\"noopener\">Paris Machine Learning</a> (8.500 AI-experts) · ruim 50.000 professionals opgeleid via LinkedIn Learning" },
+  ],
+  founderProfile: { url: "https://bardol.org", label: "Volledig profiel" },
+  expertiseKicker: "Expertise in dienst van het publieke debat",
+  expertise: [
+    { icon: "users", title: "10+ jaar", body: "in AI, data en kwantitatieve modellering" },
+    { icon: "bank", title: "Bedrijven & instellingen", body: "AI-projecten voor de Banque de France, Thales, Airbus, General Electric, Bouygues Colas, SNCF, Saint-Gobain, STMicroelectronics, het kernfusieproject ITER/CEA, Vinci, GlaxoSmithKline, het Franse ruimteagentschap CNES, het mkb…" },
+    { icon: "book", title: "Opleiding & overdracht", body: "colleges, conferenties, keynotes, LinkedIn Learning-MOOC's (50.000+ professionals opgeleid in AI)" },
+    { icon: "certificate", title: "Ethiek & verantwoordelijkheid", body: "Master AI en machine learning (Université Paris 6 – CNAM), Management (Universiteit van Genève), statistische modellering (Université Paris Nanterre) en een certificaat Filosofische Ethiek (Universiteit van Genève)" },
+  ],
+  strengthsTitle: "Wat ScoreMyDataCenter sterk maakt",
+  strengths: [
+    "Een uitputtend corpus, doorlopend bijgewerkt",
+    "Eén methode, publiek en geversioneerd",
+    "Cijfers die worden uitgelegd, gedocumenteerd en betwistbaar zijn",
+    "Een observatorium gebouwd om te blijven",
+  ],
+};

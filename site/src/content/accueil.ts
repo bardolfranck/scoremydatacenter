@@ -655,7 +655,7 @@ const EN: typeof FR = {
 const NL: typeof FR = {
   blocs: {
     actu: { heading: "Laatste sectornieuws", seeAll: "Al het nieuws →", href: "/nl/nieuws/", projet: "Project", locale: "nl-NL" },
-    projets: { heading: "Nieuw gesignaleerde projecten", seeAll: "Bekijk de monitoring →", href: "/nl/kaart/", veille: "onder observatie", carte: "/nl/kaart/" },
+    projets: { heading: "Nieuw gesignaleerde projecten", seeAll: "Bekijk de monitoring →", href: "/nl/kaart/", veille: "gevolgd", carte: "/nl/kaart/" },
     pays: { label: "landen gevolgd", aria: "{n} landen gevolgd: {pays}" },
     mur: { fiche: "/nl/dc" },
   },
@@ -702,7 +702,7 @@ const NL: typeof FR = {
     noted: "beoordeelde projecten",
     countries: "landen gedekt",
     stress: "sites in een zone met hoge waterstress of in watercrisis",
-    watch: "projecten ‘onder observatie’ (verzet, moratoria)",
+    watch: "projecten gevolgd, nog niet beoordeeld (verzet, moratoria)",
     scaleNote: "<strong>Eén cijfer A–E voor de site</strong> — wat de plek oplegt: water, net, grond, omwonenden. En een <strong>tweede cijfer, project &amp; proces</strong>, voor wat de initiatiefnemer aankondigt en documenteert: het is alleen te berekenen wanneer het projectdossier openbaar is, en dat blijft zeldzaam. Altijd getoond mét hun documentair vertrouwen.",
   },
   manifesto: {
@@ -742,7 +742,7 @@ const NL: typeof FR = {
     { name: "Burgers", line: "Het project bij u in de buurt, in klare taal — de kaart.", href: "/nl/kaart/" },
     { name: "Journalisten", line: "Gedocumenteerde, citeerbare feiten, met hun archieven.", href: "/nl/ranglijst" },
     { name: "Bestuurders", line: "Vergelijk uw gemeente, bereid het debat voor.", href: "/nl/ranglijst" },
-    { name: "Ngo's", line: "Verzet en moratoria — de observatielaag.", href: "/nl/kaart?veille=tout" },
+    { name: "Ngo's", line: "Verzet en moratoria — de monitoringlaag.", href: "/nl/kaart?veille=tout" },
     { name: "Onderzoekers", line: "De methode, de data — alles is na te rekenen.", href: "/nl/methodologie/" },
     { name: "Exploitanten", line: "Corrigeer, reageer — en verbeter het echte project.", href: "/nl/contact/" },
   ],
@@ -876,7 +876,7 @@ const NL: typeof FR = {
     },
     {
       q: "Waarom hebben de Amerikaanse projecten (nog) geen cijfer?",
-      a: "Omdat de diepgang de data volgt. Een cijfer vraagt per land gekalibreerde drempels (elektriciteitsnet, water, bodem, registers, procedures) en een werkend kanaal voor correctie en weerwoord — dat is vandaag het geval in Europa. In de Verenigde Staten publiceren we eerst de laag ‘onder observatie’: burgerverzet ✋🏼 en moratoria ⏸️ — gedocumenteerde feiten, nooit een cijfer. De eerste Amerikaanse cijfers komen wanneer de data en de kalibratie op niveau zijn, niet eerder: het onbekende beoordelen we niet.",
+      a: "Omdat de diepgang de data volgt. Een cijfer vraagt per land gekalibreerde drempels (elektriciteitsnet, water, bodem, registers, procedures) en een werkend kanaal voor correctie en weerwoord — dat is vandaag het geval in Europa. In de Verenigde Staten publiceren we eerst de monitoringlaag: burgerverzet ✋🏼 en moratoria ⏸️ — gedocumenteerde feiten, nooit een cijfer. De eerste Amerikaanse cijfers komen wanneer de data en de kalibratie op niveau zijn, niet eerder: het onbekende beoordelen we niet.",
     },
     {
       q: "Kan een exploitant betalen om zijn cijfer te verbeteren?",
