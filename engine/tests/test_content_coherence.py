@@ -956,3 +956,30 @@ def test_la_page_nuisances_a_une_phrase_sans_chiffre(page):
         f"{page} ne passe plus par le helper qui choisit la variante — elle a dû recomposer "
         f"la phrase sur place, et la garantie n'est plus gardée qu'ici"
     )
+
+
+def test_le_titre_de_fiche_ne_sert_JAMAIS_une_valeur_D_ENUMERATION():
+    """Le `<title>` ne doit porter qu'une note PUBLIABLE, jamais un identifiant interne.
+
+    🔴 Deux fois le même défaut, avec deux sentinelles différentes :
+      · 2026-10-02 — « note insufficient_data », l'énumération en anglais dans l'onglet du
+        navigateur et en SERP ; corrigé en nommant CETTE valeur ;
+      · 2026-11-02 — « note en_attente », avec le souligné, sur DIX-NEUF pages servies, dès
+        que la rétention de lettre sur coordonnée tenue a écrit cette sentinelle dans
+        l'artefact. Le correctif précédent nommait une valeur ; il ne fermait pas la classe.
+
+    D'où ce test : le gabarit n'interpole `{grade}` que si c'est VRAIMENT une lettre A–E.
+    Nommer les sentinelles une par une, c'est attendre la troisième.
+    """
+    gabarit = (REPO_ROOT / "site" / "src" / "components" / "DcFiche.astro").read_text()
+    assert "/^[A-E]$/.test(dc.grades.site.grade" in gabarit, (
+        "le titre n'est plus gardé par un test de LETTRE : il interpolera la prochaine "
+        "sentinelle (`en_veille`, `pending`, ce qu'on inventera) dans les résultats de "
+        "recherche, et personne ne le verra avant de chercher le site sur Google"
+    )
+    # et la branche de repli doit être la note « en attente », pas une lettre inventée
+    i = gabarit.index("/^[A-E]$/.test(dc.grades.site.grade")
+    suite = gabarit[i : i + 400]
+    assert "t.seo.pending" in suite, (
+        "une note non publiable doit sortir « note en attente », pas un repli muet"
+    )

@@ -473,7 +473,16 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
     // interne, en anglais, dans l'onglet du navigateur et dans les résultats de recherche.
     : dc.grades.site.grade === "insufficient_data"
       ? t.seo.insufficient
-      : t.seo.grade.replace("{grade}", dc.grades.site.grade);
+      // 🔴 ET LE MÊME DÉFAUT EST REVENU AVEC UNE AUTRE SENTINELLE. Le 2026-11-02, la
+      // rétention de lettre sur coordonnée tenue écrit `grade: "en_attente"` dans
+      // l'artefact ; ce code l'a interpolée telle quelle et DIX-NEUF titres servis
+      // annonçaient « note en_attente » — avec le souligné, dans l'onglet du navigateur et
+      // dans les résultats de recherche. Le correctif précédent nommait UNE valeur ; on
+      // ferme la CLASSE : on n'interpole `{grade}` que si c'est vraiment une lettre, et
+      // toute autre valeur est une note qu'on ne publie pas.
+      : /^[A-E]$/.test(dc.grades.site.grade ?? "")
+        ? t.seo.grade.replace("{grade}", dc.grades.site.grade)
+        : t.seo.pending;
 const seoPlaceRaw = dc.municipality ?? dc.admin_area ?? dc.country ?? "";
 // « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
 // est du bruit qui mange la largeur utile du titre en SERP.
