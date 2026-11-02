@@ -89,39 +89,33 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
-  kicker: "Ce que déclare le dossier environnemental",
-  lire: "lire l'avis (PDF)", pages: "p.", petitionnaire: "pétitionnaire",
-  // Les rubriques DÉCRIVENT, elles ne qualifient pas. « Groupes électrogènes et fioul »
-  // plutôt que « nuisances » : nommer une nuisance serait notre verdict, et c'est exactement
-  // ce que ce bloc s'interdit. Le lecteur conclut, l'autorité écrit, nous rapportons.
-  secours: "Groupes électrogènes et fioul", bruit: "Bruit relevé", voisinage: "Voisinage",
-  energie: "Énergie et chaleur", eau: "Eau et refroidissement", emissions: "Émissions",
-  emploi: "Emploi", emprise: "Emprise et bâti", icpe: "Classement ICPE",
-  reserves: "Réserves de l'autorité", autresNiv: "Autres niveaux cités dans l'avis",
-  periode: "", jour: "Jour", nuit: "Nuit", mesure: "Mesure", autres: "Les autres dans l'avis",
-  caveatGroupes: "puissance de secours — ce n'est pas la puissance consommée par le site",
-  bruitNote: "État relevé dans l'étude d'impact, avant exploitation.",
-  pasUneNote: "Ces chiffres ne sont pas une note.",
-  pasUneNoteSuite: " Ils proviennent du dossier déposé par le pétitionnaire et de l'avis de l'autorité environnementale ; nous les rapportons avec leur phrase et leur page, nous ne les évaluons pas.",
-  bloc: "Ce bloc n'existe que pour les projets soumis à évaluation environnementale — une minorité des sites.",
-  absence: "Son absence ne signifie pas l'absence d'impact",
-  absenceSuite: " : elle indique qu'aucun document public exploitable n'a été identifié dans notre corpus à ce jour.",
-  niveauxLabel: "Niveaux relevés", emergenceLabel: "Émergence",
-  avisPluriel: "avis d'autorité environnementale rendus sur ce site",
-  sansDate: "date non confirmée",
-  explication: "Explication",
-  differe: "diffère d'un dossier à l'autre",
-  differeNote: "Ce site a fait l'objet de plusieurs dossiers. Les valeurs qui ne sont pas les mêmes de l'un à l'autre sont signalées, et affichées côte à côte avec leur date. Un écart peut venir d'un projet redimensionné, d'une tranche différente, ou d'une donnée corrigée : l'avis ne dit pas laquelle, et nous ne le devinons pas.",
-  icpeTip: "Installation classée pour la protection de l'environnement : le régime qui encadre, autorise et contrôle une activité pouvant présenter un risque ou une gêne. Chaque numéro désigne l'activité visée dans la nomenclature nationale. Être classé ne veut pas dire être dangereux : cela veut dire être encadré, et donc contrôlé.",
-  // Le mot est dans la table comme les autres : il était en ternaire au point d'affichage,
-  // là où on le lit — l'endroit où une langue nouvelle ne le trouve jamais.
-  valeursMultiples: "{n} valeurs",
-  // 🔴 LE FORMAT EST UNE PROPRIÉTÉ DE LA LANGUE, pas une branche de code. Les deux sources
-  // ne datent pas pareil (le registre régional donne « 30/03/2022 », l'index national
-  // « 2022-04-01 ») : la date est donc toujours recomposée dans le motif de la langue.
-  // Un néerlandais écrira `{j}-{m}-{a}` sans toucher au composant.
-  datePattern: "{j}/{m}/{a}",
-  locale: "fr-FR",
+  kicker: "Wat het milieudossier opgeeft",
+  lire: "lees het advies (PDF)", pages: "p.", petitionnaire: "aanvrager",
+  // De rubrieken BESCHRIJVEN, ze kwalificeren niet (zelfde règle que le FR) :
+  // « Noodaggregaten en stookolie » plutôt que « hinder » — le lecteur conclut.
+  secours: "Noodaggregaten en stookolie", bruit: "Gemeten geluid", voisinage: "Omgeving",
+  energie: "Energie en warmte", eau: "Water en koeling", emissions: "Emissies",
+  emploi: "Werkgelegenheid", emprise: "Terrein en bebouwing", icpe: "ICPE-classificatie",
+  reserves: "Voorbehouden van de autoriteit", autresNiv: "Andere niveaus genoemd in het advies",
+  periode: "", jour: "Dag", nuit: "Nacht", mesure: "Meting", autres: "De andere in het advies",
+  caveatGroupes: "noodvermogen — niet het vermogen dat de site verbruikt",
+  bruitNote: "Toestand opgenomen in het milieueffectrapport (MER), vóór exploitatie.",
+  pasUneNote: "Deze getallen zijn geen cijfer.",
+  pasUneNoteSuite: " Ze komen uit het dossier van de aanvrager en uit het advies van de autorité environnementale; we rapporteren ze met hun zin en hun pagina, we beoordelen ze niet.",
+  bloc: "Dit blok bestaat alleen voor projecten met een milieubeoordeling — een minderheid van de sites.",
+  absence: "Zijn afwezigheid betekent niet dat er geen impact is",
+  absenceSuite: ": ze betekent dat we tot op heden geen bruikbaar publiek document in ons corpus hebben gevonden.",
+  niveauxLabel: "Gemeten niveaus", emergenceLabel: "Geluidstoename (émergence)",
+  avisPluriel: "adviezen van de autorité environnementale over deze site",
+  sansDate: "datum niet bevestigd",
+  explication: "Toelichting",
+  differe: "verschilt van dossier tot dossier",
+  differeNote: "Deze site kent meerdere dossiers. Waarden die niet in elk dossier gelijk zijn, worden gesignaleerd en naast elkaar getoond met hun datum. Een verschil kan komen van een geherdimensioneerd project, een andere fase of een gecorrigeerd gegeven: het advies zegt niet welke, en wij raden niet.",
+  icpeTip: "Installation classée pour la protection de l'environnement: het Franse regime dat een activiteit met mogelijk risico of hinder omkadert, vergunt en controleert. Elk nummer verwijst naar de activiteit in de nationale nomenclatuur. Geklasseerd zijn betekent niet gevaarlijk zijn: het betekent omkaderd — en dus gecontroleerd — zijn.",
+  valeursMultiples: "{n} waarden",
+  // Format = propriété de la LANGUE : date néerlandaise 30-03-2022.
+  datePattern: "{j}-{m}-{a}",
+  locale: "nl-NL",
 };
 
 /** La copie du bloc dossier : `DOSSIER[lang]`. */
