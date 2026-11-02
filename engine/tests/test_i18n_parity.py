@@ -1275,3 +1275,80 @@ def test_la_prose_hors_table_ne_grossit_jamais():
             f"bonne nouvelle, et le cliquet doit suivre : plus que {len(paires)} paires "
             f"(déclaré : {DETTE_PAIRES_STATS}). Abaissez DETTE_PAIRES_STATS à {len(paires)}."
         )
+
+
+DONNEE_SERVIE = REPO_ROOT / "site" / "public" / "data"
+
+
+def _objets_bilingues(noeud, sortie: list) -> None:
+    """Les objets de la donnée servie qui portent une chaîne PAR LANGUE."""
+    if isinstance(noeud, dict):
+        if "fr" in noeud and "en" in noeud and all(
+            isinstance(v, str) for v in noeud.values() if v is not None
+        ):
+            sortie.append(noeud)
+            return
+        for v in noeud.values():
+            _objets_bilingues(v, sortie)
+    elif isinstance(noeud, list):
+        for v in noeud:
+            _objets_bilingues(v, sortie)
+
+
+def test_la_donnee_servie_parle_toutes_les_langues_vivantes():
+    """La DONNÉE servie doit porter chaque langue vivante, pas seulement les tables du site.
+
+    🔴 Trouvé par la préviz, au rendu, pas par un test : une page de portrait néerlandaise
+    affiche ses libellés d'indicateur et ses questions à poser **en anglais**. Pas une
+    erreur, pas un blanc — `SitePortrait.astro` lit `lang === "fr" ? o.fr : o.en`, donc toute
+    langue qui n'est pas le français reçoit l'anglais. C'est le piège des 17 ternaires, mais
+    sur le seul bloc qui dit au lecteur **ce qu'il peut faire**.
+
+    Ces chaînes ne vivent pas dans `content/` : elles sont ÉMISES par le pipeline. Les
+    traduire n'est donc pas un geste de harnais, et ce test ne corrige rien — il refuse
+    qu'on serve une langue à qui la donnée ne répond pas.
+
+    Il se TAIT quand la donnée n'est pas là (la CI du dépôt public ne l'a pas : `site/public/
+    data/` est ignoré) — même discipline que les gates de corpus : un côté absent, rien à
+    comparer, rien à garder.
+
+    ANGLE MORT DÉCLARÉ : on ne parcourt que `scores.json` et `methodology.json`, qui portent
+    le vocabulaire PARTAGÉ (433 chaînes distinctes mesurées le 2026-11-02, ~3 150 mots). Les
+    3 267 fiches portent EN PLUS leur prose propre (accroche, justification par badge) ;
+    les parcourir ajouterait 65 Mo de lecture à chaque `make test`. Ce trou est déclaré ici,
+    pas découvert en servant.
+    """
+    import json
+
+    fichiers = [DONNEE_SERVIE / "scores.json", DONNEE_SERVIE / "methodology.json"]
+    if not all(f.is_file() for f in fichiers):
+        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+
+    vivantes = set(_langues_vivantes())
+    objets: list = []
+    for f in fichiers:
+        _objets_bilingues(json.loads(f.read_text(encoding="utf-8")), objets)
+    assert objets, "aucun objet bilingue trouvé — le relevé ne cherche plus au bon endroit"
+
+    distinctes = {
+        tuple(sorted(o.items())) for o in objets if vivantes - set(o)
+    }
+    assert not distinctes, (
+        f"{len(distinctes)} chaîne(s) distinctes de la donnée servie ne portent pas toutes "
+        f"les langues vivantes ({sorted(vivantes)}) : le pipeline ne les émet pas. Servies "
+        f"telles quelles, elles sortent en ANGLAIS sur une page qui n'est pas anglaise — "
+        f"sans erreur et sans blanc. Exemple : {sorted(distinctes)[0][:2]}"
+    )
+
+
+def test_le_garde_de_la_donnee_servie_mord_vraiment(monkeypatch):
+    """Contre-épreuve : on déclare `nl` vivante — la donnée, elle, ne le sait pas.
+
+    C'est l'épreuve qui donne sa valeur au test précédent : elle prouve qu'il dira NON le
+    jour où quelqu'un ouvrira le néerlandais sans que le pipeline ait suivi.
+    """
+    if not (DONNEE_SERVIE / "scores.json").is_file():
+        pytest.skip("donnée servie absente de ce checkout")
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "nl"])
+    with pytest.raises(AssertionError, match="ne portent pas toutes les langues vivantes"):
+        test_la_donnee_servie_parle_toutes_les_langues_vivantes()

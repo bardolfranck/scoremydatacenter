@@ -48,7 +48,16 @@ interface Props {
 }
 const { dc, lang, t, nav, altHref, altLabel } = Astro.props as Props;
 const cm = COMMUN[lang];
-const L = (o: any) => (o && typeof o === "object" ? (/* i18n:donnee */ lang === "fr" ? o.fr : o.en) : o);
+// 🔴 LE REPLI DE LANGUE DE LA DONNÉE, DÉCLARÉ. Ces objets viennent du PIPELINE, pas des
+// tables du site : il les émet en `fr`/`en`. Le ternaire d'avant (`lang === "fr" ? o.fr :
+// o.en`) donnait l'anglais à TOUTE langue qui n'est pas le français — vu au rendu le
+// 2026-11-02 sur une page de portrait néerlandaise, dont les libellés d'indicateur et les
+// questions à poser sortaient en anglais, sans erreur et sans blanc, dans le seul bloc qui
+// dit au lecteur ce qu'il peut FAIRE. Servir l'anglais plutôt qu'un vide reste le bon
+// repli ; ce qui ne va pas, c'est qu'il soit muet. Il est maintenant écrit, et
+// `test_la_donnee_servie_parle_toutes_les_langues_vivantes` refuse d'ouvrir une langue à
+// laquelle la donnée ne répond pas.
+const L = (o: any) => (o && typeof o === "object" ? (/* i18n:donnee */ o[lang] ?? o.en) : o);
 
 const methodology = methodologyData as any;
 const defs: any[] = methodology.indicators;
