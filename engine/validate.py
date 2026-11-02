@@ -38,7 +38,7 @@ from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 
 from .core import (
-    DATA_DIR, FICTIONAL_PREFIX, GateError, load_json, load_methodology,
+    DATA_DIR, FICTIONAL_PREFIX, REPO_ROOT, GateError, load_json, load_methodology,
     datacenter_paths, watchlist_paths,
 )
 from .scoring import score_datacenter
@@ -635,6 +635,12 @@ FILIGRANES = re.compile(
     re.IGNORECASE | re.MULTILINE)
 
 
+def _newsroom_cal() -> Path:
+    """La racine du corpus privé — UN seul endroit, elle était recopiée dans deux gates."""
+    return Path(os.environ.get(
+        "NEWSROOM_CAL", Path(__file__).resolve().parents[2] / "smdc-newsroom" / "calibration"))
+
+
 def retient_la_note(verdict: dict) -> bool:
     """La note est-elle retenue pour cette coordonnée ? — le prédicat, à UN endroit.
 
@@ -675,6 +681,115 @@ def filigrane_gate(paths: list[Path]) -> list[str]:
                     f"(lieu + exploitant), pas recopier un boilerplate de pipeline"
                 )
     return out
+
+
+# Combien de mètres on tolère entre la coordonnée MESURÉE par un détecteur et celle que la
+# fiche porte aujourd'hui. 25 m : assez pour absorber un arrondi d'écriture, trop peu pour
+# laisser passer un recalage (le plus court de la journée faisait 640 m).
+ECART_VERDICT_MAX_M = 25.0
+
+
+def verdict_perime_gate(data_dir: Path) -> list[str]:
+    """Un verdict mesuré à une coordonnée que la fiche ne porte plus n'est PAS un verdict.
+
+    🔴 CE GARDE VIENT DE DEUX INCIDENTS DU MÊME JOUR, et les deux sens y sont passés :
+      · 2026-11-02, matin — `ie-k2-…` était signalée « géo fabriquée » par une mesure
+        ANTÉRIEURE à son recalage. Le verdict tenait sa lettre sur un point qu'elle n'avait
+        plus : il a fallu une dérogation écrite à la main pour débloquer la mise en ligne.
+      · 2026-11-02, après-midi — l'inverse, et il publiait. `fr-cyrus-one` est sortie d'un
+        balayage SANS verdict parce qu'elle a été mesurée pendant qu'elle changeait de
+        coordonnée. `coord_hold` sert quand il ne sait pas : la note d'un doublon posé sur un
+        parking allait partir en ligne.
+
+    🔴 LA LEÇON, ET C'EST CE QUE CE GARDE FORMALISE : **le constat et la coordonnée sont deux
+    objets distincts.** Remettre le point ne remet pas le verdict qui disait ce qu'il y a sur
+    ce point, et une re-mesure qui ne conclut rien EFFACE le constat sans toucher la
+    coordonnée. Un verdict ne vaut donc que pour le point où il a été pris.
+
+    Le gate REFUSE au lieu de ré-interpréter : ré-interpréter en silence, c'est choisir pour
+    la mesure, et dans le sens fail-open ça publie. Le remède est toujours le même — relancer
+    le détecteur sur les fiches nommées.
+
+    ⚠️ CE QU'IL NE VOIT PAS, et il le dit : seules les entrées qui PORTENT leur coordonnée
+    mesurée sont vérifiables. `coord-feature-check` la porte (490 entrées sur 1 021 au
+    2026-11-02) ; `centroid-check` ne la porte pas encore, donc ses verdicts échappent à ce
+    contrôle. C'est le même contrat que `meta.ids_testees` : un détecteur doit consigner les
+    conditions de sa mesure, pas seulement sa conclusion.
+    """
+    racine = next((r for r in (data_dir, _newsroom_cal())
+                   if (r / "geo-audit").is_dir()), None)
+    if racine is None:
+        return []
+    fiches = {}
+    for path in datacenter_paths(racine if datacenter_paths(racine) else data_dir):
+        coord = (load_json(path).get("identity") or {}).get("coordinates") or {}
+        if coord.get("lat") is not None and coord.get("lon") is not None:
+            fiches[path.stem] = (coord["lat"], coord["lon"])
+    out, verifiees = [], 0
+    for nom in ("coord-feature-check.json", "centroid-check.json"):
+        chemin = racine / "geo-audit" / nom
+        if not chemin.is_file():
+            continue
+        brut = load_json(chemin)
+        entrees = brut.get("fiches") if isinstance(brut.get("fiches"), dict) else {}
+        for fid, entree in entrees.items():
+            if not isinstance(entree, dict) or fid not in fiches:
+                continue
+            mesuree = entree.get("coord") or {}
+            if mesuree.get("lat") is None or mesuree.get("lon") is None:
+                continue
+            verifiees += 1
+            lat, lon = fiches[fid]
+            metres = _metres(mesuree["lat"], mesuree["lon"], lat, lon)
+            if metres > ECART_VERDICT_MAX_M:
+                out.append(
+                    f"GATE VERDICT: {fid!r} porte un verdict de {nom} mesuré à "
+                    f"{round(metres)} m de la coordonnée qu'elle sert aujourd'hui — ce verdict "
+                    f"ne parle plus de ce point. Relancer le détecteur sur cette fiche ; ne pas "
+                    f"la débloquer par une dérogation, ce serait écrire qu'on a regardé."
+                )
+    if not out:
+        print(f"GATE VERDICT: {verifiees} verdicts vérifiés contre la coordonnée servie, aucun "
+              f"périmé — les entrées sans coordonnée mesurée échappent à ce contrôle",
+              file=sys.stderr)
+    return out
+
+
+def orphelins_gate(data_dir: Path, artefacts: Path | None = None) -> list[str]:
+    """Un artefact SANS fiche publie une page que le corpus ne porte plus.
+
+    🔴 Le 2026-11-02, après le retrait d'un doublon décidé par Franck, l'artefact
+    `site/public/data/dc/fr-cyrus-one.json` (16 Ko) est resté. Or les pages de fiche sont
+    énumérées en BALAYANT ce dossier :
+
+        import.meta.glob("../../../public/data/dc/*.json", { eager: true })
+
+    Le déploiement suivant aurait donc republié la page de la fiche qu'on venait de retirer,
+    et rien ne l'aurait dit. Retirer une fiche du corpus ne retire pas sa page : c'est la même
+    famille que la fiche renommée qui a laissé un 404 pendant six jours, découvert par Google.
+    """
+    dossier = artefacts or (REPO_ROOT / "site" / "public" / "data" / "dc")
+    if not dossier.is_dir():
+        return []
+    # 🔴 TROISIÈME FOIS QUE JE COMPARE DEUX POPULATIONS DIFFÉRENTES, et c'est la CI qui l'a
+    # encore dit. Ma première version confrontait les milliers d'artefacts d'un build réel aux
+    # DEUX fixtures du dépôt et annonçait « 3 267 orphelins ». Un artefact n'est orphelin que
+    # par rapport au corpus qu'il est censé décrire : sans le corpus privé monté, il n'y a
+    # rien à comparer, donc rien à protéger.
+    racine = data_dir if artefacts else _newsroom_cal()
+    if not racine.is_dir():
+        return []
+    corpus = {p.stem for p in datacenter_paths(racine)}
+    if not corpus:
+        return []
+    orphelins = sorted({p.stem for p in dossier.glob("*.json")} - corpus)
+    if not orphelins:
+        return []
+    return [
+        f"GATE ORPHELIN: {len(orphelins)} artefact(s) sans fiche au corpus — leur page serait "
+        f"republiée alors que la fiche n'existe plus : {orphelins[:5]}. Les supprimer de "
+        f"{dossier} avant de construire."
+    ]
 
 
 def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]:
@@ -927,6 +1042,8 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     problems += geo_gate(data_dir)
     problems += statut_gate(data_dir)
     problems += filigrane_gate(datacenter_paths(data_dir))
+    problems += verdict_perime_gate(data_dir)
+    problems += orphelins_gate(data_dir)
 
     return problems
 

@@ -773,3 +773,66 @@ def test_le_build_appelle_le_predicat_au_lieu_de_le_reecrire():
     assert 'get("hold")' not in source.split("retient_la_note(verdict)")[1], (
         "le build reteste `hold` APRÈS le prédicat : une seule lecture, ou aucune"
     )
+
+
+def test_un_verdict_mesure_ailleurs_est_refuse(tmp_path, monkeypatch):
+    """Le constat et la coordonnée sont deux objets : un verdict ne vaut que pour SON point.
+
+    🔴 Deux incidents du 2026-11-02, les deux sens :
+      · un verdict ANTÉRIEUR à un recalage tenait la lettre d'une fiche sur un point qu'elle
+        n'avait plus — il a fallu une dérogation écrite à la main pour déployer ;
+      · une re-mesure a EFFACÉ le constat sans toucher la coordonnée, et comme le faisceau
+        sert quand il ne sait pas, la note d'un doublon posé sur un parking partait en ligne.
+
+    Le gate REFUSE au lieu de ré-interpréter : ré-interpréter en silence, c'est choisir pour
+    la mesure, et dans le sens fail-open ça publie.
+    """
+    from engine.validate import verdict_perime_gate
+
+    cal = tmp_path / "calibration"
+    (cal / "datacenters").mkdir(parents=True)
+    (cal / "geo-audit").mkdir(parents=True)
+    (cal / "datacenters" / "xx-site.json").write_text(json.dumps(
+        {"id": "xx-site", "identity": {"coordinates": {"lat": 48.7324, "lon": 2.3181}}}),
+        encoding="utf-8")
+
+    def sidecar(lat, lon):
+        (cal / "geo-audit" / "coord-feature-check.json").write_text(json.dumps(
+            {"fiches": {"xx-site": {"coord": {"lat": lat, "lon": lon}, "verdict": "wrong"}}}),
+            encoding="utf-8")
+
+    sidecar(48.7324, 2.3181)
+    assert verdict_perime_gate(cal) == [], "mesuré au point servi : le verdict vaut"
+    sidecar(48.73244, 2.318148)      # ~6 m : un arrondi d'écriture, pas un recalage
+    assert verdict_perime_gate(cal) == [], "un écart de quelques mètres ne périme pas un verdict"
+    sidecar(48.7316381, 2.3268669)   # le point du parking, ~640 m : le cas réel
+    violations = verdict_perime_gate(cal)
+    assert any("xx-site" in v and "ne parle plus de ce point" in v for v in violations), violations
+    # et une entrée SANS coordonnée mesurée n'est pas vérifiable : le gate se taît, et le DIT
+    (cal / "geo-audit" / "coord-feature-check.json").write_text(json.dumps(
+        {"fiches": {"xx-site": {"verdict": "wrong"}}}), encoding="utf-8")
+    assert verdict_perime_gate(cal) == [], "sans coordonnée mesurée, il n'y a rien à comparer"
+
+
+def test_un_artefact_sans_fiche_est_refuse(tmp_path):
+    """Retirer une fiche du corpus ne retire pas sa page — et le balayage du dossier la republie.
+
+    🔴 Le 2026-11-02, l'artefact du doublon retiré est resté (16 Ko) ; les pages de fiche sont
+    énumérées par `import.meta.glob(".../dc/*.json")`, donc le déploiement suivant aurait
+    republié la page d'une fiche que Franck venait de retirer. Même famille que la fiche
+    renommée qui a laissé un 404 pendant six jours, découvert par Google.
+    """
+    from engine.validate import orphelins_gate
+
+    cal = tmp_path / "calibration"
+    (cal / "datacenters").mkdir(parents=True)
+    (cal / "datacenters" / "xx-vivante.json").write_text(
+        json.dumps({"id": "xx-vivante", "identity": {}}), encoding="utf-8")
+    arte = tmp_path / "dc"
+    arte.mkdir()
+    (arte / "xx-vivante.json").write_text("{}", encoding="utf-8")
+    assert orphelins_gate(cal, arte) == [], "un artefact qui a sa fiche passe"
+
+    (arte / "xx-retiree.json").write_text("{}", encoding="utf-8")
+    violations = orphelins_gate(cal, arte)
+    assert any("xx-retiree" in v and "la fiche n'existe plus" in v for v in violations), violations
