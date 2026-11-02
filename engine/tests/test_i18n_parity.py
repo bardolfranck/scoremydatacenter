@@ -1452,3 +1452,94 @@ def test_le_garde_des_questions_a_poser_mord_vraiment(tmp_path, monkeypatch):
     monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "nl"])
     with pytest.raises(AssertionError, match="ne portent pas toutes les langues"):
         test_les_questions_a_poser_parlent_toutes_les_langues_vivantes()
+
+
+BLOCS_RICHES = CONTENU / "understand-blocks.ts"
+
+
+def _blocs_de_comprendre(langue: str) -> list[tuple[str, str, str]]:
+    """(id, ancre, slot) des blocs de « Comprendre », dans l'ordre, pour une langue."""
+    texte = (CONTENU / "comprendre.ts").read_text(encoding="utf-8")
+    m = re.search(rf"^const {langue.upper()}\b.*?blocks:\s*\[(.*?)\n\s*\],", texte, re.S | re.M)
+    if not m:
+        return []
+    return [
+        (i, a, s or "")
+        for i, a, s in re.findall(
+            r'id:\s*"([^"]+)",\s*anchor:\s*"([^"]+)"[^}]*?(?:slot:\s*"([^"]+)")?[^}]*\}',
+            m.group(1),
+        )
+    ]
+
+
+def test_l_ancre_ne_sert_plus_de_cle_de_donnees():
+    """L'ancre d'un bloc est une ADRESSE ; sa clé de données est un identifiant stable.
+
+    🔴 Trouvé par la préviz, au rendu, et invisible à tout le reste : la page « Comprendre »
+    néerlandaise rendait **144 blocs contre 182 en français**. Les tables riches étaient
+    indexées par l'ancre — `RICH_FR` sur `commune`, `droits`… — et la page néerlandaise
+    demandait `gemeente`, `rechten`. Personne ne répondait. Rien ne cassait : le contenu
+    n'était simplement jamais DEMANDÉ, et quatre des cinq blocs documentés disparaissaient.
+
+    Les clés étaient justes des deux côtés ; c'est leur COUPLAGE qui était faux — une ancre
+    traduite (ce qu'elle doit être, l'anglais le fait depuis toujours) emportait avec elle une
+    clé qui, elle, ne doit pas bouger. [[id-daffichage-perime-rubrique-muette]] appliqué à
+    une adresse.
+
+    Les identifiants sont choisis DIFFÉRENTS des ancres de chaque langue (sauf `faq`, dont le
+    sigle est universel — d'où `faq-block`) : un id qui ressemble à l'ancre d'une langue
+    invite à les refusionner le jour où « ça marche quand même ».
+    """
+    langues = _langues_declarees()
+    reference = _blocs_de_comprendre(langues[0])
+    assert len(reference) >= 5, (
+        f"{len(reference)} bloc(s) relevés dans comprendre.ts — le relevé ne cherche plus"
+    )
+    ids_ref = [i for i, _, _ in reference]
+    for lg in langues[1:]:
+        ids = [i for i, _, _ in _blocs_de_comprendre(lg)]
+        assert ids == ids_ref, (
+            f"comprendre.ts — les identifiants de bloc de {lg.upper()} ne sont pas ceux de "
+            f"{langues[0].upper()} : {ids} ≠ {ids_ref}. Un id est la même chose dans toutes "
+            f"les langues ; c'est l'ancre qui se traduit."
+        )
+
+    texte = BLOCS_RICHES.read_text(encoding="utf-8")
+    tables = {
+        m.group(1): set(
+            re.findall(r'^\s{2}"([\w-]+)":\s*\{', m.group(2), re.M)
+        )
+        for m in re.finditer(
+            r"export const RICH_(\w+)[^=]*= \{(.*?)^\};", texte, re.S | re.M
+        )
+    }
+    assert tables, "aucune table RICH_* relevée — le garde ne garde plus rien"
+    connus = set(ids_ref)
+    for nom, cles in tables.items():
+        intruses = sorted(cles - connus)
+        assert not intruses, (
+            f"RICH_{nom} porte {len(intruses)} clé(s) qui ne sont l'identifiant d'aucun "
+            f"bloc : {intruses}. Servie telle quelle, cette entrée n'est jamais demandée — "
+            f"elle ne manque pas à l'écran, elle n'existe pas."
+        )
+    communes = set.intersection(*tables.values()) if len(tables) > 1 else next(iter(tables.values()))
+    for nom, cles in tables.items():
+        manquantes = sorted(communes - cles)
+        assert not manquantes, (
+            f"RICH_{nom} n'a pas {manquantes}, que les autres langues portent — le bloc "
+            f"serait vide dans cette langue seulement, sans erreur"
+        )
+
+
+def test_le_garde_du_decouplage_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une table riche réindexée sur l'ancre d'une langue."""
+    faux = tmp_path / "understand-blocks.ts"
+    faux.write_text(
+        'export const RICH_FR: Record<string, RichBlock> = {\n'
+        '  "gemeente": { intro: "x" },\n'
+        "};\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "BLOCS_RICHES", faux)
+    with pytest.raises(AssertionError, match="n'est jamais demandée|identifiant d'aucun"):
+        test_l_ancre_ne_sert_plus_de_cle_de_donnees()

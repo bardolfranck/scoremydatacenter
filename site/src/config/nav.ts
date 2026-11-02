@@ -123,3 +123,46 @@ export const EN_NAV: NavNode[] = [
     { href: "/#contact", label: "Contact" },
   ]},
 ];
+
+// Le menu néerlandais. Les MOTS viennent de rapports-SMDC (c'est de la prose, et le mot
+// commande l'URL : « geluid » dans le lien parce que c'est le mot cherché) ; la STRUCTURE et
+// les routes sont au harnais. Les adresses `/nl/…` ne répondent pas encore : aucune page
+// néerlandaise n'est servie tant que `nl` est en préparation. Ce menu existe pour la préviz
+// et pour que le câblage des routes ait sa cible écrite.
+//
+// 🔴 LES QUATRE RAPPORTS N'Y SONT PAS. La bibliothèque est hors du périmètre de traduction
+// signé, et je n'ai pas de slug néerlandais pour eux : en inventer quatre serait écrire des
+// adresses que personne n'a décidées. Le groupe ne garde donc que son entrée générale, et
+// les quatre manquent SCIEMMENT — un trou déclaré vaut mieux qu'une route fabriquée.
+export const NL_NAV: NavNode[] = [
+  { label: "Verkennen", children: [
+    { href: "/nl/kaart/", label: "Kaart" },
+    { href: "/nl/ranglijst/", label: "Ranglijst" },
+    { href: "/nl/portret-van-de-site/", label: "Portret van de site" },
+    { href: "/nl/indices/", label: "Landenindex" },
+    { href: "/nl/kerncijfers/", label: "Kerncijfers" },
+  ]},
+  { label: "Begrijpen", children: [
+    { href: "/nl/acceptatie-datacenter/", label: "Maatschappelijke acceptatie" },
+    { href: "/nl/beoordeling-datacenter/", label: "De beoordeling" },
+    { href: "/nl/hinder-datacenter/", label: "Geluid en hinder" },
+    { href: "/nl/datacenters-begrijpen/", label: "Datacenters begrijpen" },
+    { href: "/nl/normen/", label: "De normen · waar wij staan" },
+    { href: "/nl/methodologie/", label: "Methode" },
+    { href: "/nl/het-cijfer-stap-voor-stap/", label: "Het cijfer, stap voor stap" },
+    { href: "/nl/bronnen/", label: "Bronnen & licenties" },
+    { href: "/nl/glossarium/", label: "Glossarium" },
+    { href: "/nl/#faq", label: "FAQ" },
+  ]},
+  { href: "/nl/vergelijken/", label: "Vergelijken" },
+  { href: "/nl/nieuws/", label: "Nieuws" },
+  { label: "Bibliotheek", children: [
+    { href: "/nl/bibliotheek/", label: "De hele bibliotheek" },
+  ]},
+  { label: "Het observatorium", children: [
+    { href: "/nl/over-ons/", label: "Over ons" },
+    { href: "/nl/#open", label: "Open model" },
+    { href: "/nl/ontwikkelaars/", label: "API voor ontwikkelaars" },
+    { href: "/nl/#contact", label: "Contact" },
+  ]},
+];

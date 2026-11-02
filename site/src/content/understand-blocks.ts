@@ -36,7 +36,7 @@ export interface RichBlock {
 }
 
 export const RICH_FR: Record<string, RichBlock> = {
-  commune: {
+  "why-local": {
     intro:
       "Un data center ne se contente pas d'occuper un terrain : il s'installe dans les réseaux de la commune — l'eau, l'électricité, les routes — et dans son budget. Cinq points concrets.",
     points: [
@@ -78,7 +78,7 @@ export const RICH_FR: Record<string, RichBlock> = {
     ],
   },
 
-  "bon-projet": {
+  "what-makes-good": {
     intro:
       "Il n'existe pas de « bon opérateur » ou de « mauvais opérateur » qui se devinerait à la réputation. Il existe des <strong>choix de projet</strong>, qui se lisent dans le dossier — ou dont l'absence se remarque. En voici six, et où les vérifier.",
     points: [
@@ -114,7 +114,7 @@ export const RICH_FR: Record<string, RichBlock> = {
     ],
   },
 
-  droits: {
+  "your-rights": {
     intro:
       "Un data center n'obtient pas une autorisation, mais plusieurs : un permis de construire, et le plus souvent une autorisation environnementale — le régime ICPE, qui encadre les installations industrielles<sup><a href='#src-droits-1'>1</a></sup>. Chacune a son calendrier, et chacune ouvre des droits au public.",
     points: [
@@ -165,7 +165,7 @@ export const RICH_FR: Record<string, RichBlock> = {
     ],
   },
 
-  faq: {
+  "faq-block": {
     qas: [
       // LES QUATRE QUESTIONS TELLES QU'ELLES SONT TAPÉES. Google les remonte comme « autres
       // questions posées » autour des data centers ; la page y répondait déjà, dispersées dans
@@ -215,7 +215,7 @@ export const RICH_FR: Record<string, RichBlock> = {
     ],
   },
 
-  "aller-plus-loin": {
+  "read-more": {
     intro: "Pour creuser le sujet, des ressources ouvertes et gratuites — les mêmes que nous utilisons.",
     linkGroups: [
       {
@@ -249,7 +249,7 @@ export const RICH_FR: Record<string, RichBlock> = {
 };
 
 export const RICH_EN: Record<string, RichBlock> = {
-  municipality: {
+  "why-local": {
     intro:
       "A data center does not just occupy a plot: it settles into the municipality's networks — water, electricity, roads — and into its budget. Five concrete points.",
     points: [
@@ -291,7 +291,7 @@ export const RICH_EN: Record<string, RichBlock> = {
     ],
   },
 
-  "good-project": {
+  "what-makes-good": {
     intro:
       "There is no “good operator” or “bad operator” to be guessed from reputation. There are <strong>project choices</strong>, which can be read in the filing — or whose absence is telling. Here are six, and where to check them.",
     points: [
@@ -329,7 +329,7 @@ export const RICH_EN: Record<string, RichBlock> = {
     ],
   },
 
-  rights: {
+  "your-rights": {
     intro:
       "A data center does not get one authorization but several: a building permit and, most often, an environmental authorization — the French ICPE regime, which governs industrial installations<sup><a href='#src-rights-1'>1</a></sup>. Each has its calendar, and each opens rights to the public.",
     points: [
@@ -377,7 +377,7 @@ export const RICH_EN: Record<string, RichBlock> = {
     ],
   },
 
-  faq: {
+  "faq-block": {
     qas: [
       {
         q: "Are any data centers being built near me?",
@@ -422,7 +422,7 @@ export const RICH_EN: Record<string, RichBlock> = {
     ],
   },
 
-  further: {
+  "read-more": {
     intro: "To dig deeper, open and free resources — the same ones we use.",
     linkGroups: [
       {

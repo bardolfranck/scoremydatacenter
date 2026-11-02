@@ -33,7 +33,7 @@ import { perimeterSites, derivedCount } from "../../config/stats";
 import { CHECKLIST_FR } from "../../content/questions";
 import { WHATIS_FR } from "../../content/what-is-a-dc";
 import { RICH_FR } from "../../content/understand-blocks";
-import { FR_NAV } from "../../config/nav";
+import { NL_NAV } from "../../config/nav";
 import { toLite, buildRelated, coordsFromGeojson, type Related } from "../../config/related";
 import { GABARITS, cheminsPreviz, choisirDemo, LANGUE_PREVIZ } from "../../config/previz";
 
@@ -77,7 +77,7 @@ const { dc, related, geo } = Astro.props as {
     related={related}
     lang={LANGUE_PREVIZ}
     t={FICHE[LANGUE_PREVIZ]}
-    nav={FR_NAV}
+    nav={NL_NAV}
     altHref={`/fr/dc/${dc.id}/`}
     altLabel="FR"
   />
@@ -87,7 +87,7 @@ const { dc, related, geo } = Astro.props as {
     dc={dc}
     lang={LANGUE_PREVIZ}
     t={PORTRAIT[LANGUE_PREVIZ]}
-    nav={FR_NAV}
+    nav={NL_NAV}
     altHref={`/fr/dc/${dc.id}/portrait/`}
     altLabel="FR"
   />
@@ -108,32 +108,32 @@ const { dc, related, geo } = Astro.props as {
   <Methodologie
     lang={LANGUE_PREVIZ}
     t={METHODOLOGIE[LANGUE_PREVIZ]}
-    nav={FR_NAV}
+    nav={NL_NAV}
     altHref="/fr/methodologie/"
     altLabel="FR"
   />
 )}
 {gabarit === "glossaire" && (
-  <Glossaire lang={LANGUE_PREVIZ} t={GLOSSAIRE[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/glossaire/" altLabel="FR" />
+  <Glossaire lang={LANGUE_PREVIZ} t={GLOSSAIRE[LANGUE_PREVIZ]} nav={NL_NAV} altHref="/fr/glossaire/" altLabel="FR" />
 )}
 {gabarit === "normes" && (
-  <Normes lang={LANGUE_PREVIZ} t={NORMES[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/normes/" altLabel="FR" />
+  <Normes lang={LANGUE_PREVIZ} t={NORMES[LANGUE_PREVIZ]} nav={NL_NAV} altHref="/fr/normes/" altLabel="FR" />
 )}
 {gabarit === "sources" && (
-  <Sources lang={LANGUE_PREVIZ} t={SOURCES[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/sources/" altLabel="FR" />
+  <Sources lang={LANGUE_PREVIZ} t={SOURCES[LANGUE_PREVIZ]} nav={NL_NAV} altHref="/fr/sources/" altLabel="FR" />
 )}
 {gabarit === "nuisances" && (
   <PagePilier
     lang={LANGUE_PREVIZ}
     t={nuisances(LANGUE_PREVIZ, perimeterSites("monde"), derivedCount("n_nearest_dwelling"))}
-    nav={FR_NAV}
+    nav={NL_NAV}
     altHref="/fr/nuisances-data-center/"
     altLabel="FR"
   />
 )}
 {gabarit === "acceptabilite" && (
-  <PagePilier lang={LANGUE_PREVIZ} t={ACCEPTABILITE[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/acceptabilite-data-center/" altLabel="FR" />
+  <PagePilier lang={LANGUE_PREVIZ} t={ACCEPTABILITE[LANGUE_PREVIZ]} nav={NL_NAV} altHref="/fr/acceptabilite-data-center/" altLabel="FR" />
 )}
 {gabarit === "notation" && (
-  <PagePilier lang={LANGUE_PREVIZ} t={NOTATION[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/notation-data-center/" altLabel="FR" />
+  <PagePilier lang={LANGUE_PREVIZ} t={NOTATION[LANGUE_PREVIZ]} nav={NL_NAV} altHref="/fr/notation-data-center/" altLabel="FR" />
 )}
