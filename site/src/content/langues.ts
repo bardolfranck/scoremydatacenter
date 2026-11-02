@@ -26,3 +26,50 @@ export const LANGUES_EN_PREPARATION = ["nl"] as const;
 /** Toutes les langues qui ont une table, servies ou non. */
 export const LANGUES_DECLAREES = [...LANGUES_VIVANTES, ...LANGUES_EN_PREPARATION] as const;
 export type LangueDeclaree = (typeof LANGUES_DECLAREES)[number];
+
+// 🔴 OÙ VIT CHAQUE LANGUE, déclaré une fois. Le layout disait `lang === "en" ? "/" : "/fr/"` :
+// un ternaire binaire, juste tant qu'il n'y a que deux langues, et qui renvoie le lecteur
+// néerlandais vers l'accueil FRANÇAIS dès qu'il y en a trois. Un ternaire ne dit pas qu'il
+// ignore un cas, il en choisit un [[absence-ressemble-a-zero]].
+export const RACINE: Record<LangueDeclaree, string> = { en: "/", fr: "/fr/", nl: "/nl/" };
+
+// 🔴 CE QUI RESTE À TRANCHER AVANT QUE LE NÉERLANDAIS SOIT SERVI : `altHref`/`altLabel`.
+// Tout le site suppose DEUX langues — « l'autre langue », au singulier. Chaque page passe un
+// `altHref` unique, et `Base.astro` construit son cluster hreflang sur cette paire. À trois
+// langues, « l'autre » devient « les autres » : c'est un sélecteur, pas un lien, et le
+// hreflang doit lister les trois. Ce n'est pas un détail d'affichage — un hreflang qui ment
+// déclare à Google qu'une page néerlandaise est la version anglaise d'une page française.
+// Décision de structure : elle appartient à Franck, pas au harnais de préviz.
+
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// LE PLURIEL EST UNE RÈGLE DE LANGUE, PAS UN `s` À COLLER
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// Le français met zéro au SINGULIER (« 0 site »), l'anglais et le néerlandais au PLURIEL
+// (« 0 sites », « 0 sites »). Un `n > 1 ? "sites" : "site"` dans un gabarit n'est donc pas
+// une commodité : c'est la règle du français, appliquée au néerlandais, en silence. La règle
+// se déclare par langue ; les FORMES vivent dans la table de chaînes, avec le reste de la
+// prose, parce que ce sont des mots.
+export type FormePluriel = "un" | "autres";
+
+export const REGLE_PLURIEL: Record<LangueDeclaree, (n: number) => FormePluriel> = {
+  fr: (n) => (Math.abs(n) < 2 ? "un" : "autres"),
+  en: (n) => (Math.abs(n) === 1 ? "un" : "autres"),
+  nl: (n) => (Math.abs(n) === 1 ? "un" : "autres"),
+};
+
+/**
+ * La forme à servir pour `n`, choisie par la règle de la langue.
+ *
+ * La table écrit `{ un: "…{n} site…", autres: "…{n} sites…" }` — DEUX phrases entières, pas
+ * un radical et une terminaison : une langue a le droit de tourner sa phrase autrement au
+ * singulier, et « 1 site » n'est pas partout « {n} site ». Le trou `{n}` reste dans les deux
+ * formes, et c'est l'appelant qui le remplit avec SON format de nombre (l'espace fine
+ * insécable du français n'est pas celle du néerlandais).
+ */
+export function pluriel(
+  lang: LangueDeclaree,
+  n: number,
+  formes: Record<FormePluriel, string>,
+): string {
+  return formes[REGLE_PLURIEL[lang](n)];
+}

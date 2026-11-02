@@ -1,0 +1,112 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// CÔTE-À-CÔTE FR ↔ NL, par page rendue — le harnais de relecture demandé par le traducteur.
+// Granularité PAGE, pas clé : on relit des phrases en place, dans leur gabarit.
+// Même portillon que la préviz : `[]` sans SMDC_PREVIZ=1, donc rien en production.
+import fs from "node:fs";
+import * as questions from "../../../content/questions";
+import * as whatis from "../../../content/what-is-a-dc";
+import * as blocs from "../../../content/understand-blocks";
+import * as nav from "../../../config/nav";
+import { GABARITS, cheminsPreviz, choisirDemo, LANGUE_PREVIZ, JUMEAU_FR } from "../../../config/previz";
+
+
+export async function getStaticPaths() {
+  return cheminsPreviz(() => {
+    const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
+    const dcs = Object.values(modules).map((m: any) => m.default);
+    const demo = choisirDemo(dcs, LANGUE_PREVIZ.toUpperCase());
+    return GABARITS.map((gabarit) => ({ params: { gabarit }, props: { id: demo.id } }));
+  });
+}
+
+const { gabarit } = Astro.params;
+const { id } = Astro.props as { id: string };
+
+const gauche = JUMEAU_FR[gabarit as keyof typeof JUMEAU_FR].replace("{id}", id);
+const droite = `/previz/${gabarit}/`;
+
+// 🔴 CE QUI N'EST PAS ENCORE TRADUIT, MESURÉ et pas listé à la main : on demande au module
+// s'il porte l'édition de la langue. Une liste écrite ici pourrirait en silence le jour où
+// l'édition arriverait, et le relecteur continuerait de lire « non traduit » sur du
+// néerlandais — ou, bien pire, l'inverse.
+const SUFFIXE = LANGUE_PREVIZ.toUpperCase();
+const replis = [
+  ["CHECKLIST", questions, "les questions à poser (Comprendre)"],
+  ["WHATIS", whatis, "« qu'est-ce qu'un data center » (Comprendre)"],
+  ["RICH", blocs, "les blocs documentés (Comprendre)"],
+  ["NAV", nav, "le MENU, présent sur toutes les pages"],
+].filter(([base, mod]) => !(`${base}_${SUFFIXE}` in (mod as object)))
+ .map(([base, , quoi]) => `${base}_${SUFFIXE} — ${quoi}`);
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Préviz FR ↔ NL · {gabarit}</title>
+    <style>
+      :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; display: flex; flex-direction: column; height: 100vh; }
+      header { padding: .5rem .75rem; border-bottom: 1px solid #8884; font-size: .82rem; }
+      header b { font-size: .95rem; }
+      nav a { margin-right: .6rem; }
+      .alerte { color: #a33; margin-top: .35rem; }
+      .duo { display: flex; flex: 1; min-height: 0; }
+      .duo section { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+      .duo h2 { margin: 0; padding: .3rem .6rem; font-size: .75rem; letter-spacing: .08em;
+                text-transform: uppercase; background: #8881; }
+      .duo iframe { flex: 1; width: 100%; border: 0; border-left: 1px solid #8884; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <b>Préviz FR ↔ NL — {gabarit}</b> · fiche de démonstration : <code>{id}</code>
+      <nav>
+        {GABARITS.map((g) => (
+          <a href={`/previz/duo/${g}/`}>{g === gabarit ? `[${g}]` : g}</a>
+        ))}
+      </nav>
+      <div class="alerte">
+        {/* 🔴 Ne pas réécrire ici le motif de ternaire que cette phrase décrit : le relevé de
+            branches nues le compterait comme une branche, et cette page entrerait dans la
+            dette i18n pour avoir PARLÉ du piège. Mon propre garde m'a mordu dessus. */}
+        Tout fragment <b>anglais</b> dans la colonne NL n'est pas une chaîne oubliée : c'est un
+        ternaire binaire sur la langue, resté dans le gabarit, qui fait tomber le néerlandais
+        du côté anglais. Signale-le, il se corrige au harnais.
+        {replis.length > 0 && (
+          <> Sans édition néerlandaise, donc affiché <b>en français</b> :
+            {replis.map((r) => <> · <code>{r}</code></>)}.</>
+        )}
+      </div>
+    </header>
+    <div class="duo">
+      <section><h2>FR — {gauche}</h2><iframe id="fr" src={gauche}></iframe></section>
+      <section><h2>NL — {droite}</h2><iframe id="nl" src={droite}></iframe></section>
+    </div>
+    <script is:inline>
+      // Scroll synchronisé, sans boucle de rétroaction : celui qu'on pilote ne repilote pas.
+      const cadres = ["fr", "nl"].map((i) => document.getElementById(i));
+      let pilote = null;
+      cadres.forEach((cadre) => {
+        cadre.addEventListener("load", () => {
+          const vue = cadre.contentWindow;
+          vue.addEventListener("scroll", () => {
+            if (pilote && pilote !== cadre) return;
+            pilote = cadre;
+            const autre = cadres.find((c) => c !== cadre);
+            const h = (w) => w.document.documentElement.scrollHeight - w.innerHeight;
+            const part = h(vue) > 0 ? vue.scrollY / h(vue) : 0;
+            try { autre.contentWindow.scrollTo(0, part * h(autre.contentWindow)); } catch (e) {}
+            clearTimeout(cadre.dataset.t);
+            cadre.dataset.t = setTimeout(() => { pilote = null; }, 120);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

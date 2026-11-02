@@ -7,8 +7,12 @@
 // place where institutions appear, resolved per country), bonus/friction
 // editorial pairing. i18n §13: FR and EN live side by side, never drift.
 import statsData from "../../public/data/stats.json";
+import type { LangueDeclaree } from "../content/langues";
 
-export type Lang = "fr" | "en";
+// 🔴 La liste des langues ne se réécrit pas ici : `content/langues.ts` la déclare une fois.
+// Elle était recopiée dans 36 fichiers le 2026-11-02 — autant d'endroits où ajouter une
+// langue, donc autant d'endroits où l'oublier.
+export type Lang = LangueDeclaree;
 export const STATS = statsData as any;
 
 /** Perimeter slugs are URL segments: "europe" or a lowercase ISO country. */
@@ -90,6 +94,10 @@ export function perimeterLabel(key: string, lang: Lang): string {
 const FORMES: Record<Lang, { pourcent: string; locale: string }> = {
   fr: { pourcent: "{v} %", locale: "fr-FR" },
   en: { pourcent: "{v}%", locale: "en-GB" },
+  // Néerlandais : pas d'espace avant le `%` (même règle que l'anglais), mais le séparateur
+  // de milliers est le POINT et la décimale la virgule — « 1.234 » s'y lit mille deux cent
+  // trente-quatre. C'est `nl-NL` qui porte cette règle, pas nous.
+  nl: { pourcent: "{v}%", locale: "nl-NL" },
 };
 export const fmtPct = (pct: number, lang: Lang): string => {
   const v = pct > 0 && pct < 1 ? "<1" : String(Math.round(pct));
@@ -147,7 +155,16 @@ export function sourceLine(statId: string, countries: string[], lang: Lang): str
     // 🔴 Les deux côtés du ternaire d'avant écrivaient LA MÊME phrase : seul l'indice de
     // langue changeait (`map.FR.fr` / `map.FR.en`). Une branche qui ne décide rien coûte
     // quand même une ligne à chaque langue nouvelle, et cache qu'il n'y a rien à décider.
-    return `${map.default[lang]} · ${map.FR[lang]} (France)`;
+    //
+    // 🔴 ET LA SOURCE NATIONALE NE RÉPÈTE PAS LA SOURCE PAR DÉFAUT. Plusieurs entrées
+    // nationales CONTIENNENT déjà la source par défaut : l'eau dit « WRI Aqueduct 4.0 ·
+    // VigiEau », dont le premier terme EST le défaut. Concaténer les deux publiait
+    // « WRI Aqueduct 4.0 · WRI Aqueduct 4.0 · VigiEau (France) » — un bégaiement, vu sur
+    // l'accueil anglais le 2026-11-02. Ce qu'on veut nommer après le défaut, c'est ce que
+    // la France AJOUTE ; s'il n'y a rien, le défaut suffit.
+    const base = map.default[lang].split(" · ");
+    const ajout = map.FR[lang].split(" · ").filter((t) => !base.includes(t));
+    return ajout.length ? `${map.default[lang]} · ${ajout.join(" · ")} (France)` : map.default[lang];
   }
   return map.default[lang];
 }

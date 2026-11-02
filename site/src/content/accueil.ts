@@ -469,7 +469,7 @@ const EN: typeof FR = {
     { genre: "vue", id: "pue_published", figure: "{big} publish their PUE",
       attribution: "Fleet figures · operators' declarations · n = {n}", url: "/figures#pue-publie" },
     { genre: "vue", id: "water_stress_high", figure: "{big} under high water stress",
-      attribution: "Fleet figures · WRI Aqueduct · n = {n}", url: "/figures#stress-hydrique" },
+      attribution: "Fleet figures · {src} · n = {n}", url: "/figures#stress-hydrique" },
     ],
   },
   whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",

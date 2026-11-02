@@ -17,6 +17,7 @@
 // dit ce qui reste vrai au lieu d'avouer notre retard. Une phrase écrite à la main ici
 // serait une affirmation que personne ne pourrait vérifier.
 import Base from "../layouts/Base.astro";
+import type { LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -39,7 +40,7 @@ import { COMMUN } from "../content/commun";
 
 interface Props {
   dc: any;
-  lang: "fr" | "en";
+  lang: LangueDeclaree;
   t: any;
   nav: NavNode[];
   altHref: string;

@@ -1,0 +1,104 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// PRÉVIZ D'UNE LANGUE EN PRÉPARATION — le rendu néerlandais, en local seulement.
+// Le portillon est dans `getStaticPaths` (voir config/previz.ts) : sans SMDC_PREVIZ=1 il
+// rend `[]`, donc AUCUN fichier dans `dist/`. Une page sans getStaticPaths serait toujours
+// construite ; un `if` dans le gabarit laisserait un HTML vide. Rendre `[]` est la seule
+// forme qui ne produise pas un octet.
+import fs from "node:fs";
+import Landing from "../../components/Landing.astro";
+import DcFiche from "../../components/DcFiche.astro";
+import SitePortrait from "../../components/SitePortrait.astro";
+import Understand from "../../components/Understand.astro";
+import Methodologie from "../../components/Methodologie.astro";
+import { ACCUEIL } from "../../content/accueil";
+import { FICHE } from "../../content/fiche";
+import { PORTRAIT } from "../../content/portrait";
+import { COMPRENDRE } from "../../content/comprendre";
+import { METHODOLOGIE } from "../../content/methodologie";
+import { CHECKLIST_FR } from "../../content/questions";
+import { WHATIS_FR } from "../../content/what-is-a-dc";
+import { RICH_FR } from "../../content/understand-blocks";
+import { FR_NAV } from "../../config/nav";
+import { toLite, buildRelated, coordsFromGeojson, type Related } from "../../config/related";
+import { GABARITS, cheminsPreviz, choisirDemo, LANGUE_PREVIZ } from "../../config/previz";
+
+
+export async function getStaticPaths() {
+  return cheminsPreviz(() => {
+    const modules = import.meta.glob("../../../public/data/dc/*.json", { eager: true });
+    const dcs = Object.values(modules).map((m: any) => m.default);
+
+    // La fiche de démonstration : une fiche NÉERLANDAISE, notée, non retenue, et la plus
+    // garnie du lot — le relecteur doit voir le plus de prose possible, et il la lira mieux
+    // sur un site qu'il connaît. Le choix vit dans `config/previz.ts`, pas ici : le
+    // côte-à-côte le refait, et deux copies de ce tri compareraient deux sites différents.
+    const demo = choisirDemo(dcs, LANGUE_PREVIZ.toUpperCase());
+
+    const coords = coordsFromGeojson(
+      JSON.parse(fs.readFileSync("public/data/map.geojson", "utf-8")),
+    );
+    const lite = dcs.map((d: any) => toLite(d, coords));
+    const props = {
+      dc: demo,
+      related: buildRelated(lite, toLite(demo, coords)),
+      geo: coords[demo.id] ?? null,
+    };
+    return GABARITS.map((gabarit) => ({ params: { gabarit }, props }));
+  });
+}
+
+const { gabarit } = Astro.params;
+const { dc, related, geo } = Astro.props as {
+  dc: any;
+  related: Related[];
+  geo: [number, number] | null;
+};
+---
+{gabarit === "accueil" && <Landing lang={LANGUE_PREVIZ} t={ACCUEIL[LANGUE_PREVIZ]} />}
+{gabarit === "fiche" && (
+  <DcFiche
+    geo={geo}
+    dc={dc}
+    related={related}
+    lang={LANGUE_PREVIZ}
+    t={FICHE[LANGUE_PREVIZ]}
+    nav={FR_NAV}
+    altHref={`/fr/dc/${dc.id}/`}
+    altLabel="FR"
+  />
+)}
+{gabarit === "portrait" && (
+  <SitePortrait
+    dc={dc}
+    lang={LANGUE_PREVIZ}
+    t={PORTRAIT[LANGUE_PREVIZ]}
+    nav={FR_NAV}
+    altHref={`/fr/dc/${dc.id}/portrait/`}
+    altLabel="FR"
+  />
+)}
+{gabarit === "comprendre" && (
+  /* CHECKLIST / WHATIS / RICH n'ont pas encore d'édition NL : la préviz montre le FR à leur
+     place et le bandeau du côte-à-côte le DIT. Un repli muet ferait relire du français en
+     croyant relire du néerlandais. */
+  <Understand
+    lang={LANGUE_PREVIZ}
+    t={COMPRENDRE[LANGUE_PREVIZ]}
+    checklist={CHECKLIST_FR}
+    whatIs={WHATIS_FR}
+    rich={RICH_FR}
+  />
+)}
+{gabarit === "methodologie" && (
+  <Methodologie
+    lang={LANGUE_PREVIZ}
+    t={METHODOLOGIE[LANGUE_PREVIZ]}
+    nav={FR_NAV}
+    altHref="/fr/methodologie/"
+    altLabel="FR"
+  />
+)}

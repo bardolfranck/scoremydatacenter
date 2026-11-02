@@ -5,6 +5,7 @@
 // The landing is fed by the engine's artifacts (scores.json, methodology.json)
 // generated at build time — no hand-written grade ever appears here.
 import Base from "../layouts/Base.astro";
+import type { LangueDeclaree } from "../content/langues";
 import ScoreBadge from "./ScoreBadge.astro";
 import AboutSection from "./AboutSection.astro";
 import FeedbackBand from "./FeedbackBand.astro";
@@ -32,7 +33,7 @@ const idxTop5 = Object.entries(idxCountries)
 const idxTotal = Object.keys(idxCountries).length;
 
 interface Props {
-  lang: "en" | "fr";
+  lang: LangueDeclaree;
   t: Record<string, any>;
 }
 const { lang, t } = Astro.props;

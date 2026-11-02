@@ -4,10 +4,11 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import "../styles/global.css";
 import { isGroup, type NavNode } from "../config/nav";
+import { RACINE, type LangueDeclaree } from "../content/langues";
 import { CHROME } from "../content/chrome";
 
 interface Props {
-  lang: "en" | "fr";
+  lang: LangueDeclaree;
   title: string;
   description: string;
   tagline: string;
@@ -27,7 +28,7 @@ const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = A
 // un diff de non-régression se met alors à mentir sur ce qu'il a vraiment vérifié.
 const c = CHROME[lang];
 const altLang = lang === "en" ? "fr" : "en";
-const home = lang === "en" ? "/" : "/fr/";
+const home = RACINE[lang];
 
 // Canonical + hreflang cluster. Canonical points at the served path WITHOUT query
 // (?q=, ?dc=, ?veille=… would otherwise let Google index dozens of duplicates of

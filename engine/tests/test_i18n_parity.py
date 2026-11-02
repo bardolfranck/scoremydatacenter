@@ -136,6 +136,11 @@ COPIE_EN_MODULE: dict[str, str] = {
 SANS_JUMELLE: dict[str, str] = {
     "fr/apercu-partage.astro": "outil interne FR (galerie d'aperçus OG), rien à traduire",
     "404.astro": "la page 404 d'Astro est servie à la racine pour toutes les langues",
+    # Le harnais de relecture du néerlandais : ces deux pages n'ont pas de jumelle parce
+    # qu'elles ne sont pas servies — leur portillon rend `[]` sans SMDC_PREVIZ=1, et
+    # `test_la_previz_ne_sort_rien_en_production` est ce qui le garde.
+    "previz/[gabarit].astro": "préviz d'une langue en préparation, jamais construite en prod",
+    "previz/duo/[gabarit].astro": "côte-à-côte FR↔NL de relecture, jamais construit en prod",
 }
 
 # Deliberate asymmetries: keys one language needs and the other, by design, does not.
@@ -1059,3 +1064,214 @@ def test_la_lecture_de_table_refuse_une_extraction_tronquee():
     tronque = "const EN: typeof FR = { a: 1 } , b: 2 };\n"
     with pytest.raises(AssertionError, match="ne se termine pas sur un `;`"):
         bloc(tronque, "EN")
+
+
+# ──────────────────────────────────────────────────────────────────────────────────────────
+# Le lecteur qui n'est PAS en France doit savoir que le guide parle du droit français
+# ──────────────────────────────────────────────────────────────────────────────────────────
+PREVIZ_TS = REPO_ROOT / "site" / "src" / "config" / "previz.ts"
+PAGES_PREVIZ = PAGES / "previz"
+
+
+def test_une_langue_servie_hors_france_porte_son_avertissement_de_contexte():
+    """`comprendre` doit porter son avertissement de contexte dans toute langue servie ≠ FR.
+
+    🔴 CE QUE `ASYMETRIES_MODULES` NE FAISAIT PAS. Les trois clés `contextNotice`,
+    `inFranceLabel` et `tag` y sont déclarées comme une asymétrie VOULUE — l'anglais les
+    porte, le français n'en a structurellement pas besoin. Mais une exemption rend une clé
+    INVISIBLE au garde de parité : elle n'oblige personne à l'écrire. Le néerlandais pouvait
+    donc arriver sans elles, passer toute la suite au vert, et dire à un élu néerlandais que
+    le délai de recours français est le sien. C'est [[favorable-par-absence-de-detection]]
+    appliqué à une exemption : l'absence de reproche n'est pas une garantie.
+
+    L'obligation mord au moment où la langue devient VIVANTE, pas pendant la rédaction :
+    c'est le moment où la page serait servie, et une langue en préparation a le droit d'être
+    incomplète. La liste des langues concernées n'est pas recopiée ici — elle se DÉRIVE : la
+    France est le seul lecteur chez lui, toute autre langue servie est un lecteur ailleurs.
+    """
+    requises = ASYMETRIES_MODULES["comprendre.ts"]
+    assert requises, "l'asymétrie de `comprendre.ts` est vide — ce garde ne garde plus rien"
+    texte = (CONTENU / "comprendre.ts").read_text(encoding="utf-8")
+    for lg in sorted(set(_langues_vivantes()) - {"fr"}):
+        cles = {c.split(".")[-1] for c in chemins(bloc(texte, lg.upper()))}
+        manquantes = sorted(requises - cles)
+        assert not manquantes, (
+            f"comprendre.ts — {lg.upper()} est servie et ne porte pas {manquantes}. Le guide "
+            f"« Comprendre » est écrit depuis le droit FRANÇAIS (droits, calendrier, enquête "
+            f"publique) ; sans cet avertissement, la page laisse croire à un lecteur de "
+            f"{lg.upper()} que les délais français sont les siens. Le gabarit teste ces clés "
+            f"(`t.x && …`), donc leur absence ne casse rien : elle efface l'avertissement."
+        )
+
+
+def test_le_garde_d_avertissement_hors_france_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une langue servie dont `comprendre` a perdu son avertissement."""
+    faux = tmp_path / "content"
+    faux.mkdir(parents=True)
+    (faux / "comprendre.ts").write_text(
+        'const FR = { titre: "Comprendre" };\n'
+        'const NL = { titre: "Begrijpen" };\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "CONTENU", faux)
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "nl"])
+    with pytest.raises(AssertionError, match="est servie et ne porte pas"):
+        test_une_langue_servie_hors_france_porte_son_avertissement_de_contexte()
+
+
+def test_chaque_langue_declaree_sait_ou_elle_vit():
+    """`RACINE` doit couvrir toute langue déclarée, et par une adresse qui lui est propre.
+
+    Le layout construisait son lien d'accueil avec `lang === "en" ? "/" : "/fr/"`. Un ternaire
+    binaire ne SIGNALE pas le cas qu'il ignore, il en choisit un : le néerlandais serait parti
+    sur l'accueil français, sans un mot. Une langue de plus que la table ne connaît rend
+    `undefined` dans un href — c'est-à-dire un lien mort, pas une erreur.
+    """
+    texte = (CONTENU / "langues.ts").read_text(encoding="utf-8")
+    m = re.search(r"RACINE: Record<LangueDeclaree, string> = \{([^}]*)\}", texte)
+    assert m, "RACINE introuvable dans langues.ts — le harnais ne sait plus où vit une langue"
+    racines = dict(re.findall(r'(\w+):\s*"([^"]*)"', m.group(1)))
+    declarees = set(_langues_declarees())
+    manquantes = sorted(declarees - set(racines))
+    assert not manquantes, (
+        f"des langues déclarées n'ont pas de racine : {manquantes} — leur lien d'accueil "
+        f"rendrait `undefined`, un lien mort sur toutes leurs pages"
+    )
+    doublons = [r for r in racines.values() if list(racines.values()).count(r) > 1]
+    assert not doublons, (
+        f"deux langues partagent la même racine ({sorted(set(doublons))}) : l'une servirait "
+        f"les pages de l'autre"
+    )
+
+
+def test_la_previz_ne_sort_rien_en_production():
+    """Une page de préviz doit tenir son portillon dans `getStaticPaths`, jamais dans le gabarit.
+
+    🔴 La forme COMPTE. Une page Astro sans `getStaticPaths` est toujours construite, et un
+    `if` qui ne rend rien laisse quand même un fichier HTML dans `dist/` : une langue
+    déclarée « en préparation » serait servie sous une autre adresse. Rendre `[]` est la
+    seule forme qui ne produise pas un octet — et c'est `cheminsPreviz()` qui la porte, à un
+    seul endroit, lu depuis l'environnement.
+    """
+    source = PREVIZ_TS.read_text(encoding="utf-8")
+    assert "process.env.SMDC_PREVIZ" in source, (
+        "le portillon de préviz ne lit plus l'environnement — s'il devient constant, les "
+        "pages de préviz partent en production"
+    )
+    assert re.search(r"return PREVIZ \? fabrique\(\) : \[\]", source), (
+        "`cheminsPreviz` ne rend plus `[]` quand le portillon est fermé"
+    )
+    pages = sorted(PAGES_PREVIZ.rglob("*.astro"))
+    assert pages, f"aucune page sous {PAGES_PREVIZ.relative_to(REPO_ROOT)} — le relevé ne cherche plus"
+    for page in pages:
+        texte = page.read_text(encoding="utf-8")
+        assert "getStaticPaths" in texte and "cheminsPreviz(" in texte, (
+            f"{page.relative_to(PAGES)} ne passe pas par `cheminsPreviz()` dans un "
+            f"`getStaticPaths` : elle serait construite en production"
+        )
+
+
+def test_les_trous_nommes_sont_les_memes_dans_toutes_les_langues():
+    """Une chaîne traduite doit porter EXACTEMENT les mêmes trous `{nom}` que sa source.
+
+    🔴 Le trou perdu est muet. `"{v} sites à {commune}"` traduit sans `{commune}` ne casse
+    rien : la phrase s'affiche, bien tournée, et la commune a disparu. Le trou EN TROP est
+    pire — `{commune}` dans une langue où le code ne le remplit pas s'affiche tel quel, en
+    accolades, sur la page. Aucun des deux ne lève d'erreur ; `astro build` ne tourne pas
+    `astro check`, et de toute façon une chaîne est une chaîne.
+
+    L'épreuve porte sur les langues DÉCLARÉES, pas seulement servies : c'est pendant la
+    rédaction qu'un trou se perd, et une langue en préparation part d'une copie où les trous
+    sont justes — la faute est donc datable au geste qui l'introduit. L'ORDRE est libre :
+    l'interpolation se fait par nom (`.replace("{grade}", …)`), et une langue a le droit de
+    tourner sa phrase autrement. C'est l'ENSEMBLE qui doit tenir.
+    """
+    declarees = _langues_declarees()
+    reference = declarees[0]
+    fautes: list[str] = []
+    for fichier in TABLES_MODULES:
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        try:
+            ref = _valeurs(bloc(texte, reference.upper()))
+        except AssertionError:
+            continue
+        for lg in declarees[1:]:
+            try:
+                autre = _valeurs(bloc(texte, lg.upper()))
+            except AssertionError:
+                continue
+            for cle, val in ref.items():
+                if cle not in autre:
+                    continue  # l'absence de clé est l'affaire du garde de parité
+                attendus = set(re.findall(r"\{[a-zA-Z_][\w]*\}", val))
+                servis = set(re.findall(r"\{[a-zA-Z_][\w]*\}", autre[cle]))
+                if attendus != servis:
+                    perdus = sorted(attendus - servis)
+                    ajoutes = sorted(servis - attendus)
+                    fautes.append(
+                        f"  {fichier} · {lg.upper()} · {cle} —"
+                        + (f" trou(s) PERDU(S) {perdus}" if perdus else "")
+                        + (f" trou(s) EN TROP {ajoutes}" if ajoutes else "")
+                    )
+    assert not fautes, (
+        f"{len(fautes)} chaîne(s) traduites n'ont plus les trous de leur source :\n"
+        + "\n".join(fautes[:20])
+        + "\n\nUn trou perdu efface une donnée sans rien casser ; un trou en trop s'affiche "
+        "en accolades sur la page. L'ordre est libre, l'ensemble ne l'est pas."
+    )
+
+
+def test_chaque_langue_declaree_a_sa_regle_de_pluriel():
+    """Toute langue déclarée doit porter sa RÈGLE de pluriel, pas hériter de celle du voisin.
+
+    Le français met zéro au singulier, l'anglais et le néerlandais au pluriel. Un
+    `n > 1 ? … : …` dans un gabarit applique donc la règle française au néerlandais sans
+    rien signaler. Une langue sans règle rendrait `REGLE_PLURIEL[lang]` → `undefined`, puis
+    `undefined(n)` : là, au moins, ça casse. Ce test empêche d'en arriver là.
+    """
+    texte = (CONTENU / "langues.ts").read_text(encoding="utf-8")
+    m = re.search(
+        r"REGLE_PLURIEL: Record<LangueDeclaree, \(n: number\) => FormePluriel> = \{(.*?)\n\};",
+        texte,
+        re.S,
+    )
+    assert m, "REGLE_PLURIEL introuvable dans langues.ts"
+    reglees = set(re.findall(r"^\s*(\w+):", m.group(1), re.M))
+    manquantes = sorted(set(_langues_declarees()) - reglees)
+    assert not manquantes, (
+        f"des langues déclarées n'ont pas de règle de pluriel : {manquantes} — leurs phrases "
+        f"à compte prendraient la règle d'une autre langue, ou rien du tout"
+    )
+
+
+# La prose qui vit HORS des tables gardées : `config/stats.ts` porte les phrases des chiffres
+# de l'accueil et des pages de chiffres sous forme de paires `{ fr: …, en: … }`. Elles sont
+# dans le périmètre signé (l'accueil en fait partie) mais pas dans `TABLES_MODULES` — donc pas
+# dans le garde de parité. Le compte est DÉCLARÉ et ne peut que baisser : un cliquet, comme
+# `DETTE_I18N`, parce qu'un trou qu'on mesure vaut mieux qu'un trou qu'on découvre en servant.
+DETTE_PAIRES_STATS = 63
+
+
+def test_la_prose_hors_table_ne_grossit_jamais():
+    """`config/stats.ts` ne doit pas accumuler de prose à deux langues en douce.
+
+    🔴 Trouvé par la préviz, pas par un test : l'accueil néerlandais PLANTAIT sur `fmtPct`
+    parce que la table de formes s'arrêtait à deux langues. Le format, lui, se déclare en une
+    ligne (c'est fait). Mais derrière il reste les PHRASES, les lignes de source, les noms de
+    pays et les périmètres — de la prose, qui n'est pas au harnais et ne peut pas s'inventer.
+    Tant qu'elle est là, l'accueil néerlandais ne peut pas être complet, et ce nombre le dit.
+    """
+    texte = (REPO_ROOT / "site" / "src" / "config" / "stats.ts").read_text(encoding="utf-8")
+    paires = re.findall(
+        r'\{\s*fr:\s*"(?:[^"\\]|\\.)*",\s*en:\s*"(?:[^"\\]|\\.)*"\s*\}', texte
+    )
+    assert len(paires) <= DETTE_PAIRES_STATS, (
+        f"{len(paires)} paires fr/en dans config/stats.ts, la dette déclarée est "
+        f"{DETTE_PAIRES_STATS} : de la prose vient d'être ajoutée hors des tables gardées. "
+        f"Elle doit rejoindre un module de `TABLES_MODULES`, où la parité se vérifie."
+    )
+    if len(paires) < DETTE_PAIRES_STATS:
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {len(paires)} paires "
+            f"(déclaré : {DETTE_PAIRES_STATS}). Abaissez DETTE_PAIRES_STATS à {len(paires)}."
+        )
