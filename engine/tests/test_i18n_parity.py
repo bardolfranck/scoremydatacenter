@@ -1379,3 +1379,76 @@ def test_le_garde_de_la_donnee_servie_mord_vraiment(monkeypatch):
     monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "nl"])
     with pytest.raises(AssertionError, match="ne portent pas toutes les langues vivantes"):
         test_la_donnee_servie_parle_toutes_les_langues_vivantes()
+
+
+QUESTIONS_DERIVEES = CONTENU / "questions-derivees.ts"
+
+
+def _litteraux_par_langue(texte: str) -> list[set[str]]:
+    """Les littéraux `{ fr: …, en: … }` d'un module, rendus comme ensembles de clés.
+
+    Troisième forme d'i18n du dépôt, après les blocs `const FR/NL` et les littéraux tenus
+    DANS un composant : une table dont CHAQUE entrée porte ses langues. `bloc()` ne sait pas
+    la lire — elle n'a pas de bloc de langue — d'où ce relevé à part.
+    """
+    sortie: list[set[str]] = []
+    for m in re.finditer(r"\bfr\s*:", texte):
+        debut = texte.rfind("{", 0, m.start())
+        if debut < 0:
+            continue
+        profondeur, i = 0, debut
+        while i < len(texte):
+            if texte[i] == "{":
+                profondeur += 1
+            elif texte[i] == "}":
+                profondeur -= 1
+                if profondeur == 0:
+                    break
+            i += 1
+        sortie.append(set(re.findall(r"\b(\w+)\s*:", texte[debut : i + 1])))
+    return sortie
+
+
+def test_les_questions_a_poser_parlent_toutes_les_langues_vivantes():
+    """`questions-derivees.ts` doit porter chaque langue servie — il n'était gardé par RIEN.
+
+    🔴 C'est le module qui engendre les « à demander » du portrait : la seule phrase du site
+    qui dise à un lecteur quoi réclamer, et à qui. Il a échappé aux deux gardes existants
+    parce qu'il a une TROISIÈME forme — ni blocs `const FR/NL`, ni littéral dans un
+    composant, mais `Record<clé, {fr, en}>`. La préviz l'a montré en anglais sur une page
+    néerlandaise, et `TABLES_MODULES` ne pouvait pas le voir : on n'y déclare que ce qu'on
+    sait lire.
+
+    Et il a d'abord été imputé au pipeline (`registers/absence.py`) : la chaîne servie n'y
+    est pas. Vérifier d'où vient VRAIMENT une chaîne avant de décider qui doit l'écrire —
+    une carte de provenance fausse envoie le travail au mauvais dépôt.
+    """
+    texte = QUESTIONS_DERIVEES.read_text(encoding="utf-8")
+    litteraux = _litteraux_par_langue(texte)
+    assert len(litteraux) >= 10, (
+        f"seulement {len(litteraux)} littéral(aux) de langue relevé(s) dans "
+        f"{QUESTIONS_DERIVEES.name} — le relevé ne cherche plus"
+    )
+    vivantes = set(_langues_vivantes())
+    manquants = [sorted(vivantes - cles) for cles in litteraux if vivantes - cles]
+    assert not manquants, (
+        f"{len(manquants)} question(s) ou amorce(s) ne portent pas toutes les langues "
+        f"vivantes : il manque {sorted({l for m in manquants for l in m})}. Servies telles "
+        f"quelles, elles sortent dans une autre langue que celle de la page — c'est la "
+        f"phrase qui dit au lecteur quoi réclamer."
+    )
+
+
+def test_le_garde_des_questions_a_poser_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve sur une table fabriquée, pas sur l'avancement du travail."""
+    faux = tmp_path / "questions-derivees.ts"
+    faux.write_text(
+        "export const Q = {\n" + "".join(
+            f'  q{i}: {{ fr: "a{i}", en: "b{i}" }},\n' for i in range(12)
+        ) + "};\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "QUESTIONS_DERIVEES", faux)
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "nl"])
+    with pytest.raises(AssertionError, match="ne portent pas toutes les langues"):
+        test_les_questions_a_poser_parlent_toutes_les_langues_vivantes()

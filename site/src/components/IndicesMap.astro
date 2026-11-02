@@ -10,6 +10,7 @@
 // the map (amendement 2026-07-19 + §4 presence gate): any surface that
 // renders the map renders the insert.
 import indicesData from "../../public/data/indices.json";
+import { copie } from "../content/langues";
 
 interface Props {
   lang: "fr" | "en";
@@ -18,7 +19,7 @@ interface Props {
 const { lang, compact = false } = Astro.props;
 const INDICES = indicesData as any;
 
-const T = {
+const T = copie({
   fr: {
     insert: "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets.",
     veille: "en veille — n < 5 : moyenne non calculée",
@@ -43,7 +44,7 @@ const T = {
       dots: "●●● solid doc · ●●○ medium · ●○○ weak — documentation always ships with the grade (rule #1)",
     },
   },
-}[lang];
+}, lang);
 
 // Visual anchor per country (lon/lat) — cartographic constants, same family
 // as the site map's hardcoded Europe center; NOT corpus data.

@@ -18,6 +18,7 @@
 import showcaseData from "../../public/data/home_showcase.json";
 import { ACCUEIL } from "../content/accueil";
 import type { Langue } from "../content/langues";
+import { copie } from "../content/langues";
 
 interface Props {
   lang: "fr" | "en";
@@ -26,7 +27,7 @@ interface Props {
 const { lang, dcById } = Astro.props;
 const SHOWCASE = showcaseData as any;
 
-const T = {
+const T = copie({
   fr: {
     eyebrow: "La preuve par l'image",
     titleA: "sites.\u00a0", titleEm: "Vus du ciel.", titleB: "\u00a0Notés.",
@@ -49,7 +50,7 @@ const T = {
     credit: "Imagery © Esri, Maxar, Earthstar Geographics",
     hint: "Hover to pause · click for the site's fiche",
   },
-}[lang];
+}, lang);
 
 const PIPELINE = ["announced", "permitting", "under_construction"];
 const ROWS = 3;

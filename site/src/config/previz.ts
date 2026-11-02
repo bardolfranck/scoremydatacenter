@@ -37,7 +37,12 @@ export function cheminsPreviz<T>(fabrique: () => T[]): T[] {
 }
 
 /** Les gabarits relus en préviz — le périmètre signé : fiche, portrait, Comprendre, accueil. */
-export const GABARITS = ["accueil", "fiche", "portrait", "comprendre", "methodologie"] as const;
+export const GABARITS = [
+  "accueil", "fiche", "portrait", "comprendre", "methodologie",
+  // Les pages de concept et de référence : le relecteur natif les a demandées, et c'est là
+  // que tombent les termes de droit — glossaire et normes les PORTENT, par métier.
+  "glossaire", "normes", "sources", "nuisances", "acceptabilite", "notation",
+] as const;
 export type Gabarit = (typeof GABARITS)[number];
 
 /** Le FR de référence pour le côte-à-côte, par gabarit. `{id}` = la fiche choisie au build. */
@@ -47,6 +52,12 @@ export const JUMEAU_FR: Record<Gabarit, string> = {
   portrait: "/fr/dc/{id}/portrait/",
   comprendre: "/fr/comprendre/",
   methodologie: "/fr/methodologie/",
+  glossaire: "/fr/glossaire/",
+  normes: "/fr/normes/",
+  sources: "/fr/sources/",
+  nuisances: "/fr/nuisances-data-center/",
+  acceptabilite: "/fr/acceptabilite-data-center/",
+  notation: "/fr/notation-data-center/",
 };
 
 /** La fiche de démonstration, choisie UNE fois : les deux pages de préviz doivent montrer la

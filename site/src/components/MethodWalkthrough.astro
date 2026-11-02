@@ -1,4 +1,5 @@
 ---
+import { copie } from "../content/langues";
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
@@ -147,7 +148,7 @@ const T = {
     satWords: ["free capacity", "some margin", "under strain", "saturated"],
   },
 };
-const t = T[lang];
+const t = copie(T, lang);
 const L = (o: { fr: string; en: string }) => o[lang];
 ---
 

@@ -14,11 +14,22 @@ import DcFiche from "../../components/DcFiche.astro";
 import SitePortrait from "../../components/SitePortrait.astro";
 import Understand from "../../components/Understand.astro";
 import Methodologie from "../../components/Methodologie.astro";
+import Glossaire from "../../components/Glossaire.astro";
+import Normes from "../../components/Normes.astro";
+import Sources from "../../components/Sources.astro";
+import PagePilier from "../../components/PagePilier.astro";
 import { ACCUEIL } from "../../content/accueil";
 import { FICHE } from "../../content/fiche";
 import { PORTRAIT } from "../../content/portrait";
 import { COMPRENDRE } from "../../content/comprendre";
 import { METHODOLOGIE } from "../../content/methodologie";
+import { GLOSSAIRE } from "../../content/glossaire";
+import { NORMES } from "../../content/normes";
+import { SOURCES } from "../../content/sources";
+import { ACCEPTABILITE } from "../../content/acceptabilite";
+import { NOTATION } from "../../content/notation";
+import { nuisances } from "../../content/nuisances";
+import { perimeterSites, derivedCount } from "../../config/stats";
 import { CHECKLIST_FR } from "../../content/questions";
 import { WHATIS_FR } from "../../content/what-is-a-dc";
 import { RICH_FR } from "../../content/understand-blocks";
@@ -101,4 +112,28 @@ const { dc, related, geo } = Astro.props as {
     altHref="/fr/methodologie/"
     altLabel="FR"
   />
+)}
+{gabarit === "glossaire" && (
+  <Glossaire lang={LANGUE_PREVIZ} t={GLOSSAIRE[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/glossaire/" altLabel="FR" />
+)}
+{gabarit === "normes" && (
+  <Normes lang={LANGUE_PREVIZ} t={NORMES[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/normes/" altLabel="FR" />
+)}
+{gabarit === "sources" && (
+  <Sources lang={LANGUE_PREVIZ} t={SOURCES[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/sources/" altLabel="FR" />
+)}
+{gabarit === "nuisances" && (
+  <PagePilier
+    lang={LANGUE_PREVIZ}
+    t={nuisances(LANGUE_PREVIZ, perimeterSites("monde"), derivedCount("n_nearest_dwelling"))}
+    nav={FR_NAV}
+    altHref="/fr/nuisances-data-center/"
+    altLabel="FR"
+  />
+)}
+{gabarit === "acceptabilite" && (
+  <PagePilier lang={LANGUE_PREVIZ} t={ACCEPTABILITE[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/acceptabilite-data-center/" altLabel="FR" />
+)}
+{gabarit === "notation" && (
+  <PagePilier lang={LANGUE_PREVIZ} t={NOTATION[LANGUE_PREVIZ]} nav={FR_NAV} altHref="/fr/notation-data-center/" altLabel="FR" />
 )}

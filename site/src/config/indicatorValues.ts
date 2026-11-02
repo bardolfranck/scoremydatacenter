@@ -220,14 +220,23 @@ export function phraseFacteurDominant(
   const mots = drag?.indicator ? FACTEUR_DOMINANT[drag.indicator] : undefined;
   if (!mots) return null;
   const lg = lang as "fr" | "en";
+  // 🔴 PAS DE MOTS DANS CETTE LANGUE = PAS DE PHRASE, comme pour un facteur sans mots sûrs.
+  // Les trois tables de ce fichier (FACTEUR_DOMINANT, GENTILES, PHRASES) s'arrêtent au
+  // français et à l'anglais. `PHRASES[lg].ici` sur une troisième langue ne rendait pas une
+  // phrase bancale : il FAISAIT ÉCHOUER LE BUILD de la page (vu sur la fiche néerlandaise,
+  // « Cannot read properties of undefined (reading 'ici') »). Se taire est ici la bonne
+  // sortie — ce bloc dit au lecteur ce qui tire SA note, en mots d'habitant ; le servir en
+  // anglais au milieu d'une page néerlandaise serait pire que ne pas le servir.
+  const phrases = PHRASES[lg];
   const facteur = mots[lg];
-  const base = PHRASES[lg].ici.replace("{facteur}", facteur);
+  if (!phrases || !facteur) return null;
+  const base = phrases.ici.replace("{facteur}", facteur);
   // La part n'est servie que si le pays a assez de fiches pour qu'elle veuille dire quelque
   // chose (le moteur l'omet sinon). Elle ne révèle rien des seuils : c'est la distribution
   // des faiblesses dans le pays, et elle dit au lecteur la chose utile — la contrainte est
   // systémique, elle n'est pas le fait de ce projet-là.
   const g = drag?.country ? GENTILES[drag.country] : undefined;
-  if (drag?.country_share === undefined || !g) return base;
+  if (drag?.country_share === undefined || !g || !g[lg]) return base;
   const pct = Math.round(drag.country_share * 100);
   // ON DONNE LE CHIFFRE, ON NE LE QUALIFIE PAS. Première version : « C'est AUSSI le premier
   // facteur sur X % » — qui marche à 83 % et devient une non-information à 1 % (cas réel : les
@@ -235,7 +244,7 @@ export function phraseFacteurDominant(
   // au-dessus de tant, « peu fréquent » en dessous) ; la formulation neutre est vraie aux deux
   // bouts et laisse le lecteur conclure — 83 % se lit comme une contrainte de pays, 1 % comme
   // une singularité. Décrire le fait, ne pas le juger : la même règle que partout ailleurs.
-  return PHRASES[lg].part
+  return phrases.part
     .replace("{base}", base)
     .replace("{pct}", String(pct))
     .replace("{gentile}", g[lg]);

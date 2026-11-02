@@ -1,4 +1,5 @@
 ---
+import { copie } from "../content/langues";
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
@@ -39,7 +40,7 @@ const T = {
     alt: "Satellite view of a large data center, seen from above",
   },
 } as const;
-const t = T[lang];
+const t = copie(T, lang);
 ---
 
 <section class="section rd-etre-section" aria-labelledby="raison-title">

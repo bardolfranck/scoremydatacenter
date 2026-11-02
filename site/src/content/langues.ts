@@ -73,3 +73,21 @@ export function pluriel(
 ): string {
   return formes[REGLE_PLURIEL[lang](n)];
 }
+
+/**
+ * La copie d'un composant pour `lang`, avec repli DÉCLARÉ sur l'anglais.
+ *
+ * 🔴 Huit composants portent encore leur copie EN DUR, par langue, dans le composant —
+ * ~301 chaînes hors des tables gardées. Tant qu'elles y sont, `T[lang]` rend `undefined`
+ * pour toute langue nouvelle, et la page ne s'affiche pas mal : **elle ne se construit
+ * pas**. L'accueil néerlandais est tombé exactement là (`Cannot read properties of
+ * undefined (reading 'eyebrow')`), et aucun garde de parité ne pouvait le voir : ils
+ * lisent `content/`, pas les composants.
+ *
+ * Ce repli n'est pas la réparation — la réparation est de sortir ces chaînes dans un
+ * module de `TABLES_MODULES`, où la parité se vérifie. Il évite qu'un bloc manquant
+ * EMPÊCHE la page d'exister, et le bandeau de préviz dit lesquels sont encore en anglais.
+ */
+export function copie<T>(table: Record<string, T>, lang: string): T {
+  return table[lang] ?? table.en;
+}

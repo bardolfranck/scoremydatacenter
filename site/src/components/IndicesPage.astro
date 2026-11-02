@@ -9,6 +9,7 @@
 // ?pays=XX shareable state. Letters render ONLY through the map component
 // and the table chips (gate 7 extended).
 import "@fontsource/bricolage-grotesque/700.css";
+import { copie } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
@@ -49,7 +50,7 @@ for (const p of CMP.pays ?? []) cmpByCountry[p.pays] = p;
 const cmpTooThin: Record<string, number> = {};
 for (const m of CMP.corpus_trop_mince ?? []) cmpTooThin[m.pays] = m.sites;
 
-const T = {
+const T = copie({
   fr: {
     pageTitle: "Indice SITE par pays — ScoreMyDataCenter",
     metaDescription: "L'indice SITE par pays : la moyenne des notes de sites (réseau, eau, foncier, risques) agrégée pays par pays — avec sa documentation, ses seuils et son historique. Il ne note ni les opérateurs ni la conduite des projets.",
@@ -128,7 +129,7 @@ const T = {
     },
     ogTitle: (name: string) => `${name}'s site index`,
   },
-}[lang];
+}, lang);
 
 const dateFmt = (iso: string | null) => {
   if (!iso) return "";

@@ -22,7 +22,7 @@ import { FR_NAV, EN_NAV } from "../config/nav";
 // de l'accueil vit donc là-bas, et le garde de parité ne l'a jamais vue — un spread n'a pas
 // de clés à relever. C'est un second endroit à remplir pour une langue nouvelle, et il est
 // désormais nommé ici.
-import { FR_ABOUT, EN_ABOUT } from "../config/about";
+import { FR_ABOUT, EN_ABOUT, NL_ABOUT } from "../config/about";
 // Les chiffres de « pourquoi maintenant » sont CALCULÉS au build : la table porte les
 // gabarits de phrase, le helper plus bas les remplit.
 import { STATS, statView, fmtInt, type Lang } from "../config/stats";
@@ -181,7 +181,7 @@ const FR = {
   whyLede: "Un data center de 900 MW s'annonce près de chez vous. Où lire, clairement, ce qu'il vaut ? Son impact local ?",
   whyBody:
     "Les cartes existantes alignent des caractéristiques techniques ; les observatoires de contestation comptent les conflits. Personne ne met à plat, projet par projet, la réalité de chaque dossier : une note, des sources, une méthode que chacun peut vérifier et refaire. C'est ce vide que ScoreMyDataCenter comble : <span class='hl-red'>la première note d'acceptabilité indépendante, publique et opposable</span> — une notation factuelle, sourcée et méthodique, publiée au titre de la contribution au débat d'intérêt général. Et une échelle qui engage : <b>le <i class='gl gl-a'>A</i> se prouve en exploitation, il ne se promet pas</b> — les promesses, même excellentes, plafonnent en <i class='gl gl-b'>B</i> ; seule la preuve vérifiée fait le <i class='gl gl-a'>A</i>. Notre mission : <b>scorer tous les data centers</b> — méthodiquement, publiquement, un dossier à la fois.",
-  ...FR_ABOUT,
+  ...NL_ABOUT,
   principlesAria: "Principes",
   principles: [
     { title: "Méthode publique", body: "Grille de notation ouverte, versionnée, citable. Quiconque peut refaire chaque note." },
