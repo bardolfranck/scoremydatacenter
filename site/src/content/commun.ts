@@ -45,17 +45,12 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
-  // Le titre SERP nomme la CATÉGORIE et la COMMUNE : « data center Fouju » est la requête
-  // d'un riverain ou d'un élu, c'est-à-dire exactement notre lecteur (audit SEO, 10-16).
-  place: "data center à {municipality}",
-  // Le repli quand la commune manque. C'était un littéral hors de toute branche, donc le
-  // même mot dans les deux langues — ce qui ne veut pas dire qu'il le restera : le
-  // néerlandais écrit « datacenter » en un mot.
-  placeFallback: "data center",
-  // L'espace insécable avant le deux-points est une règle TYPOGRAPHIQUE du français, donc
-  // une propriété de la langue — comme la virgule décimale. Elle vit ici et non en code,
-  // pour qu'une langue nouvelle la déclare au lieu d'aller modifier un gabarit.
-  colon: " : ",
+  // Le titre SERP nomme la CATÉGORIE et la COMMUNE — en néerlandais la requête du
+  // riverain est « datacenter Almere » : datacenter EN UN MOT (lexique du rapport figé).
+  place: "datacenter in {municipality}",
+  placeFallback: "datacenter",
+  // Pas d'espace avant le deux-points en néerlandais (convention typographique NL).
+  colon: ": ",
 };
 
 /** Les chaînes partagées : `COMMUN[lang]`. */
