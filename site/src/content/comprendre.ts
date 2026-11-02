@@ -159,7 +159,11 @@ const EN = {
 // Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
-const NL: typeof FR = {
+// Comme EN, le bloc NL est non typé : il porte les clés d'avertissement de contexte
+// (contextNotice/inFranceLabel/tag) que `typeof FR` ne connaît pas — le lecteur NL
+// n'est pas en France, le garde `test_une_langue_servie_hors_france_porte_son_
+// avertissement_de_contexte` les exige à la mise en vie.
+const NL = {
   title: "Datacenters begrijpen, zonder jargon — ScoreMyDataCenter",
   description:
     "Wat een datacenter echt verandert in uw buurt: ordes van grootte, lokale impact, de juiste vragen om te stellen, uw rechten, de kalender. In klare taal, zonder jargon.",
@@ -177,16 +181,21 @@ const NL: typeof FR = {
   seeMore: "Meer tonen…",
   seeLess: "Inklappen",
   tocAria: "Inhoud",
+  inFranceLabel: "In Frankrijk —",
+  contextNotice:
+    "Deze gids is geschreven vanuit de <strong>Franse</strong> regelgeving en markt — het eerste land dat het observatorium volledig beoordeelt. De vragen in blok 3 reizen overal mee; bedragen, rechten en termijnen zijn Frans. Landspecifieke versies volgen met de uitbreiding van het observatorium.",
   blocks: [
     {
       anchor: "wat",
       title: "Wat is een datacenter?",
       slot: "whatis",
+      tag: "Frankrijk",
     },
     {
       anchor: "gemeente",
       title: "Waarom dit mijn gemeente aangaat",
       slot: "rich",
+      tag: "Frankrijk",
     },
     {
       anchor: "vragen",
@@ -204,6 +213,7 @@ const NL: typeof FR = {
       anchor: "rechten",
       title: "Rechten en kalender",
       slot: "rich",
+      tag: "Frankrijk",
     },
     {
       anchor: "faq",

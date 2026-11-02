@@ -59,22 +59,22 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
-  title: "Noter un data center — la méthode Nutri-Score de l'acceptabilité | ScoreMyDataCenter",
-  metaDescription: "Comment note-t-on un data center ? Deux notes de A à E — site et projet — avec niveau de confiance et méthode ouverte. Le « Nutri-Score » de l'acceptabilité, projet par projet.",
-  tagline: "Observatoire indépendant",
-  h1: "La notation des data centers",
-  lead: "Noter un data center, c'est résumer en une lettre de <strong><span class='note-inline n-a'>A</span> à <span class='note-inline n-e'>E</span></strong> ce que des dizaines d'indicateurs sourcés disent de son empreinte et de sa conduite — comme un <strong>Nutri-Score</strong>, mais pour un projet d'infrastructure. Nous attribuons <strong>deux notes</strong> par projet, toujours assorties d'un niveau de confiance.",
+  title: "Een datacenter beoordelen — de Nutri-Score-methode voor maatschappelijke acceptatie | ScoreMyDataCenter",
+  metaDescription: "Hoe wordt een datacenter beoordeeld? Twee cijfers van A tot E — site en project — met een vertrouwensniveau en een open methode. De ‘Nutri-Score’ van de maatschappelijke acceptatie, project per project.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "De beoordeling van datacenters",
+  lead: "Een datacenter beoordelen is in één letter van <strong><span class='note-inline n-a'>A</span> tot <span class='note-inline n-e'>E</span></strong> samenvatten wat tientallen gedocumenteerde indicatoren zeggen over zijn voetafdruk en zijn gedrag — als een <strong>Nutri-Score</strong>, maar voor een infrastructuurproject. We kennen per project <strong>twee cijfers</strong> toe, altijd samen met een vertrouwensniveau.",
   sections: [
-    { h2: "L'idée du Nutri-Score",
-      corps: "<p>Une étiquette lisible par tous devant une réalité technique complexe. Une lettre ne remplace pas le dossier : elle y donne accès et le rend comparable d'un site à l'autre.</p>" },
-    { h2: "Deux notes, pas une",
-      corps: "<p>Une pour le <strong>site</strong> — le contexte que le projet subit, qu'il n'a pas choisi — et une pour le <strong>projet et le processus</strong> — ce que l'opérateur décide. Les séparer évite qu'un bon dossier rachète un mauvais terrain, ou l'inverse. Une note n'est <strong>pas</strong> la moyenne des piliers : voir <a href=\"/fr/methodologie\">la méthode</a>.</p>" },
-    { h2: "Cinq piliers, des poids explicites",
-      corps: "<p>Énergie 25 %, Eau 20 %, Foncier et biodiversité 20 %, Impact local 20 %, Transparence et gouvernance 15 %. Ces poids sont publics et ne changent pas d'un site à l'autre.</p>" },
-    { h2: "La confiance ne se sépare jamais de la note",
-      corps: "<p>Sous 40 % de couverture documentaire, nous écrivons « données insuffisantes » au lieu d'une lettre. <strong>Le <span class='note-inline n-a'>A</span> se prouve, il ne se promet pas</strong> : une absence de donnée ne vaut jamais une bonne note — sans quoi le site le moins transparent serait le mieux noté.</p>" },
-    { h2: "Une méthode reproductible",
-      corps: "<p>Le calcul ne repose que sur les valeurs sourcées du fichier de chaque projet, et la méthode est ouverte. Pour la voir s'appliquer pas à pas : <a href=\"/fr/la-note-pas-a-pas\">la note, pas à pas</a>, <a href=\"/fr/classement\">le classement</a>, <a href=\"/fr/carte\">la carte</a>.</p>" },
+    { h2: "Het idee van de Nutri-Score",
+      corps: "<p>Een etiket dat iedereen kan lezen, vóór een complexe technische werkelijkheid. Een letter vervangt het dossier niet: ze opent het, en maakt het vergelijkbaar van site tot site.</p>" },
+    { h2: "Twee cijfers, niet één",
+      corps: "<p>Eén voor de <strong>site</strong> — de context die het project ondergaat en niet heeft gekozen — en één voor <strong>project en proces</strong> — wat de exploitant beslist. Ze scheiden voorkomt dat een goed dossier een slechte plek afkoopt, of omgekeerd. Een cijfer is <strong>niet</strong> het gemiddelde van de pijlers: zie <a href=\"/fr/methodologie\">de methode</a>.</p>" },
+    { h2: "Vijf pijlers, expliciete gewichten",
+      corps: "<p>Energie 25 %, Water 20 %, Bodem en biodiversiteit 20 %, Lokale impact 20 %, Transparantie en governance 15 %. Deze gewichten zijn openbaar en verschillen niet van site tot site.</p>" },
+    { h2: "Het vertrouwen laat zich nooit van het cijfer scheiden",
+      corps: "<p>Onder 40 % documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van een letter. <strong>Een <span class='note-inline n-a'>A</span> bewijs je, een A beloof je niet</strong>: ontbrekende gegevens leveren nooit een goed cijfer op — anders zou de minst transparante site het best beoordeeld zijn.</p>" },
+    { h2: "Een reproduceerbare methode",
+      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het dossier van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/fr/la-note-pas-a-pas\">het cijfer, stap voor stap</a>, <a href=\"/fr/classement\">de ranglijst</a>, <a href=\"/fr/carte\">de kaart</a>.</p>" },
   ],
 };
 

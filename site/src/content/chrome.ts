@@ -109,44 +109,44 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
-  // La même phrase sert la description schema.org de l'organisation ET l'accroche du pied de
-  // page. Elle était écrite deux fois dans Base.astro, à 130 lignes d'écart.
-  baseline: "Observatoire indépendant du risque d'acceptabilité des data centers.",
-  ogLocale: "fr_FR",
+  // Baseline = description schema.org ET accroche du pied de page (une seule phrase).
+  baseline: "Onafhankelijk observatorium van het acceptatierisico van datacenters.",
+  ogLocale: "nl_NL",
   search: {
-    action: "/fr/classement",
-    placeholder: "Rechercher une commune, un site, un opérateur…",
-    aria: "Rechercher une commune ou un projet noté",
+    action: "/nl/ranglijst",
+    placeholder: "Zoek een gemeente, een site, een exploitant…",
+    aria: "Zoek een gemeente of een beoordeeld project",
   },
+  // Slugs NL choisis AVEC les libellés (règle du fichier : le mot commande l'URL).
   footer: [
-    { heading: "Explorer", links: [
-      { label: "Carte", href: "/fr/carte" },
-      { label: "Classement", href: "/fr/classement" },
-      { label: "Indices pays", href: "/fr/indices/" },
-      { label: "Les chiffres du parc", href: "/fr/chiffres/" },
-      { label: "Comprendre les data centers", href: "/fr/comprendre/" },
+    { heading: "Verkennen", links: [
+      { label: "Kaart", href: "/nl/kaart" },
+      { label: "Ranglijst", href: "/nl/ranglijst" },
+      { label: "Landenindex", href: "/nl/indices/" },
+      { label: "Kerncijfers van het park", href: "/nl/kerncijfers/" },
+      { label: "Datacenters begrijpen", href: "/nl/datacenters-begrijpen/" },
     ] },
-    { heading: "Ressources", links: [
-      { label: "Méthodologie", href: "/fr/methodologie/" },
-      { label: "Modèle ouvert", href: "/fr/#open" },
-      { label: "Bibliothèque", href: "/fr/bibliotheque/" },
-      { label: "API développeurs", href: "/fr/developpeurs" },
-      { label: "FAQ", href: "/fr/#faq" },
+    { heading: "Hulpmiddelen", links: [
+      { label: "Methodologie", href: "/nl/methodologie/" },
+      { label: "Open model", href: "/nl/#open" },
+      { label: "Bibliotheek", href: "/nl/bibliotheek/" },
+      { label: "API voor ontwikkelaars", href: "/nl/ontwikkelaars" },
+      { label: "FAQ", href: "/nl/#faq" },
     ] },
-    { heading: "À propos", links: [
-      { label: "Qui sommes-nous ?", href: "/fr/qui-sommes-nous" },
-      { label: "Presse", href: "/fr/presse" },
-      { label: "Contact", href: "/fr/contact" },
-      { label: "Mentions légales", href: "/fr/mentions-legales" },
+    { heading: "Over", links: [
+      { label: "Over ons", href: "/nl/over-ons" },
+      { label: "Pers", href: "/nl/pers" },
+      { label: "Contact", href: "/nl/contact" },
+      { label: "Juridische informatie", href: "/nl/juridisch" },
     ] },
   ],
   consent: {
-    aria: "Consentement à la mesure d'audience",
-    text: "Mesure d'audience : nous utilisons Google Analytics pour compter les visites et comprendre ce qui est lu. Aucun cookie n'est déposé sans votre accord.",
-    moreHref: "/fr/mentions-legales",
-    more: "En savoir plus",
-    decline: "Refuser",
-    accept: "Accepter",
+    aria: "Toestemming voor bezoekersstatistieken",
+    text: "Bezoekersstatistieken: we gebruiken Google Analytics om bezoeken te tellen en te begrijpen wat er wordt gelezen. Zonder uw toestemming wordt geen cookie geplaatst.",
+    moreHref: "/nl/juridisch",
+    more: "Meer informatie",
+    decline: "Weigeren",
+    accept: "Accepteren",
   },
 };
 

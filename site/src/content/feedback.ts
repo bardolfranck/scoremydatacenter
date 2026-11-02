@@ -57,19 +57,19 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
-  kicker: "Votre avis",
-  title: "Notre travail vous est utile ? Dites-le. Il manque quelque chose ? Dites-le aussi.",
-  usefulLabel: "Qu'est-ce qui vous est utile dans ScoreMyDataCenter ?",
-  usefulHint: "La carte, une note, la méthode, un rapport… dites-le avec vos mots.",
-  missingLabel: "Et qu'est-ce qui vous manque ?",
-  missingHint: "facultatif",
-  nameLabel: "Votre nom et votre fonction",
-  namePlaceholder: "Ex. : Marie Dupont, élue municipale",
-  consentLabel: "J'accepte que ce témoignage soit publié avec mon nom et ma fonction.",
-  consentNote: "Sans cette case, votre message nous parvient quand même — il reste privé.",
-  submit: "Envoyer",
-  thanks: "Merci ! Votre avis est bien parti — nous lisons tout.",
-  error: "L'envoi a échoué. Réessayez, ou écrivez-nous : contact@scoremydatacenter.org",
+  kicker: "Uw mening",
+  title: "Is ons werk u van nut? Zeg het. Ontbreekt er iets? Zeg het ook.",
+  usefulLabel: "Wat heeft u aan ScoreMyDataCenter?",
+  usefulHint: "De kaart, een cijfer, de methode, een rapport… zeg het in uw eigen woorden.",
+  missingLabel: "En wat mist u?",
+  missingHint: "optioneel",
+  nameLabel: "Uw naam en functie",
+  namePlaceholder: "Bijv.: Anna de Vries, gemeenteraadslid",
+  consentLabel: "Ik ga ermee akkoord dat deze reactie met mijn naam en functie wordt gepubliceerd.",
+  consentNote: "Zonder dit vinkje bereikt uw bericht ons ook — het blijft dan privé.",
+  submit: "Versturen",
+  thanks: "Dank u! Uw bericht is verzonden — we lezen alles.",
+  error: "Versturen is mislukt. Probeer het opnieuw, of schrijf ons: contact@scoremydatacenter.org",
 };
 
 /** La copie du bandeau d'avis : `FEEDBACK[lang]`. */
