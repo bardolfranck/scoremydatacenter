@@ -28,7 +28,20 @@ def _ind(doc, indicator_id):
     return next(e for e in doc["indicators"] if e["id"] == indicator_id)
 
 
-def test_repository_data_passes_all_gates():
+def test_repository_data_passes_all_gates(tmp_path, monkeypatch):
+    """Les données DU DÉPÔT passent tous les gates — et rien que celles du dépôt.
+
+    🔴 Ce test lisait le corpus PRIVÉ sans le savoir : deux gates (géo, statut) retombent sur
+    le sidecar du newsroom quand `data_dir` n'en a pas, et ils jugeaient donc 3 293 fiches
+    réelles au lieu des 2 fixtures. Conséquence vécue le 2026-11-02 : il est passé au rouge
+    parce qu'une AUTRE session avait re-mesuré le détecteur de centroïde et signalé une fiche
+    irlandaise — un test du dépôt public cassé par le travail en cours d'un coéquipier, sur un
+    sujet sans rapport. C'est le même défaut que le gate géo a payé en 2026-10-01.
+
+    Le corpus réel est gardé là où il doit l'être : `scripts/validate_corpus.py`, qui tourne
+    dans le chemin de déploiement. Ici on isole.
+    """
+    monkeypatch.setenv("NEWSROOM_CAL", str(tmp_path / "jamais-monte"))
     assert run_gates() == []
 
 
@@ -615,6 +628,53 @@ def test_filigrane_gate_ne_mord_pas_sur_une_phrase_innocente(tmp_path):
                      encoding="utf-8")
         assert filigrane_gate([p]) == [], f"faux positif sur « {innocente} »"
 
+
+def test_geo_gate_refuse_un_sidecar_qui_a_mesure_PLUS_que_le_corpus(tmp_path, monkeypatch):
+    """On rejoue l'incident du 2026-10-30 : un compte supérieur n'est pas une couverture.
+
+    🔴 Le contrôle était `covered < corpus` → refus. Donc un sidecar annonçant **3 283**
+    fiches testées passait pour un corpus de **3 275** — alors qu'il datait de douze jours et
+    qu'AUCUNE des 8 fiches irlandaises publiées ce jour-là n'avait été mesurée. Les 3 283
+    étaient d'autres fiches, dont des disparues. Le re-run du 2026-11-02 a classé l'une des 8
+    « géo fabriquée probable » : elle était publique depuis deux jours, notée C, sur cinq
+    indicateurs calculés depuis ce point.
+
+    Un sidecar qui a mesuré PLUS que le corpus n'est pas rassurant : il est périmé par
+    construction. D'où l'égalité stricte, et le contrat `meta.ids_testees` qui la rendra exacte.
+    """
+    from engine.validate import geo_gate
+    from engine.core import DATA_DIR, datacenter_paths
+
+    newsroom = tmp_path / "newsroom"
+    (newsroom / "geo-audit").mkdir(parents=True)
+    sidecar = newsroom / "geo-audit" / "centroid-check.json"
+    monkeypatch.setenv("NEWSROOM_CAL", str(newsroom))
+    n = len(datacenter_paths(DATA_DIR))
+
+    def ecrire(testees, ids=None):
+        meta = {"counts": {"testées": testees}}
+        if ids is not None:
+            meta["ids_testees"] = ids
+        sidecar.write_text(json.dumps(
+            {"meta": meta, "fabriquees_probables": [], "non_evalues": []}), encoding="utf-8")
+
+    ecrire(n)
+    assert geo_gate(DATA_DIR) == [], "une mesure exactement à jour passe"
+
+    ecrire(n + 8)          # le profil EXACT du 2026-10-30
+    violations = geo_gate(DATA_DIR)
+    assert any("périmé" in v and "PLUS" in v for v in violations), violations
+
+    ecrire(n - 1)
+    assert any("périmé" in v for v in geo_gate(DATA_DIR)), "moins mesuré que le corpus : refus"
+
+    # Et le remède FORT : avec la liste des ids, la couverture est exacte, pas statistique.
+    ids = [p.stem for p in datacenter_paths(DATA_DIR)]
+    ecrire(len(ids), ids)
+    assert geo_gate(DATA_DIR) == [], "ids complets : le gate se tait"
+    ecrire(len(ids) + 99, ids[:-1])
+    violations = geo_gate(DATA_DIR)
+    assert any("JAMAIS été mesurées" in v and ids[-1] in v for v in violations), violations
 
 def test_une_coordonnee_tenue_ne_sert_AUCUNE_lettre(tmp_path):
     """Bout en bout : `grade_withheld` posé au build ⇒ plus de lettre nulle part.

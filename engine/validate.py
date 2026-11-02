@@ -388,8 +388,13 @@ def geo_gate(data_dir: Path) -> list[str]:
     # Le sidecar vit dans le newsroom PRIVÉ, que data_dir pointe dessus ou non.
     newsroom = Path(os.environ.get("NEWSROOM_CAL",
                                    Path(__file__).resolve().parents[2] / "smdc-newsroom" / "calibration"))
-    sidecar = next((c for c in (data_dir / "geo-audit" / "centroid-check.json",
-                                newsroom / "geo-audit" / "centroid-check.json") if c.is_file()), None)
+    # 🔴 LE CORPUS COMPTÉ DOIT ÊTRE CELUI QUE LE SIDECAR DÉCRIT — même défaut que le gate
+    # statut, découvert ici le 2026-11-02 en resserrant la couverture : sidecar du newsroom,
+    # corpus de `data_dir`, donc depuis le dépôt public ce gate comparait 3 293 fiches
+    # mesurées à 2 fixtures. Un gate qui compare deux populations différentes ne mesure rien.
+    racine_geo = next((r for r in (data_dir, newsroom)
+                       if (r / "geo-audit" / "centroid-check.json").is_file()), None)
+    sidecar = None if racine_geo is None else racine_geo / "geo-audit" / "centroid-check.json"
     if sidecar is None:
         # SANS newsroom monté, il n'y a pas de corpus réel à protéger : `data_dir` est alors
         # le jeu de fixtures du dépôt (2 fiches zz-), et exiger un sidecar y fait échouer la
@@ -422,13 +427,50 @@ def geo_gate(data_dir: Path) -> list[str]:
     # Couverture : le sidecar ne liste que les cas remarquables, pas les fiches saines. On
     # vérifie donc que la MESURE a bien porté sur tout le corpus — sinon il suffirait de ne
     # pas relancer le détecteur après un onboarding pour passer le gate sans être vu.
-    covered = ((report.get("meta") or {}).get("counts") or {}).get("testées")
-    corpus = len(datacenter_paths(data_dir))
-    if covered is None:
+    #
+    # 🔴 CE CONTRÔLE ÉTAIT UN `>=` SUR UN COMPTE, ET IL A LAISSÉ PASSER CE QU'IL DEVAIT
+    # ARRÊTER. Le 2026-10-30, 8 fiches irlandaises neuves sont parties en production avec un
+    # sidecar daté du 2026-10-20 : il annonçait **3 283 fiches testées** pour un corpus de
+    # **3 275**, donc `3283 >= 3275` passait — alors qu'aucune des 8 n'avait été mesurée. Les
+    # 3 283 étaient d'autres fiches, dont certaines disparues depuis. Le re-run du 2026-11-02
+    # a classé l'une d'elles « géo fabriquée probable » : elle était publique depuis deux
+    # jours, notée C, sur cinq indicateurs calculés depuis ce point.
+    #
+    # UN COMPTE NE PROUVERA JAMAIS UNE COUVERTURE D'ENSEMBLE. Deux remèdes, du plus fort au
+    # plus faible, et le gate prend le plus fort que le sidecar permet :
+    #   1. `meta.ids_testees` — la LISTE des fiches mesurées. Comparaison d'ensembles, exacte.
+    #      C'est le contrat demandé à la lane qui produit le détecteur.
+    #   2. à défaut, ÉGALITÉ STRICTE du compte : un sidecar qui a mesuré PLUS que le corpus
+    #      n'est pas rassurant, il est périmé par construction (des fiches ont disparu), et
+    #      c'est précisément ce profil qui a laissé passer les 8.
+    meta = report.get("meta") or {}
+    covered = (meta.get("counts") or {}).get("testées")
+    ids_testees = meta.get("ids_testees")
+    # La racine qui porte les FICHES n'est pas toujours celle qui porte le sidecar : dans le
+    # dépôt public, `data_dir` a les fixtures et le sidecar vit dans le newsroom. On compte
+    # donc les fiches là où il y en a.
+    racine_corpus = racine_geo if datacenter_paths(racine_geo) else data_dir
+    corpus_ids = {p.stem for p in datacenter_paths(racine_corpus)}
+    corpus = len(corpus_ids)
+    if ids_testees is not None:
+        jamais = sorted(corpus_ids - set(ids_testees))
+        if jamais:
+            out.append(
+                f"GATE GÉO: {len(jamais)} fiche(s) du corpus n'ont JAMAIS été mesurées "
+                f"({jamais[:5]}) — relancer `python -m pipelines.geo_audit.centroid_check` "
+                f"avant de publier. Une fiche qu'on ne sait pas juger ne part pas en ligne."
+            )
+    elif covered is None:
         out.append("GATE GÉO: le sidecar ne dit pas combien de fiches ont été testées")
-    elif covered < corpus:
-        out.append(f"GATE GÉO: détecteur de centroïde périmé — {covered} fiches testées pour "
-                   f"{corpus} au corpus ; relancer avant d'onboarder")
+    elif covered != corpus:
+        sens = "moins" if covered < corpus else "PLUS"
+        out.append(
+            f"GATE GÉO: détecteur de centroïde périmé — {covered} fiches testées pour "
+            f"{corpus} au corpus (il en a mesuré {sens}). Relancer avant de publier, et "
+            f"faire émettre `meta.ids_testees` au détecteur : un compte ne prouve pas une "
+            f"couverture d'ensemble, et c'est ce `>=` qui a laissé partir 8 fiches jamais "
+            f"mesurées le 2026-10-30."
+        )
     # CE QUE CE GATE NE DIT PAS, dit à chaque passage. Vert ici ne signifie pas « coordonnées
     # certifiées » : il signifie « mesurées, et ne tombant pas dans le motif connu ». Deux
     # angles morts sont établis, et le silence sur eux serait le vrai danger — c'est en
