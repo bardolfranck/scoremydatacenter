@@ -2184,3 +2184,62 @@ def test_chaque_bloc_de_langue_porte_le_menu_de_SA_langue():
         "une table de contenu sert le menu d'une AUTRE langue — donc des liens qui sortent "
         "le lecteur de sa langue à chaque clic :\n" + "\n".join(fautes)
     )
+
+
+# La table de routes est une PROMESSE faite au sélecteur de langue : « cette page existe
+# aussi en néerlandais ». Le test précédent va des fichiers vers la table (trouver une page
+# oubliée) ; celui-ci va de la table vers les fichiers — et c'est le sens qui trouve une
+# promesse en trop. En préviz, le sélecteur propose déjà le néerlandais : une colonne qui
+# désigne une page inexistante y envoie le relecteur sur un 404.
+#
+# Sept chemins néerlandais déclarés sans page, 2026-11-03 : la carte, l'actu, les chiffres
+# du parc, les développeurs et leur clé, la presse, qui-sommes-nous, la note pas à pas. Ce
+# sont les pages dont le GABARIT ne parle que deux langues — leur colonne reste dans la
+# table parce qu'elle dit où la page ira, et le compte dit qu'elle n'y est pas encore.
+DETTE_ROUTES_EN_PREPARATION = 7
+
+
+def _routes_sans_page(langue: str) -> list[str]:
+    return sorted(
+        f"{ident} → {chemin}"
+        for ident, chemins in _familles().items()
+        if (chemin := chemins.get(langue)) and ":id" not in chemin and _page_absente(chemin)
+    )
+
+
+def test_la_table_de_routes_ne_promet_aucune_page_absente_dans_une_langue_servie():
+    """Une langue en ligne : chaque colonne de la table désigne une page qui existe.
+
+    Sinon le sélecteur de langue envoie le lecteur sur un 404 — et c'est le pire endroit
+    pour un lien mort, parce qu'il est en haut de toutes les pages du site.
+    """
+    for langue in _langues_vivantes():
+        absentes = _routes_sans_page(langue)
+        assert not absentes, (
+            f"{len(absentes)} chemin(s) déclaré(s) dans config/routes.ts pour « {langue} » "
+            f"sans page correspondante :\n" + "\n".join(f"  {a}" for a in absentes)
+        )
+
+
+def test_la_dette_de_routes_de_la_langue_en_preparation_ne_peut_que_baisser():
+    """Les colonnes néerlandaises qui désignent une page pas encore écrite.
+
+    Distinct de la dette du MENU : le menu promet au visiteur, la table promet au sélecteur
+    de langue. Les deux listes ne se recouvrent pas tout à fait — la clé d'API, par exemple,
+    n'est dans aucun menu et a bien une colonne néerlandaise.
+    """
+    vivantes = set(_langues_vivantes())
+    absentes = [
+        a for lg in _langues_declarees() if lg not in vivantes for a in _routes_sans_page(lg)
+    ]
+    assert len(absentes) <= DETTE_ROUTES_EN_PREPARATION, (
+        f"{len(absentes)} colonne(s) de la table désignent une page absente, la dette "
+        f"déclarée est {DETTE_ROUTES_EN_PREPARATION} : une colonne vient d'être ajoutée "
+        f"sans sa page.\n" + "\n".join(f"  {a}" for a in absentes)
+    )
+    if len(absentes) < DETTE_ROUTES_EN_PREPARATION:
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {len(absentes)} "
+            f"colonne(s) sans page (déclaré : {DETTE_ROUTES_EN_PREPARATION}). Abaissez "
+            f"DETTE_ROUTES_EN_PREPARATION à {len(absentes)}."
+        )
