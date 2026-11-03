@@ -1276,7 +1276,10 @@ def test_chaque_langue_declaree_a_sa_regle_de_pluriel():
 # dans le périmètre signé (l'accueil en fait partie) mais pas dans `TABLES_MODULES` — donc pas
 # dans le garde de parité. Le compte est DÉCLARÉ et ne peut que baisser : un cliquet, comme
 # `DETTE_I18N`, parce qu'un trou qu'on mesure vaut mieux qu'un trou qu'on découvre en servant.
-DETTE_PAIRES_STATS = 63
+# 63 → 43 le 2026-11-03 : les 20 noms de pays ont reçu leur néerlandais. Le cliquet a crié
+# pour le DIRE — un cliquet qui ne signale que les hausses laisse oublier les baisses, et
+# une dette qu'on ne voit pas diminuer est une dette qu'on cesse de rembourser.
+DETTE_PAIRES_STATS = 43
 
 
 def test_la_prose_hors_table_ne_grossit_jamais():
@@ -1725,3 +1728,44 @@ def test_le_bloc_qui_explique_la_note_parle_chaque_langue_servie():
             f"« ce qui pèse le plus ici » se tairait dans une langue servie, et le lecteur "
             f"n'aurait aucun moyen de savoir qu'il manque quelque chose"
         )
+
+
+def test_chaque_pays_du_corpus_a_son_nom_dans_chaque_langue_servie():
+    """Un pays servi sans nom dans une langue s'affiche en CODE ISO.
+
+    « Deze site ligt in **NL** » — relevé par la relecture native. Le gabarit rend
+    `COUNTRY_NAMES[iso]?.[lang] ?? iso` : le repli est le code, et un code se lit comme une
+    donnée non traduite, parce que c'en est une.
+
+    Le garde part du CORPUS, pas de la table : c'est l'arrivée d'un pays qui crée le trou,
+    et elle arrive par la donnée. Il se tait quand la donnée servie n'est pas là.
+    """
+    import json
+
+    dossier = REPO_ROOT / "site" / "public" / "data" / "dc"
+    if not dossier.is_dir():
+        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+    pays = {
+        json.loads(f.read_text(encoding="utf-8")).get("country")
+        for f in dossier.glob("*.json")
+    } - {None}
+    assert len(pays) >= 5, f"{len(pays)} pays relevés — le relevé ne cherche plus"
+
+    texte = (REPO_ROOT / "site" / "src" / "config" / "stats.ts").read_text(encoding="utf-8")
+    m = re.search(r"(?:const|export const) COUNTRY_NAMES[^=]*= \{(.*?)\n\};", texte, re.S)
+    assert m, "COUNTRY_NAMES introuvable"
+    noms = {
+        cle: set(re.findall(r"\b(\w+):\s*\"", corps))
+        for cle, corps in re.findall(r"(\w+):\s*\{([^}]*)\}", m.group(1))
+    }
+    vivantes = set(_langues_vivantes())
+    fautes = sorted(
+        f"  {iso} — manque {sorted(vivantes - noms.get(iso, set()))}"
+        for iso in pays
+        if vivantes - noms.get(iso, set())
+    )
+    assert not fautes, (
+        f"{len(fautes)} pays du corpus n'ont pas leur nom dans toutes les langues servies :\n"
+        + "\n".join(fautes)
+        + "\n\nIls s'afficheraient en code ISO — ce qui se lit comme une donnée non traduite."
+    )

@@ -39,16 +39,16 @@ export const derivedCount = (key: string): number | null => {
 };
 
 export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
-  US: { fr: "États-Unis", en: "United States" }, IL: { fr: "Israël", en: "Israel" },
-  AT: { fr: "Autriche", en: "Austria" }, BE: { fr: "Belgique", en: "Belgium" },
-  CH: { fr: "Suisse", en: "Switzerland" }, DE: { fr: "Allemagne", en: "Germany" },
-  DK: { fr: "Danemark", en: "Denmark" }, ES: { fr: "Espagne", en: "Spain" },
-  FI: { fr: "Finlande", en: "Finland" }, FR: { fr: "France", en: "France" },
-  GB: { fr: "Royaume-Uni", en: "United Kingdom" }, IE: { fr: "Irlande", en: "Ireland" },
-  IT: { fr: "Italie", en: "Italy" }, LU: { fr: "Luxembourg", en: "Luxembourg" },
-  NL: { fr: "Pays-Bas", en: "Netherlands" }, NO: { fr: "Norvège", en: "Norway" },
-  PL: { fr: "Pologne", en: "Poland" }, PT: { fr: "Portugal", en: "Portugal" },
-  SE: { fr: "Suède", en: "Sweden" },
+  US: { fr: "États-Unis", en: "United States", nl: "Verenigde Staten" }, IL: { fr: "Israël", en: "Israel", nl: "Israël" },
+  AT: { fr: "Autriche", en: "Austria", nl: "Oostenrijk" }, BE: { fr: "Belgique", en: "Belgium", nl: "België" },
+  CH: { fr: "Suisse", en: "Switzerland", nl: "Zwitserland" }, DE: { fr: "Allemagne", en: "Germany", nl: "Duitsland" },
+  DK: { fr: "Danemark", en: "Denmark", nl: "Denemarken" }, ES: { fr: "Espagne", en: "Spain", nl: "Spanje" },
+  FI: { fr: "Finlande", en: "Finland", nl: "Finland" }, FR: { fr: "France", en: "France", nl: "Frankrijk" },
+  GB: { fr: "Royaume-Uni", en: "United Kingdom", nl: "Verenigd Koninkrijk" }, IE: { fr: "Irlande", en: "Ireland", nl: "Ierland" },
+  IT: { fr: "Italie", en: "Italy", nl: "Italië" }, LU: { fr: "Luxembourg", en: "Luxembourg", nl: "Luxemburg" },
+  NL: { fr: "Pays-Bas", en: "Netherlands", nl: "Nederland" }, NO: { fr: "Norvège", en: "Norway", nl: "Noorwegen" },
+  PL: { fr: "Pologne", en: "Poland", nl: "Polen" }, PT: { fr: "Portugal", en: "Portugal", nl: "Portugal" },
+  SE: { fr: "Suède", en: "Sweden", nl: "Zweden" },
 };
 
 export const REGION_NAMES: Record<string, string> = {
@@ -70,7 +70,7 @@ export const EUROPE_ISO: string[] = (STATS as any).scopes?.europe ?? [];
  *  « Monde » était en ternaire dans la fonction — un mot dans une expression, donc un mot
  *  qu'une langue nouvelle ne trouve pas. */
 const PERIMETRES: Record<string, Record<Lang, string>> = {
-  monde: { fr: "Monde", en: "World" },
+  monde: { fr: "Monde", en: "World", nl: "Wereld" },
 };
 
 export function perimeterLabel(key: string, lang: Lang): string {
