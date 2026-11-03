@@ -1,3 +1,4 @@
+import type { LangueDeclaree } from "../content/langues";
 // Libellés lisibles des valeurs catégorielles et des unités.
 //
 // POURQUOI. La fiche affichait la clé technique du moteur — `saturated`,
@@ -169,31 +170,31 @@ export function libelleUnite(unite: string, lang: string): string {
 // E6 n'y est pas parce que le moteur écarte les tiers 2 de cette position (un tier 2 qui
 // domine est le drapeau d'une couverture tier 1 trop mince, pas un signal).
 const FACTEUR_DOMINANT: Record<string, { fr: string; en: string }> = {
-  E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix" },
-  E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection" },
-  E3: { fr: "une capacité réseau déjà largement réservée", en: "grid capacity already heavily reserved" },
-  W1: { fr: "un bassin d'eau sous tension", en: "a water-stressed basin" },
-  W2: { fr: "la proximité d'un milieu aquatique fragile", en: "closeness to a fragile water body" },
-  F1: { fr: "la proximité d'une zone naturelle protégée", en: "closeness to a protected natural area" },
-  F2: { fr: "la consommation de terres agricoles ou naturelles", en: "building on farmland or natural land" },
-  W3: { fr: "de forts prélèvements d'eau sur le bassin", en: "heavy water abstraction on the basin" },
-  L3: { fr: "la proximité d'un site industriel à risque (Seveso)", en: "closeness to a major-hazard (Seveso) site" },
+  E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix", nl: "een zeer koolstofrijke nationale stroommix" },
+  E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection", nl: "een verzadigd elektriciteitsnet op het aansluitpunt" },
+  E3: { fr: "une capacité réseau déjà largement réservée", en: "grid capacity already heavily reserved", nl: "al grotendeels gereserveerde netcapaciteit" },
+  W1: { fr: "un bassin d'eau sous tension", en: "a water-stressed basin", nl: "een stroomgebied onder waterstress" },
+  W2: { fr: "la proximité d'un milieu aquatique fragile", en: "closeness to a fragile water body", nl: "de nabijheid van een kwetsbaar waterlichaam" },
+  F1: { fr: "la proximité d'une zone naturelle protégée", en: "closeness to a protected natural area", nl: "de nabijheid van een beschermd natuurgebied" },
+  F2: { fr: "la consommation de terres agricoles ou naturelles", en: "building on farmland or natural land", nl: "het bebouwen van landbouwgrond of natuur" },
+  W3: { fr: "de forts prélèvements d'eau sur le bassin", en: "heavy water abstraction on the basin", nl: "zware wateronttrekkingen uit het stroomgebied" },
+  L3: { fr: "la proximité d'un site industriel à risque (Seveso)", en: "closeness to a major-hazard (Seveso) site", nl: "de nabijheid van een industriële risicosite (Seveso)" },
 };
 
 const GENTILES: Record<string, { fr: string; en: string }> = {
-  FR: { fr: "français", en: "French" },
-  NL: { fr: "néerlandais", en: "Dutch" },
-  DE: { fr: "allemands", en: "German" },
-  GB: { fr: "britanniques", en: "British" },
-  IT: { fr: "italiens", en: "Italian" },
-  ES: { fr: "espagnols", en: "Spanish" },
-  PL: { fr: "polonais", en: "Polish" },
-  BE: { fr: "belges", en: "Belgian" },
-  CH: { fr: "suisses", en: "Swiss" },
-  SE: { fr: "suédois", en: "Swedish" },
-  NO: { fr: "norvégiens", en: "Norwegian" },
-  DK: { fr: "danois", en: "Danish" },
-  FI: { fr: "finlandais", en: "Finnish" },
+  FR: { fr: "français", en: "French", nl: "Franse" },
+  NL: { fr: "néerlandais", en: "Dutch", nl: "Nederlandse" },
+  DE: { fr: "allemands", en: "German", nl: "Duitse" },
+  GB: { fr: "britanniques", en: "British", nl: "Britse" },
+  IT: { fr: "italiens", en: "Italian", nl: "Italiaanse" },
+  ES: { fr: "espagnols", en: "Spanish", nl: "Spaanse" },
+  PL: { fr: "polonais", en: "Polish", nl: "Poolse" },
+  BE: { fr: "belges", en: "Belgian", nl: "Belgische" },
+  CH: { fr: "suisses", en: "Swiss", nl: "Zwitserse" },
+  SE: { fr: "suédois", en: "Swedish", nl: "Zweedse" },
+  NO: { fr: "norvégiens", en: "Norwegian", nl: "Noorse" },
+  DK: { fr: "danois", en: "Danish", nl: "Deense" },
+  FI: { fr: "finlandais", en: "Finnish", nl: "Finse" },
 };
 
 /** Les deux phrases du bloc « ce qui tire la note », un motif par langue.
@@ -207,9 +208,12 @@ const GENTILES: Record<string, { fr: string; en: string }> = {
  *  recopiée telle quelle : la corriger changerait ce qui est affiché, et ce lot ne doit rien
  *  changer. À trancher à part.
  */
-const PHRASES: Record<"fr" | "en", { ici: string; part: string }> = {
+const PHRASES: Record<LangueDeclaree, { ici: string; part: string }> = {
   fr: { ici: "Ce qui pèse le plus ici : {facteur}.", part: "{base} Premier facteur pour {pct} % des sites {gentile} que nous avons notés." },
   en: { ici: "What weighs most here: {facteur}.", part: "{base} Leading factor for {pct}% of the {gentile} sites we have graded." },
+  // Néerlandais : pas d'espace avant le `%`, comme l'anglais. Et les gentilés-adjectifs
+  // prennent la MAJUSCULE en néerlandais (« Nederlandse ») — ce n'est pas une coquille.
+  nl: { ici: "Wat hier het zwaarst weegt: {facteur}.", part: "{base} Belangrijkste factor voor {pct}% van de {gentile} sites die we hebben beoordeeld." },
 };
 
 /** La phrase « ce qui pèse le plus ici », ou null si on n'a pas de mots sûrs pour ce facteur. */
@@ -219,7 +223,7 @@ export function phraseFacteurDominant(
 ): string | null {
   const mots = drag?.indicator ? FACTEUR_DOMINANT[drag.indicator] : undefined;
   if (!mots) return null;
-  const lg = lang as "fr" | "en";
+  const lg = lang as LangueDeclaree;
   // 🔴 PAS DE MOTS DANS CETTE LANGUE = PAS DE PHRASE, comme pour un facteur sans mots sûrs.
   // Les trois tables de ce fichier (FACTEUR_DOMINANT, GENTILES, PHRASES) s'arrêtent au
   // français et à l'anglais. `PHRASES[lg].ici` sur une troisième langue ne rendait pas une

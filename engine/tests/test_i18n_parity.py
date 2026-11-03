@@ -1681,3 +1681,47 @@ def test_les_notes_de_bas_de_page_suivent_l_identifiant_stable():
         + f"\n\nIdentifiants valides : {sorted(ids)}. Un renvoi qui ne tombe nulle part ne "
         "casse rien : il laisse le lecteur où il est."
     )
+
+
+VALEURS_TS = REPO_ROOT / "site" / "src" / "config" / "indicatorValues.ts"
+
+
+def test_le_bloc_qui_explique_la_note_parle_chaque_langue_servie():
+    """« Ce qui pèse le plus ici » doit avoir ses mots dans chaque langue SERVIE.
+
+    C'est la seule phrase de la fiche qui explique la note d'un coup d'œil, en mots
+    d'habitant. Faute de mots, la fonction rend `null` et le bloc DISPARAÎT — un silence
+    préférable à de l'anglais au milieu d'une page néerlandaise, mais un silence quand même.
+    Il est acceptable pendant la rédaction, pas une fois la langue servie : le lecteur aurait
+    alors une page entièrement traduite dont manque, sans explication, la phrase qui résume.
+    """
+    texte = VALEURS_TS.read_text(encoding="utf-8")
+    vivantes = set(_langues_vivantes())
+
+    def bloc_de(table: str) -> str:
+        m = re.search(rf"(?:export )?const {table}[^=]*= \{{(.*?)\n\}};", texte, re.S)
+        assert m, f"{table} introuvable — le garde ne garde plus rien"
+        return m.group(1)
+
+    # 🔴 Deux FORMES, et ma première version les a confondues : dans les deux premières
+    # tables la langue est une sous-clé (`E1: { fr, en, nl }`), dans `PHRASES` elle EST la
+    # clé (`fr: { ici, part }`). Le garde criait donc sur une table parfaitement complète.
+    phrases = set(re.findall(r"^  (\w+):\s*\{", bloc_de("PHRASES"), re.M))
+    manquantes = sorted(vivantes - phrases)
+    assert not manquantes, (
+        f"PHRASES n'a pas de motif pour {manquantes} — le bloc se tairait dans une langue "
+        f"servie, et le lecteur n'aurait aucun moyen de savoir qu'il manque quelque chose"
+    )
+
+    for table in ("FACTEUR_DOMINANT", "GENTILES"):
+        entrees = re.findall(r"^  [\"']?[\w\-]+[\"']?:\s*\{(.*?)\},?$", bloc_de(table), re.M | re.S)
+        assert entrees, f"{table} : aucune entrée relevée"
+        manquantes = {
+            lg for e in entrees for lg in vivantes
+            if not re.search(rf"\b{lg}:", e)
+        }
+        assert not manquantes, (
+            f"{table} ne porte pas {sorted(manquantes)} sur toutes ses entrées — le bloc "
+            f"« ce qui pèse le plus ici » se tairait dans une langue servie, et le lecteur "
+            f"n'aurait aucun moyen de savoir qu'il manque quelque chose"
+        )
