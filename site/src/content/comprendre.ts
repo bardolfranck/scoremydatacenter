@@ -21,7 +21,7 @@ import type { Langue, LangueDeclaree } from "./langues";
 // (`config/nav.ts`), et une langue nouvelle déclarera son menu au même endroit que les
 // autres. Déplacer `nav` hors de `t` demanderait de retoucher le gabarit : pas dans ce lot,
 // qui ne doit rien changer à ce qui est rendu.
-import { FR_NAV, EN_NAV } from "../config/nav";
+import { FR_NAV, EN_NAV, NL_NAV } from "../config/nav";
 
 const FR = {
   title: "Comprendre les data centers, sans jargon — ScoreMyDataCenter",
@@ -170,7 +170,7 @@ const NL = {
   tagline: "Onafhankelijk observatorium",
   altHref: "/understand/",
   altLabel: "EN",
-  nav: FR_NAV,
+  nav: NL_NAV,
   pageTitle: "Datacenters begrijpen",
   lede:
     "Voor de bestuurder die een adviesbureau aan de lijn krijgt, de omwonende die een bekendmaking van een inspraakprocedure ontdekt, de journalist die net op het onderwerp begint: de essentie, zonder jargon. Wat er achter de getallen schuilgaat.",

@@ -1,0 +1,16 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL « La notation des data centers » : page de concept, gabarit dans PagePilier.astro.
+// ⚠️ C'est la page la plus exposée au reproche de PAGE-PORTE, puisqu'elle renvoie vers la
+// méthode et le classement. Elle doit donc dire quelque chose d'elle-même : ce que vaut une
+// lettre, pourquoi il y en a DEUX, et pourquoi une absence de donnée ne devient jamais un A.
+import PagePilier from "../../components/PagePilier.astro";
+import { NL_NAV } from "../../config/nav";
+import { NOTATION } from "../../content/notation";
+
+const t = NOTATION.nl;
+---
+
+<PagePilier lang="nl" t={t} nav={NL_NAV} />

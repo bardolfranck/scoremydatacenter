@@ -1,0 +1,36 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL contact: thin page — template in ProsePage.astro (shared FR/EN, i18n §13).
+import ProsePage from "../../components/ProsePage.astro";
+import { NL_NAV } from "../../config/nav";
+
+const t = {
+  title: "Contact — ScoreMyDataCenter",
+  metaDescription: "Contacter l'observatoire : suggérer un projet à noter, signaler une correction de donnée, joindre l'équipe.",
+  tagline: "Observatoire indépendant",
+  h1: "Contact",
+  sections: [
+    {
+      h2: "Nous écrire",
+      html: [
+        "<p>Une question, un projet à suivre, une donnée à corriger ? Écrivez-nous.</p>",
+        "<p><a href=\"mailto:contact@scoremydatacenter.org\">contact@scoremydatacenter.org</a></p>",
+      ],
+    },
+    {
+      h2: "Suggérer un projet à noter",
+      html: ["<p>Indiquez le projet et, si possible, ses sources. Nous priorisons les dossiers les mieux documentés et les plus discutés. Précision d'indépendance : nous ne notons jamais sur commande d'une partie, ni pour ni contre — la note suit la méthode, pas le demandeur.</p>"],
+    },
+    {
+      h2: "Signaler une correction",
+      html: ["<p>Toute donnée peut être corrigée sur preuve. Le plus efficace est d'ouvrir une <a href=\"https://github.com/bardolfranck/scoremydatacenter/issues\" target=\"_blank\" rel=\"noopener\">issue GitHub</a> (source obligatoire, déclaration d'intérêt demandée) ; la validation est relue par un mainteneur. Sinon, écrivez-nous par e-mail.</p>"],
+    },
+  ],
+  backHref: "/nl/",
+  backLabel: "← Retour à l'accueil",
+};
+---
+
+<ProsePage lang="nl" t={t} nav={NL_NAV} />

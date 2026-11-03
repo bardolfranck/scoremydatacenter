@@ -17,7 +17,7 @@
 import type { Langue, LangueDeclaree } from "./langues";
 // `nav` n'est pas de la copie : c'est la structure du menu, que le gabarit lit dans `t`. La
 // source reste unique (`config/nav.ts`) ; une langue nouvelle y déclarera son menu.
-import { FR_NAV, EN_NAV } from "../config/nav";
+import { FR_NAV, EN_NAV, NL_NAV } from "../config/nav";
 // 🔴 La table ÉTEND `config/about.ts` par un spread (`...FR_ABOUT`) : une partie de la copie
 // de l'accueil vit donc là-bas, et le garde de parité ne l'a jamais vue — un spread n'a pas
 // de clés à relever. C'est un second endroit à remplir pour une langue nouvelle, et il est
@@ -684,7 +684,7 @@ const NL: typeof FR = {
   altHref: "/",
   altLabel: "EN",
   tagline: "Onafhankelijk observatorium",
-  nav: FR_NAV,
+  nav: NL_NAV,
   heroEyebrow: "Onafhankelijk & publiek observatorium",
   heroTitle: "Een datacenter komt niet langer zomaar ergens te staan.<br><span class='hero-red'>Wij meten het risico.</span>",
   heroLede:

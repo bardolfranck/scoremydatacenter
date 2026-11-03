@@ -1,0 +1,14 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL glossary: thin page, template in Glossaire.astro. Definitions in our own words,
+// generic, no named third party (legal discipline).
+import Glossaire from "../../components/Glossaire.astro";
+import { NL_NAV } from "../../config/nav";
+import { GLOSSAIRE } from "../../content/glossaire";
+
+const t = GLOSSAIRE.nl;
+---
+
+<Glossaire lang="nl" t={t} nav={NL_NAV} />

@@ -20,6 +20,9 @@
 //   · un VERBE par stade de la procédure (quatre) — et ce verbe vient du dossier
 //     juridique : sans lui, une question est un vœu ; avec lui, c'est une action datée.
 
+import { LANGUES_DECLAREES, type LangueDeclaree } from "./langues";
+import { COMMUN } from "./commun";
+
 export type EtatIndicateur = "not_collected" | "missing";
 export type StadeProjet =
   | "announced"
@@ -167,15 +170,28 @@ export function questionsPour(
   return retenues.map((i) => {
     const base = QUESTIONS[i.id];
     const ajouts = AFFUTAGE.filter((r) => r.question === i.id && r.quand(valeurs));
-    const suffixe = (l: "fr" | "en") =>
-      ajouts.length ? " — " + ajouts.map((r) => r.ajout[l]).join(", ") : "";
+    // 🔴 LA FONCTION QUI ASSEMBLE PERDAIT LA LANGUE QUE LA TABLE PORTAIT. Les 22 questions
+    // ont leur néerlandais, les affûtages aussi — et cette composition énumérait `fr` puis
+    // `en` à la main, point d'interrogation compris. Résultat : douze questions EN ANGLAIS
+    // sur chaque portrait néerlandais, sans erreur, sans blanc, et sans que rien ne crie.
+    // Trouvé en confrontant le portrait servi en néerlandais au portrait servi en anglais.
+    //
+    // On compose donc pour chaque langue DÉCLARÉE, et la règle du point d'interrogation est
+    // lue dans `COMMUN` — c'est une propriété de la langue, comme la virgule décimale.
+    const suffixe = (l: LangueDeclaree) =>
+      ajouts.length
+        ? " — " + ajouts.map((r) => r.ajout[l] ?? r.ajout.en).join(", ")
+        : "";
+    const texte = Object.fromEntries(
+      LANGUES_DECLAREES.filter((l) => base[l] != null).map((l) => [
+        l,
+        (base[l] as string).replace(/\s*\?$/, "") + suffixe(l) + COMMUN[l].interrogation,
+      ]),
+    ) as QuestionDerivee["texte"];
     return {
       id: i.id,
       amorce: AMORCES[i.status as EtatIndicateur],
-      texte: {
-        fr: base.fr.replace(/\s*\?$/, "") + suffixe("fr") + " ?",
-        en: base.en.replace(/\s*\?$/, "") + suffixe("en") + "?",
-      },
+      texte,
       verbe,
     };
   });

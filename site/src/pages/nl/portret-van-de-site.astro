@@ -1,0 +1,12 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL « Le portrait du site » : page mince, gabarit dans PortraitExplainer.astro.
+import PortraitExplainer from "../../components/PortraitExplainer.astro";
+import { NL_NAV } from "../../config/nav";
+import { PORTRAIT_EXPLAINER } from "../../content/portrait-explainer";
+
+const t = PORTRAIT_EXPLAINER.nl;
+---
+<PortraitExplainer lang="nl" t={t} nav={NL_NAV} />

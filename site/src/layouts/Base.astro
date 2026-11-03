@@ -23,8 +23,8 @@ interface Props {
   // `config/routes.ts`, d'après l'adresse servie. Ces deux propriétés ne servent QUE les
   // pages hors table — la préviz, qui n'est pas un gabarit public. Elles restent acceptées
   // parce que 81 pages les passent encore ; les retirer est un nettoyage, pas une règle.
-  altHref: string;
-  altLabel: string;
+  altHref?: string;
+  altLabel?: string;
   nav: NavNode[];
   ogImage?: string; // absolute URL of the social card
 }
@@ -67,8 +67,8 @@ const liens: { langue: LangueDeclaree; href: string; etiquette: string }[] = aut
     }))
   : [{
       langue: (lang === "en" ? "fr" : "en") as LangueDeclaree,
-      href: withSlash(altHref),
-      etiquette: altLabel,
+      href: withSlash(altHref ?? RACINE.en),
+      etiquette: altLabel ?? "EN",
     }];
 const abs = (p: string) => new URL(p, Astro.site).href;
 // x-default = l'anglais, qui est ce qu'un moteur sert quand aucune langue ne convient. S'il

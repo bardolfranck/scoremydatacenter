@@ -1,0 +1,14 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL methodology: thin page — template in Methodologie.astro (shared FR/EN, i18n §13),
+// this file only carries the French doctrine prose (t).
+import Methodologie from "../../components/Methodologie.astro";
+import { NL_NAV } from "../../config/nav";
+import { METHODOLOGIE } from "../../content/methodologie";
+
+const t = METHODOLOGIE.nl;
+---
+
+<Methodologie lang="nl" t={t} nav={NL_NAV} />

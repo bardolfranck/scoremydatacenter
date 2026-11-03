@@ -29,12 +29,18 @@ const FR = {
   // une propriété de la langue — comme la virgule décimale. Elle vit ici et non en code,
   // pour qu'une langue nouvelle la déclare au lieu d'aller modifier un gabarit.
   colon: " : ",
+  // Même nature que le deux-points : le français met une espace avant le point
+  // d'interrogation, l'anglais et le néerlandais non. C'était écrit en dur dans la fonction
+  // qui compose les questions du portrait — avec les deux langues énumérées à la main, donc
+  // la troisième perdue en silence [[absence-ressemble-a-zero]].
+  interrogation: " ?",
 };
 
 const EN: typeof FR = {
   place: "data center in {municipality}",
   placeFallback: "data center",
   colon: ": ",
+  interrogation: "?",
 };
 
 
@@ -49,8 +55,10 @@ const NL: typeof FR = {
   // riverain est « datacenter Almere » : datacenter EN UN MOT (lexique du rapport figé).
   place: "datacenter in {municipality}",
   placeFallback: "datacenter",
-  // Pas d'espace avant le deux-points en néerlandais (convention typographique NL).
+  // Pas d'espace avant le deux-points ni avant le point d'interrogation en néerlandais
+  // (convention typographique NL, la même que l'anglais).
   colon: ": ",
+  interrogation: "?",
 };
 
 /** Les chaînes partagées : `COMMUN[lang]`. */

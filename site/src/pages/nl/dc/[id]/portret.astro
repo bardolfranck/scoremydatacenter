@@ -1,0 +1,18 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Portrait du site, FR : page mince — le gabarit vit dans SitePortrait.astro.
+import SitePortrait from "../../../../components/SitePortrait.astro";
+import { NL_NAV } from "../../../../config/nav";
+import { PORTRAIT } from "../../../../content/portrait";
+
+export async function getStaticPaths() {
+  const modules = import.meta.glob("../../../../../public/data/dc/*.json", { eager: true });
+  return Object.values(modules).map((m: any) => ({ params: { id: m.default.id }, props: { dc: m.default } }));
+}
+const { dc } = Astro.props as { dc: any };
+
+const t = PORTRAIT.nl;
+---
+<SitePortrait dc={dc} lang="nl" t={t} nav={NL_NAV} />
