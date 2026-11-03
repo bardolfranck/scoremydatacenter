@@ -166,11 +166,11 @@ const FR = {
     repli: "europe" as string | null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} sur poste électrique saturé",
-      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#reseau-sature" },
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres/#reseau-sature" },
     { genre: "vue", id: "pue_published", figure: "{big} publient leur PUE",
-      attribution: "Les chiffres du parc · déclarations opérateurs · n = {n}", url: "/fr/chiffres#pue-publie" },
+      attribution: "Les chiffres du parc · déclarations opérateurs · n = {n}", url: "/fr/chiffres/#pue-publie" },
     { genre: "vue", id: "water_stress_high", figure: "{big} en zone de stress hydrique fort",
-      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#stress-hydrique" },
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres/#stress-hydrique" },
     ],
   },
   whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
@@ -251,7 +251,7 @@ const FR = {
       // telle qu'elle se pose — « un projet arrive, par où commencer ? » — en trois lignes,
       // et renvoie. Le reste de cette FAQ parle de NOTRE note ; celle-ci parle de leur projet.
       q: "Un projet est annoncé près de chez moi. Par où commencer ?",
-      a: "Par le calendrier, parce qu'il décide de tout : la même question posée en concertation peut changer le projet, posée après l'autorisation elle ne change plus rien. Les délais de recours sont de <b>deux mois</b> — à compter du premier jour d'affichage pour un permis de construire, de la dernière formalité accomplie pour une autorisation environnementale. Et quand le site fonctionne déjà, il reste la réclamation au préfet sur les <i>prescriptions</i> (bruit, rejets, eau). Tout le parcours, étape par étape, est dans <a href='/fr/comprendre#droits'>Droits et calendrier</a>, avec les textes.",
+      a: "Par le calendrier, parce qu'il décide de tout : la même question posée en concertation peut changer le projet, posée après l'autorisation elle ne change plus rien. Les délais de recours sont de <b>deux mois</b> — à compter du premier jour d'affichage pour un permis de construire, de la dernière formalité accomplie pour une autorisation environnementale. Et quand le site fonctionne déjà, il reste la réclamation au préfet sur les <i>prescriptions</i> (bruit, rejets, eau). Tout le parcours, étape par étape, est dans <a href='/fr/comprendre/#droits'>Droits et calendrier</a>, avec les textes.",
     },
     {
       q: "Le nutri-score des DC. Comment un data center est-il noté ?",
@@ -323,7 +323,7 @@ const FR = {
     },
     {
       q: "Quelles sont les étapes d'un projet de data center, de l'annonce à la mise en service ?",
-      a: "En France, schématiquement : 1) l'annonce et, parfois, une concertation préalable ; 2) le dépôt des demandes — permis de construire et, le plus souvent, autorisation environnementale au titre des installations classées (ICPE) ; 3) l'instruction : avis de l'autorité environnementale, puis enquête publique ; 4) la décision : permis délivré par le maire (ou par le préfet dans certains cas), autorisation environnementale par arrêté préfectoral ; 5) les délais de recours ; 6) les travaux, souvent par phases ; 7) la mise en service, puis les contrôles pendant l'exploitation. Les étapes peuvent se chevaucher, et un projet peut s'arrêter à chacune d'elles. Les droits du public à chaque étape : <a href='/fr/comprendre#droits'>Droits et calendrier</a>.",
+      a: "En France, schématiquement : 1) l'annonce et, parfois, une concertation préalable ; 2) le dépôt des demandes — permis de construire et, le plus souvent, autorisation environnementale au titre des installations classées (ICPE) ; 3) l'instruction : avis de l'autorité environnementale, puis enquête publique ; 4) la décision : permis délivré par le maire (ou par le préfet dans certains cas), autorisation environnementale par arrêté préfectoral ; 5) les délais de recours ; 6) les travaux, souvent par phases ; 7) la mise en service, puis les contrôles pendant l'exploitation. Les étapes peuvent se chevaucher, et un projet peut s'arrêter à chacune d'elles. Les droits du public à chaque étape : <a href='/fr/comprendre/#droits'>Droits et calendrier</a>.",
     },
     {
       q: "Qu'est-ce qu'un « moratoire » sur les data centers ? Est-ce que ça arrête un projet ?",
@@ -465,11 +465,11 @@ const EN: typeof FR = {
     repli: null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} on already-saturated substations",
-      attribution: "Fleet figures · {src} · n = {n}", url: "/figures#reseau-sature" },
+      attribution: "Fleet figures · {src} · n = {n}", url: "/figures/#reseau-sature" },
     { genre: "vue", id: "pue_published", figure: "{big} publish their PUE",
-      attribution: "Fleet figures · operators' declarations · n = {n}", url: "/figures#pue-publie" },
+      attribution: "Fleet figures · operators' declarations · n = {n}", url: "/figures/#pue-publie" },
     { genre: "vue", id: "water_stress_high", figure: "{big} under high water stress",
-      attribution: "Fleet figures · {src} · n = {n}", url: "/figures#stress-hydrique" },
+      attribution: "Fleet figures · {src} · n = {n}", url: "/figures/#stress-hydrique" },
     ],
   },
   whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",
@@ -546,7 +546,7 @@ const EN: typeof FR = {
   faq: [
     {
       q: "A project has been announced near me. Where do I start?",
-      a: "With the calendar, because it decides everything: the same question asked during consultation can still change the project; asked after the authorisation, it changes nothing. Appeal windows are <b>two months</b> — from the first day of posting for a building permit, from the last formality completed for an environmental authorisation. And once the site is running, what remains is a claim to the prefect about its <i>prescriptions</i> (noise, discharges, water). The whole path, step by step, is in <a href='/understand#droits'>Rights and calendar</a> (in French), with the legal texts.",
+      a: "With the calendar, because it decides everything: the same question asked during consultation can still change the project; asked after the authorisation, it changes nothing. Appeal windows are <b>two months</b> — from the first day of posting for a building permit, from the last formality completed for an environmental authorisation. And once the site is running, what remains is a claim to the prefect about its <i>prescriptions</i> (noise, discharges, water). The whole path, step by step, is in <a href='/understand/#droits'>Rights and calendar</a> (in French), with the legal texts.",
     },
     {
       q: "The Nutri-Score of data centers. How is a data center graded?",
@@ -618,7 +618,7 @@ const EN: typeof FR = {
     },
     {
       q: "What are the stages of a data center project, from announcement to operation?",
-      a: "In France, broadly: 1) announcement and, sometimes, a prior public consultation; 2) filing — building permit and, most often, an environmental authorization under the classified-installations regime (ICPE); 3) review: opinion of the environmental authority, then public inquiry; 4) decision: permit granted by the mayor (or by the préfet in some cases), environmental authorization by prefectoral order; 5) appeal periods; 6) construction, often in phases; 7) commissioning, then inspections during operation. Stages can overlap, and a project can stop at any of them. The public's rights at each stage: <a href='/understand#rights'>Rights and timeline</a>.",
+      a: "In France, broadly: 1) announcement and, sometimes, a prior public consultation; 2) filing — building permit and, most often, an environmental authorization under the classified-installations regime (ICPE); 3) review: opinion of the environmental authority, then public inquiry; 4) decision: permit granted by the mayor (or by the préfet in some cases), environmental authorization by prefectoral order; 5) appeal periods; 6) construction, often in phases; 7) commissioning, then inspections during operation. Stages can overlap, and a project can stop at any of them. The public's rights at each stage: <a href='/understand/#rights'>Rights and timeline</a>.",
     },
     {
       q: "What is a “moratorium” on data centers? Does it stop a project?",
@@ -662,7 +662,7 @@ const NL: typeof FR = {
 
   chemins: {
     fiche: "/nl/dc",
-    classement: "/nl/ranglijst",
+    classement: "/nl/ranglijst/",
     carte: "/nl/kaart/",
     indices: "/nl/indices/",
     indicesPays: "/nl/indices?pays=",
@@ -740,9 +740,9 @@ const NL: typeof FR = {
   whoSub: "Dezelfde toegang, verschillende toepassingen — elk profiel heeft zijn eigen ingang.",
   who: [
     { name: "Burgers", line: "Het project bij u in de buurt, in klare taal — de kaart.", href: "/nl/kaart/" },
-    { name: "Journalisten", line: "Gedocumenteerde, citeerbare feiten, met hun archieven.", href: "/nl/ranglijst" },
-    { name: "Bestuurders", line: "Vergelijk uw gemeente, bereid het debat voor.", href: "/nl/ranglijst" },
-    { name: "Ngo's", line: "Verzet en moratoria — de monitoringlaag.", href: "/nl/kaart?veille=tout" },
+    { name: "Journalisten", line: "Gedocumenteerde, citeerbare feiten, met hun archieven.", href: "/nl/ranglijst/" },
+    { name: "Bestuurders", line: "Vergelijk uw gemeente, bereid het debat voor.", href: "/nl/ranglijst/" },
+    { name: "Ngo's", line: "Verzet en moratoria — de monitoringlaag.", href: "/nl/kaart/?veille=tout" },
     { name: "Onderzoekers", line: "De methode, de data — alles is na te rekenen.", href: "/nl/methodologie/" },
     { name: "Exploitanten", line: "Corrigeer, reageer — en verbeter het echte project.", href: "/nl/contact/" },
   ],
@@ -767,11 +767,11 @@ const NL: typeof FR = {
     repli: "europe" as string | null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} op een vol onderstation",
-      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers#vol-station" },
+      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers/#vol-station" },
     { genre: "vue", id: "pue_published", figure: "{big} publiceren hun PUE",
-      attribution: "Kerncijfers van het datacenterpark · opgaven van exploitanten · n = {n}", url: "/nl/kerncijfers#pue-gepubliceerd" },
+      attribution: "Kerncijfers van het datacenterpark · opgaven van exploitanten · n = {n}", url: "/nl/kerncijfers/#pue-gepubliceerd" },
     { genre: "vue", id: "water_stress_high", figure: "{big} in een zone met hoge waterstress",
-      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers#waterstress" },
+      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers/#waterstress" },
     ],
   },
   whyNowPunch: "Het heetste onderwerp van AI heeft geen enkele onafhankelijke scheidsrechter. <b>Die scheidsrechter zijn wij.</b>",
@@ -848,7 +848,7 @@ const NL: typeof FR = {
   faq: [
     {
       q: "Er is een project aangekondigd bij mij in de buurt. Waar begin ik?",
-      a: "Bij het tijdpad, want dat beslist alles: dezelfde vraag gesteld tijdens het overleg kan het project veranderen; gesteld na de vergunning verandert ze niets meer. In Frankrijk zijn de beroepstermijnen <b>twee maanden</b> — vanaf de eerste dag van aanplakking voor een bouwvergunning, vanaf de laatste vervulde formaliteit voor een milieuvergunning. En als de site al draait, rest nog de klacht bij de prefect over de <i>voorschriften</i> (geluid, lozingen, water). Het hele parcours, stap voor stap, staat in <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>, met de teksten.",
+      a: "Bij het tijdpad, want dat beslist alles: dezelfde vraag gesteld tijdens het overleg kan het project veranderen; gesteld na de vergunning verandert ze niets meer. In Frankrijk zijn de beroepstermijnen <b>twee maanden</b> — vanaf de eerste dag van aanplakking voor een bouwvergunning, vanaf de laatste vervulde formaliteit voor een milieuvergunning. En als de site al draait, rest nog de klacht bij de prefect over de <i>voorschriften</i> (geluid, lozingen, water). Het hele parcours, stap voor stap, staat in <a href='/nl/datacenters-begrijpen/#rechten'>Rechten en tijdpad</a>, met de teksten.",
     },
     {
       q: "De nutri-score van datacenters. Hoe wordt een datacenter beoordeeld?",
@@ -920,7 +920,7 @@ const NL: typeof FR = {
     },
     {
       q: "Wat zijn de stappen van een datacenterproject, van aankondiging tot ingebruikname?",
-      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaand overleg; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de milieuautoriteit, dan de inspraak; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de bouw, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>.",
+      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaand overleg; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de milieuautoriteit, dan de inspraak; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de bouw, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen/#rechten'>Rechten en tijdpad</a>.",
     },
     {
       q: "Wat is een ‘moratorium’ op datacenters? Stopt dat een project?",

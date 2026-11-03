@@ -68,13 +68,13 @@ const NL: typeof FR = {
     { h2: "Het idee van de Nutri-Score",
       corps: "<p>Een etiket dat iedereen kan lezen, vóór een complexe technische werkelijkheid. Een letter vervangt het dossier niet: ze opent het, en maakt het vergelijkbaar van site tot site.</p>" },
     { h2: "Twee cijfers, niet één",
-      corps: "<p>Eén voor de <strong>site</strong> — de context die het project ondergaat en niet heeft gekozen — en één voor <strong>project en proces</strong> — wat de exploitant beslist. Die scheiding voorkomt dat een goed dossier een slechte plek goedmaakt, of omgekeerd. Een cijfer is <strong>niet</strong> het gemiddelde van de pijlers: zie <a href=\"/nl/methodologie\">de methode</a>.</p>" },
+      corps: "<p>Eén voor de <strong>site</strong> — de context die het project ondergaat en niet heeft gekozen — en één voor <strong>project en proces</strong> — wat de exploitant beslist. Die scheiding voorkomt dat een goed dossier een slechte plek goedmaakt, of omgekeerd. Een cijfer is <strong>niet</strong> het gemiddelde van de pijlers: zie <a href=\"/nl/methodologie/\">de methode</a>.</p>" },
     { h2: "Vijf pijlers, expliciete gewichten",
       corps: "<p>Energie 25%, Water 20%, Bodem en biodiversiteit 20%, Lokale impact 20%, Transparantie en governance 15%. Deze gewichten zijn openbaar en verschillen niet van site tot site.</p>" },
     { h2: "Het vertrouwen laat zich nooit van het cijfer scheiden",
       corps: "<p>Onder 40% documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van een letter. <strong>Een <span class='note-inline n-a'>A</span> bewijs je, een A beloof je niet</strong>: ontbrekende gegevens leveren nooit een goed cijfer op — anders zou de minst transparante site het best beoordeeld zijn.</p>" },
     { h2: "Een reproduceerbare methode",
-      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het gegevensbestand van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/nl/het-cijfer-stap-voor-stap\">het cijfer, stap voor stap</a>, <a href=\"/nl/ranglijst\">de ranglijst</a>, <a href=\"/nl/kaart\">de kaart</a>.</p>" },
+      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het gegevensbestand van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/nl/het-cijfer-stap-voor-stap/\">het cijfer, stap voor stap</a>, <a href=\"/nl/ranglijst/\">de ranglijst</a>, <a href=\"/nl/kaart/\">de kaart</a>.</p>" },
   ],
 };
 

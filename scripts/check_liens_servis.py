@@ -23,7 +23,10 @@ import sys
 from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[1]
-HREF = re.compile(r'href="(/[^"#?]*)"')
+# 🔴 UN LIEN ANCRÉ REDIRIGE AUSSI. La première version écartait tout href portant un `#`,
+# donc `/fr/comprendre#questions` — qui répond 308 vers `/fr/comprendre/` exactement comme
+# son jumeau nu (vérifié en production). On lit la partie CHEMIN et on laisse l'ancre de côté.
+HREF = re.compile(r'href="(/[^"?#]*)(#[^"]*)?"')
 
 
 def main() -> int:
@@ -39,6 +42,8 @@ def main() -> int:
         pages += 1
         for m in HREF.finditer(fichier.read_text(encoding="utf-8", errors="replace")):
             href = m.group(1)
+            if not href:
+                continue  # un href qui n'est QUE l'ancre (`#faq`) ne va nulle part d'autre
             # Une adresse de FICHIER garde son extension (`/assets/x.svg`, `/sitemap.xml`) :
             # elle n'a pas de barre finale et n'en veut pas.
             if href.endswith("/") or "." in href.rsplit("/", 1)[-1]:

@@ -181,7 +181,7 @@ const NL: typeof FR = {
   tagline: "Onafhankelijk observatorium",
   h1: "De normen. Waar wij staan.",
   intro:
-    "<p>We betreden geen onontgonnen terrein. De datacentersector meet zijn prestaties al jaren, met een genormeerd vocabulaire en gezaghebbende instanties. Deze pagina brengt <strong>het bestaande</strong> in kaart — de officiële KPI's, de ISO-normen — om daartegen af te zetten wat wij toevoegen.</p><p class=\"meth-nerd\">🤓 Verder dan <a href=\"/nl/datacenters-begrijpen\">Datacenters begrijpen</a>, vóór onze <a href=\"/nl/methodologie\">Methode</a>. Dit is de middelste trede: het bestaande speelveld, vóór ons cijfer.</p>",
+    "<p>We betreden geen onontgonnen terrein. De datacentersector meet zijn prestaties al jaren, met een genormeerd vocabulaire en gezaghebbende instanties. Deze pagina brengt <strong>het bestaande</strong> in kaart — de officiële KPI's, de ISO-normen — om daartegen af te zetten wat wij toevoegen.</p><p class=\"meth-nerd\">🤓 Verder dan <a href=\"/nl/datacenters-begrijpen/\">Datacenters begrijpen</a>, vóór onze <a href=\"/nl/methodologie/\">Methode</a>. Dit is de middelste trede: het bestaande speelveld, vóór ons cijfer.</p>",
 
   mapH2: "De kaart van de normen",
   mapIntro: "<p>Wie gezag heeft, en waarover. De wereldwijde ruggengraat is <strong>ISO/IEC 30134</strong> (via comité SC39); de rest draait eromheen.</p>",
@@ -215,7 +215,7 @@ const NL: typeof FR = {
   ],
 
   situateH2: "Waar wij staan",
-  situateP: "<p>Onze pijler Energie spreekt <strong>exact</strong> de genormeerde taal van de sector — we <em>leunen op</em> de normen, we omzeilen ze niet. De <a href=\"/nl/methodologie\"><i class=\"gl gl-a\">A</i> bewijs je</a> trouwens met een geaccrediteerde <strong>ISO/IEC 30134</strong>-audit.</p>",
+  situateP: "<p>Onze pijler Energie spreekt <strong>exact</strong> de genormeerde taal van de sector — we <em>leunen op</em> de normen, we omzeilen ze niet. De <a href=\"/nl/methodologie/\"><i class=\"gl gl-a\">A</i> bewijs je</a> trouwens met een geaccrediteerde <strong>ISO/IEC 30134</strong>-audit.</p>",
   alignCols: { ours: "Onze indicator", theirs: "Bijbehorende officiële KPI" },
   alignRows: [
     { ours: "Energie · <strong>PUE</strong> (declaratief, met voorzichtigheid beoordeeld)", theirs: "PUE — <strong>ISO/IEC 30134-2</strong>" },

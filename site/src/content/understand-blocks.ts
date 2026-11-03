@@ -587,7 +587,7 @@ export const RICH_NL: Record<string, RichBlock> = {
     qas: [
       {
         q: "Worden er datacenters gebouwd bij mij in de buurt?",
-        a: "We publiceren een cijfer voor elke bekende site en elk bekend project, met de bronnen erbij. <a href='/nl/kaart/'>Zoek uw gemeente op de kaart</a> of <a href='/nl/ranglijst'>blader door de ranglijst</a>: de fiche van een project zegt wat er bekend is over vermogen, water, grond en omgeving — en wat niet. Een project dat in onze data ontbreekt, is geen project dat niet bestaat: het is nog niet publiek gemaakt, of wij hebben het nog niet gezien.",
+        a: "We publiceren een cijfer voor elke bekende site en elk bekend project, met de bronnen erbij. <a href='/nl/kaart/'>Zoek uw gemeente op de kaart</a> of <a href='/nl/ranglijst/'>blader door de ranglijst</a>: de fiche van een project zegt wat er bekend is over vermogen, water, grond en omgeving — en wat niet. Een project dat in onze data ontbreekt, is geen project dat niet bestaat: het is nog niet publiek gemaakt, of wij hebben het nog niet gezien.",
       },
       {
         q: "Waarom zijn mensen tegen datacenters?",
@@ -657,6 +657,6 @@ export const RICH_NL: Record<string, RichBlock> = {
       },
     ],
     closing:
-      "En om projecten met elkaar te vergelijken: onze <a href='/nl/kaart/'>kaart</a>, onze <a href='/nl/ranglijst'>ranglijst</a> en de <a href='/nl/#method'>volledige methode</a> — daarvoor bestaat deze site.",
+      "En om projecten met elkaar te vergelijken: onze <a href='/nl/kaart/'>kaart</a>, onze <a href='/nl/ranglijst/'>ranglijst</a> en de <a href='/nl/#method'>volledige methode</a> — daarvoor bestaat deze site.",
   },
 };

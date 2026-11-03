@@ -42,8 +42,9 @@ RACINE = Path(__file__).resolve().parents[1]
 #     traduction signé, et leurs gabarits sont binaires (`lang === "fr" ? … : …`).
 #   · 2 familles — la fiche et le portrait, qui attendent la traduction des champs de
 #     SYNTHÈSE (`summary`, `citable_quote`), produits par le pipeline sur 1 399 fiches.
-# Le compte ne peut que baisser. À zéro, `nl` peut rejoindre `LANGUES_VIVANTES`.
-DETTE_SURFACES_NL = 10
+# 10 → 9 le 2026-11-03 : le one-pager est propre (bouton d'impression et libellé de retour
+# en néerlandais). Le compte ne peut que baisser. À zéro, `nl` rejoint `LANGUES_VIVANTES`.
+DETTE_SURFACES_NL = 9
 
 # Les blocs qui sont les MÊMES dans toutes les langues PAR DÉCISION, pas par négligence.
 # Chaque motif est une règle de la maison, pas une exception de confort :

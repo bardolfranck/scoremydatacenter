@@ -113,7 +113,7 @@ const NL: typeof FR = {
   baseline: "Onafhankelijk observatorium van het acceptatierisico van datacenters.",
   ogLocale: "nl_NL",
   search: {
-    action: "/nl/ranglijst",
+    action: "/nl/ranglijst/",
     placeholder: "Zoek een gemeente, een site, een exploitant…",
     aria: "Zoek een gemeente of een beoordeeld project",
   },

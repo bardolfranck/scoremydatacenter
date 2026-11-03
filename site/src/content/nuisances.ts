@@ -56,7 +56,7 @@ const FR = {
       q: "Vivre près d'un data center, est-ce risqué pour la santé&nbsp;?",
       r: `<p>Nous ne sommes pas une autorité sanitaire et <strong>nous ne mesurons aucun effet sur la santé</strong> — l'affirmer ou le nier serait également malhonnête. Ce que nous pouvons dire tient aux faits versés aux dossiers.</p>
       <p>Ce qui revient le plus souvent dans les avis d'autorité environnementale que nous avons dépouillés : les <strong>groupes électrogènes</strong>, les <strong>cuves de carburant</strong> et le <strong>bruit</strong>. Le bruit nocturne est le sujet le plus constant, parce qu'il est continu et qu'il n'a pas de répit — c'est ce qui distingue un data center d'un chantier ou d'une route.</p>
-      <p>Nous publions ces éléments <strong>à côté de la note, jamais dedans</strong>, et nous disons sur quoi ils reposent. Pour comprendre à quel moment ces questions se posent dans une procédure, voir <a href='/fr/comprendre#droits'>Droits et calendrier</a>.</p>` },
+      <p>Nous publions ces éléments <strong>à côté de la note, jamais dedans</strong>, et nous disons sur quoi ils reposent. Pour comprendre à quel moment ces questions se posent dans une procédure, voir <a href='/fr/comprendre/#droits'>Droits et calendrier</a>.</p>` },
   ],
 
   // 🔴 LES DEUX COMPTES SE DÉRIVENT DU CORPUS, ils ne se recopient pas : la page a publié
@@ -150,7 +150,7 @@ const EN: typeof FR = {
       q: "Are there health risks to living near a data center?",
       r: `<p>We are not a health authority and <strong>we measure no health effect</strong> — asserting one, or denying it, would be equally dishonest. What we can say rests on the facts filed in the dossiers.</p>
       <p>What comes up most often in the environmental-authority opinions we reviewed: <strong>backup generators</strong>, <strong>fuel tanks</strong> and <strong>noise</strong>. Night-time noise is the most constant subject, because it is continuous and has no lull — that is what sets a data center apart from a building site or a road.</p>
-      <p>We publish these facts <strong>next to the grade, never inside it</strong>, and we say what they rest on. To see when these questions can still change a project, read <a href='/understand#droits'>Rights and calendar</a> (in French).</p>` },
+      <p>We publish these facts <strong>next to the grade, never inside it</strong>, and we say what they rest on. To see when these questions can still change a project, read <a href='/understand/#droits'>Rights and calendar</a> (in French).</p>` },
   ],
 
   mesure: {
@@ -242,7 +242,7 @@ const NL: typeof FR = {
       q: "Is wonen bij een datacenter een gezondheidsrisico?",
       r: `<p>We zijn geen gezondheidsautoriteit en <strong>we meten geen enkel gezondheidseffect</strong> — het bevestigen of het ontkennen zou even oneerlijk zijn. Wat we kunnen zeggen, steunt op de feiten in de dossiers.</p>
       <p>Wat het vaakst terugkomt in de milieuadviezen die we hebben doorgenomen: de <strong>noodaggregaten</strong>, de <strong>brandstoftanks</strong> en het <strong>geluid</strong>. Het nachtelijke geluid is het meest constante onderwerp, omdat het continu is en geen pauze kent — dat onderscheidt een datacenter van een bouwplaats of een weg.</p>
-      <p>We publiceren deze elementen <strong>naast het cijfer, nooit erin</strong>, en we zeggen waarop ze steunen. Om te begrijpen wanneer deze vragen in een procedure aan bod komen: zie <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>.</p>` },
+      <p>We publiceren deze elementen <strong>naast het cijfer, nooit erin</strong>, en we zeggen waarop ze steunen. Om te begrijpen wanneer deze vragen in een procedure aan bod komen: zie <a href='/nl/datacenters-begrijpen/#rechten'>Rechten en tijdpad</a>.</p>` },
   ],
 
   mesure: {

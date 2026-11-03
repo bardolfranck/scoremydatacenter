@@ -373,7 +373,7 @@ export const CHECKLIST_NL: Checklist = {
   takeaway:
     "Een vraag zonder antwoord is geen mislukking: noteer haar, dateer haar, stel haar opnieuw, schriftelijk. Precies dat doet onze meetlat: wat niet publiek gedocumenteerd is, leest u af aan het vertrouwen (hoog, gemiddeld of laag) dat elk cijfer vergezelt.",
   printLabel: "Printversie",
-  printHref: "/nl/datacenters-begrijpen/one-pager",
+  printHref: "/nl/datacenters-begrijpen/one-pager/",
   pdfLabel: "Download de pdf (één pagina)",
   pdfHref: "/downloads/questions-data-center-nl.pdf",
   printTitle: "De juiste vragen bij een datacenterproject",
