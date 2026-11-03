@@ -266,7 +266,7 @@ const NL: typeof FR = {
       <p>De buurt hoort ze niet bij stroomuitval, die zeldzaam is. Ze hoort ze bij de <strong>periodieke proeven</strong>, verplicht om te garanderen dat ze zullen starten: doorgaans één proef per maand per machine, plus één langere proef onder last per jaar. Een site met dertig motoren heeft dus <strong>zeer regelmatig</strong> proeven, en dat is veruit de grootste bron van wrevel in de dossiers die we lezen.</p>
       <p>Vanaf wanneer is het ‘veel’? Twee ijkpunten in plaats van één getal: het <strong>gecumuleerde vermogen</strong> van het machinepark — boven een bepaalde thermische drempel valt de installatie onder een strenger vergunningsregime voor geklasseerde installaties — en de <strong>verhouding tussen dat vermogen en de omvang van de gemeente</strong>. Die tweede verhouding verklaart waarom hetzelfde project geruisloos passeert in een industriezone en elders vastloopt.</p>` },
 
-    { icone: "fuel", h2: "De brandstoftanks: de hoeveelheid telt, niet de soort",
+    { icone: "fuel", h2: "De brandstoftanks: eerst de hoeveelheid, dan de soort",
       corps: `<p>Wie aggregaten zegt, zegt voorraad: de motoren moeten uren, soms dagen, kunnen draaien zonder levering. Een dossier geeft dus een <strong>opslagvolume</strong> op, en dat volume noteren wij.</p>
       <p>De opgegeven brandstof varieert: sommige adviezen vermelden HVO (waterstofbehandelde plantaardige olie), andere stookolie of diesel.</p>
       <p>En dus? De brandstofsoort telt minder dan drie dingen:</p>

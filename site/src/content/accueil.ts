@@ -690,7 +690,7 @@ const NL: typeof FR = {
   heroLede:
     "Datacenters veranderen onze leefomgeving. Water, energie, grond, lokale impact, transparantie: ScoreMyDataCenter beoordeelt publiekelijk de acceptatiescore van elk project, volgens een open methode en gedocumenteerde feiten.",
   heroStandards:
-    "We zijn onafhankelijk. We passen de standaarden van de sector toe — <strong>PUE</strong> (ISO/IEC&nbsp;30134), energie, koolstof — en meten vervolgens wat zij negeren: <strong>het water, de bodem, het gebied</strong>. Het resultaat is een Nutri-Score voor {n} echte sites.",
+    "We zijn onafhankelijk. We passen de standaarden van de sector toe — <strong>PUE</strong> (ISO/IEC&nbsp;30134), energie, koolstof — en meten vervolgens wat zij negeren: <strong>het water, de bodem, het gebied</strong>. Het resultaat is een nutri-score voor {n} echte sites.",
   heroChecks: [
     "Het cijfer is <strong>gratis</strong>",
     "De methode is <strong>openbaar</strong> (v0.1.0 bevroren)",
@@ -815,7 +815,7 @@ const NL: typeof FR = {
     "26 indicatoren in 5 pijlers, verdeeld naar wat het project <span class='term'>ondergaat</span> en wat de exploitant <span class='term'>kiest</span>. De meetlat, haar gewichten en drempels zijn <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>openbaar en downloadbaar</a>.",
   methodPedago: "Begrijp het cijfer, stap voor stap",
   siteScoreExplain: "De context die het project <span class='term'>ondergaat</span>: koolstofintensiteit van het elektriciteitsnet, waterstress, bodem, lokaal weefsel en economie van de gemeente.",
-  operatorScoreExplain: "De hefbomen die de exploitant <span class='term'>kiest</span>: energie-efficiëntie, koeling, banen, inspraak, transparantie.",
+  operatorScoreExplain: "De hefbomen die de exploitant <span class='term'>kiest</span>: energie-efficiëntie, koeling, banen, overleg, transparantie.",
   confidenceTitle: "Documentair vertrouwen",
   confidenceExplain:
     "Een cijfer verschijnt er nooit zonder. Onder 40% dekking schrijven we ‘onvoldoende gegevens’. Het onbekende beoordelen we niet.",
@@ -848,7 +848,7 @@ const NL: typeof FR = {
   faq: [
     {
       q: "Er is een project aangekondigd bij mij in de buurt. Waar begin ik?",
-      a: "Bij het tijdpad, want dat beslist alles: dezelfde vraag gesteld tijdens de inspraak kan het project veranderen; gesteld na de vergunning verandert ze niets meer. In Frankrijk zijn de beroepstermijnen <b>twee maanden</b> — vanaf de eerste dag van aanplakking voor een bouwvergunning, vanaf de laatste vervulde formaliteit voor een milieuvergunning. En als de site al draait, rest nog de klacht bij de prefect over de <i>voorschriften</i> (geluid, lozingen, water). Het hele parcours, stap voor stap, staat in <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>, met de teksten.",
+      a: "Bij het tijdpad, want dat beslist alles: dezelfde vraag gesteld tijdens het overleg kan het project veranderen; gesteld na de vergunning verandert ze niets meer. In Frankrijk zijn de beroepstermijnen <b>twee maanden</b> — vanaf de eerste dag van aanplakking voor een bouwvergunning, vanaf de laatste vervulde formaliteit voor een milieuvergunning. En als de site al draait, rest nog de klacht bij de prefect over de <i>voorschriften</i> (geluid, lozingen, water). Het hele parcours, stap voor stap, staat in <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>, met de teksten.",
     },
     {
       q: "De nutri-score van datacenters. Hoe wordt een datacenter beoordeeld?",
@@ -864,7 +864,7 @@ const NL: typeof FR = {
     },
     {
       q: "Wat betekenen de twee cijfers, ‘site’ en ‘exploitant’?",
-      a: "Het sitecijfer beoordeelt wat het project ondergaat — gebied, water, net, grond — wie er ook achter zit. Het exploitantcijfer beoordeelt wat hij kiest — efficiëntie, inspraak, transparantie, toezeggingen. We scheiden het terrein van de beslissingen.",
+      a: "Het sitecijfer beoordeelt wat het project ondergaat — gebied, water, net, grond — wie er ook achter zit. Het exploitantcijfer beoordeelt wat hij kiest — efficiëntie, overleg, transparantie, toezeggingen. We scheiden het terrein van de beslissingen.",
     },
     {
       q: "Kan ik het project bij mij in de buurt laten beoordelen?",
@@ -884,7 +884,7 @@ const NL: typeof FR = {
     },
     {
       q: "Waarom heeft nog geen enkel datacenter het cijfer <i class='gl gl-a'>A</i>?",
-      a: "Omdat een <i class='gl gl-a'>A</i> bewezen wordt, niet beloofd: hij is voorbehouden aan waarden die in exploitatie zijn geverifieerd. Een volledig declaratief dossier, hoe uitstekend ook, komt niet boven een <i class='gl gl-b'>B</i> uit — ‘aangekondigd ≠ gemeten’. Een exploitant behaalt zijn <i class='gl gl-a'>A</i> door bewijs van een derde aan te leveren (EED-rapportage aan de toezichthouder, ISO/IEC 30134-audit door een geaccrediteerde instelling — nooit een marketingpagina) via het publieke correctiekanaal: de waarde gaat dan van ‘aangekondigd’ naar ‘gemeten’, het plafond vervalt, en de herberekening wordt vastgelegd in het auditlogboek. De <i class='gl gl-a'>A</i> is niet te koop en niet op eigen verklaring te krijgen: hij wordt aangetoond. En bewijs verhoogt het cijfer project &amp; proces — nooit dat van de site: het gebied is een gegeven: daar valt niets te bewijzen.",
+      a: "Omdat een <i class='gl gl-a'>A</i> bewezen wordt, niet beloofd: hij is voorbehouden aan waarden die in exploitatie zijn geverifieerd. Een volledig declaratief dossier, hoe uitstekend ook, komt niet boven een <i class='gl gl-b'>B</i> uit — ‘aangekondigd ≠ gemeten’. Een exploitant behaalt zijn <i class='gl gl-a'>A</i> door bewijs van een derde aan te leveren (EED-rapportage aan de toezichthouder, ISO/IEC 30134-audit door een geaccrediteerde instelling — nooit een marketingpagina) via het publieke correctiekanaal: de waarde gaat dan van ‘aangekondigd’ naar ‘gemeten’, het plafond vervalt, en de herberekening wordt vastgelegd in het auditlogboek. De <i class='gl gl-a'>A</i> is niet te koop en niet op eigen verklaring te krijgen: hij wordt aangetoond. En bewijs verhoogt het cijfer project &amp; proces — nooit dat van de site: het gebied is een gegeven — daar valt niets te bewijzen.",
     },
     {
       q: "Waarom we publiceren zonder toestemming te vragen",
@@ -920,7 +920,7 @@ const NL: typeof FR = {
     },
     {
       q: "Wat zijn de stappen van een datacenterproject, van aankondiging tot ingebruikname?",
-      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaande inspraak; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de milieuautoriteit, dan openbare raadpleging; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de bouw, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>.",
+      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaand overleg; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de milieuautoriteit, dan de inspraak; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de bouw, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>.",
     },
     {
       q: "Wat is een ‘moratorium’ op datacenters? Stopt dat een project?",

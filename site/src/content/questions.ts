@@ -265,7 +265,7 @@ export const CHECKLIST_EN: Checklist = {
 // n'existent pas encore : printHref/pdfHref sont des slugs PROPOSÉS (harnais).
 export const CHECKLIST_NL: Checklist = {
   intro:
-    "Op een publieksbijeenkomst, aan het loket of in de gemeenteraad: deze vragen kunnen zo worden gesteld. Ze volgen de vijf pijlers van onze meetlat.",
+    "Op een publieksbijeenkomst, op het spreekuur of in de gemeenteraad: deze vragen kunnen zo worden gesteld. Ze volgen de vijf pijlers van onze meetlat.",
   groups: [
     {
       pillar: "Energie",
@@ -312,7 +312,7 @@ export const CHECKLIST_NL: Checklist = {
           why: "Een oud industrieterrein en landbouwgrond kosten de gemeente niet hetzelfde.",
         },
         {
-          q: "Hoe past het project in de Franse doelstelling van zuinig grondgebruik (‘zéro artificialisation nette’, klimaatwet van 2021)?",
+          q: "Hoe past het project in de doelstelling van zuinig grondgebruik van de gemeente (‘zéro artificialisation nette’, Franse klimaatwet van 2021)?",
           why: "De hectaren die hier opgaan, ontbreken elders — woningen, voorzieningen, bedrijvigheid.",
         },
         {
@@ -365,13 +365,13 @@ export const CHECKLIST_NL: Checklist = {
         },
         {
           q: "Waar is het volledige dossier in te zien, en wanneer loopt de inspraak?",
-          why: "Die data openen uw rechten — ze missen sluit beroepen af (zie <a href='#rechten'>Rechten en tijdpad</a>).",
+          why: "Die datums openen uw rechten — wie ze mist, sluit beroepswegen af (zie <a href='#rechten'>Rechten en tijdpad</a>).",
         },
       ],
     },
   ],
   takeaway:
-    "Een vraag zonder antwoord is geen mislukking: noteer haar, dateer haar, stel haar opnieuw op schrift. Precies dat doet onze meetlat: wat niet publiek gedocumenteerd is, leest u af aan het vertrouwen (hoog, gemiddeld of laag) dat elk cijfer vergezelt.",
+    "Een vraag zonder antwoord is geen mislukking: noteer haar, dateer haar, stel haar opnieuw, schriftelijk. Precies dat doet onze meetlat: wat niet publiek gedocumenteerd is, leest u af aan het vertrouwen (hoog, gemiddeld of laag) dat elk cijfer vergezelt.",
   printLabel: "Printversie",
   printHref: "/nl/datacenters-begrijpen/one-pager",
   pdfLabel: "Download de pdf (één pagina)",

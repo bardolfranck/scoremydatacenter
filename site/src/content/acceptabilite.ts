@@ -140,7 +140,7 @@ const NL: typeof FR = {
     { icone: "local", titre: "Lokale impact en absorptievermogen",
       corps: "wat het gebied kan dragen. <strong>Een gigaproject in een plattelandsgemeente is iets anders dan een rekencentrum in de stad</strong>: zelfde vermogen, zelfde geluid, maar niet hetzelfde aantal inwoners om het te dragen, en niet hetzelfde economische weefsel om ervan te profiteren." },
     { icone: "transparency", titre: "Transparantie en governance",
-      corps: "wat de initiatiefnemer publiceert, en hoe hij de omgeving betrekt. Een raadpleegbaar dossier en echte inspraak maken nog geen goed project, maar hun afwezigheid weegt — het is de enige pijler die over het <em>gedrag</em> gaat in plaats van over de effecten." },
+      corps: "wat de initiatiefnemer publiceert, en hoe hij de omgeving betrekt. Een raadpleegbaar dossier en echt overleg maken nog geen goed project, maar hun afwezigheid weegt — het is de enige pijler die over het <em>gedrag</em> gaat in plaats van over de effecten." },
   ],
 
   sectionsApres: [
