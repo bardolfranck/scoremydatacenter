@@ -111,23 +111,23 @@ const AFFUTAGE: Array<{
   {
     question: "W4",
     quand: (v) => v.W1 === "high" || v.W1 === "extremely_high",
-    ajout: { fr: "dans un bassin déjà en tension", en: "in a basin already under stress" },
+    ajout: { fr: "dans un bassin déjà en tension", en: "in a basin already under stress", nl: "in een stroomgebied dat al onder druk staat", },
   },
   {
     question: "W4",
     quand: (v) => v.W2 === "bad" || v.W2 === "poor",
-    ajout: { fr: "vers un cours d'eau déjà dégradé", en: "into an already impaired watercourse" },
+    ajout: { fr: "vers un cours d'eau déjà dégradé", en: "into an already impaired watercourse", nl: "naar een al aangetaste waterloop", },
   },
   {
     question: "F4",
     quand: (v) => v.F2 === "agricultural" || v.F2 === "natural",
-    ajout: { fr: "sur un sol qui n'est pas artificialisé", en: "on land that is not already developed" },
+    ajout: { fr: "sur un sol qui n'est pas artificialisé", en: "on land that is not already developed", nl: "op grond die nog niet verhard is", },
   },
   {
     question: "L5",
     quand: (v) => typeof v.L2 === "number" && (v.L2 as number) >= 5,
     ajout: { fr: "pour une commune que le projet dépasse largement",
-             en: "for a municipality the project dwarfs" },
+             en: "for a municipality the project dwarfs", nl: "voor een gemeente waar het project veel te groot voor is", },
   },
 ];
 

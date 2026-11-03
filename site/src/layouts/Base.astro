@@ -36,7 +36,8 @@ const home = RACINE[lang];
 // (the EN version = the default the search engine serves when no language fits).
 // Trailing slash matches the built canonical (…/press/), so the whole hreflang
 // cluster points at the exact canonical URLs — no redirect hop, fully reciprocal.
-const withSlash = (p: string) => (p.endsWith("/") ? p : p + "/");
+const withSlash = (p: string) =>
+  p.endsWith("/") || p.includes("#") || p.includes("?") ? p : p + "/";
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const altAbs = new URL(withSlash(altHref), Astro.site).href;
 const enAbs = lang === "en" ? canonical : altAbs;
@@ -148,7 +149,12 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
                aria-current={isActive(item.href) ? "page" : undefined}>{item.label}</a>
           )
         ))}
-        <a class="lang-switch" href={altHref}>{altLabel}</a>
+        {/* 🔴 LA MÊME ADRESSE QUE LE SIGNAL ENVOYÉ AUX MOTEURS. Le lien visible prenait
+            `altHref` BRUT pendant que le cluster hreflang prenait `withSlash(altHref)` :
+            40 des 63 pages déclaraient une adresse canonique et en proposaient une autre au
+            lecteur, qui passait donc par une redirection à chaque changement de langue.
+            Deux normalisations pour une même valeur, c'est une de trop. */}
+        <a class="lang-switch" href={withSlash(altHref)}>{altLabel}</a>
       </nav>
       <script>
         // Progressive enhancement over native <details> (which already gives

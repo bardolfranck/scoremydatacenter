@@ -971,3 +971,28 @@ def test_la_page_nuisances_a_une_phrase_sans_chiffre(page):
         f"{page} ne passe plus par le helper qui choisit la variante — elle a dû recomposer "
         f"la phrase sur place, et la garantie n'est plus gardée qu'ici"
     )
+
+
+def test_les_liens_vers_l_autre_langue_finissent_par_une_barre():
+    """`altHref` doit porter sa barre finale — sinon chaque changement de langue redirige.
+
+    🔴 40 des 63 pages la perdaient, et le défaut était INVISIBLE parce qu'il se contredisait
+    lui-même : le cluster hreflang normalisait l'adresse (`withSlash`) pendant que le lien
+    proposé au lecteur prenait la valeur brute. Le moteur recevait donc la bonne adresse, le
+    lecteur l'autre, et personne ne voyait la redirection — elle est muette.
+
+    Le gabarit normalise désormais les deux ; ce test tient la VALEUR propre à la source,
+    pour qu'on n'ait pas à se fier à une normalisation à l'affichage.
+    """
+    pages = REPO_ROOT / "site" / "src" / "pages"
+    fautes = [
+        f"  {p.relative_to(pages)} → {m}"
+        for p in sorted(pages.rglob("*.astro"))
+        for m in re.findall(r'altHref="([^"]*)"', p.read_text(encoding="utf-8"))
+        if not m.endswith("/") and "#" not in m and "?" not in m
+    ]
+    assert not fautes, (
+        f"{len(fautes)} lien(s) « autre langue » sans barre finale — un clic de plus par "
+        f"redirection, et une adresse différente de celle déclarée aux moteurs :\n"
+        + "\n".join(fautes[:12])
+    )
