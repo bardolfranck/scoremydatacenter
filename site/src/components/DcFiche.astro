@@ -488,13 +488,16 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
     // interne, en anglais, dans l'onglet du navigateur et dans les résultats de recherche.
     : dc.grades.site.grade === "insufficient_data"
       ? t.seo.insufficient
-      // 🔴 ET ON NE PUBLIE UNE LETTRE QUE SI C'EN EST UNE. Cette chaîne ÉNUMÉRAIT les
-      // valeurs à ne pas écrire — `en_attente`, `insufficient_data` — et en ratait donc
-      // forcément une : 8 fiches israéliennes titraient « note en_attente » en production,
-      // le grade étant retenu SANS `provisional_band`, un chemin qu'aucune branche ne
-      // couvrait. Troisième fois que cette famille sort (insufficient_data le 2026-10-02,
-      // en_attente le 2026-11-02, celle-ci). Énumérer les mauvaises valeurs est une course
-      // qu'on perd ; vérifier que la valeur est une LETTRE la termine.
+      // 🔴 ET ON NE PUBLIE UNE LETTRE QUE SI C'EN EST UNE. Trois fois cette famille est
+      // sortie, par trois chemins différents, et deux fois on a corrigé la valeur du jour :
+      //   · 2026-10-02 — `insufficient_data` dans un titre servi.
+      //   · 2026-11-02 — la rétention de lettre sur coordonnée tenue écrit `en_attente`
+      //     dans l'artefact ; ce code l'interpolait telle quelle et DIX-NEUF titres servis
+      //     annonçaient « note en_attente », souligné compris.
+      //   · 2026-11-03 — huit fiches israéliennes, grade retenu au niveau du PAYS sans
+      //     `provisional_band` : un chemin qu'aucune branche ne couvrait.
+      // Énumérer les mauvaises valeurs est une course qu'on perd — il en reste toujours une.
+      // Vérifier que la valeur est une LETTRE la termine.
       : /^[A-E]$/.test(dc.grades.site.grade ?? "")
         ? t.seo.grade.replace("{grade}", dc.grades.site.grade)
         : t.seo.pending;
