@@ -43,12 +43,12 @@ export const RICH_FR: Record<string, RichBlock> = {
       {
         icon: "energy",
         lead: "L'électricité.",
-        body: "Les grands projets récents demandent 100 à 200 MW, l'équivalent de la consommation électrique de villes comme Le Mans ou Saint-Étienne<sup><a href='#src-commune-1'>1</a></sup>. Cette puissance passe par le réseau local : postes électriques, lignes, travaux.",
+        body: "Les grands projets récents demandent 100 à 200 MW, l'équivalent de la consommation électrique de villes comme Le Mans ou Saint-Étienne<sup><a href='#src-why-local-1'>1</a></sup>. Cette puissance passe par le réseau local : postes électriques, lignes, travaux.",
       },
       {
         icon: "water",
         lead: "L'eau.",
-        body: "Certaines techniques de refroidissement consomment très peu d'eau, d'autres beaucoup : les data centers d'Amazon ont prélevé environ 9,5 milliards de litres dans le monde en 2025, premier chiffre annuel publié par l'entreprise<sup><a href='#src-commune-2'>2</a></sup>. Le sujet est pris au sérieux par la loi : depuis mai 2026, un permis de construire peut être refusé en raison de « tensions structurelles sur la ressource en eau » (loi n° 2026-403 du 26 mai 2026, art. 35)<sup><a href='#src-commune-3'>3</a></sup>.",
+        body: "Certaines techniques de refroidissement consomment très peu d'eau, d'autres beaucoup : les data centers d'Amazon ont prélevé environ 9,5 milliards de litres dans le monde en 2025, premier chiffre annuel publié par l'entreprise<sup><a href='#src-why-local-2'>2</a></sup>. Le sujet est pris au sérieux par la loi : depuis mai 2026, un permis de construire peut être refusé en raison de « tensions structurelles sur la ressource en eau » (loi n° 2026-403 du 26 mai 2026, art. 35)<sup><a href='#src-why-local-3'>3</a></sup>.",
       },
       {
         icon: "noise",
@@ -58,12 +58,12 @@ export const RICH_FR: Record<string, RichBlock> = {
       {
         icon: "land",
         lead: "Le foncier et l'emploi.",
-        body: "Un méga-projet peut occuper des dizaines d'hectares — environ 90 pour le Campus IA de Fouju<sup><a href='#src-commune-4'>4</a></sup>. Pour une emprise comparable, une plateforme logistique emploie typiquement 300 à 400 personnes, un data center autour de 15 à 20<sup><a href='#src-commune-5'>5</a></sup>.",
+        body: "Un méga-projet peut occuper des dizaines d'hectares — environ 90 pour le Campus IA de Fouju<sup><a href='#src-why-local-4'>4</a></sup>. Pour une emprise comparable, une plateforme logistique emploie typiquement 300 à 400 personnes, un data center autour de 15 à 20<sup><a href='#src-why-local-5'>5</a></sup>.",
       },
       {
         icon: "tax",
         lead: "La fiscalité.",
-        body: "Le site paie des impôts locaux (taxe foncière, cotisation foncière des entreprises, notamment), répartis entre commune, intercommunalité et autres collectivités — avec des exonérations possibles les premières années<sup><a href='#src-commune-6'>6</a></sup>. D'où la question à poser : quelles recettes, pour qui, à partir de quand ?",
+        body: "Le site paie des impôts locaux (taxe foncière, cotisation foncière des entreprises, notamment), répartis entre commune, intercommunalité et autres collectivités — avec des exonérations possibles les premières années<sup><a href='#src-why-local-6'>6</a></sup>. D'où la question à poser : quelles recettes, pour qui, à partir de quand ?",
       },
     ],
     takeaway:
@@ -92,7 +92,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       },
       {
         lead: "Contractualiser la chaleur.",
-        body: "La loi impose d'étudier la valorisation de la chaleur produite (code de l'énergie, art. L.236-2, issu de la loi du 30 avril 2025)<sup><a href='#src-bon-projet-1'>1</a></sup>. La différence se joue entre une étude de principe et un contrat signé avec un réseau de chaleur, une piscine, des serres. Où vérifier : demander si un contrat existe, et avec qui.",
+        body: "La loi impose d'étudier la valorisation de la chaleur produite (code de l'énergie, art. L.236-2, issu de la loi du 30 avril 2025)<sup><a href='#src-what-makes-good-1'>1</a></sup>. La différence se joue entre une étude de principe et un contrat signé avec un réseau de chaleur, une piscine, des serres. Où vérifier : demander si un contrat existe, et avec qui.",
       },
       {
         lead: "Choisir le terrain qui coûte le moins au territoire.",
@@ -100,7 +100,7 @@ export const RICH_FR: Record<string, RichBlock> = {
       },
       {
         lead: "S'engager à publier les données en exploitation.",
-        body: "Consommations d'électricité et d'eau, efficacité mesurée — la loi prévoit d'ailleurs une déclaration de performance pour les centres de données (code de l'énergie, art. L.236-1)<sup><a href='#src-bon-projet-1'>1</a></sup>. Où vérifier : ce que le dossier promet de rendre public, et à quel rythme.",
+        body: "Consommations d'électricité et d'eau, efficacité mesurée — la loi prévoit d'ailleurs une déclaration de performance pour les centres de données (code de l'énergie, art. L.236-1)<sup><a href='#src-what-makes-good-1'>1</a></sup>. Où vérifier : ce que le dossier promet de rendre public, et à quel rythme.",
       },
       {
         lead: "Négocier des bénéfices locaux écrits.",
@@ -116,19 +116,19 @@ export const RICH_FR: Record<string, RichBlock> = {
 
   "your-rights": {
     intro:
-      "Un data center n'obtient pas une autorisation, mais plusieurs : un permis de construire, et le plus souvent une autorisation environnementale — le régime ICPE, qui encadre les installations industrielles<sup><a href='#src-droits-1'>1</a></sup>. Chacune a son calendrier, et chacune ouvre des droits au public.",
+      "Un data center n'obtient pas une autorisation, mais plusieurs : un permis de construire, et le plus souvent une autorisation environnementale — le régime ICPE, qui encadre les installations industrielles<sup><a href='#src-your-rights-1'>1</a></sup>. Chacune a son calendrier, et chacune ouvre des droits au public.",
     points: [
       {
         lead: "Avant le dépôt : la concertation.",
-        body: "Une concertation préalable, parfois avec un garant nommé par la CNDP (la Commission nationale du débat public), peut se tenir en amont. Attention : depuis un décret du 3 mars 2026, les data centers ne font plus partie des projets à saisine obligatoire de la CNDP<sup><a href='#src-droits-2'>2</a></sup> — la tenue d'une concertation dépend donc du porteur du projet ou de l'État. Si elle a lieu, c'est le moment où le projet peut encore changer le plus.",
+        body: "Une concertation préalable, parfois avec un garant nommé par la CNDP (la Commission nationale du débat public), peut se tenir en amont. Attention : depuis un décret du 3 mars 2026, les data centers ne font plus partie des projets à saisine obligatoire de la CNDP<sup><a href='#src-your-rights-2'>2</a></sup> — la tenue d'une concertation dépend donc du porteur du projet ou de l'État. Si elle a lieu, c'est le moment où le projet peut encore changer le plus.",
       },
       {
         lead: "Pendant l'instruction : l'enquête publique.",
-        body: "Pour les projets soumis à évaluation environnementale, elle dure au minimum 30 jours (code de l'environnement, art. L.123-9)<sup><a href='#src-droits-3'>3</a></sup>. Chacun — habitant ou non de la commune — peut déposer des observations écrites, en mairie ou en ligne. Elles sont versées au dossier et le commissaire enquêteur y répond dans son rapport.",
+        body: "Pour les projets soumis à évaluation environnementale, elle dure au minimum 30 jours (code de l'environnement, art. L.123-9)<sup><a href='#src-your-rights-3'>3</a></sup>. Chacun — habitant ou non de la commune — peut déposer des observations écrites, en mairie ou en ligne. Elles sont versées au dossier et le commissaire enquêteur y répond dans son rapport.",
       },
       {
         lead: "Cas particulier depuis mai 2026.",
-        body: "Un data center peut être qualifié par décret de « projet d'intérêt national majeur » : le permis est alors instruit par le préfet, et non par le maire. Même dans ce cas, le permis peut être refusé en raison de « tensions structurelles sur la ressource en eau » (loi n° 2026-403 du 26 mai 2026, art. 35)<sup><a href='#src-droits-1'>1</a></sup>.",
+        body: "Un data center peut être qualifié par décret de « projet d'intérêt national majeur » : le permis est alors instruit par le préfet, et non par le maire. Même dans ce cas, le permis peut être refusé en raison de « tensions structurelles sur la ressource en eau » (loi n° 2026-403 du 26 mai 2026, art. 35)<sup><a href='#src-your-rights-1'>1</a></sup>.",
       },
       {
         lead: "Après l'autorisation : les recours.",
@@ -139,15 +139,15 @@ export const RICH_FR: Record<string, RichBlock> = {
         // l'environnement, vérifié sur Légifrance). L'erreur allait dans le pire sens : un
         // riverain qui s'y fiait laissait passer son délai et perdait définitivement son
         // recours. Toute reprise de ce chiffre se vérifie sur le texte, jamais sur un article.
-        body: "Les délais sont courts, et ils ne se rattrapent pas : deux mois contre un permis de construire à compter du premier jour de son affichage sur le terrain, deux mois également pour les tiers contre une autorisation environnementale, à compter de la dernière formalité accomplie — affichage en mairie ou publication sur le site de la préfecture (art. R. 181-50)<sup><a href='#src-droits-4'>4</a></sup>. Un recours contentieux doit en outre être notifié à l'auteur de la décision et au bénéficiaire, sous quinze jours, à peine d'irrecevabilité (art. R. 181-51).",
+        body: "Les délais sont courts, et ils ne se rattrapent pas : deux mois contre un permis de construire à compter du premier jour de son affichage sur le terrain, deux mois également pour les tiers contre une autorisation environnementale, à compter de la dernière formalité accomplie — affichage en mairie ou publication sur le site de la préfecture (art. R. 181-50)<sup><a href='#src-your-rights-4'>4</a></sup>. Un recours contentieux doit en outre être notifié à l'auteur de la décision et au bénéficiaire, sous quinze jours, à peine d'irrecevabilité (art. R. 181-51).",
       },
       {
         lead: "Une fois le site en service : la réclamation.",
-        body: "Passé les délais, l'autorisation est définitive — mais ses PRESCRIPTIONS ne le sont pas. Toute personne gênée peut déposer une réclamation auprès du préfet, à compter de la mise en service, pour contester « l'insuffisance ou l'inadaptation des prescriptions » : bruit des groupes froids, essais de groupes électrogènes, rejets, prélèvements d'eau. Le préfet a deux mois pour répondre de façon motivée, son silence vaut refus, et s'il juge la réclamation fondée il impose des prescriptions complémentaires (art. R. 181-52)<sup><a href='#src-droits-5'>5</a></sup>. C'est le seul levier qui reste quand la gêne se découvre à l'usage — et c'est le plus ignoré.",
+        body: "Passé les délais, l'autorisation est définitive — mais ses PRESCRIPTIONS ne le sont pas. Toute personne gênée peut déposer une réclamation auprès du préfet, à compter de la mise en service, pour contester « l'insuffisance ou l'inadaptation des prescriptions » : bruit des groupes froids, essais de groupes électrogènes, rejets, prélèvements d'eau. Le préfet a deux mois pour répondre de façon motivée, son silence vaut refus, et s'il juge la réclamation fondée il impose des prescriptions complémentaires (art. R. 181-52)<sup><a href='#src-your-rights-5'>5</a></sup>. C'est le seul levier qui reste quand la gêne se découvre à l'usage — et c'est le plus ignoré.",
       },
       {
         lead: "Le piège de l'acheteur.",
-        body: "Qui achète ou loue un bien près d'une installation classée APRÈS l'affichage de son autorisation ne peut plus contester cette autorisation : la loi le déclare irrecevable (art. L. 514-6, III du code de l'environnement)<sup><a href='#src-droits-6'>6</a></sup>. Avant de signer près d'une zone d'activités, il vaut donc la peine de demander en mairie et en préfecture quelles autorisations y sont déjà affichées. La réclamation sur les prescriptions, elle, reste ouverte.",
+        body: "Qui achète ou loue un bien près d'une installation classée APRÈS l'affichage de son autorisation ne peut plus contester cette autorisation : la loi le déclare irrecevable (art. L. 514-6, III du code de l'environnement)<sup><a href='#src-your-rights-6'>6</a></sup>. Avant de signer près d'une zone d'activités, il vaut donc la peine de demander en mairie et en préfecture quelles autorisations y sont déjà affichées. La réclamation sur les prescriptions, elle, reste ouverte.",
       },
     ],
     takeaway:
@@ -256,12 +256,12 @@ export const RICH_EN: Record<string, RichBlock> = {
       {
         icon: "energy",
         lead: "Electricity.",
-        body: "Recent large projects request 100 to 200 MW, the equivalent of the electricity consumption of cities like Le Mans or Saint-Étienne<sup><a href='#src-municipality-1'>1</a></sup>. That power flows through the local grid: substations, lines, works.",
+        body: "Recent large projects request 100 to 200 MW, the equivalent of the electricity consumption of cities like Le Mans or Saint-Étienne<sup><a href='#src-why-local-1'>1</a></sup>. That power flows through the local grid: substations, lines, works.",
       },
       {
         icon: "water",
         lead: "Water.",
-        body: "Some cooling techniques use very little water, others a lot: Amazon's data centers withdrew about 9.5 billion liters worldwide in 2025, the first annual figure the company has published<sup><a href='#src-municipality-2'>2</a></sup>. The law takes the matter seriously: since May 2026, a building permit can be refused in France over “structural tensions on the water resource” (law no. 2026-403 of May 26, 2026, art. 35)<sup><a href='#src-municipality-3'>3</a></sup>.",
+        body: "Some cooling techniques use very little water, others a lot: Amazon's data centers withdrew about 9.5 billion liters worldwide in 2025, the first annual figure the company has published<sup><a href='#src-why-local-2'>2</a></sup>. The law takes the matter seriously: since May 2026, a building permit can be refused in France over “structural tensions on the water resource” (law no. 2026-403 of May 26, 2026, art. 35)<sup><a href='#src-why-local-3'>3</a></sup>.",
       },
       {
         icon: "noise",
@@ -271,12 +271,12 @@ export const RICH_EN: Record<string, RichBlock> = {
       {
         icon: "land",
         lead: "Land and jobs.",
-        body: "A mega-project can occupy dozens of hectares — about 90 for the Fouju AI Campus<sup><a href='#src-municipality-4'>4</a></sup>. For a comparable footprint, a logistics platform typically employs 300 to 400 people, a data center around 15 to 20<sup><a href='#src-municipality-5'>5</a></sup>.",
+        body: "A mega-project can occupy dozens of hectares — about 90 for the Fouju AI Campus<sup><a href='#src-why-local-4'>4</a></sup>. For a comparable footprint, a logistics platform typically employs 300 to 400 people, a data center around 15 to 20<sup><a href='#src-why-local-5'>5</a></sup>.",
       },
       {
         icon: "tax",
         lead: "Tax revenue.",
-        body: "The site pays local taxes (property tax and the local business levy, among others), split between the municipality, the inter-municipal body and other authorities — with possible exemptions in the first years<sup><a href='#src-municipality-6'>6</a></sup>. Hence the question to ask: what revenue, for whom, starting when?",
+        body: "The site pays local taxes (property tax and the local business levy, among others), split between the municipality, the inter-municipal body and other authorities — with possible exemptions in the first years<sup><a href='#src-why-local-6'>6</a></sup>. Hence the question to ask: what revenue, for whom, starting when?",
       },
     ],
     takeaway:
@@ -321,7 +321,7 @@ export const RICH_EN: Record<string, RichBlock> = {
       },
     ],
     inFrance:
-      "The law backs two of these levers: operators must study reusing the heat produced (energy code, art. L.236-2, from the law of April 30, 2025) and file a performance declaration for data centers (energy code, art. L.236-1)<sup><a href='#src-good-project-1'>1</a></sup>.",
+      "The law backs two of these levers: operators must study reusing the heat produced (energy code, art. L.236-2, from the law of April 30, 2025) and file a performance declaration for data centers (energy code, art. L.236-1)<sup><a href='#src-what-makes-good-1'>1</a></sup>.",
     takeaway:
       "A “good” project is not a project without impacts: it is a project whose impacts are written, quantified and verifiable. Our grid scores exactly that: what the project chooses, not only what it endures.",
     sources: [
@@ -331,19 +331,19 @@ export const RICH_EN: Record<string, RichBlock> = {
 
   "your-rights": {
     intro:
-      "A data center does not get one authorization but several: a building permit and, most often, an environmental authorization — the French ICPE regime, which governs industrial installations<sup><a href='#src-rights-1'>1</a></sup>. Each has its calendar, and each opens rights to the public.",
+      "A data center does not get one authorization but several: a building permit and, most often, an environmental authorization — the French ICPE regime, which governs industrial installations<sup><a href='#src-your-rights-1'>1</a></sup>. Each has its calendar, and each opens rights to the public.",
     points: [
       {
         lead: "Before filing: the public consultation.",
-        body: "A prior consultation, sometimes with a guarantor appointed by the CNDP (France's national commission for public debate), may be held upstream. Note: since a decree of March 3, 2026, data centers are no longer among the projects requiring mandatory CNDP referral<sup><a href='#src-rights-2'>2</a></sup> — whether a consultation happens now depends on the developer or the State. When it does happen, it is the moment the project can still change the most.",
+        body: "A prior consultation, sometimes with a guarantor appointed by the CNDP (France's national commission for public debate), may be held upstream. Note: since a decree of March 3, 2026, data centers are no longer among the projects requiring mandatory CNDP referral<sup><a href='#src-your-rights-2'>2</a></sup> — whether a consultation happens now depends on the developer or the State. When it does happen, it is the moment the project can still change the most.",
       },
       {
         lead: "During review: the public inquiry.",
-        body: "For projects subject to environmental assessment it lasts at least 30 days (environment code, art. L.123-9)<sup><a href='#src-rights-3'>3</a></sup>. Anyone — resident of the municipality or not — can file written observations, at the town hall or online. They join the file and the inquiry commissioner responds to them in the report.",
+        body: "For projects subject to environmental assessment it lasts at least 30 days (environment code, art. L.123-9)<sup><a href='#src-your-rights-3'>3</a></sup>. Anyone — resident of the municipality or not — can file written observations, at the town hall or online. They join the file and the inquiry commissioner responds to them in the report.",
       },
       {
         lead: "A special case since May 2026.",
-        body: "A data center can be designated by decree a “project of major national interest”: the permit is then processed by the préfet, not the mayor. Even then, the permit can be refused over “structural tensions on the water resource” (law no. 2026-403 of May 26, 2026, art. 35)<sup><a href='#src-rights-1'>1</a></sup>.",
+        body: "A data center can be designated by decree a “project of major national interest”: the permit is then processed by the préfet, not the mayor. Even then, the permit can be refused over “structural tensions on the water resource” (law no. 2026-403 of May 26, 2026, art. 35)<sup><a href='#src-your-rights-1'>1</a></sup>.",
       },
       {
         lead: "After authorization: appeals.",
@@ -352,15 +352,15 @@ export const RICH_EN: Record<string, RichBlock> = {
         // of 10 May 2024 cut it to two months for decisions taken from 1 September 2024
         // (art. R. 181-50, checked on Légifrance). The error ran the worst way: a resident
         // relying on it let the window close and lost the appeal for good.
-        body: "Deadlines are short, and they cannot be recovered: two months against a building permit from the first day it is posted on site, two months as well for third parties against an environmental authorization, counted from the last formality completed — posting at the town hall or publication on the prefecture's website (art. R. 181-50)<sup><a href='#src-rights-4'>4</a></sup>. A court appeal must also be notified to the author of the decision and to its beneficiary within fifteen days, or it is inadmissible (art. R. 181-51).",
+        body: "Deadlines are short, and they cannot be recovered: two months against a building permit from the first day it is posted on site, two months as well for third parties against an environmental authorization, counted from the last formality completed — posting at the town hall or publication on the prefecture's website (art. R. 181-50)<sup><a href='#src-your-rights-4'>4</a></sup>. A court appeal must also be notified to the author of the decision and to its beneficiary within fifteen days, or it is inadmissible (art. R. 181-51).",
       },
       {
         lead: "Once the site is running: the claim.",
-        body: "Past the deadlines the authorization is final — but its PRESCRIPTIONS are not. Anyone affected can file a claim with the préfet, from the moment the site enters service, contesting the “insufficiency or inadequacy of the prescriptions”: noise from the chillers, generator tests, discharges, water abstraction. The préfet has two months to answer with reasons, silence counts as refusal, and where the claim is well founded he sets additional prescriptions (art. R. 181-52)<sup><a href='#src-rights-5'>5</a></sup>. It is the only lever left when the nuisance is discovered in use — and the most overlooked.",
+        body: "Past the deadlines the authorization is final — but its PRESCRIPTIONS are not. Anyone affected can file a claim with the préfet, from the moment the site enters service, contesting the “insufficiency or inadequacy of the prescriptions”: noise from the chillers, generator tests, discharges, water abstraction. The préfet has two months to answer with reasons, silence counts as refusal, and where the claim is well founded he sets additional prescriptions (art. R. 181-52)<sup><a href='#src-your-rights-5'>5</a></sup>. It is the only lever left when the nuisance is discovered in use — and the most overlooked.",
       },
       {
         lead: "The buyer's trap.",
-        body: "Anyone who buys or rents near a classified installation AFTER its authorization has been posted can no longer contest that authorization: the law rules them inadmissible (art. L. 514-6, III of the environment code)<sup><a href='#src-rights-6'>6</a></sup>. Before signing near an industrial zone, it is worth asking the town hall and the prefecture which authorizations are already posted there. The claim about prescriptions, however, stays open.",
+        body: "Anyone who buys or rents near a classified installation AFTER its authorization has been posted can no longer contest that authorization: the law rules them inadmissible (art. L. 514-6, III of the environment code)<sup><a href='#src-your-rights-6'>6</a></sup>. Before signing near an industrial zone, it is worth asking the town hall and the prefecture which authorizations are already posted there. The claim about prescriptions, however, stays open.",
       },
     ],
     takeaway:
@@ -452,5 +452,211 @@ export const RICH_EN: Record<string, RichBlock> = {
     ],
     closing:
       "And to compare projects with each other: our <a href='/fr/carte/'>map</a>, our <a href='/fr/classement/'>ranking</a> and the <a href='/#method'>full method</a> — that is what this site is for.",
+  },
+};
+
+// ── NÉERLANDAIS — rédigé après la passe native (registre étalonné), indexé sur les
+// IDENTIFIANTS STABLES du découplage ancre/clé (jamais sur les ancres de langue).
+// Structure calquée sur RICH_EN (lecteur hors de France : bloc `inFrance` séparé,
+// institutions françaises nommées et glosées). Chiffres et articles de loi = ceux du
+// FR, vérifiés à la source (délai de recours : DEUX mois, R. 181-50, décret 2024-423).
+export const RICH_NL: Record<string, RichBlock> = {
+  "why-local": {
+    intro:
+      "Een datacenter neemt niet alleen een terrein in beslag: het nestelt zich in de netten van de gemeente — water, elektriciteit, wegen — en in haar begroting. Vijf concrete punten.",
+    points: [
+      {
+        icon: "energy",
+        lead: "De elektriciteit.",
+        body: "Recente grote projecten vragen 100 tot 200 MW, het elektriciteitsverbruik van steden als Le Mans of Saint-Étienne<sup><a href='#src-why-local-1'>1</a></sup>. Dat vermogen loopt via het lokale net: onderstations, lijnen, werkzaamheden.",
+      },
+      {
+        icon: "water",
+        lead: "Het water.",
+        body: "Sommige koeltechnieken verbruiken heel weinig water, andere veel: de datacenters van Amazon onttrokken in 2025 wereldwijd zo'n 9,5 miljard liter — de eerste jaaropgave die het bedrijf publiceert<sup><a href='#src-why-local-2'>2</a></sup>. De wet neemt het onderwerp serieus: sinds mei 2026 kan in Frankrijk een bouwvergunning worden geweigerd wegens ‘structurele spanningen op de watervoorraad’ (wet nr. 2026-403 van 26 mei 2026, art. 35)<sup><a href='#src-why-local-3'>3</a></sup>.",
+      },
+      {
+        icon: "noise",
+        lead: "Het geluid.",
+        body: "De koeling draait dag en nacht, en de noodstroomaggregaten worden regelmatig getest. De toegestane niveaus staan in de vergunningen van de site — ze staan op papier, dus ze zijn te controleren. Wat vastligt is trouwens geen afstand, maar hoeveel het geluid bij de buren toeneemt: <a href='/nl/hinder-datacenter/'>hoe het geluid van een project wordt beoordeeld, en op welke afstand u rustig woont</a>.",
+      },
+      {
+        icon: "land",
+        lead: "De grond en de banen.",
+        body: "Een megaproject kan tientallen hectaren beslaan — ongeveer 90 voor de Campus IA in Fouju<sup><a href='#src-why-local-4'>4</a></sup>. Op een vergelijkbaar terrein werken bij een logistiek platform doorgaans 300 tot 400 mensen, bij een datacenter zo'n 15 tot 20<sup><a href='#src-why-local-5'>5</a></sup>.",
+      },
+      {
+        icon: "tax",
+        lead: "De belastingen.",
+        body: "De site betaalt lokale belastingen (onder meer onroerendgoedbelasting en de Franse bedrijvenheffing CFE), verdeeld over gemeente, intergemeentelijk verband en andere overheden — met mogelijke vrijstellingen in de eerste jaren<sup><a href='#src-why-local-6'>6</a></sup>. Vandaar de vraag: welke inkomsten, voor wie, vanaf wanneer?",
+      },
+    ],
+    takeaway:
+      "Geen van deze effecten is op zichzelf goed of slecht: alles hangt af van het project, de plek en wat er in het dossier staat. Precies dat leren de volgende blokken u lezen.",
+    sources: [
+      { label: "RTE, « Les data centers en chiffres clés », 2026", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
+      { label: "Data Center Dynamics, 2026 (AWS-water)", url: "https://www.datacenterdynamics.com/en/news/amazon-data-centers-used-25bn-gallons-of-water-in-2025/" },
+      { label: "Gossement Avocats, wet nr. 2026-403, art. 35", url: "https://www.gossement-avocats.com/blog/centres-de-donnees-data-centers-ce-que-change-la-loi-de-simplification-de-la-vie-economique/" },
+      { label: "Publieke inspraak Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
+      { label: "AFP / Connaissance des énergies, juni 2026 (banen)", url: "https://www.connaissancedesenergies.org/afp/data-centers-en-ile-de-france-des-installations-energivores-mais-avares-en-emplois-260601" },
+      { label: "service-public.fr (CFE, vrijstellingen)", url: "https://entreprendre.service-public.fr/vosdroits/F23547" },
+    ],
+  },
+
+  "what-makes-good": {
+    intro:
+      "Er bestaat geen ‘goede exploitant’ of ‘slechte exploitant’ die zich aan reputatie laat raden. Er bestaan <strong>projectkeuzes</strong>, die in het dossier te lezen zijn — of waarvan de afwezigheid opvalt. Hier zijn er zes, en waar u ze controleert.",
+    points: [
+      {
+        lead: "Vroeg aankondigen.",
+        body: "Het project wordt publiek gepresenteerd vóór de vergunningsaanvraag wordt ingediend, niet ontdekt op een aanplakbord. Waar te controleren: de datum van de eerste publieke communicatie naast de indieningsdatum.",
+      },
+      {
+        lead: "De watertoezeggingen op papier zetten.",
+        body: "De koeltechniek en het jaarverbruik staan in het vergunningsdossier, niet alleen in de folder. Waar te controleren: het dossier, in te zien bij de bevoegde overheid.",
+      },
+      {
+        lead: "De warmte contracteren.",
+        body: "Het verschil zit tussen een papieren studie en een getekend contract met een warmtenet, een zwembad, kassen. Waar te controleren: vraag of er een contract bestaat, en met wie.",
+      },
+      {
+        lead: "De grond kiezen die het gebied het minst kost.",
+        body: "Brownfield of al verharde grond in plaats van landbouwgrond of natuur. Waar te controleren: de aard van het terrein, in het milieueffectrapport (MER).",
+      },
+      {
+        lead: "Zich verbinden tot publicatie van de exploitatiegegevens.",
+        body: "Elektriciteits- en waterverbruik, gemeten efficiëntie. Waar te controleren: wat het dossier belooft openbaar te maken, en hoe vaak.",
+      },
+      {
+        lead: "Schriftelijke lokale voordelen bedingen.",
+        body: "Overeenkomsten, fondsen, voorzieningen: wat getekend is, bindt; wat in een vergadering wordt genoemd niet.",
+      },
+    ],
+    inFrance:
+      "De wet schraagt twee van deze hefbomen: exploitanten moeten het hergebruik van de geproduceerde warmte onderzoeken (Franse energiewet, art. L.236-2, uit de wet van 30 april 2025) en voor datacenters een prestatieverklaring indienen (art. L.236-1)<sup><a href='#src-what-makes-good-1'>1</a></sup>.",
+    takeaway:
+      "Een ‘goed’ project is geen project zonder effecten: het is een project waarvan de effecten op papier staan, in getallen zijn uitgedrukt en controleerbaar zijn. Onze meetlat beoordeelt precies dat: wat het project kiest, niet alleen wat het ondergaat.",
+    sources: [
+      { label: "Gossement Avocats, 2026 (Franse energiewet, art. L.236-1 en L.236-2; wet nr. 2025-391 van 30 april 2025)", url: "https://www.gossement-avocats.com/blog/centres-de-donnees-data-centers-ce-que-change-la-loi-de-simplification-de-la-vie-economique/" },
+    ],
+  },
+
+  "your-rights": {
+    intro:
+      "Een datacenter krijgt in Frankrijk niet één vergunning maar meerdere: een bouwvergunning en meestal een milieuvergunning — het ICPE-regime, waar de industriële installaties onder vallen<sup><a href='#src-your-rights-1'>1</a></sup>. Elk heeft zijn eigen tijdpad, en elk opent rechten voor het publiek.",
+    points: [
+      {
+        lead: "Vóór de indiening: het overleg.",
+        body: "Een voorafgaand overleg, soms met een procesbewaker benoemd door de CNDP (de Franse nationale commissie voor het publieke debat), kan vooraf plaatsvinden. Let op: sinds een decreet van 3 maart 2026 horen datacenters niet meer bij de projecten waarvoor de CNDP verplicht wordt ingeschakeld<sup><a href='#src-your-rights-2'>2</a></sup> — of er overleg komt, hangt dus af van de initiatiefnemer of van de staat. Vindt het plaats, dan is dat het moment waarop het project nog het meest kan veranderen.",
+      },
+      {
+        lead: "Tijdens de behandeling: de inspraak.",
+        body: "Voor projecten met een milieubeoordeling duurt de Franse <em>enquête publique</em> minstens 30 dagen (Franse milieuwet, art. L.123-9)<sup><a href='#src-your-rights-3'>3</a></sup>. Iedereen — inwoner van de gemeente of niet — kan schriftelijke opmerkingen indienen, op het gemeentehuis of online. Ze worden bij het dossier gevoegd en de onderzoekscommissaris beantwoordt ze in zijn rapport.",
+      },
+      {
+        lead: "Een bijzonder geval sinds mei 2026.",
+        body: "Een datacenter kan bij decreet worden aangemerkt als ‘project van groot nationaal belang’: de vergunning wordt dan door de prefect behandeld, niet door de burgemeester. Ook dan kan ze worden geweigerd wegens ‘structurele spanningen op de watervoorraad’ (wet nr. 2026-403 van 26 mei 2026, art. 35)<sup><a href='#src-your-rights-1'>1</a></sup>.",
+      },
+      {
+        lead: "Na de vergunning: de beroepen.",
+        // ⚠️ TWEE maanden, niet vier — décret nr. 2024-423 (R. 181-50), vérifié Légifrance.
+        body: "De termijnen zijn kort, en ze zijn niet in te halen: twee maanden tegen een bouwvergunning vanaf de eerste dag van aanplakking op het terrein, eveneens twee maanden voor derden tegen een milieuvergunning, te rekenen vanaf de laatst vervulde formaliteit — aanplakking op het gemeentehuis of publicatie op de site van de prefectuur (art. R. 181-50)<sup><a href='#src-your-rights-4'>4</a></sup>. Een beroep bij de rechter moet bovendien binnen vijftien dagen worden gemeld aan de auteur van het besluit en aan de begunstigde, op straffe van niet-ontvankelijkheid (art. R. 181-51).",
+      },
+      {
+        lead: "Zodra de site draait: de klacht.",
+        body: "Na de termijnen is de vergunning definitief — maar haar VOORSCHRIFTEN zijn dat niet. Wie hinder ondervindt, kan vanaf de ingebruikname bij de prefect een klacht indienen tegen ‘de ontoereikendheid of ongeschiktheid van de voorschriften’: geluid van de koelmachines, proeven van de noodstroomaggregaten, lozingen, wateronttrekking. De prefect moet binnen twee maanden gemotiveerd antwoorden, zijn stilzwijgen geldt als weigering, en acht hij de klacht gegrond, dan legt hij aanvullende voorschriften op (art. R. 181-52)<sup><a href='#src-your-rights-5'>5</a></sup>. Het is de enige hefboom die overblijft wanneer de hinder pas bij het gebruik blijkt — en de minst bekende.",
+      },
+      {
+        lead: "De valkuil voor de koper.",
+        body: "Wie een pand koopt of huurt bij een geklasseerde installatie NADAT haar vergunning is aangeplakt, kan die vergunning niet meer aanvechten: de wet verklaart hem niet-ontvankelijk (art. L. 514-6, III van de Franse milieuwet)<sup><a href='#src-your-rights-6'>6</a></sup>. Vóór u tekent bij een bedrijventerrein loont het dus om bij gemeentehuis en prefectuur te vragen welke vergunningen er al zijn aangeplakt. De klacht over de voorschriften blijft wél openstaan.",
+      },
+    ],
+    takeaway:
+      "Het tijdpad is alles: dezelfde vraag gesteld tijdens het overleg kan het project veranderen; gesteld na de vergunning verandert ze niets meer. Vandaar het belang van er vroeg bij zijn — met de <a href='#vragen'>checklist van blok 3</a>.",
+    sources: [
+      { label: "Gossement Avocats, wet nr. 2026-403, 2026", url: "https://www.gossement-avocats.com/blog/centres-de-donnees-data-centers-ce-que-change-la-loi-de-simplification-de-la-vie-economique/" },
+      { label: "Actu-Environnement, decreet van 3 maart 2026 (CNDP)", url: "https://www.actu-environnement.com/ae/news/cndp-projets-saisine-decret-data-centers-eolien-mer-raccordement-lignes-electrique-sous-marines-47625.php4" },
+      { label: "Franse milieuwet, art. L.123-9", url: "https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000033038541" },
+      { label: "Franse milieuwet, art. R. 181-50 — beroepstermijn voor derden, twee maanden (decreet nr. 2024-423 van 10 mei 2024)", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000033929087" },
+      { label: "Franse milieuwet, art. R. 181-52 — klacht bij de prefect vanaf de ingebruikname", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000033929087" },
+      { label: "Franse milieuwet, art. L. 514-6, III — derden die zich ná de aanplakking vestigen zijn niet-ontvankelijk", url: "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006074220/LEGISCTA000006176598" },
+    ],
+  },
+
+  "faq-block": {
+    qas: [
+      {
+        q: "Worden er datacenters gebouwd bij mij in de buurt?",
+        a: "We publiceren een cijfer voor elke bekende site en elk bekend project, met de bronnen erbij. <a href='/nl/kaart/'>Zoek uw gemeente op de kaart</a> of <a href='/nl/ranglijst'>blader door de ranglijst</a>: de fiche van een project zegt wat er bekend is over vermogen, water, grond en omgeving — en wat niet. Een project dat in onze data ontbreekt, is geen project dat niet bestaat: het is nog niet publiek gemaakt, of wij hebben het nog niet gezien.",
+      },
+      {
+        q: "Waarom zijn mensen tegen datacenters?",
+        a: "Zelden uit principe. Wat in de dossiers en de lokale campagnes terugkeert, komt neer op vier concrete dingen: de <b>elektriciteit</b> van een al krap net, het koel<b>water</b> in gebieden waar het schaars is, de <b>grond</b> die wordt verhard voor een gebouw met weinig banen, en het continue <b>geluid</b> voor de naaste omwonenden. Daar komt een gevoel van scheefheid bij: de hulpbron is lokaal, de waarde vertrekt naar elders. Precies dat meet het cijfer, pijler per pijler — zie <a href='/nl/hinder-datacenter/'>de hinder</a> voor wat u er vanaf de straat van merkt.",
+      },
+      {
+        q: "Waarom keuren gemeenteraden deze projecten goed?",
+        a: "Omdat een datacenter lokale belastinginkomsten brengt, bouwactiviteit, en soms een warmtenet of glasvezel. De werkgelegenheid is laag zodra de bouw klaar is — het is een gebouw vol machines, geen fabriek. De echte vraag is dus niet ‘voor of tegen’, maar wat de gemeenschap in ruil krijgt, en wat ze in de vergunning laat opnemen: toezeggingen die niet op papier staan, zijn niet afdwingbaar.",
+      },
+      {
+        q: "Wat vragen we als een datacenter zich wil vestigen?",
+        a: "Eerst drie getallen, schriftelijk: het <b>vermogen</b> in megawatt, het geplande <b>waterverbruik</b> met de koelmethode, en de <b>afstand tot de dichtstbijzijnde woningen</b>. Dan drie toezeggingen: de warmteterugwinning, het indieningstijdpad, en wat er wordt <b>gepubliceerd</b> zodra de site draait. De <a href='#vragen'>checklist van blok 3</a> past op één pagina, en <a href='#rechten'>Rechten en tijdpad</a> zegt wanneer elke vraag nog gewicht heeft.",
+      },
+      {
+        q: "Er hangt net een aankondiging van een inspraakprocedure bij mij in de buurt.",
+        a: "Noteer de einddatum: de procedure duurt minstens 30 dagen (zie <a href='#rechten'>Rechten en tijdpad</a>). U kunt een schriftelijke opmerking indienen, op het gemeentehuis of online, ook als u niet in de gemeente woont. Een precieze, feitelijke opmerking weegt zwaarder dan een principiële petitie: steun op de <a href='#vragen'>checklist van blok 3</a>.",
+      },
+      {
+        q: "Ik ben bestuurder; een adviesbureau belde net over een project.",
+        a: "Niets verplicht u om ter plekke te reageren. Vraag het dossier schriftelijk op, met drie getallen: het vermogen in megawatt, het geplande waterverbruik, het indieningstijdpad. De <a href='#vragen'>checklist van blok 3</a> past op één pagina — neem haar mee naar de vergadering.",
+      },
+      {
+        q: "Het project is al vergund. Te laat?",
+        a: "Om de vergunning zelf aan te vechten: ja, na twee maanden (zie <a href='#rechten'>Rechten en tijdpad</a>). Maar een definitieve vergunning bevriest haar <b>voorschriften</b> niet: vanaf de ingebruikname kan iedereen bij de prefect een klacht indienen tegen hun ontoereikendheid — geluid, lozingen, wateronttrekking — en de prefect moet binnen twee maanden gemotiveerd antwoorden (art. R. 181-52). Verder blijft over: vragen om een opvolgingscommissie, en om regelmatige publicatie van de in het dossier beloofde exploitatiegegevens.",
+      },
+      {
+        q: "Met wie neemt u concreet contact op?",
+        a: "Het gemeentehuis of het intergemeentelijk verband voor de ruimtelijke ordening; de prefectuur voor het milieuvergunningsdossier; de onderzoekscommissaris tijdens de inspraak; en de groepen die bij u in de buurt al actief zijn (zie <a href='#verder'>Verder lezen</a>).",
+      },
+      {
+        q: "Hoe weet ik wat er al bestaat rond mijn woonplaats?",
+        a: "Publieke kaarten inventariseren de bestaande sites en de projecten — zie <a href='#verder'>Verder lezen</a>.",
+      },
+      {
+        q: "Waar raadpleeg ik de gegevens van een project?",
+        a: "Elke datacenterfiche toont het cijfer, en elke indicator verwijst met een klikbare link naar zijn publieke bron (open data van RTE, INSEE, adviezen van de milieuautoriteit, rechterlijke uitspraken…): alles is na te rekenen. Officiële documenten krijgen een gearchiveerde kopie zodat ze beschikbaar blijven; persartikelen worden gelinkt, nooit overgenomen. Noch het cijfer, noch zijn motivering zit ooit achter een betaalmuur.",
+      },
+    ],
+  },
+
+  "read-more": {
+    intro: "Om dieper te graven: open en gratis bronnen — dezelfde die wij gebruiken.",
+    linkGroups: [
+      {
+        title: "Kaarten en inventarissen",
+        links: [
+          { name: "DCWatch (Hubblo)", desc: "digitale common van de datacentervoetafdruk (PUE, WUE, CUE, oppervlak, water), downloadbare ODbL-data — kaart: datacenters.hubblo.org", url: "https://dcwatch.hubblo.org" },
+          { name: "Le nuage était sous nos pieds", desc: "participatieve kaart van sites, projecten en mobilisaties in Frankrijk, bijgehouden door een collectief uit Marseille", url: "https://lenuageetaitsousnospieds.org" },
+          { name: "Data Center Watch", desc: "volgt het verzet tegen projecten in de Verenigde Staten", url: "https://www.datacenterwatch.org" },
+        ],
+      },
+      {
+        title: "Referentiegetallen",
+        links: [
+          { name: "RTE, « Les data centers en chiffres clés »", desc: "het officiële Franse panorama — vermogens, aansluitingen, prognoses (bijgewerkt in 2026)", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
+          { name: "ADEME, « Prospective des consommations des data centers 2024-2060 »", desc: "de Franse langetermijnscenario's", url: "https://librairie.ademe.fr/energies/8910-prospective-d-evolution-des-consommations-des-data-centers-a-court-moyen-et-long-terme-de-2024-a-2060.html" },
+          { name: "IEA, « Energy and AI »", desc: "datacenters in het wereldwijde elektriciteitssysteem (2025, in het Engels)", url: "https://www.iea.org/reports/energy-and-ai" },
+        ],
+      },
+      {
+        title: "Uw rechten begrijpen",
+        links: [
+          { name: "CNDP — debatpublic.fr", desc: "publieksparticipatie in Frankrijk, zo werkt het", url: "https://www.debatpublic.fr" },
+          { name: "Géorisques", desc: "vind de geklasseerde installaties (ICPE) rond uw woonplaats", url: "https://www.georisques.gouv.fr" },
+          { name: "Gossement Avocats (blog)", desc: "actuele juridische analyses van het datacenterrecht", url: "https://www.gossement-avocats.com/blog/" },
+        ],
+      },
+    ],
+    closing:
+      "En om projecten met elkaar te vergelijken: onze <a href='/nl/kaart/'>kaart</a>, onze <a href='/nl/ranglijst'>ranglijst</a> en de <a href='/nl/#method'>volledige methode</a> — daarvoor bestaat deze site.",
   },
 };

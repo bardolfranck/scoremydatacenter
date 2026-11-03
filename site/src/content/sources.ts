@@ -154,13 +154,13 @@ const NL: typeof FR = {
     "<p>Onze methode is open. Dit is <strong>elke bron</strong> die een cijfer, een fiche of een landenindex voedt — wat ze aanlevert, en onder welke licentie. Het publieke, volledige antwoord op ‘welke gegevens gebruiken jullie?’.</p>",
   boundaryTitle: "Wat we publiceren, en waar de grens ligt",
   boundaryBody:
-    "<p>Dit register noemt onze bronnen op het niveau van elke <strong>pijler en indicator</strong>. Dat is de open laag.</p><p>De herkomst waarde-per-waarde van één specifieke site (welke bron voor welk getal, gemeten of geschat) is onze <strong>operationele laag</strong>. Compilatie, export en versheid in bulk zijn het <strong>product</strong> (onze API).</p>",
+    "<p>Dit register noemt onze bronnen op het niveau van elke <strong>pijler en indicator</strong>. Dat is de open laag.</p><p>De herkomst per waarde van één specifieke site (welke bron voor welk getal, gemeten of geschat) is onze <strong>operationele laag</strong>. Bundeling, export en actualiteit in bulk zijn het <strong>product</strong> (onze API).</p>",
   cols: { source: "Bron", feeds: "Wat ze voedt", license: "Licentie" },
   groups: [
     { title: "Identiteit & locatie van de site", rows: [
       { source: "DCWatch (Hubblo)", url: "https://dcwatch.hubblo.org", feeds: "Een van de vertrekpunten van het corpus: naam, exploitant, coördinaten, aangekondigd vermogen, projectstatus — die onze pipeline daarna opnieuw afleidt en verifieert.", license: "<strong>ODbL</strong>" },
-      { source: "DCmag-kaart", url: "https://carte.dcmag.fr", feeds: "Locatie en status van aangekondigde projecten (project of site in bedrijf), fiche per fiche gekruist.", license: "Publieke kaart" },
-      { source: "PeeringDB", url: "https://www.peeringdb.com", feeds: "Wekelijkse controle van de status ‘in bedrijf’: netwerken die in het gebouw interconnecteren.", license: "Publieke PeeringDB-gegevens" },
+      { source: "DCmag-kaart", url: "https://carte.dcmag.fr", feeds: "Locatie en status van aangekondigde projecten (project of site in bedrijf), fiche voor fiche tegen elkaar gelegd.", license: "Publieke kaart" },
+      { source: "PeeringDB", url: "https://www.peeringdb.com", feeds: "Wekelijkse controle van de status ‘in bedrijf’: netwerken die in het gebouw op elkaar aansluiten.", license: "Publieke PeeringDB-gegevens" },
       { source: "SIRENE-register (INSEE)", url: "https://annuaire-entreprises.data.gouv.fr", feeds: "Identificatie van de exploitant wanneer die ontbreekt (Frans ondernemingsregister).", license: "Licence Ouverte" },
       { source: "geo.api.gouv.fr", url: "https://geo.api.gouv.fr", feeds: "Gemeente en departement (opnieuw afgeleid uit de coördinaten).", license: "Licence Ouverte" },
       { source: "OpenStreetMap · OpenFreeMap", url: "https://www.openstreetmap.org/copyright", feeds: "Basiskaart.", license: "<strong>ODbL</strong>" },
@@ -187,22 +187,22 @@ const NL: typeof FR = {
     { title: "Pijler Lokale impact", rows: [
       { source: "INSEE", url: "https://www.insee.fr", feeds: "Sociaal-economisch profiel en absorptievermogen van de gemeente.", license: "Licence Ouverte" },
       { source: "Géorisques", url: "https://www.georisques.gouv.fr", feeds: "Technologisch / Seveso-risico in de omgeving.", license: "Licence Ouverte" },
-      { source: "Pers · persberichten · raadsnotulen", feeds: "Aangekondigde banen en baten, waargenomen verzet, standpunt van de bestuurders — <strong>gedocumenteerde feiten, nooit het artikel herpubliceerd</strong>.", license: "Links + korte citaten" },
+      { source: "Pers · persberichten · raadsnotulen", feeds: "Aangekondigde banen en baten, waargenomen verzet, standpunt van de bestuurders — <strong>gedocumenteerde feiten; we publiceren nooit het artikel zelf opnieuw</strong>.", license: "Links + korte citaten" },
     ]},
     { title: "Transparantie & governance", rows: [
-      { source: "Openbare raadplegingen · inspraak", feeds: "Instemming en governance van het project.", license: "Publieke documenten" },
+      { source: "Inspraak · overleg", feeds: "Instemming en governance van het project.", license: "Publieke documenten" },
     ]},
     { title: "Verificatie & dekking buiten Frankrijk", rows: [
       { source: "EED- / RVO-registers (Nederland)", feeds: "Werkelijke vermogens en verificatiebron (de eerste A's van Europa).", license: "Open register" },
-      { source: "Eurostat (NUTS)", url: "https://ec.europa.eu/eurostat", feeds: "Brug voor inkomen / landgebruik voor landen buiten Frankrijk.", license: "Vrij hergebruik (Eurostat)" },
+      { source: "Eurostat (NUTS)", url: "https://ec.europa.eu/eurostat", feeds: "Koppeling voor inkomen / landgebruik voor landen buiten Frankrijk.", license: "Vrij hergebruik (Eurostat)" },
       { source: "datacentertracker.org", url: "https://www.datacentertracker.org", feeds: "Noord-Amerikaanse gevallen.", license: "<strong>CC BY</strong>" },
-      { source: "GDELT", url: "https://www.gdeltproject.org", feeds: "Vangnet voor het ontdekken van verzet (monitoring; precisie bij de redactionele triage).", license: "Publiek domein" },
+      { source: "GDELT", url: "https://www.gdeltproject.org", feeds: "Vangnet voor het ontdekken van verzet (monitoring; precisie bij de redactionele selectie).", license: "Publiek domein" },
     ]},
   ],
-  closeP: "Een cijfer steunt uitsluitend op <strong>gedocumenteerde feiten</strong>. Elke waarde op een fiche verwijst naar haar herkomst; onder 40 % documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van het onbekende te beoordelen.",
-  methodHref: "/fr/methodologie/",
+  closeP: "Een cijfer steunt uitsluitend op <strong>gedocumenteerde feiten</strong>. Elke waarde op een fiche verwijst naar haar herkomst; onder 40% documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van het onbekende te beoordelen.",
+  methodHref: "/nl/methodologie/",
   ctaMethod: "Bekijk onze methode →",
-  backHref: "/fr/",
+  backHref: "/nl/",
   backLabel: "← Terug naar de startpagina",
 };
 

@@ -20,7 +20,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -34,7 +35,8 @@
           "dots": 3,
           "label": {
             "fr": "documentation moyenne",
-            "en": "moderately documented"
+            "en": "moderately documented",
+            "nl": "gedeeltelijk gedocumenteerd"
           }
         }
       }
@@ -59,7 +61,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -73,7 +76,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -87,7 +91,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -101,7 +106,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -115,7 +121,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       }
@@ -141,7 +148,8 @@
       "n_base": 15,
       "label": {
         "fr": "note provisoire (plage) — se resserre à la livraison",
-        "en": "provisional grade (range) — narrows at delivery"
+        "en": "provisional grade (range) — narrows at delivery",
+        "nl": "voorlopig cijfer (bandbreedte) — versmalt bij levering van de gegevens"
       }
     },
     "pillar_bands": {
@@ -162,7 +170,8 @@
         "confidence": "high",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       },
       "water": {
@@ -182,7 +191,8 @@
         "confidence": "high",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       },
       "land_biodiversity": {
@@ -202,7 +212,8 @@
         "confidence": "high",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       },
       "local_impact": {
@@ -224,7 +235,8 @@
         "confidence": "high",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       }
     }
@@ -250,7 +262,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -279,7 +292,8 @@
           "dots": 3,
           "label": {
             "fr": "documentation moyenne",
-            "en": "moderately documented"
+            "en": "moderately documented",
+            "nl": "gedeeltelijk gedocumenteerd"
           }
         }
       },
@@ -293,7 +307,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -307,7 +322,8 @@
           "dots": 4,
           "label": {
             "fr": "documentation solide",
-            "en": "well documented"
+            "en": "well documented",
+            "nl": "ruim gedocumenteerd"
           }
         }
       },
@@ -321,7 +337,8 @@
           "dots": 2,
           "label": {
             "fr": "documentation moyenne",
-            "en": "moderately documented"
+            "en": "moderately documented",
+            "nl": "gedeeltelijk gedocumenteerd"
           }
         }
       },
@@ -335,7 +352,8 @@
           "dots": 1,
           "label": {
             "fr": "documentation faible",
-            "en": "sparsely documented"
+            "en": "sparsely documented",
+            "nl": "dun gedocumenteerd"
           }
         }
       }
@@ -363,7 +381,8 @@
       "n_base": 15,
       "label": {
         "fr": "note provisoire (plage) — se resserre à la livraison",
-        "en": "provisional grade (range) — narrows at delivery"
+        "en": "provisional grade (range) — narrows at delivery",
+        "nl": "voorlopig cijfer (bandbreedte) — versmalt bij levering van de gegevens"
       }
     },
     "pillar_bands": {
@@ -386,7 +405,8 @@
         "confidence": "medium",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       },
       "water": {
@@ -408,7 +428,8 @@
         "confidence": "medium",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       },
       "land_biodiversity": {
@@ -430,7 +451,8 @@
         "confidence": "medium",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       },
       "local_impact": {
@@ -452,7 +474,8 @@
         "confidence": "medium",
         "label": {
           "fr": "sous-note probable — la plage se resserre à la collecte",
-          "en": "probable sub-grade — the range narrows as data lands"
+          "en": "probable sub-grade — the range narrows as data lands",
+          "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
         }
       }
     }

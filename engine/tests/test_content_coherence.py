@@ -14,6 +14,7 @@ import json
 import re
 from pathlib import Path
 
+import re
 import pytest
 
 from engine.core import REPO_ROOT, load_methodology
@@ -306,17 +307,27 @@ def test_l_enumeration_de_l_etat_des_donnees_boucle(lang):
 BLOCS = REPO_ROOT / "site" / "src" / "content" / "understand-blocks.ts"
 
 
-def _moities() -> tuple[str, str]:
-    """Le fichier déclare RICH_FR puis RICH_EN : on compare les deux moitiés.
+def _tables() -> dict[str, str]:
+    """Le texte de CHAQUE table `RICH_*`, par langue.
 
-    On part de RICH_FR et non du début : la déclaration de type qui précède contient elle
-    aussi `lead:`, `label:` et `q:`, et les compter faisait échouer le test sur un écart de
-    un — côté français, puisque le type est de ce côté-là de la coupure.
+    🔴 Avant : « la moitié avant RICH_EN et la moitié après ». L'arrivée d'une TROISIÈME
+    table a fait compter le néerlandais comme de l'anglais — 34 points « en anglais » au
+    lieu de 17 — et le test a crié sur un fichier sain. Une coupure en deux suppose qu'il n'y
+    aura jamais trois langues ; c'est la même hypothèse binaire qui traînait dans tout le
+    site. On relève donc les tables telles qu'elles sont déclarées.
+
+    On part de la déclaration et non du début de fichier : le type qui précède contient lui
+    aussi `lead:`, `label:` et `q:`.
     """
     texte = BLOCS.read_text()
-    debut = texte.index("export const RICH_FR")
-    i = texte.index("export const RICH_EN")
-    return texte[debut:i], texte[i:]
+    bornes = [(m.group(1), m.start()) for m in
+              re.finditer(r"^export const RICH_(\w+)", texte, re.M)]
+    assert len(bornes) >= 2, f"{len(bornes)} table RICH_* — le relevé ne compare plus rien"
+    sortie: dict[str, str] = {}
+    for i, (langue, debut) in enumerate(bornes):
+        fin = bornes[i + 1][1] if i + 1 < len(bornes) else len(texte)
+        sortie[langue.lower()] = texte[debut:fin]
+    return sortie
 
 
 @pytest.mark.parametrize("marqueur,quoi", [
@@ -336,11 +347,15 @@ def test_les_blocs_comprendre_restent_a_parite_fr_en(marqueur, quoi):
     il compare les STRUCTURES : autant de points, de sources et de questions d'un côté que de
     l'autre. Un ajout dans une seule langue casse le build.
     """
-    fr, en = _moities()
-    n_fr, n_en = fr.count(marqueur), en.count(marqueur)
-    assert n_fr == n_en, (
-        f"{quoi} : {n_fr} en français contre {n_en} en anglais — une langue a été enrichie "
-        "sans l'autre (voir l'incident du délai de recours, 2026-10-22)"
+    tables = _tables()
+    attendu = tables["fr"].count(marqueur)
+    ecarts = {lg: t.count(marqueur) for lg, t in tables.items()
+              if lg != "fr" and t.count(marqueur) != attendu}
+    assert not ecarts, (
+        f"{quoi} : {attendu} en français, et " + ", ".join(
+            f"{n} en {lg.upper()}" for lg, n in sorted(ecarts.items())
+        ) + " — une langue a été enrichie sans les autres "
+        "(voir l'incident du délai de recours, 2026-10-22)"
     )
 
 

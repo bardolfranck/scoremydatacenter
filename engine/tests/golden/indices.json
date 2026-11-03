@@ -4,7 +4,8 @@
   "labels": {
     "title": {
       "fr": "Indice SITE — ce que les territoires offrent",
-      "en": "SITE index — what the territories offer"
+      "en": "SITE index — what the territories offer",
+      "nl": "SITE-index — wat de gebieden te bieden hebben"
     }
   },
   "methodology_version": "0.3.0",

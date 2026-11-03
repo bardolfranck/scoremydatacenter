@@ -30,9 +30,9 @@ import { ACCEPTABILITE } from "../../content/acceptabilite";
 import { NOTATION } from "../../content/notation";
 import { nuisances } from "../../content/nuisances";
 import { perimeterSites, derivedCount } from "../../config/stats";
-import { CHECKLIST_FR } from "../../content/questions";
-import { WHATIS_FR } from "../../content/what-is-a-dc";
-import { RICH_FR } from "../../content/understand-blocks";
+import { CHECKLIST_NL } from "../../content/questions";
+import { WHATIS_NL } from "../../content/what-is-a-dc";
+import { RICH_NL } from "../../content/understand-blocks";
 import { NL_NAV } from "../../config/nav";
 import { toLite, buildRelated, coordsFromGeojson, type Related } from "../../config/related";
 import { GABARITS, cheminsPreviz, choisirDemo, LANGUE_PREVIZ } from "../../config/previz";
@@ -93,15 +93,12 @@ const { dc, related, geo } = Astro.props as {
   />
 )}
 {gabarit === "comprendre" && (
-  /* CHECKLIST / WHATIS / RICH n'ont pas encore d'édition NL : la préviz montre le FR à leur
-     place et le bandeau du côte-à-côte le DIT. Un repli muet ferait relire du français en
-     croyant relire du néerlandais. */
   <Understand
     lang={LANGUE_PREVIZ}
     t={COMPRENDRE[LANGUE_PREVIZ]}
-    checklist={CHECKLIST_FR}
-    whatIs={WHATIS_FR}
-    rich={RICH_FR}
+    checklist={CHECKLIST_NL}
+    whatIs={WHATIS_NL}
+    rich={RICH_NL}
   />
 )}
 {gabarit === "methodologie" && (

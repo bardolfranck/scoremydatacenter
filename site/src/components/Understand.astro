@@ -127,7 +127,7 @@ const faqJsonLd = qas.length
                   <p class="block-sources">
                     {t.sourcesLabel}
                     {rich[block.id].sources.map((src: any, n: number) => (
-                      <span class="src-item" id={`src-${block.anchor}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.id].sources.length - 1 ? " ·" : ""}</span>
+                      <span class="src-item" id={`src-${block.id}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.id].sources.length - 1 ? " ·" : ""}</span>
                     ))}
                   </p>
                 )}
@@ -156,7 +156,7 @@ const faqJsonLd = qas.length
                 <p class="block-sources">
                   {whatIs.sourcesLabel}
                   {whatIs.sources.map((src, n) => (
-                    <span class="src-item" id={`src-${block.anchor}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " ·" : ""}</span>
+                    <span class="src-item" id={`src-${block.id}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " ·" : ""}</span>
                   ))}
                 </p>
               </div>

@@ -36,7 +36,7 @@ MIN_N = 5
 DOC_BANDS = [(0.75, "solide"), (0.5, "moyenne"), (0.0, "faible")]
 LABELS = {
     "title": {"fr": "Indice SITE — ce que les territoires offrent",
-              "en": "SITE index — what the territories offer"},
+              "en": "SITE index — what the territories offer", "nl": "SITE-index — wat de gebieden te bieden hebben"},
 }
 
 _PIPELINE_STATUSES = ("announced", "permitting", "under_construction")

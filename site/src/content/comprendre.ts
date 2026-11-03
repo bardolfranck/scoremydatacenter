@@ -166,14 +166,14 @@ const EN = {
 const NL = {
   title: "Datacenters begrijpen, zonder jargon — ScoreMyDataCenter",
   description:
-    "Wat een datacenter echt verandert in uw buurt: ordes van grootte, lokale impact, de juiste vragen om te stellen, uw rechten, de kalender. In klare taal, zonder jargon.",
+    "Wat een datacenter echt verandert in uw buurt: ordes van grootte, lokale impact, de juiste vragen om te stellen, uw rechten, het tijdpad. In klare taal, zonder jargon.",
   tagline: "Onafhankelijk observatorium",
   altHref: "/understand/",
   altLabel: "EN",
   nav: FR_NAV,
   pageTitle: "Datacenters begrijpen",
   lede:
-    "Voor de bestuurder die de ontwikkelaar aan de lijn krijgt, de omwonende die een bekendmaking van een inspraakprocedure ontdekt, de journalist die net op het onderwerp begint: de essentie, zonder jargon. Wat er achter de cijfers schuilgaat.",
+    "Voor de bestuurder die een adviesbureau aan de lijn krijgt, de omwonende die een bekendmaking van een inspraakprocedure ontdekt, de journalist die net op het onderwerp begint: de essentie, zonder jargon. Wat er achter de getallen schuilgaat.",
   pendingLabel: "Tekst in voorbereiding",
   whyLabel: "Waarom:",
   takeawayLabel: "Onthoud —",
@@ -183,7 +183,7 @@ const NL = {
   tocAria: "Inhoud",
   inFranceLabel: "In Frankrijk —",
   contextNotice:
-    "Deze gids is geschreven vanuit de <strong>Franse</strong> regelgeving en markt — het eerste land dat het observatorium volledig beoordeelt. De vragen in blok 3 reizen overal mee; bedragen, rechten en termijnen zijn Frans. Landspecifieke versies volgen met de uitbreiding van het observatorium.",
+    "Deze gids is geschreven vanuit de <strong>Franse</strong> regelgeving en markt — het eerste land dat het observatorium volledig beoordeelt. De vragen in blok 3 gelden overal; bedragen, rechten en termijnen zijn Frans. Landspecifieke versies volgen met de uitbreiding van het observatorium.",
   blocks: [
     {
       id: "what-is", anchor: "wat",
@@ -211,7 +211,7 @@ const NL = {
     },
     {
       id: "your-rights", anchor: "rechten",
-      title: "Rechten en kalender",
+      title: "Rechten en tijdpad",
       slot: "rich",
       tag: "Frankrijk",
     },

@@ -193,9 +193,9 @@ const NL: typeof FR = {
     "De status van elke meting: gemeten, aangekondigd, niet in het dossier",
     "Vergelijkbare sites, beoordeeld langs dezelfde meetlat",
   ],
-  demoPortraitHref: "/fr/dc/fr-campus-ia-fouju/portrait/",
+  demoPortraitHref: "/nl/dc/fr-campus-ia-fouju/portrait/",
   demoPortraitLabel: "Bekijk een portret: Campus IA Fouju →",
-  demoSheetHref: "/fr/dc/fr-campus-ia-fouju/",
+  demoSheetHref: "/nl/dc/fr-campus-ia-fouju/",
   demoSheetLabel: "De fiche van dezelfde site →",
   notSimplified: "Het portret is geen vereenvoudigde fiche. Het laat niets weg: het ordent anders, en het gaat door tot de vraag die de fiche niet stelt — ‘en wat doe ik nu?’.",
 
@@ -226,17 +226,17 @@ const NL: typeof FR = {
   ],
 
   madeTitle: "Hoe het wordt gemaakt",
-  madeBody: "Het portret en de fiche lezen <strong>hetzelfde artefact</strong>, geproduceerd door dezelfde berekening. Niets wordt twee keer ingevoerd, dus niets kan uiteenlopen. De vragen komen uit een tabel ‘indicator × status × stadium’; de procedure uit een register waarin elke bewering zijn wetsartikel draagt, met een link naar de tekst en de datum waarop we die hebben gelezen. Waar een rechtsgebied niet is gelezen, verzint het portret het niet: het zegt wat ook zonder dat rechtsgebied waar blijft. <a href=\"/fr/methodologie/\">De methode</a> en <a href=\"/fr/la-note-pas-a-pas/\">het cijfer stap voor stap</a> beschrijven de berekening.",
+  madeBody: "Het portret en de fiche lezen <strong>hetzelfde artefact</strong>, geproduceerd door dezelfde berekening. Niets wordt twee keer ingevoerd, dus niets kan uiteenlopen. De vragen komen uit een tabel ‘indicator × status × stadium’; de procedure uit een register waarin elke bewering zijn wetsartikel draagt, met een link naar de tekst en de datum waarop we die hebben gelezen. Waar een rechtsgebied niet is gelezen, verzint het portret het niet: het zegt wat ook zonder dat rechtsgebied waar blijft. <a href=\"/nl/methodologie/\">De methode</a> en <a href=\"/nl/het-cijfer-stap-voor-stap/\">het cijfer stap voor stap</a> beschrijven de berekening.",
 
   findTitle: "Het portret van een site vinden",
   findBody: "Er is geen lijst van portretten: er is er één per beoordeelde site, en u bereikt het via de site. Vertrek vanaf de plek, of vanaf het cijfer.",
-  mapHref: "/fr/carte/",
+  mapHref: "/nl/kaart/",
   mapLabel: "Zoeken op de kaart →",
-  rankHref: "/fr/classement/",
+  rankHref: "/nl/ranglijst/",
   rankLabel: "Door de ranglijst bladeren →",
   examplesIntro: "Drie voorbeelden, drie verschillende situaties:",
   examples: [
-    { href: "/fr/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju (Frankrijk)", why: "een project in behandeling in Seine-et-Marne: de inspraakperiode is open, en de Franse procedure is volledig gelezen." },
+    { href: "/nl/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju (Frankrijk)", why: "een project in behandeling in Seine-et-Marne: de inspraakperiode is open, en de Franse procedure is volledig gelezen." },
     { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "een aangekondigd project in de Verenigde Staten: verplichte hoorzitting van het ontwikkelingsagentschap, SEQRA-toetsing, beroep binnen vier maanden." },
     { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "een staat waarvan we de wet nog niet hebben gelezen: het portret zegt wat waar blijft, en wat u in de plaats kunt vragen." },
   ],

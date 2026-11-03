@@ -1392,7 +1392,10 @@ def _litteraux_par_langue(texte: str) -> list[set[str]]:
     la lire — elle n'a pas de bloc de langue — d'où ce relevé à part.
     """
     sortie: list[set[str]] = []
-    for m in re.finditer(r"\bfr\s*:", texte):
+    # 🔴 `fr: string` est une DÉCLARATION DE TYPE, pas une chaîne. Ma première version les
+    # comptait et annonçait douze traductions manquantes qui n'existaient pas — un garde qui
+    # crie faux use la confiance qu'on lui fait aussi sûrement qu'un garde muet.
+    for m in re.finditer(r"\bfr\s*:\s*[\"'`]", texte):
         debut = texte.rfind("{", 0, m.start())
         if debut < 0:
             continue
@@ -1405,7 +1408,7 @@ def _litteraux_par_langue(texte: str) -> list[set[str]]:
                 if profondeur == 0:
                     break
             i += 1
-        sortie.append(set(re.findall(r"\b(\w+)\s*:", texte[debut : i + 1])))
+        sortie.append(set(re.findall(r"\b(\w+)\s*:\s*[\"'`]", texte[debut : i + 1])))
     return sortie
 
 
@@ -1543,3 +1546,138 @@ def test_le_garde_du_decouplage_mord_vraiment(tmp_path, monkeypatch):
     monkeypatch.setitem(globals(), "BLOCS_RICHES", faux)
     with pytest.raises(AssertionError, match="n'est jamais demandée|identifiant d'aucun"):
         test_l_ancre_ne_sert_plus_de_cle_de_donnees()
+
+
+# Les liens internes d'une table de langue doivent rester DANS cette langue. Exemptions
+# déclarées, avec leur raison — vide aujourd'hui : il n'y a pas de bonne raison d'envoyer un
+# lecteur sur une page qu'il ne lit pas, et si une page n'existe que dans une langue, c'est
+# cette absence-là qu'il faut traiter, pas la masquer par un lien.
+# `altHref` EST le lien vers l'autre langue : c'est sa raison d'être, pas une faute. (Et
+# c'est précisément lui qui devra devenir un sélecteur le jour où il y aura trois langues —
+# voir `content/langues.ts`.)
+LIENS_HORS_LANGUE_OK: dict[str, set[str]] = {f: {"altHref"} for f in TABLES_MODULES}
+
+
+def test_une_table_de_langue_ne_renvoie_pas_vers_une_autre_langue():
+    """Un lien interne d'une table NL ou EN ne doit pas pointer vers `/fr/…`.
+
+    🔴 Trouvé par le traducteur en relisant son propre travail, et c'est un bug de
+    PRODUCTION, pas un défaut néerlandais : la page « Comprendre » anglaise renvoyait son
+    lecteur vers la carte FRANÇAISE. Les tables néerlandaises en portent davantage, pour une
+    raison bénigne — elles sont nées d'une copie du français — mais elles partiraient en
+    ligne avec.
+
+    Un lien est une ROUTE, pas une chaîne : il ne se traduit pas, il se REMAPPE. Et rien ne
+    le signale, puisque la page de destination existe et s'affiche : le lecteur change
+    simplement de langue sans l'avoir demandé.
+    """
+    racines = {lg: f"/{lg}/" for lg in _langues_declarees() if lg != "en"}
+    fautes: list[str] = []
+    for fichier in TABLES_MODULES:
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        for lg in _langues_declarees():
+            try:
+                valeurs = _valeurs(bloc(texte, lg.upper()))
+            except AssertionError:
+                continue
+            exempt = LIENS_HORS_LANGUE_OK.get(fichier, set())
+            for cle, val in valeurs.items():
+                if cle in exempt:
+                    continue
+                for autre, racine in racines.items():
+                    if autre != lg and racine in val:
+                        fautes.append(f"  {fichier} · {lg.upper()} · {cle} → {racine}")
+    assert not fautes, (
+        f"{len(fautes)} lien(s) interne(s) envoient le lecteur dans une AUTRE langue :\n"
+        + "\n".join(sorted(set(fautes))[:20])
+        + "\n\nUn lien est une route, pas une chaîne : il se remappe. Rien ne le signale, "
+        "puisque la page de destination existe — le lecteur change de langue sans l'avoir "
+        "demandé."
+    )
+
+
+def test_le_lien_vers_l_autre_langue_ne_pointe_pas_sur_soi():
+    """`altHref` doit sortir de sa langue — sinon il ne mène nulle part de nouveau.
+
+    🔴 Je l'ai cassé moi-même en remappant les liens internes : mon exemption d'`altHref`
+    vivait dans le GARDE et pas dans le script de remplacement, et la page « Comprendre »
+    anglaise s'est mise à proposer sa propre version anglaise. Rien ne casse — le lien est
+    valide, la page existe, elle s'affiche — et le lecteur clique sur « FR » pour rester en
+    anglais. Un garde qui exempte un cas doit aussi savoir dire quand ce cas est faux.
+    """
+    racines = {lg: f"/{lg}/" for lg in _langues_declarees() if lg != "en"}
+    fautes: list[str] = []
+    for fichier in TABLES_MODULES:
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        for lg in _langues_declarees():
+            try:
+                alt = _valeurs(bloc(texte, lg.upper())).get("altHref")
+            except AssertionError:
+                continue
+            if not alt:
+                continue
+            sienne = racines.get(lg)
+            chez_soi = alt.startswith(sienne) if sienne else not any(
+                alt.startswith(r) for r in racines.values()
+            )
+            if chez_soi:
+                fautes.append(f"  {fichier} · {lg.upper()} · altHref = {alt}")
+    assert not fautes, (
+        "des pages proposent « l'autre langue » et renvoient vers la LEUR :\n"
+        + "\n".join(fautes)
+        + "\n\nLe lien est valide et la page s'affiche : le lecteur clique pour changer de "
+        "langue et ne change pas de langue."
+    )
+
+
+def test_le_schema_de_methodologie_admet_chaque_langue_declaree():
+    """Le schéma et `langues.ts` doivent dire la MÊME liste de langues.
+
+    🔴 Deux vocabulaires, encore. En posant le néerlandais sur les 61 libellés de la méthode,
+    dix-neuf tests ont échoué : le schéma refusait la clé `nl` (`additionalProperties: false`)
+    sur une donnée que l'on venait justement de compléter. C'est la même histoire que le
+    statut `unknown` du 2026-11-02 — le refus était correct, ce qui manquait était le PONT.
+
+    Seuls `fr` et `en` restent EXIGÉS : une langue en préparation a le droit d'être
+    incomplète, c'est `LANGUES_VIVANTES` qui décide de ce qui est servi.
+    """
+    import json
+
+    schema = json.loads(
+        (REPO_ROOT / "data" / "schema" / "methodology.schema.json").read_text(encoding="utf-8")
+    )
+    admises = set(schema["$defs"]["bilingual_label"]["properties"])
+    declarees = set(_langues_declarees())
+    manquantes = sorted(declarees - admises)
+    assert not manquantes, (
+        f"le schéma de méthodologie n'admet pas {manquantes}, que `langues.ts` déclare : "
+        f"poser ces libellés ferait REFUSER la méthodologie au gate de corpus, sur une "
+        f"donnée pourtant complète"
+    )
+    intruses = sorted(admises - declarees)
+    assert not intruses, (
+        f"le schéma admet {intruses} que `langues.ts` ne déclare pas — une langue qui "
+        f"n'existe nulle part ailleurs finirait par être servie sans table"
+    )
+
+
+def test_les_notes_de_bas_de_page_suivent_l_identifiant_stable():
+    """Une note de source pointe sur l'identifiant du bloc, jamais sur son ancre traduite.
+
+    Même leçon que le découplage, un cran plus bas : le gabarit engendre `id="src-<id>-N"`,
+    donc un renvoi écrit `#src-rechten-1` ne mène nulle part — et ne casse rien, puisqu'un
+    ancrage absent laisse simplement le lecteur où il est.
+    """
+    ids = {i for i, _, _ in _blocs_de_comprendre(_langues_declarees()[0])}
+    assert ids, "aucun identifiant de bloc relevé — le garde ne garde plus rien"
+    fautes: list[str] = []
+    for fichier in sorted((CONTENU).rglob("*.ts")):
+        for cle in set(re.findall(r"#src-([a-z-]+?)-\d+", fichier.read_text(encoding="utf-8"))):
+            if cle not in ids:
+                fautes.append(f"  {fichier.name} · #src-{cle}-N")
+    assert not fautes, (
+        "des renvois de source pointent sur une ancre et non sur un identifiant de bloc :\n"
+        + "\n".join(sorted(set(fautes)))
+        + f"\n\nIdentifiants valides : {sorted(ids)}. Un renvoi qui ne tombe nulle part ne "
+        "casse rien : il laisse le lecteur où il est."
+    )

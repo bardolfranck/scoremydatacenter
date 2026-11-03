@@ -148,9 +148,9 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
 
 
 _DOC_LABELS = {
-    "high": {"fr": "documentation solide", "en": "well documented"},
-    "medium": {"fr": "documentation moyenne", "en": "moderately documented"},
-    "low": {"fr": "documentation faible", "en": "sparsely documented"},
+    "high": {"fr": "documentation solide", "en": "well documented", "nl": "ruim gedocumenteerd"},
+    "medium": {"fr": "documentation moyenne", "en": "moderately documented", "nl": "gedeeltelijk gedocumenteerd"},
+    "low": {"fr": "documentation faible", "en": "sparsely documented", "nl": "dun gedocumenteerd"},
 }
 
 _GRADE_ORDER = "ABCDE"  # index rises with severity (A best, E worst)

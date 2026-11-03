@@ -32,17 +32,17 @@ export const WHATIS_FR: WhatIsDC = {
     {
       label: "Data center « classique »",
       power: "quelques MW",
-      note: "La grande majorité des ~300 sites français, raccordés au réseau de distribution comme une grosse usine<sup><a href='#src-quoi-1'>1</a></sup>",
+      note: "La grande majorité des ~300 sites français, raccordés au réseau de distribution comme une grosse usine<sup><a href='#src-what-is-1'>1</a></sup>",
     },
     {
       label: "Grand projet",
       power: "100 à 200 MW",
-      note: "La consommation électrique de villes comme Le Mans ou Saint-Étienne<sup><a href='#src-quoi-1'>1</a></sup>",
+      note: "La consommation électrique de villes comme Le Mans ou Saint-Étienne<sup><a href='#src-what-is-1'>1</a></sup>",
     },
     {
       label: "Méga-projet",
       power: "plus de 400 MW",
-      note: "Une dizaine de projets « hors normes » en France ; le Campus IA de Fouju vise 1 400 MW sur environ 90 hectares<sup><a href='#src-quoi-1'>1</a></sup><sup><a href='#src-quoi-3'>3</a></sup>",
+      note: "Une dizaine de projets « hors normes » en France ; le Campus IA de Fouju vise 1 400 MW sur environ 90 hectares<sup><a href='#src-what-is-1'>1</a></sup><sup><a href='#src-what-is-3'>3</a></sup>",
     },
   ],
   scale: {
@@ -54,7 +54,7 @@ export const WHATIS_FR: WhatIsDC = {
     ],
   },
   statsParagraph:
-    "Aujourd'hui, l'ensemble des data centers représente environ 2 % de l'électricité consommée en France ; RTE anticipe environ 4 % en 2035<sup><a href='#src-quoi-1'>1</a></sup>. À l'échelle mondiale, ils pèsent environ 1,5 % de la consommation d'électricité en 2024<sup><a href='#src-quoi-4'>4</a></sup>.",
+    "Aujourd'hui, l'ensemble des data centers représente environ 2 % de l'électricité consommée en France ; RTE anticipe environ 4 % en 2035<sup><a href='#src-what-is-1'>1</a></sup>. À l'échelle mondiale, ils pèsent environ 1,5 % de la consommation d'électricité en 2024<sup><a href='#src-what-is-4'>4</a></sup>.",
   takeaway:
     "Le même mot désigne une salle de quelques mégawatts et un campus mille fois plus puissant. Face à un projet, la première question est toujours : combien de mégawatts ?",
   sourcesLabel: "Sources :",
@@ -76,17 +76,17 @@ export const WHATIS_EN: WhatIsDC = {
     {
       label: "“Classic” data center",
       power: "a few MW",
-      note: "The vast majority of France's ~300 sites, connected to the distribution grid like a large factory<sup><a href='#src-what-1'>1</a></sup>",
+      note: "The vast majority of France's ~300 sites, connected to the distribution grid like a large factory<sup><a href='#src-what-is-1'>1</a></sup>",
     },
     {
       label: "Large project",
       power: "100 to 200 MW",
-      note: "The electricity consumption of cities like Le Mans or Saint-Étienne<sup><a href='#src-what-1'>1</a></sup>",
+      note: "The electricity consumption of cities like Le Mans or Saint-Étienne<sup><a href='#src-what-is-1'>1</a></sup>",
     },
     {
       label: "Mega-project",
       power: "above 400 MW",
-      note: "About a dozen “out of the ordinary” projects in France; the Fouju AI Campus targets 1,400 MW on about 90 hectares<sup><a href='#src-what-1'>1</a></sup><sup><a href='#src-what-3'>3</a></sup>",
+      note: "About a dozen “out of the ordinary” projects in France; the Fouju AI Campus targets 1,400 MW on about 90 hectares<sup><a href='#src-what-is-1'>1</a></sup><sup><a href='#src-what-is-3'>3</a></sup>",
     },
   ],
   scale: {
@@ -98,7 +98,7 @@ export const WHATIS_EN: WhatIsDC = {
     ],
   },
   statsParagraph:
-    "Today, data centers account for about 2% of the electricity consumed in France; RTE expects about 4% by 2035<sup><a href='#src-what-1'>1</a></sup>. Worldwide, they used about 1.5% of electricity in 2024<sup><a href='#src-what-4'>4</a></sup>.",
+    "Today, data centers account for about 2% of the electricity consumed in France; RTE expects about 4% by 2035<sup><a href='#src-what-is-1'>1</a></sup>. Worldwide, they used about 1.5% of electricity in 2024<sup><a href='#src-what-is-4'>4</a></sup>.",
   takeaway:
     "The same word covers a room of a few megawatts and a campus a thousand times more powerful. Facing a project, the first question is always: how many megawatts?",
   sourcesLabel: "Sources:",
@@ -106,6 +106,53 @@ export const WHATIS_EN: WhatIsDC = {
     { label: "RTE, “Data centers in key figures”, 2026", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
     { label: "Journal du Grand Paris, 2025", url: "https://www.lejournaldugrandparis.fr/choose-france-un-campus-dia-geant-en-seine-et-marne/" },
     { label: "Campus IA public consultation", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
+    { label: "IEA, Energy and AI, 2025", url: "https://www.iea.org/reports/energy-and-ai/executive-summary" },
+  ],
+};
+
+// ── NÉERLANDAIS — rédigé après la passe native ; chiffres identiques au FR vérifié.
+// Ancres de sources sur l'IDENTIFIANT STABLE du bloc (#src-what-is-N) : une ancre
+// se traduit, un identifiant non — et une note de bas de page doit suivre l'identifiant.
+export const WHATIS_NL: WhatIsDC = {
+  paragraphs: [
+    "Een datacenter is een industrieel gebouw vol servers — de computers die websites, video's, onlinediensten en, steeds vaker, kunstmatige intelligentie laten draaien. Die machines draaien dag en nacht, verbruiken continu elektriciteit en geven warmte af die moet worden afgevoerd. Daar komt hun energiebehoefte vandaan — en, afhankelijk van de koeltechniek, hun waterbehoefte.",
+    "Om een datacenter te meten is de juiste eenheid niet de oppervlakte van het gebouw maar het <strong>elektrische vermogen, in megawatt (MW)</strong> — de stroom die de site op elk moment kan afnemen.",
+  ],
+  sizesTitle: "Drie heel verschillende maten dragen dezelfde naam:",
+  sizes: [
+    {
+      label: "‘Klassiek’ datacenter",
+      power: "enkele MW",
+      note: "De grote meerderheid van de ~300 Franse sites, aangesloten op het distributienet zoals een grote fabriek<sup><a href='#src-what-is-1'>1</a></sup>",
+    },
+    {
+      label: "Groot project",
+      power: "100 tot 200 MW",
+      note: "Het elektriciteitsverbruik van steden als Le Mans of Saint-Étienne<sup><a href='#src-what-is-1'>1</a></sup>",
+    },
+    {
+      label: "Megaproject",
+      power: "meer dan 400 MW",
+      note: "Een tiental ‘buitenmaatse’ projecten in Frankrijk; de Campus IA in Fouju mikt op 1.400 MW op ongeveer 90 hectare<sup><a href='#src-what-is-1'>1</a></sup><sup><a href='#src-what-is-3'>3</a></sup>",
+    },
+  ],
+  scale: {
+    caption: "De oppervlakten zijn evenredig met het elektrische vermogen.",
+    items: [
+      { mw: 3, mwLabel: "enkele MW", label: "klassiek datacenter" },
+      { mw: 150, mwLabel: "150 MW", label: "groot project ≈ Le Mans" },
+      { mw: 1400, mwLabel: "1.400 MW", label: "megaproject (Fouju)" },
+    ],
+  },
+  statsParagraph:
+    "Vandaag nemen de datacenters samen ongeveer 2% van het in Frankrijk verbruikte stroomvolume voor hun rekening; RTE verwacht ongeveer 4% in 2035<sup><a href='#src-what-is-1'>1</a></sup>. Wereldwijd gebruikten ze in 2024 ongeveer 1,5% van de elektriciteit<sup><a href='#src-what-is-4'>4</a></sup>.",
+  takeaway:
+    "Hetzelfde woord dekt een zaal van enkele megawatt en een campus die duizend keer krachtiger is. Tegenover een project is de eerste vraag altijd: hoeveel megawatt?",
+  sourcesLabel: "Bronnen:",
+  sources: [
+    { label: "RTE, « Les data centers en chiffres clés », 2026", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
+    { label: "Journal du Grand Paris, 2025", url: "https://www.lejournaldugrandparis.fr/choose-france-un-campus-dia-geant-en-seine-et-marne/" },
+    { label: "Publieke inspraak Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
     { label: "IEA, Energy and AI, 2025", url: "https://www.iea.org/reports/energy-and-ai/executive-summary" },
   ],
 };

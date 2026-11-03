@@ -1,3 +1,4 @@
+import re
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 # https://scoremydatacenter.org · independent data center acceptability-risk score
@@ -5,6 +6,7 @@
 they are an independent check of the engine, not a copy of its output."""
 
 from engine.scoring import score_datacenter
+from engine.core import REPO_ROOT
 
 
 def test_alpha_dual_grades(methodology, alpha):
@@ -109,17 +111,42 @@ def test_alpha_pillar_subscores(methodology, alpha):
     assert set(pillars) == {"energy", "water", "land_biodiversity", "local_impact", "transparency_governance"}
 
 
+def _langues_declarees() -> set[str]:
+    """Les langues déclarées, lues à leur source unique — jamais recopiées dans un test."""
+    texte = (REPO_ROOT / "site" / "src" / "content" / "langues.ts").read_text(encoding="utf-8")
+    vivantes = re.search(r"LANGUES_VIVANTES = \[([^\]]*)\]", texte)
+    prepa = re.search(r"LANGUES_EN_PREPARATION = \[([^\]]*)\]", texte)
+    assert vivantes, "LANGUES_VIVANTES introuvable"
+    return set(re.findall(r'"(\w+)"', vivantes.group(1))) | (
+        set(re.findall(r'"(\w+)"', prepa.group(1))) if prepa else set()
+    )
+
+
 def test_documentation_accompanies_every_grade(methodology, alpha):
-    # Product rule n°1: a letter is never shown without its documentation chip.
+    """Une lettre ne s'affiche jamais sans sa pastille de documentation.
+
+    🔴 La liste des langues n'est plus écrite ici. Elle l'était — `== {"fr", "en"}` — et
+    l'arrivée du néerlandais a fait échouer dix-neuf tests sur une donnée SAINE : la pastille
+    portait une langue de plus, ce qu'on venait précisément de lui demander. Une égalité
+    stricte sur un ensemble de langues est une liste à deux endroits de plus ; on exige donc
+    la PRÉSENCE de chaque langue déclarée, et le droit d'en porter une nouvelle.
+    """
+    langues = _langues_declarees()
     r = score_datacenter(alpha, methodology)
     for badge in ("site", "project_process"):
         doc = r["grades"][badge]["documentation"]
         assert doc["level"] in {"high", "medium", "low"}
         assert 1 <= doc["dots"] <= 4
-        assert set(doc["label"]) == {"fr", "en"}
+        assert langues <= set(doc["label"]), (
+            f"pastille de documentation du badge {badge} : {sorted(doc['label'])}, "
+            f"il manque {sorted(langues - set(doc['label']))}"
+        )
     for pillar, detail in r["pillars"].items():
         assert 1 <= detail["documentation"]["dots"] <= 4, pillar
-        assert set(detail["documentation"]["label"]) == {"fr", "en"}
+        assert langues <= set(detail["documentation"]["label"]), (
+            f"pastille du pilier {pillar} : il manque "
+            f"{sorted(langues - set(detail['documentation']['label']))}"
+        )
 
 
 def test_no_documentation_without_a_grade(methodology, beta):
