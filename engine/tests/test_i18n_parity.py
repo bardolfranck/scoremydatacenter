@@ -1797,7 +1797,12 @@ def test_chaque_pays_du_corpus_a_son_nom_dans_chaque_langue_servie():
 CHAMPS_PROCEDURE = 181  # 19 fichiers, 2026-11-03
 # 181 → 93 le 2026-11-03 : première passe de rapports-SMDC, 88 champs posés par
 # `scripts/injecter_traduction_procedure.py` (ancrage par rang, nombres vérifiés).
-DETTE_NL_PROCEDURE = 93
+# 93 → 94 le même jour, et le cliquet a eu raison de refuser : la #304 a réécrit l'autorité
+# néerlandaise (« instruction communale » était faux pour exactement les gros data centers
+# qu'on note — c'est la province, voire le Rijk, qui décide). Le néerlandais posé traduisait
+# fidèlement la phrase d'AVANT ; une traduction fidèle d'un texte périmé est un texte périmé.
+# Le champ est donc retourné à la dette, et cette hausse est DÉCLARÉE au lieu d'être subie.
+DETTE_NL_PROCEDURE = 94
 
 PROCEDURE = CONTENU / "procedure"
 
