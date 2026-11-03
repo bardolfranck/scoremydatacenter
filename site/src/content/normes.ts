@@ -181,25 +181,25 @@ const NL: typeof FR = {
   tagline: "Onafhankelijk observatorium",
   h1: "De normen. Waar wij staan.",
   intro:
-    "<p>We landen niet op onontgonnen terrein. De datacentersector meet zijn prestaties al jaren, met een genormeerd vocabulaire en gezaghebbende instanties. Deze pagina brengt <strong>het bestaande</strong> in kaart — de officiële KPI's, de ISO-normen — om, bij contrast, te situeren wat wij toevoegen.</p><p class=\"meth-nerd\">🤓 Verder dan <a href=\"/fr/comprendre\">Datacenters begrijpen</a>, vóór onze <a href=\"/fr/methodologie\">Methode</a>. Dit is de middelste trede: het bestaande speelveld, vóór ons cijfer.</p>",
+    "<p>We betreden geen onontgonnen terrein. De datacentersector meet zijn prestaties al jaren, met een genormeerd vocabulaire en gezaghebbende instanties. Deze pagina brengt <strong>het bestaande</strong> in kaart — de officiële KPI's, de ISO-normen — om daartegen af te zetten wat wij toevoegen.</p><p class=\"meth-nerd\">🤓 Verder dan <a href=\"/fr/comprendre\">Datacenters begrijpen</a>, vóór onze <a href=\"/fr/methodologie\">Methode</a>. Dit is de middelste trede: het bestaande speelveld, vóór ons cijfer.</p>",
 
   mapH2: "De kaart van de normen",
-  mapIntro: "<p>Wie gezag heeft, en waarover. De wereldwijde ruggengraat is <strong>ISO/IEC 30134</strong> (via comité SC39); al de rest draait eromheen.</p>",
+  mapIntro: "<p>Wie gezag heeft, en waarover. De wereldwijde ruggengraat is <strong>ISO/IEC 30134</strong> (via comité SC39); de rest draait eromheen.</p>",
   mapCols: { org: "Instantie", role: "Rol", scope: "Wat ze normeert" },
   mapRows: [
     { org: "ISO/IEC JTC1 SC39", role: "het internationale comité", scope: "de reeks <strong>ISO/IEC 30134</strong> = de officiële KPI's van het datacenter" },
     { org: "The Green Grid", role: "industrieel consortium", scope: "heeft de PUE <em>uitgevonden</em> (overgenomen door ISO), plus CUE, WUE en de index <strong>PI</strong>" },
     { org: "ETSI", role: "telecomnormalisatie (EU)", scope: "de index <strong>DCp</strong> (Data Center Performance), label A→I" },
-    { org: "Cenelec", role: "Europese overname", scope: "zet de ISO 30134-normen om voor Europa" },
-    { org: "France Datacenter · Gimélec · AGIT", role: "de Franse sector", scope: "het witboek van de KPI's (2017): pedagogie, anti-greenwashing" },
-    { org: "InfraNum", role: "federatie van infrastructuren", scope: "gids 2025: nabijheidsdatacenters, soevereiniteit" },
+    { org: "Cenelec", role: "Europese omzetting", scope: "zet de ISO 30134-normen om voor Europa" },
+    { org: "France Datacenter · Gimélec · AGIT", role: "de Franse sector", scope: "het witboek van de KPI's (2017): voorlichting, anti-greenwashing" },
+    { org: "InfraNum", role: "federatie van infrastructuren", scope: "gids 2025: regionale datacenters, soevereiniteit" },
   ],
 
   kpiH2: "De officiële indicatoren",
   kpiIntro: "<p>Het vocabulaire dat de hele sector deelt. Bijna allemaal meten ze één ding: <strong>de efficiëntie van de machine</strong>.</p>",
   kpiCols: { kpi: "Indicator", norm: "Norm", measure: "Wat hij meet" },
   kpiRows: [
-    { kpi: "PUE", norm: "ISO/IEC 30134-2", measure: "het globale energierendement van de infrastructuur. <em>De koning onder de indicatoren</em>: 2,0 = gemiddelde van het Franse park, 1,28 = de nieuwste sites." },
+    { kpi: "PUE", norm: "ISO/IEC 30134-2", measure: "het totale energierendement van de infrastructuur. <em>De koning onder de indicatoren</em>: 2,0 = gemiddelde van het Franse datacenterpark, 1,28 = de nieuwste sites." },
     { kpi: "REF", norm: "ISO/IEC 30134-3", measure: "het aandeel verbruikte hernieuwbare energie" },
     { kpi: "ITEEsv", norm: "ISO/IEC 30134-4 <em>(in voorbereiding)</em>", measure: "de energie-efficiëntie van het serverpark" },
     { kpi: "CUE", norm: "Green Grid", measure: "de uitgestoten koolstof per eenheid IT-energie" },
@@ -207,10 +207,10 @@ const NL: typeof FR = {
     { kpi: "ERF · COP · CER", norm: "ISO SC39 <em>(in voorbereiding)</em>", measure: "hergebruik van warmte, rendement van de koeling" },
   ],
 
-  lettersH2: "Cijfers in letters bestaan al — maar ze meten niet hetzelfde",
+  lettersH2: "Letterscores bestaan al — maar ze meten niet hetzelfde",
   lettersP: [
     "<p>De sector heeft <strong>al</strong> letters. De <strong>PI</strong> (Performance Indicator, The Green Grid) deelt een datacenter in van <i class=\"gl gl-a\">A</i> tot <strong>G</strong>; de <strong>DCp</strong> (ETSI RGS/OEU-0011) van <strong>A tot I</strong> — zoals het energielabel van een koelkast.</p>",
-    "<p><strong>Maar</strong> die letters meten de <strong>energie-efficiëntie van de infrastructuur</strong> (PUE, restwarmte, hernieuwbaar); ze zijn <strong>zelfgerapporteerd</strong> door de exploitant, over een <strong>anonieme</strong> machine. Niemand geeft een letter aan de <strong>maatschappelijke acceptatie</strong> — water, bodem, gebied, governance — van een <strong>benoemde, echte</strong> site, <strong>van buitenaf</strong>.</p>",
+    "<p><strong>Maar</strong> die letters meten de <strong>energie-efficiëntie van de infrastructuur</strong> (PUE, restwarmte, hernieuwbaar); ze zijn <strong>zelfgerapporteerd</strong> door de exploitant, voor een <strong>anonieme</strong> machine. Niemand geeft een letter aan de <strong>maatschappelijke acceptatie</strong> — water, bodem, gebied, governance — van een <strong>met naam en toenaam genoemde, echte</strong> site, <strong>van buitenaf</strong>.</p>",
     "<p>Zelfde alfabet, radicaal andere dimensie. Precies dat gat vullen wij.</p>",
   ],
 
@@ -224,22 +224,22 @@ const NL: typeof FR = {
     { ours: "Water · WUE / reële waterbron", theirs: "<strong>WUE</strong> (Green Grid)" },
     { ours: "Bodem · warmteterugwinning", theirs: "dicht bij <strong>ERF</strong>" },
   ],
-  beyondP: "<p>En hier zit het verschil, door constructie. De officiële KPI's zijn <strong>allemaal</strong> efficiëntie-indicatoren van de infrastructuur. <strong>Geen enkele</strong> meet wat wij in <strong>vier van onze vijf pijlers</strong> beoordelen:</p><ul><li><strong>Water — de waterstress van het gebied</strong> (niet het verbruik van de machine, maar de druk op de lokale voorraad)</li><li><strong>Bodem &amp; biodiversiteit</strong> — verharde grond, beschermde gebieden, ecologische verbindingen</li><li><strong>Lokale impact</strong> — absorptievermogen van de gemeente, Seveso-risico in de buurt, waargenomen verzet, standpunt van de bestuurders</li><li><strong>Transparantie &amp; governance</strong> — inspraak, instemming, openbare raadpleging</li></ul><p>De sector optimaliseert de <strong>machine</strong>. Wij beoordelen zijn <strong>acceptatie in het gebied</strong>.</p>",
+  beyondP: "<p>En hier zit het verschil, door constructie. De officiële KPI's zijn <strong>allemaal</strong> efficiëntie-indicatoren van de infrastructuur. <strong>Geen enkele</strong> meet wat wij in <strong>vier van onze vijf pijlers</strong> beoordelen:</p><ul><li><strong>Water — de waterstress van het gebied</strong> (niet het verbruik van de machine, maar de druk op de lokale voorraad)</li><li><strong>Bodem &amp; biodiversiteit</strong> — verharde grond, beschermde gebieden, ecologische verbindingen</li><li><strong>Lokale impact</strong> — absorptievermogen van de gemeente, Seveso-risico in de buurt, waargenomen verzet, standpunt van de bestuurders</li><li><strong>Transparantie &amp; governance</strong> — overleg, instemming, inspraak</li></ul><p>De sector optimaliseert de <strong>machine</strong>. Wij beoordelen zijn <strong>acceptatie in het gebied</strong>.</p>",
 
-  etatH2: "Wat de Franse staat, van zijn kant, bekijkt",
+  etatH2: "Wat de Franse staat zelf bekijkt",
   etatIntro: "<p>De KPI's van de sector stoppen bij de machine — maar de Franse administratie kijkt al naar het gebied. In Île-de-France, waar boven <strong>5.000 m²</strong> vloeroppervlak de goedkeuring van de staat <strong>verplicht</strong> is, publiceerde de regionale prefectuur op 1 juni 2026 een <a href=\"https://www.drieat.ile-de-france.developpement-durable.gouv.fr/IMG/pdf/fiche_repere_relative_aux_demandes_agrement_des_centres_de_donnees_juin_2026.pdf\">referentiefiche</a> die zwart op wit zegt wat ze in een datacenterdossier onderzoekt. De lijst valt bijna regel voor regel samen met onze pijlers.</p>",
   etatCols: { theirs: "Wat de staat in Île-de-France onderzoekt", ours: "Onze indicator" },
   etatRows: [
     { theirs: "<strong>Vestigen op bestaande bedrijventerreinen</strong> en brownfields — geen stadsuitbreiding zolang er een al verhard alternatief bestaat <em>(SDRIF, reglementaire oriëntaties 126, 102 en 85; ZAN-traject)</em>", ours: "Bodem · status van de grond (verhard / landbouw / natuur)" },
-    { theirs: "<strong>Boven 40 MW aansluitvermogen verscherpte aandacht</strong> in gebieden waar het net al zwaar onder druk staat, om de capaciteit van het net voor de andere lokale behoeften niet te hypothekeren", ours: "Energie · aansluitcapaciteit en wachtrij van het net" },
-    { theirs: "<strong>20 % van de verbruikte elektriciteit teruggewonnen als warmte</strong> — aanbevolen niveau in het hypercentrum van de agglomeratie, mee te nemen vanaf het ontwerp van het project", ours: "Energie · aansluitbaarheid op een warmtenet · aangekondigde terugwinning" },
-    { theirs: "<strong>Bijzondere waakzaamheid in waterverdelingszones</strong> — de grondwaterlagen van Albien, Champigny en Beauce, de Mauldre, een deel van de Vexin, de Beuvronne, de Thérouanne en La Bassée — en beperking van de onttrekkingen via de keuze van de koeling", ours: "Water · waterstress van het stroomgebied · koeling en aangekondigd volume" },
-    { theirs: "<strong>Advies van de ontvangende gemeenten</strong> — verwachte toezeggingen over werkgelegenheid, opleiding en publieke voorzieningen", ours: "Lokale impact · profiel van de gemeente · standpunt van de bestuurders" },
+    { theirs: "<strong>Boven 40 MW aansluitvermogen verscherpte aandacht</strong> in gebieden waar het net al zwaar onder druk staat, om de capaciteit van het net voor de andere lokale behoeften niet op het spel te zetten", ours: "Energie · aansluitcapaciteit en wachtrij van het net" },
+    { theirs: "<strong>20% van de verbruikte elektriciteit teruggewonnen als warmte</strong> — aanbevolen niveau in het hart van de agglomeratie, mee te nemen vanaf het ontwerp van het project", ours: "Energie · aansluitbaarheid op een warmtenet · aangekondigde terugwinning" },
+    { theirs: "<strong>Bijzondere waakzaamheid in waterverdelingszones (ZRE)</strong> — de grondwaterlagen van Albien, Champigny en Beauce, de Mauldre, een deel van de Vexin, de Beuvronne, de Thérouanne en La Bassée — en beperking van de onttrekkingen via de keuze van de koeling", ours: "Water · waterstress van het stroomgebied · koeling en aangekondigd volume" },
+    { theirs: "<strong>Advies van de betrokken gemeenten</strong> — verwachte toezeggingen over werkgelegenheid, opleiding en publieke voorzieningen", ours: "Lokale impact · profiel van de gemeente · standpunt van de bestuurders" },
     { theirs: "<strong>PUE, WUE, ISO 14001 en ISO 50001</strong> — plus de <em>European Code of Conduct for Data Centres</em> — om de aangekondigde prestaties te onderbouwen", ours: "Energie · PUE · Water · WUE (zie de tabel hierboven)" },
   ],
-  etatNote: "<p><strong>Wat dit voor ons verandert — en wat niet.</strong> Deze criteria zijn geen beoordelingsdrempels en geen nationaal recht: het zijn de punten die een regionale prefectuur, dossier per dossier, onderzoekt voor <em>één</em> goedkeuring. Ze leveren geen letter op, geen vergelijking tussen sites, en niets ervan wordt gepubliceerd in een vorm die zich laat toetsen.</p><p>Precies daar ligt de grens. De staat beoordeelt <strong>geval per geval en achter gesloten deuren</strong>; wij meten dezelfde dimensies <strong>van buitenaf, met dezelfde meetlat, over het hele corpus</strong> — en we publiceren ze. Wij beoordelen wat de staat al bekijkt: het beste argument tegen het idee dat deze dimensies onze uitvinding zouden zijn.</p>",
+  etatNote: "<p><strong>Wat dit voor ons verandert — en wat niet.</strong> Deze criteria zijn geen beoordelingsdrempels en geen nationaal recht: het zijn de punten die een regionale prefectuur, dossier per dossier, onderzoekt voor <em>één</em> goedkeuring. Ze leveren geen letter op, geen vergelijking tussen sites, en niets ervan wordt gepubliceerd in een vorm die zich laat toetsen.</p><p>Precies daar ligt de grens. De staat beoordeelt <strong>van geval tot geval en achter gesloten deuren</strong>; wij meten dezelfde dimensies <strong>van buitenaf, met dezelfde meetlat, over het hele corpus</strong> — en we publiceren ze. Wij beoordelen wat de staat al bekijkt: het beste argument tegen het idee dat deze dimensies onze uitvinding zouden zijn.</p>",
 
-  closeP: "De sector schrijft de regel in zijn witboeken. Wij publiceren de score — openbaar, site per site — en we citeren zijn normen om onaantastbaar te zijn, niet om gezalfd te worden.",
+  closeP: "De sector schrijft de regel in zijn witboeken. Wij publiceren de score — openbaar, site per site — en we citeren zijn normen om onaantastbaar te zijn, niet om een ridderslag te krijgen.",
 
   ctaMethod: "Bekijk onze methode →",
   backHref: "/fr/",

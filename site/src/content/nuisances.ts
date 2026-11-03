@@ -226,10 +226,10 @@ const NL: typeof FR = {
   // Même leçon SEO que le FR : le lecteur cherche « geluid », pas « hinder » — le titre mène
   // avec le mot cherché, le h1 garde le concept.
   title: "Het geluid van een datacenter — hoeveel, op welke afstand, wat er vastligt",
-  metaDescription: "Het geluid van een datacenter: continue koeling, noodaggregaten op proef, brandstoftanks, onttrokken water. Hoeveel, op welke afstand, en wat milieuadviezen werkelijk documenteren.",
+  metaDescription: "Het geluid van een datacenter: continue koeling, noodaggregaten die proefdraaien, brandstoftanks, onttrokken water. Hoeveel, op welke afstand, en wat milieuadviezen werkelijk documenteren.",
   tagline: "Onafhankelijk observatorium",
   h1: "De hinder van datacenters",
-  lead: `Een datacenter wordt vaak besproken op zijn totale balans — de elektriciteit, het klimaat. Wat je vanaf de straat meemaakt, is concreter: continu <strong>geluid</strong>, <strong>noodaggregaten</strong> op proef, <strong>brandstoftanks</strong>, <strong>water</strong> dat wordt onttrokken en geloosd. In de 41 adviezen van de <a href="${AE}" target="_blank" rel="noopener">Franse milieuautoriteit</a> die we hebben doorgenomen, komen de noodaggregaten het vaakst terug, vóór de brandstoftanks en het geluid.`,
+  lead: `Een datacenter wordt vaak besproken op zijn totale balans — de elektriciteit, het klimaat. Wat u vanaf de straat meemaakt, is concreter: continu <strong>geluid</strong>, <strong>noodaggregaten</strong> die proefdraaien, <strong>brandstoftanks</strong>, <strong>water</strong> dat wordt onttrokken en geloosd. In de 41 adviezen van de <a href="${AE}" target="_blank" rel="noopener">Franse milieuautoriteit</a> die we hebben doorgenomen, komen de noodaggregaten het vaakst terug, vóór de brandstoftanks en het geluid.`,
 
   questionsH2: "De vragen die men ons stelt",
   questions: [
@@ -237,12 +237,12 @@ const NL: typeof FR = {
       q: "Op welke afstand van een datacenter woont u rustig?",
       r: `<p>Er bestaat <strong>geen enkele reglementaire afstand</strong> tussen een datacenter en woningen. Wat de regelgeving vastlegt is niet de afstand maar de <strong>geluidstoename</strong>: hoeveel het geluid bij de buren stijgt wanneer de installatie draait. Het Franse besluit van 23 januari 1997 staat in de regel <strong>+5 dB(A) overdag en +3 dB(A) ’s nachts</strong> toe.</p>
       <p>Het gevolg is contra-intuïtief: <strong>dezelfde machine heeft niet overal hetzelfde effect</strong>. Een plattelandsomgeving die ’s nachts naar 30 dB(A) zakt, laat bijna geen marge, waar een industriezone haar opslokt. Twee huizen op gelijke afstand van twee identieke sites beleven dus niet hetzelfde.</p>
-      <p>Daarom publiceren we op elke fiche, waar we ze hebben, de <strong>afstand tot de dichtstbijzijnde woningen</strong>: de enige parameter die niemand achteraf kan bijstellen, en hij leest mee met de rest van het dossier. <a href='/nl/kaart/'>Zoek de site bij u in de buurt op de kaart</a>.</p>` },
+      <p>Daarom publiceren we op elke fiche, waar we ze hebben, de <strong>afstand tot de dichtstbijzijnde woningen</strong>: de enige parameter die niemand achteraf kan bijstellen, en u leest hem samen met de rest van het dossier. <a href='/nl/kaart/'>Zoek de site bij u in de buurt op de kaart</a>.</p>` },
     {
       q: "Is wonen bij een datacenter een gezondheidsrisico?",
       r: `<p>We zijn geen gezondheidsautoriteit en <strong>we meten geen enkel gezondheidseffect</strong> — het bevestigen of het ontkennen zou even oneerlijk zijn. Wat we kunnen zeggen, steunt op de feiten in de dossiers.</p>
       <p>Wat het vaakst terugkomt in de milieuadviezen die we hebben doorgenomen: de <strong>noodaggregaten</strong>, de <strong>brandstoftanks</strong> en het <strong>geluid</strong>. Het nachtelijke geluid is het meest constante onderwerp, omdat het continu is en geen pauze kent — dat onderscheidt een datacenter van een bouwplaats of een weg.</p>
-      <p>We publiceren deze elementen <strong>naast het cijfer, nooit erin</strong>, en we zeggen waarop ze steunen. Om te begrijpen wanneer deze vragen in een procedure aan bod komen: zie <a href='/nl/datacenters-begrijpen#rechten'>Rechten en kalender</a>.</p>` },
+      <p>We publiceren deze elementen <strong>naast het cijfer, nooit erin</strong>, en we zeggen waarop ze steunen. Om te begrijpen wanneer deze vragen in een procedure aan bod komen: zie <a href='/nl/datacenters-begrijpen#rechten'>Rechten en tijdpad</a>.</p>` },
   ],
 
   mesure: {
@@ -252,37 +252,37 @@ const NL: typeof FR = {
   locale: "nl-NL",
   sections: [
     { icone: "noise", h2: "Het geluid, de hinder van elke dag",
-      corps: `<p>Een datacenter stopt nooit: het voert permanent de warmte van zijn machines af. Het geluid komt dus niet van het gebouw maar van wat erop en eromheen staat — <strong>ventilatoren, droge koelers, koelgroepen</strong> — en het is <strong>continu, dag en nacht</strong>. Dat onderscheidt het van een bouwplaats of een weg: er is geen stilte tussendoor.</p>
+      corps: `<p>Een datacenter stopt nooit: het voert permanent de warmte van zijn machines af. Het geluid komt dus niet van het gebouw maar van wat erop en eromheen staat — <strong>ventilatoren, drycoolers, koelmachines</strong> — en het is <strong>continu, dag en nacht</strong>. Dat onderscheidt het van een bouwplaats of een weg: er is geen stilte tussendoor.</p>
       <p>Drie dingen tellen zwaarder dan het ruwe niveau:</p>
       <ul>
-        <li><strong>Het verschil met het achtergrondgeluid</strong>, niet de absolute decibel. De Franse regelgeving voor geklasseerde installaties redeneert in geluidstoename (‘émergence’): het besluit van 23 januari 1997 staat in de regel <strong>+5 dB(A) overdag en +3 dB(A) ’s nachts</strong> toe bij de buren, met een plafond aan de terreingrens rond 70 dB(A) overdag en 60 dB(A) ’s nachts. Direct gevolg: een plattelandsomgeving waar de nacht naar 30 dB(A) zakt, laat bijna geen marge, terwijl dezelfde machine verdwijnt in een bedrijvenwijk. <strong>Dezelfde installatie is niet overal aanvaardbaar.</strong></li>
-        <li><strong>De afstand tot de dichtstbijzijnde woningen.</strong> De enige parameter die niemand achteraf kan bijstellen — precies daarom meten we hem site per site.</li>
+        <li><strong>Het verschil met het achtergrondgeluid</strong>, niet de absolute decibel. De Franse regelgeving voor geklasseerde installaties redeneert in geluidstoename (‘émergence’): het besluit van 23 januari 1997 staat in de regel <strong>+5 dB(A) overdag en +3 dB(A) ’s nachts</strong> toe bij de buren, met een plafond aan de terreingrens rond 70 dB(A) overdag en 60 dB(A) ’s nachts. Direct gevolg: een plattelandsomgeving waar de nacht naar 30 dB(A) zakt, laat bijna geen marge, terwijl dezelfde machine op een bedrijventerrein wegvalt. <strong>Dezelfde installatie is niet overal aanvaardbaar.</strong></li>
+        <li><strong>De afstand tot de dichtstbijzijnde woningen.</strong> De enige parameter die niemand achteraf kan bijstellen — precies daarom meten we hem site voor site.</li>
         <li><strong>De tonaliteit.</strong> Een fluittoon of een gebrom op één duidelijke frequentie valt bij gelijk niveau veel meer op dan een diffuse ruis; de regelgeving behandelt hem trouwens apart.</li>
       </ul>
-      <p>De koeltechnologie verandert het spel: een luchtgekoelde site droogt op grote banken ventilatoren, die <strong>juist versnellen tijdens hittegolven</strong> — op het moment dat de ramen openstaan. Een adiabatische of watergekoelde site blaast minder hard, maar verbruikt water. Vloeistofkoeling vlak bij de chips vermindert de ventilatoren nog verder. <strong>Er bestaat geen keuze zonder tegenprestatie</strong>: geluid, water en elektriciteit worden tegen elkaar geruild.</p>` },
+      <p>De koeltechnologie verandert het spel: een luchtgekoelde site koelt droog, via grote rijen ventilatoren die <strong>juist versnellen tijdens hittegolven</strong> — op het moment dat de ramen openstaan. Een adiabatische of watergekoelde site blaast minder hard, maar verbruikt water. Vloeistofkoeling vlak bij de chips vermindert de ventilatoren nog verder. <strong>Er bestaat geen keuze zonder keerzijde</strong>: geluid, water en elektriciteit worden tegen elkaar geruild.</p>` },
 
     { icone: "engine", h2: "De noodaggregaten: waarom dat hinder is",
-      corps: `<p>Deze motoren produceren in normale tijden niets. Ze bestaan opdat de site een netuitval overleeft — en een datacenter dimensioneert zijn vloot om <strong>de volledige</strong> last te dragen, koeling inbegrepen, met redundantie. In orde van grootte zet een site van enkele tientallen megawatt dus <strong>tientallen motoren</strong> neer van het formaat van scheepsmotoren. Het is een elektriciteitscentrale in reserve, aan de rand van de stad.</p>
-      <p>De buurt hoort ze niet bij stroomuitval, die zeldzaam is. Ze hoort ze bij de <strong>periodieke proeven</strong>, verplicht om te garanderen dat ze zullen starten: typisch één proef per maand en per machine, plus één langere proef onder last per jaar. Een site met dertig motoren heeft dus <strong>zeer regelmatig</strong> proeven, en dat is veruit de eerste bron van wrevel in de dossiers die we lezen.</p>
-      <p>Vanaf wanneer is het ‘veel’? Twee ijkpunten in plaats van één getal: het <strong>gecumuleerde vermogen</strong> van de vloot — boven een bepaalde thermische drempel valt de installatie onder een strenger vergunningsregime voor geklasseerde installaties — en de <strong>verhouding tussen dat vermogen en de omvang van de gemeente</strong>. Die tweede verhouding verklaart waarom hetzelfde project geruisloos passeert in een industriezone en elders blokkeert.</p>` },
+      corps: `<p>Deze motoren produceren in normale tijden niets. Ze bestaan opdat de site een netuitval overleeft — en een datacenter dimensioneert zijn machinepark om <strong>de volledige</strong> last te dragen, koeling inbegrepen, met redundantie. In orde van grootte zet een site van enkele tientallen megawatt dus <strong>tientallen motoren</strong> neer van het formaat van scheepsmotoren. Het is een elektriciteitscentrale in reserve, aan de rand van de stad.</p>
+      <p>De buurt hoort ze niet bij stroomuitval, die zeldzaam is. Ze hoort ze bij de <strong>periodieke proeven</strong>, verplicht om te garanderen dat ze zullen starten: doorgaans één proef per maand per machine, plus één langere proef onder last per jaar. Een site met dertig motoren heeft dus <strong>zeer regelmatig</strong> proeven, en dat is veruit de grootste bron van wrevel in de dossiers die we lezen.</p>
+      <p>Vanaf wanneer is het ‘veel’? Twee ijkpunten in plaats van één getal: het <strong>gecumuleerde vermogen</strong> van het machinepark — boven een bepaalde thermische drempel valt de installatie onder een strenger vergunningsregime voor geklasseerde installaties — en de <strong>verhouding tussen dat vermogen en de omvang van de gemeente</strong>. Die tweede verhouding verklaart waarom hetzelfde project geruisloos passeert in een industriezone en elders vastloopt.</p>` },
 
-    { icone: "fuel", h2: "De brandstoftanks: de hoeveelheid vóór de stof",
+    { icone: "fuel", h2: "De brandstoftanks: de hoeveelheid telt, niet de soort",
       corps: `<p>Wie aggregaten zegt, zegt voorraad: de motoren moeten uren, soms dagen, kunnen draaien zonder levering. Een dossier geeft dus een <strong>opslagvolume</strong> op, en dat volume noteren wij.</p>
-      <p>De opgegeven brandstof varieert: sommige adviezen vermelden gehydrogeneerde plantaardige olie, andere stookolie of diesel.</p>
-      <p>En dus? De stof telt minder dan drie dingen:</p>
+      <p>De opgegeven brandstof varieert: sommige adviezen vermelden HVO (waterstofbehandelde plantaardige olie), andere stookolie of diesel.</p>
+      <p>En dus? De brandstofsoort telt minder dan drie dingen:</p>
       <ul>
         <li><strong>De opgeslagen hoeveelheid.</strong> Zíj meet het risico: enkele kubieke meters en meerdere honderden beheer je niet op dezelfde manier, en het zijn volumedrempels — niet de aard van het product — die de zwaarste verplichtingen in werking stellen.</li>
-        <li><strong>De insluiting.</strong> Dubbelwandige tanks, opvangbekkens die zowel de brandstof als het bluswater van een brand kunnen vasthouden: dáár speelt het wezenlijke. Een niet-opgevangen lek nabij een drinkwaterwinning of een waterloop is het scenario dat de behandelende diensten verontrust.</li>
+        <li><strong>De opvang.</strong> Dubbelwandige tanks, opvangbekkens die zowel de brandstof als het bluswater van een brand kunnen vasthouden: dáár draait het om. Een niet-opgevangen lek nabij een drinkwaterwinning of een waterloop is het scenario dat de vergunningverleners zorgen baart.</li>
         <li><strong>Wat er tijdens de proeven uit de uitlaat komt.</strong> Stikstofoxiden en fijnstof, op dakhoogte, tijdens kantooruren.</li>
       </ul>
-      <p>Wat is dan deugdzaam? <strong>Minder volume, beter ingesloten</strong>, en een brandstof die minder uitstoot. Gehydrogeneerde plantaardige olie vermindert de emissies duidelijk en is niet fossiel — maar ze brandt en wordt opgeslagen in dezelfde tanks: ze verbetert de balans, ze heft het risico niet op.</p>` },
+      <p>Wat is dan de goede aanpak? <strong>Minder volume, beter ingesloten</strong>, en een brandstof die minder uitstoot. HVO vermindert de emissies duidelijk en is niet fossiel — maar ze brandt en wordt opgeslagen in dezelfde tanks: ze verbetert de balans, ze heft het risico niet op.</p>` },
 
     { icone: "water", h2: "Het water: het volume, maar ook de lozing",
       corps: `<p>Koelen met water kost veel minder elektriciteit dan koelen met lucht — dezelfde afweging als hierboven, van de andere kant bekeken. Twee vragen dringen zich dan op: <strong>hoeveel</strong> wordt onttrokken, en <strong>uit welke voorraad</strong>. Een bescheiden volume uit een stroomgebied dat ’s zomers al onder druk staat, weegt zwaarder dan een groot volume elders.</p>
-      <p>De lozing is de vergeten helft van het onderwerp: het water vertrekt <strong>warmer</strong>, zouter, en behandeld tegen kalkaanslag en legionella. De vraag voor een gemeente is dus niet alleen ‘hoeveel’, maar ‘<strong>waarheen, op welke temperatuur, met welke behandeling</strong>’.</p>` },
+      <p>De lozing is de vergeten helft van het onderwerp: het water komt er <strong>warmer</strong> uit, zouter, en behandeld tegen kalkaanslag en legionella. De vraag voor een gemeente is dus niet alleen ‘hoeveel’, maar ‘<strong>waarheen, op welke temperatuur, met welke behandeling</strong>’.</p>` },
 
-    { icone: "energy", h2: "De elektriciteit: de hinder die je niet ziet",
-      corps: `<p>Ze is niet te horen en niet te ruiken, maar zij beslist vaak. Een aansluiting met groot vermogen verbruikt netcapaciteit die de andere behoeften van het gebied — industrie, wonen, vervoer — jarenlang niet meer zullen hebben, en haar wachtrij telt in jaren. Het is ook wat de vloot aggregaten zo groot maakt: hoe krachtiger de site, hoe zwaarder zijn reserve.</p>` },
+    { icone: "energy", h2: "De elektriciteit: de hinder die u niet ziet",
+      corps: `<p>Ze is niet te horen en niet te ruiken, maar zij beslist vaak. Een aansluiting met groot vermogen verbruikt netcapaciteit die de andere behoeften van het gebied — industrie, wonen, vervoer — jarenlang niet meer zullen hebben, en de wachtrij loopt in de jaren. Het is ook wat het aggregatenpark zo groot maakt: hoe krachtiger de site, hoe zwaarder zijn reserve.</p>` },
 
     { icone: "hidden", h2: "Het ‘verborgene’",
       corps: `<p>Een exploitant presenteert zich met zijn energie-efficiëntie. Hij zet zelden zijn noodaggregaten, zijn tanks of de akoestische modellering die de milieuautoriteit hem vraagt in de etalage. <strong>De kloof tussen een communicatiefolder en de inhoud van een beoordelingsdossier is op zichzelf informatie</strong> — en dat is het materiaal van deze pagina.</p>` },
@@ -290,7 +290,7 @@ const NL: typeof FR = {
     { icone: "hazard", h2: "Wanneer de site zelf een risico draagt",
       corps: `<p>Sommige projecten slaan ter plaatse grote hoeveelheden brandstof op, lithium-ionbatterijen, soms waterstof. De site <strong>draagt</strong> dan een gevaar, in plaats van het alleen te ondergaan — dat is geen hinder meer, dat is een risico, en het hoort thuis in de veiligheidsstudie. We publiceren deze elementen <strong>als informatie, naast het cijfer</strong>, zolang de dekking niet toelaat ze te beoordelen zonder de vergelijking tussen sites te vertekenen.</p>` },
 
-    { icone: "measure", h2: "Hoe ver onze meting staat",
+    { icone: "measure", h2: "Waar onze meting staat",
       corps: `<p>{mesure} Het detail van de hinder komt uit de <strong>41 doorgenomen milieuadviezen</strong>: de projecten die een beoordeling doorliepen, <strong>niet het hele park</strong>. Deze feiten worden gepubliceerd <strong>naast het cijfer, niet erin</strong>.</p>
       <p>Zie <a href='/nl/acceptatie-datacenter/'>de maatschappelijke acceptatie van datacenters</a>, <a href='/nl/kaart/'>de kaart van de sites</a> en <a href='/nl/methodologie/'>de methode</a>.</p>` },
   ],
@@ -302,7 +302,7 @@ const NL: typeof FR = {
       <p>Toch is het niet decoratief. De initiatiefnemer moet er <strong>schriftelijk op antwoorden</strong>, en advies én antwoord worden <strong>bij het dossier voor het publiek gevoegd</strong>; de overheid die de vergunning verleent, moet haar beslissing in het licht van die stukken motiveren. In de praktijk dwingt een advies dat een lacune aanwijst tot aanvulling van het dossier, en het dient bestuurders en omwonenden tot steun tijdens de raadpleging. <strong>Het is het nuttigste document om te lezen vóór u zich een mening over een project vormt</strong> — en het is onze grondstof.</p>` },
 
     { resume: "Meer weten — hoe het geluid van een project wordt beoordeeld",
-      corps: `<p>Vóór de werken meet een akoesticus het <strong>bestaande achtergrondgeluid</strong>, dag en nacht, bij de dichtstbijzijnde woningen. Daarna modelleert hij de site in bedrijf en vergelijkt: beoordeeld wordt het <strong>verschil</strong> tussen beide, niet het niveau van de machine. Daar horen toezeggingen bij — schermen, omkastingen, ventilatoren op lagere snelheid ’s nachts, beperking van de aggregaatproeven in de avond — en in beginsel wordt een <strong>controlecampagne na ingebruikname</strong> gevraagd.</p>
+      corps: `<p>Vóór de bouw meet een akoesticus het <strong>bestaande achtergrondgeluid</strong>, dag en nacht, bij de dichtstbijzijnde woningen. Daarna modelleert hij de site in bedrijf en vergelijkt: beoordeeld wordt het <strong>verschil</strong> tussen beide, niet het niveau van de machine. Daar horen toezeggingen bij — schermen, omkastingen, ventilatoren op lagere snelheid ’s nachts, beperking van de aggregaatproeven in de avond — en in beginsel wordt een <strong>controlecampagne na ingebruikname</strong> gevraagd.</p>
       <p>Twee klassieke zwakke plekken, zichtbaar bij lezing van de adviezen: een achtergrondgeluid gemeten buiten het seizoen of op een slecht gekozen dag, wat de beschikbare marge opblaast; en een modellering op nominaal ventilatievermogen, terwijl de echte pieken bij hittegolven komen. Vandaar het belang van <strong>metingen na ingebruikname</strong> — en van de afstand tot de woningen: die valt tenminste niet te heronderhandelen.</p>` },
   ],
 };

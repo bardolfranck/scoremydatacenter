@@ -60,7 +60,7 @@ const EN: typeof FR = {
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
   title: "Een datacenter beoordelen — de Nutri-Score-methode voor maatschappelijke acceptatie | ScoreMyDataCenter",
-  metaDescription: "Hoe wordt een datacenter beoordeeld? Twee cijfers van A tot E — site en project — met een vertrouwensniveau en een open methode. De ‘Nutri-Score’ van de maatschappelijke acceptatie, project per project.",
+  metaDescription: "Hoe wordt een datacenter beoordeeld? Twee cijfers van A tot E — site en project — met een vertrouwensniveau en een open methode. De ‘Nutri-Score’ van de maatschappelijke acceptatie, project voor project.",
   tagline: "Onafhankelijk observatorium",
   h1: "De beoordeling van datacenters",
   lead: "Een datacenter beoordelen is in één letter van <strong><span class='note-inline n-a'>A</span> tot <span class='note-inline n-e'>E</span></strong> samenvatten wat tientallen gedocumenteerde indicatoren zeggen over zijn voetafdruk en zijn gedrag — als een <strong>Nutri-Score</strong>, maar voor een infrastructuurproject. We kennen per project <strong>twee cijfers</strong> toe, altijd samen met een vertrouwensniveau.",
@@ -68,13 +68,13 @@ const NL: typeof FR = {
     { h2: "Het idee van de Nutri-Score",
       corps: "<p>Een etiket dat iedereen kan lezen, vóór een complexe technische werkelijkheid. Een letter vervangt het dossier niet: ze opent het, en maakt het vergelijkbaar van site tot site.</p>" },
     { h2: "Twee cijfers, niet één",
-      corps: "<p>Eén voor de <strong>site</strong> — de context die het project ondergaat en niet heeft gekozen — en één voor <strong>project en proces</strong> — wat de exploitant beslist. Ze scheiden voorkomt dat een goed dossier een slechte plek afkoopt, of omgekeerd. Een cijfer is <strong>niet</strong> het gemiddelde van de pijlers: zie <a href=\"/fr/methodologie\">de methode</a>.</p>" },
+      corps: "<p>Eén voor de <strong>site</strong> — de context die het project ondergaat en niet heeft gekozen — en één voor <strong>project en proces</strong> — wat de exploitant beslist. Die scheiding voorkomt dat een goed dossier een slechte plek goedmaakt, of omgekeerd. Een cijfer is <strong>niet</strong> het gemiddelde van de pijlers: zie <a href=\"/fr/methodologie\">de methode</a>.</p>" },
     { h2: "Vijf pijlers, expliciete gewichten",
-      corps: "<p>Energie 25 %, Water 20 %, Bodem en biodiversiteit 20 %, Lokale impact 20 %, Transparantie en governance 15 %. Deze gewichten zijn openbaar en verschillen niet van site tot site.</p>" },
+      corps: "<p>Energie 25%, Water 20%, Bodem en biodiversiteit 20%, Lokale impact 20%, Transparantie en governance 15%. Deze gewichten zijn openbaar en verschillen niet van site tot site.</p>" },
     { h2: "Het vertrouwen laat zich nooit van het cijfer scheiden",
       corps: "<p>Onder 40 % documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van een letter. <strong>Een <span class='note-inline n-a'>A</span> bewijs je, een A beloof je niet</strong>: ontbrekende gegevens leveren nooit een goed cijfer op — anders zou de minst transparante site het best beoordeeld zijn.</p>" },
     { h2: "Een reproduceerbare methode",
-      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het dossier van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/fr/la-note-pas-a-pas\">het cijfer, stap voor stap</a>, <a href=\"/fr/classement\">de ranglijst</a>, <a href=\"/fr/carte\">de kaart</a>.</p>" },
+      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het gegevensbestand van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/fr/la-note-pas-a-pas\">het cijfer, stap voor stap</a>, <a href=\"/fr/classement\">de ranglijst</a>, <a href=\"/fr/carte\">de kaart</a>.</p>" },
   ],
 };
 

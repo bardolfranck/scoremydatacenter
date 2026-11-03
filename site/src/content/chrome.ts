@@ -123,7 +123,7 @@ const NL: typeof FR = {
       { label: "Kaart", href: "/nl/kaart" },
       { label: "Ranglijst", href: "/nl/ranglijst" },
       { label: "Landenindex", href: "/nl/indices/" },
-      { label: "Kerncijfers van het park", href: "/nl/kerncijfers/" },
+      { label: "Kerncijfers van het datacenterpark", href: "/nl/kerncijfers/" },
       { label: "Datacenters begrijpen", href: "/nl/datacenters-begrijpen/" },
     ] },
     { heading: "Hulpmiddelen", links: [
