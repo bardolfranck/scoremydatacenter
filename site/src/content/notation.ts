@@ -26,13 +26,13 @@ const FR = {
     { h2: "L'idée du Nutri-Score",
       corps: "<p>Une étiquette lisible par tous devant une réalité technique complexe. Une lettre ne remplace pas le dossier : elle y donne accès et le rend comparable d'un site à l'autre.</p>" },
     { h2: "Deux notes, pas une",
-      corps: "<p>Une pour le <strong>site</strong> — le contexte que le projet subit, qu'il n'a pas choisi — et une pour le <strong>projet et le processus</strong> — ce que l'opérateur décide. Les séparer évite qu'un bon dossier rachète un mauvais terrain, ou l'inverse. Une note n'est <strong>pas</strong> la moyenne des piliers : voir <a href=\"/fr/methodologie\">la méthode</a>.</p>" },
+      corps: "<p>Une pour le <strong>site</strong> — le contexte que le projet subit, qu'il n'a pas choisi — et une pour le <strong>projet et le processus</strong> — ce que l'opérateur décide. Les séparer évite qu'un bon dossier rachète un mauvais terrain, ou l'inverse. Une note n'est <strong>pas</strong> la moyenne des piliers : voir <a href=\"/fr/methodologie/\">la méthode</a>.</p>" },
     { h2: "Cinq piliers, des poids explicites",
       corps: "<p>Énergie 25 %, Eau 20 %, Foncier et biodiversité 20 %, Impact local 20 %, Transparence et gouvernance 15 %. Ces poids sont publics et ne changent pas d'un site à l'autre.</p>" },
     { h2: "La confiance ne se sépare jamais de la note",
       corps: "<p>Sous 40 % de couverture documentaire, nous écrivons « données insuffisantes » au lieu d'une lettre. <strong>Le <span class='note-inline n-a'>A</span> se prouve, il ne se promet pas</strong> : une absence de donnée ne vaut jamais une bonne note — sans quoi le site le moins transparent serait le mieux noté.</p>" },
     { h2: "Une méthode reproductible",
-      corps: "<p>Le calcul ne repose que sur les valeurs sourcées du fichier de chaque projet, et la méthode est ouverte. Pour la voir s'appliquer pas à pas : <a href=\"/fr/la-note-pas-a-pas\">la note, pas à pas</a>, <a href=\"/fr/classement\">le classement</a>, <a href=\"/fr/carte\">la carte</a>.</p>" },
+      corps: "<p>Le calcul ne repose que sur les valeurs sourcées du fichier de chaque projet, et la méthode est ouverte. Pour la voir s'appliquer pas à pas : <a href=\"/fr/la-note-pas-a-pas/\">la note, pas à pas</a>, <a href=\"/fr/classement/\">le classement</a>, <a href=\"/fr/carte/\">la carte</a>.</p>" },
   ],
 };
 

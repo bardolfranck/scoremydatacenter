@@ -235,6 +235,7 @@ deploy:
 	uv run python scripts/check_dist_pruned.py
 	uv run python scripts/check_no_legislation.py
 	uv run python scripts/check_titres_servis.py
+	uv run python scripts/check_liens_servis.py
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 

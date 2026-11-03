@@ -25,7 +25,7 @@ const FR = {
   baseline: "Observatoire indépendant du risque d'acceptabilité des data centers.",
   ogLocale: "fr_FR",
   search: {
-    action: "/fr/classement",
+    action: "/fr/classement/",
     placeholder: "Rechercher une commune, un site, un opérateur…",
     aria: "Rechercher une commune ou un projet noté",
   },
@@ -65,7 +65,7 @@ const EN: typeof FR = {
   baseline: "Independent observatory of data-center acceptability risk.",
   ogLocale: "en_GB",
   search: {
-    action: "/ranking",
+    action: "/ranking/",
     placeholder: "Search a town, a site, an operator…",
     aria: "Search a town or a scored project",
   },

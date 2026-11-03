@@ -46,7 +46,7 @@ const FR = {
   // déclare ses adresses, elle ne modifie pas le gabarit.
   chemins: {
     fiche: "/fr/dc",
-    classement: "/fr/classement",
+    classement: "/fr/classement/",
     carte: "/fr/carte/",
     indices: "/fr/indices/",
     indicesPays: "/fr/indices?pays=",
@@ -130,7 +130,7 @@ const FR = {
     { name: "Citoyens", line: "Le projet près de chez vous, en clair — la carte.", href: "/fr/carte/" },
     { name: "Journalistes", line: "Des faits sourcés, citables, avec leurs archives.", href: "/fr/classement/" },
     { name: "Élus", line: "Comparer votre commune, préparer le débat.", href: "/fr/classement/" },
-    { name: "ONG", line: "Oppositions et moratoires — la couche veille.", href: "/fr/carte?veille=tout" },
+    { name: "ONG", line: "Oppositions et moratoires — la couche veille.", href: "/fr/carte/?veille=tout" },
     { name: "Chercheurs", line: "La méthode, les données, tout se recalcule.", href: "/fr/methodologie/" },
     { name: "Opérateurs", line: "Corriger, répondre — et améliorer le projet réel.", href: "/fr/contact/" },
   ],
@@ -360,7 +360,7 @@ const EN: typeof FR = {
 
   chemins: {
     fiche: "/dc",
-    classement: "/ranking",
+    classement: "/ranking/",
     carte: "/map/",
     indices: "/indices/",
     indicesPays: "/indices?pays=",

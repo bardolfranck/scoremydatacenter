@@ -22,7 +22,7 @@ interface Props {
     // i18n (§13): link bases + strings the client script renders. FR defaults
     // apply when absent so existing callers keep working.
     ficheBase?: string;   // "/fr/dc" | "/dc"
-    mapPath?: string;     // "/fr/carte" | "/map"
+    mapPath?: string;     // "/fr/carte/" | "/map"
     viewFiche?: string;
     reserved?: string;
     legendGraded?: string;
@@ -36,7 +36,7 @@ const { variant, labels } = Astro.props;
 <div class={`map-island map-${variant}`} data-variant={variant} data-labels={JSON.stringify(labels)}>
   <div class="map-canvas"></div>
   {variant === "hero" && labels.openMap && (
-    <a class="button button-primary map-open-link" href={labels.mapPath ?? "/fr/carte"}>{labels.openMap}</a>
+    <a class="button button-primary map-open-link" href={labels.mapPath ?? "/fr/carte/"}>{labels.openMap}</a>
   )}
   {variant === "full" && (
     <div class="map-legend" aria-hidden="true">

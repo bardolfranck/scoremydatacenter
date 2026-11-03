@@ -26,7 +26,7 @@ const FR = {
   tagline: "Observatoire indépendant",
   h1: "Les normes. Où nous nous situons.",
   intro:
-    "<p>Nous ne débarquons pas en terrain vierge. La filière data center mesure ses performances depuis des années, avec un vocabulaire normé et des organismes qui font autorité. Cette page cartographie <strong>l'existant</strong> — les KPI officiels, les normes ISO — pour situer, par contraste, ce que nous apportons.</p><p class=\"meth-nerd\">🤓 Plus avancé que <a href=\"/fr/comprendre\">Comprendre les data centers</a>, en amont de notre <a href=\"/fr/methodologie\">Méthode</a>. C'est la marche du milieu : le terrain de jeu existant, avant notre note.</p>",
+    "<p>Nous ne débarquons pas en terrain vierge. La filière data center mesure ses performances depuis des années, avec un vocabulaire normé et des organismes qui font autorité. Cette page cartographie <strong>l'existant</strong> — les KPI officiels, les normes ISO — pour situer, par contraste, ce que nous apportons.</p><p class=\"meth-nerd\">🤓 Plus avancé que <a href=\"/fr/comprendre/\">Comprendre les data centers</a>, en amont de notre <a href=\"/fr/methodologie/\">Méthode</a>. C'est la marche du milieu : le terrain de jeu existant, avant notre note.</p>",
 
   mapH2: "La carte des normes",
   mapIntro: "<p>Qui fait autorité, et sur quoi. L'ossature mondiale, c'est <strong>ISO/IEC 30134</strong> (via le comité SC39) ; tout le reste gravite autour.</p>",
@@ -60,7 +60,7 @@ const FR = {
   ],
 
   situateH2: "Où nous nous situons",
-  situateP: "<p>Notre pilier Énergie parle <strong>exactement</strong> le langage normé du secteur — nous nous <em>adossons</em> aux normes, nous ne les contournons pas. Le <a href=\"/fr/methodologie\"><i class=\"gl gl-a\">A</i> se prouve</a> d'ailleurs par un audit <strong>ISO/IEC 30134</strong> accrédité.</p>",
+  situateP: "<p>Notre pilier Énergie parle <strong>exactement</strong> le langage normé du secteur — nous nous <em>adossons</em> aux normes, nous ne les contournons pas. Le <a href=\"/fr/methodologie/\"><i class=\"gl gl-a\">A</i> se prouve</a> d'ailleurs par un audit <strong>ISO/IEC 30134</strong> accrédité.</p>",
   alignCols: { ours: "Notre indicateur", theirs: "KPI officiel correspondant" },
   alignRows: [
     { ours: "Énergie · <strong>PUE</strong> (déclaratif, noté avec prudence)", theirs: "PUE — <strong>ISO/IEC 30134-2</strong>" },
@@ -101,7 +101,7 @@ const EN: typeof FR = {
   tagline: "Independent observatory",
   h1: "The standards. Where we sit.",
   intro:
-    "<p>We are not landing on empty ground. The data center industry has measured its performance for years, with a normalized vocabulary and authoritative bodies. This page maps <strong>what already exists</strong> — the official KPIs, the ISO standards — to situate, by contrast, what we add.</p><p class=\"meth-nerd\">🤓 More advanced than <a href=\"/understand\">Understanding data centers</a>, upstream of our <a href=\"/methodology\">Method</a>. It is the middle rung: the existing playing field, before our grade.</p>",
+    "<p>We are not landing on empty ground. The data center industry has measured its performance for years, with a normalized vocabulary and authoritative bodies. This page maps <strong>what already exists</strong> — the official KPIs, the ISO standards — to situate, by contrast, what we add.</p><p class=\"meth-nerd\">🤓 More advanced than <a href=\"/understand/\">Understanding data centers</a>, upstream of our <a href=\"/methodology/\">Method</a>. It is the middle rung: the existing playing field, before our grade.</p>",
 
   mapH2: "The map of standards",
   mapIntro: "<p>Who sets authority, and over what. The global backbone is <strong>ISO/IEC 30134</strong> (via the SC39 committee); everything else orbits it.</p>",
@@ -135,7 +135,7 @@ const EN: typeof FR = {
   ],
 
   situateH2: "Where we sit",
-  situateP: "<p>Our Energy pillar speaks <strong>exactly</strong> the sector's standardized language — we <em>lean on</em> the standards, we do not bypass them. The <a href=\"/methodology\"><i class=\"gl gl-a\">A</i> is proven</a>, in fact, by an accredited <strong>ISO/IEC 30134</strong> audit.</p>",
+  situateP: "<p>Our Energy pillar speaks <strong>exactly</strong> the sector's standardized language — we <em>lean on</em> the standards, we do not bypass them. The <a href=\"/methodology/\"><i class=\"gl gl-a\">A</i> is proven</a>, in fact, by an accredited <strong>ISO/IEC 30134</strong> audit.</p>",
   alignCols: { ours: "Our indicator", theirs: "Matching official KPI" },
   alignRows: [
     { ours: "Energy · <strong>PUE</strong> (declared, graded with caution)", theirs: "PUE — <strong>ISO/IEC 30134-2</strong>" },

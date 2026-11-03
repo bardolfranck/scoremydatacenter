@@ -132,7 +132,7 @@ const fmtDate = (s?: string) => { const d = parseWhen(s); return d ? dtf.format(
             {isTranslated && <span class="actu-mt">🌐 {t.machineTranslated}</span>}
           </p>
           {it.linked_dc?.id && (
-            <a class="actu-linked" href={`${lang === "fr" ? "/fr/dc" : "/dc"}/${it.linked_dc.id}`}>{t.linkedDc}</a>
+            <a class="actu-linked" href={`${lang === "fr" ? "/fr/dc" : "/dc"}/${it.linked_dc.id}/`}>{t.linkedDc}</a>
           )}
         </article>
       );
