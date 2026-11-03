@@ -15,7 +15,7 @@ import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
-import { STATS, fmtPct } from "../config/stats";
+import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
 import { operateurIdentifie } from "../config/operator";
 import { COUNTRY_NAME } from "../config/flags";
 import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
@@ -448,7 +448,7 @@ const distanceVoisin = (km: number) => {
   if (km < PLANCHER_KM)
     return enMiles ? t.related.relation.nearbyUnderMi : t.related.relation.nearbyUnder;
   const v = enMiles ? km / 1.609344 : km;
-  const n = v < 10 ? v.toFixed(1) : String(Math.round(v));
+  const n = v < 10 ? fmtDec(v, lang) : fmtInt(Math.round(v), lang);
   return (enMiles ? t.related.relation.nearbyMi : t.related.relation.nearby)
     .replace(enMiles ? "{mi}" : "{km}", n);
 };

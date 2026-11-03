@@ -106,6 +106,16 @@ export const fmtPct = (pct: number, lang: Lang): string => {
 export const fmtInt = (n: number, lang: Lang): string =>
   n.toLocaleString(FORMES[lang].locale);
 
+/** Un décimal dans l'écriture de la langue — « 2,4 » en français et en néerlandais, « 2.4 »
+ *  en anglais. `toFixed()` écrit TOUJOURS un point : il produisait « (59.9) » au milieu
+ *  d'une page néerlandaise, relevé par la relecture native. Un nombre n'est pas une chaîne,
+ *  il s'écrit selon la langue qui le lit. */
+export const fmtDec = (n: number, lang: Lang, decimales = 1): string =>
+  n.toLocaleString(FORMES[lang].locale, {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  });
+
 /** Source lines — institutions live HERE, resolved per country (cadrage §4.10:
  * regulatory concepts never reach the punch phrase). `default` covers every
  * other wired country with the neutral, truthful dataset family. */

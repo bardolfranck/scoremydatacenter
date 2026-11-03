@@ -18,6 +18,7 @@
 // serait une affirmation que personne ne pourrait vérifier.
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
+import { RACINE } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -158,12 +159,12 @@ const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null
 // se lit comme une carte officielle.
 const photoCaveat = L(dc.context_map?.caveat) ?? null;
 
-const ficheHref = /* i18n:route */ lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
+const ficheHref = /* i18n:route */ `${RACINE[lang]}dc/${dc.id}/`;
 // Le pied de page affichait le seul chemin (« /fr/dc/ch-cdrom-le-noirmont/ »). Un portrait
 // est fait pour être IMPRIMÉ et posé sur une table : sur papier, un chemin sans domaine ne
 // mène nulle part. L'adresse s'écrit donc en entier, celle qu'on peut recopier.
 const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
-const url = `https://scoremydatacenter.org${/* i18n:route */ lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
+const url = `https://scoremydatacenter.org${/* i18n:route */ RACINE[lang]}dc/${dc.id}/portrait/`;
 const titre = `${dc.name} — ${t.kicker}`;
 const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 
@@ -313,7 +314,7 @@ const seoTitle = [
                   </ul>
                   {q && (
                     <p class="pt-ask">
-                      <strong>{L(q.amorce)} :</strong> <mark>{L(q.texte)}</mark>
+                      <strong>{L(q.amorce)}{ptSep.trimEnd()}</strong> <mark>{L(q.texte)}</mark>
                       <span class="pt-rule">{L(q.verbe)}</span>
                     </p>
                   )}
@@ -402,7 +403,7 @@ const seoTitle = [
           <ul>
             {questions.map((q) => (
               <li>
-                <strong>{L(q.amorce)} :</strong> {L(q.texte)}
+                <strong>{L(q.amorce)}{ptSep.trimEnd()}</strong> {L(q.texte)}
                 <span class="pt-rule">{L(q.verbe)}</span>
               </li>
             ))}

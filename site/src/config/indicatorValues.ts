@@ -1,4 +1,5 @@
 import type { LangueDeclaree } from "../content/langues";
+import { fmtInt, fmtDec, type Lang } from "./stats";
 // Libellés lisibles des valeurs catégorielles et des unités.
 //
 // POURQUOI. La fiche affichait la clé technique du moteur — `saturated`,
@@ -143,6 +144,15 @@ const UNITES: Record<string, string> = {
 
 /** Le libellé d'une valeur, ou la valeur brute si elle n'en a pas encore. */
 export function libelleValeur(indicateur: string, valeur: unknown, lang: string): string {
+  // 🔴 UN NOMBRE S'ÉCRIT SELON LA LANGUE QUI LE LIT. `String(valeur)` rendait « 59.9 » et
+  // « 3264 » au milieu d'une page néerlandaise — point décimal anglais, milliers sans
+  // séparateur — relevé par la relecture native. Le français et le néerlandais écrivent
+  // « 59,9 », et les milliers prennent une espace fine en français, un point en néerlandais.
+  if (typeof valeur === "number") {
+    return Number.isInteger(valeur)
+      ? fmtInt(valeur, lang as Lang)
+      : fmtDec(valeur, lang as Lang);
+  }
   if (typeof valeur !== "string") return String(valeur);
   const l = VALEURS[indicateur]?.[valeur];
   if (!l) return valeur;

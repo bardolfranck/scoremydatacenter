@@ -152,7 +152,7 @@ export const WHATIS_NL: WhatIsDC = {
   sources: [
     { label: "RTE, « Les data centers en chiffres clés », 2026", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
     { label: "Journal du Grand Paris, 2025", url: "https://www.lejournaldugrandparis.fr/choose-france-un-campus-dia-geant-en-seine-et-marne/" },
-    { label: "Publieke inspraak Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
+    { label: "Publiek overleg Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
     { label: "IEA, Energy and AI, 2025", url: "https://www.iea.org/reports/energy-and-ai/executive-summary" },
   ],
 };

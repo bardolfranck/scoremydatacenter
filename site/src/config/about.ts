@@ -135,7 +135,7 @@ export const NL_ABOUT = {
     sub: "Omdat <strong class=\"hero-red\">een nutri-score berekenen voor alle datacenters van Europa zich niet laat improviseren</strong>. Een architectuur van gespecialiseerde agenten verwerkt tienduizenden bronnen om elk datacenter rigoureus te beoordelen — onder menselijke controle.",
     steps: [
       { icon: "collect", title: "Verzamelen", body: "De agenten sporen de nuttige publieke bronnen op: reglementaire dossiers, institutionele data, documenten van exploitanten, kaarten, lokale besluiten en persartikelen." },
-      { icon: "structure", title: "Structureren", body: "Ze zetten die heterogene bronnen om in vergelijkbare gegevens: vermogen, water, grond, net, inspraak, transparantie, projectstatus." },
+      { icon: "structure", title: "Structureren", body: "Ze zetten die heterogene bronnen om in vergelijkbare gegevens: vermogen, water, grond, net, overleg, transparantie, projectstatus." },
       { icon: "verify", title: "Verifiëren", body: "Ze kruisen de informatie, signaleren tegenstrijdigheden, benoemen ontbrekende gegevens en bewaren de bron van elk feit." },
       { icon: "compute", title: "Berekenen", body: "Ze passen op elk project dezelfde methode toe, herberekenen de cijfers en controleren of drempels, regels en waarborgen worden nageleefd." },
       { icon: "watch", title: "Bewaken", body: "Ze detecteren veranderingen: een nieuwe vergunning, een beroep, een projectwijziging, een gepubliceerd getal, een evolutie van het net of van de lokale context." },

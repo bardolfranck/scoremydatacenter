@@ -497,7 +497,7 @@ export const RICH_NL: Record<string, RichBlock> = {
       { label: "RTE, « Les data centers en chiffres clés », 2026", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
       { label: "Data Center Dynamics, 2026 (AWS-water)", url: "https://www.datacenterdynamics.com/en/news/amazon-data-centers-used-25bn-gallons-of-water-in-2025/" },
       { label: "Gossement Avocats, wet nr. 2026-403, art. 35", url: "https://www.gossement-avocats.com/blog/centres-de-donnees-data-centers-ce-que-change-la-loi-de-simplification-de-la-vie-economique/" },
-      { label: "Publieke inspraak Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
+      { label: "Publiek overleg Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
       { label: "AFP / Connaissance des énergies, juni 2026 (banen)", url: "https://www.connaissancedesenergies.org/afp/data-centers-en-ile-de-france-des-installations-energivores-mais-avares-en-emplois-260601" },
       { label: "service-public.fr (CFE, vrijstellingen)", url: "https://entreprendre.service-public.fr/vosdroits/F23547" },
     ],
@@ -513,7 +513,7 @@ export const RICH_NL: Record<string, RichBlock> = {
       },
       {
         lead: "De watertoezeggingen op papier zetten.",
-        body: "De koeltechniek en het jaarverbruik staan in het vergunningsdossier, niet alleen in de folder. Waar te controleren: het dossier, in te zien bij de bevoegde overheid.",
+        body: "De koeltechniek en het jaarverbruik staan in het vergunningsdossier, niet alleen in de folder. Waar te controleren: het dossier, in te zien op de prefectuur of het gemeentehuis.",
       },
       {
         lead: "De warmte contracteren.",
@@ -591,7 +591,7 @@ export const RICH_NL: Record<string, RichBlock> = {
       },
       {
         q: "Waarom zijn mensen tegen datacenters?",
-        a: "Zelden uit principe. Wat in de dossiers en de lokale campagnes terugkeert, komt neer op vier concrete dingen: de <b>elektriciteit</b> van een al krap net, het koel<b>water</b> in gebieden waar het schaars is, de <b>grond</b> die wordt verhard voor een gebouw met weinig banen, en het continue <b>geluid</b> voor de naaste omwonenden. Daar komt een gevoel van scheefheid bij: de hulpbron is lokaal, de waarde vertrekt naar elders. Precies dat meet het cijfer, pijler per pijler — zie <a href='/nl/hinder-datacenter/'>de hinder</a> voor wat u er vanaf de straat van merkt.",
+        a: "Zelden uit principe. Wat in de dossiers en de lokale campagnes terugkeert, komt neer op vier concrete dingen: de <b>elektriciteit</b> van een al krap net, het <b>koelwater</b> in gebieden waar het schaars is, de <b>grond</b> die wordt verhard voor een gebouw met weinig banen, en het continue <b>geluid</b> voor de naaste omwonenden. Daar komt een gevoel van scheefheid bij: de hulpbron is lokaal, de waarde vertrekt naar elders. Precies dat meet het cijfer, pijler per pijler — zie <a href='/nl/hinder-datacenter/'>de hinder</a> voor wat u er vanaf de straat van merkt.",
       },
       {
         q: "Waarom keuren gemeenteraden deze projecten goed?",
@@ -634,7 +634,7 @@ export const RICH_NL: Record<string, RichBlock> = {
       {
         title: "Kaarten en inventarissen",
         links: [
-          { name: "DCWatch (Hubblo)", desc: "digitale common van de datacentervoetafdruk (PUE, WUE, CUE, oppervlak, water), downloadbare ODbL-data — kaart: datacenters.hubblo.org", url: "https://dcwatch.hubblo.org" },
+          { name: "DCWatch (Hubblo)", desc: "digitaal gemeengoed van de datacentervoetafdruk (PUE, WUE, CUE, oppervlak, water), downloadbare ODbL-data — kaart: datacenters.hubblo.org", url: "https://dcwatch.hubblo.org" },
           { name: "Le nuage était sous nos pieds", desc: "participatieve kaart van sites, projecten en mobilisaties in Frankrijk, bijgehouden door een collectief uit Marseille", url: "https://lenuageetaitsousnospieds.org" },
           { name: "Data Center Watch", desc: "volgt het verzet tegen projecten in de Verenigde Staten", url: "https://www.datacenterwatch.org" },
         ],
