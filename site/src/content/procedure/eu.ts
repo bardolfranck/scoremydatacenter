@@ -20,6 +20,7 @@ export const EU: ProcedureJurisdiction = {
   authority: {
     fr: "l'autorité compétente désignée par l'État membre",
     en: "the competent authority designated by the Member State",
+    nl: "de door de lidstaat aangewezen bevoegde autoriteit",
   },
   windows: {
     permitting: {

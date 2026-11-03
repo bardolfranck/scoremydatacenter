@@ -77,12 +77,14 @@ export const US: ProcedureCountry = {
   frame: {
     fr: "Aux États-Unis, aucun permis fédéral ne porte sur un data center : c'est la commune ou le comté qui autorise, sous la loi de son État. Et chaque État a sa propre loi d'accès aux documents — de trois jours ouvrés au Missouri à trente au Maryland, et aucun délai du tout au Texas.",
     en: "In the United States no federal permit covers a data centre: the town or county authorises it, under its own state's law. And every state has its own public-records law — from three business days in Missouri to thirty in Maryland, and no deadline at all in Texas.",
+    nl: "In de Verenigde Staten dekt geen enkele federale vergunning een datacenter: de gemeente of de county verleent de toestemming, onder de wet van de eigen staat. En elke staat heeft zijn eigen openbaarheidswet — van drie werkdagen in Missouri tot dertig in Maryland, en helemaal geen termijn in Texas.",
   },
   subdivisions: {
     "Arkansas": {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -102,6 +104,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -121,6 +124,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -140,6 +144,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -159,6 +164,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -178,6 +184,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -197,6 +204,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -216,6 +224,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -235,6 +244,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -254,6 +264,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -273,6 +284,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -292,6 +304,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -311,6 +324,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -330,6 +344,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -349,6 +364,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -368,6 +384,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -387,6 +404,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -406,6 +424,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -425,6 +444,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -444,6 +464,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -463,6 +484,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -482,6 +504,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain (agence chef de file au titre du SEQRA)",
         en: "the town or county that zones the land (lead agency under SEQRA)",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt (leidende instantie onder SEQRA)",
       },
       windows: {
         announced: {
@@ -566,6 +589,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -585,6 +609,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -604,6 +629,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -623,6 +649,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -642,6 +669,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -661,6 +689,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -680,6 +709,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -699,6 +729,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -718,6 +749,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -737,6 +769,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -756,6 +789,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -775,6 +809,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -794,6 +829,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -813,6 +849,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -832,6 +869,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -851,6 +889,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -870,6 +909,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -889,6 +929,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -908,6 +949,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -927,6 +969,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],
@@ -946,6 +989,7 @@ export const US: ProcedureCountry = {
       authority: {
         fr: "la commune ou le comté qui zone le terrain",
         en: "the town or county that zones the land",
+        nl: "de gemeente of de county die de bestemming van de grond bepaalt",
       },
       windows: {},
       deadlines: [],

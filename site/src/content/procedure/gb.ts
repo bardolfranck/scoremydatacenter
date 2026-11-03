@@ -15,6 +15,7 @@ const ANGLETERRE_PAYS_DE_GALLES = {
   authority: {
     fr: "l'autorité locale d'urbanisme (local planning authority)",
     en: "the local planning authority",
+    nl: "de lokale planningsautoriteit (local planning authority)",
   },
   windows: {},
   deadlines: [
@@ -48,6 +49,7 @@ export const GB: ProcedureCountry = {
   frame: {
     fr: "Le Royaume-Uni n'a pas un droit de l'urbanisme mais trois : l'Angleterre et le pays de Galles partagent la loi de 1990, l'Écosse a la sienne depuis 1997, l'Irlande du Nord depuis 2011. La procédure ci-dessous est celle de la nation concernée.",
     en: "The United Kingdom has not one planning law but three: England and Wales share the 1990 Act, Scotland has had its own since 1997, Northern Ireland since 2011. The procedure below is that nation's.",
+    nl: "Het Verenigd Koninkrijk heeft niet één ruimtelijkeordeningsrecht maar drie: Engeland en Wales delen de wet van 1990, Schotland heeft de zijne sinds 1997, Noord-Ierland sinds 2011. De procedure hieronder is die van de betrokken natie.",
   },
   subdivisions: {
     ENG: ANGLETERRE_PAYS_DE_GALLES,

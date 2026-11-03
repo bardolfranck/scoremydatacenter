@@ -22,11 +22,13 @@ export const DE: ProcedureCountry = {
   frame: {
     fr: "En Allemagne la loi est fédérale et l'instruction régionale : c'est le Regierungspräsidium du Land qui délivre l'autorisation. Un data center y entre généralement par ses groupes électrogènes de secours, soumis à la loi sur les immissions.",
     en: "In Germany the law is federal and the review regional: the Land's Regierungspräsidium issues the permit. A data centre usually enters that regime through its standby generators, caught by the immission-control act.",
+    nl: "In Duitsland is de wet federaal en de behandeling regionaal: het Regierungspräsidium van het Land verleent de vergunning. Een datacenter komt er doorgaans binnen via zijn noodstroomaggregaten, die onder de immissiewet vallen.",
   },
   national: {
     authority: {
       fr: "le Regierungspräsidium du Land (autorisation d'immissions), la commune pour le permis de construire",
       en: "the Land's Regierungspräsidium (immission-control permit), the municipality for the building permit",
+      nl: "het Regierungspräsidium van het Land (immissievergunning), de gemeente voor de bouwvergunning",
     },
     windows: {
       permitting: {

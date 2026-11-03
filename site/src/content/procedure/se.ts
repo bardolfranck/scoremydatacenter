@@ -14,6 +14,7 @@ export const SE: ProcedureCountry = {
     authority: {
       fr: "la commune pour le permis de construire, le conseil régional (länsstyrelsen) pour l'autorisation environnementale",
       en: "the municipality for the building permit, the county board (länsstyrelsen) for the environmental permit",
+      nl: "de gemeente voor de bouwvergunning, het regionale bestuur (länsstyrelsen) voor de milieuvergunning",
     },
     windows: {},
     deadlines: [

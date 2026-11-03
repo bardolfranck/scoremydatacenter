@@ -15,11 +15,13 @@ export const IT: ProcedureCountry = {
   frame: {
     fr: "En Italie l'évaluation environnementale est conduite par la région, mais le délai pour contester la décision devant le tribunal administratif est fixé par la loi nationale.",
     en: "In Italy the environmental assessment is run by the region, but the deadline to challenge the decision before the administrative court is set by national law.",
+    nl: "In Italië voert de regio de milieubeoordeling uit, maar de termijn om het besluit bij de bestuursrechter aan te vechten staat in de nationale wet.",
   },
   national: {
     authority: {
       fr: "la commune pour le permis de construire, la région pour l'évaluation environnementale ; recours devant le tribunal administratif régional (TAR)",
       en: "the municipality for the building permit, the region for the environmental assessment; appeal to the regional administrative court (TAR)",
+      nl: "de gemeente voor de bouwvergunning, de regio voor de milieubeoordeling; beroep bij de regionale administratieve rechtbank (TAR)",
     },
     windows: {},
     deadlines: [

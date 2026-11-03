@@ -1789,8 +1789,15 @@ def test_chaque_pays_du_corpus_a_son_nom_dans_chaque_langue_servie():
 # juridiction la cite. Traduire « Algemene wet bestuursrecht, art. 6:7 » serait rendre la
 # source introuvable.
 #
-# 181 champs au 2026-11-03, 19 fichiers. Un cliquet : le compte ne peut que baisser.
-DETTE_NL_PROCEDURE = 181
+# DEUX nombres, et ils ne mesurent pas la même chose — les confondre a fait échouer ce test
+# dès la première passe de traduction, et c'était la bonne alarme : le TOTAL des champs de
+# prose ne bouge que si on ajoute ou retire une affirmation juridique, la DETTE ne bouge
+# qu'avec la traduction. Un seul compteur pour les deux aurait laissé une affirmation
+# disparaître sans bruit du jour où la dette baissait.
+CHAMPS_PROCEDURE = 181  # 19 fichiers, 2026-11-03
+# 181 → 93 le 2026-11-03 : première passe de rapports-SMDC, 88 champs posés par
+# `scripts/injecter_traduction_procedure.py` (ancrage par rang, nombres vérifiés).
+DETTE_NL_PROCEDURE = 93
 
 PROCEDURE = CONTENU / "procedure"
 
@@ -1823,10 +1830,12 @@ def test_le_releve_du_bloc_juridique_voit_bien_les_champs():
     """
     releve = _prose_juridique()
     total = sum(n for _, n, _ in releve)
-    assert total <= DETTE_NL_PROCEDURE, (
-        f"{total} champs de prose relevés dans content/procedure/, la dette déclarée est "
-        f"{DETTE_NL_PROCEDURE} : de la prose juridique vient d'être ajoutée. Elle doit partir "
-        f"en traduction avec le reste, et le cliquet doit monter EXPLICITEMENT."
+    assert total == CHAMPS_PROCEDURE, (
+        f"{total} champs de prose relevés dans content/procedure/, le total déclaré est "
+        f"{CHAMPS_PROCEDURE}. En plus : de la prose juridique vient d'être ajoutée, elle doit "
+        f"partir en traduction avec le reste. En moins : une affirmation juridique a disparu, "
+        f"et ça ne se constate pas en passant. Dans les deux cas, corrigez CHAMPS_PROCEDURE "
+        f"à {total} EXPRÈS, et la dette avec."
     )
     assert "types.ts" not in {nom for nom, _, _ in releve}
     assert len(releve) >= 19, f"19 fichiers portent de la prose, le relevé en voit {len(releve)}"

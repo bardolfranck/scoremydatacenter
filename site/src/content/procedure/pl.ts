@@ -27,6 +27,7 @@ export const PL: ProcedureCountry = {
     authority: {
       fr: "le starosta, ou le président d'une ville à statut de powiat ; l'appel monte au voïvode (wojewoda)",
       en: "the starosta (district head), or the mayor of a city with powiat status; the appeal goes up to the voivode (wojewoda)",
+      nl: "de starosta, of de burgemeester van een stad met powiat-status; het beroep gaat omhoog naar de woiwode (wojewoda)",
     },
     windows: {},
     deadlines: [

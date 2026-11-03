@@ -15,6 +15,7 @@ export const NO: ProcedureCountry = {
     authority: {
       fr: "la commune, le préfet de comté (statsforvalteren) en appel",
       en: "the municipality, with the county governor (statsforvalteren) on appeal",
+      nl: "de gemeente, in beroep de prefect van de provincie (statsforvalteren)",
     },
     windows: {},
     deadlines: [

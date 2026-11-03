@@ -31,6 +31,7 @@ export const IE: ProcedureCountry = {
     authority: {
       fr: "l'autorité locale d'urbanisme ; en appel, An Coimisiún Pleanála (ex-An Bord Pleanála). Le recours juridictionnel se porte devant la High Court.",
       en: "the local planning authority; on appeal, An Coimisiún Pleanála (formerly An Bord Pleanála). Judicial review goes to the High Court.",
+      nl: "de lokale planningsautoriteit; in beroep An Coimisiún Pleanála (voorheen An Bord Pleanála). Het beroep bij de rechter (judicial review) loopt via de High Court.",
     },
     windows: {},
     deadlines: [

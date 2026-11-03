@@ -14,6 +14,7 @@ export const FI: ProcedureCountry = {
     authority: {
       fr: "la commune pour le permis de construire, l'agence régionale (aluehallintovirasto) pour l'autorisation environnementale",
       en: "the municipality for the building permit, the regional agency (aluehallintovirasto) for the environmental permit",
+      nl: "de gemeente voor de bouwvergunning, het regionale agentschap (aluehallintovirasto) voor de milieuvergunning",
     },
     windows: {},
     deadlines: [

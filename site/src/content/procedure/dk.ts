@@ -17,6 +17,7 @@ export const DK: ProcedureCountry = {
     authority: {
       fr: "la commune, avec recours devant la commission des recours environnementaux (Miljø- og Fødevareklagenævnet)",
       en: "the municipality, with appeal to the Environment and Food Appeals Board (Miljø- og Fødevareklagenævnet)",
+      nl: "de gemeente, met beroep bij de milieuberoepscommissie (Miljø- og Fødevareklagenævnet)",
     },
     windows: {},
     deadlines: [

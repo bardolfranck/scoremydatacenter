@@ -17,6 +17,7 @@ export const NL: ProcedureCountry = {
     authority: {
       fr: "la commune, ou la province pour les installations les plus lourdes",
       en: "the municipality, or the province for the heaviest installations",
+      nl: "de gemeente, of de provincie voor de zwaarste installaties",
     },
     windows: {},
     deadlines: [

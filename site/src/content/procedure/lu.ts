@@ -28,6 +28,7 @@ export const LU: ProcedureCountry = {
     authority: {
       fr: "le bourgmestre de la commune ; le recours se porte ensuite devant le tribunal administratif",
       en: "the municipal mayor (bourgmestre); the appeal then goes to the administrative tribunal",
+      nl: "de burgemeester van de gemeente; het beroep gaat daarna naar de bestuursrechter",
     },
     windows: {},
     deadlines: [

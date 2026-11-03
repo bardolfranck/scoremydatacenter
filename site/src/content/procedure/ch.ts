@@ -43,12 +43,14 @@ export const CH: ProcedureCountry = {
   frame: {
     fr: "En Suisse, le permis de construire est cantonal et chaque canton fixe son propre délai de recours : de dix jours à Soleure et dans les deux Bâle à trente à Zurich et Genève. Il n'existe aucun délai fédéral applicable, et nous ne publions rien pour un canton dont le droit n'a pas été lu.",
     en: "In Switzerland the building permit is cantonal and each canton sets its own appeal deadline: from ten days in Solothurn and the two Basels to thirty in Zurich and Geneva. No federal deadline applies, and we publish nothing for a canton whose own law we have not read.",
+    nl: "In Zwitserland is de bouwvergunning kantonnaal en elk kanton bepaalt zijn eigen beroepstermijn: van tien dagen in Solothurn en de twee Bazels tot dertig in Zürich en Genève. Er is geen enkele federale termijn die hier geldt, en we publiceren niets voor een kanton waarvan het recht niet is gelezen.",
   },
   subdivisions: {
     ZH: {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -77,6 +79,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -96,6 +99,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -124,6 +128,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -143,6 +148,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "le département cantonal pour l'autorisation de construire, puis la chambre administrative",
         en: "the cantonal department for the building permit, then the administrative chamber",
+        nl: "het kantonnale departement voor de bouwvergunning, daarna de administratieve kamer",
       },
       windows: {},
       deadlines: [
@@ -162,6 +168,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -181,6 +188,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis le Conseil d'État ou le tribunal cantonal",
         en: "the municipality for the building permit, then the Council of State or the cantonal court",
+        nl: "de gemeente voor de bouwvergunning, daarna de Conseil d'État (de kantonnale regering) of de kantonnale rechtbank",
       },
       windows: {},
       deadlines: [
@@ -200,6 +208,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -219,6 +228,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "le département cantonal pour l'autorisation de construire, puis le tribunal administratif",
         en: "the cantonal department for the building permit, then the administrative court",
+        nl: "het kantonnale departement voor de bouwvergunning, daarna de bestuursrechter",
       },
       windows: {},
       deadlines: [
@@ -238,6 +248,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance supérieure",
         en: "the municipality for the building permit, then the higher authority",
+        nl: "de gemeente voor de bouwvergunning, daarna de hogere instantie",
       },
       windows: {},
       deadlines: [
@@ -257,6 +268,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -276,6 +288,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [
@@ -304,6 +317,7 @@ export const CH: ProcedureCountry = {
       authority: {
         fr: "la commune pour l'autorisation de construire, puis l'instance de recours cantonale",
         en: "the municipality for the building permit, then the cantonal appeals body",
+        nl: "de gemeente voor de bouwvergunning, daarna de kantonnale beroepsinstantie",
       },
       windows: {},
       deadlines: [

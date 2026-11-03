@@ -19,6 +19,7 @@ export const FR: ProcedureCountry = {
     authority: {
       fr: "le préfet de département, après enquête publique",
       en: "the département préfet, after a public inquiry",
+      nl: "de prefect van het departement, na de inspraak",
     },
     windows: {
       announced: {
