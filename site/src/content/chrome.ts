@@ -31,8 +31,8 @@ const FR = {
   },
   footer: [
     { heading: "Explorer", links: [
-      { label: "Carte", href: "/fr/carte" },
-      { label: "Classement", href: "/fr/classement" },
+      { label: "Carte", href: "/fr/carte/" },
+      { label: "Classement", href: "/fr/classement/" },
       { label: "Indices pays", href: "/fr/indices/" },
       { label: "Les chiffres du parc", href: "/fr/chiffres/" },
       { label: "Comprendre les data centers", href: "/fr/comprendre/" },
@@ -41,14 +41,14 @@ const FR = {
       { label: "Méthodologie", href: "/fr/methodologie/" },
       { label: "Modèle ouvert", href: "/fr/#open" },
       { label: "Bibliothèque", href: "/fr/bibliotheque/" },
-      { label: "API développeurs", href: "/fr/developpeurs" },
+      { label: "API développeurs", href: "/fr/developpeurs/" },
       { label: "FAQ", href: "/fr/#faq" },
     ] },
     { heading: "À propos", links: [
-      { label: "Qui sommes-nous ?", href: "/fr/qui-sommes-nous" },
-      { label: "Presse", href: "/fr/presse" },
-      { label: "Contact", href: "/fr/contact" },
-      { label: "Mentions légales", href: "/fr/mentions-legales" },
+      { label: "Qui sommes-nous ?", href: "/fr/qui-sommes-nous/" },
+      { label: "Presse", href: "/fr/presse/" },
+      { label: "Contact", href: "/fr/contact/" },
+      { label: "Mentions légales", href: "/fr/mentions-legales/" },
     ] },
   ],
   consent: {
@@ -71,8 +71,8 @@ const EN: typeof FR = {
   },
   footer: [
     { heading: "Explore", links: [
-      { label: "Map", href: "/map" },
-      { label: "Ranking", href: "/ranking" },
+      { label: "Map", href: "/map/" },
+      { label: "Ranking", href: "/ranking/" },
       { label: "Country index", href: "/indices/" },
       { label: "Fleet figures", href: "/figures/" },
       { label: "Understanding data centers", href: "/understand/" },
@@ -81,14 +81,14 @@ const EN: typeof FR = {
       { label: "Methodology", href: "/methodology/" },
       { label: "Open model", href: "/#open" },
       { label: "Library", href: "/intelligence/" },
-      { label: "Developer API", href: "/developers" },
+      { label: "Developer API", href: "/developers/" },
       { label: "FAQ", href: "/#faq" },
     ] },
     { heading: "About", links: [
-      { label: "Who we are", href: "/who-we-are" },
-      { label: "Press", href: "/press" },
-      { label: "Contact", href: "/contact" },
-      { label: "Legal notices", href: "/legal" },
+      { label: "Who we are", href: "/who-we-are/" },
+      { label: "Press", href: "/press/" },
+      { label: "Contact", href: "/contact/" },
+      { label: "Legal notices", href: "/legal/" },
     ] },
   ],
   consent: {
@@ -120,8 +120,8 @@ const NL: typeof FR = {
   // Slugs NL choisis AVEC les libellés (règle du fichier : le mot commande l'URL).
   footer: [
     { heading: "Verkennen", links: [
-      { label: "Kaart", href: "/nl/kaart" },
-      { label: "Ranglijst", href: "/nl/ranglijst" },
+      { label: "Kaart", href: "/nl/kaart/" },
+      { label: "Ranglijst", href: "/nl/ranglijst/" },
       { label: "Landenindex", href: "/nl/indices/" },
       { label: "Kerncijfers van het datacenterpark", href: "/nl/kerncijfers/" },
       { label: "Datacenters begrijpen", href: "/nl/datacenters-begrijpen/" },
@@ -130,14 +130,14 @@ const NL: typeof FR = {
       { label: "Methodologie", href: "/nl/methodologie/" },
       { label: "Open model", href: "/nl/#open" },
       { label: "Bibliotheek", href: "/nl/bibliotheek/" },
-      { label: "API voor ontwikkelaars", href: "/nl/ontwikkelaars" },
+      { label: "API voor ontwikkelaars", href: "/nl/ontwikkelaars/" },
       { label: "FAQ", href: "/nl/#faq" },
     ] },
     { heading: "Over", links: [
-      { label: "Over ons", href: "/nl/over-ons" },
-      { label: "Pers", href: "/nl/pers" },
-      { label: "Contact", href: "/nl/contact" },
-      { label: "Juridische informatie", href: "/nl/juridisch" },
+      { label: "Over ons", href: "/nl/over-ons/" },
+      { label: "Pers", href: "/nl/pers/" },
+      { label: "Contact", href: "/nl/contact/" },
+      { label: "Juridische informatie", href: "/nl/juridisch/" },
     ] },
   ],
   consent: {

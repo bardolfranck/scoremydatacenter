@@ -1867,3 +1867,151 @@ def test_la_dette_nl_du_bloc_juridique_ne_peut_que_baisser():
             f"néerlandais (déclaré : {DETTE_NL_PROCEDURE}). Abaissez DETTE_NL_PROCEDURE à "
             f"{restants}. Il reste : {reste}."
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# UN LIEN DE MENU QUI NE MÈNE NULLE PART.
+#
+# Le menu et le pied de page s'affichent sur les 13 169 pages. Leurs adresses sont écrites à
+# la main, par langue, dans `config/nav.ts` et `content/chrome.ts` — et rien ne vérifiait
+# qu'une de ces adresses correspond à une page qui EXISTE. Le garde de parité compare la
+# FORME des deux menus (mêmes gestes, même nature) ; il ne va jamais voir si le fichier est
+# là. Un slug traduit sans sa page est donc un 404 servi partout, et c'est précisément ce
+# qu'une langue nouvelle produit : les dix-neuf adresses néerlandaises du menu existent dans
+# la table et aucune n'a de page.
+#
+# La règle suit `langues.ts` : une langue VIVANTE n'a pas droit à un seul lien mort ; une
+# langue EN PRÉPARATION a une dette, comptée, qui ne peut que baisser — et qui doit valoir
+# zéro le jour où on la fait passer vivante.
+CHROME_TS = REPO_ROOT / "site" / "src" / "content" / "chrome.ts"
+# Dette de la langue en préparation, 2026-11-03 : les 22 pages néerlandaises que le menu et
+# le pied de page promettent et qui n'existent pas. 19 viennent du menu, 3 du pied seul
+# (presse, contact, mentions légales) — et c'est le genre d'écart qu'on ne voit qu'en
+# relevant les DEUX tables : la nôtre ne promettait pas la même chose aux deux endroits.
+DETTE_PAGES_EN_PREPARATION = 22
+
+
+def _liens_de_chrome(langue: str) -> list[str]:
+    """Les adresses de PAGE du menu et du pied de page d'une langue.
+
+    Les ancres (`/fr/#faq`) sont écartées : elles mènent à une section, pas à un fichier.
+    La requête (`?v=2`) l'est aussi — elle s'ajoute à une adresse, elle ne la change pas.
+    """
+    liens: list[str] = []
+    # 🔴 La borne de FIN se déclare par fichier, et c'est tout l'enjeu du relevé : une
+    # première version cherchait « le prochain `const XX` » avec un `\b` après les deux
+    # lettres — qui ne mord pas devant le souligné de `NL_NAV`. Le bloc français courait
+    # donc jusqu'au bout du fichier et avalait les adresses néerlandaises : le garde
+    # annonçait 38 liens morts dans une langue EN LIGNE. Un relevé qu'on ne confronte pas à
+    # un ordre de grandeur attendu raconte n'importe quoi avec aplomb.
+    for fichier, debut, borne in (
+        (NAV_TS, f"export const {langue.upper()}_NAV", r"^export const \w+"),
+        (CHROME_TS, f"const {langue.upper()}", r"^const [A-Z]{2}\W"),
+    ):
+        texte = fichier.read_text(encoding="utf-8")
+        i = texte.index(debut)
+        suite = texte[i + len(debut):]
+        prochain = re.search(borne, suite, re.M)
+        region = suite[: prochain.start()] if prochain else suite
+        lignes = []
+        for ligne in region.splitlines():
+            c = debut_de_commentaire(ligne)
+            lignes.append(ligne if c == -1 else ligne[:c])
+        liens += re.findall(r'href:\s*"([^"]*)"', "\n".join(lignes))
+    return [h.split("?")[0] for h in liens if "#" not in h]
+
+
+def _page_absente(href: str) -> bool:
+    """Vrai si aucun fichier de `pages/` ne rend cette adresse."""
+    chemin = href.strip("/")
+    if not chemin:
+        return not (PAGES / "index.astro").exists()
+    return not (PAGES / f"{chemin}.astro").exists() and not (
+        PAGES / chemin / "index.astro"
+    ).exists()
+
+
+def test_le_releve_des_liens_de_navigation_voit_bien_les_deux_fichiers():
+    """Contre-épreuve du relevé : un garde qui ne lit rien déclare tout bon.
+
+    Le menu d'une langue vivante porte une vingtaine de liens de page et le pied une
+    douzaine. Si le relevé en voyait trois, le test suivant passerait en ne gardant rien.
+    """
+    for langue in _langues_vivantes():
+        liens = _liens_de_chrome(langue)
+        assert len(liens) >= 25, (
+            f"{len(liens)} liens de page relevés pour « {langue} » : le relevé ne lit plus "
+            f"nav.ts ou chrome.ts, et le garde des liens morts ne garde plus rien"
+        )
+    # et il doit savoir dire qu'une adresse n'existe pas
+    assert _page_absente("/nl/une-page-qui-n-existe-pas/")
+    assert not _page_absente("/fr/methodologie/")
+
+
+def test_aucun_lien_de_navigation_ne_mene_au_vide_dans_une_langue_servie():
+    """Une langue en ligne n'a pas droit à un seul lien mort dans son menu ou son pied.
+
+    Ces deux éléments sont sur TOUTES les pages : un slug traduit dont la page manque n'est
+    pas un petit défaut local, c'est un 404 offert au lecteur depuis les 13 169 pages.
+    """
+    morts = [
+        f"  {langue} → {href}"
+        for langue in _langues_vivantes()
+        for href in _liens_de_chrome(langue)
+        if _page_absente(href)
+    ]
+    assert not morts, (
+        f"{len(morts)} lien(s) de navigation sans page, dans une langue SERVIE :\n"
+        + "\n".join(morts)
+    )
+
+
+def test_la_dette_de_pages_de_la_langue_en_preparation_ne_peut_que_baisser():
+    """Ce qui manque à la langue en préparation pour pouvoir passer vivante.
+
+    Ce nombre EST la liste des pages à écrire — pas une estimation. Il doit valoir zéro le
+    jour où la langue rejoint `LANGUES_VIVANTES`, et le test précédent prend alors le relais.
+    """
+    vivantes = set(_langues_vivantes())
+    attente = [lg for lg in _langues_declarees() if lg not in vivantes]
+    morts = sorted({
+        f"{lg} → /{href.strip('/')}/"
+        for lg in attente
+        for href in _liens_de_chrome(lg)
+        if _page_absente(href)
+    })
+    assert len(morts) <= DETTE_PAGES_EN_PREPARATION, (
+        f"{len(morts)} adresses de la langue en préparation sans page, la dette déclarée est "
+        f"{DETTE_PAGES_EN_PREPARATION} : un slug vient d'être ajouté au menu sans sa page.\n"
+        + "\n".join(f"  {m}" for m in morts)
+    )
+    if len(morts) < DETTE_PAGES_EN_PREPARATION:
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {len(morts)} adresse(s) "
+            f"sans page (déclaré : {DETTE_PAGES_EN_PREPARATION}). Abaissez "
+            f"DETTE_PAGES_EN_PREPARATION à {len(morts)}.\n"
+            + "\n".join(f"  {m}" for m in morts)
+        )
+
+
+def test_aucun_lien_de_navigation_ne_perd_sa_barre_finale():
+    """Menu et pied de page : chaque adresse interne porte sa barre, sinon c'est un détour.
+
+    🔴 Trouvé en câblant le néerlandais, et vivant depuis des mois : VINGT-ET-UNE adresses
+    du pied de page n'avaient pas leur barre finale — dont quatorze dans les deux langues
+    EN LIGNE. Vérifié en production avant de le dire : `/map` répond 308 vers `/map/`, et
+    `/fr/carte` pareil. Le pied s'affiche sur les 13 169 pages, donc chaque clic sur « Carte »,
+    « Classement », « Contact » ou « Mentions légales » payait une redirection.
+
+    La règle est déjà acquise ailleurs (l'incident des liens « autre langue ») ; elle ne
+    l'était pas ici, parce que personne n'avait regardé cette table-là.
+    """
+    fautes = []
+    for fichier in (NAV_TS, CHROME_TS):
+        for href in re.findall(r'href:\s*"([^"]*)"', fichier.read_text(encoding="utf-8")):
+            if href.startswith("/") and "#" not in href and "?" not in href and not href.endswith("/"):
+                fautes.append(f"  {fichier.name} → {href}")
+    assert not fautes, (
+        f"{len(fautes)} adresse(s) de navigation sans barre finale — une redirection par clic, "
+        f"sur toutes les pages du site :\n" + "\n".join(fautes)
+    )
