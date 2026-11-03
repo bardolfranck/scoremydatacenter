@@ -1769,3 +1769,87 @@ def test_chaque_pays_du_corpus_a_son_nom_dans_chaque_langue_servie():
         + "\n".join(fautes)
         + "\n\nIls s'afficheraient en code ISO — ce qui se lit comme une donnée non traduite."
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# La CINQUIÈME racine de chaînes : `content/procedure/*.ts`, le bloc juridique.
+#
+# C'est le seul endroit du site qui dise au lecteur quoi FAIRE : qui décide, quelle fenêtre
+# est encore ouverte, quel délai ne revient pas. Donc le bloc qui se traduit en PREMIER et
+# pas en dernier — un riverain néerlandais qui lit son délai de recours en anglais n'est pas
+# armé, il est renvoyé à sa complexité.
+#
+# Les quatre autres racines sont au harnais (`TABLES_MODULES`, `DETTE_I18N`). Celle-ci ne
+# pouvait pas y entrer : ses chaînes ne sont pas des libellés d'interface mais de la prose
+# SOURCÉE — chaque phrase porte son article, son lien vers le texte et la date de lecture en
+# vigueur. Elle se traduit, elle ne se régénère pas : la version française est la référence,
+# et la néerlandaise doit dire la MÊME chose, pas une chose vraisemblable.
+#
+# `cite` et `url` restent hors périmètre : une référence d'article se cite comme la
+# juridiction la cite. Traduire « Algemene wet bestuursrecht, art. 6:7 » serait rendre la
+# source introuvable.
+#
+# 181 champs au 2026-11-03, 19 fichiers. Un cliquet : le compte ne peut que baisser.
+DETTE_NL_PROCEDURE = 181
+
+PROCEDURE = CONTENU / "procedure"
+
+# fr, puis en, puis — quand il existe — nl. L'ordre fait partie de la règle : des champs qui
+# se suivent toujours dans le même ordre se relisent en diagonale et se diffent ligne à ligne.
+_PROSE = re.compile(
+    r'fr:\s*"(?:[^"\\]|\\.)*",\s*en:\s*"(?:[^"\\]|\\.)*",(\s*nl:\s*")?',
+    re.S,
+)
+
+
+def _prose_juridique() -> list[tuple[str, int, int]]:
+    """Par fichier : (nom, champs de prose, champs qui portent déjà le néerlandais)."""
+    releve = []
+    for chemin in sorted(PROCEDURE.glob("*.ts")):
+        if chemin.name == "types.ts":
+            continue  # les déclarations de type ne sont pas des chaînes
+        trouves = _PROSE.findall(chemin.read_text(encoding="utf-8"))
+        if trouves:
+            releve.append((chemin.name, len(trouves), sum(1 for g in trouves if g)))
+    return releve
+
+
+def test_le_releve_du_bloc_juridique_voit_bien_les_champs():
+    """Contre-épreuve du relevé lui-même : un compteur qui mesure à côté rassure comme un juste.
+
+    🔴 Déjà vu deux fois : un garde qui comptait `fr: string` (une DÉCLARATION de type) comme
+    une chaîne, et un garde qui confondait deux formes de table. Ici on vérifie que le relevé
+    retrouve le total attendu ET qu'il ne compte pas les trois interfaces de `types.ts`.
+    """
+    releve = _prose_juridique()
+    total = sum(n for _, n, _ in releve)
+    assert total <= DETTE_NL_PROCEDURE, (
+        f"{total} champs de prose relevés dans content/procedure/, la dette déclarée est "
+        f"{DETTE_NL_PROCEDURE} : de la prose juridique vient d'être ajoutée. Elle doit partir "
+        f"en traduction avec le reste, et le cliquet doit monter EXPLICITEMENT."
+    )
+    assert "types.ts" not in {nom for nom, _, _ in releve}
+    assert len(releve) >= 19, f"19 fichiers portent de la prose, le relevé en voit {len(releve)}"
+
+
+def test_la_dette_nl_du_bloc_juridique_ne_peut_que_baisser():
+    """Le bloc juridique en néerlandais : ce qui manque est COMPTÉ, pas découvert en servant.
+
+    Tant qu'un champ n'a pas son `nl`, le repli déclaré de `L()` sert l'anglais. Ce n'est pas
+    une panne, c'est une dette — mais une dette qu'on voit, dont on connaît le fichier, et qui
+    descend à chaque passe. Le test crie aussi quand elle BAISSE : une dette qu'on ne voit pas
+    diminuer est une dette qu'on cesse de rembourser.
+    """
+    releve = _prose_juridique()
+    restants = sum(n - fait for _, n, fait in releve)
+    assert restants <= DETTE_NL_PROCEDURE, (
+        f"{restants} champs du bloc juridique sans néerlandais, la dette déclarée est "
+        f"{DETTE_NL_PROCEDURE}"
+    )
+    if restants < DETTE_NL_PROCEDURE:
+        reste = ", ".join(f"{nom} {n - fait}" for nom, n, fait in releve if n > fait) or "aucun"
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {restants} champs sans "
+            f"néerlandais (déclaré : {DETTE_NL_PROCEDURE}). Abaissez DETTE_NL_PROCEDURE à "
+            f"{restants}. Il reste : {reste}."
+        )

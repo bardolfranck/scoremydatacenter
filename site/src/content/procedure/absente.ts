@@ -23,13 +23,15 @@
 // Même doctrine que la note creuse et que « l'absence ressemble à zéro » : on publie ce qu'on
 // sait, on nomme ce qu'on ignore, et on ne laisse jamais un blanc se lire comme un néant.
 
+import type { Prose } from "./types";
+
 export interface ProcedureAbsente {
   /** Ce qui reste vrai sans avoir lu le texte. */
-  cadre: { fr: string; en: string };
+  cadre: Prose;
   /** Le levier dont l'existence est certaine, délai mis à part. */
-  levier: { fr: string; en: string };
+  levier: Prose;
   /** La question que le lecteur pose à notre place. */
-  question: { fr: string; en: string };
+  question: Prose;
 }
 
 const ETATS_UNIS: ProcedureAbsente = {

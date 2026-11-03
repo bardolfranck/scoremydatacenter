@@ -11,10 +11,28 @@
 // force. No source, no claim — `resolveProcedure` returns null and the page says
 // so rather than inventing a procedure that does not exist in that jurisdiction.
 
+/**
+ * Un champ de prose du bloc juridique — le seul endroit du site qui dise au lecteur quoi
+ * FAIRE, donc celui qui doit lui parler SA langue : un délai de recours lu en anglais par
+ * un riverain néerlandais n'arme personne.
+ *
+ * `nl` est optionnel, et c'est un trou DÉCLARÉ, pas un oubli : tant qu'il manque, le
+ * lecteur reçoit l'anglais (repli déclaré de `L()`) et `test_dette_nl_du_bloc_juridique`
+ * compte ce qui reste. Le compte ne peut que baisser.
+ *
+ * `cite` et `url` ne sont pas ici : une référence d'article se cite comme la juridiction
+ * la cite, dans sa langue, jamais traduite.
+ */
+export interface Prose {
+  fr: string;
+  en: string;
+  nl?: string;
+}
+
 /** One actionable statement, traceable to the text that creates it. */
 export interface ProcedureClaim {
   /** What the reader can do, or what runs out. Written for a non-lawyer. */
-  text: { fr: string; en: string };
+  text: Prose;
   /** The article, cited the way the jurisdiction cites it. */
   cite: string;
   /** Primary source: the text itself. */
@@ -28,7 +46,7 @@ export type ProjectStatus = "announced" | "permitting" | "under_construction" | 
 /** The level that actually decides, and what is open at each stage. */
 export interface ProcedureJurisdiction {
   /** Who decides. Named as locals name it. */
-  authority: { fr: string; en: string };
+  authority: Prose;
   /** The window open at a given stage — the one sentence that matters most. */
   windows: Partial<Record<ProjectStatus, ProcedureClaim>>;
   /** Deadlines that do not come back once missed. */
@@ -57,7 +75,7 @@ export interface ProcedureCountry {
    * One sentence on how the country is built, for a reader who assumes every
    * country works like theirs. No claim, no deadline — the frame only.
    */
-  frame?: { fr: string; en: string };
+  frame?: Prose;
   /**
    * Socle supranational dont ce pays hérite. "EU" = les garanties minimales des
    * directives 2011/92 et 2003/4, écrites une seule fois dans eu.ts. Un socle est un
