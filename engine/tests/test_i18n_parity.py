@@ -2015,3 +2015,105 @@ def test_aucun_lien_de_navigation_ne_perd_sa_barre_finale():
         f"{len(fautes)} adresse(s) de navigation sans barre finale — une redirection par clic, "
         f"sur toutes les pages du site :\n" + "\n".join(fautes)
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# LA TABLE DE ROUTES — « la même page, dans chaque langue », déclarée une fois.
+#
+# Elle remplace les 81 `altHref` qui supposaient DEUX langues. Mais une table qui déclare des
+# adresses est une troisième liste à côté du menu et du pied de page : si les trois ne disent
+# pas la même chose, le sélecteur de langue envoie le lecteur sur une adresse que personne ne
+# sert, et le cluster hreflang raconte à Google une correspondance qui n'existe pas.
+ROUTES_TS = REPO_ROOT / "site" / "src" / "config" / "routes.ts"
+
+
+def _familles() -> dict[str, dict[str, str]]:
+    """La table de routes, lue à sa source : id → {langue: chemin}."""
+    texte = ROUTES_TS.read_text(encoding="utf-8")
+    debut = texte.index("export const FAMILLES")
+    fin = texte.index("\nconst SEGMENTS", debut)
+    region = texte[debut:fin]
+    lignes = []
+    for ligne in region.splitlines():
+        c = debut_de_commentaire(ligne)
+        lignes.append(ligne if c == -1 else ligne[:c])
+    region = "\n".join(lignes)
+
+    table: dict[str, dict[str, str]] = {}
+    morceaux = re.split(r'\bid:\s*"', region)[1:]
+    for morceau in morceaux:
+        ident, reste = morceau.split('"', 1)
+        chemins = dict(re.findall(r'\b(en|fr|nl):\s*"([^"]*)"', reste.split("{ id:")[0]))
+        table[ident] = chemins
+    return table
+
+
+def test_le_releve_de_la_table_de_routes_voit_bien_les_familles():
+    """Contre-épreuve : une table lue de travers déclarerait tout cohérent."""
+    familles = _familles()
+    assert len(familles) >= 30, f"{len(familles)} familles relevées — le relevé ne lit plus routes.ts"
+    assert familles["fiche"] == {
+        "en": "/dc/:id/", "fr": "/fr/dc/:id/", "nl": "/nl/dc/:id/"
+    }, familles.get("fiche")
+    # une famille volontairement à deux langues doit sortir SANS néerlandais
+    assert "nl" not in familles["rapport-france"], familles["rapport-france"]
+
+
+def test_la_table_de_routes_et_le_menu_disent_la_meme_chose():
+    """Toute adresse promise par le menu ou le pied doit être une adresse de la table.
+
+    Sinon le sélecteur de langue et la navigation ne parlent pas du même site : on peut
+    arriver sur une page par le menu et n'avoir aucun moyen d'en changer la langue, ou se
+    faire proposer une langue vers une adresse que rien ne sert.
+    """
+    familles = _familles()
+    for langue in _langues_declarees():
+        connus = {c for f in familles.values() if (c := f.get(langue))}
+        # Mêmes exemptions que la couverture : les pages de chiffres portent leur paire
+        # page par page, parce que leur périmètre par défaut dépend de la langue.
+        EXEMPTES = {"/figures/", "/fr/chiffres/", "/nl/kerncijfers/"}
+        absents = sorted({
+            f"/{href.strip('/')}/" for href in _liens_de_chrome(langue)
+            if f"/{href.strip('/')}/" not in connus and f"/{href.strip('/')}/" not in EXEMPTES
+        })
+        assert not absents, (
+            f"{len(absents)} adresse(s) du menu ou du pied « {langue} » ne sont pas dans la "
+            f"table de routes — elles n'auront pas de sélecteur de langue :\n"
+            + "\n".join(f"  {a}" for a in absents)
+        )
+
+
+def test_la_table_de_routes_couvre_toute_page_servie():
+    """Une page qui n'est dans aucune famille n'a pas de sélecteur de langue.
+
+    Le relevé part des FICHIERS, pas de la table : c'est la seule direction qui trouve une
+    page oubliée. Partir de la table ne dirait que ce que la table sait déjà.
+    """
+    familles = _familles()
+    tous = {c for f in familles.values() for c in f.values()}
+    # Un fichier de page devient une adresse : `fr/carte.astro` → `/fr/carte/`, un segment
+    # dynamique `[id]` → `:id`. La préviz, les générateurs d'images et la 404 n'en sont pas.
+    # Exemptions DÉCLARÉES, avec leur raison — une exemption muette est un trou.
+    # Les pages de chiffres ne se mettent pas en table : leur périmètre par défaut dépend
+    # de la langue (France en français, Europe en anglais), donc la même adresse n'y porte
+    # pas le même contenu. Elles gardent la paire déclarée page par page.
+    HORS_TABLE = {
+        "figures/index.astro", "figures/[perimeter].astro",
+        "fr/chiffres/index.astro", "fr/chiffres/[perimetre].astro",
+    }
+    orphelines = []
+    for chemin in sorted(PAGES.rglob("*.astro")):
+        rel = chemin.relative_to(PAGES).as_posix()
+        if rel.startswith(("previz/", "og/")) or rel == "404.astro" or rel in HORS_TABLE:
+            continue
+        adresse = "/" + re.sub(r"\[\.{3}?(\w+)\]", ":id", rel.removesuffix(".astro")).replace(
+            "/index", ""
+        ).removesuffix("index") + "/"
+        adresse = re.sub(r"/{2,}", "/", adresse.replace("[id]", ":id").replace("[perimetre]", ":id")
+                         .replace("[perimeter]", ":id"))
+        if adresse not in tous:
+            orphelines.append(f"  {rel} → {adresse}")
+    assert not orphelines, (
+        f"{len(orphelines)} page(s) hors de la table de routes — aucun sélecteur de langue "
+        f"ne pourra les relier à leurs sœurs :\n" + "\n".join(orphelines)
+    )
