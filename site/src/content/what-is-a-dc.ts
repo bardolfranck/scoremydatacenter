@@ -109,3 +109,49 @@ export const WHATIS_EN: WhatIsDC = {
     { label: "IEA, Energy and AI, 2025", url: "https://www.iea.org/reports/energy-and-ai/executive-summary" },
   ],
 };
+
+// ── NÉERLANDAIS — rédigé après la passe native ; chiffres identiques au FR vérifié.
+// Ancres de sources sur l'ancre NL du bloc (#src-wat-N).
+export const WHATIS_NL: WhatIsDC = {
+  paragraphs: [
+    "Een datacenter is een industrieel gebouw vol servers — de computers die websites, video's, onlinediensten en, steeds vaker, kunstmatige intelligentie laten draaien. Die machines draaien dag en nacht, verbruiken continu elektriciteit en geven warmte af die moet worden afgevoerd. Daar komt hun energiebehoefte vandaan — en, afhankelijk van de koeltechniek, hun waterbehoefte.",
+    "Om een datacenter te meten is de juiste eenheid niet de oppervlakte van het gebouw maar het <strong>elektrische vermogen, in megawatt (MW)</strong> — de stroom die de site op elk moment kan afnemen.",
+  ],
+  sizesTitle: "Drie heel verschillende maten dragen dezelfde naam:",
+  sizes: [
+    {
+      label: "‘Klassiek’ datacenter",
+      power: "enkele MW",
+      note: "De grote meerderheid van de ~300 Franse sites, aangesloten op het distributienet zoals een grote fabriek<sup><a href='#src-wat-1'>1</a></sup>",
+    },
+    {
+      label: "Groot project",
+      power: "100 tot 200 MW",
+      note: "Het elektriciteitsverbruik van steden als Le Mans of Saint-Étienne<sup><a href='#src-wat-1'>1</a></sup>",
+    },
+    {
+      label: "Megaproject",
+      power: "meer dan 400 MW",
+      note: "Een tiental ‘buitenmaatse’ projecten in Frankrijk; de Campus IA in Fouju mikt op 1.400 MW op ongeveer 90 hectare<sup><a href='#src-wat-1'>1</a></sup><sup><a href='#src-wat-3'>3</a></sup>",
+    },
+  ],
+  scale: {
+    caption: "De oppervlakten zijn evenredig met het elektrische vermogen.",
+    items: [
+      { mw: 3, mwLabel: "enkele MW", label: "klassiek datacenter" },
+      { mw: 150, mwLabel: "150 MW", label: "groot project ≈ Le Mans" },
+      { mw: 1400, mwLabel: "1.400 MW", label: "megaproject (Fouju)" },
+    ],
+  },
+  statsParagraph:
+    "Vandaag nemen de datacenters samen ongeveer 2% van het in Frankrijk verbruikte stroomvolume voor hun rekening; RTE verwacht ongeveer 4% in 2035<sup><a href='#src-wat-1'>1</a></sup>. Wereldwijd gebruikten ze in 2024 ongeveer 1,5% van de elektriciteit<sup><a href='#src-wat-4'>4</a></sup>.",
+  takeaway:
+    "Hetzelfde woord dekt een zaal van enkele megawatt en een campus die duizend keer krachtiger is. Tegenover een project is de eerste vraag altijd: hoeveel megawatt?",
+  sourcesLabel: "Bronnen:",
+  sources: [
+    { label: "RTE, « Les data centers en chiffres clés », 2026", url: "https://www.rte-france.com/bases-electricite/consommation-electricite/essor-data-centers-france" },
+    { label: "Journal du Grand Paris, 2025", url: "https://www.lejournaldugrandparis.fr/choose-france-un-campus-dia-geant-en-seine-et-marne/" },
+    { label: "Publieke inspraak Campus IA", url: "https://www.concertation-campus-ia.fr/fr/comprendre-le-projet" },
+    { label: "IEA, Energy and AI, 2025", url: "https://www.iea.org/reports/energy-and-ai/executive-summary" },
+  ],
+};
