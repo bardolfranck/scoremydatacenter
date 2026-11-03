@@ -234,6 +234,7 @@ deploy:
 # build. La vérification porte donc sur ce qui PART, juste avant que ça parte.
 	uv run python scripts/check_dist_pruned.py
 	uv run python scripts/check_no_legislation.py
+	uv run python scripts/check_titres_servis.py
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 

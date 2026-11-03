@@ -74,7 +74,8 @@ const methodology = methodologyData as any;
 // Indices pays (brief 2026-07-18/19 §2.3) : la ligne de croisement — l'indice
 // SITE du pays de cette fiche, avec sa réserve A-25 si elle s'applique.
 import indicesData from "../../public/data/indices.json";
-import { COUNTRY_NAMES } from "../config/indices";
+import { nomDePaysEnPhrase } from "../config/indices";
+import { RACINE } from "../content/langues";
 // 🔴 « pas operational » n'est pas « est un projet ». La note sous l'image satellite
 // (« le terrain visible ici peut ne pas encore accueillir le data center ») sortait dès que
 // le statut n'était pas `operational` — donc aussi pour un statut NON ÉTABLI, ce qui en
@@ -83,19 +84,32 @@ import { enProjet } from "../content/statuts";
 const _idxEntry = (indicesData as any).countries?.[dc.country];
 let idxLine: { text: string; href: string } | null = null;
 if (_idxEntry?.eligible) {
-  const cname = (COUNTRY_NAMES as any)[dc.country]?.[lang] ?? dc.country;
+  const cname = nomDePaysEnPhrase(dc.country, lang);
   // La virgule décimale est un FORMAT, pas un mot : elle suit la locale et n'a rien à faire
   // dans la table — une langue nouvelle n'aurait pas à décider comment on écrit « 3,4 ».
-  const score = /* i18n:format */ lang === "fr" ? String(_idxEntry.score).replace(".", ",") : String(_idxEntry.score);
+  // 🔴 Le commentaire au-dessus disait déjà « c'est un FORMAT, une langue nouvelle n'aurait
+  // pas à décider » — et la ligne en dessous était quand même un ternaire fr/en. Le
+  // néerlandais écrivait donc « 3.4 » là où il écrit « 3,4 ». La table des formes décide.
+  // Un indice ÉLIGIBLE peut n'avoir pas de score (Israël : note retenue au niveau du pays).
+  // L'ancienne écriture rendait alors « (undefined) » en toutes lettres ; on ne publie pas
+  // une parenthèse vide de sens, on ne publie pas la ligne.
+  const score = typeof _idxEntry.score === "number"
+    ? /* i18n:format */ fmtDec(_idxEntry.score, lang)
+    : null;
   const res = _idxEntry.reserved_from === "A" ? t.idx.reserved : "";
-  idxLine = {
-    text: t.idx.line
-      .replace("{country}", cname)
-      .replace("{grade}", _idxEntry.grade)
-      .replace("{reserved}", res)
-      .replace("{score}", score),
-    href: `${/* i18n:route */ lang === "fr" ? "/fr" : ""}/indices/?pays=${dc.country}`,
-  };
+  // La ligne annonce « indice du pays : X (n) ». Sans lettre OU sans score, elle n'annonce
+  // rien : on ne l'écrit pas. La publier à moitié ferait sortir le mot interne « en_attente »
+  // ou un « (undefined) » dans une phrase lue comme un verdict.
+  if (score !== null && /^[A-E]$/.test(_idxEntry.grade ?? "")) {
+    idxLine = {
+      text: t.idx.line
+        .replace("{country}", cname)
+        .replace("{grade}", _idxEntry.grade)
+        .replace("{reserved}", res)
+        .replace("{score}", score),
+      href: `${/* i18n:route */ RACINE[lang]}indices/?pays=${dc.country}`,
+    };
+  }
 }
 
 const SITE_ORIGIN = "https://scoremydatacenter.org";
@@ -474,7 +488,16 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
     // interne, en anglais, dans l'onglet du navigateur et dans les résultats de recherche.
     : dc.grades.site.grade === "insufficient_data"
       ? t.seo.insufficient
-      : t.seo.grade.replace("{grade}", dc.grades.site.grade);
+      // 🔴 ET ON NE PUBLIE UNE LETTRE QUE SI C'EN EST UNE. Cette chaîne ÉNUMÉRAIT les
+      // valeurs à ne pas écrire — `en_attente`, `insufficient_data` — et en ratait donc
+      // forcément une : 8 fiches israéliennes titraient « note en_attente » en production,
+      // le grade étant retenu SANS `provisional_band`, un chemin qu'aucune branche ne
+      // couvrait. Troisième fois que cette famille sort (insufficient_data le 2026-10-02,
+      // en_attente le 2026-11-02, celle-ci). Énumérer les mauvaises valeurs est une course
+      // qu'on perd ; vérifier que la valeur est une LETTRE la termine.
+      : /^[A-E]$/.test(dc.grades.site.grade ?? "")
+        ? t.seo.grade.replace("{grade}", dc.grades.site.grade)
+        : t.seo.pending;
 const seoPlaceRaw = dc.municipality ?? dc.admin_area ?? dc.country ?? "";
 // « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
 // est du bruit qui mange la largeur utile du titre en SERP.
