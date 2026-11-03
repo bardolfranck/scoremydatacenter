@@ -30,6 +30,7 @@ export const ES: ProcedureCountry = {
         text: {
           fr: "Deux mois pour former un recours contentieux-administratif contre une décision expresse, à compter du lendemain de sa notification ou de sa publication. Si l'administration n'a pas répondu, le délai est de six mois.",
           en: "Two months to bring a contentious-administrative appeal against an express decision, from the day after it is notified or published. Where the authority stayed silent, the period is six months.",
+          nl: "Twee maanden om tegen een uitdrukkelijk besluit bestuursrechtelijk beroep (recurso contencioso-administrativo) in te stellen, te rekenen vanaf de dag na de kennisgeving of de publicatie. Heeft de overheid niet geantwoord, dan is de termijn zes maanden.",
         },
         cite: "Ley 29/1998, art. 46.1",
         url: "https://www.boe.es/buscar/act.php?id=BOE-A-1998-16718&tn=1&p=20210730#a46",

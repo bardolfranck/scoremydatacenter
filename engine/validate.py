@@ -191,6 +191,17 @@ def _metres(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 # Portée volontairement étroite : on ne vérifie pas que la prose dit tout, on vérifie qu'elle
 # n'AFFIRME pas une absence que la valeur contredit. Une prose muette est incomplète, pas fausse.
 # La table se lit comme la méthodo : par indicateur, les valeurs qui autorisent l'affirmation.
+# Les langues que porte la synthèse, lues au SCHÉMA — pas recopiées. Le schéma est ce qui
+# décide ce qu'une fiche peut contenir ; une seconde liste ici finirait par ne plus dire la
+# même chose, et c'est le gate qui se tairait [[liste-a-deux-endroits-ment]].
+def _langues_de_la_synthese() -> tuple[str, ...]:
+    schema = load_json(DATA_DIR / "schema" / "datacenter.schema.json")
+    bloc = schema["properties"]["synthesis"]["properties"]["site"]["properties"]
+    return tuple(k for k in bloc if k != "lead")
+
+
+LANGUES_SYNTHESE = _langues_de_la_synthese()
+
 ABSENCE_AFFIRMEE = {
     "L3": (
         re.compile(r"(aucun (?:site|établissement)[^.;]{0,60}(?:risque|seveso)"
@@ -217,8 +228,16 @@ def prose_gate(paths: list[Path]) -> list[str]:
         syn = d.get("synthesis")
         if not syn:
             continue
+        # 🔴 LE GATE DOIT LIRE TOUTES LES LANGUES DE LA SYNTHÈSE, pas les deux premières.
+        # Il cherche une AFFIRMATION D'ABSENCE (« aucun site Seveso à proximité ») que la
+        # donnée ne soutient pas. Figé à ("fr", "en"), il laisserait passer la même
+        # affirmation fausse en néerlandais : la phrase traduite dit la même chose, et le
+        # gate ne la lirait pas. On lit les langues DÉCLARÉES, pas une paire en dur.
         texte = " ".join(
-            v.get(lang, "") for v in syn.values() if isinstance(v, dict) for lang in ("fr", "en")
+            v.get(lang, "") or ""
+            for v in syn.values()
+            if isinstance(v, dict)
+            for lang in LANGUES_SYNTHESE
         )
         entrees = {i["id"]: i for i in d.get("indicators", [])}
         for iid, (motif, valeurs_ok) in ABSENCE_AFFIRMEE.items():

@@ -22,6 +22,7 @@ export const FI: ProcedureCountry = {
         text: {
           fr: "Trente jours pour former un recours écrit contre la décision, à compter de sa notification. Le recours ne peut se fonder que sur l'illégalité de la décision.",
           en: "Thirty days to lodge a written appeal against the decision, from its notification. The appeal may only be founded on the decision being unlawful.",
+          nl: "Dertig dagen om schriftelijk beroep in te stellen tegen het besluit, te rekenen vanaf de kennisgeving. Het beroep kan alleen op de onrechtmatigheid van het besluit worden gegrond.",
         },
         cite: "Laki oikeudenkäynnistä hallintoasioissa (808/2019), 13 §",
         url: "https://finlex.fi/fi/lainsaadanto/2019/808",

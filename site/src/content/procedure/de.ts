@@ -35,6 +35,7 @@ export const DE: ProcedureCountry = {
         text: {
           fr: "Le dossier est mis à disposition du public pendant un mois après l'annonce, et les objections peuvent être déposées jusqu'à deux semaines après la fin de cette mise à disposition — un mois pour les installations relevant de la directive sur les émissions industrielles.",
           en: "The file is made available to the public for one month after the announcement, and objections can be raised until two weeks after that display period ends — one month for installations under the industrial-emissions directive.",
+          nl: "Het dossier ligt na de aankondiging een maand ter inzage voor het publiek, en bezwaren kunnen worden ingediend tot twee weken na afloop van die terinzagelegging — een maand voor installaties die onder de richtlijn industriële emissies vallen.",
         },
         cite: "BImSchG § 10 Abs. 3",
         url: "https://www.gesetze-im-internet.de/bimschg/__10.html",
@@ -46,6 +47,7 @@ export const DE: ProcedureCountry = {
         text: {
           fr: "Le recours contre l'autorisation doit être introduit dans le mois qui suit sa notification. Passé ce délai, elle devient définitive.",
           en: "An action against the permit must be brought within one month of its notification. After that it becomes final.",
+          nl: "Het beroep tegen de vergunning moet worden ingesteld binnen een maand na de kennisgeving. Na die termijn wordt ze onherroepelijk.",
         },
         cite: "VwGO § 74 Abs. 1",
         url: "https://www.gesetze-im-internet.de/vwgo/__74.html",

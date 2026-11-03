@@ -25,6 +25,7 @@ export const DK: ProcedureCountry = {
         text: {
           fr: "Quatre semaines pour contester la décision, à compter du jour où elle est notifiée — ou toujours de sa publication si elle a été annoncée publiquement. Un délai qui expire un samedi ou un jour férié court jusqu'au jour ouvrable suivant.",
           en: "Four weeks to contest the decision, from the day it is notified — or always from publication where it was publicly announced. A deadline falling on a Saturday or holiday runs to the next working day.",
+          nl: "Vier weken om het besluit aan te vechten, te rekenen vanaf de dag van de kennisgeving — of altijd vanaf de publicatie als het publiek is aangekondigd. Een termijn die op een zaterdag of feestdag afloopt, loopt door tot de eerstvolgende werkdag.",
         },
         cite: "Miljøbeskyttelsesloven § 93",
         url: "https://www.retsinformation.dk/eli/lta/2024/928",

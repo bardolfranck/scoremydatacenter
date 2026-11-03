@@ -231,8 +231,24 @@ def test_toute_page_est_declaree_dans_la_liste_des_paires():
     Désormais une page nouvelle doit se déclarer — en paire, ou dans SANS_JUMELLE avec sa
     raison. L'oubli casse la suite au lieu de laisser une page sans garde.
     """
+    # 🔴 PAIRS est une liste FR↔EN, née quand le site n'avait que deux langues. Une page
+    # néerlandaise n'y entre pas — « la paire » n'existe plus, c'est une famille. Elle se
+    # déclare donc dans `config/routes.ts`, qui est désormais la source de ce qui existe
+    # dans quelle langue, et ce test accepte les deux déclarations. Fusionner PAIRS dans
+    # la table reste à faire : PAIRS porte en plus un drapeau `compare` que la table n'a
+    # pas. Tant que les deux vivent, c'est ici que leur union se lit.
+    en_table = {
+        c.strip("/").replace(":id", "[id]") for f in _familles().values() for c in f.values()
+    }
+
+    def _declaree_en_table(page: str) -> bool:
+        adresse = page.removesuffix(".astro").removesuffix("/index")
+        return adresse in en_table or adresse.removesuffix("index").strip("/") in en_table
+
     declarees = {fr for fr, _, _ in PAIRS} | {en for _, en, _ in PAIRS} | set(SANS_JUMELLE)
-    orphelines = sorted(_pages_du_disque() - declarees)
+    orphelines = sorted(
+        p for p in _pages_du_disque() - declarees if not _declaree_en_table(p)
+    )
     assert not orphelines, (
         f"{len(orphelines)} page(s) ne sont déclarées nulle part :\n"
         + "\n".join(f"  · {p}" for p in orphelines)
@@ -248,8 +264,15 @@ def test_une_liste_de_paires_perimee_ne_passe_pas(monkeypatch):
     C'est exactement la panne vécue — la page existait, la liste l'ignorait, le garde se
     taisait. Si ce test-ci ne mord pas, le précédent ne garantit rien.
     """
+    # La page doit disparaître des DEUX déclarations : depuis que `config/routes.ts` est
+    # une source valable, n'en amputer qu'une ne prouve plus rien — et c'est ce test qui l'a
+    # dit, en cessant de mordre à la seconde où la table a pris le relais.
     ampute = [p for p in PAIRS if p[0] != "fr/actu.astro"]
     monkeypatch.setitem(globals(), "PAIRS", ampute)
+    sans_actu = {
+        ident: ch for ident, ch in _familles().items() if ident != "actu"
+    }
+    monkeypatch.setitem(globals(), "_familles", lambda: sans_actu)
     with pytest.raises(AssertionError, match="déclarées nulle part"):
         test_toute_page_est_declaree_dans_la_liste_des_paires()
 
@@ -1802,7 +1825,10 @@ CHAMPS_PROCEDURE = 181  # 19 fichiers, 2026-11-03
 # qu'on note — c'est la province, voire le Rijk, qui décide). Le néerlandais posé traduisait
 # fidèlement la phrase d'AVANT ; une traduction fidèle d'un texte périmé est un texte périmé.
 # Le champ est donc retourné à la dette, et cette hausse est DÉCLARÉE au lieu d'être subie.
-DETTE_NL_PROCEDURE = 94
+# 94 → 0 le 2026-11-03 : passe B de rapports-SMDC. Les 181 affirmations du bloc juridique
+# parlent néerlandais. Le cliquet reste — il dira si une affirmation ajoutée part sans sa
+# traduction, et c'est précisément le bloc où cela se verrait le moins.
+DETTE_NL_PROCEDURE = 0
 
 PROCEDURE = CONTENU / "procedure"
 
@@ -1888,7 +1914,11 @@ CHROME_TS = REPO_ROOT / "site" / "src" / "content" / "chrome.ts"
 # le pied de page promettent et qui n'existent pas. 19 viennent du menu, 3 du pied seul
 # (presse, contact, mentions légales) — et c'est le genre d'écart qu'on ne voit qu'en
 # relevant les DEUX tables : la nôtre ne promettait pas la même chose aux deux endroits.
-DETTE_PAGES_EN_PREPARATION = 22
+# 22 → 7 le 2026-11-03 : quinze pages néerlandaises écrites. Les sept qui restent sont
+# celles qui portent leur PROPRE copie de référencement (titre, description) dans la page
+# au lieu d'une table — carte, actu, développeurs, la note pas à pas, chiffres, presse,
+# qui sommes-nous. Ce n'est pas du harnais : il faut les écrire en néerlandais.
+DETTE_PAGES_EN_PREPARATION = 7
 
 
 def _liens_de_chrome(langue: str) -> list[str]:
@@ -2116,4 +2146,41 @@ def test_la_table_de_routes_couvre_toute_page_servie():
     assert not orphelines, (
         f"{len(orphelines)} page(s) hors de la table de routes — aucun sélecteur de langue "
         f"ne pourra les relier à leurs sœurs :\n" + "\n".join(orphelines)
+    )
+
+
+def test_chaque_bloc_de_langue_porte_le_menu_de_SA_langue():
+    """Une table de contenu qui porte un `nav:` doit porter CELUI de sa langue.
+
+    🔴 Trouvé en confrontant le HTML servi, pas en relisant le code : l'accueil néerlandais
+    et « Datacenters begrijpen » affichaient le MENU FRANÇAIS — tous les liens vers /fr/ —
+    parce que leurs blocs `nl` déclaraient `nav: FR_NAV`. Ni la relecture native (qui lit
+    des mots, pas du câblage) ni la parité de clés (la clé `nav` était bien là) ni la préviz
+    (même nombre de blocs) ne pouvaient le voir.
+
+    Le menu vit à deux endroits : `config/nav.ts` et le `nav:` de chaque bloc de langue.
+    Tant qu'il en est ainsi, c'est ce test qui tient le lien.
+    """
+    fautes = []
+    for nom in ("accueil.ts", "comprendre.ts", "fiche.ts", "portrait.ts"):
+        chemin = CONTENU / nom
+        if not chemin.is_file():
+            continue
+        texte = chemin.read_text(encoding="utf-8")
+        for langue in _langues_declarees():
+            # le bloc de cette langue : de sa déclaration à la suivante
+            m = re.search(rf"^(?:export )?const [A-Z_]*{langue.upper()}\b.*?= \{{", texte, re.M | re.S)
+            if not m:
+                continue
+            suite = texte[m.end():]
+            fin = re.search(r"^(?:export )?const [A-Z]", suite, re.M)
+            region = suite[: fin.start()] if fin else suite
+            for trouve in re.findall(r"nav:\s*(\w+)", region):
+                if trouve != f"{langue.upper()}_NAV":
+                    fautes.append(
+                        f"  {nom}, bloc {langue} → nav: {trouve} (attendu {langue.upper()}_NAV)"
+                    )
+    assert not fautes, (
+        "une table de contenu sert le menu d'une AUTRE langue — donc des liens qui sortent "
+        "le lecteur de sa langue à chaque clic :\n" + "\n".join(fautes)
     )

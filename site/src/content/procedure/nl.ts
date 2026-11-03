@@ -26,6 +26,7 @@ export const NL: ProcedureCountry = {
     authority: {
       fr: "la commune (college van burgemeester en wethouders) délivre l'omgevingsvergunning ; pour les installations les plus lourdes la compétence remonte à la province (gedeputeerde staten), voire à l'État (un ministre) pour les projets d'intérêt national",
       en: "the municipality (college van burgemeester en wethouders) issues the omgevingsvergunning; for the heaviest installations competence rises to the province (gedeputeerde staten), and to the State (a minister) for projects of national interest",
+      nl: "de gemeente (het college van burgemeester en wethouders) verleent de omgevingsvergunning; voor de zwaarste installaties gaat de bevoegdheid omhoog naar de provincie (gedeputeerde staten), en zelfs naar het Rijk (een minister) voor projecten van nationaal belang",
     },
     windows: {},
     deadlines: [
@@ -33,6 +34,7 @@ export const NL: ProcedureCountry = {
         text: {
           fr: "Six semaines pour contester la décision — le même délai vaut pour la réclamation administrative et pour le recours devant le juge.",
           en: "Six weeks to contest the decision — the same period applies to the administrative objection and to the court appeal.",
+          nl: "Zes weken om het besluit aan te vechten — dezelfde termijn geldt voor het bezwaar en voor het beroep bij de rechter.",
         },
         cite: "Algemene wet bestuursrecht, art. 6:7",
         url: "https://wetten.overheid.nl/BWBR0005537/2026-08-15/#Hoofdstuk6_Afdeling6.2_Artikel6:7",

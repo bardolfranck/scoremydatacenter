@@ -23,6 +23,7 @@ const ANGLETERRE_PAYS_DE_GALLES = {
       text: {
         fr: "Six semaines pour saisir la High Court d'une contestation de la décision d'urbanisme, à compter du lendemain du jour où elle est prise — et il faut d'abord en obtenir l'autorisation du juge.",
         en: "Six weeks to bring a challenge to the planning decision before the High Court, running from the day after it is taken — and leave of the court is needed first.",
+        nl: "Zes weken om de planningsbeslissing bij de High Court aan te vechten, te rekenen vanaf de dag nadat ze is genomen — en u hebt eerst verlof van de rechter nodig.",
       },
       cite: "Town and Country Planning Act 1990, s. 288(4A)-(4B)",
       url: "https://www.legislation.gov.uk/ukpga/1990/8/section/288",
@@ -34,6 +35,7 @@ const ANGLETERRE_PAYS_DE_GALLES = {
       text: {
         fr: "Toute information environnementale détenue par une autorité publique se demande par écrit : la réponse est due dans les vingt jours ouvrables.",
         en: "Any environmental information held by a public authority can be requested in writing: the answer is due within twenty working days.",
+        nl: "Alle milieu-informatie in handen van een overheidsinstantie vraagt u schriftelijk op: het antwoord moet er binnen twintig werkdagen zijn.",
       },
       cite: "Environmental Information Regulations 2004, reg. 5(1)-(2)",
       url: "https://www.legislation.gov.uk/uksi/2004/3391/regulation/5",

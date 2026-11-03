@@ -93,6 +93,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : si le document est en cours d'utilisation ou archivé et donc indisponible au moment où un citoyen demande à le consulter, le dépositaire doit le certifier PAR ÉCRIT et fixer une date et une heure dans les trois jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: if the record is in active use or storage and therefore unavailable when a citizen asks to examine it, the custodian must certify that IN WRITING and set a date and hour within three working days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: is het document in gebruik of gearchiveerd en daardoor niet beschikbaar op het moment dat een burger het wil inzien, dan moet de bewaarder dat SCHRIFTELIJK bevestigen en een datum en een uur vastleggen binnen drie werkdagen.",
           },
           cite: "A.C.A. § 25-19-105(e), reproduit intégralement en annexe du manuel FOIA du procureur général de l'Arkansas (22e éd., 2026)",
           url: "https://media.ark.org/ag/APA-045-2026-FOIA-Handbook-22nd-Edition.pdf",
@@ -113,6 +114,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : la consultation doit être permise immédiatement ou dès que praticable, et au plus tard quinze jours après la demande écrite. Si elle n'est pas permise sous TROIS jours ouvrés, le dépositaire doit expliquer par écrit quand les documents seront disponibles. Et passé quinze jours sans accès, la demande PEUT ÊTRE RÉPUTÉE REFUSÉE — ce qui ouvre les recours.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: inspection must be permitted immediately or as soon as practicable, and no later than fifteen days after the written request. If it is not permitted within THREE business days, the custodian must explain in writing when the records will be available. And after fifteen days without access, the request MAY BE DEEMED DENIED — which opens the remedies.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: inzage moet onmiddellijk worden toegestaan of zodra het kan, en uiterlijk vijftien dagen na het schriftelijke verzoek. Is ze niet binnen DRIE werkdagen toegestaan, dan moet de bewaarder schriftelijk uitleggen wanneer de documenten beschikbaar komen. En na vijftien dagen zonder toegang kan het verzoek GEACHT WORDEN TE ZIJN GEWEIGERD — wat de weg naar beroep opent.",
           },
           cite: "NMSA 1978, § 14-2-8(D) et § 14-2-11(A), reproduits intégralement en annexe du guide IPRA du ministère de la Justice du Nouveau-Mexique (9e éd., 2025)",
           url: "https://nmdoj.gov/wp-content/uploads/NMDOJ-IPRA-Guide-Ninth-Edition-25.03.21.pdf",
@@ -133,6 +135,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite, ou même orale, au titre de la loi d'accès aux documents de l'État. Le délai : trois jours ouvrés au plus. Si une partie seulement des documents est prête, l'administration doit livrer ceux-là dans le délai, et fournir dans ce même délai la description des autres et un calendrier.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a request, written or even oral, under the state's public-records law. The deadline: three business days at most. Where only some records are ready, the agency must produce those within the period, and within that same period give a description of the rest and a timeline.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk, of zelfs mondeling, verzoek op grond van de openbaarheidswet van de staat. De termijn: hoogstens drie werkdagen. Is maar een deel van de documenten klaar, dan moet de overheid dat deel binnen de termijn leveren, en binnen diezelfde termijn een beschrijving van de rest en een tijdschema geven.",
           },
           cite: "O.C.G.A. § 50-18-71(b)(1)(A), reproduit intégralement en annexe du guide officiel du procureur général de Géorgie",
           url: "https://law.georgia.gov/document/document/citizens-guide-open-government/download",
@@ -153,6 +156,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : si le document est immédiatement disponible, il doit être remis SUR-LE-CHAMP. S'il est en cours d'utilisation, le dépositaire doit le certifier par écrit et fixer un jour et une heure dans les trois jours, samedis, dimanches et jours fériés non comptés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: if the record is immediately available it must be handed over ON THE SPOT. If it is in active use, the custodian must certify that in writing and fix a day and hour within three days, excluding Saturdays, Sundays and legal holidays.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: is het document direct beschikbaar, dan moet het METEEN worden overhandigd. Is het in gebruik, dan moet de bewaarder dat schriftelijk bevestigen en een dag en een uur vastleggen binnen drie dagen, zaterdagen, zondagen en feestdagen niet meegeteld.",
           },
           cite: "La. R.S. 44:33(B)(1)",
           url: "https://legis.la.gov/Legis/Law.aspx?d=99701",
@@ -173,6 +177,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : sept jours ouvrés — quatorze si la demande est faite à des fins commerciales, et sept de plus dans certains cas, l'administration devant alors prévenir du délai supplémentaire dans les sept premiers jours. Délais portés par la réforme de 2024.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: seven business days — fourteen where the request is for a commercial purpose, and seven more in some cases, the custodian having to give notice of the extra time within the first seven days. Deadlines set by the 2024 reform.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: zeven werkdagen — veertien als het verzoek commerciële doelen dient, en in sommige gevallen zeven extra; de overheid moet dat uitstel dan binnen de eerste zeven dagen aankondigen. Termijnen zoals gewijzigd door de hervorming van 2024.",
           },
           cite: "N.J.S.A. 47:1A-5(i)(1), tel que modifié par P.L.2024, c.16",
           url: "https://pub.njleg.state.nj.us/Bills/2024/AL24/16_.HTM",
@@ -193,6 +198,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : trois jours ouvrés — la loi pose que le « délai raisonnable » est présumé de trois jours ouvrés ou moins. Une prolongation exige des circonstances atténuantes constatées PAR ÉCRIT dans ces trois jours, et ne peut dépasser sept jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: three working days — the statute presumes a “reasonable time” to be three working days or less. An extension needs extenuating circumstances found IN WRITING within those three days, and cannot exceed seven working days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: drie werkdagen — de wet stelt dat de 'redelijke termijn' wordt vermoed drie werkdagen of minder te zijn. Een verlenging vereist verzachtende omstandigheden, SCHRIFTELIJK vastgesteld binnen die drie dagen, en mag zeven werkdagen niet overschrijden.",
           },
           cite: "C.R.S. § 24-72-203(3)(b)",
           url: "https://content.leg.colorado.gov/sites/default/files/images/olls/crs2023-title-24.pdf",
@@ -213,6 +219,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : trois jours ouvrés pour un RÉSIDENT de l'Idaho — vingt et un jours pour toute autre personne. Le droit d'accès y dépend du domicile du demandeur.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: three working days for an Idaho RESIDENT — twenty-one days for anyone else. Access here depends on where the requester lives.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: drie werkdagen voor een INWONER van Idaho — eenentwintig dagen voor ieder ander. Het recht op toegang hangt daar af van de woonplaats van de aanvrager.",
           },
           cite: "Idaho Code § 74-103(2)",
           url: "https://legislature.idaho.gov/statutesrules/idstat/Title74/T74CH1/SECT74-103/",
@@ -233,6 +240,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : dix jours ouvrés à compter de la réception de la demande, et sans retard déraisonnable.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: ten business days following receipt of the request, and without unreasonable delay.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: tien werkdagen vanaf de ontvangst van het verzoek, en zonder onredelijke vertraging.",
           },
           cite: "M.G.L. c. 66, § 10(a)",
           url: "https://malegislature.gov/Laws/GeneralLaws/PartI/TitleX/Chapter66/Section10",
@@ -253,6 +261,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés pour accorder, refuser, accorder en partie, ou prolonger.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days to grant, deny, partly grant, or extend.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: vijf werkdagen om toe te kennen, te weigeren, deels toe te kennen of te verlengen.",
           },
           cite: "MCL 15.235(2)",
           url: "https://www.legislature.mi.gov/Laws/MCL?objectName=mcl-15-235",
@@ -273,6 +282,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : quatre jours ouvrés au plus à compter de la réception effective — avec, dans le même délai, une estimation du coût des copies.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: no more than four business days after actual receipt — with, in the same period, an estimate of the cost of copies.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: hoogstens vier werkdagen vanaf de feitelijke ontvangst — met, binnen dezelfde termijn, een raming van de kopieerkosten.",
           },
           cite: "Neb. Rev. Stat. § 84-712(4)",
           url: "https://nebraskalegislature.gov/laws/statutes.php?statute=84-712",
@@ -293,6 +303,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : au plus tard à la fin du cinquième jour ouvré suivant la demande, écrite ou orale.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: no later than the end of the fifth business day after the request, written or oral.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: uiterlijk aan het einde van de vijfde werkdag na het verzoek, schriftelijk of mondeling.",
           },
           cite: "NRS 239.0107(1)",
           url: "https://www.leg.state.nv.us/NRS/NRS-239.html",
@@ -313,6 +324,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés pour communiquer le document, le refuser, ou écrire le temps qu'il faudra et pourquoi.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days to make the record available, deny the request, or state in writing how long it will take and why.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: vijf werkdagen om het document te verstrekken, het te weigeren, of op te schrijven hoeveel tijd er nodig is en waarom.",
           },
           cite: "RSA 91-A:4, IV(b)",
           url: "https://www.gencourt.state.nh.us/rsa/html/VI/91-A/91-A-4.htm",
@@ -333,6 +345,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « aussi promptement que possible » — AUCUN nombre de jours.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “as promptly as possible” — NO number of days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'zo snel als mogelijk' — GEEN aantal dagen.",
           },
           cite: "N.C.G.S. § 132-6(a)",
           url: "https://www.ncleg.gov/EnactedLegislation/Statutes/HTML/BySection/Chapter_132/GS_132-6.html",
@@ -353,6 +366,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : les documents sont ouverts « pendant les heures de bureau raisonnables » — la loi ne fixe AUCUN délai de réponse.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: records are open “during reasonable office hours” — the statute sets NO response deadline at all.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: de documenten zijn toegankelijk 'tijdens redelijke kantooruren' — de wet legt GEEN antwoordtermijn vast.",
           },
           cite: "N.D.C.C. § 44-04-18(1)",
           url: "https://ndlegis.gov/cencode/t44c04.pdf",
@@ -373,6 +387,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « promptement préparés et mis à disposition », aux heures ouvrables raisonnables, les copies étant fournies « dans un délai raisonnable » — AUCUN nombre de jours.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “promptly prepared and made available” at all reasonable times during business hours, copies supplied “within a reasonable period of time” — NO number of days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'prompt klaargemaakt en beschikbaar gesteld', tijdens redelijke kantooruren, met kopieën 'binnen een redelijke termijn' — GEEN aantal dagen.",
           },
           cite: "Ohio Rev. Code § 149.43(B)(1)",
           url: "https://codes.ohio.gov/ohio-revised-code/section-149.43",
@@ -393,6 +408,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « un accès prompt et raisonnable » — AUCUN nombre de jours. Un retard ne peut tenir qu'au temps de préparation des documents.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “prompt, reasonable access” — NO number of days. A delay may only be the time needed to prepare the documents.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'prompte en redelijke toegang' — GEEN aantal dagen. Vertraging mag alleen liggen aan de tijd die het klaarmaken van de documenten vergt.",
           },
           cite: "51 O.S. § 24A.5(6)",
           url: "https://oksenate.gov/sites/default/files/2019-12/os51.pdf",
@@ -413,6 +429,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés pour accuser réception OU pour répondre complètement — l'administration choisit lequel des deux.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days to acknowledge receipt OR to complete the response — the agency picks which.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: vijf werkdagen om de ontvangst te bevestigen OF om volledig te antwoorden — de overheid kiest welke van de twee.",
           },
           cite: "ORS 192.329(2)",
           url: "https://www.oregonlegislature.gov/bills_laws/ors/ors192.html",
@@ -433,6 +450,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : cinq jours ouvrés au maximum. Et le silence vaut décision : passé ce délai sans réponse, la demande est RÉPUTÉE REFUSÉE — ce qui ouvre l'appel au lieu de laisser le demandeur attendre.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: five business days at most. And silence is a decision: past that, with no answer, the request is DEEMED DENIED — which opens the appeal instead of leaving the requester waiting.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: hoogstens vijf werkdagen. En zwijgen geldt als besluit: verstrijkt die termijn zonder antwoord, dan wordt het verzoek GEACHT TE ZIJN GEWEIGERD — wat het beroep opent in plaats van de aanvrager te laten wachten.",
           },
           cite: "65 P.S. § 67.901",
           url: "https://www.legis.state.pa.us/WU01/LI/LI/US/HTM/2008/0/0003..HTM",
@@ -453,6 +471,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : dix jours ouvrés ; au-delà, l'administration doit expliquer par écrit, et de façon propre à la demande, le temps supplémentaire qu'il lui faut.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: ten business days; beyond that the body must explain in writing, specifically to that request, why it needs more time.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: tien werkdagen; daarna moet de overheid schriftelijk, en toegespitst op dit verzoek, uitleggen hoeveel extra tijd ze nodig heeft.",
           },
           cite: "R.I. Gen. Laws § 38-2-3(e)",
           url: "https://webserver.rilegislature.gov/Statutes/TITLE38/38-2/38-2-3.HTM",
@@ -473,6 +492,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « dès que possible en pratique et sans retard » — AUCUN nombre de jours.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: “as soon as practicable and without delay” — NO number of days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'zodra het praktisch kan en zonder vertraging' — GEEN aantal dagen.",
           },
           cite: "Wis. Stat. § 19.35(4)(a)",
           url: "https://docs.legis.wisconsin.gov/statutes/statutes/19/ii/35",
@@ -493,6 +513,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : trente jours calendaires au plus à compter de la réception accusée ; sept jours ouvrés si l'administration doit signaler qu'elle ne détient pas le document. Un document immédiatement disponible se remet sur-le-champ.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law. The deadline: thirty calendar days at most from acknowledged receipt; seven business days where the entity must say it does not hold the record. A readily available record is released immediately.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: hoogstens dertig kalenderdagen vanaf de bevestigde ontvangst; zeven werkdagen als de overheid moet melden dat ze het document niet heeft. Een direct beschikbaar document wordt meteen overhandigd.",
           },
           cite: "W.S. § 16-4-202(b) et (c)",
           url: "https://www.wyoleg.gov/statutes/compress/title16.pdf",
@@ -511,6 +532,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Avant tout dossier : l'aide financière d'une agence de développement industriel (abattement de taxe foncière, PILOT) au-delà de 100 000 $ impose une audience publique — souvent le premier rendez-vous public du projet, et le plus tôt.",
             en: "Before any filing: financial assistance from an industrial development agency (property-tax abatement, PILOT) above $100,000 requires a public hearing — often the project's first public meeting, and the earliest.",
+            nl: "Vóór enig dossier: financiële steun van een industrieel ontwikkelingsagentschap (korting op de onroerendgoedbelasting, PILOT) boven 100.000 $ vereist een openbare hoorzitting — vaak de eerste publieke afspraak van het project, en de vroegste.",
           },
           cite: "N.Y. General Municipal Law § 859-a(2)",
           url: "https://www.nysenate.gov/legislation/laws/GMU/859-A",
@@ -520,6 +542,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "L'examen SEQRA est ouvert : les commentaires sur l'étude d'impact (draft EIS) sont reçus pendant trente jours au moins, à compter du dépôt et de la diffusion de l'avis d'achèvement.",
             en: "SEQRA review is open: comments on the draft EIS are accepted for a minimum of thirty days from the first filing and circulation of the notice of completion.",
+            nl: "De SEQRA-toetsing is open: opmerkingen op het milieueffectrapport (draft EIS) worden ten minste dertig dagen ontvangen, te rekenen vanaf de indiening en de verspreiding van het bericht van voltooiing.",
           },
           cite: "6 NYCRR 617.9(a)(3)",
           url: "https://www.law.cornell.edu/regulations/new-york/6-NYCRR-617.9",
@@ -529,6 +552,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Le site fonctionne : les conditions opposables sont celles écrites dans l'autorisation locale. Les obtenir, puis les confronter à l'exploitation, passe par une demande FOIL.",
             en: "The site is running: the enforceable conditions are the ones written into the local approval. Getting them, then holding the operation to them, goes through a FOIL request.",
+            nl: "De site draait: de afdwingbare voorwaarden zijn die welke in de lokale vergunning staan. Ze opvragen, en ze dan naast de exploitatie leggen, gaat via een FOIL-verzoek (verzoek om openbaarmaking).",
           },
           cite: "N.Y. Public Officers Law § 89(3)(a)",
           url: "https://www.nysenate.gov/legislation/laws/PBO/89",
@@ -540,6 +564,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Si une audience publique est tenue sur l'étude d'impact, elle s'ouvre entre quinze et soixante jours calendaires après le dépôt de l'avis d'achèvement : la date se surveille, elle ne se demande pas.",
             en: "If a public hearing is held on the draft EIS, it opens no less than 15 and no more than 60 calendar days after the notice of completion is filed: the date is watched for, not requested.",
+            nl: "Wordt er een openbare hoorzitting over het milieueffectrapport gehouden, dan opent die tussen vijftien en zestig kalenderdagen na de indiening van het bericht van voltooiing: de datum moet u in de gaten houden, niet aanvragen.",
           },
           cite: "6 NYCRR 617.9(a)(4)(ii)",
           url: "https://www.law.cornell.edu/regulations/new-york/6-NYCRR-617.9",
@@ -549,6 +574,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "L'audience de l'agence de développement industriel doit être annoncée au moins dix jours à l'avance : c'est le préavis minimal pour s'organiser.",
             en: "The industrial development agency's hearing must be noticed at least ten days ahead: that is the minimum warning you get.",
+            nl: "De hoorzitting van het industriële ontwikkelingsagentschap moet ten minste tien dagen vooraf worden aangekondigd: dat is de minimale termijn om u te organiseren.",
           },
           cite: "N.Y. General Municipal Law § 859-a(3)",
           url: "https://www.nysenate.gov/legislation/laws/GMU/859-A",
@@ -558,6 +584,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Contester la décision devant le juge (procédure dite Article 78) : quatre mois à compter du jour où elle devient définitive. Ce délai ne se rattrape pas.",
             en: "Challenging the decision in court (an Article 78 proceeding): four months from the day it becomes final and binding. This one does not come back.",
+            nl: "Het besluit aanvechten bij de rechter (de zogeheten Article 78-procedure): vier maanden vanaf de dag waarop het onherroepelijk wordt. Deze termijn is fataal.",
           },
           cite: "N.Y. CPLR 217(1)",
           url: "https://www.nysenate.gov/legislation/laws/CVP/217",
@@ -569,6 +596,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide, étude acoustique — s'obtient par une demande écrite FOIL : l'administration doit agir dans les cinq jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, assistance application, acoustic study — is obtained by a written FOIL request: the agency must act within five business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, steunaanvraag, akoestisch onderzoek — is te verkrijgen met een schriftelijk FOIL-verzoek (verzoek om openbaarmaking): de overheid moet binnen vijf werkdagen handelen.",
           },
           cite: "N.Y. Public Officers Law § 89(3)(a)",
           url: "https://www.nysenate.gov/legislation/laws/PBO/89",
@@ -578,6 +606,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Un refus se conteste : trente jours pour faire appel par écrit auprès du responsable désigné de l'administration.",
             en: "A denial can be contested: thirty days to appeal in writing to the agency's designated appeals officer.",
+            nl: "Een weigering valt aan te vechten: dertig dagen om schriftelijk in beroep te gaan bij de daarvoor aangewezen verantwoordelijke van de overheid.",
           },
           cite: "N.Y. Public Officers Law § 89(4)(a)",
           url: "https://www.nysenate.gov/legislation/laws/PBO/89",
@@ -598,6 +627,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « promptement » — AUCUN nombre de jours. Un défaut de réponse prompte vaut refus, ce qui ouvre le recours.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. The deadline: “promptly” — NO number of days. A failure to respond promptly counts as a denial, which opens the appeal.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'prompt' — GEEN aantal dagen. Het uitblijven van een prompt antwoord geldt als weigering, wat de weg naar beroep opent.",
           },
           cite: "A.R.S. § 39-121.01(D)(1)",
           url: "https://www.azleg.gov/ars/39/00121-01.htm",
@@ -618,6 +648,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de dix jours.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within ten days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen tien dagen.",
           },
           cite: "Cal. Gov. Code § 7922.535(a)",
           url: "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=GOV&sectionNum=7922.535",
@@ -638,6 +669,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Un refus doit être notifié PAR ÉCRIT dans les quatre jours ouvrés — dix lorsque la demande porte sur des données nominatives de personnels. Un silence au-delà vaut refus et ouvre le recours.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. A denial must be given IN WRITING within four business days — ten where the request covers personnel data. Silence beyond that counts as a denial and opens the appeal.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. Een weigering moet SCHRIFTELIJK worden meegedeeld binnen vier werkdagen — tien wanneer het verzoek om persoonsgegevens van personeel gaat. Blijft het daarna stil, dan geldt dat als weigering en opent dat het beroep.",
           },
           cite: "Conn. Gen. Stat. § 1-206(a)",
           url: "https://www.cga.ct.gov/current/pub/chap_014.htm",
@@ -658,6 +690,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de quinze jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within fifteen business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen vijftien werkdagen.",
           },
           cite: "29 Del. C. § 10003(h)(1)",
           url: "https://delcode.delaware.gov/title29/c100/index.html",
@@ -678,6 +711,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de quinze jours, samedis, dimanches et jours fériés non comptés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within fifteen days, excluding Saturdays, Sundays and legal holidays.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen vijftien dagen, zaterdagen, zondagen en feestdagen niet meegeteld.",
           },
           cite: "D.C. Code § 2-532(c)(1)",
           url: "https://code.dccouncil.gov/us/dc/council/code/sections/2-532",
@@ -698,6 +732,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « promptement » et « de bonne foi » — AUCUN nombre de jours. Il n'y a pas d'horloge : seule la relance datée fait courir la preuve.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. The deadline: “promptly” and “in good faith” — NO number of days. There is no clock: only a dated follow-up builds the record.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'prompt' en 'te goeder trouw' — GEEN aantal dagen. Er loopt geen klok: alleen een gedateerde herinneringsbrief legt bewijs vast.",
           },
           cite: "Fla. Stat. § 119.07(1)(c)",
           url: "https://m.flsenate.gov/Statutes/119.07",
@@ -718,6 +753,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de vingt jours calendaires au maximum, dix jours ouvrés ordinairement.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within twenty calendar days at most, ten business days ordinarily.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen hoogstens twintig kalenderdagen, gewoonlijk tien werkdagen.",
           },
           cite: "Iowa Code § 22.8(4)(d)",
           url: "https://www.legis.iowa.gov/docs/code/22.8.pdf",
@@ -738,6 +774,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de trois jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within three business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen drie werkdagen.",
           },
           cite: "K.S.A. § 45-218(d)",
           url: "https://ksrevisor.gov/statutes/chapters/ch45/045_002_0018.html",
@@ -758,6 +795,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. L'administration doit ACCUSER RÉCEPTION de la demande dans les cinq jours ouvrés. L'accusé n'est pas la communication : c'est le point de départ, pas l'arrivée.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. The agency must ACKNOWLEDGE the request within five working days. The acknowledgement is not the disclosure: it is the start, not the finish.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De overheid moet de ONTVANGST van het verzoek BEVESTIGEN binnen vijf werkdagen. De bevestiging is nog niet de verstrekking: het is het vertrekpunt, niet de aankomst.",
           },
           cite: "1 M.R.S. § 408-A(3)",
           url: "https://legislature.maine.gov/statutes/1/title1sec408-A.html",
@@ -778,6 +816,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de trente jours.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within thirty days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen dertig dagen.",
           },
           cite: "Md. Code, Gen. Prov. § 4-203(a)(1)",
           url: "https://mgaleg.maryland.gov/mgawebsite/Laws/StatuteText?article=ggp&section=4-203&enactments=false",
@@ -798,6 +837,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « dès que raisonnablement possible » — AUCUN nombre de jours. Il n'y a pas d'horloge : seule la relance datée fait courir la preuve.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. The deadline: “as soon as reasonably possible” — NO number of days. There is no clock: only a dated follow-up builds the record.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'zodra redelijkerwijs mogelijk' — GEEN aantal dagen. Er loopt geen klok: alleen een gedateerde herinneringsbrief legt bewijs vast.",
           },
           cite: "Minn. Stat. § 13.03, subd. 3",
           url: "https://www.revisor.mn.gov/statutes/cite/13.03",
@@ -818,6 +858,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de trois jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within three business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen drie werkdagen.",
           },
           cite: "Mo. Rev. Stat. § 610.023.3",
           url: "https://revisor.mo.gov/main/OneSection.aspx?section=610.023",
@@ -838,6 +879,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : le droit d'examiner et de copier toute information publique est posé, mais AUCUN délai de réponse n'est fixé par la loi.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. The deadline: the right to examine and copy any public information is stated, but the statute sets NO response deadline.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: het recht om alle publieke informatie in te zien en te kopiëren staat vast, maar de wet legt GEEN antwoordtermijn vast.",
           },
           cite: "MCA § 2-6-1003",
           url: "https://mca.legmt.gov/bills/mca/title_0020/chapter_0060/part_0100/section_0030/0020-0060-0100-0030.html",
@@ -858,6 +900,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de dix jours, samedis, dimanches et jours fériés non comptés — vingt pour un document de plus de vingt-quatre mois.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within ten days, excluding Saturdays, Sundays and legal holidays — twenty for a record older than twenty-four months.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen tien dagen, zaterdagen, zondagen en feestdagen niet meegeteld — twintig voor een document ouder dan vierentwintig maanden.",
           },
           cite: "S.C. Code § 30-4-30(C)",
           url: "https://www.scstatehouse.gov/code/t30c004.php",
@@ -878,6 +921,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de dix jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within ten business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen tien werkdagen.",
           },
           cite: "SDCL § 1-27-37(1)",
           url: "https://sdlegislature.gov/Statutes/1-27-37",
@@ -898,6 +942,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État. Le délai : « promptement », c'est-à-dire « aussi vite que possible selon les circonstances, dans un délai raisonnable, sans retard » — AUCUN nombre de jours. Il n'y a pas d'horloge : seule la relance datée fait courir la preuve.",
             en: "Any record held by the town, the county or the development agency is obtained by a written request under the state's public-records law. The deadline: “promptly”, meaning “as soon as possible under the circumstances, that is, within a reasonable time, without delay” — NO number of days. There is no clock: only a dated follow-up builds the record.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat. De termijn: 'prompt', dat wil zeggen 'zo snel als de omstandigheden toelaten, binnen een redelijke termijn, zonder vertraging' — GEEN aantal dagen. Er loopt geen klok: alleen een gedateerde herinneringsbrief legt bewijs vast.",
           },
           cite: "Tex. Gov't Code § 552.221(a)",
           url: "https://statutes.capitol.texas.gov/Docs/GV/htm/GV.552.htm",
@@ -918,6 +963,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de dix jours ouvrés — cinq si la demande sert le public plutôt que le demandeur.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within ten business days — five where the request benefits the public rather than the requester.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen tien werkdagen — vijf als het verzoek het publiek dient en niet de aanvrager.",
           },
           cite: "Utah Code § 63G-2-204(4)(b)",
           url: "https://le.utah.gov/xcode/Title63G/Chapter2/63G-2-S204.html",
@@ -938,6 +984,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de trois jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within three business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen drie werkdagen.",
           },
           cite: "1 V.S.A. § 318(a)(1)",
           url: "https://legislature.vermont.gov/statutes/section/01/005/00318",
@@ -958,6 +1005,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de cinq jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within five working days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen vijf werkdagen.",
           },
           cite: "Va. Code § 2.2-3704(B)",
           url: "https://law.lis.virginia.gov/vacode/title2.2/chapter37/section2.2-3704/",
@@ -978,6 +1026,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de cinq jours ouvrés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within five business days.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen vijf werkdagen.",
           },
           cite: "RCW 42.56.520(1)",
           url: "https://app.leg.wa.gov/RCW/default.aspx?cite=42.56.520",
@@ -998,6 +1047,7 @@ export const US: ProcedureCountry = {
           text: {
             fr: "Toute pièce détenue par la commune, le comté ou l'agence de développement — étude d'impact, demande d'aide fiscale, étude acoustique — s'obtient par une demande écrite au titre de la loi d'accès aux documents de l'État : l'administration doit répondre dans un délai de cinq jours, samedis, dimanches et jours fériés non comptés.",
             en: "Any record held by the town, the county or the development agency — impact study, tax-assistance application, acoustic study — is obtained by a written request under the state's public-records law: the agency must respond within five days, excluding Saturdays, Sundays and legal holidays.",
+            nl: "Elk stuk in handen van de gemeente, de county of het ontwikkelingsagentschap — milieueffectrapport, aanvraag voor belastingvoordeel, akoestisch onderzoek — is te verkrijgen met een schriftelijk verzoek op grond van de openbaarheidswet van de staat: de overheid moet antwoorden binnen vijf dagen, zaterdagen, zondagen en feestdagen niet meegeteld.",
           },
           cite: "W. Va. Code § 29B-1-3(d)",
           url: "https://code.wvlegislature.gov/29B-1-3/",

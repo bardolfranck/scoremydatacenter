@@ -30,6 +30,7 @@ export const AT: ProcedureCountry = {
         text: {
           fr: "Quatre semaines pour former un recours contre la décision d'une autorité devant le tribunal administratif.",
           en: "Four weeks to bring an appeal against an authority's decision before the administrative court.",
+          nl: "Vier weken om tegen het besluit van een autoriteit beroep in te stellen bij de bestuursrechter.",
         },
         cite: "VwGVG § 7 Abs. 4",
         url: "https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20008255&Paragraf=7",

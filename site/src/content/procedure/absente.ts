@@ -66,7 +66,7 @@ const UNION_EUROPEENNE: ProcedureAbsente = {
   question: {
     fr: "Ce que nous n'avons pas encore lu, c'est le délai national de recours — celui qui, une fois l'autorisation délivrée, ne se rattrape pas. Aucune directive ne le fixe : il va de trois semaines en Suède à deux mois en France et en Espagne. Demandez-le à l'autorité qui délivre l'autorisation, et faites-le avant qu'elle ne la délivre.",
     en: "What we have not yet read is the national appeal deadline — the one that, once the permit is granted, does not come back. No directive sets it: it runs from three weeks in Sweden to two months in France and Spain. Ask the issuing authority for it, and ask before they grant.",
-    nl: "Wat we nog niet hebben gelezen, is de nationale beroepstermijn — de termijn die, zodra de vergunning is verleend, niet meer in te halen is. Geen enkele richtlijn legt hem vast: hij loopt van drie weken in Zweden tot twee maanden in Frankrijk en Spanje. Vraag hem op bij de autoriteit die de vergunning verleent — en doe dat vóór ze haar verleent.",
+    nl: "Wat we nog niet hebben gelezen, is de nationale beroepstermijn — de termijn die, zodra de vergunning is verleend, fataal is. Geen enkele richtlijn legt hem vast: hij loopt van drie weken in Zweden tot twee maanden in Frankrijk en Spanje. Vraag hem op bij de autoriteit die de vergunning verleent — en doe dat vóór ze haar verleent.",
   },
 };
 

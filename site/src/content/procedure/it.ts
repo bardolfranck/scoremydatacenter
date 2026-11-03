@@ -29,6 +29,7 @@ export const IT: ProcedureCountry = {
         text: {
           fr: "Soixante jours, à peine de forclusion, pour demander l'annulation de la décision — pour violation de la loi, incompétence ou excès de pouvoir.",
           en: "Sixty days, on pain of forfeiture, to seek annulment of the decision — for breach of law, lack of competence or misuse of power.",
+          nl: "Zestig dagen, op straffe van verval van recht, om de vernietiging van het besluit te vragen — wegens schending van de wet, onbevoegdheid of machtsoverschrijding.",
         },
         cite: "Codice del processo amministrativo (d.lgs. 104/2010, allegato 1), art. 29",
         url: "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2010-07-02;104",

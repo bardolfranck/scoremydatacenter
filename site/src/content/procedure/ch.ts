@@ -58,6 +58,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Trente jours pour déposer un recours écrit, à compter du lendemain de la notification — du lendemain de la publication officielle si la décision n'a pas été notifiée.",
             en: "Thirty days to file a written appeal, from the day after notification — from the day after official publication where the decision was not notified.",
+            nl: "Dertig dagen om een schriftelijk beroep in te dienen, te rekenen vanaf de dag na de kennisgeving — vanaf de dag na de officiële publicatie als het besluit niet ter kennis is gebracht.",
           },
           cite: "Verwaltungsrechtspflegegesetz (VRG, LS 175.2), § 22 Abs. 1 et 2",
           url: "https://www2.zhlex.zh.ch/appl/zhlex_r.nsf/WebView/1F43F59724E5F9EEC12588C300332E2C/$File/175.2_24.5.59_118.pdf",
@@ -67,6 +68,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "En cas d'urgence particulière, l'autorité peut réduire ce délai à cinq jours.",
             en: "In cases of particular urgency the authority may cut that period to five days.",
+            nl: "Bij bijzondere spoed kan de autoriteit deze termijn inkorten tot vijf dagen.",
           },
           cite: "VRG (LS 175.2), § 22 Abs. 3",
           url: "https://www2.zhlex.zh.ch/appl/zhlex_r.nsf/WebView/1F43F59724E5F9EEC12588C300332E2C/$File/175.2_24.5.59_118.pdf",
@@ -87,6 +89,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Trente jours pour former recours, à compter de la notification ou de la publication de la décision.",
             en: "Thirty days to lodge an appeal, from the notification or publication of the decision.",
+            nl: "Dertig dagen om beroep in te stellen, te rekenen vanaf de kennisgeving of de publicatie van het besluit.",
           },
           cite: "Gesetz über die Verwaltungsrechtspflege (VRPG, BSG 155.21), Art. 67 Abs. 1",
           url: "https://www.belex.sites.be.ch/app/de/texts_of_law/155.21",
@@ -107,6 +110,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Vingt jours pour déposer un recours écrit après la communication de la décision — et non trente.",
             en: "Twenty days to file a written appeal after the decision is communicated — not thirty.",
+            nl: "Twintig dagen om na de mededeling van het besluit een schriftelijk beroep in te dienen — geen dertig.",
           },
           cite: "Gesetz über den Rechtsschutz in Verwaltungssachen (BGS 162.1), § 43 Abs. 1",
           url: "https://bgs.zg.ch/app/de/texts_of_law/162.1",
@@ -116,6 +120,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "En cas d'urgence particulière, l'autorité peut ramener ce délai à quarante-huit heures.",
             en: "In cases of particular urgency the authority may cut that period to forty-eight hours.",
+            nl: "Bij bijzondere spoed kan de autoriteit deze termijn terugbrengen tot achtenveertig uur.",
           },
           cite: "BGS 162.1, § 43 Abs. 2",
           url: "https://bgs.zg.ch/app/de/texts_of_law/162.1",
@@ -136,6 +141,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Trente jours pour recourir — dix seulement contre une décision incidente.",
             en: "Thirty days to appeal — only ten against an incidental decision.",
+            nl: "Dertig dagen om in beroep te gaan — slechts tien tegen een tussenbeslissing.",
           },
           cite: "Code de procédure et de juridiction administrative (CPJA, RSF 150.1), art. 79",
           url: "https://bdlf.fr.ch/app/fr/texts_of_law/150.1",
@@ -156,6 +162,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Trente jours contre une décision finale, dix contre les autres décisions. Le délai court dès le lendemain de la notification.",
             en: "Thirty days against a final decision, ten against other decisions. The period runs from the day after notification.",
+            nl: "Dertig dagen tegen een eindbeslissing, tien tegen de andere beslissingen. De termijn loopt vanaf de dag na de kennisgeving.",
           },
           cite: "Loi sur la procédure administrative (LPA, E 5 10), art. 62",
           url: "https://silgeneve.ch/legis/data/rsg_e5_10.htm",
@@ -176,6 +183,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Vingt jours pour former opposition contre une décision finale, dix contre une décision incidente. L'opposition suspend la décision.",
             en: "Twenty days to object to a final decision, ten against an interim one. The objection suspends the decision.",
+            nl: "Twintig dagen om bezwaar aan te tekenen tegen een eindbeslissing, tien tegen een tussenbeslissing. Het bezwaar schorst de beslissing.",
           },
           cite: "Gesetz über die Verwaltungsrechtspflege (SRL Nr. 40), § 119 Abs. 1",
           url: "https://srl.lu.ch/app/de/texts_of_law/40",
@@ -196,6 +204,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Trente jours pour déposer le recours — dix s'il s'agit d'une décision incidente.",
             en: "Thirty days to file the appeal — ten if it is an incidental decision.",
+            nl: "Dertig dagen om het beroep in te dienen — tien als het om een tussenbeslissing gaat.",
           },
           cite: "Loi sur la procédure et la juridiction administratives (LPJA, RS/VS 172.6), art. 46 al. 1",
           url: "https://lex.vs.ch/app/fr/texts_of_law/172.6",
@@ -216,6 +225,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Quatorze jours seulement pour déposer le recours après la notification — cinq contre des mesures provisionnelles ou d'exécution.",
             en: "Fourteen days only to file the appeal after notification — five against provisional or enforcement measures.",
+            nl: "Slechts veertien dagen om na de kennisgeving het beroep in te dienen — vijf tegen voorlopige of uitvoeringsmaatregelen.",
           },
           cite: "Gesetz über die Verwaltungsrechtspflege (sGS 951.1), Art. 47",
           url: "https://www.gesetzessammlung.sg.ch/app/de/texts_of_law/951.1",
@@ -236,6 +246,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Dix jours pour ANNONCER le recours par écrit au tribunal administratif, puis trente jours au plus pour en déposer les motifs. Manquer le premier délai ferme le second.",
             en: "Ten days to DECLARE the appeal in writing to the administrative court, then at most thirty days to file its grounds. Missing the first closes the second.",
+            nl: "Tien dagen om het beroep schriftelijk AAN TE KONDIGEN bij de bestuursrechter, daarna hoogstens dertig dagen om de gronden in te dienen. De eerste termijn missen sluit de tweede af.",
           },
           cite: "Gesetz über die Verfassungs- und Verwaltungsrechtspflege (SG 270.100), § 16",
           url: "https://www.gesetzessammlung.bs.ch/app/de/texts_of_law/270.100",
@@ -256,6 +267,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Dix jours — le délai le plus court du corpus suisse — à compter de la remise de la décision.",
             en: "Ten days — the shortest in the Swiss corpus — from service of the decision.",
+            nl: "Tien dagen — de kortste termijn van het Zwitserse corpus — te rekenen vanaf de afgifte van de beslissing.",
           },
           cite: "Gesetz über den Rechtsschutz in Verwaltungssachen (BGS 124.11), § 32 Abs. 1",
           url: "https://bgs.so.ch/app/de/texts_of_law/124.11",
@@ -276,6 +288,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Trente jours pour déposer le mémoire de recours, qui doit porter des conclusions, des motifs et les moyens de preuve.",
             en: "Thirty days to file the appeal, which must carry its claims, its grounds and its evidence.",
+            nl: "Dertig dagen om het beroepschrift in te dienen; het moet de vorderingen, de gronden en de bewijsmiddelen bevatten.",
           },
           cite: "Gesetz über die Verwaltungsrechtspflege (RB 170.1), § 45 Abs. 1",
           url: "https://www.rechtsbuch.tg.ch/app/de/texts_of_law/170.1",
@@ -296,6 +309,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Vingt jours après la communication de la décision — ou, à défaut, après en avoir eu connaissance.",
             en: "Twenty days after the decision is communicated — or, failing that, after learning of it.",
+            nl: "Twintig dagen na de mededeling van het besluit — of, bij gebrek daaraan, nadat u er kennis van hebt gekregen.",
           },
           cite: "Gesetz über den Rechtsschutz in Verwaltungssachen (SHR 172.200), Art. 20 Abs. 1",
           url: "https://www.rechtsbuch.sh.ch/app/de/texts_of_law/172.200",
@@ -305,6 +319,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "En cas d'urgence particulière, l'autorité peut ramener ce délai à quarante-huit heures.",
             en: "In cases of particular urgency the authority may cut that period to forty-eight hours.",
+            nl: "Bij bijzondere spoed kan de autoriteit deze termijn terugbrengen tot achtenveertig uur.",
           },
           cite: "SHR 172.200, Art. 20 Abs. 2",
           url: "https://www.rechtsbuch.sh.ch/app/de/texts_of_law/172.200",
@@ -325,6 +340,7 @@ export const CH: ProcedureCountry = {
           text: {
             fr: "Dix jours à compter de la notification. Un tiers que l'autorité ne connaissait pas dispose de dix jours à compter du moment où il a connaissance de la décision.",
             en: "Ten days from notification. A third party unknown to the authority has ten days from the moment they learn of the decision.",
+            nl: "Tien dagen vanaf de kennisgeving. Een derde die de autoriteit niet kende, heeft tien dagen vanaf het moment waarop hij kennis krijgt van de beslissing.",
           },
           cite: "Verwaltungsverfahrensgesetz (SGS 175), § 33 Abs. 1 et 2",
           url: "https://bl.clex.ch/app/de/texts_of_law/175",

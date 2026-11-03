@@ -27,6 +27,7 @@ export const EU: ProcedureJurisdiction = {
       text: {
         fr: "Quand une évaluation environnementale est requise, le public concerné dispose d'au moins trente jours pour se prononcer sur le rapport d'évaluation. Ce plancher vaut dans toute l'Union.",
         en: "Where an environmental assessment is required, the public concerned has at least thirty days to comment on the assessment report. That floor applies across the Union.",
+        nl: "Wanneer een milieubeoordeling vereist is, heeft het betrokken publiek ten minste dertig dagen om zich over het beoordelingsrapport uit te spreken. Die ondergrens geldt in de hele Unie.",
       },
       cite: "Directive 2011/92/UE, art. 6(7) (modifié par la directive 2014/52/UE)",
       url: "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02011L0092-20140515",
@@ -38,6 +39,7 @@ export const EU: ProcedureJurisdiction = {
       text: {
         fr: "Une fois l'autorisation délivrée ou refusée, son contenu, ses prescriptions et les motifs qui la fondent doivent être rendus publics — y compris la façon dont les observations du public ont été prises en compte.",
         en: "Once consent is granted or refused, its content, its conditions and the reasons behind it must be made public — including how the public's comments were taken into account.",
+        nl: "Zodra de vergunning is verleend of geweigerd, moeten de inhoud, de voorschriften en de motivering openbaar worden gemaakt — met inbegrip van de manier waarop de opmerkingen van het publiek zijn meegewogen.",
       },
       cite: "Directive 2011/92/UE, art. 9(1)",
       url: "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02011L0092-20140515",
@@ -47,6 +49,7 @@ export const EU: ProcedureJurisdiction = {
       text: {
         fr: "Le public concerné a droit à un recours devant un tribunal pour contester la légalité de la décision, sur le fond comme sur la procédure. Le délai, lui, est fixé par chaque État — c'est la ligne nationale qu'il faut lire.",
         en: "The public concerned has a right of review before a court to challenge the decision's legality, on substance and on procedure. The deadline itself is set by each State — that is the national line to read.",
+        nl: "Het betrokken publiek heeft recht op beroep bij een rechter om de rechtmatigheid van het besluit aan te vechten, op de inhoud én op de procedure. De termijn wordt door elke staat zelf bepaald — dat is de nationale lijn die u moet lezen.",
       },
       cite: "Directive 2011/92/UE, art. 11(1)",
       url: "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02011L0092-20140515",
@@ -58,6 +61,7 @@ export const EU: ProcedureJurisdiction = {
       text: {
         fr: "Toute information environnementale détenue par une autorité publique s'obtient sur simple demande, sans avoir à justifier d'un intérêt, et doit être fournie dans un délai d'un mois — deux si le volume le justifie, l'autorité devant alors le dire avant l'échéance.",
         en: "Any environmental information held by a public authority is available on request, without having to state an interest, and must be supplied within one month — two if the volume warrants it, the authority having to say so before the deadline.",
+        nl: "Alle milieu-informatie in handen van een overheidsinstantie is op eenvoudig verzoek te verkrijgen, zonder dat u een belang hoeft aan te tonen, en moet binnen een maand worden geleverd — twee als de omvang dat rechtvaardigt, en dan moet de autoriteit dat vóór de vervaldag zeggen.",
       },
       cite: "Directive 2003/4/CE, art. 3(1) et 3(2)",
       url: "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32003L0004",

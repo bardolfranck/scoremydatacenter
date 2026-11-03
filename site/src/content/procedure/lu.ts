@@ -36,6 +36,7 @@ export const LU: ProcedureCountry = {
         text: {
           fr: "Trois mois pour attaquer la décision devant le tribunal administratif — à compter de sa notification, ou du jour où vous avez pu en prendre connaissance. Un recours gracieux adressé à l'autorité avant ce délai le suspend et fait courir un nouveau délai de trois mois.",
           en: "Three months to challenge the decision before the administrative tribunal — from the day it is notified, or from the day you could become aware of it. A prior request for reconsideration (recours gracieux) sent before that deadline suspends it and starts a fresh three-month period.",
+          nl: "Drie maanden om het besluit aan te vechten bij de bestuursrechter — te rekenen vanaf de kennisgeving, of vanaf de dag waarop u er kennis van kon nemen. Een verzoek tot heroverweging bij de autoriteit (recours gracieux), ingediend vóór die termijn verstrijkt, schorst hem en doet een nieuwe termijn van drie maanden lopen.",
         },
         cite: "Loi du 21 juin 1999 portant règlement de procédure devant les juridictions administratives, art. 13",
         url: "https://legilux.public.lu/eli/etat/leg/loi/1999/06/21/n2/consolide/20230916",

@@ -23,6 +23,7 @@ export const NO: ProcedureCountry = {
         text: {
           fr: "Trois semaines pour former une réclamation contre la décision, à compter du moment où elle parvient à la partie concernée — à compter de la publication si elle a été annoncée publiquement.",
           en: "Three weeks to lodge a complaint against the decision, from the moment notice reaches the party concerned — from publication if it was announced publicly.",
+          nl: "Drie weken om bezwaar aan te tekenen tegen het besluit, te rekenen vanaf het moment waarop het de betrokken partij bereikt — vanaf de publicatie als het publiek is aangekondigd.",
         },
         cite: "Forvaltningsloven § 29",
         url: "https://lovdata.no/dokument/NL/lov/1967-02-10/KAPITTEL_6",
