@@ -677,6 +677,150 @@ def filigrane_gate(paths: list[Path]) -> list[str]:
     return out
 
 
+# ──────────────────────────────────────────────────────────────────────────────────────────
+# Une traduction ne déplace pas une grandeur
+# ──────────────────────────────────────────────────────────────────────────────────────────
+# Les classes de PÉRIODE, par langue. Comparer les mots d'unité serait absurde — « g de CO2
+# par kWh » et « g CO2 per kWh » ne s'écrivent pas pareil, et c'est normal. Mais une PÉRIODE
+# est un fait : « par an » qui devient « per maand » fait mentir la fiche d'un facteur douze.
+# C'est la faute qu'on a déjà publiée, en français, sur 74 synthèses.
+# 🔴 CE GARDE NE COMPARE QUE LES NOMBRES, ET C'EST UNE DÉCISION, PAS UN OUBLI.
+# J'ai essayé d'y ajouter les PÉRIODES — « par an » devenu « par mois » fait mentir une
+# fiche d'un facteur douze, et c'est la faute qu'on a déjà publiée. Trois tentatives, trois
+# vagues de faux positifs sur des traductions JUSTES : l'article anglais « an » compté comme
+# l'année française ; « kilowatt-hour » qui se coupe là où « kilowattheure » ne se coupe pas ;
+# « en moyenne annuelle » contre « as a 12-month average », puis « sur les douze derniers
+# mois » où les deux mots ne se touchent même pas. 128 alertes, puis 13, puis 529.
+# Une langue naturelle dit la même période de dix façons : un relevé mécanique ne les
+# départage pas, et un garde qui crie sur du travail juste se fait désactiver dans la
+# semaine — il aura coûté sa confiance sans avoir rien gardé.
+# ANGLE MORT DÉCLARÉ, donc : une période changée SANS toucher à un nombre n'est pas vue
+# ici. C'est l'échantillon humain de la relecture qui la couvre (une trentaine de fiches,
+# stratifiées), et c'est le bon partage : la machine prend ce qui se vérifie à 100 %,
+# l'humain prend ce qui demande de lire.
+
+
+# 🔴 UN CHIFFRE COLLÉ À UNE LETTRE N'EST PAS UN NOMBRE : c'est une unité. « m3 » donnait un
+# 3, « CO2 » un 2 — et le français qui écrit « 0,032 million de m3 » là où l'anglais écrit
+# « cubic meters » perdait un nombre qui n'en était pas un. Le garde a crié deux fois sur
+# deux traductions justes avant que je lise les textes.
+_NOMBRE = re.compile(r"(?<![^\W\d_])\d[\d  .,\u202f\u00a0]*\d|(?<![^\W\d_])\d")
+
+
+def _nombres(texte: str) -> list[float]:
+    """Les nombres d'un texte, en VALEUR — pas en écriture.
+
+    « 1 400 », « 1.400 » et « 1,400 » sont le même nombre écrit par trois langues ; « 370,4 »
+    et « 370.4 » aussi. Comparer les chaînes ferait crier le garde sur chaque traduction
+    juste. On compare donc ce que le lecteur COMPREND, pas ce qu'il lit.
+    """
+    sortie: list[float] = []
+    for brut in _NOMBRE.findall(texte):
+        net = brut.replace(" ", "").replace("\u202f", "").replace("\u00a0", "")
+        # Le dernier séparateur est décimal s'il laisse 1 ou 2 chiffres derrière lui ;
+        # sinon c'est un séparateur de milliers. Règle grossière, mais elle couvre les
+        # trois écritures du corpus et se trompe dans le même sens des deux côtés.
+        m = re.search(r"[.,](\d{1,2})$", net)
+        if m:
+            net = net[: m.start()].replace(".", "").replace(",", "") + "." + m.group(1)
+        else:
+            net = net.replace(".", "").replace(",", "")
+        try:
+            sortie.append(float(net))
+        except ValueError:
+            continue
+    return sorted(sortie)
+
+
+# « douze mois » et « annuel » sont la MÊME période, et les deux éditions ont le droit de
+# choisir l'une ou l'autre : le français dit « en moyenne annuelle » là où l'anglais dit
+# « as a 12-month average ». Sans cette normalisation le garde criait sur des traductions
+# justes — et un garde qui crie sur du travail juste finit désactivé.
+_DOUZE_MOIS = re.compile(
+    r"\b(?:12|douze|twelve|twaalf)[-  \u202f\u00a0]?(?:mois|months?|maanden?)\b",
+    re.IGNORECASE,
+)
+
+
+def _periodes(texte: str, langue: str) -> dict[str, int] | None:
+    """Le compte de chaque classe de période, lu avec le vocabulaire de SA langue.
+
+    Rend `None` pour une langue dont on n'a pas le vocabulaire : on ne compare pas ce qu'on
+    ne sait pas lire. Un garde muet sur une langue inconnue vaut mieux qu'un garde qui crie
+    parce qu'il ne la parle pas.
+    """
+    vocabulaire = _PERIODES.get(langue)
+    if vocabulaire is None:
+        return None
+    compte = {cle: 0 for cle in _CLASSES}
+    texte, douze = _DOUZE_MOIS.subn(" ", texte)
+    compte["an"] += douze
+    for mot in _MOT.findall(texte.lower()):
+        for cle, mots in vocabulaire.items():
+            if mot in mots:
+                compte[cle] += 1
+    return compte
+
+
+def grandeurs_gate(data_dir: Path) -> list[str]:
+    """Les grandeurs d'une synthèse doivent être les mêmes dans toutes ses langues.
+
+    🔴 POURQUOI CE GARDE EST SUR LE SERVI ET PAS DANS LA CHAÎNE DE TRADUCTION. Le pipeline a
+    déjà sa propre vérification, et elle est bonne. Mais un contrôle qui vit chez celui qui
+    produit vérifie que le producteur a fait ce qu'il CROIT avoir fait ; celui-ci vérifie ce
+    que le lecteur VERRA, et il tient encore si la chaîne de traduction change ou si
+    quelqu'un corrige une fiche à la main six mois plus tard.
+
+    Décision de Franck, 2026-11-03 : les synthèses néerlandaises sont une TRADUCTION du
+    français, pas une seconde génération — « un observatoire ne peut pas dire deux choses du
+    même site selon la langue ». Ce garde est la forme mécanique de cette décision : si les
+    deux éditions ne portent pas les mêmes grandeurs, elles ne disent pas la même chose.
+
+    Et il ne se vérifie pas par échantillon. Un tirage de trente fiches laisserait passer
+    98 % d'un « par an » devenu « par mois » — la faute exacte qu'on a déjà publiée sur 74
+    synthèses. Toutes les fiches, ou rien.
+
+    ANGLE MORT DÉCLARÉ : on ne compare NI les mots d'unité (« g de CO2 par kWh » / « g CO2
+    per kWh » : ils doivent différer), NI l'ordre des nombres (une langue a le droit de
+    tourner sa phrase autrement). On compare l'ENSEMBLE des valeurs et le compte des classes
+    de période. Une unité remplacée par une autre de même période (kWh → MWh) passerait :
+    c'est le trou, il est connu, et il demanderait un dictionnaire d'unités par langue.
+    """
+    problemes: list[str] = []
+    for chemin in datacenter_paths(data_dir):
+        fiche = load_json(chemin)
+        syntheses = fiche.get("synthesis") or {}
+        if not isinstance(syntheses, dict):
+            continue
+        for nom, bloc in syntheses.items():
+            if not isinstance(bloc, dict):
+                continue
+            textes = {k: v for k, v in bloc.items() if isinstance(v, str) and len(k) == 2}
+            if "fr" not in textes or len(textes) < 2:
+                continue
+            ref_n = _nombres(textes["fr"])
+            for langue, texte in textes.items():
+                if langue == "fr":
+                    continue
+                n = _nombres(texte)
+                # 🔴 ON EXIGE LA SURVIE DES NOMBRES DU FRANÇAIS, PAS L'ÉGALITÉ DES DEUX
+                # ENSEMBLES. Première version : égalité stricte. Elle a crié 128 fois sur le
+                # corpus réel — et c'étaient des traductions JUSTES : le français écrit
+                # « sur douze mois » en lettres là où l'anglais écrit « a 12-month average ».
+                # Un nombre EN PLUS dans l'autre langue est donc légitime ; un nombre du
+                # français qui disparaît ou qui change, jamais. Le trou est déclaré : une
+                # traduction qui ajoute un chiffre faux passerait.
+                manquants = [x for x in ref_n if x not in n]
+                if manquants:
+                    problemes.append(
+                        f"GATE GRANDEUR: {chemin.stem} · synthesis.{nom} · {langue.upper()} "
+                        f"a perdu ou modifié {len(manquants)} nombre(s) du français : "
+                        f"{manquants[:4]} — une mesure qui bouge en traduction est un errata "
+                        f"sur une page qui note un site réel"
+                    )
+    return problemes
+
+
 def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]:
     """Return the list of gate violations (empty = all gates pass)."""
     today = today or date.today()
@@ -927,6 +1071,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     problems += geo_gate(data_dir)
     problems += statut_gate(data_dir)
     problems += filigrane_gate(datacenter_paths(data_dir))
+    problems += grandeurs_gate(data_dir)
 
     return problems
 

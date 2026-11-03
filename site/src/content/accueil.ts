@@ -181,7 +181,7 @@ const FR = {
   whyLede: "Un data center de 900 MW s'annonce près de chez vous. Où lire, clairement, ce qu'il vaut ? Son impact local ?",
   whyBody:
     "Les cartes existantes alignent des caractéristiques techniques ; les observatoires de contestation comptent les conflits. Personne ne met à plat, projet par projet, la réalité de chaque dossier : une note, des sources, une méthode que chacun peut vérifier et refaire. C'est ce vide que ScoreMyDataCenter comble : <span class='hl-red'>la première note d'acceptabilité indépendante, publique et opposable</span> — une notation factuelle, sourcée et méthodique, publiée au titre de la contribution au débat d'intérêt général. Et une échelle qui engage : <b>le <i class='gl gl-a'>A</i> se prouve en exploitation, il ne se promet pas</b> — les promesses, même excellentes, plafonnent en <i class='gl gl-b'>B</i> ; seule la preuve vérifiée fait le <i class='gl gl-a'>A</i>. Notre mission : <b>scorer tous les data centers</b> — méthodiquement, publiquement, un dossier à la fois.",
-  ...NL_ABOUT,
+  ...FR_ABOUT,
   principlesAria: "Principes",
   principles: [
     { title: "Méthode publique", body: "Grille de notation ouverte, versionnée, citable. Quiconque peut refaire chaque note." },
@@ -782,7 +782,7 @@ const NL: typeof FR = {
   whyLede: "Een datacenter van 900 MW wordt aangekondigd bij u in de buurt. Waar leest u, helder, wat het waard is? Zijn lokale impact?",
   whyBody:
     "De bestaande kaarten zetten technische kenmerken op een rij; de observatoria van het verzet tellen conflicten. Niemand legt, project per project, de werkelijkheid van elk dossier op tafel: een cijfer, bronnen, een methode die iedereen kan controleren en overdoen. Dát gat vult ScoreMyDataCenter: <span class='hl-red'>het eerste onafhankelijke en publieke acceptatiecijfer, waarop iedereen zich kan beroepen</span> — een feitelijke, gedocumenteerde en methodische beoordeling, gepubliceerd als bijdrage aan het publieke debat. En een schaal die bindt: <b>de <i class='gl gl-a'>A</i> bewijs je in exploitatie, je belooft hem niet</b> — beloften, hoe uitstekend ook, plafonneren op <i class='gl gl-b'>B</i>; alleen geverifieerd bewijs maakt de <i class='gl gl-a'>A</i>. Onze missie: <b>alle datacenters scoren</b> — methodisch, openbaar, dossier per dossier.",
-  ...FR_ABOUT,
+  ...NL_ABOUT,
   principlesAria: "Principes",
   principles: [
     { title: "Openbare methode", body: "Open, geversioneerde, citeerbare meetlat. Iedereen kan elk cijfer overdoen." },

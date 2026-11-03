@@ -773,3 +773,39 @@ def test_le_build_appelle_le_predicat_au_lieu_de_le_reecrire():
     assert 'get("hold")' not in source.split("retient_la_note(verdict)")[1], (
         "le build reteste `hold` APRÈS le prédicat : une seule lecture, ou aucune"
     )
+
+
+def test_une_traduction_qui_deplace_une_mesure_est_refusee(tmp_path):
+    """Contre-épreuve du garde des grandeurs, sur un corpus fabriqué.
+
+    🔴 Il a trouvé un vrai défaut dès sa première exécution honnête : la fiche
+    `fr-digital-realty-les-ulis-projet-dc2` annonçait **44 g CO2/kWh en français et 17,6 en
+    anglais** — deux mesures différentes du même site selon la langue de lecture.
+
+    Les trois écritures du même nombre (« 19 950 », « 19,950 », « 19.950 ») doivent passer :
+    c'est ce qui distingue ce garde d'un comparateur de chaînes. Et un chiffre collé à une
+    lettre n'est pas un nombre — « m3 », « CO2 » — sans quoi il crie sur une traduction qui
+    dit « cubic meters » là où le français dit « m3 ».
+    """
+    from engine.validate import grandeurs_gate
+
+    dossier = tmp_path / "datacenters"
+    dossier.mkdir(parents=True)
+
+    def fiche(nom, fr, autre, langue="nl"):
+        (dossier / f"{nom}.json").write_text(
+            json.dumps({"id": nom, "synthesis": {"site": {"fr": fr, langue: autre}}}),
+            encoding="utf-8",
+        )
+
+    fiche("zz-ok", "44 g CO2/kWh et 19 950 € par an",
+          "44 gCO2/kWh en 19.950 EUR per jaar")
+    fiche("zz-ok-unites", "0,032 million de m3 prélevés",
+          "0,032 miljoen kubieke meter onttrokken")
+    fiche("zz-mesure-deplacee", "une intensité carbone de 44 g CO2/kWh",
+          "een koolstofintensiteit van 17,6 gCO2/kWh")
+
+    problemes = grandeurs_gate(tmp_path)
+    assert len(problemes) == 1, f"attendu 1 refus, obtenu {len(problemes)} : {problemes}"
+    assert "zz-mesure-deplacee" in problemes[0]
+    assert "44" in problemes[0]
