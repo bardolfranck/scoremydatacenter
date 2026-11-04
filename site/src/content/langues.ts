@@ -91,3 +91,33 @@ export function pluriel(
 export function copie<T>(table: Record<string, T>, lang: string): T {
   return table[lang] ?? table.en;
 }
+
+/**
+ * La valeur d'un champ de DONNÉE pour `lang`, avec repli DÉCLARÉ : langue → anglais → français.
+ *
+ * 🔴 POURQUOI CETTE FONCTION EXISTE, ET POURQUOI L'ORDRE N'EST PAS UN DÉTAIL. Cinq composants
+ * portaient chacun leur propre version de ce repli, et tous les cinq terminaient sur le
+ * FRANÇAIS : `obj?.[lang] ?? obj?.fr ?? ""`. Avec deux langues, cette seconde branche n'est
+ * JAMAIS prise — `lang` vaut `fr` ou `en`, et les deux clés existent. C'était donc du code
+ * mort depuis le premier jour, qui s'exécute pour la première fois le jour où une troisième
+ * langue arrive. Et ce jour-là il sert du **français** à un lecteur néerlandais : sans erreur,
+ * sans blanc, sans que rien ne crie [[absence-ressemble-a-zero]].
+ *
+ * L'anglais d'abord, donc, parce que c'est la traduction fidèle de référence et la langue que
+ * ce lecteur a le plus de chances de lire. Le français n'est PAS une langue de secours
+ * universelle : c'est la langue d'un des pays du corpus. Il reste en dernier ressort pour les
+ * enregistrements anciens qui ne portent que `fr`, pas comme un choix éditorial.
+ *
+ * Ce repli vaut aussi pour ce qui n'est pas de la prose : l'URL d'une **carte de contexte
+ * annotée** est un champ par langue comme un autre, et une fiche néerlandaise montrant une
+ * photo satellite annotée en français est le même défaut, en image.
+ *
+ * ⚠️ Il ne répare QUE le repli qui mente. Deux autres familles cassent sur une langue neuve et
+ * ne se réparent pas par une chaîne : le repli qui EFFACE (`?? ""`, un libellé ICPE qui devient
+ * muet) et l'absence de tout repli (`undefined` rendu, ou la page qui ne se construit pas).
+ * Celles-là réclament la colonne de la langue, pas un ordre de secours.
+ */
+export function donnee<T>(objet: Record<string, T> | null | undefined, lang: string): T | "" {
+  if (!objet) return "";
+  return objet[lang] ?? objet.en ?? objet.fr ?? "";
+}

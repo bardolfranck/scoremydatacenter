@@ -75,7 +75,7 @@ const methodology = methodologyData as any;
 // SITE du pays de cette fiche, avec sa réserve A-25 si elle s'applique.
 import indicesData from "../../public/data/indices.json";
 import { nomDePaysEnPhrase } from "../config/indices";
-import { RACINE } from "../content/langues";
+import { RACINE, donnee } from "../content/langues";
 // 🔴 « pas operational » n'est pas « est un projet ». La note sous l'image satellite
 // (« le terrain visible ici peut ne pas encore accueillir le data center ») sortait dès que
 // le statut n'était pas `operational` — donc aussi pour un statut NON ÉTABLI, ce qui en
@@ -152,7 +152,7 @@ const bandChips = (b: string) => b.split("–").map(noteChip).join("–");
 const isDesalCountry = dc.country === "IL";
 const mapPath = /* i18n:route */ lang === "fr" ? "/fr/carte/" : "/map/";
 const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}/`;
-const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
+const L = (obj: any) => donnee(obj, lang);
 // The synthesis `lead` is per-language like the body. Back-compat: older records carry a bare
 // string (single language) — render it as-is until they are regenerated. New records carry
 // {fr,en,…}, resolved by the active locale exactly like the body, so adding a language is a locale,
@@ -318,7 +318,7 @@ const pillars = methodology.pillars as any[];
 // Repli sur l'ancienne URL unique tant qu'une fiche n'a pas reçu ses deux variantes — sans
 // quoi il faudrait livrer les 1366 cartes d'un coup, ou laisser des fiches sans image.
 const ctxUrl: string | null = dc.context_map
-  ? (dc.context_map.urls?.[lang] ?? dc.context_map.urls?.fr ?? dc.context_map.url ?? null)
+  ? (donnee(dc.context_map.urls, lang) || dc.context_map.url || null)
   : null;
 
 // SUR QUOI LA NOTE D'UN PILIER REPOSE. La renormalisation retire les indicateurs
@@ -546,7 +546,13 @@ const seoTitle = [
 ].find((s) => s.length <= 65) ?? `${dc.name} — ${seoGrade} | ${seoLieuSansRegion}`;
 // La meta reprend l'accroche générée du contrat d'artefact plutôt qu'un gabarit : c'est une
 // phrase écrite pour CE site, donc un extrait SERP qui dit quelque chose.
-const seoLead = dc.synthesis?.site?.lead?.[lang];
+// 🔴 LE MÊME CHAMP, RÉSOLU DEUX FOIS DIFFÉREMMENT DANS CE FICHIER. `Lead()` (plus haut)
+// replie par langue ; cette ligne ne repliait pas du tout, et rendait donc `undefined` pour
+// toute langue neuve. Conséquence mesurée au rendu : les 6 602 pages néerlandaises
+// retombaient sur la description GÉNÉRIQUE du chrome — pas un vide, mais la MÊME phrase
+// répétée sur toutes, là où `fr` et `en` portent chacune une description propre tirée de
+// l'accroche de la fiche. Un défaut qu'aucun lecteur ne voit, et que Google voit seul.
+const seoLead = Lead(dc.synthesis?.site);
 const seoDesc = seoLead
   ? `${seoLead} — ${dc.name}, ${seoLieu}. ${seoGrade.charAt(0).toUpperCase()}${seoGrade.slice(1)}, `
     + t.seo.tail

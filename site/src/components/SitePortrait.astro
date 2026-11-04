@@ -18,7 +18,7 @@
 // serait une affirmation que personne ne pourrait vérifier.
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
-import { RACINE } from "../content/langues";
+import { RACINE, donnee } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -58,7 +58,7 @@ const cm = COMMUN[lang];
 // repli ; ce qui ne va pas, c'est qu'il soit muet. Il est maintenant écrit, et
 // `test_la_donnee_servie_parle_toutes_les_langues_vivantes` refuse d'ouvrir une langue à
 // laquelle la donnée ne répond pas.
-const L = (o: any) => (o && typeof o === "object" ? (/* i18n:donnee */ o[lang] ?? o.en) : o);
+const L = (o: any) => (o && typeof o === "object" ? /* i18n:donnee */ donnee(o, lang) : o);
 
 const methodology = methodologyData as any;
 const defs: any[] = methodology.indicators;
@@ -152,7 +152,7 @@ const stadeIdx = STADES.indexOf(dc.project_status);
 
 // ── LA PHOTO. La carte de contexte annotée, pas la vue brute : c'est elle qui porte
 // l'emprise, le cours d'eau et les anneaux de distance — ce qu'un tableau ne montre pas.
-const photo = dc.context_map?.urls?.[lang] ?? dc.satellite_image?.url ?? null;
+const photo = donnee(dc.context_map?.urls, lang) || dc.satellite_image?.url || null;
 const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null;
 // La mise en garde voyage avec l'image : les anneaux sont des tampons de distance, pas un
 // zonage réglementaire. Elle n'était pas affichée — une image annotée sans sa mise en garde

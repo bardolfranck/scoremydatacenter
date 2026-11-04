@@ -2435,3 +2435,93 @@ def test_le_garde_de_lordre_mord_vraiment(monkeypatch, tmp_path):
     monkeypatch.setitem(globals(), "MAKEFILE", faux)
     with pytest.raises(AssertionError, match="AVANT `make build`"):
         test_la_barriere_de_la_donnee_servie_est_bien_apres_le_build()
+
+
+# ══════════════════════════════════════════════════════════════════════════════════════════
+# UN REPLI DE LANGUE EST UNE RÈGLE, PAS UN TERNAIRE QU'ON RECOPIE
+# ══════════════════════════════════════════════════════════════════════════════════════════
+# 🔴 CE QUE CE GARDE A TROUVÉ EN NAISSANT. Cinq composants portaient chacun leur version du
+# repli d'un champ par langue, et tous les cinq terminaient sur le FRANÇAIS :
+# `obj?.[lang] ?? obj?.fr ?? ""`. Avec deux langues la seconde branche n'est JAMAIS prise
+# (`lang` vaut `fr` ou `en`, les deux clés existent) : du code mort depuis le premier jour,
+# qui s'exécute pour la première fois le jour d'une troisième langue — et qui sert alors du
+# français à un lecteur néerlandais, sans erreur et sans blanc.
+#
+# Mesuré le même jour : 3 292 fiches servies, 0 avec `synthesis.nl`. Le périmètre de
+# traduction européen avait été décidé sur un « repli anglais » qui n'existait pas.
+#
+# Le repli est donc DÉCLARÉ une fois (`donnee()` / `copie()` dans `content/langues.ts`) et
+# les composants le consomment. Ce garde interdit de le re-déclarer : un sixième ternaire
+# serait muet comme les cinq premiers [[liste-a-deux-endroits-ment]].
+#
+# ⚠️ CE QUE CE GARDE NE DIT PAS, et il ne doit pas prétendre le dire. Il ne voit que le repli
+# qui termine sur une langue EN DUR. Un accès par langue qui replie sur `""` (un libellé qui
+# devient muet) ou qui ne replie PAS du tout (`undefined` rendu) casse aussi sur une langue
+# neuve — autrement, et ça ne se répare pas par un ordre de secours mais par la colonne de la
+# langue. Un garde qui dépasserait son mandat ici rassurerait sur deux familles qu'il ne
+# regarde pas [[gate-qui-depasse-son-mandat]].
+_REPLI_DE_LANGUE = re.compile(
+    r"\[(?:lang|langue|W\.lang)\]"                  # un accès indexé par la langue…
+    r"[^;\n]*?(?:\?\?|\|\|)\s*[^;\n]*?"            # …suivi d'un repli…
+    r"(?:\.(?:fr|en|nl)\b|\[\"(?:fr|en|nl)\"\])"   # …dont la cible est une langue EN DUR
+)
+# La source du repli, seul fichier où la règle a le droit de s'écrire.
+SOURCE_DU_REPLI = "content/langues.ts"
+
+
+def test_aucun_composant_ne_redeclare_son_repli_de_langue():
+    """Le repli d'un champ par langue s'écrit à UN endroit, et nulle part ailleurs.
+
+    Recopié, il dérive : les cinq copies trouvées le 2026-11-04 terminaient toutes sur le
+    français alors que les deux replis justes du site (`copie()`, le portrait) terminaient sur
+    l'anglais. La maison était coupée en deux, et c'est exactement pour ça que personne ne
+    l'avait vu — chaque composant avait l'air cohérent avec lui-même.
+    """
+    fautes = []
+    for p in _sources_site():
+        rel = str(p.relative_to(SRC_SITE))
+        if rel == SOURCE_DU_REPLI:
+            continue
+        for n, ligne in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
+            m = _REPLI_DE_LANGUE.search(ligne)
+            if not m:
+                continue
+            c = debut_de_commentaire(ligne)
+            if c != -1 and c < m.start():
+                continue  # un commentaire qui PARLE du motif n'est pas le motif
+            fautes.append(f"  {rel}:{n}  {ligne.strip()[:110]}")
+
+    assert not fautes, (
+        f"{len(fautes)} repli(s) de langue re-déclarés hors de {SOURCE_DU_REPLI} :\n"
+        + "\n".join(fautes)
+        + f"\n\nUn repli par langue est une RÈGLE, pas une commodité de gabarit. Elle vit dans "
+        f"`{SOURCE_DU_REPLI}` : `donnee(objet, lang)` pour un champ de DONNÉE (chaîne "
+        f"langue → en → fr), `copie(table, lang)` pour la copie d'un composant. Recopiée ici, "
+        f"elle dérive — et sa dérive est muette, parce qu'avec deux langues la branche de "
+        f"repli ne s'exécute jamais."
+    )
+
+
+def test_le_garde_du_repli_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : le motif exact qui a été réparé doit être refusé.
+
+    Sans elle, ce garde peut cesser de voir (un `[lang]` écrit autrement, une ligne découpée)
+    et rester vert — un instrument qui mesure à côté rassure comme un juste.
+    """
+    faux = tmp_path / "components"
+    faux.mkdir()
+    (faux / "Fautif.astro").write_text(
+        'const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";\n', encoding="utf-8"
+    )
+    # Et la variante de l'île de carte, qui n'a ni `?.` ni le même nom de variable.
+    (faux / "Ile.astro").write_text(
+        'const l = (f: any) => (f.label || {})[W.lang] ?? (f.label || {}).fr ?? "";\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "SRC_SITE", tmp_path)
+    monkeypatch.setitem(
+        globals(), "_sources_site", lambda: sorted(tmp_path.rglob("*.astro"))
+    )
+    with pytest.raises(AssertionError) as e:
+        test_aucun_composant_ne_redeclare_son_repli_de_langue()
+    assert "Fautif.astro" in str(e.value) and "Ile.astro" in str(e.value)
