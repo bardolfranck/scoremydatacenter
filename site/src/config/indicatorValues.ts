@@ -68,7 +68,7 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
   W2: {
     very_good: L("masse d'eau en très bon état", "water body in very good status", "waterlichaam in zeer goede toestand"),
     good: L("masse d'eau en bon état", "water body in good status", "waterlichaam in goede toestand"),
-    moderate: L("masse d'eau en état moyen", "water body in moderate status"),
+    moderate: L("masse d'eau en état moyen", "water body in moderate status", "waterlichaam in matige toestand"),
     poor: L("masse d'eau en état médiocre", "water body in poor status", "waterlichaam in ontoereikende toestand"),
     bad: L("masse d'eau en mauvais état", "water body in bad status", "waterlichaam in slechte toestand"),
   },
@@ -93,6 +93,13 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
     distant_over_5km: L(
       "aucune zone naturelle protégée recensée à moins de 5 km, à notre connaissance",
       "no protected natural area on record within 5 km, to our knowledge", "geen beschermd natuurgebied geregistreerd binnen 5 km, voor zover ons bekend"),
+  },
+  F7: {
+    oui: L(
+      "procédure de mise en compatibilité du document d'urbanisme engagée",
+      "a procedure is under way to align the planning document with the project",
+      "procedure gestart om het bestemmingsplan aan het project aan te passen",
+    ),
   },
   F2: {
     artificialized: L("terrain déjà artificialisé", "previously developed land", "reeds verhard terrein"),
