@@ -8,6 +8,7 @@
 // table is collapsed (<details>) and force-expanded in print.
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
+import { donnee } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -21,7 +22,7 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
 const m = methodologyData as any;
 const repo = "https://github.com/bardolfranck/scoremydatacenter";
 const docUrl = `${repo}/blob/main/docs/methodologie-notation.md`;
-const L = (obj: any) => obj?.[lang] ?? obj?.fr ?? "";
+const L = (obj: any) => donnee(obj, lang);
 const pillarIcon: Record<string, PillarIconName> = {
   energy: "energy", water: "water", land_biodiversity: "land",
   local_impact: "local", transparency_governance: "transparency",

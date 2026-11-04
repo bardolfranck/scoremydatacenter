@@ -45,6 +45,7 @@ import scales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 import { DOSSIER } from "../content/dossier";
 import type { Langue } from "../content/langues";
+import { donnee } from "../content/langues";
 import { libelleFait } from "../config/indicatorValues";
 
 const { dossier, lang = "fr" } = Astro.props;
@@ -175,7 +176,7 @@ const NIVEAUX = ["noise_level_dba", "noise_emergence_dba"];
 // est bilingue, cette fonction se réduit d'elle-même. (Repéré avant la première extraction GB,
 // 2026-10-03.)
 const LIB = (l: any): string =>
-  typeof l === "string" ? l : (l?.[lang] ?? l?.fr ?? l?.en ?? "");
+  typeof l === "string" ? l : donnee(l, lang);
 
 const CAVEAT: Record<string, string> = {
   groupes_puissance_totale_mw: t.caveatGroupes,

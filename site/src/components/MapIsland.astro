@@ -59,6 +59,7 @@ const { variant, labels } = Astro.props;
   // `p.operator ?` tout court — vrai pour « unknown » (167 sites) et pour « opérateur non
   // identifié » (162), qui s'affichaient donc comme des noms d'exploitant sur la carte.
   import { operateurIdentifie } from "../config/operator";
+  import { donnee } from "../content/langues";
 
   const STYLE_URL = "https://tiles.openfreemap.org/styles/positron";
 
@@ -505,7 +506,7 @@ const { variant, labels } = Astro.props;
             : [p.municipality, p.country].filter(Boolean).join(" · ");
           const sub = [loc, p.project_status ? WATCH_STATUS[p.project_status] : ""].filter(Boolean).join(" · ");
           const factItems = facts.map((f: any) =>
-            `<li>${f.kind === "press" ? W.press : ""}${(f.label || {})[W.lang] ?? (f.label || {}).fr ?? ""}` +
+            `<li>${f.kind === "press" ? W.press : ""}${donnee(f.label, W.lang)}` +
             `${f.self_reported ? ` <span class="contestation-tag">${W.selfReported}</span>` : ""} — ${srcLink(f.source)}</li>`
           ).join("");
           return `
