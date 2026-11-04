@@ -21,9 +21,15 @@ import { fmtInt, fmtDec, type Lang } from "./stats";
 // tranchés lui-même : le profil social d'une commune (favorable / intermédiaire /
 // fragile), le dossier de l'opérateur, et les retombées annoncées.
 
-type Libelle = { fr: string; en: string };
+// 🔴 LE TYPE DISAIT DEUX LANGUES ET LE FICHIER EN PORTAIT TROIS. `FACTEUR_DOMINANT` était
+// déclaré `{ fr; en }` alors que ses entrées portent déjà `nl` : le type mentait, et
+// `astro build` ne lance pas `astro check` — donc personne ne le voyait. Une langue de plus
+// est une clé OPTIONNELLE : tant qu'elle manque, `libelleValeur` rend la valeur BRUTE, pas
+// l'anglais, et c'est la barrière de langue servie qui compte le trou.
+type Libelle = { fr: string; en: string; nl?: string };
 
-const L = (fr: string, en: string): Libelle => ({ fr, en });
+const L = (fr: string, en: string, nl?: string): Libelle =>
+  nl === undefined ? { fr, en } : { fr, en, nl };
 
 export const VALEURS: Record<string, Record<string, Libelle>> = {
   // ——— Énergie ———
@@ -133,13 +139,26 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
   },
 };
 
-// Unités : on traduit ce qui est une phrase, on garde ce qui est une notation
-// standard (gCO2e/kWh, PUE, L/kWh se lisent pareil dans les deux langues).
-const UNITES: Record<string, string> = {
-  hectares: "hectares",
-  "% renewable": "% renouvelable",
-  "MW per 1000 inhabitants": "MW pour 1000 habitants",
-  "permanent jobs per 100 MW": "emplois permanents pour 100 MW",
+// Unités : on traduit ce qui est une PHRASE, on garde ce qui est une notation standard
+// (gCO2e/kWh, PUE, L/kWh se lisent pareil dans toutes les langues).
+//
+// 🔴 La table ne portait que le français, et la fonction disait `if (lang !== "fr") return
+// unite` : toute langue qui n'est pas le français recevait donc l'ANGLAIS. Un portrait
+// néerlandais affichait « 0,59 MW per 1000 inhabitants » — le nombre dans la bonne langue,
+// l'unité dans une autre. Une unité réécrite est un fait faux, et une unité pas réécrite
+// est une phrase anglaise au milieu d'une phrase néerlandaise.
+//
+// La table est donc indexée PAR LANGUE, et l'anglais y est la clé d'origine : l'unité telle
+// que la méthodologie l'écrit. Une langue absente rend la notation inchangée.
+const UNITES: Record<string, Partial<Record<LangueDeclaree, string>>> = {
+  hectares: { fr: "hectares", nl: "hectare" },
+  "% renewable": { fr: "% renouvelable", nl: "% hernieuwbaar" },
+  "MW per 1000 inhabitants": {
+    fr: "MW pour 1000 habitants", nl: "MW per 1000 inwoners",
+  },
+  "permanent jobs per 100 MW": {
+    fr: "emplois permanents pour 100 MW", nl: "vaste banen per 100 MW",
+  },
 };
 
 /** Le libellé d'une valeur, ou la valeur brute si elle n'en a pas encore. */
@@ -164,8 +183,7 @@ export function libelleValeur(indicateur: string, valeur: unknown, lang: string)
 
 /** L'unité dans la langue de la page ; inchangée si c'est une notation. */
 export function libelleUnite(unite: string, lang: string): string {
-  if (lang !== "fr") return unite;
-  return UNITES[unite] ?? unite;
+  return UNITES[unite]?.[lang as LangueDeclaree] ?? unite;
 }
 
 // « CE QUI PÈSE LE PLUS ICI » — les mots d'habitant du facteur dominant.
@@ -179,7 +197,7 @@ export function libelleUnite(unite: string, lang: string): string {
 // formulation ». Les huit indicateurs de tier 1 qui peuvent dominer sont tous couverts ;
 // E6 n'y est pas parce que le moteur écarte les tiers 2 de cette position (un tier 2 qui
 // domine est le drapeau d'une couverture tier 1 trop mince, pas un signal).
-const FACTEUR_DOMINANT: Record<string, { fr: string; en: string }> = {
+const FACTEUR_DOMINANT: Record<string, Libelle> = {
   E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix", nl: "een zeer koolstofrijke nationale stroommix" },
   E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection", nl: "een verzadigd elektriciteitsnet op het aansluitpunt" },
   E3: { fr: "une capacité réseau déjà largement réservée", en: "grid capacity already heavily reserved", nl: "al grotendeels gereserveerde netcapaciteit" },

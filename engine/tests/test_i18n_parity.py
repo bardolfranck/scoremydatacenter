@@ -1395,16 +1395,48 @@ def test_la_donnee_servie_parle_toutes_les_langues_vivantes():
 
 
 def test_le_garde_de_la_donnee_servie_mord_vraiment(monkeypatch):
-    """Contre-épreuve : on déclare `nl` vivante — la donnée, elle, ne le sait pas.
+    """Contre-épreuve : on déclare vivante une langue que la donnée ne porte pas.
 
-    C'est l'épreuve qui donne sa valeur au test précédent : elle prouve qu'il dira NON le
-    jour où quelqu'un ouvrira le néerlandais sans que le pipeline ait suivi.
+    🔴 CETTE ÉPREUVE S'APPUYAIT SUR LE NÉERLANDAIS, et elle a cessé de mordre — parce que la
+    donnée servie porte MAINTENANT le néerlandais : libellés d'indicateurs, noms de piliers,
+    phrase citable. Une contre-épreuve adossée à un trou meurt le jour où le trou se comble,
+    et elle meurt en silence : elle passe au vert pour la mauvaise raison.
+    (C'est aussi, au passage, la meilleure nouvelle du jour : si on faisait passer `nl`
+    vivante, le garde de la donnée servie ne s'y opposerait plus.)
+
+    Elle s'appuie donc sur une langue qui n'existera jamais dans la donnée. Ce que le test
+    doit prouver, c'est qu'il SAIT DIRE NON — pas que le néerlandais est incomplet.
     """
     if not (DONNEE_SERVIE / "scores.json").is_file():
         pytest.skip("donnée servie absente de ce checkout")
-    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "nl"])
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "zz"])
     with pytest.raises(AssertionError, match="ne portent pas toutes les langues vivantes"):
         test_la_donnee_servie_parle_toutes_les_langues_vivantes()
+
+
+def test_la_donnee_servie_porte_deja_le_neerlandais():
+    """Le constat, nommé : la donnée servie parle néerlandais, langue pas encore ouverte.
+
+    Ce n'est pas un doublon du garde des langues vivantes — c'est le jalon qu'il ne peut pas
+    dire, puisqu'il ne regarde que les langues DÉJÀ servies. Le jour où ce test tombe, c'est
+    qu'un pipeline a cessé d'émettre le néerlandais ; on le saura avant d'ouvrir la langue,
+    pas après.
+    """
+    import json
+
+    fichiers = [DONNEE_SERVIE / "scores.json", DONNEE_SERVIE / "methodology.json"]
+    if not all(f.is_file() for f in fichiers):
+        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+    objets: list = []
+    for f in fichiers:
+        _objets_bilingues(json.loads(f.read_text(encoding="utf-8")), objets)
+    assert objets, "le relevé ne trouve aucun objet bilingue — il ne garde plus rien"
+    sans_nl = [o for o in objets if "nl" not in o]
+    assert not sans_nl, (
+        f"{len(sans_nl)} objet(s) de la donnée servie sur {len(objets)} ne portent pas le "
+        f"néerlandais — un pipeline a cessé de l'émettre. Exemple : "
+        f"{list(sans_nl[0].items())[:2]}"
+    )
 
 
 QUESTIONS_DERIVEES = CONTENU / "questions-derivees.ts"
