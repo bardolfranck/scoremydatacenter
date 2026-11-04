@@ -40,9 +40,9 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
     saturated: L("réseau saturé au point de raccordement", "grid saturated at the connection point", "net verzadigd op het aansluitpunt"),
   },
   E3: {
-    low: L("réseau local peu encombré", "little local grid congestion"),
-    moderate: L("réseau local moyennement encombré", "moderate local grid congestion"),
-    high: L("réseau local très encombré", "heavy local grid congestion"),
+    low: L("réseau local peu encombré", "little local grid congestion", "weinig congestie op het lokale net"),
+    moderate: L("réseau local moyennement encombré", "moderate local grid congestion", "matige congestie op het lokale net"),
+    high: L("réseau local très encombré", "heavy local grid congestion", "zware congestie op het lokale net"),
     critical: L("réseau local en congestion critique", "critical local grid congestion", "kritieke congestie op het lokale net"),
   },
   E6: {
@@ -61,8 +61,8 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
   // ——— Eau ———
   W1: {
     no_stress: L("zone sans stress hydrique mesuré", "no measured water stress in the area", "geen gemeten waterstress in het gebied"),
-    moderate: L("stress hydrique modéré", "moderate water stress"),
-    high: L("stress hydrique élevé", "high water stress"),
+    moderate: L("stress hydrique modéré", "moderate water stress", "matige waterstress"),
+    high: L("stress hydrique élevé", "high water stress", "hoge waterstress"),
     zre_or_crisis: L("zone de répartition des eaux ou arrêté de crise", "water-allocation zone or drought order", "waterverdelingszone of droogtebesluit"),
   },
   W2: {
