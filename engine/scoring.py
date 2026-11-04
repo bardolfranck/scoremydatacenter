@@ -205,18 +205,22 @@ CITABLE: dict[str, dict[str, str]] = {
     "site_insuffisant": {
         "fr": "Données insuffisantes pour noter ce site ; aucune note n'est publiée.",
         "en": "Insufficient data to grade this site; no grade is published.",
+        "nl": "Onvoldoende gegevens om deze site een cijfer te geven; er wordt geen cijfer gepubliceerd.",
     },
     "contraste": {
         "fr": "Noté {lettre} sur le site, mais {pire} sur « {pilier} ».",
         "en": "Rated {lettre} on site, but {pire} on “{pilier}”.",
+        "nl": "Beoordeeld met {lettre} op de site, maar {pire} op ‘{pilier}’.",
     },
     "projet_insuffisant": {
         "fr": "Noté {lettre} sur le site ; données de projet insuffisantes pour une note projet & processus.",
         "en": "Rated {lettre} on site; project data insufficient to grade project & process.",
+        "nl": "Beoordeeld met {lettre} op de site; onvoldoende projectgegevens voor een cijfer project & proces.",
     },
     "deux_notes": {
         "fr": "Noté {lettre} sur le site, {projet} en projet & processus.",
         "en": "Rated {lettre} on site, {projet} on project & process.",
+        "nl": "Beoordeeld met {lettre} op de site, {projet} op project & proces.",
     },
 }
 
