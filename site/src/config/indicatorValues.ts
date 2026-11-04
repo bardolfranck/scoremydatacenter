@@ -34,52 +34,52 @@ const L = (fr: string, en: string, nl?: string): Libelle =>
 export const VALEURS: Record<string, Record<string, Libelle>> = {
   // ——— Énergie ———
   E2: {
-    ample: L("capacité de raccordement largement disponible", "ample connection capacity"),
-    adequate: L("capacité de raccordement suffisante", "adequate connection capacity"),
-    constrained: L("capacité de raccordement contrainte", "constrained connection capacity"),
-    saturated: L("réseau saturé au point de raccordement", "grid saturated at the connection point"),
+    ample: L("capacité de raccordement largement disponible", "ample connection capacity", "ruim beschikbare aansluitcapaciteit"),
+    adequate: L("capacité de raccordement suffisante", "adequate connection capacity", "voldoende aansluitcapaciteit"),
+    constrained: L("capacité de raccordement contrainte", "constrained connection capacity", "beperkte aansluitcapaciteit"),
+    saturated: L("réseau saturé au point de raccordement", "grid saturated at the connection point", "net verzadigd op het aansluitpunt"),
   },
   E3: {
     low: L("réseau local peu encombré", "little local grid congestion"),
     moderate: L("réseau local moyennement encombré", "moderate local grid congestion"),
     high: L("réseau local très encombré", "heavy local grid congestion"),
-    critical: L("réseau local en congestion critique", "critical local grid congestion"),
+    critical: L("réseau local en congestion critique", "critical local grid congestion", "kritieke congestie op het lokale net"),
   },
   E6: {
-    raccordable: L("raccordable à un réseau de chaleur existant", "connectable to an existing heat network"),
-    proche: L("réseau de chaleur à proximité", "heat network nearby"),
-    eloigne: L("aucun réseau de chaleur à proximité", "no heat network nearby"),
+    raccordable: L("raccordable à un réseau de chaleur existant", "connectable to an existing heat network", "aansluitbaar op een bestaand warmtenet"),
+    proche: L("réseau de chaleur à proximité", "heat network nearby", "warmtenet in de buurt"),
+    eloigne: L("aucun réseau de chaleur à proximité", "no heat network nearby", "geen warmtenet in de buurt"),
   },
   E7: {
-    realise: L("récupération de chaleur réalisée", "heat recovery in operation"),
+    realise: L("récupération de chaleur réalisée", "heat recovery in operation", "warmteterugwinning gerealiseerd"),
     contrat_signe: L("contrat de récupération de chaleur signé", "heat-recovery contract signed"),
-    etude: L("récupération de chaleur à l'étude", "heat recovery under study"),
+    etude: L("récupération de chaleur à l'étude", "heat recovery under study", "warmteterugwinning in onderzoek"),
     intention: L("intention annoncée, sans engagement", "stated intention, no commitment"),
     aucun: L("aucune récupération de chaleur annoncée", "no heat recovery announced"),
   },
 
   // ——— Eau ———
   W1: {
-    no_stress: L("zone sans stress hydrique mesuré", "no measured water stress in the area"),
+    no_stress: L("zone sans stress hydrique mesuré", "no measured water stress in the area", "geen gemeten waterstress in het gebied"),
     moderate: L("stress hydrique modéré", "moderate water stress"),
     high: L("stress hydrique élevé", "high water stress"),
-    zre_or_crisis: L("zone de répartition des eaux ou arrêté de crise", "water-allocation zone or drought order"),
+    zre_or_crisis: L("zone de répartition des eaux ou arrêté de crise", "water-allocation zone or drought order", "waterverdelingszone of droogtebesluit"),
   },
   W2: {
-    very_good: L("masse d'eau en très bon état", "water body in very good status"),
-    good: L("masse d'eau en bon état", "water body in good status"),
+    very_good: L("masse d'eau en très bon état", "water body in very good status", "waterlichaam in zeer goede toestand"),
+    good: L("masse d'eau en bon état", "water body in good status", "waterlichaam in goede toestand"),
     moderate: L("masse d'eau en état moyen", "water body in moderate status"),
-    poor: L("masse d'eau en état médiocre", "water body in poor status"),
-    bad: L("masse d'eau en mauvais état", "water body in bad status"),
+    poor: L("masse d'eau en état médiocre", "water body in poor status", "waterlichaam in ontoereikende toestand"),
+    bad: L("masse d'eau en mauvais état", "water body in bad status", "waterlichaam in slechte toestand"),
   },
   W3: {
-    low: L("prélèvements faibles sur le bassin", "low abstraction in the basin"),
-    moderate: L("prélèvements modérés sur le bassin", "moderate abstraction in the basin"),
-    high: L("prélèvements élevés sur le bassin", "high abstraction in the basin"),
-    very_high: L("prélèvements très élevés sur le bassin", "very high abstraction in the basin"),
+    low: L("prélèvements faibles sur le bassin", "low abstraction in the basin", "lage onttrekkingen uit het stroomgebied"),
+    moderate: L("prélèvements modérés sur le bassin", "moderate abstraction in the basin", "matige onttrekkingen uit het stroomgebied"),
+    high: L("prélèvements élevés sur le bassin", "high abstraction in the basin", "hoge onttrekkingen uit het stroomgebied"),
+    very_high: L("prélèvements très élevés sur le bassin", "very high abstraction in the basin", "zeer hoge onttrekkingen uit het stroomgebied"),
   },
   W4: {
-    closed_loop_dry: L("refroidissement en circuit fermé, sans eau", "dry closed-loop cooling"),
+    closed_loop_dry: L("refroidissement en circuit fermé, sans eau", "dry closed-loop cooling", "koeling in gesloten kringloop, zonder water"),
     hybrid_adiabatic: L("refroidissement hybride adiabatique", "hybrid adiabatic cooling"),
     evaporative_open: L("refroidissement évaporatif en circuit ouvert", "open-circuit evaporative cooling"),
     unknown: L("technologie de refroidissement non communiquée", "cooling technology not disclosed"),
@@ -87,57 +87,106 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
 
   // ——— Foncier & biodiversité ———
   F1: {
-    overlap: L("recoupe une zone naturelle protégée", "overlaps a protected natural area"),
-    adjacent_under_1km: L("zone naturelle protégée à moins de 1 km", "protected natural area within 1 km"),
-    near_1_to_5km: L("zone naturelle protégée entre 1 et 5 km", "protected natural area 1–5 km away"),
+    overlap: L("recoupe une zone naturelle protégée", "overlaps a protected natural area", "overlapt een beschermd natuurgebied"),
+    adjacent_under_1km: L("zone naturelle protégée à moins de 1 km", "protected natural area within 1 km", "beschermd natuurgebied binnen 1 km"),
+    near_1_to_5km: L("zone naturelle protégée entre 1 et 5 km", "protected natural area 1–5 km away", "beschermd natuurgebied tussen 1 en 5 km"),
     distant_over_5km: L(
       "aucune zone naturelle protégée recensée à moins de 5 km, à notre connaissance",
-      "no protected natural area on record within 5 km, to our knowledge",
-    ),
+      "no protected natural area on record within 5 km, to our knowledge", "geen beschermd natuurgebied geregistreerd binnen 5 km, voor zover ons bekend"),
   },
   F2: {
-    artificialized: L("terrain déjà artificialisé", "previously developed land"),
-    transitional: L("terrain en transition", "transitional land"),
-    agricultural: L("terre agricole", "farmland"),
-    natural_or_enaf: L("espace naturel, agricole ou forestier", "natural, agricultural or forest land"),
+    artificialized: L("terrain déjà artificialisé", "previously developed land", "reeds verhard terrein"),
+    transitional: L("terrain en transition", "transitional land", "terrein in overgang"),
+    agricultural: L("terre agricole", "farmland", "landbouwgrond"),
+    natural_or_enaf: L("espace naturel, agricole ou forestier", "natural, agricultural or forest land", "natuur-, landbouw- of bosgrond"),
+  },
+  // F6 et F7 posent DEUX questions différentes et reçoivent la même valeur `oui` — le
+  // terrain est-il déjà désigné à l'urbanisation (F6), et une procédure est-elle engagée
+  // pour rendre le document compatible (F7). Un seul libellé pour les deux aurait fait
+  // dire au second ce que dit le premier : c'est pourquoi la table est indexée par PAIRE
+  // (indicateur, valeur) et non par valeur seule.
+  F6: {
+    oui: L(
+      "terrain désigné à l'urbanisation dans un plan supra-communal",
+      "land designated for urban development in a supra-municipal plan",
+      "terrein aangewezen voor verstedelijking in een bovengemeentelijk plan",
+    ),
   },
   F5: {
-    erc_complet: L("mesures éviter-réduire-compenser complètes", "full avoid-reduce-offset measures"),
-    partiel: L("mesures éviter-réduire-compenser partielles", "partial avoid-reduce-offset measures"),
+    erc_complet: L("mesures éviter-réduire-compenser complètes", "full avoid-reduce-offset measures", "volledige maatregelen om te vermijden, te beperken en te compenseren"),
+    partiel: L("mesures éviter-réduire-compenser partielles", "partial avoid-reduce-offset measures", "gedeeltelijke maatregelen om te vermijden, te beperken en te compenseren"),
     aucun: L("aucune mesure éviter-réduire-compenser", "no avoid-reduce-offset measures"),
   },
 
   // ——— Impact local ———
   L1: {
-    strong_fit: L("profil social de la commune : favorable", "municipality's social profile: favourable"),
-    neutral: L("profil social de la commune : intermédiaire", "municipality's social profile: intermediate"),
-    sensitive: L("profil social de la commune : fragile", "municipality's social profile: fragile"),
+    strong_fit: L("profil social de la commune : favorable", "municipality's social profile: favourable", "sociaal profiel van de gemeente: gunstig"),
+    neutral: L("profil social de la commune : intermédiaire", "municipality's social profile: intermediate", "sociaal profiel van de gemeente: gemiddeld"),
+    sensitive: L("profil social de la commune : fragile", "municipality's social profile: fragile", "sociaal profiel van de gemeente: kwetsbaar"),
   },
   L3: {
     none_within_5km: L(
       "aucun site à risque technologique recensé dans un rayon de 5 km, à notre connaissance",
-      "no technological-risk site on record within 5 km, to our knowledge",
-    ),
-    seveso_low_within_5km: L("un établissement Seveso recensé à moins de 5 km", "a Seveso establishment on record within 5 km"),
+      "no technological-risk site on record within 5 km, to our knowledge", "geen industriële risicosite geregistreerd binnen een straal van 5 km, voor zover ons bekend"),
+    seveso_low_within_5km: L("un établissement Seveso recensé à moins de 5 km", "a Seveso establishment on record within 5 km", "een Seveso-inrichting geregistreerd binnen 5 km"),
     seveso_high_within_2km: L(
       "un établissement Seveso seuil haut recensé à moins de 2 km",
-      "an upper-tier Seveso establishment on record within 2 km",
-    ),
+      "an upper-tier Seveso establishment on record within 2 km", "een Seveso-inrichting met hoge drempel geregistreerd binnen 2 km"),
   },
   L5: {
     documented_significant: L("retombées fiscales documentées", "documented tax revenue"),
-    announced_unquantified: L("retombées annoncées sans chiffrage", "revenue announced without figures"),
+    announced_unquantified: L("retombées annoncées sans chiffrage", "revenue announced without figures", "aangekondigde baten, zonder bedragen"),
     none: L("aucune retombée fiscale annoncée", "no tax revenue announced"),
   },
 
   // ——— Transparence & gouvernance ———
   T2: {
-    full_dossier_online: L("dossier complet publié en ligne", "full dossier published online"),
+    full_dossier_online: L("dossier complet publié en ligne", "full dossier published online", "volledig dossier online gepubliceerd"),
     partial: L("dossier partiellement publié", "dossier partially published"),
-    minimal: L("dossier minimal", "minimal dossier"),
+    minimal: L("dossier minimal", "minimal dossier", "minimaal dossier"),
     unavailable: L("dossier non accessible", "dossier not accessible"),
   },
 };
+
+
+// ─────────────────────────────────────────────────────────────────────────────────────────
+// LES VALEURS DU DOSSIER ENVIRONNEMENTAL — une autre famille, un autre nommage.
+//
+// 🔴 Celles-là sortaient BRUTES dans les trois langues : « Carburant des groupes
+// fuel_oil_or_diesel », « Valorisation de la chaleur under_study ». 43 pages servies, en
+// production, en français comme en anglais. Le composant du dossier affiche `String(value)`
+// — ce qui va pour un nombre et publie une clé de moteur pour une chaîne.
+//
+// Ce ne sont PAS les valeurs de `VALEURS` : elles sont indexées par le nom du champ extrait
+// du dossier (`backup_generator_fuel`), pas par l'identifiant d'un indicateur noté. Deux
+// familles de clés, deux tables — les confondre ferait chercher `adiabatic` sous « W4 ».
+//
+// Règle tenue sur les champs déclaratifs : le libellé dit ce que le DOCUMENT dit, pas ce
+// qu'on en conclut. `closed_loop` ne reçoit donc pas le « sans eau » de `closed_loop_dry`,
+// que le dossier ne dit pas.
+export const VALEURS_DOSSIER: Record<string, Record<string, Libelle>> = {
+  backup_generator_fuel: {
+    fuel_oil_or_diesel: L("fioul ou gazole", "fuel oil or diesel", "stookolie of diesel"),
+    domestic_fuel_oil: L("fioul domestique", "domestic heating oil", "huisbrandolie"),
+    hvo: L("HVO (gazole d'origine végétale)", "HVO (hydrotreated vegetable oil)", "HVO (gehydrogeneerde plantaardige olie)"),
+  },
+  waste_heat_recovery_status: {
+    under_study: L("valorisation de la chaleur à l'étude", "heat reuse under study", "warmtebenutting in onderzoek"),
+  },
+  cooling_technology: {
+    adiabatic: L("refroidissement adiabatique", "adiabatic cooling", "adiabatische koeling"),
+    free_cooling: L("free cooling (refroidissement par l'air extérieur)", "free cooling (outside-air cooling)", "free cooling (koeling met buitenlucht)"),
+    closed_loop: L("refroidissement en circuit fermé", "closed-loop cooling", "koeling in gesloten kringloop"),
+  },
+};
+
+/** Le libellé d'une valeur du dossier, ou la valeur brute si elle n'en a pas. */
+export function libelleFait(indicateur: string, valeur: string, lang: string): string {
+  const l = VALEURS_DOSSIER[indicateur]?.[valeur];
+  // Même règle que `libelleValeur` : un libellé qui manque rend la valeur BRUTE, jamais
+  // l'anglais — une langue à moitié remplie se lirait sinon comme une langue complète.
+  return l?.[lang as keyof typeof l] ?? valeur;
+}
 
 // Unités : on traduit ce qui est une PHRASE, on garde ce qui est une notation standard
 // (gCO2e/kWh, PUE, L/kWh se lisent pareil dans toutes les langues).

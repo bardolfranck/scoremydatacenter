@@ -95,7 +95,14 @@ const hasPlanned = tiles.some((t) => t.planned);
               <a class="otile" href={`${ficheBase}/${tile.id}/`}
                 tabindex={pass === 0 ? 0 : -1} aria-hidden={pass === 1 ? "true" : undefined}>
                 <img src={tile.thumb} alt="" loading="lazy" decoding="async" width="400" height="267" />
-                <span class={`otile-chip grade-${tile.grade.toLowerCase()}`}>{tile.grade}</span>
+                {/* 🔴 La puce ne porte une lettre QUE si c'en est une. Le mur affichait
+                    « en_attente » sur la vignette d'un site dont la note est retenue — avec
+                    une classe CSS `grade-en_attente` qui n'existe pas, donc une puce nue.
+                    Même famille que les titres de fiche : énumérer les mauvaises valeurs est
+                    une course qu'on perd, vérifier que c'est une LETTRE la termine. */}
+                {/^[A-E]$/.test(tile.grade ?? "") && (
+                  <span class={`otile-chip grade-${tile.grade.toLowerCase()}`}>{tile.grade}</span>
+                )}
                 {tile.planned && <span class="otile-status">⏳ {T.projectTag}</span>}
                 <span class="otile-cap">{tile.name}<small>{tile.country} · {T.seeFiche}</small></span>
               </a>
