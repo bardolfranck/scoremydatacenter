@@ -16,7 +16,7 @@
 // 🔴 Le type ne garde RIEN au build (`astro build` sans `astro check`) : une clé absente
 // rend `undefined` en silence. Le garde qui mord est `engine/tests/test_i18n_parity.py`.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   kicker: "Ce que déclare le dossier environnemental",
@@ -81,5 +81,42 @@ const EN: typeof FR = {
   locale: "en-GB",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  kicker: "Wat het milieudossier opgeeft",
+  lire: "lees het advies (PDF)", pages: "p.", petitionnaire: "aanvrager",
+  // De rubrieken BESCHRIJVEN, ze kwalificeren niet (zelfde règle que le FR) :
+  // « Noodaggregaten en stookolie » plutôt que « hinder » — le lecteur conclut.
+  secours: "Noodaggregaten en stookolie", bruit: "Gemeten geluid", voisinage: "Omgeving",
+  energie: "Energie en warmte", eau: "Water en koeling", emissions: "Emissies",
+  emploi: "Werkgelegenheid", emprise: "Terrein en bebouwing", icpe: "ICPE-classificatie",
+  reserves: "Voorbehouden van de autoriteit", autresNiv: "Andere niveaus genoemd in het advies",
+  periode: "", jour: "Dag", nuit: "Nacht", mesure: "Meting", autres: "De andere in het advies",
+  caveatGroupes: "noodvermogen — niet het vermogen dat de site verbruikt",
+  bruitNote: "Toestand opgenomen in het milieueffectrapport (MER), vóór exploitatie.",
+  pasUneNote: "Deze getallen zijn geen cijfer.",
+  pasUneNoteSuite: " Ze komen uit het dossier van de aanvrager en uit het advies van de milieuautoriteit; we rapporteren ze met hun zin en hun pagina, we beoordelen ze niet.",
+  bloc: "Dit blok bestaat alleen voor projecten met een milieubeoordeling — een minderheid van de sites.",
+  absence: "Zijn afwezigheid betekent niet dat er geen impact is",
+  absenceSuite: ": ze betekent dat we tot op heden geen bruikbaar publiek document in ons corpus hebben gevonden.",
+  niveauxLabel: "Gemeten niveaus", emergenceLabel: "Geluidstoename (émergence)",
+  avisPluriel: "adviezen van de milieuautoriteit over deze site",
+  sansDate: "datum niet bevestigd",
+  explication: "Toelichting",
+  differe: "verschilt van dossier tot dossier",
+  differeNote: "Deze site kent meerdere dossiers. Waarden die niet in elk dossier gelijk zijn, worden gesignaleerd en naast elkaar getoond met hun datum. Een verschil kan komen van een geherdimensioneerd project, een andere fase of een gecorrigeerd gegeven: het advies zegt niet welke, en wij raden niet.",
+  icpeTip: "Installation classée pour la protection de l'environnement: het Franse regime dat een activiteit met mogelijk risico of hinder omkadert, vergunt en controleert. Elk nummer verwijst naar de activiteit in de nationale nomenclatuur. Geklasseerd zijn betekent niet gevaarlijk zijn: het betekent omkaderd — en dus gecontroleerd — zijn.",
+  valeursMultiples: "{n} waarden",
+  // Format = propriété de la LANGUE : date néerlandaise 30-03-2022.
+  datePattern: "{j}-{m}-{a}",
+  locale: "nl-NL",
+};
+
 /** La copie du bloc dossier : `DOSSIER[lang]`. */
-export const DOSSIER: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const DOSSIER: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

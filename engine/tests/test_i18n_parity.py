@@ -136,6 +136,11 @@ COPIE_EN_MODULE: dict[str, str] = {
 SANS_JUMELLE: dict[str, str] = {
     "fr/apercu-partage.astro": "outil interne FR (galerie d'aperçus OG), rien à traduire",
     "404.astro": "la page 404 d'Astro est servie à la racine pour toutes les langues",
+    # Le harnais de relecture du néerlandais : ces deux pages n'ont pas de jumelle parce
+    # qu'elles ne sont pas servies — leur portillon rend `[]` sans SMDC_PREVIZ=1, et
+    # `test_la_previz_ne_sort_rien_en_production` est ce qui le garde.
+    "previz/[gabarit].astro": "préviz d'une langue en préparation, jamais construite en prod",
+    "previz/duo/[gabarit].astro": "côte-à-côte FR↔NL de relecture, jamais construit en prod",
 }
 
 # Deliberate asymmetries: keys one language needs and the other, by design, does not.
@@ -166,6 +171,20 @@ def _langues_vivantes() -> list[str]:
     langues = re.findall(r'"(\w+)"', m.group(1))
     assert len(langues) >= 2, f"une seule langue vivante ({langues}) : rien à comparer"
     return langues
+
+
+def _langues_declarees() -> list[str]:
+    """Toutes les langues qui ont une table, SERVIES OU NON — lues à leur source unique.
+
+    Une langue en préparation (`nl` depuis le 2026-11-02) a ses clés gardées comme une
+    langue vivante : c'est ce qui l'empêche de dériver pendant les semaines où elle s'écrit.
+    Ce qu'elle n'a pas, c'est une page qui la sert.
+    """
+    texte = LANGUES_TS.read_text(encoding="utf-8")
+    vivantes = _langues_vivantes()
+    m = re.search(r"LANGUES_EN_PREPARATION = \[([^\]]*)\]", texte)
+    preparation = re.findall(r'"(\w+)"', m.group(1)) if m else []
+    return vivantes + [lg for lg in preparation if lg not in vivantes]
 
 
 def _t_keys(page: str) -> set[str]:
@@ -212,8 +231,24 @@ def test_toute_page_est_declaree_dans_la_liste_des_paires():
     Désormais une page nouvelle doit se déclarer — en paire, ou dans SANS_JUMELLE avec sa
     raison. L'oubli casse la suite au lieu de laisser une page sans garde.
     """
+    # 🔴 PAIRS est une liste FR↔EN, née quand le site n'avait que deux langues. Une page
+    # néerlandaise n'y entre pas — « la paire » n'existe plus, c'est une famille. Elle se
+    # déclare donc dans `config/routes.ts`, qui est désormais la source de ce qui existe
+    # dans quelle langue, et ce test accepte les deux déclarations. Fusionner PAIRS dans
+    # la table reste à faire : PAIRS porte en plus un drapeau `compare` que la table n'a
+    # pas. Tant que les deux vivent, c'est ici que leur union se lit.
+    en_table = {
+        c.strip("/").replace(":id", "[id]") for f in _familles().values() for c in f.values()
+    }
+
+    def _declaree_en_table(page: str) -> bool:
+        adresse = page.removesuffix(".astro").removesuffix("/index")
+        return adresse in en_table or adresse.removesuffix("index").strip("/") in en_table
+
     declarees = {fr for fr, _, _ in PAIRS} | {en for _, en, _ in PAIRS} | set(SANS_JUMELLE)
-    orphelines = sorted(_pages_du_disque() - declarees)
+    orphelines = sorted(
+        p for p in _pages_du_disque() - declarees if not _declaree_en_table(p)
+    )
     assert not orphelines, (
         f"{len(orphelines)} page(s) ne sont déclarées nulle part :\n"
         + "\n".join(f"  · {p}" for p in orphelines)
@@ -229,8 +264,15 @@ def test_une_liste_de_paires_perimee_ne_passe_pas(monkeypatch):
     C'est exactement la panne vécue — la page existait, la liste l'ignorait, le garde se
     taisait. Si ce test-ci ne mord pas, le précédent ne garantit rien.
     """
+    # La page doit disparaître des DEUX déclarations : depuis que `config/routes.ts` est
+    # une source valable, n'en amputer qu'une ne prouve plus rien — et c'est ce test qui l'a
+    # dit, en cessant de mordre à la seconde où la table a pris le relais.
     ampute = [p for p in PAIRS if p[0] != "fr/actu.astro"]
     monkeypatch.setitem(globals(), "PAIRS", ampute)
+    sans_actu = {
+        ident: ch for ident, ch in _familles().items() if ident != "actu"
+    }
+    monkeypatch.setitem(globals(), "_familles", lambda: sans_actu)
     with pytest.raises(AssertionError, match="déclarées nulle part"):
         test_toute_page_est_declaree_dans_la_liste_des_paires()
 
@@ -266,7 +308,10 @@ def test_les_tables_partagees_portent_les_memes_cles():
     lui qui mord — pas le type TypeScript, puisque `astro build` tourne sans `astro check`
     (une clé absente rendrait `undefined` en silence dans la page).
     """
-    langues = _langues_vivantes()
+    # 🔴 Les langues DÉCLARÉES, pas seulement les vivantes : une langue en préparation qui
+    # dérive pendant sa rédaction arrive incomplète le jour où on l'ouvre, et c'est le pire
+    # moment pour s'en apercevoir.
+    langues = _langues_declarees()
     for fichier, quoi in TABLES_MODULES.items():
         texte = (CONTENU / fichier).read_text(encoding="utf-8")
         exempt = ASYMETRIES_MODULES.get(fichier, set())
@@ -830,6 +875,146 @@ def _enum_statut_watchlist(schema: dict) -> list[str]:
     raise AssertionError("enum project_status introuvable dans le schéma de veille")
 
 
+def test_une_langue_ne_devient_vivante_que_traduite():
+    """Une langue ne passe en PRÉPARATION → VIVANTE que si CHAQUE module est traduit.
+
+    🔴 C'est le garde qui protège la mise en ligne du néerlandais. Ses 740 chaînes ont été
+    créées le 2026-11-02 en COPIANT le texte français — à dessein : un traducteur natif a
+    besoin de la source en place. Mais une copie du français dans un bloc nommé `nl` est
+    exactement ce qui part en ligne sans que personne ne le voie, et en une seule fois.
+
+    🔴 ET IL SE COMPTE PAR MODULE, PAS EN BLOC. Première version : un ratio AGRÉGÉ sur toute
+    la surface. Le traducteur a prévenu, et la mesure lui a donné raison plus durement qu'il
+    ne le disait — au 2026-11-02, l'agrégat tombait à **15 %**, donc « traduite », pendant que
+    `glossaire.ts` (20 chaînes sur 20) et `dossier.ts` (38 sur 38) étaient ENCORE
+    INTÉGRALEMENT EN FRANÇAIS. Douze modules traduits payaient pour les quatre autres. Une
+    moyenne sur des parties indépendantes ne dit rien de la pire d'entre elles : c'est la
+    même faute que de compter des fiches mesurées au lieu de comparer des ensembles
+    [[gate-deux-populations-meme-racine]].
+
+    Le seuil n'est pas zéro : des valeurs restent légitimement identiques d'une langue à
+    l'autre — un sigle (« PUE »), une URL, un nom propre, « data center » en néerlandais. On
+    refuse un MODULE dont la majorité des chaînes est encore celle du français.
+    """
+    vivantes = _langues_vivantes()
+    reference = vivantes[0]
+    for lg in vivantes[1:]:
+        fautifs: list[tuple[str, int, int]] = []
+        for fichier in TABLES_MODULES:
+            texte = (CONTENU / fichier).read_text(encoding="utf-8")
+            try:
+                ref = _valeurs(bloc(texte, reference.upper()))
+                autre = _valeurs(bloc(texte, lg.upper()))
+            except AssertionError:
+                continue
+            communes = [c for c in ref if c in autre]
+            if not communes:
+                continue
+            identiques = sum(1 for c in communes if autre[c] == ref[c])
+            if identiques / len(communes) >= _SEUIL_MODULE_TRADUIT:
+                fautifs.append((fichier, identiques, len(communes)))
+        assert not fautifs, (
+            f"la langue {lg.upper()} est déclarée VIVANTE mais {len(fautifs)} module(s) ont "
+            f"leurs chaînes encore identiques au {reference.upper()} :\n"
+            + "\n".join(
+                f"  · {f} — {i} sur {t} ({round(100 * i / t)} %)" for f, i, t in fautifs
+            )
+            + f"\n\nUne table copiée n'est pas une table traduite. Remettre {lg.upper()} dans "
+            f"`LANGUES_EN_PREPARATION` jusqu'à ce que CHAQUE module soit écrit : un module "
+            f"oublié sert du français sous pavillon étranger, sur toutes ses pages."
+        )
+
+
+# La part de chaînes identiques au-delà de laquelle un module n'est pas traduit. Par MODULE :
+# un agrégat laisserait les modules écrits payer pour les modules oubliés.
+_SEUIL_MODULE_TRADUIT = 0.5
+
+
+def test_le_garde_de_traduction_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une langue vivante aux valeurs copiées fait rougir le garde.
+
+    🔴 Éprouvé sur une table FABRIQUÉE, pas sur l'état réel de `nl` : la première version
+    de ce canari supposait `nl` non traduite — il a cassé le jour où la traduction a
+    dépassé 50 %, c'est-à-dire exactement quand tout allait bien. Un canari qui dépend
+    de l'avancement du travail mesure l'avancement, pas le garde.
+    """
+    fausse = tmp_path / "fausse-table.ts"
+    fausse.write_text(
+        'const FR = {\n  a: "bonjour",\n  b: "le monde",\n};\n\n'
+        'const XX: typeof FR = {\n  a: "bonjour",\n  b: "le monde",\n};\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "CONTENU", tmp_path)
+    monkeypatch.setitem(globals(), "TABLES_MODULES", {"fausse-table.ts": "table fabriquée"})
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "xx"])
+    with pytest.raises(AssertionError, match="encore identiques"):
+        test_une_langue_ne_devient_vivante_que_traduite()
+
+
+def _valeurs(litteral: str) -> dict[str, str]:
+    """Les chaînes d'un littéral, par chemin de clé — pour comparer deux langues.
+
+    Même discipline que `chemins()` : lecture caractère par caractère, une clé n'est reconnue
+    que là où une clé peut commencer. On ne relève que les valeurs de type CHAÎNE ; un nombre
+    ou un booléen n'a pas à différer d'une langue à l'autre.
+    """
+    import engine.tests.i18n_table as it
+
+    sortie: dict[str, str] = {}
+    prefixe: list[str] = []
+    pile: list[tuple[str, str | None]] = []
+    attente: str | None = None
+    attend_cle = False
+    i = it._saute_blanc_et_commentaires(litteral, 0)
+    while i < len(litteral):
+        i = it._saute_blanc_et_commentaires(litteral, i)
+        if i >= len(litteral):
+            break
+        c = litteral[i]
+        if c in "{[":
+            pile.append(("obj" if c == "{" else "arr", attente))
+            if attente is not None:
+                prefixe.append(attente)
+            attente, attend_cle = None, c == "{"
+            i += 1
+            continue
+        if c in "}]":
+            if pile:
+                _, seg = pile.pop()
+                if seg is not None and prefixe and prefixe[-1] == seg:
+                    prefixe.pop()
+            attente = None
+            attend_cle = bool(pile) and pile[-1][0] == "obj"
+            i += 1
+            continue
+        if c in "\"'`":
+            fin = it._fin_de_chaine(litteral, i)
+            apres = it._saute_blanc_et_commentaires(litteral, fin)
+            if attend_cle and apres < len(litteral) and litteral[apres] == ":":
+                nom = litteral[i + 1 : fin - 1]
+                attente, attend_cle = nom, False
+                i = apres + 1
+                continue
+            if attente is not None:
+                sortie[".".join(prefixe + [attente])] = litteral[i + 1 : fin - 1]
+            i = fin
+            continue
+        m = it._IDENT.match(litteral, i)
+        if m:
+            apres = it._saute_blanc_et_commentaires(litteral, m.end())
+            if attend_cle and apres < len(litteral) and litteral[apres] == ":":
+                attente, attend_cle = m.group(), False
+                i = apres + 1
+                continue
+            i = m.end()
+            continue
+        if c == ",":
+            attente = None
+            attend_cle = bool(pile) and pile[-1][0] == "obj"
+        i += 1
+    return sortie
+
+
 def test_le_total_annonce_en_tete_est_le_bon():
     """L'en-tête de `DETTE_I18N` annonce un total : il doit être celui de la table.
 
@@ -929,3 +1114,1164 @@ def test_la_lecture_de_table_refuse_une_extraction_tronquee():
     tronque = "const EN: typeof FR = { a: 1 } , b: 2 };\n"
     with pytest.raises(AssertionError, match="ne se termine pas sur un `;`"):
         bloc(tronque, "EN")
+
+
+# ──────────────────────────────────────────────────────────────────────────────────────────
+# Le lecteur qui n'est PAS en France doit savoir que le guide parle du droit français
+# ──────────────────────────────────────────────────────────────────────────────────────────
+PREVIZ_TS = REPO_ROOT / "site" / "src" / "config" / "previz.ts"
+PAGES_PREVIZ = PAGES / "previz"
+
+
+def test_une_langue_servie_hors_france_porte_son_avertissement_de_contexte():
+    """`comprendre` doit porter son avertissement de contexte dans toute langue servie ≠ FR.
+
+    🔴 CE QUE `ASYMETRIES_MODULES` NE FAISAIT PAS. Les trois clés `contextNotice`,
+    `inFranceLabel` et `tag` y sont déclarées comme une asymétrie VOULUE — l'anglais les
+    porte, le français n'en a structurellement pas besoin. Mais une exemption rend une clé
+    INVISIBLE au garde de parité : elle n'oblige personne à l'écrire. Le néerlandais pouvait
+    donc arriver sans elles, passer toute la suite au vert, et dire à un élu néerlandais que
+    le délai de recours français est le sien. C'est [[favorable-par-absence-de-detection]]
+    appliqué à une exemption : l'absence de reproche n'est pas une garantie.
+
+    L'obligation mord au moment où la langue devient VIVANTE, pas pendant la rédaction :
+    c'est le moment où la page serait servie, et une langue en préparation a le droit d'être
+    incomplète. La liste des langues concernées n'est pas recopiée ici — elle se DÉRIVE : la
+    France est le seul lecteur chez lui, toute autre langue servie est un lecteur ailleurs.
+    """
+    requises = ASYMETRIES_MODULES["comprendre.ts"]
+    assert requises, "l'asymétrie de `comprendre.ts` est vide — ce garde ne garde plus rien"
+    texte = (CONTENU / "comprendre.ts").read_text(encoding="utf-8")
+    for lg in sorted(set(_langues_vivantes()) - {"fr"}):
+        cles = {c.split(".")[-1] for c in chemins(bloc(texte, lg.upper()))}
+        manquantes = sorted(requises - cles)
+        assert not manquantes, (
+            f"comprendre.ts — {lg.upper()} est servie et ne porte pas {manquantes}. Le guide "
+            f"« Comprendre » est écrit depuis le droit FRANÇAIS (droits, calendrier, enquête "
+            f"publique) ; sans cet avertissement, la page laisse croire à un lecteur de "
+            f"{lg.upper()} que les délais français sont les siens. Le gabarit teste ces clés "
+            f"(`t.x && …`), donc leur absence ne casse rien : elle efface l'avertissement."
+        )
+
+
+def test_le_garde_d_avertissement_hors_france_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une langue servie dont `comprendre` a perdu son avertissement."""
+    faux = tmp_path / "content"
+    faux.mkdir(parents=True)
+    (faux / "comprendre.ts").write_text(
+        'const FR = { titre: "Comprendre" };\n'
+        'const NL = { titre: "Begrijpen" };\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "CONTENU", faux)
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "nl"])
+    with pytest.raises(AssertionError, match="est servie et ne porte pas"):
+        test_une_langue_servie_hors_france_porte_son_avertissement_de_contexte()
+
+
+def test_chaque_langue_declaree_sait_ou_elle_vit():
+    """`RACINE` doit couvrir toute langue déclarée, et par une adresse qui lui est propre.
+
+    Le layout construisait son lien d'accueil avec `lang === "en" ? "/" : "/fr/"`. Un ternaire
+    binaire ne SIGNALE pas le cas qu'il ignore, il en choisit un : le néerlandais serait parti
+    sur l'accueil français, sans un mot. Une langue de plus que la table ne connaît rend
+    `undefined` dans un href — c'est-à-dire un lien mort, pas une erreur.
+    """
+    texte = (CONTENU / "langues.ts").read_text(encoding="utf-8")
+    m = re.search(r"RACINE: Record<LangueDeclaree, string> = \{([^}]*)\}", texte)
+    assert m, "RACINE introuvable dans langues.ts — le harnais ne sait plus où vit une langue"
+    racines = dict(re.findall(r'(\w+):\s*"([^"]*)"', m.group(1)))
+    declarees = set(_langues_declarees())
+    manquantes = sorted(declarees - set(racines))
+    assert not manquantes, (
+        f"des langues déclarées n'ont pas de racine : {manquantes} — leur lien d'accueil "
+        f"rendrait `undefined`, un lien mort sur toutes leurs pages"
+    )
+    doublons = [r for r in racines.values() if list(racines.values()).count(r) > 1]
+    assert not doublons, (
+        f"deux langues partagent la même racine ({sorted(set(doublons))}) : l'une servirait "
+        f"les pages de l'autre"
+    )
+
+
+def test_la_previz_ne_sort_rien_en_production():
+    """Une page de préviz doit tenir son portillon dans `getStaticPaths`, jamais dans le gabarit.
+
+    🔴 La forme COMPTE. Une page Astro sans `getStaticPaths` est toujours construite, et un
+    `if` qui ne rend rien laisse quand même un fichier HTML dans `dist/` : une langue
+    déclarée « en préparation » serait servie sous une autre adresse. Rendre `[]` est la
+    seule forme qui ne produise pas un octet — et c'est `cheminsPreviz()` qui la porte, à un
+    seul endroit, lu depuis l'environnement.
+    """
+    source = PREVIZ_TS.read_text(encoding="utf-8")
+    assert "process.env.SMDC_PREVIZ" in source, (
+        "le portillon de préviz ne lit plus l'environnement — s'il devient constant, les "
+        "pages de préviz partent en production"
+    )
+    assert re.search(r"return PREVIZ \? fabrique\(\) : \[\]", source), (
+        "`cheminsPreviz` ne rend plus `[]` quand le portillon est fermé"
+    )
+    pages = sorted(PAGES_PREVIZ.rglob("*.astro"))
+    assert pages, f"aucune page sous {PAGES_PREVIZ.relative_to(REPO_ROOT)} — le relevé ne cherche plus"
+    for page in pages:
+        texte = page.read_text(encoding="utf-8")
+        assert "getStaticPaths" in texte and "cheminsPreviz(" in texte, (
+            f"{page.relative_to(PAGES)} ne passe pas par `cheminsPreviz()` dans un "
+            f"`getStaticPaths` : elle serait construite en production"
+        )
+
+
+def test_les_trous_nommes_sont_les_memes_dans_toutes_les_langues():
+    """Une chaîne traduite doit porter EXACTEMENT les mêmes trous `{nom}` que sa source.
+
+    🔴 Le trou perdu est muet. `"{v} sites à {commune}"` traduit sans `{commune}` ne casse
+    rien : la phrase s'affiche, bien tournée, et la commune a disparu. Le trou EN TROP est
+    pire — `{commune}` dans une langue où le code ne le remplit pas s'affiche tel quel, en
+    accolades, sur la page. Aucun des deux ne lève d'erreur ; `astro build` ne tourne pas
+    `astro check`, et de toute façon une chaîne est une chaîne.
+
+    L'épreuve porte sur les langues DÉCLARÉES, pas seulement servies : c'est pendant la
+    rédaction qu'un trou se perd, et une langue en préparation part d'une copie où les trous
+    sont justes — la faute est donc datable au geste qui l'introduit. L'ORDRE est libre :
+    l'interpolation se fait par nom (`.replace("{grade}", …)`), et une langue a le droit de
+    tourner sa phrase autrement. C'est l'ENSEMBLE qui doit tenir.
+    """
+    declarees = _langues_declarees()
+    reference = declarees[0]
+    fautes: list[str] = []
+    for fichier in TABLES_MODULES:
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        try:
+            ref = _valeurs(bloc(texte, reference.upper()))
+        except AssertionError:
+            continue
+        for lg in declarees[1:]:
+            try:
+                autre = _valeurs(bloc(texte, lg.upper()))
+            except AssertionError:
+                continue
+            for cle, val in ref.items():
+                if cle not in autre:
+                    continue  # l'absence de clé est l'affaire du garde de parité
+                attendus = set(re.findall(r"\{[a-zA-Z_][\w]*\}", val))
+                servis = set(re.findall(r"\{[a-zA-Z_][\w]*\}", autre[cle]))
+                if attendus != servis:
+                    perdus = sorted(attendus - servis)
+                    ajoutes = sorted(servis - attendus)
+                    fautes.append(
+                        f"  {fichier} · {lg.upper()} · {cle} —"
+                        + (f" trou(s) PERDU(S) {perdus}" if perdus else "")
+                        + (f" trou(s) EN TROP {ajoutes}" if ajoutes else "")
+                    )
+    assert not fautes, (
+        f"{len(fautes)} chaîne(s) traduites n'ont plus les trous de leur source :\n"
+        + "\n".join(fautes[:20])
+        + "\n\nUn trou perdu efface une donnée sans rien casser ; un trou en trop s'affiche "
+        "en accolades sur la page. L'ordre est libre, l'ensemble ne l'est pas."
+    )
+
+
+def test_chaque_langue_declaree_a_sa_regle_de_pluriel():
+    """Toute langue déclarée doit porter sa RÈGLE de pluriel, pas hériter de celle du voisin.
+
+    Le français met zéro au singulier, l'anglais et le néerlandais au pluriel. Un
+    `n > 1 ? … : …` dans un gabarit applique donc la règle française au néerlandais sans
+    rien signaler. Une langue sans règle rendrait `REGLE_PLURIEL[lang]` → `undefined`, puis
+    `undefined(n)` : là, au moins, ça casse. Ce test empêche d'en arriver là.
+    """
+    texte = (CONTENU / "langues.ts").read_text(encoding="utf-8")
+    m = re.search(
+        r"REGLE_PLURIEL: Record<LangueDeclaree, \(n: number\) => FormePluriel> = \{(.*?)\n\};",
+        texte,
+        re.S,
+    )
+    assert m, "REGLE_PLURIEL introuvable dans langues.ts"
+    reglees = set(re.findall(r"^\s*(\w+):", m.group(1), re.M))
+    manquantes = sorted(set(_langues_declarees()) - reglees)
+    assert not manquantes, (
+        f"des langues déclarées n'ont pas de règle de pluriel : {manquantes} — leurs phrases "
+        f"à compte prendraient la règle d'une autre langue, ou rien du tout"
+    )
+
+
+# La prose qui vit HORS des tables gardées : `config/stats.ts` porte les phrases des chiffres
+# de l'accueil et des pages de chiffres sous forme de paires `{ fr: …, en: … }`. Elles sont
+# dans le périmètre signé (l'accueil en fait partie) mais pas dans `TABLES_MODULES` — donc pas
+# dans le garde de parité. Le compte est DÉCLARÉ et ne peut que baisser : un cliquet, comme
+# `DETTE_I18N`, parce qu'un trou qu'on mesure vaut mieux qu'un trou qu'on découvre en servant.
+# 63 → 43 le 2026-11-03 : les 20 noms de pays ont reçu leur néerlandais. Le cliquet a crié
+# pour le DIRE — un cliquet qui ne signale que les hausses laisse oublier les baisses, et
+# une dette qu'on ne voit pas diminuer est une dette qu'on cesse de rembourser.
+DETTE_PAIRES_STATS = 43
+
+
+def test_la_prose_hors_table_ne_grossit_jamais():
+    """`config/stats.ts` ne doit pas accumuler de prose à deux langues en douce.
+
+    🔴 Trouvé par la préviz, pas par un test : l'accueil néerlandais PLANTAIT sur `fmtPct`
+    parce que la table de formes s'arrêtait à deux langues. Le format, lui, se déclare en une
+    ligne (c'est fait). Mais derrière il reste les PHRASES, les lignes de source, les noms de
+    pays et les périmètres — de la prose, qui n'est pas au harnais et ne peut pas s'inventer.
+    Tant qu'elle est là, l'accueil néerlandais ne peut pas être complet, et ce nombre le dit.
+    """
+    texte = (REPO_ROOT / "site" / "src" / "config" / "stats.ts").read_text(encoding="utf-8")
+    paires = re.findall(
+        r'\{\s*fr:\s*"(?:[^"\\]|\\.)*",\s*en:\s*"(?:[^"\\]|\\.)*"\s*\}', texte
+    )
+    assert len(paires) <= DETTE_PAIRES_STATS, (
+        f"{len(paires)} paires fr/en dans config/stats.ts, la dette déclarée est "
+        f"{DETTE_PAIRES_STATS} : de la prose vient d'être ajoutée hors des tables gardées. "
+        f"Elle doit rejoindre un module de `TABLES_MODULES`, où la parité se vérifie."
+    )
+    if len(paires) < DETTE_PAIRES_STATS:
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {len(paires)} paires "
+            f"(déclaré : {DETTE_PAIRES_STATS}). Abaissez DETTE_PAIRES_STATS à {len(paires)}."
+        )
+
+
+DONNEE_SERVIE = REPO_ROOT / "site" / "public" / "data"
+
+
+def _objets_bilingues(noeud, sortie: list) -> None:
+    """Les objets de la donnée servie qui portent une chaîne PAR LANGUE."""
+    if isinstance(noeud, dict):
+        if "fr" in noeud and "en" in noeud and all(
+            isinstance(v, str) for v in noeud.values() if v is not None
+        ):
+            sortie.append(noeud)
+            return
+        for v in noeud.values():
+            _objets_bilingues(v, sortie)
+    elif isinstance(noeud, list):
+        for v in noeud:
+            _objets_bilingues(v, sortie)
+
+
+def test_la_donnee_servie_parle_toutes_les_langues_vivantes():
+    """La DONNÉE servie doit porter chaque langue vivante, pas seulement les tables du site.
+
+    🔴 Trouvé par la préviz, au rendu, pas par un test : une page de portrait néerlandaise
+    affiche ses libellés d'indicateur et ses questions à poser **en anglais**. Pas une
+    erreur, pas un blanc — `SitePortrait.astro` lit `lang === "fr" ? o.fr : o.en`, donc toute
+    langue qui n'est pas le français reçoit l'anglais. C'est le piège des 17 ternaires, mais
+    sur le seul bloc qui dit au lecteur **ce qu'il peut faire**.
+
+    Ces chaînes ne vivent pas dans `content/` : elles sont ÉMISES par le pipeline. Les
+    traduire n'est donc pas un geste de harnais, et ce test ne corrige rien — il refuse
+    qu'on serve une langue à qui la donnée ne répond pas.
+
+    Il se TAIT quand la donnée n'est pas là (la CI du dépôt public ne l'a pas : `site/public/
+    data/` est ignoré) — même discipline que les gates de corpus : un côté absent, rien à
+    comparer, rien à garder.
+
+    ANGLE MORT DÉCLARÉ : on ne parcourt que `scores.json` et `methodology.json`, qui portent
+    le vocabulaire PARTAGÉ (433 chaînes distinctes mesurées le 2026-11-02, ~3 150 mots). Les
+    3 267 fiches portent EN PLUS leur prose propre (accroche, justification par badge) ;
+    les parcourir ajouterait 65 Mo de lecture à chaque `make test`. Ce trou est déclaré ici,
+    pas découvert en servant.
+    """
+    import json
+
+    fichiers = [DONNEE_SERVIE / "scores.json", DONNEE_SERVIE / "methodology.json"]
+    if not all(f.is_file() for f in fichiers):
+        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+
+    vivantes = set(_langues_vivantes())
+    objets: list = []
+    for f in fichiers:
+        _objets_bilingues(json.loads(f.read_text(encoding="utf-8")), objets)
+    assert objets, "aucun objet bilingue trouvé — le relevé ne cherche plus au bon endroit"
+
+    distinctes = {
+        tuple(sorted(o.items())) for o in objets if vivantes - set(o)
+    }
+    assert not distinctes, (
+        f"{len(distinctes)} chaîne(s) distinctes de la donnée servie ne portent pas toutes "
+        f"les langues vivantes ({sorted(vivantes)}) : le pipeline ne les émet pas. Servies "
+        f"telles quelles, elles sortent en ANGLAIS sur une page qui n'est pas anglaise — "
+        f"sans erreur et sans blanc. Exemple : {sorted(distinctes)[0][:2]}"
+    )
+
+
+def test_le_garde_de_la_donnee_servie_mord_vraiment(monkeypatch):
+    """Contre-épreuve : on déclare vivante une langue que la donnée ne porte pas.
+
+    🔴 CETTE ÉPREUVE S'APPUYAIT SUR LE NÉERLANDAIS, et elle a cessé de mordre — parce que la
+    donnée servie porte MAINTENANT le néerlandais : libellés d'indicateurs, noms de piliers,
+    phrase citable. Une contre-épreuve adossée à un trou meurt le jour où le trou se comble,
+    et elle meurt en silence : elle passe au vert pour la mauvaise raison.
+    (C'est aussi, au passage, la meilleure nouvelle du jour : si on faisait passer `nl`
+    vivante, le garde de la donnée servie ne s'y opposerait plus.)
+
+    Elle s'appuie donc sur une langue qui n'existera jamais dans la donnée. Ce que le test
+    doit prouver, c'est qu'il SAIT DIRE NON — pas que le néerlandais est incomplet.
+    """
+    if not (DONNEE_SERVIE / "scores.json").is_file():
+        pytest.skip("donnée servie absente de ce checkout")
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "zz"])
+    with pytest.raises(AssertionError, match="ne portent pas toutes les langues vivantes"):
+        test_la_donnee_servie_parle_toutes_les_langues_vivantes()
+
+
+def test_la_donnee_servie_porte_deja_le_neerlandais():
+    """Le constat, nommé : la donnée servie parle néerlandais, langue pas encore ouverte.
+
+    Ce n'est pas un doublon du garde des langues vivantes — c'est le jalon qu'il ne peut pas
+    dire, puisqu'il ne regarde que les langues DÉJÀ servies. Le jour où ce test tombe, c'est
+    qu'un pipeline a cessé d'émettre le néerlandais ; on le saura avant d'ouvrir la langue,
+    pas après.
+    """
+    import json
+
+    fichiers = [DONNEE_SERVIE / "scores.json", DONNEE_SERVIE / "methodology.json"]
+    if not all(f.is_file() for f in fichiers):
+        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+    objets: list = []
+    for f in fichiers:
+        _objets_bilingues(json.loads(f.read_text(encoding="utf-8")), objets)
+    assert objets, "le relevé ne trouve aucun objet bilingue — il ne garde plus rien"
+    sans_nl = [o for o in objets if "nl" not in o]
+    assert not sans_nl, (
+        f"{len(sans_nl)} objet(s) de la donnée servie sur {len(objets)} ne portent pas le "
+        f"néerlandais — un pipeline a cessé de l'émettre. Exemple : "
+        f"{list(sans_nl[0].items())[:2]}"
+    )
+
+
+QUESTIONS_DERIVEES = CONTENU / "questions-derivees.ts"
+
+
+def _litteraux_par_langue(texte: str) -> list[set[str]]:
+    """Les littéraux `{ fr: …, en: … }` d'un module, rendus comme ensembles de clés.
+
+    Troisième forme d'i18n du dépôt, après les blocs `const FR/NL` et les littéraux tenus
+    DANS un composant : une table dont CHAQUE entrée porte ses langues. `bloc()` ne sait pas
+    la lire — elle n'a pas de bloc de langue — d'où ce relevé à part.
+    """
+    sortie: list[set[str]] = []
+    # 🔴 `fr: string` est une DÉCLARATION DE TYPE, pas une chaîne. Ma première version les
+    # comptait et annonçait douze traductions manquantes qui n'existaient pas — un garde qui
+    # crie faux use la confiance qu'on lui fait aussi sûrement qu'un garde muet.
+    for m in re.finditer(r"\bfr\s*:\s*[\"'`]", texte):
+        debut = texte.rfind("{", 0, m.start())
+        if debut < 0:
+            continue
+        profondeur, i = 0, debut
+        while i < len(texte):
+            if texte[i] == "{":
+                profondeur += 1
+            elif texte[i] == "}":
+                profondeur -= 1
+                if profondeur == 0:
+                    break
+            i += 1
+        sortie.append(set(re.findall(r"\b(\w+)\s*:\s*[\"'`]", texte[debut : i + 1])))
+    return sortie
+
+
+def test_les_questions_a_poser_parlent_toutes_les_langues_vivantes():
+    """`questions-derivees.ts` doit porter chaque langue servie — il n'était gardé par RIEN.
+
+    🔴 C'est le module qui engendre les « à demander » du portrait : la seule phrase du site
+    qui dise à un lecteur quoi réclamer, et à qui. Il a échappé aux deux gardes existants
+    parce qu'il a une TROISIÈME forme — ni blocs `const FR/NL`, ni littéral dans un
+    composant, mais `Record<clé, {fr, en}>`. La préviz l'a montré en anglais sur une page
+    néerlandaise, et `TABLES_MODULES` ne pouvait pas le voir : on n'y déclare que ce qu'on
+    sait lire.
+
+    Et il a d'abord été imputé au pipeline (`registers/absence.py`) : la chaîne servie n'y
+    est pas. Vérifier d'où vient VRAIMENT une chaîne avant de décider qui doit l'écrire —
+    une carte de provenance fausse envoie le travail au mauvais dépôt.
+    """
+    texte = QUESTIONS_DERIVEES.read_text(encoding="utf-8")
+    litteraux = _litteraux_par_langue(texte)
+    assert len(litteraux) >= 10, (
+        f"seulement {len(litteraux)} littéral(aux) de langue relevé(s) dans "
+        f"{QUESTIONS_DERIVEES.name} — le relevé ne cherche plus"
+    )
+    vivantes = set(_langues_vivantes())
+    manquants = [sorted(vivantes - cles) for cles in litteraux if vivantes - cles]
+    assert not manquants, (
+        f"{len(manquants)} question(s) ou amorce(s) ne portent pas toutes les langues "
+        f"vivantes : il manque {sorted({l for m in manquants for l in m})}. Servies telles "
+        f"quelles, elles sortent dans une autre langue que celle de la page — c'est la "
+        f"phrase qui dit au lecteur quoi réclamer."
+    )
+
+
+def test_le_garde_des_questions_a_poser_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve sur une table fabriquée, pas sur l'avancement du travail."""
+    faux = tmp_path / "questions-derivees.ts"
+    faux.write_text(
+        "export const Q = {\n" + "".join(
+            f'  q{i}: {{ fr: "a{i}", en: "b{i}" }},\n' for i in range(12)
+        ) + "};\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "QUESTIONS_DERIVEES", faux)
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "nl"])
+    with pytest.raises(AssertionError, match="ne portent pas toutes les langues"):
+        test_les_questions_a_poser_parlent_toutes_les_langues_vivantes()
+
+
+BLOCS_RICHES = CONTENU / "understand-blocks.ts"
+
+
+def _blocs_de_comprendre(langue: str) -> list[tuple[str, str, str]]:
+    """(id, ancre, slot) des blocs de « Comprendre », dans l'ordre, pour une langue."""
+    texte = (CONTENU / "comprendre.ts").read_text(encoding="utf-8")
+    m = re.search(rf"^const {langue.upper()}\b.*?blocks:\s*\[(.*?)\n\s*\],", texte, re.S | re.M)
+    if not m:
+        return []
+    return [
+        (i, a, s or "")
+        for i, a, s in re.findall(
+            r'id:\s*"([^"]+)",\s*anchor:\s*"([^"]+)"[^}]*?(?:slot:\s*"([^"]+)")?[^}]*\}',
+            m.group(1),
+        )
+    ]
+
+
+def test_l_ancre_ne_sert_plus_de_cle_de_donnees():
+    """L'ancre d'un bloc est une ADRESSE ; sa clé de données est un identifiant stable.
+
+    🔴 Trouvé par la préviz, au rendu, et invisible à tout le reste : la page « Comprendre »
+    néerlandaise rendait **144 blocs contre 182 en français**. Les tables riches étaient
+    indexées par l'ancre — `RICH_FR` sur `commune`, `droits`… — et la page néerlandaise
+    demandait `gemeente`, `rechten`. Personne ne répondait. Rien ne cassait : le contenu
+    n'était simplement jamais DEMANDÉ, et quatre des cinq blocs documentés disparaissaient.
+
+    Les clés étaient justes des deux côtés ; c'est leur COUPLAGE qui était faux — une ancre
+    traduite (ce qu'elle doit être, l'anglais le fait depuis toujours) emportait avec elle une
+    clé qui, elle, ne doit pas bouger. [[id-daffichage-perime-rubrique-muette]] appliqué à
+    une adresse.
+
+    Les identifiants sont choisis DIFFÉRENTS des ancres de chaque langue (sauf `faq`, dont le
+    sigle est universel — d'où `faq-block`) : un id qui ressemble à l'ancre d'une langue
+    invite à les refusionner le jour où « ça marche quand même ».
+    """
+    langues = _langues_declarees()
+    reference = _blocs_de_comprendre(langues[0])
+    assert len(reference) >= 5, (
+        f"{len(reference)} bloc(s) relevés dans comprendre.ts — le relevé ne cherche plus"
+    )
+    ids_ref = [i for i, _, _ in reference]
+    for lg in langues[1:]:
+        ids = [i for i, _, _ in _blocs_de_comprendre(lg)]
+        assert ids == ids_ref, (
+            f"comprendre.ts — les identifiants de bloc de {lg.upper()} ne sont pas ceux de "
+            f"{langues[0].upper()} : {ids} ≠ {ids_ref}. Un id est la même chose dans toutes "
+            f"les langues ; c'est l'ancre qui se traduit."
+        )
+
+    texte = BLOCS_RICHES.read_text(encoding="utf-8")
+    tables = {
+        m.group(1): set(
+            re.findall(r'^\s{2}"([\w-]+)":\s*\{', m.group(2), re.M)
+        )
+        for m in re.finditer(
+            r"export const RICH_(\w+)[^=]*= \{(.*?)^\};", texte, re.S | re.M
+        )
+    }
+    assert tables, "aucune table RICH_* relevée — le garde ne garde plus rien"
+    connus = set(ids_ref)
+    for nom, cles in tables.items():
+        intruses = sorted(cles - connus)
+        assert not intruses, (
+            f"RICH_{nom} porte {len(intruses)} clé(s) qui ne sont l'identifiant d'aucun "
+            f"bloc : {intruses}. Servie telle quelle, cette entrée n'est jamais demandée — "
+            f"elle ne manque pas à l'écran, elle n'existe pas."
+        )
+    communes = set.intersection(*tables.values()) if len(tables) > 1 else next(iter(tables.values()))
+    for nom, cles in tables.items():
+        manquantes = sorted(communes - cles)
+        assert not manquantes, (
+            f"RICH_{nom} n'a pas {manquantes}, que les autres langues portent — le bloc "
+            f"serait vide dans cette langue seulement, sans erreur"
+        )
+
+
+def test_le_garde_du_decouplage_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une table riche réindexée sur l'ancre d'une langue."""
+    faux = tmp_path / "understand-blocks.ts"
+    faux.write_text(
+        'export const RICH_FR: Record<string, RichBlock> = {\n'
+        '  "gemeente": { intro: "x" },\n'
+        "};\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "BLOCS_RICHES", faux)
+    with pytest.raises(AssertionError, match="n'est jamais demandée|identifiant d'aucun"):
+        test_l_ancre_ne_sert_plus_de_cle_de_donnees()
+
+
+# Les liens internes d'une table de langue doivent rester DANS cette langue. Exemptions
+# déclarées, avec leur raison — vide aujourd'hui : il n'y a pas de bonne raison d'envoyer un
+# lecteur sur une page qu'il ne lit pas, et si une page n'existe que dans une langue, c'est
+# cette absence-là qu'il faut traiter, pas la masquer par un lien.
+# `altHref` EST le lien vers l'autre langue : c'est sa raison d'être, pas une faute. (Et
+# c'est précisément lui qui devra devenir un sélecteur le jour où il y aura trois langues —
+# voir `content/langues.ts`.)
+LIENS_HORS_LANGUE_OK: dict[str, set[str]] = {f: {"altHref"} for f in TABLES_MODULES}
+
+
+def test_une_table_de_langue_ne_renvoie_pas_vers_une_autre_langue():
+    """Un lien interne d'une table NL ou EN ne doit pas pointer vers `/fr/…`.
+
+    🔴 Trouvé par le traducteur en relisant son propre travail, et c'est un bug de
+    PRODUCTION, pas un défaut néerlandais : la page « Comprendre » anglaise renvoyait son
+    lecteur vers la carte FRANÇAISE. Les tables néerlandaises en portent davantage, pour une
+    raison bénigne — elles sont nées d'une copie du français — mais elles partiraient en
+    ligne avec.
+
+    Un lien est une ROUTE, pas une chaîne : il ne se traduit pas, il se REMAPPE. Et rien ne
+    le signale, puisque la page de destination existe et s'affiche : le lecteur change
+    simplement de langue sans l'avoir demandé.
+    """
+    racines = {lg: f"/{lg}/" for lg in _langues_declarees() if lg != "en"}
+    fautes: list[str] = []
+    for fichier in TABLES_MODULES:
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        for lg in _langues_declarees():
+            try:
+                valeurs = _valeurs(bloc(texte, lg.upper()))
+            except AssertionError:
+                continue
+            exempt = LIENS_HORS_LANGUE_OK.get(fichier, set())
+            for cle, val in valeurs.items():
+                if cle in exempt:
+                    continue
+                for autre, racine in racines.items():
+                    if autre != lg and racine in val:
+                        fautes.append(f"  {fichier} · {lg.upper()} · {cle} → {racine}")
+    assert not fautes, (
+        f"{len(fautes)} lien(s) interne(s) envoient le lecteur dans une AUTRE langue :\n"
+        + "\n".join(sorted(set(fautes))[:20])
+        + "\n\nUn lien est une route, pas une chaîne : il se remappe. Rien ne le signale, "
+        "puisque la page de destination existe — le lecteur change de langue sans l'avoir "
+        "demandé."
+    )
+
+
+def test_le_lien_vers_l_autre_langue_ne_pointe_pas_sur_soi():
+    """`altHref` doit sortir de sa langue — sinon il ne mène nulle part de nouveau.
+
+    🔴 Je l'ai cassé moi-même en remappant les liens internes : mon exemption d'`altHref`
+    vivait dans le GARDE et pas dans le script de remplacement, et la page « Comprendre »
+    anglaise s'est mise à proposer sa propre version anglaise. Rien ne casse — le lien est
+    valide, la page existe, elle s'affiche — et le lecteur clique sur « FR » pour rester en
+    anglais. Un garde qui exempte un cas doit aussi savoir dire quand ce cas est faux.
+    """
+    racines = {lg: f"/{lg}/" for lg in _langues_declarees() if lg != "en"}
+    fautes: list[str] = []
+    for fichier in TABLES_MODULES:
+        texte = (CONTENU / fichier).read_text(encoding="utf-8")
+        for lg in _langues_declarees():
+            try:
+                alt = _valeurs(bloc(texte, lg.upper())).get("altHref")
+            except AssertionError:
+                continue
+            if not alt:
+                continue
+            sienne = racines.get(lg)
+            chez_soi = alt.startswith(sienne) if sienne else not any(
+                alt.startswith(r) for r in racines.values()
+            )
+            if chez_soi:
+                fautes.append(f"  {fichier} · {lg.upper()} · altHref = {alt}")
+    assert not fautes, (
+        "des pages proposent « l'autre langue » et renvoient vers la LEUR :\n"
+        + "\n".join(fautes)
+        + "\n\nLe lien est valide et la page s'affiche : le lecteur clique pour changer de "
+        "langue et ne change pas de langue."
+    )
+
+
+def test_le_schema_de_methodologie_admet_chaque_langue_declaree():
+    """Le schéma et `langues.ts` doivent dire la MÊME liste de langues.
+
+    🔴 Deux vocabulaires, encore. En posant le néerlandais sur les 61 libellés de la méthode,
+    dix-neuf tests ont échoué : le schéma refusait la clé `nl` (`additionalProperties: false`)
+    sur une donnée que l'on venait justement de compléter. C'est la même histoire que le
+    statut `unknown` du 2026-11-02 — le refus était correct, ce qui manquait était le PONT.
+
+    Seuls `fr` et `en` restent EXIGÉS : une langue en préparation a le droit d'être
+    incomplète, c'est `LANGUES_VIVANTES` qui décide de ce qui est servi.
+    """
+    import json
+
+    schema = json.loads(
+        (REPO_ROOT / "data" / "schema" / "methodology.schema.json").read_text(encoding="utf-8")
+    )
+    admises = set(schema["$defs"]["bilingual_label"]["properties"])
+    declarees = set(_langues_declarees())
+    manquantes = sorted(declarees - admises)
+    assert not manquantes, (
+        f"le schéma de méthodologie n'admet pas {manquantes}, que `langues.ts` déclare : "
+        f"poser ces libellés ferait REFUSER la méthodologie au gate de corpus, sur une "
+        f"donnée pourtant complète"
+    )
+    intruses = sorted(admises - declarees)
+    assert not intruses, (
+        f"le schéma admet {intruses} que `langues.ts` ne déclare pas — une langue qui "
+        f"n'existe nulle part ailleurs finirait par être servie sans table"
+    )
+
+
+def test_les_notes_de_bas_de_page_suivent_l_identifiant_stable():
+    """Une note de source pointe sur l'identifiant du bloc, jamais sur son ancre traduite.
+
+    Même leçon que le découplage, un cran plus bas : le gabarit engendre `id="src-<id>-N"`,
+    donc un renvoi écrit `#src-rechten-1` ne mène nulle part — et ne casse rien, puisqu'un
+    ancrage absent laisse simplement le lecteur où il est.
+    """
+    ids = {i for i, _, _ in _blocs_de_comprendre(_langues_declarees()[0])}
+    assert ids, "aucun identifiant de bloc relevé — le garde ne garde plus rien"
+    fautes: list[str] = []
+    for fichier in sorted((CONTENU).rglob("*.ts")):
+        for cle in set(re.findall(r"#src-([a-z-]+?)-\d+", fichier.read_text(encoding="utf-8"))):
+            if cle not in ids:
+                fautes.append(f"  {fichier.name} · #src-{cle}-N")
+    assert not fautes, (
+        "des renvois de source pointent sur une ancre et non sur un identifiant de bloc :\n"
+        + "\n".join(sorted(set(fautes)))
+        + f"\n\nIdentifiants valides : {sorted(ids)}. Un renvoi qui ne tombe nulle part ne "
+        "casse rien : il laisse le lecteur où il est."
+    )
+
+
+VALEURS_TS = REPO_ROOT / "site" / "src" / "config" / "indicatorValues.ts"
+
+
+def test_le_bloc_qui_explique_la_note_parle_chaque_langue_servie():
+    """« Ce qui pèse le plus ici » doit avoir ses mots dans chaque langue SERVIE.
+
+    C'est la seule phrase de la fiche qui explique la note d'un coup d'œil, en mots
+    d'habitant. Faute de mots, la fonction rend `null` et le bloc DISPARAÎT — un silence
+    préférable à de l'anglais au milieu d'une page néerlandaise, mais un silence quand même.
+    Il est acceptable pendant la rédaction, pas une fois la langue servie : le lecteur aurait
+    alors une page entièrement traduite dont manque, sans explication, la phrase qui résume.
+    """
+    texte = VALEURS_TS.read_text(encoding="utf-8")
+    vivantes = set(_langues_vivantes())
+
+    def bloc_de(table: str) -> str:
+        m = re.search(rf"(?:export )?const {table}[^=]*= \{{(.*?)\n\}};", texte, re.S)
+        assert m, f"{table} introuvable — le garde ne garde plus rien"
+        return m.group(1)
+
+    # 🔴 Deux FORMES, et ma première version les a confondues : dans les deux premières
+    # tables la langue est une sous-clé (`E1: { fr, en, nl }`), dans `PHRASES` elle EST la
+    # clé (`fr: { ici, part }`). Le garde criait donc sur une table parfaitement complète.
+    phrases = set(re.findall(r"^  (\w+):\s*\{", bloc_de("PHRASES"), re.M))
+    manquantes = sorted(vivantes - phrases)
+    assert not manquantes, (
+        f"PHRASES n'a pas de motif pour {manquantes} — le bloc se tairait dans une langue "
+        f"servie, et le lecteur n'aurait aucun moyen de savoir qu'il manque quelque chose"
+    )
+
+    for table in ("FACTEUR_DOMINANT", "GENTILES"):
+        entrees = re.findall(r"^  [\"']?[\w\-]+[\"']?:\s*\{(.*?)\},?$", bloc_de(table), re.M | re.S)
+        assert entrees, f"{table} : aucune entrée relevée"
+        manquantes = {
+            lg for e in entrees for lg in vivantes
+            if not re.search(rf"\b{lg}:", e)
+        }
+        assert not manquantes, (
+            f"{table} ne porte pas {sorted(manquantes)} sur toutes ses entrées — le bloc "
+            f"« ce qui pèse le plus ici » se tairait dans une langue servie, et le lecteur "
+            f"n'aurait aucun moyen de savoir qu'il manque quelque chose"
+        )
+
+
+def test_chaque_pays_du_corpus_a_son_nom_dans_chaque_langue_servie():
+    """Un pays servi sans nom dans une langue s'affiche en CODE ISO.
+
+    « Deze site ligt in **NL** » — relevé par la relecture native. Le gabarit rend
+    `COUNTRY_NAMES[iso]?.[lang] ?? iso` : le repli est le code, et un code se lit comme une
+    donnée non traduite, parce que c'en est une.
+
+    Le garde part du CORPUS, pas de la table : c'est l'arrivée d'un pays qui crée le trou,
+    et elle arrive par la donnée. Il se tait quand la donnée servie n'est pas là.
+    """
+    import json
+
+    dossier = REPO_ROOT / "site" / "public" / "data" / "dc"
+    if not dossier.is_dir():
+        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+    pays = {
+        json.loads(f.read_text(encoding="utf-8")).get("country")
+        for f in dossier.glob("*.json")
+    } - {None}
+    assert len(pays) >= 5, f"{len(pays)} pays relevés — le relevé ne cherche plus"
+
+    texte = (REPO_ROOT / "site" / "src" / "config" / "stats.ts").read_text(encoding="utf-8")
+    m = re.search(r"(?:const|export const) COUNTRY_NAMES[^=]*= \{(.*?)\n\};", texte, re.S)
+    assert m, "COUNTRY_NAMES introuvable"
+    noms = {
+        cle: set(re.findall(r"\b(\w+):\s*\"", corps))
+        for cle, corps in re.findall(r"(\w+):\s*\{([^}]*)\}", m.group(1))
+    }
+    vivantes = set(_langues_vivantes())
+    fautes = sorted(
+        f"  {iso} — manque {sorted(vivantes - noms.get(iso, set()))}"
+        for iso in pays
+        if vivantes - noms.get(iso, set())
+    )
+    assert not fautes, (
+        f"{len(fautes)} pays du corpus n'ont pas leur nom dans toutes les langues servies :\n"
+        + "\n".join(fautes)
+        + "\n\nIls s'afficheraient en code ISO — ce qui se lit comme une donnée non traduite."
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# La CINQUIÈME racine de chaînes : `content/procedure/*.ts`, le bloc juridique.
+#
+# C'est le seul endroit du site qui dise au lecteur quoi FAIRE : qui décide, quelle fenêtre
+# est encore ouverte, quel délai ne revient pas. Donc le bloc qui se traduit en PREMIER et
+# pas en dernier — un riverain néerlandais qui lit son délai de recours en anglais n'est pas
+# armé, il est renvoyé à sa complexité.
+#
+# Les quatre autres racines sont au harnais (`TABLES_MODULES`, `DETTE_I18N`). Celle-ci ne
+# pouvait pas y entrer : ses chaînes ne sont pas des libellés d'interface mais de la prose
+# SOURCÉE — chaque phrase porte son article, son lien vers le texte et la date de lecture en
+# vigueur. Elle se traduit, elle ne se régénère pas : la version française est la référence,
+# et la néerlandaise doit dire la MÊME chose, pas une chose vraisemblable.
+#
+# `cite` et `url` restent hors périmètre : une référence d'article se cite comme la
+# juridiction la cite. Traduire « Algemene wet bestuursrecht, art. 6:7 » serait rendre la
+# source introuvable.
+#
+# DEUX nombres, et ils ne mesurent pas la même chose — les confondre a fait échouer ce test
+# dès la première passe de traduction, et c'était la bonne alarme : le TOTAL des champs de
+# prose ne bouge que si on ajoute ou retire une affirmation juridique, la DETTE ne bouge
+# qu'avec la traduction. Un seul compteur pour les deux aurait laissé une affirmation
+# disparaître sans bruit du jour où la dette baissait.
+CHAMPS_PROCEDURE = 181  # 19 fichiers, 2026-11-03
+# 181 → 93 le 2026-11-03 : première passe de rapports-SMDC, 88 champs posés par
+# `scripts/injecter_traduction_procedure.py` (ancrage par rang, nombres vérifiés).
+# 93 → 94 le même jour, et le cliquet a eu raison de refuser : la #304 a réécrit l'autorité
+# néerlandaise (« instruction communale » était faux pour exactement les gros data centers
+# qu'on note — c'est la province, voire le Rijk, qui décide). Le néerlandais posé traduisait
+# fidèlement la phrase d'AVANT ; une traduction fidèle d'un texte périmé est un texte périmé.
+# Le champ est donc retourné à la dette, et cette hausse est DÉCLARÉE au lieu d'être subie.
+# 94 → 0 le 2026-11-03 : passe B de rapports-SMDC. Les 181 affirmations du bloc juridique
+# parlent néerlandais. Le cliquet reste — il dira si une affirmation ajoutée part sans sa
+# traduction, et c'est précisément le bloc où cela se verrait le moins.
+DETTE_NL_PROCEDURE = 0
+
+PROCEDURE = CONTENU / "procedure"
+
+# fr, puis en, puis — quand il existe — nl. L'ordre fait partie de la règle : des champs qui
+# se suivent toujours dans le même ordre se relisent en diagonale et se diffent ligne à ligne.
+_PROSE = re.compile(
+    r'fr:\s*"(?:[^"\\]|\\.)*",\s*en:\s*"(?:[^"\\]|\\.)*",(\s*nl:\s*")?',
+    re.S,
+)
+
+
+def _prose_juridique() -> list[tuple[str, int, int]]:
+    """Par fichier : (nom, champs de prose, champs qui portent déjà le néerlandais)."""
+    releve = []
+    for chemin in sorted(PROCEDURE.glob("*.ts")):
+        if chemin.name == "types.ts":
+            continue  # les déclarations de type ne sont pas des chaînes
+        trouves = _PROSE.findall(chemin.read_text(encoding="utf-8"))
+        if trouves:
+            releve.append((chemin.name, len(trouves), sum(1 for g in trouves if g)))
+    return releve
+
+
+def test_le_releve_du_bloc_juridique_voit_bien_les_champs():
+    """Contre-épreuve du relevé lui-même : un compteur qui mesure à côté rassure comme un juste.
+
+    🔴 Déjà vu deux fois : un garde qui comptait `fr: string` (une DÉCLARATION de type) comme
+    une chaîne, et un garde qui confondait deux formes de table. Ici on vérifie que le relevé
+    retrouve le total attendu ET qu'il ne compte pas les trois interfaces de `types.ts`.
+    """
+    releve = _prose_juridique()
+    total = sum(n for _, n, _ in releve)
+    assert total == CHAMPS_PROCEDURE, (
+        f"{total} champs de prose relevés dans content/procedure/, le total déclaré est "
+        f"{CHAMPS_PROCEDURE}. En plus : de la prose juridique vient d'être ajoutée, elle doit "
+        f"partir en traduction avec le reste. En moins : une affirmation juridique a disparu, "
+        f"et ça ne se constate pas en passant. Dans les deux cas, corrigez CHAMPS_PROCEDURE "
+        f"à {total} EXPRÈS, et la dette avec."
+    )
+    assert "types.ts" not in {nom for nom, _, _ in releve}
+    assert len(releve) >= 19, f"19 fichiers portent de la prose, le relevé en voit {len(releve)}"
+
+
+def test_la_dette_nl_du_bloc_juridique_ne_peut_que_baisser():
+    """Le bloc juridique en néerlandais : ce qui manque est COMPTÉ, pas découvert en servant.
+
+    Tant qu'un champ n'a pas son `nl`, le repli déclaré de `L()` sert l'anglais. Ce n'est pas
+    une panne, c'est une dette — mais une dette qu'on voit, dont on connaît le fichier, et qui
+    descend à chaque passe. Le test crie aussi quand elle BAISSE : une dette qu'on ne voit pas
+    diminuer est une dette qu'on cesse de rembourser.
+    """
+    releve = _prose_juridique()
+    restants = sum(n - fait for _, n, fait in releve)
+    assert restants <= DETTE_NL_PROCEDURE, (
+        f"{restants} champs du bloc juridique sans néerlandais, la dette déclarée est "
+        f"{DETTE_NL_PROCEDURE}"
+    )
+    if restants < DETTE_NL_PROCEDURE:
+        reste = ", ".join(f"{nom} {n - fait}" for nom, n, fait in releve if n > fait) or "aucun"
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {restants} champs sans "
+            f"néerlandais (déclaré : {DETTE_NL_PROCEDURE}). Abaissez DETTE_NL_PROCEDURE à "
+            f"{restants}. Il reste : {reste}."
+        )
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# UN LIEN DE MENU QUI NE MÈNE NULLE PART.
+#
+# Le menu et le pied de page s'affichent sur les 13 169 pages. Leurs adresses sont écrites à
+# la main, par langue, dans `config/nav.ts` et `content/chrome.ts` — et rien ne vérifiait
+# qu'une de ces adresses correspond à une page qui EXISTE. Le garde de parité compare la
+# FORME des deux menus (mêmes gestes, même nature) ; il ne va jamais voir si le fichier est
+# là. Un slug traduit sans sa page est donc un 404 servi partout, et c'est précisément ce
+# qu'une langue nouvelle produit : les dix-neuf adresses néerlandaises du menu existent dans
+# la table et aucune n'a de page.
+#
+# La règle suit `langues.ts` : une langue VIVANTE n'a pas droit à un seul lien mort ; une
+# langue EN PRÉPARATION a une dette, comptée, qui ne peut que baisser — et qui doit valoir
+# zéro le jour où on la fait passer vivante.
+CHROME_TS = REPO_ROOT / "site" / "src" / "content" / "chrome.ts"
+# Dette de la langue en préparation, 2026-11-03 : les 22 pages néerlandaises que le menu et
+# le pied de page promettent et qui n'existent pas. 19 viennent du menu, 3 du pied seul
+# (presse, contact, mentions légales) — et c'est le genre d'écart qu'on ne voit qu'en
+# relevant les DEUX tables : la nôtre ne promettait pas la même chose aux deux endroits.
+# 22 → 7 le 2026-11-03 : quinze pages néerlandaises écrites. Les sept qui restent sont
+# celles qui portent leur PROPRE copie de référencement (titre, description) dans la page
+# au lieu d'une table — carte, actu, développeurs, la note pas à pas, chiffres, presse,
+# qui sommes-nous. Ce n'est pas du harnais : il faut les écrire en néerlandais.
+DETTE_PAGES_EN_PREPARATION = 7
+
+
+def _liens_de_chrome(langue: str) -> list[str]:
+    """Les adresses de PAGE du menu et du pied de page d'une langue.
+
+    Les ancres (`/fr/#faq`) sont écartées : elles mènent à une section, pas à un fichier.
+    La requête (`?v=2`) l'est aussi — elle s'ajoute à une adresse, elle ne la change pas.
+    """
+    liens: list[str] = []
+    # 🔴 La borne de FIN se déclare par fichier, et c'est tout l'enjeu du relevé : une
+    # première version cherchait « le prochain `const XX` » avec un `\b` après les deux
+    # lettres — qui ne mord pas devant le souligné de `NL_NAV`. Le bloc français courait
+    # donc jusqu'au bout du fichier et avalait les adresses néerlandaises : le garde
+    # annonçait 38 liens morts dans une langue EN LIGNE. Un relevé qu'on ne confronte pas à
+    # un ordre de grandeur attendu raconte n'importe quoi avec aplomb.
+    for fichier, debut, borne in (
+        (NAV_TS, f"export const {langue.upper()}_NAV", r"^export const \w+"),
+        (CHROME_TS, f"const {langue.upper()}", r"^const [A-Z]{2}\W"),
+    ):
+        texte = fichier.read_text(encoding="utf-8")
+        i = texte.index(debut)
+        suite = texte[i + len(debut):]
+        prochain = re.search(borne, suite, re.M)
+        region = suite[: prochain.start()] if prochain else suite
+        lignes = []
+        for ligne in region.splitlines():
+            c = debut_de_commentaire(ligne)
+            lignes.append(ligne if c == -1 else ligne[:c])
+        liens += re.findall(r'href:\s*"([^"]*)"', "\n".join(lignes))
+    return [h.split("?")[0] for h in liens if "#" not in h]
+
+
+def _page_absente(href: str) -> bool:
+    """Vrai si aucun fichier de `pages/` ne rend cette adresse."""
+    chemin = href.strip("/")
+    if not chemin:
+        return not (PAGES / "index.astro").exists()
+    return not (PAGES / f"{chemin}.astro").exists() and not (
+        PAGES / chemin / "index.astro"
+    ).exists()
+
+
+def test_le_releve_des_liens_de_navigation_voit_bien_les_deux_fichiers():
+    """Contre-épreuve du relevé : un garde qui ne lit rien déclare tout bon.
+
+    Le menu d'une langue vivante porte une vingtaine de liens de page et le pied une
+    douzaine. Si le relevé en voyait trois, le test suivant passerait en ne gardant rien.
+    """
+    for langue in _langues_vivantes():
+        liens = _liens_de_chrome(langue)
+        assert len(liens) >= 25, (
+            f"{len(liens)} liens de page relevés pour « {langue} » : le relevé ne lit plus "
+            f"nav.ts ou chrome.ts, et le garde des liens morts ne garde plus rien"
+        )
+    # et il doit savoir dire qu'une adresse n'existe pas
+    assert _page_absente("/nl/une-page-qui-n-existe-pas/")
+    assert not _page_absente("/fr/methodologie/")
+
+
+def test_aucun_lien_de_navigation_ne_mene_au_vide_dans_une_langue_servie():
+    """Une langue en ligne n'a pas droit à un seul lien mort dans son menu ou son pied.
+
+    Ces deux éléments sont sur TOUTES les pages : un slug traduit dont la page manque n'est
+    pas un petit défaut local, c'est un 404 offert au lecteur depuis les 13 169 pages.
+    """
+    morts = [
+        f"  {langue} → {href}"
+        for langue in _langues_vivantes()
+        for href in _liens_de_chrome(langue)
+        if _page_absente(href)
+    ]
+    assert not morts, (
+        f"{len(morts)} lien(s) de navigation sans page, dans une langue SERVIE :\n"
+        + "\n".join(morts)
+    )
+
+
+def test_la_dette_de_pages_de_la_langue_en_preparation_ne_peut_que_baisser():
+    """Ce qui manque à la langue en préparation pour pouvoir passer vivante.
+
+    Ce nombre EST la liste des pages à écrire — pas une estimation. Il doit valoir zéro le
+    jour où la langue rejoint `LANGUES_VIVANTES`, et le test précédent prend alors le relais.
+    """
+    vivantes = set(_langues_vivantes())
+    attente = [lg for lg in _langues_declarees() if lg not in vivantes]
+    morts = sorted({
+        f"{lg} → /{href.strip('/')}/"
+        for lg in attente
+        for href in _liens_de_chrome(lg)
+        if _page_absente(href)
+    })
+    assert len(morts) <= DETTE_PAGES_EN_PREPARATION, (
+        f"{len(morts)} adresses de la langue en préparation sans page, la dette déclarée est "
+        f"{DETTE_PAGES_EN_PREPARATION} : un slug vient d'être ajouté au menu sans sa page.\n"
+        + "\n".join(f"  {m}" for m in morts)
+    )
+    if len(morts) < DETTE_PAGES_EN_PREPARATION:
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {len(morts)} adresse(s) "
+            f"sans page (déclaré : {DETTE_PAGES_EN_PREPARATION}). Abaissez "
+            f"DETTE_PAGES_EN_PREPARATION à {len(morts)}.\n"
+            + "\n".join(f"  {m}" for m in morts)
+        )
+
+
+def test_aucun_lien_de_navigation_ne_perd_sa_barre_finale():
+    """Menu et pied de page : chaque adresse interne porte sa barre, sinon c'est un détour.
+
+    🔴 Trouvé en câblant le néerlandais, et vivant depuis des mois : VINGT-ET-UNE adresses
+    du pied de page n'avaient pas leur barre finale — dont quatorze dans les deux langues
+    EN LIGNE. Vérifié en production avant de le dire : `/map` répond 308 vers `/map/`, et
+    `/fr/carte` pareil. Le pied s'affiche sur les 13 169 pages, donc chaque clic sur « Carte »,
+    « Classement », « Contact » ou « Mentions légales » payait une redirection.
+
+    La règle est déjà acquise ailleurs (l'incident des liens « autre langue ») ; elle ne
+    l'était pas ici, parce que personne n'avait regardé cette table-là.
+    """
+    fautes = []
+    for fichier in (NAV_TS, CHROME_TS):
+        for href in re.findall(r'href:\s*"([^"]*)"', fichier.read_text(encoding="utf-8")):
+            if href.startswith("/") and "#" not in href and "?" not in href and not href.endswith("/"):
+                fautes.append(f"  {fichier.name} → {href}")
+    assert not fautes, (
+        f"{len(fautes)} adresse(s) de navigation sans barre finale — une redirection par clic, "
+        f"sur toutes les pages du site :\n" + "\n".join(fautes)
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────
+# LA TABLE DE ROUTES — « la même page, dans chaque langue », déclarée une fois.
+#
+# Elle remplace les 81 `altHref` qui supposaient DEUX langues. Mais une table qui déclare des
+# adresses est une troisième liste à côté du menu et du pied de page : si les trois ne disent
+# pas la même chose, le sélecteur de langue envoie le lecteur sur une adresse que personne ne
+# sert, et le cluster hreflang raconte à Google une correspondance qui n'existe pas.
+ROUTES_TS = REPO_ROOT / "site" / "src" / "config" / "routes.ts"
+
+
+def _familles() -> dict[str, dict[str, str]]:
+    """La table de routes, lue à sa source : id → {langue: chemin}."""
+    texte = ROUTES_TS.read_text(encoding="utf-8")
+    debut = texte.index("export const FAMILLES")
+    fin = texte.index("\nconst SEGMENTS", debut)
+    region = texte[debut:fin]
+    lignes = []
+    for ligne in region.splitlines():
+        c = debut_de_commentaire(ligne)
+        lignes.append(ligne if c == -1 else ligne[:c])
+    region = "\n".join(lignes)
+
+    table: dict[str, dict[str, str]] = {}
+    morceaux = re.split(r'\bid:\s*"', region)[1:]
+    for morceau in morceaux:
+        ident, reste = morceau.split('"', 1)
+        chemins = dict(re.findall(r'\b(en|fr|nl):\s*"([^"]*)"', reste.split("{ id:")[0]))
+        table[ident] = chemins
+    return table
+
+
+def test_le_releve_de_la_table_de_routes_voit_bien_les_familles():
+    """Contre-épreuve : une table lue de travers déclarerait tout cohérent."""
+    familles = _familles()
+    assert len(familles) >= 30, f"{len(familles)} familles relevées — le relevé ne lit plus routes.ts"
+    assert familles["fiche"] == {
+        "en": "/dc/:id/", "fr": "/fr/dc/:id/", "nl": "/nl/dc/:id/"
+    }, familles.get("fiche")
+    # une famille volontairement à deux langues doit sortir SANS néerlandais
+    assert "nl" not in familles["rapport-france"], familles["rapport-france"]
+
+
+def test_la_table_de_routes_et_le_menu_disent_la_meme_chose():
+    """Toute adresse promise par le menu ou le pied doit être une adresse de la table.
+
+    Sinon le sélecteur de langue et la navigation ne parlent pas du même site : on peut
+    arriver sur une page par le menu et n'avoir aucun moyen d'en changer la langue, ou se
+    faire proposer une langue vers une adresse que rien ne sert.
+    """
+    familles = _familles()
+    for langue in _langues_declarees():
+        connus = {c for f in familles.values() if (c := f.get(langue))}
+        # Mêmes exemptions que la couverture : les pages de chiffres portent leur paire
+        # page par page, parce que leur périmètre par défaut dépend de la langue.
+        EXEMPTES = {"/figures/", "/fr/chiffres/", "/nl/kerncijfers/"}
+        absents = sorted({
+            f"/{href.strip('/')}/" for href in _liens_de_chrome(langue)
+            if f"/{href.strip('/')}/" not in connus and f"/{href.strip('/')}/" not in EXEMPTES
+        })
+        assert not absents, (
+            f"{len(absents)} adresse(s) du menu ou du pied « {langue} » ne sont pas dans la "
+            f"table de routes — elles n'auront pas de sélecteur de langue :\n"
+            + "\n".join(f"  {a}" for a in absents)
+        )
+
+
+def test_la_table_de_routes_couvre_toute_page_servie():
+    """Une page qui n'est dans aucune famille n'a pas de sélecteur de langue.
+
+    Le relevé part des FICHIERS, pas de la table : c'est la seule direction qui trouve une
+    page oubliée. Partir de la table ne dirait que ce que la table sait déjà.
+    """
+    familles = _familles()
+    tous = {c for f in familles.values() for c in f.values()}
+    # Un fichier de page devient une adresse : `fr/carte.astro` → `/fr/carte/`, un segment
+    # dynamique `[id]` → `:id`. La préviz, les générateurs d'images et la 404 n'en sont pas.
+    # Exemptions DÉCLARÉES, avec leur raison — une exemption muette est un trou.
+    # Les pages de chiffres ne se mettent pas en table : leur périmètre par défaut dépend
+    # de la langue (France en français, Europe en anglais), donc la même adresse n'y porte
+    # pas le même contenu. Elles gardent la paire déclarée page par page.
+    HORS_TABLE = {
+        "figures/index.astro", "figures/[perimeter].astro",
+        "fr/chiffres/index.astro", "fr/chiffres/[perimetre].astro",
+    }
+    orphelines = []
+    for chemin in sorted(PAGES.rglob("*.astro")):
+        rel = chemin.relative_to(PAGES).as_posix()
+        if rel.startswith(("previz/", "og/")) or rel == "404.astro" or rel in HORS_TABLE:
+            continue
+        adresse = "/" + re.sub(r"\[\.{3}?(\w+)\]", ":id", rel.removesuffix(".astro")).replace(
+            "/index", ""
+        ).removesuffix("index") + "/"
+        adresse = re.sub(r"/{2,}", "/", adresse.replace("[id]", ":id").replace("[perimetre]", ":id")
+                         .replace("[perimeter]", ":id"))
+        if adresse not in tous:
+            orphelines.append(f"  {rel} → {adresse}")
+    assert not orphelines, (
+        f"{len(orphelines)} page(s) hors de la table de routes — aucun sélecteur de langue "
+        f"ne pourra les relier à leurs sœurs :\n" + "\n".join(orphelines)
+    )
+
+
+def test_chaque_bloc_de_langue_porte_le_menu_de_SA_langue():
+    """Une table de contenu qui porte un `nav:` doit porter CELUI de sa langue.
+
+    🔴 Trouvé en confrontant le HTML servi, pas en relisant le code : l'accueil néerlandais
+    et « Datacenters begrijpen » affichaient le MENU FRANÇAIS — tous les liens vers /fr/ —
+    parce que leurs blocs `nl` déclaraient `nav: FR_NAV`. Ni la relecture native (qui lit
+    des mots, pas du câblage) ni la parité de clés (la clé `nav` était bien là) ni la préviz
+    (même nombre de blocs) ne pouvaient le voir.
+
+    Le menu vit à deux endroits : `config/nav.ts` et le `nav:` de chaque bloc de langue.
+    Tant qu'il en est ainsi, c'est ce test qui tient le lien.
+    """
+    fautes = []
+    for nom in ("accueil.ts", "comprendre.ts", "fiche.ts", "portrait.ts"):
+        chemin = CONTENU / nom
+        if not chemin.is_file():
+            continue
+        texte = chemin.read_text(encoding="utf-8")
+        for langue in _langues_declarees():
+            # le bloc de cette langue : de sa déclaration à la suivante
+            m = re.search(rf"^(?:export )?const [A-Z_]*{langue.upper()}\b.*?= \{{", texte, re.M | re.S)
+            if not m:
+                continue
+            suite = texte[m.end():]
+            fin = re.search(r"^(?:export )?const [A-Z]", suite, re.M)
+            region = suite[: fin.start()] if fin else suite
+            for trouve in re.findall(r"nav:\s*(\w+)", region):
+                if trouve != f"{langue.upper()}_NAV":
+                    fautes.append(
+                        f"  {nom}, bloc {langue} → nav: {trouve} (attendu {langue.upper()}_NAV)"
+                    )
+    assert not fautes, (
+        "une table de contenu sert le menu d'une AUTRE langue — donc des liens qui sortent "
+        "le lecteur de sa langue à chaque clic :\n" + "\n".join(fautes)
+    )
+
+
+# La table de routes est une PROMESSE faite au sélecteur de langue : « cette page existe
+# aussi en néerlandais ». Le test précédent va des fichiers vers la table (trouver une page
+# oubliée) ; celui-ci va de la table vers les fichiers — et c'est le sens qui trouve une
+# promesse en trop. En préviz, le sélecteur propose déjà le néerlandais : une colonne qui
+# désigne une page inexistante y envoie le relecteur sur un 404.
+#
+# Sept chemins néerlandais déclarés sans page, 2026-11-03 : la carte, l'actu, les chiffres
+# du parc, les développeurs et leur clé, la presse, qui-sommes-nous, la note pas à pas. Ce
+# sont les pages dont le GABARIT ne parle que deux langues — leur colonne reste dans la
+# table parce qu'elle dit où la page ira, et le compte dit qu'elle n'y est pas encore.
+DETTE_ROUTES_EN_PREPARATION = 7
+
+
+def _routes_sans_page(langue: str) -> list[str]:
+    return sorted(
+        f"{ident} → {chemin}"
+        for ident, chemins in _familles().items()
+        if (chemin := chemins.get(langue)) and ":id" not in chemin and _page_absente(chemin)
+    )
+
+
+def test_la_table_de_routes_ne_promet_aucune_page_absente_dans_une_langue_servie():
+    """Une langue en ligne : chaque colonne de la table désigne une page qui existe.
+
+    Sinon le sélecteur de langue envoie le lecteur sur un 404 — et c'est le pire endroit
+    pour un lien mort, parce qu'il est en haut de toutes les pages du site.
+    """
+    for langue in _langues_vivantes():
+        absentes = _routes_sans_page(langue)
+        assert not absentes, (
+            f"{len(absentes)} chemin(s) déclaré(s) dans config/routes.ts pour « {langue} » "
+            f"sans page correspondante :\n" + "\n".join(f"  {a}" for a in absentes)
+        )
+
+
+def test_la_dette_de_routes_de_la_langue_en_preparation_ne_peut_que_baisser():
+    """Les colonnes néerlandaises qui désignent une page pas encore écrite.
+
+    Distinct de la dette du MENU : le menu promet au visiteur, la table promet au sélecteur
+    de langue. Les deux listes ne se recouvrent pas tout à fait — la clé d'API, par exemple,
+    n'est dans aucun menu et a bien une colonne néerlandaise.
+    """
+    vivantes = set(_langues_vivantes())
+    absentes = [
+        a for lg in _langues_declarees() if lg not in vivantes for a in _routes_sans_page(lg)
+    ]
+    assert len(absentes) <= DETTE_ROUTES_EN_PREPARATION, (
+        f"{len(absentes)} colonne(s) de la table désignent une page absente, la dette "
+        f"déclarée est {DETTE_ROUTES_EN_PREPARATION} : une colonne vient d'être ajoutée "
+        f"sans sa page.\n" + "\n".join(f"  {a}" for a in absentes)
+    )
+    if len(absentes) < DETTE_ROUTES_EN_PREPARATION:
+        pytest.fail(
+            f"bonne nouvelle, et le cliquet doit suivre : plus que {len(absentes)} "
+            f"colonne(s) sans page (déclaré : {DETTE_ROUTES_EN_PREPARATION}). Abaissez "
+            f"DETTE_ROUTES_EN_PREPARATION à {len(absentes)}."
+        )

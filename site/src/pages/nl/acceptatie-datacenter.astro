@@ -1,0 +1,19 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL « L'acceptabilité des data centers » : page de concept, gabarit dans PagePilier.astro.
+//
+// ⚠️ Les attributs HTML sont en guillemets SIMPLES : ces chaînes sont délimitées par des
+// guillemets doubles, et les imbriquer casse le build.
+// ⚠️ Toute note nommée dans le texte porte sa couleur (.note-inline.n-a … n-e) : même code
+// couleur que les fiches et la carte, sinon on écrit « A » en noir sur une page qui explique
+// précisément qu'un A est vert.
+import PagePilier from "../../components/PagePilier.astro";
+import { NL_NAV } from "../../config/nav";
+import { ACCEPTABILITE } from "../../content/acceptabilite";
+
+const t = ACCEPTABILITE.nl;
+---
+
+<PagePilier lang="nl" t={t} nav={NL_NAV} />

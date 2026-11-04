@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   tagline: "Observatoire indépendant",
@@ -111,5 +111,59 @@ const EN: typeof FR = {
   sourcesOn: "Measures, values and sources:",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  tagline: "Onafhankelijk observatorium",
+  kicker: "Portret van de site",
+  // L'angle du titre : trois mots mesurés (cf. SitePortrait.astro).
+  seoAngle: "geluid, water, grond",
+  metaDescription: "{name}, {place}: het continue geluid, het water, de grond, en wat het project verandert voor de gemeente. Wat er nog in de vergunning moet komen, en tot wanneer.",
+  status: { announced: "aangekondigd", permitting: "in behandeling", under_construction: "in aanbouw", operational: "in bedrijf", unknown: "niet vastgesteld" },
+  siteGrade: "Cijfer van de site",
+  probable: "waarschijnlijk cijfer",
+  probableWindow: "waarschijnlijk cijfer · venster {w}",
+  definitive: "definitief cijfer",
+  leadHelp: "Deze pagina zegt hetzelfde als de technische fiche, in de volgorde waarin u beslist: wat weegt, wat ontbreekt, en wat er nog te vragen valt zolang het nog kan.",
+  photoAlt: "Geannoteerd luchtbeeld van {name}: terreinomtrek, waterloop en afstanden",
+  photoHint: "Beweeg eroverheen om te vergroten · klik voor het volledige beeld",
+  photoOpen: "Open het luchtbeeld op volle grootte",
+  pillarsTitle: "De vijf pijlers achter het cijfer",
+  ofMeasures: "{n} van de {total} metingen",
+  pillarsNote: "Een pijler zonder letter steunt op te weinig metingen om er één te verdedigen. We publiceren het aantal in plaats van een letter die we niet kunnen waarmaken.",
+  decisiveTitle: "De punten die de doorslag geven",
+  streetTitle: "Wat u er vanaf de straat van merkt",
+  noiseTitle: "Geluid — continu, dag en nacht",
+  noiseBody: "De koeling draait permanent en de noodaggregaten worden regelmatig getest. Wat de regels begrenzen, is geen afstand, maar hoeveel het geluid bij de buren toeneemt.",
+  noiseDistance: "De dichtstbijzijnde geregistreerde woning staat op {m} m van het referentiepunt. Dat is een afstand in vogelvlucht, nooit een geluidsmeting: het akoestisch onderzoek uit het dossier moet nog worden opgeëist — dát legt de afdwingbare waarden vast.",
+  noiseNoDistance: "We hebben voor deze site geen afstand tot de dichtstbijzijnde woning en geen akoestisch onderzoek. Beide zijn te verkrijgen: het onderzoek is een stuk uit het dossier.",
+  fuelTitle: "De noodaggregaten en hun brandstof",
+  fuelBody: "Een site als deze heeft noodaggregaten staan, en de tanks die ze voeden. Zíj zijn het die getest worden, die u ruikt, en die hun eigen regels meebrengen. Hun aantal, hun brandstof en het opgeslagen volume staan in het dossier, waar dat bestaat.",
+  healthDisclaimer: "We meten geen enkel gezondheidseffect en we beweren niet dat we dat doen. We publiceren wat in het dossier staat, en wat er niet in staat.",
+  unknownTitle: "Wat we niet hebben gemeten",
+  unknownNone: "Alle basismetingen van deze site zijn ingevuld.",
+  verifiedAbsent: "gecontroleerd: ontbreekt in het geraadpleegde dossier",
+  notCollected: "nog niet door ons verzameld",
+  unknownNote: "Deze hiaten zijn van ons, niet van de initiatiefnemer: ze zeggen waar onze meting ophoudt, en ze benadelen de site niet.",
+  procedureTitle: "Waar de procedure staat",
+  writeInTitle: "Wat in de vergunning moet komen",
+  writeInNote: "Toezeggingen die niet in het besluit staan, zijn niet afdwingbaar: wat niet geschreven is, kan later niet worden geëist.",
+  technicalSheet: "Technische fiche van het project",
+  technicalSheetSub: "de indicatoren één voor één, hun waarden en hun bronnen",
+  print: "Afdrukken",
+  share: "Delen",
+  shareMail: "Per e-mail",
+  copyLink: "Link kopiëren",
+  signal: "Een fout melden",
+  signalSubject: "Correctie of reactie — portret van de site",
+  howToRead: "Hoe u dit portret leest. De letter vat vijf pijlers samen — energie, water, bodem, lokale impact, transparantie. Elk feit komt uit een publieke bron, geciteerd op de technische fiche.",
+  sourcesOn: "Indicatoren, waarden en bronnen:",
+};
+
 /** La table servie au gabarit : `PORTRAIT[lang]`. */
-export const PORTRAIT: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const PORTRAIT: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

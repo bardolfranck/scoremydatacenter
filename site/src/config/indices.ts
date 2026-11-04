@@ -13,6 +13,28 @@ export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
   ...NOMS_MONDE, ...NOMS_UE,
 };
 
+// 🔴 ICI et pas dans `stats.ts` : c'est ce fichier qui porte la table FUSIONNÉE (les
+// 23 pays, Europe du corpus + anneau mondial). Posée à côté des 19, l'aide serait
+// retombée sur le code ISO pour les quatre autres — une régression invisible tant
+// qu'aucune fiche n'en vient.
+// 🔴 LE MÊME NOM NE SE DIT PAS PAREIL SEUL ET DANS UNE PHRASE. « 🇺🇸 Verenigde Staten » dans
+// une liste à côté du drapeau, mais « deze site ligt in DE Verenigde Staten » : le
+// néerlandais met l'article aux noms de pays PLURIELS et à ceux en « Koninkrijk/Republiek ».
+// Stocker la forme avec article partout écorcherait la liste ; la forme nue partout écrirait
+// une faute dans la phrase. On garde donc les deux, pour les seuls pays qui le demandent.
+// (Règle de rapports-SMDC, 2026-11-03. Le français et l'anglais n'en ont pas besoin ici :
+// « se trouve en France », « located in the United States » — l'article y est dans le
+// gabarit ou pas du tout.)
+const NOM_EN_PHRASE: Record<string, Partial<Record<string, string>>> = {
+  US: { nl: "de Verenigde Staten" },
+  GB: { nl: "het Verenigd Koninkrijk" },
+};
+
+/** Le nom d'un pays tel qu'il s'écrit DANS une phrase — sa forme nue si rien ne diffère. */
+export function nomDePaysEnPhrase(iso: string, lang: string): string {
+  return NOM_EN_PHRASE[iso]?.[lang] ?? (COUNTRY_NAMES as any)[iso]?.[lang] ?? iso;
+}
+
 // Un drapeau emoji N'EST PAS une liste à tenir à jour : c'est le code ISO écrit avec les
 // deux indicateurs régionaux correspondants. Le recensement manuel a laissé passer un pays
 // suivi, qui est sorti en lettres. On dérive — et l'oubli n'est plus possible.

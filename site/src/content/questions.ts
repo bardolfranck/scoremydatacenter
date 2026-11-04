@@ -137,7 +137,7 @@ export const CHECKLIST_FR: Checklist = {
   takeaway:
     "Une question sans réponse n'est pas un échec : notez-la, datez-la, redemandez par écrit. C'est exactement ce que fait notre grille : ce qui n'est pas documenté publiquement se lit dans la confiance (haute, moyenne ou faible) qui accompagne chaque note.",
   printLabel: "Version imprimable",
-  printHref: "/fr/comprendre/one-pager",
+  printHref: "/fr/comprendre/one-pager/",
   pdfLabel: "Télécharger le PDF (une page)",
   pdfHref: "/downloads/questions-data-center-fr.pdf",
   printTitle: "Les bonnes questions à poser sur un projet de data center",
@@ -254,9 +254,128 @@ export const CHECKLIST_EN: Checklist = {
   takeaway:
     "An unanswered question is not a failure: note it, date it, ask again in writing. That is exactly what our grid does: what is not publicly documented shows up in the confidence level (high, medium or low) attached to every grade.",
   printLabel: "Printable version",
-  printHref: "/understand/one-pager",
+  printHref: "/understand/one-pager/",
   pdfLabel: "Download the PDF (one page)",
   pdfHref: "/downloads/questions-data-center-en.pdf",
   printTitle: "The right questions to ask about a data center project",
   printFooter: "ScoreMyDataCenter — independent observatory · scoremydatacenter.org · CC BY-SA 4.0",
+};
+
+// ── NÉERLANDAIS — rédigé après la passe native. Le one-pager NL et son PDF
+// n'existent pas encore : printHref/pdfHref sont des slugs PROPOSÉS (harnais).
+export const CHECKLIST_NL: Checklist = {
+  intro:
+    "Op een publieksbijeenkomst, op het spreekuur of in de gemeenteraad: deze vragen kunnen zo worden gesteld. Ze volgen de vijf pijlers van onze meetlat.",
+  groups: [
+    {
+      pillar: "Energie",
+      icon: "energy",
+      items: [
+        {
+          q: "Welk elektrisch vermogen vraagt u aan het net, in megawatt, en hoever staat de aansluitaanvraag?",
+          why: "Het aansluitvermogen zegt meer over de echte omvang van het project dan de oppervlakte van het gebouw.",
+        },
+        {
+          q: "Wordt de geproduceerde warmte teruggewonnen — door wie, en met welk getekend contract?",
+          why: "Warmteterugwinning wordt vaak aangekondigd, zelden gecontracteerd.",
+        },
+        {
+          q: "Welke energie-efficiëntie (PUE, de verhouding tussen alle verbruikte elektriciteit en wat werkelijk de servers voedt) wordt gemeten en gepubliceerd zodra de site draait?",
+          why: "Een getal dat vóór de bouw wordt beloofd, bindt tot niets zolang het niet gemeten en gepubliceerd is.",
+        },
+      ],
+    },
+    {
+      pillar: "Water",
+      icon: "water",
+      items: [
+        {
+          q: "Hoe wordt de site gekoeld, en hoeveel water verbruikt hij per jaar, onttrokken waar — drinkwaternet, boring, rivier?",
+          why: "Afhankelijk van de koeltechniek loopt het waterverbruik van bijna nul tot aanzienlijk.",
+        },
+        {
+          q: "Wat gebeurt er bij een droogtebesluit: vermindert de site zijn onttrekkingen, en staat dat op papier?",
+          why: "Beter het antwoord kennen vóór de crisis dan erin.",
+        },
+        {
+          q: "Staat de watertoezegging in het vergunningsdossier, of alleen in de communicatie van het project?",
+          why: "Alleen wat in het officiële dossier staat, is afdwingbaar.",
+        },
+      ],
+    },
+    {
+      pillar: "Bodem & biodiversiteit",
+      icon: "land",
+      items: [
+        {
+          q: "Welke oppervlakte wordt verhard, en op welk soort terrein — brownfield, landbouwgrond, natuur?",
+          why: "Een oud industrieterrein en landbouwgrond kosten de gemeente niet hetzelfde.",
+        },
+        {
+          q: "Hoe past het project in de doelstelling van zuinig grondgebruik van de gemeente (‘zéro artificialisation nette’, Franse klimaatwet van 2021)?",
+          why: "De hectaren die hier opgaan, ontbreken elders — woningen, voorzieningen, bedrijvigheid.",
+        },
+        {
+          q: "Liggen er beschermde of geïnventariseerde gebieden in de buurt (Natura 2000, ZNIEFF — de Franse inventarissen van waardevolle natuur), en wat zegt het milieueffectrapport?",
+          why: "Het antwoord is online te controleren; aarzeling is een signaal.",
+        },
+        {
+          q: "Wat is er voorzien voor het einde van de levensduur — ontmanteling, herstel van het terrein — en wie betaalt?",
+          why: "Zonder plan voor het einde wordt een gebouw van deze omvang de last van de gemeente.",
+        },
+      ],
+    },
+    {
+      pillar: "Lokale impact",
+      icon: "local",
+      items: [
+        {
+          q: "Hoeveel vaste banen op de site zodra hij gebouwd is — de bouwbanen niet meegeteld?",
+          why: "De twee getallen worden vaak vermengd, en dat van de bouw oogt altijd gunstiger.",
+        },
+        {
+          q: "Welk geluidsniveau aan de terreingrens, overdag en ’s nachts, en hoe vaak worden de noodstroomaggregaten getest?",
+          why: "Het geluid van de koeling is permanent, dat van de proeven keert terug — beide zijn te meten en horen in het dossier.",
+        },
+        {
+          q: "Welke belastinginkomsten, en voor wie precies — de gemeente, het intergemeentelijk verband, het departement?",
+          why: "De opbrengst die ‘voor de streek’ wordt aangekondigd, gaat niet vanzelf naar uw gemeente.",
+        },
+        {
+          q: "Tijdens de bouw: hoeveel vrachtwagens per dag, over welke wegen, hoeveel maanden lang?",
+          why: "De bouw duurt jaren; het is de meest directe impact voor omwonenden.",
+        },
+      ],
+    },
+    {
+      pillar: "Transparantie & governance",
+      icon: "transparency",
+      items: [
+        {
+          q: "Wie draagt het project: de lokale vennootschap die ervoor is opgericht, of de groep erachter — en wie geeft over tien jaar antwoord?",
+          why: "Projecten worden vaak gedragen door speciaal opgerichte vennootschappen; de gesprekspartner van vandaag kan verdwijnen.",
+        },
+        {
+          q: "Welke gegevens worden tijdens de exploitatie gepubliceerd — gemeten elektriciteit, water, efficiëntie — en hoe vaak?",
+          why: "Een publicatietoezegging is te controleren; een mondelinge belofte niet.",
+        },
+        {
+          q: "Komt er een opvolgingscommissie met bestuurders en omwonenden, en met welke rol?",
+          why: "De dialoog na de ingebruikname is de eerste hefboom om toezeggingen gestand te doen.",
+        },
+        {
+          q: "Waar is het volledige dossier in te zien, en wanneer loopt de inspraak?",
+          why: "Die datums openen uw rechten — wie ze mist, sluit beroepswegen af (zie <a href='#rechten'>Rechten en tijdpad</a>).",
+        },
+      ],
+    },
+  ],
+  takeaway:
+    "Een vraag zonder antwoord is geen mislukking: noteer haar, dateer haar, stel haar opnieuw, schriftelijk. Precies dat doet onze meetlat: wat niet publiek gedocumenteerd is, leest u af aan het vertrouwen (hoog, gemiddeld of laag) dat elk cijfer vergezelt.",
+  printLabel: "Printversie",
+  printHref: "/nl/datacenters-begrijpen/one-pager/",
+  pdfLabel: "Download de pdf (één pagina)",
+  pdfHref: "/downloads/questions-data-center-nl.pdf",
+  printTitle: "De juiste vragen bij een datacenterproject",
+  printFooter: "ScoreMyDataCenter — onafhankelijk observatorium · scoremydatacenter.org · CC BY-SA 4.0",
 };

@@ -14,14 +14,14 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 // 🔴 `nav` n'est PAS de la copie : c'est la structure du menu, et la table la porte parce
 // que le gabarit `Understand.astro` la lit dans `t`. Elle vivait dans la page, où le menu
 // de la bonne langue était à portée ; ici il faut l'importer — mais la source reste unique
 // (`config/nav.ts`), et une langue nouvelle déclarera son menu au même endroit que les
 // autres. Déplacer `nav` hors de `t` demanderait de retoucher le gabarit : pas dans ce lot,
 // qui ne doit rien changer à ce qui est rendu.
-import { FR_NAV, EN_NAV } from "../config/nav";
+import { FR_NAV, EN_NAV, NL_NAV } from "../config/nav";
 
 const FR = {
   title: "Comprendre les data centers, sans jargon — ScoreMyDataCenter",
@@ -43,39 +43,39 @@ const FR = {
   tocAria: "Sommaire",
   blocks: [
     {
-      anchor: "quoi",
+      id: "what-is", anchor: "quoi",
       title: "C'est quoi, un data center ?",
       slot: "whatis",
     },
     {
-      anchor: "commune",
+      id: "why-local", anchor: "commune",
       title: "Pourquoi ça concerne ma commune",
       slot: "rich",
     },
     {
-      anchor: "questions",
+      id: "questions-to-ask", anchor: "questions",
       title: "Les bonnes questions à poser",
       body: "La checklist qui épouse nos piliers de notation : énergie, eau, foncier, impact local, transparence.",
       featured: true,
       slot: "checklist",
     },
     {
-      anchor: "bon-projet",
+      id: "what-makes-good", anchor: "bon-projet",
       title: "C'est quoi, un « bon » projet ?",
       slot: "rich",
     },
     {
-      anchor: "droits",
+      id: "your-rights", anchor: "droits",
       title: "Droits et calendrier",
       slot: "rich",
     },
     {
-      anchor: "faq",
+      id: "faq-block", anchor: "faq",
       title: "Questions pratiques",
       slot: "rich",
     },
     {
-      anchor: "aller-plus-loin",
+      id: "read-more", anchor: "aller-plus-loin",
       title: "Aller plus loin",
       slot: "rich",
     },
@@ -110,47 +110,123 @@ const EN = {
     "This guide is written from the <strong>French</strong> regulatory and market context — the observatory's first scored country. The questions in block 3 travel anywhere; figures, rights and timelines are France-specific. Country-specific versions will follow the observatory's expansion.",
   blocks: [
     {
-      anchor: "what",
+      id: "what-is", anchor: "what",
       title: "What is a data center?",
       slot: "whatis",
       tag: "France",
     },
     {
-      anchor: "municipality",
+      id: "why-local", anchor: "municipality",
       title: "Why it concerns my municipality",
       slot: "rich",
       tag: "France",
     },
     {
-      anchor: "questions",
+      id: "questions-to-ask", anchor: "questions",
       title: "The right questions to ask",
       body: "The checklist that mirrors our scoring pillars: energy, water, land, local impact, transparency.",
       featured: true,
       slot: "checklist",
     },
     {
-      anchor: "good-project",
+      id: "what-makes-good", anchor: "good-project",
       title: "What makes a “good” project?",
       slot: "rich",
     },
     {
-      anchor: "rights",
+      id: "your-rights", anchor: "rights",
       title: "Rights and timeline",
       slot: "rich",
       tag: "France",
     },
     {
-      anchor: "faq",
+      id: "faq-block", anchor: "faq",
       title: "Practical questions",
       slot: "rich",
     },
     {
-      anchor: "further",
+      id: "read-more", anchor: "further",
       title: "Going further",
       slot: "rich",
     },
   ],
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+// Comme EN, le bloc NL est non typé : il porte les clés d'avertissement de contexte
+// (contextNotice/inFranceLabel/tag) que `typeof FR` ne connaît pas — le lecteur NL
+// n'est pas en France, le garde `test_une_langue_servie_hors_france_porte_son_
+// avertissement_de_contexte` les exige à la mise en vie.
+const NL = {
+  title: "Datacenters begrijpen, zonder jargon — ScoreMyDataCenter",
+  description:
+    "Wat een datacenter echt verandert in uw buurt: ordes van grootte, lokale impact, de juiste vragen om te stellen, uw rechten, het tijdpad. In klare taal, zonder jargon.",
+  tagline: "Onafhankelijk observatorium",
+  altHref: "/understand/",
+  altLabel: "EN",
+  nav: NL_NAV,
+  pageTitle: "Datacenters begrijpen",
+  lede:
+    "Voor de bestuurder die een adviesbureau aan de lijn krijgt, de omwonende die een bekendmaking van een inspraakprocedure ontdekt, de journalist die net op het onderwerp begint: de essentie, zonder jargon. Wat er achter de getallen schuilgaat.",
+  pendingLabel: "Tekst in voorbereiding",
+  whyLabel: "Waarom:",
+  takeawayLabel: "Onthoud —",
+  sourcesLabel: "Bronnen:",
+  seeMore: "Meer tonen…",
+  seeLess: "Inklappen",
+  tocAria: "Inhoud",
+  inFranceLabel: "In Frankrijk —",
+  contextNotice:
+    "Deze gids is geschreven vanuit de <strong>Franse</strong> regelgeving en markt — het eerste land dat het observatorium volledig beoordeelt. De vragen in blok 3 gelden overal; bedragen, rechten en termijnen zijn Frans. Landspecifieke versies volgen met de uitbreiding van het observatorium.",
+  blocks: [
+    {
+      id: "what-is", anchor: "wat",
+      title: "Wat is een datacenter?",
+      slot: "whatis",
+      tag: "Frankrijk",
+    },
+    {
+      id: "why-local", anchor: "gemeente",
+      title: "Waarom dit mijn gemeente aangaat",
+      slot: "rich",
+      tag: "Frankrijk",
+    },
+    {
+      id: "questions-to-ask", anchor: "vragen",
+      title: "De juiste vragen om te stellen",
+      body: "De checklist die onze beoordelingspijlers volgt: energie, water, bodem, lokale impact, transparantie.",
+      featured: true,
+      slot: "checklist",
+    },
+    {
+      id: "what-makes-good", anchor: "goed-project",
+      title: "Wat is een ‘goed’ project?",
+      slot: "rich",
+    },
+    {
+      id: "your-rights", anchor: "rechten",
+      title: "Rechten en tijdpad",
+      slot: "rich",
+      tag: "Frankrijk",
+    },
+    {
+      id: "faq-block", anchor: "faq",
+      title: "Praktische vragen",
+      slot: "rich",
+    },
+    {
+      id: "read-more", anchor: "verder",
+      title: "Verder lezen",
+      slot: "rich",
+    },
+  ],
+};
+
 /** La table servie au gabarit : `COMPRENDRE[lang]`. */
-export const COMPRENDRE = { fr: FR, en: EN } satisfies Record<Langue, unknown>;
+export const COMPRENDRE = { fr: FR, en: EN, nl: NL } satisfies Record<LangueDeclaree, unknown>;

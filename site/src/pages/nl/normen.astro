@@ -1,0 +1,13 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL "Les normes — où nous nous situons" : thin page, template in Normes.astro.
+import Normes from "../../components/Normes.astro";
+import { NL_NAV } from "../../config/nav";
+import { NORMES } from "../../content/normes";
+
+const t = NORMES.nl;
+---
+
+<Normes lang="nl" t={t} nav={NL_NAV} />

@@ -344,6 +344,10 @@
                 "en": {
                   "type": "string",
                   "minLength": 1
+                },
+                "nl": {
+                  "type": "string",
+                  "minLength": 1
                 }
               },
               "description": "Titre court de la synthèse, PAR LANGUE. Le schéma exigeait une chaîne unique alors que le rédacteur produit {fr,en} depuis longtemps et que la fiche l'affiche dans la langue du lecteur : 2800 champs servis étaient en désaccord avec le schéma sans que rien ne le voie."
@@ -353,6 +357,10 @@
               "minLength": 1
             },
             "en": {
+              "type": "string",
+              "minLength": 1
+            },
+            "nl": {
               "type": "string",
               "minLength": 1
             }
@@ -382,6 +390,10 @@
                 "en": {
                   "type": "string",
                   "minLength": 1
+                },
+                "nl": {
+                  "type": "string",
+                  "minLength": 1
                 }
               },
               "description": "Titre court de la synthèse, PAR LANGUE. Le schéma exigeait une chaîne unique alors que le rédacteur produit {fr,en} depuis longtemps et que la fiche l'affiche dans la langue du lecteur : 2800 champs servis étaient en désaccord avec le schéma sans que rien ne le voie."
@@ -391,6 +403,10 @@
               "minLength": 1
             },
             "en": {
+              "type": "string",
+              "minLength": 1
+            },
+            "nl": {
               "type": "string",
               "minLength": 1
             }

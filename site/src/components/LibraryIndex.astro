@@ -13,7 +13,7 @@ import LibraryTeaser from "./LibraryTeaser.astro";
 import { BRIEFS_BY_DATE, briefLanguages, coverField, LANG_FLAGS , hookText} from "../config/library";
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
-const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
+const contactPath = lang === "fr" ? "/fr/contact/" : "/contact/";
 
 const fmtDate = (iso: string) =>
   new Date(`${iso}T00:00:00Z`).toLocaleDateString(lang === "fr" ? "fr-FR" : "en-GB", {

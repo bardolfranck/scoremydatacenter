@@ -7,7 +7,8 @@
       "id": "energy",
       "label": {
         "fr": "Énergie",
-        "en": "Energy"
+        "en": "Energy",
+        "nl": "Energie"
       },
       "weight": 0.25
     },
@@ -15,7 +16,8 @@
       "id": "water",
       "label": {
         "fr": "Eau",
-        "en": "Water"
+        "en": "Water",
+        "nl": "Water"
       },
       "weight": 0.2
     },
@@ -23,7 +25,8 @@
       "id": "land_biodiversity",
       "label": {
         "fr": "Foncier & biodiversité",
-        "en": "Land & biodiversity"
+        "en": "Land & biodiversity",
+        "nl": "Bodem & biodiversiteit"
       },
       "weight": 0.2
     },
@@ -31,7 +34,8 @@
       "id": "local_impact",
       "label": {
         "fr": "Impact local",
-        "en": "Local impact"
+        "en": "Local impact",
+        "nl": "Lokale impact"
       },
       "weight": 0.2
     },
@@ -39,7 +43,8 @@
       "id": "transparency_governance",
       "label": {
         "fr": "Transparence & gouvernance",
-        "en": "Transparency & governance"
+        "en": "Transparency & governance",
+        "nl": "Transparantie & governance"
       },
       "weight": 0.15
     }
@@ -49,11 +54,13 @@
       "id": "E1",
       "label": {
         "fr": "Intensité carbone du réseau local",
-        "en": "Local grid carbon intensity"
+        "en": "Local grid carbon intensity",
+        "nl": "Koolstofintensiteit van het lokale net"
       },
       "description": {
         "fr": "La quantité de CO₂ émise pour produire l'électricité que consommera le site, selon le réseau régional.",
-        "en": "How much CO₂ is emitted to produce the electricity the site will consume, based on the regional grid."
+        "en": "How much CO₂ is emitted to produce the electricity the site will consume, based on the regional grid.",
+        "nl": "Hoeveel CO₂ wordt uitgestoten om de elektriciteit te produceren die de site zal verbruiken, volgens het regionale net."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.12,
@@ -99,11 +106,13 @@
       "id": "E2",
       "label": {
         "fr": "Capacité / proximité de raccordement",
-        "en": "Grid connection capacity / proximity"
+        "en": "Grid connection capacity / proximity",
+        "nl": "Aansluitcapaciteit / -nabijheid"
       },
       "description": {
         "fr": "La facilité à raccorder le site au réseau électrique : capacité disponible et distance au poste le plus proche.",
-        "en": "How easily the site can be connected to the power grid: available capacity and distance to the nearest substation."
+        "en": "How easily the site can be connected to the power grid: available capacity and distance to the nearest substation.",
+        "nl": "Hoe makkelijk de site op het elektriciteitsnet kan worden aangesloten: beschikbare capaciteit en afstand tot het dichtstbijzijnde onderstation."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.28,
@@ -136,11 +145,13 @@
       "id": "E3",
       "label": {
         "fr": "Congestion / file d'attente réseau",
-        "en": "Grid congestion / connection queue"
+        "en": "Grid congestion / connection queue",
+        "nl": "Netcongestie / wachtrij"
       },
       "description": {
         "fr": "L'encombrement du réseau électrique local : plus il est saturé, plus le raccordement pèse sur les autres usages.",
-        "en": "How congested the local grid is: the more saturated, the more the connection competes with other users."
+        "en": "How congested the local grid is: the more saturated, the more the connection competes with other users.",
+        "nl": "Hoe vol het lokale elektriciteitsnet zit: hoe verzadigder, hoe meer de aansluiting concurreert met de andere gebruikers."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.16,
@@ -172,11 +183,13 @@
       "id": "E4",
       "label": {
         "fr": "PUE (efficacité énergétique annoncée)",
-        "en": "PUE (announced energy efficiency)"
+        "en": "PUE (announced energy efficiency)",
+        "nl": "PUE (aangekondigde energie-efficiëntie)"
       },
       "description": {
         "fr": "L'efficacité énergétique annoncée : l'électricité totale consommée rapportée à celle qui sert vraiment aux calculs. Plus c'est proche de 1, mieux c'est.",
-        "en": "The announced energy efficiency: total electricity used versus what actually powers computing. Closer to 1 is better."
+        "en": "The announced energy efficiency: total electricity used versus what actually powers computing. Closer to 1 is better.",
+        "nl": "De aangekondigde energie-efficiëntie: alle verbruikte elektriciteit afgezet tegen wat werkelijk de berekeningen voedt. Hoe dichter bij 1, hoe beter."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.13,
@@ -221,11 +234,13 @@
       "id": "E5",
       "label": {
         "fr": "Approvisionnement réel (PPA, % EnR)",
-        "en": "Actual supply (PPA, % renewables)"
+        "en": "Actual supply (PPA, % renewables)",
+        "nl": "Reële levering (PPA, % hernieuwbaar)"
       },
       "description": {
         "fr": "La part d'électricité réellement d'origine renouvelable, via des contrats d'achat vérifiables (et non de simples déclarations).",
-        "en": "The share of electricity genuinely from renewables, through verifiable purchase contracts (not mere claims)."
+        "en": "The share of electricity genuinely from renewables, through verifiable purchase contracts (not mere claims).",
+        "nl": "Het aandeel elektriciteit dat werkelijk van hernieuwbare oorsprong is, via verifieerbare afnamecontracten (niet louter verklaringen)."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.07,
@@ -253,11 +268,13 @@
       "id": "E6",
       "label": {
         "fr": "Raccordabilité à un réseau de chaleur",
-        "en": "Heat-network connectability"
+        "en": "Heat-network connectability",
+        "nl": "Aansluitbaarheid op een warmtenet"
       },
       "description": {
         "fr": "Possibilité pour le site de valoriser sa chaleur fatale via un réseau de chaleur urbain : distance au réseau le plus proche et présence d'une obligation de raccordement (périmètre de développement prioritaire). Répond à la doctrine de l'autorité environnementale (récupération de la chaleur fatale, loi du 15/11/2021).",
-        "en": "Whether the site can valorise its waste heat via a district-heating network: distance to the nearest network and presence of a connection obligation (priority development perimeter)."
+        "en": "Whether the site can valorise its waste heat via a district-heating network: distance to the nearest network and presence of a connection obligation (priority development perimeter).",
+        "nl": "Of de site zijn restwarmte via een stedelijk warmtenet kan benutten: afstand tot het dichtstbijzijnde net en aanwezigheid van een aansluitplicht (prioritaire ontwikkelingszone)."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.14,
@@ -290,11 +307,13 @@
       "id": "E7",
       "label": {
         "fr": "Récupération de la chaleur fatale — engagement",
-        "en": "Waste-heat recovery — commitment"
+        "en": "Waste-heat recovery — commitment",
+        "nl": "Terugwinning van restwarmte — toezegging"
       },
       "description": {
         "fr": "Degré d'engagement de l'opérateur à valoriser la chaleur fatale du site (réalisé / contrat signé / étude / intention / aucun). Distingue l'intention non concrétisée de l'engagement réel, conformément aux avis de l'autorité environnementale.",
-        "en": "Operator commitment level to valorise the site's waste heat (delivered / signed contract / study / intention / none)."
+        "en": "Operator commitment level to valorise the site's waste heat (delivered / signed contract / study / intention / none).",
+        "nl": "De mate waarin de exploitant zich verbindt om de restwarmte van de site te benutten (gerealiseerd / getekend contract / studie / voornemen / geen)."
       },
       "pillar": "energy",
       "weight_in_pillar": 0.1,
@@ -329,11 +348,13 @@
       "id": "W1",
       "label": {
         "fr": "Stress hydrique de la zone",
-        "en": "Local water stress"
+        "en": "Local water stress",
+        "nl": "Waterstress van de zone"
       },
       "description": {
         "fr": "La tension sur l'eau dans la zone : dans une région déjà en manque, prélever pèse plus lourd.",
-        "en": "Water tension in the area: in an already water-scarce region, withdrawals weigh more heavily."
+        "en": "Water tension in the area: in an already water-scarce region, withdrawals weigh more heavily.",
+        "nl": "De druk op het water in de zone: in een regio die al tekortkomt, weegt een onttrekking zwaarder."
       },
       "pillar": "water",
       "weight_in_pillar": 0.3,
@@ -369,11 +390,13 @@
       "id": "W2",
       "label": {
         "fr": "État de la masse d'eau",
-        "en": "Water body status"
+        "en": "Water body status",
+        "nl": "Toestand van het waterlichaam"
       },
       "description": {
         "fr": "La santé écologique de la rivière ou de la nappe concernée, selon la classification européenne (de « très bon » à « mauvais »).",
-        "en": "The ecological health of the affected river or aquifer, per the EU classification (from 'high' to 'bad')."
+        "en": "The ecological health of the affected river or aquifer, per the EU classification (from 'high' to 'bad').",
+        "nl": "De ecologische gezondheid van de betrokken rivier of grondwaterlaag, volgens de Europese classificatie (van ‘zeer goed’ tot ‘slecht’)."
       },
       "pillar": "water",
       "weight_in_pillar": 0.2,
@@ -407,11 +430,13 @@
       "id": "W3",
       "label": {
         "fr": "Pression de prélèvement du bassin",
-        "en": "Basin withdrawal pressure"
+        "en": "Basin withdrawal pressure",
+        "nl": "Onttrekkingsdruk op het stroomgebied"
       },
       "description": {
         "fr": "L'intensité des prélèvements d'eau déjà en cours sur le bassin : un bassin très sollicité supporte mal un nouvel usage.",
-        "en": "How intensively water is already withdrawn from the basin: a heavily-tapped basin ill affords a new user."
+        "en": "How intensively water is already withdrawn from the basin: a heavily-tapped basin ill affords a new user.",
+        "nl": "Hoe intensief er al water aan het stroomgebied wordt onttrokken: een zwaar aangesproken stroomgebied verdraagt moeilijk een nieuwe gebruiker."
       },
       "pillar": "water",
       "weight_in_pillar": 0.2,
@@ -444,11 +469,13 @@
       "id": "W4",
       "label": {
         "fr": "Refroidissement + volume d'eau annoncé",
-        "en": "Cooling technology + announced water volume"
+        "en": "Cooling technology + announced water volume",
+        "nl": "Koeling + aangekondigd watervolume"
       },
       "description": {
         "fr": "La technologie de refroidissement choisie et le volume d'eau qu'elle consommera, tels qu'annoncés par l'opérateur.",
-        "en": "The cooling technology chosen and the water volume it will consume, as announced by the operator."
+        "en": "The cooling technology chosen and the water volume it will consume, as announced by the operator.",
+        "nl": "De gekozen koeltechnologie en het watervolume dat ze zal verbruiken, zoals aangekondigd door de exploitant."
       },
       "pillar": "water",
       "weight_in_pillar": 0.2,
@@ -480,11 +507,13 @@
       "id": "W5",
       "label": {
         "fr": "WUE constaté / source d'eau (auto-déclarés)",
-        "en": "Observed WUE / water source (self-reported)"
+        "en": "Observed WUE / water source (self-reported)",
+        "nl": "Vastgestelde WUE / waterbron (zelfgerapporteerd)"
       },
       "description": {
         "fr": "L'eau réellement consommée par unité de calcul, et d'où elle vient (potable, recyclée…) — chiffres constatés mais produits par l'opérateur, donc invérifiables sans source tierce. Plus c'est bas, mieux c'est.",
-        "en": "The water actually used per unit of computing, and where it comes from (drinking, recycled…) — observed figures, but operator-produced and unverifiable without a third-party source. Lower is better."
+        "en": "The water actually used per unit of computing, and where it comes from (drinking, recycled…) — observed figures, but operator-produced and unverifiable without a third-party source. Lower is better.",
+        "nl": "Het werkelijk verbruikte water per rekeneenheid, en waar het vandaan komt (drinkwater, hergebruikt…) — vastgestelde getallen, maar door de exploitant geproduceerd en zonder derde bron niet te verifiëren. Hoe lager, hoe beter."
       },
       "pillar": "water",
       "weight_in_pillar": 0.1,
@@ -528,11 +557,13 @@
       "id": "F1",
       "label": {
         "fr": "Recouvrement / distance zones protégées",
-        "en": "Overlap / distance to protected areas"
+        "en": "Overlap / distance to protected areas",
+        "nl": "Overlap / afstand beschermde gebieden"
       },
       "description": {
         "fr": "La proximité du projet avec des espaces naturels protégés (Natura 2000, ZNIEFF…).",
-        "en": "How close the project is to protected natural areas (Natura 2000, nature reserves…)."
+        "en": "How close the project is to protected natural areas (Natura 2000, nature reserves…).",
+        "nl": "Hoe dicht het project bij beschermde natuurgebieden ligt (Natura 2000, ZNIEFF…)."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.2,
@@ -566,11 +597,13 @@
       "id": "F2",
       "label": {
         "fr": "Statut du sol (artificialisé / ENAF / agricole)",
-        "en": "Soil status (artificialized / natural / agricultural)"
+        "en": "Soil status (artificialized / natural / agricultural)",
+        "nl": "Status van de grond (verhard / natuur / landbouw)"
       },
       "description": {
         "fr": "Ce qu'était le terrain avant : déjà bétonné (friche), naturel, ou agricole — bétonner de la terre agricole ou naturelle pèse le plus.",
-        "en": "What the land was before: already built (brownfield), natural, or farmland — sealing farmland or nature weighs most."
+        "en": "What the land was before: already built (brownfield), natural, or farmland — sealing farmland or nature weighs most.",
+        "nl": "Wat het terrein eerst was: al bebouwd (brownfield), natuur of landbouwgrond — natuur of landbouwgrond verharden weegt het zwaarst."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.35,
@@ -605,11 +638,13 @@
       "id": "F3",
       "label": {
         "fr": "Continuités écologiques (TVB)",
-        "en": "Ecological corridors (TVB)"
+        "en": "Ecological corridors (TVB)",
+        "nl": "Ecologische verbindingen (TVB)"
       },
       "description": {
         "fr": "Si le projet coupe un corridor que la faune emprunte pour se déplacer (trame verte et bleue).",
-        "en": "Whether the project severs a wildlife corridor (green-and-blue network)."
+        "en": "Whether the project severs a wildlife corridor (green-and-blue network).",
+        "nl": "Of het project een corridor doorsnijdt die dieren gebruiken om zich te verplaatsen (groenblauwe dooradering)."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.2,
@@ -642,11 +677,13 @@
       "id": "F4",
       "label": {
         "fr": "Surface au sol du site",
-        "en": "Site ground footprint"
+        "en": "Site ground footprint",
+        "nl": "Grondoppervlak van de site"
       },
       "description": {
         "fr": "L'emprise au sol du SITE en hectares — le terrain mobilisé par le projet (bâtiments, voiries, parkings, poste électrique, bassins), pas la seule empreinte des bâtiments : plus elle est étendue, plus l'impact foncier est fort.",
-        "en": "The SITE's ground footprint in hectares — the land the project takes up (buildings, roads, parking, substation, retention basins), not the building print alone: the larger, the greater the land impact."
+        "en": "The SITE's ground footprint in hectares — the land the project takes up (buildings, roads, parking, substation, retention basins), not the building print alone: the larger, the greater the land impact.",
+        "nl": "Het terreinbeslag van de SITE in hectaren — de grond die het project inneemt (gebouwen, wegen, parkeerterreinen, onderstation, bekkens), niet alleen de voetafdruk van de gebouwen: hoe uitgestrekter, hoe groter de impact op de grond."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.15,
@@ -691,11 +728,13 @@
       "id": "F5",
       "label": {
         "fr": "Mesures ERC (éviter-réduire-compenser)",
-        "en": "Avoid-reduce-offset (ERC) measures"
+        "en": "Avoid-reduce-offset (ERC) measures",
+        "nl": "ERC-maatregelen (vermijden-verminderen-compenseren)"
       },
       "description": {
         "fr": "Les mesures prises pour éviter, réduire ou compenser les atteintes à l'artificialisation et à la biodiversité. (La récupération de chaleur fatale a été déplacée en E6/E7, pilier Énergie.)",
-        "en": "Measures to avoid, reduce or offset harm to soil artificialisation and biodiversity. (Heat recovery moved to E6/E7, Energy pillar.)"
+        "en": "Measures to avoid, reduce or offset harm to soil artificialisation and biodiversity. (Heat recovery moved to E6/E7, Energy pillar.)",
+        "nl": "De maatregelen om schade aan bodem en biodiversiteit te vermijden, te verminderen of te compenseren. (Warmteterugwinning is verplaatst naar E6/E7, pijler Energie.)"
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.1,
@@ -727,11 +766,13 @@
       "id": "F6",
       "label": {
         "fr": "Désignation à l'urbanisation dans un plan supra-communal",
-        "en": "Designated for urbanisation in a supra-municipal plan"
+        "en": "Designated for urbanisation in a supra-municipal plan",
+        "nl": "Aangewezen voor verstedelijking in een bovengemeentelijk plan"
       },
       "description": {
         "fr": "Le terrain est-il inscrit comme secteur d'urbanisation dans un document de planification au-dessus de la commune ? Fait de contexte, publié tel quel : il n'améliore ni n'aggrave la note.",
-        "en": "Is the site designated for urbanisation in a planning document above the municipality? A contextual fact, published as such: it neither improves nor worsens the grade."
+        "en": "Is the site designated for urbanisation in a planning document above the municipality? A contextual fact, published as such: it neither improves nor worsens the grade.",
+        "nl": "Staat het terrein als verstedelijkingszone in een planningsdocument boven de gemeente? Contextueel feit, als zodanig gepubliceerd: het verbetert noch verslechtert het cijfer."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0,
@@ -757,11 +798,13 @@
       "id": "F7",
       "label": {
         "fr": "Procédure de mise en compatibilité du document d'urbanisme en cours",
-        "en": "Planning-document compatibility procedure under way"
+        "en": "Planning-document compatibility procedure under way",
+        "nl": "Procedure tot aanpassing van het ruimtelijke plan loopt"
       },
       "description": {
         "fr": "Une procédure est-elle engagée pour rendre le document d'urbanisme compatible avec le projet ? Fait de contexte : on suit l'instrument, pas l'intention — le statut du sol ne changera que le jour où la procédure aboutit.",
-        "en": "Is a procedure under way to make the planning document compatible with the project? A contextual fact: we follow the instrument, not the intention — the land status only changes the day the procedure completes."
+        "en": "Is a procedure under way to make the planning document compatible with the project? A contextual fact: we follow the instrument, not the intention — the land status only changes the day the procedure completes.",
+        "nl": "Loopt er een procedure om het ruimtelijke plan met het project in overeenstemming te brengen? Contextueel feit: we volgen het instrument, niet de intentie — de status van de grond verandert pas op de dag dat de procedure rond is."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0,
@@ -788,11 +831,13 @@
       "id": "L1",
       "label": {
         "fr": "Profil socio-économique de la commune",
-        "en": "Municipality socio-economic profile"
+        "en": "Municipality socio-economic profile",
+        "nl": "Sociaal-economisch profiel van de gemeente"
       },
       "description": {
         "fr": "Le profil social de la commune d'accueil. Garde-fou : un projet ne doit jamais améliorer sa note en s'installant dans une commune vulnérable.",
-        "en": "The host town's social profile. A safeguard: a project must never improve its grade by locating in a vulnerable town."
+        "en": "The host town's social profile. A safeguard: a project must never improve its grade by locating in a vulnerable town.",
+        "nl": "Het sociale profiel van de ontvangende gemeente. Waarborg: een project mag zijn cijfer nooit verbeteren door zich in een kwetsbare gemeente te vestigen."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
@@ -833,11 +878,13 @@
       "id": "L2",
       "label": {
         "fr": "Capacité d'absorption (taille du projet vs commune)",
-        "en": "Absorption capacity (project size vs municipality)"
+        "en": "Absorption capacity (project size vs municipality)",
+        "nl": "Absorptievermogen (project vs gemeente)"
       },
       "description": {
         "fr": "La taille du projet rapportée à celle de la commune : un très gros projet dans une petite commune bouleverse davantage.",
-        "en": "The project's size relative to the town: a very large project in a small town disrupts more."
+        "en": "The project's size relative to the town: a very large project in a small town disrupts more.",
+        "nl": "De omvang van het project afgezet tegen die van de gemeente: een zeer groot project in een kleine gemeente ontwricht meer."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
@@ -881,11 +928,13 @@
       "id": "L3",
       "label": {
         "fr": "Aléa technologique / Seveso environnant",
-        "en": "Technological hazard / nearby Seveso sites"
+        "en": "Technological hazard / nearby Seveso sites",
+        "nl": "Technologisch risico / Seveso in de omgeving"
       },
       "description": {
         "fr": "La présence de sites industriels dangereux (Seveso) à proximité, qui ajoutent un risque au voisinage.",
-        "en": "The presence of hazardous industrial sites (Seveso) nearby, adding risk to the surroundings."
+        "en": "The presence of hazardous industrial sites (Seveso) nearby, adding risk to the surroundings.",
+        "nl": "De aanwezigheid van gevaarlijke industriële sites (Seveso) in de buurt, die risico aan de omgeving toevoegen."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.1,
@@ -916,11 +965,13 @@
       "id": "L4",
       "label": {
         "fr": "Emplois annoncés",
-        "en": "Announced jobs"
+        "en": "Announced jobs",
+        "nl": "Aangekondigde banen"
       },
       "description": {
         "fr": "Le nombre d'emplois permanents annoncés, rapporté à la taille du projet. Plus il y en a, mieux c'est.",
-        "en": "The number of permanent jobs announced, relative to project size. More is better."
+        "en": "The number of permanent jobs announced, relative to project size. More is better.",
+        "nl": "Het aantal aangekondigde vaste banen, afgezet tegen de omvang van het project. Hoe meer, hoe beter."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
@@ -949,11 +1000,13 @@
       "id": "L5",
       "label": {
         "fr": "Retombées fiscales annoncées",
-        "en": "Announced tax revenue"
+        "en": "Announced tax revenue",
+        "nl": "Aangekondigde belastingopbrengsten"
       },
       "description": {
         "fr": "Les recettes fiscales que le projet apporterait à la commune, telles qu'annoncées.",
-        "en": "The tax revenue the project would bring to the town, as announced."
+        "en": "The tax revenue the project would bring to the town, as announced.",
+        "nl": "De belastinginkomsten die het project de gemeente zou opleveren, zoals aangekondigd."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.1,
@@ -985,11 +1038,13 @@
       "id": "L6",
       "label": {
         "fr": "Niveau de contestation observé",
-        "en": "Observed level of opposition"
+        "en": "Observed level of opposition",
+        "nl": "Waargenomen verzet"
       },
       "description": {
         "fr": "L'ampleur de l'opposition constatée : recours, pétitions, mobilisations relayées par la presse.",
-        "en": "The scale of observed opposition: appeals, petitions, mobilizations reported by the press."
+        "en": "The scale of observed opposition: appeals, petitions, mobilizations reported by the press.",
+        "nl": "De omvang van het vastgestelde verzet: beroepen, petities, mobilisaties waarover de pers bericht."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.2,
@@ -1023,11 +1078,13 @@
       "id": "L7",
       "label": {
         "fr": "Position des élus (faits votés uniquement)",
-        "en": "Elected officials' position (voted facts only)"
+        "en": "Elected officials' position (voted facts only)",
+        "nl": "Standpunt van de bestuurders (alleen gestemde feiten)"
       },
       "description": {
         "fr": "La position des élus telle qu'exprimée par des votes officiels uniquement (délibérations), sans aucun jugement de personne.",
-        "en": "Elected officials' position as expressed by official votes only (council decisions), with no personal judgment."
+        "en": "Elected officials' position as expressed by official votes only (council decisions), with no personal judgment.",
+        "nl": "Het standpunt van de gekozen bestuurders zoals uitgedrukt in officiële stemmingen alleen (raadsbesluiten), zonder enig oordeel over personen."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
@@ -1060,11 +1117,13 @@
       "id": "T1",
       "label": {
         "fr": "Concertation / consentement / gouvernance (proxies procéduraux)",
-        "en": "Consultation / consent / governance (procedural proxies)"
+        "en": "Consultation / consent / governance (procedural proxies)",
+        "nl": "Overleg / instemming / governance (procedurele proxy’s)"
       },
       "description": {
         "fr": "La qualité du processus démocratique : enquête publique tenue, avis de l'autorité environnementale, recours, saisine de la CNDP.",
-        "en": "The quality of the democratic process: public inquiry held, environmental authority opinion, appeals, CNDP referral."
+        "en": "The quality of the democratic process: public inquiry held, environmental authority opinion, appeals, CNDP referral.",
+        "nl": "De kwaliteit van het democratische proces: gehouden inspraak, advies van de milieuautoriteit, beroepen, aanhangigmaking bij de CNDP."
       },
       "pillar": "transparency_governance",
       "weight_in_pillar": 0.6,
@@ -1122,11 +1181,13 @@
       "id": "T2",
       "label": {
         "fr": "Transparence documentaire / disponibilité du dossier",
-        "en": "Documentation transparency / file availability"
+        "en": "Documentation transparency / file availability",
+        "nl": "Documentaire transparantie / beschikbaarheid van het dossier"
       },
       "description": {
         "fr": "À quel point le dossier du projet est réellement accessible au public : études, chiffres et engagements publiés.",
-        "en": "How genuinely accessible the project's file is to the public: published studies, figures and commitments."
+        "en": "How genuinely accessible the project's file is to the public: published studies, figures and commitments.",
+        "nl": "Hoe werkelijk toegankelijk het projectdossier voor het publiek is: gepubliceerde studies, getallen en toezeggingen."
       },
       "pillar": "transparency_governance",
       "weight_in_pillar": 0.4,

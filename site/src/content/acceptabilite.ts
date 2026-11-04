@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   title: "L'acceptabilité des data centers — définition, enjeux, mesure | ScoreMyDataCenter",
@@ -110,5 +110,57 @@ const EN: typeof FR = {
   ],
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  title: "De maatschappelijke acceptatie van datacenters — definitie, inzet, meting | ScoreMyDataCenter",
+  metaDescription: "Wat is de maatschappelijke acceptatie van een datacenter? Definitie, de vijf dimensies (energie, water, bodem, lokale impact, transparantie) en hoe ze wordt gemeten, project voor project.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "De maatschappelijke acceptatie van datacenters",
+  lead: "De maatschappelijke acceptatie van een datacenter is de mate waarin een project zich op een plek kan vestigen zonder dat de effecten — op energie, water, bodem, omwonenden — overschrijden wat de gemeenschap bereid is te dragen. Ze wordt niet afgekondigd: ze wordt <strong>gemeten</strong>, project voor project.",
+
+  sections: [
+    { h2: "Waarom de vraag nú speelt",
+      corps: "<p>De golf van projecten rond kunstmatige intelligentie concentreert op een handvol plekken een ongekende vraag naar elektriciteit, koelwater en grond. Een gebouw dat honderd megawatt vraagt, bespreek je niet als een distributiecentrum: het legt beslag op het elektriciteitsnet van een regio, soms op het water van een stroomgebied, en het blijft dertig jaar staan.</p><p>Maatschappelijke acceptatie is de vraag geworden die beslist of een project doorgaat, verhuist of vastloopt. Ze wordt zelden beslecht met het grote, mondiale argument — het klimaat, de data — en bijna altijd op iets lokaals en concreets: <em>wat verandert dit, hier?</em></p>" },
+  ],
+
+  piliersH2: "Vijf dimensies — en het zijn onze vijf beoordelingspijlers",
+  piliers: [
+    { icone: "energy", titre: "Energie",
+      corps: "de elektriciteit die <strong>de site afneemt</strong>, en wat het lokale net nog kan geven. Een vol onderstation verdubbel je niet met een vingerknip: vaak bepaalt de netaansluiting, niet het gebouw, het tijdpad van een project." },
+    { icone: "water", titre: "Water",
+      corps: "het volume dat voor koeling wordt <strong>verbruikt</strong> en wat wordt <strong>geloosd</strong> — met welke zuivering, in welk milieu. Een stroomgebied dat ’s zomers al onder druk staat, weegt een onttrekking zwaarder dan een waterrijk gebied." },
+    { icone: "land", titre: "Bodem en biodiversiteit",
+      corps: "de grond waarop de site zich vestigt. <strong>Landbouwgrond kost niet hetzelfde als een opnieuw benut industrieterrein</strong>: het tweede herstelt iets, het eerste neemt iets weg. Daarbij komen de beschermde gebieden en de ecologische verbindingen in de directe omgeving." },
+    { icone: "local", titre: "Lokale impact en absorptievermogen",
+      corps: "wat het gebied kan dragen. <strong>Een gigaproject in een plattelandsgemeente is iets anders dan een rekencentrum in de stad</strong>: zelfde vermogen, zelfde geluid, maar niet hetzelfde aantal inwoners om het te dragen, en niet hetzelfde economische weefsel om ervan te profiteren." },
+    { icone: "transparency", titre: "Transparantie en governance",
+      corps: "wat de initiatiefnemer publiceert, en hoe hij de omgeving betrekt. Een raadpleegbaar dossier en echt overleg maken nog geen goed project, maar hun afwezigheid weegt — het is de enige pijler die over het <em>gedrag</em> gaat in plaats van over de effecten." },
+  ],
+
+  sectionsApres: [
+    { h2: "Hoe ze wordt gemeten",
+      corps: "<p>We kennen elk project <strong>twee cijfers van <span class='note-inline n-a'>A</span> tot <span class='note-inline n-e'>E</span></strong> toe — één voor de <strong>site</strong>, de context die het ondergaat en niet heeft gekozen, één voor <strong>project en proces</strong>, wat de exploitant beslist. Elk cijfer gaat vergezeld van een <strong>vertrouwensniveau</strong> dat zegt op hoeveel gedocumenteerde elementen het steunt.</p><p>Ontbrekende gegevens worden nooit een <span class='note-inline n-a'>A</span>: onder een dekkingsdrempel schrijven we ‘onvoldoende gegevens’ in plaats van een letter. Zonder die regel zou de minst transparante site het best beoordeeld zijn. De berekening is openbaar: <a href='/nl/methodologie/'>de methode</a>, en <a href='/nl/het-cijfer-stap-voor-stap/'>het cijfer, stap voor stap</a>.</p>" },
+    { h2: "Hinder, de andere helft van het verhaal",
+      corps: "<p>Maatschappelijke acceptatie wordt ook beslist op wat u vanaf de straat hoort en ziet: het geluid van de koeling, het testen van noodaggregaten, de brandstoftanks, het bouwverkeer. Dat zijn geen dossierdetails — het zijn de eerste bezwaargronden die we in milieuadviezen aantreffen.</p><p>We publiceren ze <strong>als feiten, naast het cijfer</strong>: zie <strong><a href='/nl/hinder-datacenter/'>de hinder van datacenters</a></strong>.</p>" },
+    { h2: "Een normatieve verankering, geen mening",
+      corps: "<p>We meten <strong>genormaliseerde</strong> indicatoren — energie-efficiëntie, watergebruik — in de geest van de reeks <strong>ISO/IEC 30134</strong> over prestatie-indicatoren voor datacenters. We voeren <strong>geen</strong> levenscyclusanalyse uit: we maken gedocumenteerde feiten vergelijkbaar. Zie <a href='/nl/normen/'>de normen, en waar wij staan</a>.</p>" },
+    { h2: "Wat maatschappelijke acceptatie niet is",
+      corps: "<p>Het is geen oordeel vóór of tegen datacenters. Een gebied kan een zwaar project onder goede voorwaarden ontvangen, en een klein project kan slecht liggen. We zeggen niet óf er gebouwd moet worden: we zeggen <strong>wat déze plek kost, voor dít project</strong>, met dezelfde meetlat voor iedereen.</p><p>Zie <a href='/nl/kaart/'>de kaart van de sites</a> en <a href='/nl/ranglijst/'>de ranglijst</a>.</p>" },
+  ],
+
+  details: [
+    { resume: "Meer weten — waarom twee cijfers, en niet één",
+      corps: "<p>Eén en hetzelfde project mengt wat het <strong>ondergaat</strong> — een vol net, een stroomgebied onder druk, landbouwgrond — met wat het <strong>kiest</strong>: zijn efficiëntie, zijn koeling, zijn transparantie. Beide in één letter samenvoegen zou een voorbeeldig dossier een slecht gekozen terrein laten goedmaken, of omgekeerd.</p><p>Vandaar de scheiding: aan het cijfer van de <strong>site</strong> kan een exploitant niets doen, voor dat van het <strong>project</strong> is hij volledig verantwoordelijk. Een bestuurder die twee mogelijke locaties vergelijkt, kijkt naar het eerste; een omwonende die een exploitant beoordeelt, kijkt naar het tweede.</p>" },
+    { resume: "Meer weten — wie beslist, en waar",
+      corps: "<p>Een project van deze omvang vraagt een <strong>omgevingsvergunning</strong> — of, waar bouw en milieu gescheiden blijven zoals in Frankrijk, afzonderlijke vergunningen — van het <strong>bevoegd gezag</strong>, en een <strong>netaansluiting</strong> die met de netbeheerder wordt onderhandeld. Een onafhankelijke instantie brengt een openbaar advies uit over het <strong>milieueffectrapport (MER)</strong>, en het publiek wordt geraadpleegd.</p><p>Niemand in die keten produceert een cijfer dat van site tot site vergelijkbaar is: elk dossier wordt op zichzelf beoordeeld, in de eigen regio. Precies dat gat vult dit observatorium.</p>" },
+  ],
+};
+
 /** La table servie au gabarit : `ACCEPTABILITE[lang]`. */
-export const ACCEPTABILITE: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const ACCEPTABILITE: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

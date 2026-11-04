@@ -348,7 +348,7 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
               <h3>{v3.t1.title}</h3>
               <p>{v3.t1.p1(STATS.corpus_date ? dateFmt(STATS.corpus_date) : "")}</p>
               <p>{v3.t1.p2}</p>
-              <a class="stx-cta" href={lang === "fr" ? "/fr/classement?statut=announced" : "/ranking?statut=announced"}>{v3.t1.cta}</a>
+              <a class="stx-cta" href={lang === "fr" ? "/fr/classement/?statut=announced" : "/ranking/?statut=announced"}>{v3.t1.cta}</a>
             </aside>
           )}
         </div>

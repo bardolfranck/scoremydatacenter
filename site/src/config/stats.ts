@@ -7,8 +7,12 @@
 // place where institutions appear, resolved per country), bonus/friction
 // editorial pairing. i18n §13: FR and EN live side by side, never drift.
 import statsData from "../../public/data/stats.json";
+import type { LangueDeclaree } from "../content/langues";
 
-export type Lang = "fr" | "en";
+// 🔴 La liste des langues ne se réécrit pas ici : `content/langues.ts` la déclare une fois.
+// Elle était recopiée dans 36 fichiers le 2026-11-02 — autant d'endroits où ajouter une
+// langue, donc autant d'endroits où l'oublier.
+export type Lang = LangueDeclaree;
 export const STATS = statsData as any;
 
 /** Perimeter slugs are URL segments: "europe" or a lowercase ISO country. */
@@ -35,16 +39,16 @@ export const derivedCount = (key: string): number | null => {
 };
 
 export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
-  US: { fr: "États-Unis", en: "United States" }, IL: { fr: "Israël", en: "Israel" },
-  AT: { fr: "Autriche", en: "Austria" }, BE: { fr: "Belgique", en: "Belgium" },
-  CH: { fr: "Suisse", en: "Switzerland" }, DE: { fr: "Allemagne", en: "Germany" },
-  DK: { fr: "Danemark", en: "Denmark" }, ES: { fr: "Espagne", en: "Spain" },
-  FI: { fr: "Finlande", en: "Finland" }, FR: { fr: "France", en: "France" },
-  GB: { fr: "Royaume-Uni", en: "United Kingdom" }, IE: { fr: "Irlande", en: "Ireland" },
-  IT: { fr: "Italie", en: "Italy" }, LU: { fr: "Luxembourg", en: "Luxembourg" },
-  NL: { fr: "Pays-Bas", en: "Netherlands" }, NO: { fr: "Norvège", en: "Norway" },
-  PL: { fr: "Pologne", en: "Poland" }, PT: { fr: "Portugal", en: "Portugal" },
-  SE: { fr: "Suède", en: "Sweden" },
+  US: { fr: "États-Unis", en: "United States", nl: "Verenigde Staten" }, IL: { fr: "Israël", en: "Israel", nl: "Israël" },
+  AT: { fr: "Autriche", en: "Austria", nl: "Oostenrijk" }, BE: { fr: "Belgique", en: "Belgium", nl: "België" },
+  CH: { fr: "Suisse", en: "Switzerland", nl: "Zwitserland" }, DE: { fr: "Allemagne", en: "Germany", nl: "Duitsland" },
+  DK: { fr: "Danemark", en: "Denmark", nl: "Denemarken" }, ES: { fr: "Espagne", en: "Spain", nl: "Spanje" },
+  FI: { fr: "Finlande", en: "Finland", nl: "Finland" }, FR: { fr: "France", en: "France", nl: "Frankrijk" },
+  GB: { fr: "Royaume-Uni", en: "United Kingdom", nl: "Verenigd Koninkrijk" }, IE: { fr: "Irlande", en: "Ireland", nl: "Ierland" },
+  IT: { fr: "Italie", en: "Italy", nl: "Italië" }, LU: { fr: "Luxembourg", en: "Luxembourg", nl: "Luxemburg" },
+  NL: { fr: "Pays-Bas", en: "Netherlands", nl: "Nederland" }, NO: { fr: "Norvège", en: "Norway", nl: "Noorwegen" },
+  PL: { fr: "Pologne", en: "Poland", nl: "Polen" }, PT: { fr: "Portugal", en: "Portugal", nl: "Portugal" },
+  SE: { fr: "Suède", en: "Sweden", nl: "Zweden" },
 };
 
 export const REGION_NAMES: Record<string, string> = {
@@ -66,7 +70,7 @@ export const EUROPE_ISO: string[] = (STATS as any).scopes?.europe ?? [];
  *  « Monde » était en ternaire dans la fonction — un mot dans une expression, donc un mot
  *  qu'une langue nouvelle ne trouve pas. */
 const PERIMETRES: Record<string, Record<Lang, string>> = {
-  monde: { fr: "Monde", en: "World" },
+  monde: { fr: "Monde", en: "World", nl: "Wereld" },
 };
 
 export function perimeterLabel(key: string, lang: Lang): string {
@@ -90,6 +94,10 @@ export function perimeterLabel(key: string, lang: Lang): string {
 const FORMES: Record<Lang, { pourcent: string; locale: string }> = {
   fr: { pourcent: "{v} %", locale: "fr-FR" },
   en: { pourcent: "{v}%", locale: "en-GB" },
+  // Néerlandais : pas d'espace avant le `%` (même règle que l'anglais), mais le séparateur
+  // de milliers est le POINT et la décimale la virgule — « 1.234 » s'y lit mille deux cent
+  // trente-quatre. C'est `nl-NL` qui porte cette règle, pas nous.
+  nl: { pourcent: "{v}%", locale: "nl-NL" },
 };
 export const fmtPct = (pct: number, lang: Lang): string => {
   const v = pct > 0 && pct < 1 ? "<1" : String(Math.round(pct));
@@ -97,6 +105,16 @@ export const fmtPct = (pct: number, lang: Lang): string => {
 };
 export const fmtInt = (n: number, lang: Lang): string =>
   n.toLocaleString(FORMES[lang].locale);
+
+/** Un décimal dans l'écriture de la langue — « 2,4 » en français et en néerlandais, « 2.4 »
+ *  en anglais. `toFixed()` écrit TOUJOURS un point : il produisait « (59.9) » au milieu
+ *  d'une page néerlandaise, relevé par la relecture native. Un nombre n'est pas une chaîne,
+ *  il s'écrit selon la langue qui le lit. */
+export const fmtDec = (n: number, lang: Lang, decimales = 1): string =>
+  n.toLocaleString(FORMES[lang].locale, {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  });
 
 /** Source lines — institutions live HERE, resolved per country (cadrage §4.10:
  * regulatory concepts never reach the punch phrase). `default` covers every
@@ -147,7 +165,16 @@ export function sourceLine(statId: string, countries: string[], lang: Lang): str
     // 🔴 Les deux côtés du ternaire d'avant écrivaient LA MÊME phrase : seul l'indice de
     // langue changeait (`map.FR.fr` / `map.FR.en`). Une branche qui ne décide rien coûte
     // quand même une ligne à chaque langue nouvelle, et cache qu'il n'y a rien à décider.
-    return `${map.default[lang]} · ${map.FR[lang]} (France)`;
+    //
+    // 🔴 ET LA SOURCE NATIONALE NE RÉPÈTE PAS LA SOURCE PAR DÉFAUT. Plusieurs entrées
+    // nationales CONTIENNENT déjà la source par défaut : l'eau dit « WRI Aqueduct 4.0 ·
+    // VigiEau », dont le premier terme EST le défaut. Concaténer les deux publiait
+    // « WRI Aqueduct 4.0 · WRI Aqueduct 4.0 · VigiEau (France) » — un bégaiement, vu sur
+    // l'accueil anglais le 2026-11-02. Ce qu'on veut nommer après le défaut, c'est ce que
+    // la France AJOUTE ; s'il n'y a rien, le défaut suffit.
+    const base = map.default[lang].split(" · ");
+    const ajout = map.FR[lang].split(" · ").filter((t) => !base.includes(t));
+    return ajout.length ? `${map.default[lang]} · ${ajout.join(" · ")} (France)` : map.default[lang];
   }
   return map.default[lang];
 }

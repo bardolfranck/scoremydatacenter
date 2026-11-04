@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   title: "Le portrait du site — ScoreMyDataCenter",
@@ -162,5 +162,85 @@ const EN: typeof FR = {
   ],
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  title: "Het portret van de site — ScoreMyDataCenter",
+  metaDescription: "Elk datacenter heeft bij ons twee pagina's: de technische fiche en het portret van de site. Dezelfde feiten, twee lezers — de analist en de omwonende.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "Het portret van de site",
+  lead: "Elke beoordeelde site heeft bij ons <strong>twee pagina's</strong>. Dezelfde feiten, dezelfde bronnen, geen gegeven extra — maar twee lezers die niet dezelfde tijd en niet dezelfde vraag hebben. Wie ze verwart, raakt er één kwijt.",
+
+  twoTitle: "Twee pagina's, twee lezers",
+  portraitFor: "Het portret van de site",
+  portraitWho: "Voor wie ernaast woont, in de gemeenteraad zit of over het onderwerp schrijft.",
+  portraitBullets: [
+    "Wat <strong>het zwaarst weegt</strong> op het cijfer, in drie punten",
+    "Waar de procedure staat, en <strong>tot wanneer</strong> er nog iets te doen valt",
+    "Wat er nog te vragen valt, <strong>en aan wie</strong>",
+    "Gemaakt om af te drukken en op tafel te leggen",
+  ],
+  sheetFor: "De technische fiche",
+  sheetWho: "Voor wie indicatoren leest: exploitant, analist, verzekeraar, adviesbureau.",
+  sheetBullets: [
+    "De <strong>zesentwintig indicatoren</strong>, één voor één",
+    "Elke waarde met <strong>de bijbehorende bron en datum</strong>",
+    "De status van elke meting: gemeten, aangekondigd, niet in het dossier",
+    "Vergelijkbare sites, beoordeeld langs dezelfde meetlat",
+  ],
+  demoPortraitHref: "/nl/dc/fr-campus-ia-fouju/portrait/",
+  demoPortraitLabel: "Bekijk een portret: Campus IA Fouju →",
+  demoSheetHref: "/nl/dc/fr-campus-ia-fouju/",
+  demoSheetLabel: "De fiche van dezelfde site →",
+  notSimplified: "Het portret is geen vereenvoudigde fiche. Het laat niets weg: het ordent anders, en het gaat door tot de vraag die de fiche niet stelt — ‘en wat doe ik nu?’.",
+
+  addsTitle: "Wat het portret toevoegt",
+  adds: [
+    {
+      icon: "measure",
+      title: "De punten die de doorslag geven",
+      body: "Drie, geen zesentwintig. Gekozen door de berekening, niet door ons: eerst de factor die de motor als dominant aanwijst, daarna wat het <strong>gebied oplegt</strong> vóór wat de <strong>initiatiefnemer aankondigt</strong>. Dat onderscheid telt: over het ene valt niet te onderhandelen, over het andere wel.",
+    },
+    {
+      icon: "transparency",
+      title: "Waar de procedure staat, en tot wanneer",
+      body: "De beroepstermijn, de inspraakperiode, de klachtenweg zodra de site in bedrijf is — gelezen <strong>in de wettekst van het betrokken land of de betrokken staat</strong>, nooit in een commentaar. Waar we die tekst niet hebben gelezen, zeggen we dat, en zeggen we wat u in de plaats ervan kunt vragen.",
+    },
+    {
+      icon: "local",
+      title: "Wat er nog te vragen valt",
+      body: "Elke vraag komt uit een indicator die het dossier niet invult, en ze wordt vervoegd naar het stadium van de procedure: ‘te vragen vóór de indiening’, ‘in te brengen tijdens de inspraak’, ‘te laten opnemen in de vergunning’, ‘af te dwingen via de voorschriften’. Een vraag zonder werkwoord is een wens.",
+    },
+  ],
+
+  refuseTitle: "Wat het niet doet",
+  refuse: [
+    "<strong>Geen enkele uitspraak over gezondheid.</strong> We meten geen gezondheidseffecten en we beweren niet dat we dat doen. We publiceren wat in het dossier staat — en wat er niet in staat.",
+    "<strong>Geen enkele zin uit de losse hand.</strong> Alles wat u op een portret leest, is afgeleid uit dezelfde gegevens als de fiche. Een zin die per geval wordt geschreven, zou een bewering zijn die niemand kan controleren — en ze zou gemarkeerd zijn, dus geloofd.",
+    "<strong>Geen enkele letter die de fiche achterhoudt.</strong> Wanneer het cijfer van een site of een pijler niet publiceerbaar is, verschijnt het hier evenmin. De twee pagina's zeggen hetzelfde, of ze zeggen niets.",
+  ],
+
+  madeTitle: "Hoe het wordt gemaakt",
+  madeBody: "Het portret en de fiche lezen <strong>hetzelfde artefact</strong>, geproduceerd door dezelfde berekening. Niets wordt twee keer ingevoerd, dus niets kan uiteenlopen. De vragen komen uit een tabel ‘indicator × status × stadium’; de procedure uit een register waarin elke bewering zijn wetsartikel draagt, met een link naar de tekst en de datum waarop we die hebben gelezen. Waar een rechtsgebied niet is gelezen, verzint het portret het niet: het zegt wat ook zonder dat rechtsgebied waar blijft. <a href=\"/nl/methodologie/\">De methode</a> en <a href=\"/nl/het-cijfer-stap-voor-stap/\">het cijfer stap voor stap</a> beschrijven de berekening.",
+
+  findTitle: "Het portret van een site vinden",
+  findBody: "Er is geen lijst van portretten: er is er één per beoordeelde site, en u bereikt het via de site. Vertrek vanaf de plek, of vanaf het cijfer.",
+  mapHref: "/nl/kaart/",
+  mapLabel: "Zoeken op de kaart →",
+  rankHref: "/nl/ranglijst/",
+  rankLabel: "Door de ranglijst bladeren →",
+  examplesIntro: "Drie voorbeelden, drie verschillende situaties:",
+  examples: [
+    { href: "/nl/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju (Frankrijk)", why: "een project in behandeling in Seine-et-Marne: de inspraakperiode is open, en de Franse procedure is volledig gelezen." },
+    { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "een aangekondigd project in de Verenigde Staten: verplichte hoorzitting van het ontwikkelingsagentschap, SEQRA-toetsing, beroep binnen vier maanden." },
+    { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "een staat waarvan we de wet nog niet hebben gelezen: het portret zegt wat waar blijft, en wat u in de plaats kunt vragen." },
+  ],
+};
+
 /** La table servie au gabarit : `PORTRAIT_EXPLAINER[lang]`. */
-export const PORTRAIT_EXPLAINER: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const PORTRAIT_EXPLAINER: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

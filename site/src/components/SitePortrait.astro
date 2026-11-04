@@ -17,6 +17,8 @@
 // dit ce qui reste vrai au lieu d'avouer notre retard. Une phrase écrite à la main ici
 // serait une affirmation que personne ne pourrait vérifier.
 import Base from "../layouts/Base.astro";
+import type { LangueDeclaree } from "../content/langues";
+import { RACINE } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -39,7 +41,7 @@ import { COMMUN } from "../content/commun";
 
 interface Props {
   dc: any;
-  lang: "fr" | "en";
+  lang: LangueDeclaree;
   t: any;
   nav: NavNode[];
   altHref: string;
@@ -47,7 +49,16 @@ interface Props {
 }
 const { dc, lang, t, nav, altHref, altLabel } = Astro.props as Props;
 const cm = COMMUN[lang];
-const L = (o: any) => (o && typeof o === "object" ? (/* i18n:donnee */ lang === "fr" ? o.fr : o.en) : o);
+// 🔴 LE REPLI DE LANGUE DE LA DONNÉE, DÉCLARÉ. Ces objets viennent du PIPELINE, pas des
+// tables du site : il les émet en `fr`/`en`. Le ternaire d'avant (`lang === "fr" ? o.fr :
+// o.en`) donnait l'anglais à TOUTE langue qui n'est pas le français — vu au rendu le
+// 2026-11-02 sur une page de portrait néerlandaise, dont les libellés d'indicateur et les
+// questions à poser sortaient en anglais, sans erreur et sans blanc, dans le seul bloc qui
+// dit au lecteur ce qu'il peut FAIRE. Servir l'anglais plutôt qu'un vide reste le bon
+// repli ; ce qui ne va pas, c'est qu'il soit muet. Il est maintenant écrit, et
+// `test_la_donnee_servie_parle_toutes_les_langues_vivantes` refuse d'ouvrir une langue à
+// laquelle la donnée ne répond pas.
+const L = (o: any) => (o && typeof o === "object" ? (/* i18n:donnee */ o[lang] ?? o.en) : o);
 
 const methodology = methodologyData as any;
 const defs: any[] = methodology.indicators;
@@ -148,12 +159,12 @@ const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null
 // se lit comme une carte officielle.
 const photoCaveat = L(dc.context_map?.caveat) ?? null;
 
-const ficheHref = /* i18n:route */ lang === "fr" ? `/fr/dc/${dc.id}/` : `/dc/${dc.id}/`;
+const ficheHref = /* i18n:route */ `${RACINE[lang]}dc/${dc.id}/`;
 // Le pied de page affichait le seul chemin (« /fr/dc/ch-cdrom-le-noirmont/ »). Un portrait
 // est fait pour être IMPRIMÉ et posé sur une table : sur papier, un chemin sans domaine ne
 // mène nulle part. L'adresse s'écrit donc en entier, celle qu'on peut recopier.
 const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
-const url = `https://scoremydatacenter.org${/* i18n:route */ lang === "fr" ? "/fr" : ""}/dc/${dc.id}/portrait/`;
+const url = `https://scoremydatacenter.org${/* i18n:route */ RACINE[lang]}dc/${dc.id}/portrait/`;
 const titre = `${dc.name} — ${t.kicker}`;
 const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 
@@ -303,7 +314,7 @@ const seoTitle = [
                   </ul>
                   {q && (
                     <p class="pt-ask">
-                      <strong>{L(q.amorce)} :</strong> <mark>{L(q.texte)}</mark>
+                      <strong>{L(q.amorce)}{ptSep.trimEnd()}</strong> <mark>{L(q.texte)}</mark>
                       <span class="pt-rule">{L(q.verbe)}</span>
                     </p>
                   )}
@@ -392,7 +403,7 @@ const seoTitle = [
           <ul>
             {questions.map((q) => (
               <li>
-                <strong>{L(q.amorce)} :</strong> {L(q.texte)}
+                <strong>{L(q.amorce)}{ptSep.trimEnd()}</strong> {L(q.texte)}
                 <span class="pt-rule">{L(q.verbe)}</span>
               </li>
             ))}

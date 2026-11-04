@@ -9,6 +9,7 @@
 // ?pays=XX shareable state. Letters render ONLY through the map component
 // and the table chips (gate 7 extended).
 import "@fontsource/bricolage-grotesque/700.css";
+import { copie } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
@@ -49,7 +50,7 @@ for (const p of CMP.pays ?? []) cmpByCountry[p.pays] = p;
 const cmpTooThin: Record<string, number> = {};
 for (const m of CMP.corpus_trop_mince ?? []) cmpTooThin[m.pays] = m.sites;
 
-const T = {
+const T = copie({
   fr: {
     pageTitle: "Indice SITE par pays — ScoreMyDataCenter",
     metaDescription: "L'indice SITE par pays : la moyenne des notes de sites (réseau, eau, foncier, risques) agrégée pays par pays — avec sa documentation, ses seuils et son historique. Il ne note ni les opérateurs ni la conduite des projets.",
@@ -128,7 +129,7 @@ const T = {
     },
     ogTitle: (name: string) => `${name}'s site index`,
   },
-}[lang];
+}, lang);
 
 const dateFmt = (iso: string | null) => {
   if (!iso) return "";
@@ -160,7 +161,25 @@ const COV_LABEL: Record<string, Record<string, string>> = {
 const COV_PILLARS = ["energy", "water", "land_biodiversity", "local_impact"];
 
 const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
-const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
+// 🔴 `String(s)` sur un score ABSENT publiait « null » puis « undefined » dans la colonne
+// Score — vu en production sur la ligne Israël, dont le pays porte une note RETENUE et donc
+// aucun score. Un score qu'on n'a pas se dit par un tiret, jamais par le nom que le langage
+// donne au vide.
+// 🔴 UN PAYS N'EST PAS « ÉLIGIBLE » PARCE QUE L'ARTEFACT LE DIT — il l'est s'il a une
+// LETTRE. L'artefact marquait Israël `eligible: true` avec `grade: "en_attente"` et
+// `score: null` : la page affichait donc une puce de note portant « en_attente », la classe
+// CSS `idx-g` correspondante n'existant pas, et « undefined » en colonne Score. Quatrième
+// sortie de cette famille — après les titres de fiche (deux fois) et le mur satellite.
+//
+// La règle est la même partout et elle s'inverse : on publie une note SI c'en est une.
+// Sinon le pays prend la ligne « en veille », qui est exactement ce qu'on avait décidé pour
+// l'Islande — un score mince ne doit pas peindre en vert le pays le plus tendu.
+const NOTE_PUBLIABLE = (e: any) => e.eligible && /^[A-E]$/.test(String(e.grade ?? ""));
+
+const fmtScore = (s: number | null | undefined) =>
+  s === null || s === undefined || Number.isNaN(s)
+    ? "—"
+    : (lang === "fr" ? String(s).replace(".", ",") : String(s));
 const flag = (iso: string) => countryFlag(iso);
 // Page-level OG = the top-ranked eligible country's card (the ranking's own
 // headline; per-country cards live at /og/indices/{lang}-{cc}.png for shares).
@@ -211,7 +230,7 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
             return (
               <tr id={`pays-${iso.toLowerCase()}`} class={e.eligible ? "" : "idx-row-veille"} data-cc={iso}>
                 <td>{flag(iso)} {name(iso)}</td>
-                {e.eligible ? (
+                {NOTE_PUBLIABLE(e) ? (
                   <>
                     <td><span class={`idx-chip idx-g${e.grade}`}>{e.grade}</span>{e.reserved_from === "A" && <small> {T.reserved}</small>}</td>
                     <td class="idx-num">{fmtScore(e.score)}</td>

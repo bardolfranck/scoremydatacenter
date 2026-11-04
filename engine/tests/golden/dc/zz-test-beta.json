@@ -20,7 +20,8 @@
         "dots": 4,
         "label": {
           "fr": "documentation solide",
-          "en": "well documented"
+          "en": "well documented",
+          "nl": "ruim gedocumenteerd"
         }
       }
     },
@@ -49,7 +50,8 @@
         "dots": 3,
         "label": {
           "fr": "documentation moyenne",
-          "en": "moderately documented"
+          "en": "moderately documented",
+          "nl": "gedeeltelijk gedocumenteerd"
         }
       }
     },
@@ -63,7 +65,8 @@
         "dots": 4,
         "label": {
           "fr": "documentation solide",
-          "en": "well documented"
+          "en": "well documented",
+          "nl": "ruim gedocumenteerd"
         }
       }
     },
@@ -77,7 +80,8 @@
         "dots": 4,
         "label": {
           "fr": "documentation solide",
-          "en": "well documented"
+          "en": "well documented",
+          "nl": "ruim gedocumenteerd"
         }
       }
     },
@@ -91,7 +95,8 @@
         "dots": 2,
         "label": {
           "fr": "documentation moyenne",
-          "en": "moderately documented"
+          "en": "moderately documented",
+          "nl": "gedeeltelijk gedocumenteerd"
         }
       }
     },
@@ -105,14 +110,16 @@
         "dots": 1,
         "label": {
           "fr": "documentation faible",
-          "en": "sparsely documented"
+          "en": "sparsely documented",
+          "nl": "dun gedocumenteerd"
         }
       }
     }
   },
   "citable_quote": {
     "fr": "Noté E sur le site ; données de projet insuffisantes pour une note projet & processus.",
-    "en": "Rated E on site; project data insufficient to grade project & process."
+    "en": "Rated E on site; project data insufficient to grade project & process.",
+    "nl": "Beoordeeld met E op de site; onvoldoende projectgegevens voor een cijfer project & proces."
   },
   "publication_status": "published",
   "provisional_band": {
@@ -133,7 +140,8 @@
     "n_base": 15,
     "label": {
       "fr": "note provisoire (plage) — se resserre à la livraison",
-      "en": "provisional grade (range) — narrows at delivery"
+      "en": "provisional grade (range) — narrows at delivery",
+      "nl": "voorlopig cijfer (bandbreedte) — versmalt bij levering van de gegevens"
     }
   },
   "pillar_bands": {
@@ -156,7 +164,8 @@
       "confidence": "medium",
       "label": {
         "fr": "sous-note probable — la plage se resserre à la collecte",
-        "en": "probable sub-grade — the range narrows as data lands"
+        "en": "probable sub-grade — the range narrows as data lands",
+        "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
       }
     },
     "water": {
@@ -178,7 +187,8 @@
       "confidence": "medium",
       "label": {
         "fr": "sous-note probable — la plage se resserre à la collecte",
-        "en": "probable sub-grade — the range narrows as data lands"
+        "en": "probable sub-grade — the range narrows as data lands",
+        "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
       }
     },
     "land_biodiversity": {
@@ -200,7 +210,8 @@
       "confidence": "medium",
       "label": {
         "fr": "sous-note probable — la plage se resserre à la collecte",
-        "en": "probable sub-grade — the range narrows as data lands"
+        "en": "probable sub-grade — the range narrows as data lands",
+        "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
       }
     },
     "local_impact": {
@@ -222,7 +233,8 @@
       "confidence": "medium",
       "label": {
         "fr": "sous-note probable — la plage se resserre à la collecte",
-        "en": "probable sub-grade — the range narrows as data lands"
+        "en": "probable sub-grade — the range narrows as data lands",
+        "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"
       }
     }
   },
@@ -240,7 +252,8 @@
       "id": "E1",
       "label": {
         "fr": "Intensité carbone du réseau local",
-        "en": "Local grid carbon intensity"
+        "en": "Local grid carbon intensity",
+        "nl": "Koolstofintensiteit van het lokale net"
       },
       "pillar": "energy",
       "block": "base",
@@ -259,7 +272,8 @@
       "id": "E2",
       "label": {
         "fr": "Capacité / proximité de raccordement",
-        "en": "Grid connection capacity / proximity"
+        "en": "Grid connection capacity / proximity",
+        "nl": "Aansluitcapaciteit / -nabijheid"
       },
       "pillar": "energy",
       "block": "base",
@@ -278,7 +292,8 @@
       "id": "E3",
       "label": {
         "fr": "Congestion / file d'attente réseau",
-        "en": "Grid congestion / connection queue"
+        "en": "Grid congestion / connection queue",
+        "nl": "Netcongestie / wachtrij"
       },
       "pillar": "energy",
       "block": "base",
@@ -297,7 +312,8 @@
       "id": "E4",
       "label": {
         "fr": "PUE (efficacité énergétique annoncée)",
-        "en": "PUE (announced energy efficiency)"
+        "en": "PUE (announced energy efficiency)",
+        "nl": "PUE (aangekondigde energie-efficiëntie)"
       },
       "pillar": "energy",
       "block": "project",
@@ -312,7 +328,8 @@
       "id": "E6",
       "label": {
         "fr": "Raccordabilité à un réseau de chaleur",
-        "en": "Heat-network connectability"
+        "en": "Heat-network connectability",
+        "nl": "Aansluitbaarheid op een warmtenet"
       },
       "pillar": "energy",
       "block": "base",
@@ -327,7 +344,8 @@
       "id": "E7",
       "label": {
         "fr": "Récupération de la chaleur fatale — engagement",
-        "en": "Waste-heat recovery — commitment"
+        "en": "Waste-heat recovery — commitment",
+        "nl": "Terugwinning van restwarmte — toezegging"
       },
       "pillar": "energy",
       "block": "project",
@@ -342,7 +360,8 @@
       "id": "W1",
       "label": {
         "fr": "Stress hydrique de la zone",
-        "en": "Local water stress"
+        "en": "Local water stress",
+        "nl": "Waterstress van de zone"
       },
       "pillar": "water",
       "block": "base",
@@ -361,7 +380,8 @@
       "id": "W2",
       "label": {
         "fr": "État de la masse d'eau",
-        "en": "Water body status"
+        "en": "Water body status",
+        "nl": "Toestand van het waterlichaam"
       },
       "pillar": "water",
       "block": "base",
@@ -380,7 +400,8 @@
       "id": "W3",
       "label": {
         "fr": "Pression de prélèvement du bassin",
-        "en": "Basin withdrawal pressure"
+        "en": "Basin withdrawal pressure",
+        "nl": "Onttrekkingsdruk op het stroomgebied"
       },
       "pillar": "water",
       "block": "base",
@@ -399,7 +420,8 @@
       "id": "W4",
       "label": {
         "fr": "Refroidissement + volume d'eau annoncé",
-        "en": "Cooling technology + announced water volume"
+        "en": "Cooling technology + announced water volume",
+        "nl": "Koeling + aangekondigd watervolume"
       },
       "pillar": "water",
       "block": "project",
@@ -414,7 +436,8 @@
       "id": "F1",
       "label": {
         "fr": "Recouvrement / distance zones protégées",
-        "en": "Overlap / distance to protected areas"
+        "en": "Overlap / distance to protected areas",
+        "nl": "Overlap / afstand beschermde gebieden"
       },
       "pillar": "land_biodiversity",
       "block": "base",
@@ -433,7 +456,8 @@
       "id": "F2",
       "label": {
         "fr": "Statut du sol (artificialisé / ENAF / agricole)",
-        "en": "Soil status (artificialized / natural / agricultural)"
+        "en": "Soil status (artificialized / natural / agricultural)",
+        "nl": "Status van de grond (verhard / natuur / landbouw)"
       },
       "pillar": "land_biodiversity",
       "block": "base",
@@ -452,7 +476,8 @@
       "id": "F3",
       "label": {
         "fr": "Continuités écologiques (TVB)",
-        "en": "Ecological corridors (TVB)"
+        "en": "Ecological corridors (TVB)",
+        "nl": "Ecologische verbindingen (TVB)"
       },
       "pillar": "land_biodiversity",
       "block": "base",
@@ -471,7 +496,8 @@
       "id": "F4",
       "label": {
         "fr": "Surface au sol du site",
-        "en": "Site ground footprint"
+        "en": "Site ground footprint",
+        "nl": "Grondoppervlak van de site"
       },
       "pillar": "land_biodiversity",
       "block": "project",
@@ -486,7 +512,8 @@
       "id": "F5",
       "label": {
         "fr": "Mesures ERC (éviter-réduire-compenser)",
-        "en": "Avoid-reduce-offset (ERC) measures"
+        "en": "Avoid-reduce-offset (ERC) measures",
+        "nl": "ERC-maatregelen (vermijden-verminderen-compenseren)"
       },
       "pillar": "land_biodiversity",
       "block": "project",
@@ -501,7 +528,8 @@
       "id": "F6",
       "label": {
         "fr": "Désignation à l'urbanisation dans un plan supra-communal",
-        "en": "Designated for urbanisation in a supra-municipal plan"
+        "en": "Designated for urbanisation in a supra-municipal plan",
+        "nl": "Aangewezen voor verstedelijking in een bovengemeentelijk plan"
       },
       "pillar": "land_biodiversity",
       "block": "project",
@@ -516,7 +544,8 @@
       "id": "F7",
       "label": {
         "fr": "Procédure de mise en compatibilité du document d'urbanisme en cours",
-        "en": "Planning-document compatibility procedure under way"
+        "en": "Planning-document compatibility procedure under way",
+        "nl": "Procedure tot aanpassing van het ruimtelijke plan loopt"
       },
       "pillar": "land_biodiversity",
       "block": "project",
@@ -531,7 +560,8 @@
       "id": "L1",
       "label": {
         "fr": "Profil socio-économique de la commune",
-        "en": "Municipality socio-economic profile"
+        "en": "Municipality socio-economic profile",
+        "nl": "Sociaal-economisch profiel van de gemeente"
       },
       "pillar": "local_impact",
       "block": "base",
@@ -550,7 +580,8 @@
       "id": "L2",
       "label": {
         "fr": "Capacité d'absorption (taille du projet vs commune)",
-        "en": "Absorption capacity (project size vs municipality)"
+        "en": "Absorption capacity (project size vs municipality)",
+        "nl": "Absorptievermogen (project vs gemeente)"
       },
       "pillar": "local_impact",
       "block": "base",
@@ -569,7 +600,8 @@
       "id": "L3",
       "label": {
         "fr": "Aléa technologique / Seveso environnant",
-        "en": "Technological hazard / nearby Seveso sites"
+        "en": "Technological hazard / nearby Seveso sites",
+        "nl": "Technologisch risico / Seveso in de omgeving"
       },
       "pillar": "local_impact",
       "block": "base",
@@ -588,7 +620,8 @@
       "id": "L4",
       "label": {
         "fr": "Emplois annoncés",
-        "en": "Announced jobs"
+        "en": "Announced jobs",
+        "nl": "Aangekondigde banen"
       },
       "pillar": "local_impact",
       "block": "project",
@@ -603,7 +636,8 @@
       "id": "L5",
       "label": {
         "fr": "Retombées fiscales annoncées",
-        "en": "Announced tax revenue"
+        "en": "Announced tax revenue",
+        "nl": "Aangekondigde belastingopbrengsten"
       },
       "pillar": "local_impact",
       "block": "project",
@@ -618,7 +652,8 @@
       "id": "L6",
       "label": {
         "fr": "Niveau de contestation observé",
-        "en": "Observed level of opposition"
+        "en": "Observed level of opposition",
+        "nl": "Waargenomen verzet"
       },
       "pillar": "local_impact",
       "block": "base",
@@ -633,7 +668,8 @@
       "id": "L7",
       "label": {
         "fr": "Position des élus (faits votés uniquement)",
-        "en": "Elected officials' position (voted facts only)"
+        "en": "Elected officials' position (voted facts only)",
+        "nl": "Standpunt van de bestuurders (alleen gestemde feiten)"
       },
       "pillar": "local_impact",
       "block": "base",
@@ -648,7 +684,8 @@
       "id": "T1",
       "label": {
         "fr": "Concertation / consentement / gouvernance (proxies procéduraux)",
-        "en": "Consultation / consent / governance (procedural proxies)"
+        "en": "Consultation / consent / governance (procedural proxies)",
+        "nl": "Overleg / instemming / governance (procedurele proxy’s)"
       },
       "pillar": "transparency_governance",
       "block": "process",
@@ -663,7 +700,8 @@
       "id": "T2",
       "label": {
         "fr": "Transparence documentaire / disponibilité du dossier",
-        "en": "Documentation transparency / file availability"
+        "en": "Documentation transparency / file availability",
+        "nl": "Documentaire transparantie / beschikbaarheid van het dossier"
       },
       "pillar": "transparency_governance",
       "block": "process",

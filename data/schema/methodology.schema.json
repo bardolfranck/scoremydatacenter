@@ -212,6 +212,7 @@
   },
   "$defs": {
     "bilingual_label": {
+      "description": "Un libellé par langue. Le nom dit « bilingual » pour des raisons d'historique : il en admet autant qu'il y a de langues déclarées dans site/src/content/langues.ts, et un test fait le pont entre les deux listes. Seuls `fr` et `en` sont EXIGÉS : une langue en cours d'écriture a le droit d'être incomplète, c'est `LANGUES_VIVANTES` qui décide de ce qui est servi.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -224,6 +225,10 @@
           "minLength": 1
         },
         "en": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nl": {
           "type": "string",
           "minLength": 1
         }

@@ -19,8 +19,10 @@
 // décimale, ordre de date) — ce ne sont pas des mots à traduire, et une langue nouvelle n'a
 // rien à en dire. Ils restent en code, dans le gabarit.
 
-export const LANGUES_FICHE = ["fr", "en"] as const;
-export type LangueFiche = (typeof LANGUES_FICHE)[number];
+// 🔴 CETTE TABLE DÉCLARAIT SA PROPRE LISTE DE LANGUES (`LANGUES_FICHE`), à côté de celle de
+// `content/langues.ts`. Une liste à deux endroits ment : ouvrir le néerlandais demandait de
+// la rallonger ici AUSSI, et rien ne l'aurait signalé. Retirée le 2026-11-02 au moment
+// d'ajouter `nl` — la source est unique.
 
 const FR = {
   tagline: "Observatoire indépendant",
@@ -411,4 +413,191 @@ const EN: typeof FR = {
 
 /** La table servie au gabarit. `FICHE[lang]` remplace le littéral que chaque
  *  page portait en double. */
-export const FICHE: Record<LangueFiche, typeof FR> = { fr: FR, en: EN };
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  tagline: "Onafhankelijk observatorium",
+  metaDescription: "Fiche {name} ({municipality}): cijfer van de site en cijfer project & proces A–E, subscores per pijler, gedocumenteerde indicatoren — onafhankelijk observatorium.",
+  kicker: "Projectfiche",
+  fleet: {
+    grid_saturated: "Deze site hoort bij de {pct} van het datacenterpark die is aangesloten op een al vol onderstation.",
+    water_stress_high: "Deze site hoort bij de {pct} van het datacenterpark die in een stroomgebied met hoge waterstress staat.",
+    soil_artificialized: "Deze site hoort bij de {pct} van het datacenterpark die op al verharde grond is gebouwd.",
+    cta: "Kerncijfers van het datacenterpark →",
+  },
+  status: { announced: "Aangekondigd", permitting: "In behandeling (vergunning)", under_construction: "In aanbouw", operational: "In bedrijf", unknown: "Status niet vastgesteld" },
+  statusCheck: {
+    verified: "status geverifieerd",
+    networksSingular: "netwerk geïnterconnecteerd",
+    networksPlural: "netwerken geïnterconnecteerd",
+    verifiedTip: "Automatisch bevestigd op {date}: {n} netwerk(en) geïnterconnecteerd in dit gebouw (bron: PeeringDB). Wekelijks gecontroleerd.",
+    unverified: "status niet geverifieerd",
+    unverifiedTip: "Status uit publieke bronnen, nog niet bevestigd door een onafhankelijk signaal. Wekelijks automatisch gecontroleerd.",
+  },
+  operatorLabel: "Exploitant:",
+  operatorFromRegister: "Automatisch geïdentificeerd in het Franse ondernemingsregister (SIRENE)",
+  developerDeclared: "opgegeven activiteit:",
+  developerRegister: "ondernemingsregister",
+  dwellLabel: "Dichtstbijzijnde woningen:",
+  dwellBuildingShort: "woongebouw (OpenStreetMap)",
+  dwellBuilding: "Afstand tot het dichtstbijzijnde woongebouw in OpenStreetMap, gemeten vanaf de coördinaten van de site (een benadering, nooit een geluidsmeting).",
+  dwellLanduseShort: "woongebied (OpenStreetMap)",
+  dwellLanduse: "Hier is nog geen woongebouw in kaart gebracht: de afstand mikt op het dichtstbijzijnde woongebied, minder precies dan een huis.",
+  powerUnknown: "vermogen niet meegedeeld",
+  powerEstimated: "geschat",
+  commissioning: "ingebruikname",
+  siteScore: "Cijfer van de site",
+  ppScore: "Cijfer project & proces",
+  naLabel: "onvoldoende gegevens",
+  reserved: "A alleen op bewijs — geleverd in exploitatie",
+  confidence: { high: "vertrouwen: hoog", medium: "vertrouwen: gemiddeld", low: "vertrouwen: laag" },
+  confidenceNote: { high: "ruim gedocumenteerd dossier", medium: "gedeeltelijk gedocumenteerd dossier", low: "dun gedocumenteerd dossier" },
+  confGlobal: "Globaal documentair vertrouwen",
+  openFullMap: "Open de grote kaart ↗",
+  miniMapAria: "Kaart gecentreerd op deze site",
+  miniMapTitle: "Gebied & buren",
+  satCaption: "Luchtbeeld — {municipality}. Bron:",
+  satAlt: "Luchtbeeld van de site {name}",
+  satStatusChip: { announced: "Geplande site", permitting: "Geplande site", under_construction: "In aanbouw" },
+  satStatusNote: "het satellietbeeld kan ouder zijn dan het project: het terrein dat u hier ziet, draagt het datacenter mogelijk nog niet",
+  synthEmptyNote: "Dun gedocumenteerd dossier ({pct}% documentair vertrouwen): we beoordelen het onbekende niet, en we schrijven geen totaalbeeld zonder voldoende feiten. Deze lezing kan evolueren zodra nieuwe publieke of verifieerbare informatie beschikbaar komt.",
+  share: "Delen",
+  shareOn: "Delen op",
+  shareMail: "Delen per e-mail",
+  copyLink: "Link kopiëren",
+  copied: "Link gekopieerd",
+  download: "Download de score als afbeelding",
+  signal: "Een fout melden",
+  signalSubject: "Correctie of weerwoord",
+  signalBody: "Betrokken fiche: {url}\nAard van het verzoek: [ ] Correctie van een gegeven [ ] Weerwoord van de exploitant [ ] Anders\nBetrokken informatie:\nVoorgestelde correctie of weerwoord:\nBron of bewijsstuk:\nNaam en hoedanigheid van de aanvrager:\nEventuele band met het project of de exploitant:\n",
+  signalNote: "Corrigeer een feit, mét de bron erbij — <strong>bewijs is vereist</strong>.",
+  methodology: "Methodologie",
+  portraitLink: "Portret van de site →",
+  portraitLinkSub: "dezelfde gegevens, geschreven voor een bestuurder of een omwonende",
+  subscoresTitle: "Subscores per pijler",
+  subscoresSub: "Een pijler mengt het ondergane en het gekozene; een cijfer is niet het gemiddelde van de pijlers.",
+  whyAria: "Waarom het cijfer niet uit de pijlers volgt",
+  whyTip: "De twee cijfers (site, project) splitsen de indicatoren naargelang ze ondergaan of gekozen zijn — over alle thema's heen, gewogen. De pijlers groeperen elk thema en mengen daarbij ondergaan en gekozen. De twee indelingen overlappen niet: het cijfer van de site laat zich niet lezen als het gemiddelde van de getoonde pijlers.",
+  legendDoc: "documentatie beschikbaar",
+  synthTitle: "Synthese van het project",
+  synthSub: "de samenhang achter de letters",
+  synthProjectTag: "Project & proces",
+  synthSiteTag: "Site",
+  quoteOpen: "‘",
+  quoteClose: "’",
+  indicatorsTitle: "Gevolgde indicatoren",
+  th: { indicator: "Indicator", value: "Waarde", reading: "Lezing", state: "Status", source: "Bron" },
+  explanation: "Toelichting",
+  notDisclosed: "Niet meegedeeld",
+  pillarBasis: { one: "slechts 1 gepubliceerde indicator:", some: "{k} van de {n} indicatoren gepubliceerd" },
+  pillarMissing: "Ontbreken:",
+  pillarScope: {
+    national: "Nationaal cijfer — hetzelfde voor alle beoordeelde sites in dit land ({pays}).",
+    thin: "Te weinig beoordeelde sites in dit land om vast te stellen of dit cijfer het onderscheidt.",
+  },
+  procedureSeeSource: "Procedure (zie bron)",
+  notApplicable: "niet van toepassing",
+  indStatus: {
+    measured: "Gemeten", announced: "Aangekondigd", estimated: "Geschat",
+    missing: "Afwezig in het dossier", not_collected: "Nog niet gezocht",
+  },
+  indStatusHint: {
+    missing: "De informatie is in het publieke dossier gezocht en staat er niet in. Ze telt als een nul in het cijfer.",
+    not_collected: "We hebben deze informatie nog niet gezocht. Ze is uit de berekening gehaald en benadeelt de site niet.",
+  },
+  accessed: "geraadpleegd op",
+  archived: "gearchiveerd",
+  directionHint: { lower_is_better: "Hoe lager de waarde, hoe beter.", higher_is_better: "Hoe hoger de waarde, hoe beter." },
+  hintDedupe: "hoe beter",
+  sense: { good: "gunstig", mid: "gemiddeld", bad: "ongunstig" },
+  proxy: {
+    inquiryHeld: "Inspraakprocedure gehouden",
+    inquiryNone: "Geen inspraakprocedure",
+    envOpinion: {
+      favorable: "Advies van de milieuautoriteit: gunstig",
+      favorable_with_reservations: "Advies van de milieuautoriteit: gunstig met voorbehoud",
+      unfavorable: "Advies van de milieuautoriteit: ongunstig",
+      none: "Advies van de milieuautoriteit: geen vereist of uitgebracht",
+    },
+    cndpYes: "Aanhangig gemaakt bij de CNDP",
+    cndpNo: "Niet aanhangig gemaakt bij de CNDP",
+    appeals: "Beroepen bij de rechter:",
+    council: {
+      favorable: "Besluiten van de gemeenteraad: gunstig",
+      mixed: "Besluiten van de gemeenteraad: gemengd",
+      unfavorable: "Besluiten van de gemeenteraad: ongunstig",
+      none_recorded: "Besluiten van de gemeenteraad: geen geregistreerd",
+    },
+  },
+  opTitle: "Weerwoord van de exploitant",
+  opNone: "De exploitant kan ons een weerwoord over deze fiche bezorgen. Zodra een weerwoord is ontvangen en publiceerbaar is, verschijnt het hier, met duidelijke naamsvermelding en datum.",
+  opNote: "Een feitelijke fout? Gebruik ‘Een fout melden’ en voeg een bron of bewijsstuk toe.",
+  dataStateTitle: "Status van de beschikbare gegevens",
+  dataState: "{n} indicatoren gevolgd · {measured} gemeten · {announced} aangekondigd (niet geverifieerd) · {missing} afwezig in het dossier · {notCollected} nog niet gezocht.",
+  contestationTitle: "Verzet & signalen",
+  contestationSub: "Gedocumenteerde feiten — tellen niet mee in het cijfer.",
+  press: "Pers: ",
+  selfReported: "zelfgerapporteerd",
+  historyTitle: "Verloop van het cijfer",
+  histSite: "Cijfer van de site op deze datum",
+  histPp: "Cijfer project & proces op deze datum",
+  scoredOn: "Beoordeeld op",
+  shareText: "{name} — Cijfer van de site: {grade}",
+  shareSuffix: ", volgens ScoreMyDataCenter",
+  related: {
+    title: "Andere sites om te vergelijken",
+    sub: "Zelfde exploitant, {maille}, of gewoon de dichtstbijzijnde — langs dezelfde meetlat gelegd.",
+    subMailleFR: "zelfde departement",
+    subMaille: "zelfde regio",
+    seeAll: "Bekijk de volledige ranglijst →",
+    relation: { operator: "zelfde exploitant:", region: "zelfde regio", regionFR: "zelfde departement", nearby: "op {km} km", nearbyUnder: "op minder dan een kilometer" },
+  },
+
+  notScoredFlag: "niet beoordeeld · contextueel feit",
+  lettersLink: "Wat de letters waard zijn →",
+  whyLink: "waarom dit cijfer?",
+  breadcrumbMap: "Kaart",
+  schemaOperator: "Exploitant",
+  idx: {
+    line: "Deze site ligt in {country} — site-index van het land: {grade}{reserved} ({score}).",
+    reserved: " · A alleen op bewijs",
+    cta: "Bekijk de landenindex",
+  },
+  prov: {
+    probable: "waarschijnlijk cijfer: {central}",
+    window: ", venster {band}",
+    narrowing: "voorlopig · wordt scherper met de data",
+  },
+  seo: {
+    probable: "waarschijnlijk cijfer {central}",
+    pending: "cijfer in afwachting",
+    provisional: "voorlopig cijfer {band}",
+    insufficient: "onvoldoende gegevens",
+    grade: "cijfer {grade}",
+    tail: "gedocumenteerde indicatoren, onafhankelijk observatorium.",
+  },
+  ctxMap: {
+    aria: "Open de contextkaart op volle grootte",
+    alt: "Geannoteerd luchtbeeld van {name} in {municipality}: terreinomtrek, waterloop, elektriciteitsstation en dichtstbijzijnde woningen, met de gemeten afstanden.",
+  },
+  probable: {
+    aria: "Waarschijnlijk cijfer",
+    title: "Waarschijnlijk cijfer, breed venster",
+    lead: "Dit project is niet in bedrijf: we publiceren een waarschijnlijk cijfer {central} en de bandbreedte waarbinnen het nog kan bewegen {band}. Het waarschijnlijke cijfer is berekend op uitsluitend de al gedocumenteerde indicatoren; de bandbreedte zegt wat de ontbrekende indicatoren nog kunnen veranderen. Ze is hier breder dan gewoonlijk — dat is de maat van wat ontbreekt, geen twijfel over de berekening. Ze wordt smaller naarmate het dossier zich vult.",
+  },
+  pending: {
+    label: "Cijfer in afwachting",
+    lead: "Deze site wordt gevolgd maar nog niet publiek beoordeeld: de sitegegevens zijn te dun voor een solide cijfer op naam, en een cijfer wordt pas gepubliceerd na herlezing en recht op weerwoord. De feiten hieronder zijn gedocumenteerd; ze vormen geen oordeel.",
+  },
+  desal: {
+    title: "Water & ontzilting — hoe u deze site leest",
+    body: "Israël voorziet grotendeels in zijn water met ontzilting. De waterstress van het stroomgebied (WRI Aqueduct) wordt daarom niet gelijkgesteld aan een zekere onttrekking aan de lokale voorraad door deze site. Maar de impact is niet uitgewist, hij is verplaatst: ontzilting verbruikt veel elektriciteit — op een sterk koolstofhoudend net (gas) — en loost pekel (mariene impact nog niet gekwantificeerd). Geen vrijgeleide: de pijler energie blijft staan, de externaliteit wordt gesignaleerd. Deze lezing evolueert op bewijs over de waterbron en de koeling van de site.",
+  },
+};
+
+export const FICHE: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

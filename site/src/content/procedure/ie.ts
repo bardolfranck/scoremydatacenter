@@ -31,6 +31,7 @@ export const IE: ProcedureCountry = {
     authority: {
       fr: "l'autorité locale d'urbanisme ; en appel, An Coimisiún Pleanála (ex-An Bord Pleanála). Le recours juridictionnel se porte devant la High Court.",
       en: "the local planning authority; on appeal, An Coimisiún Pleanála (formerly An Bord Pleanála). Judicial review goes to the High Court.",
+      nl: "de lokale planningsautoriteit; in beroep An Coimisiún Pleanála (voorheen An Bord Pleanála). Het beroep bij de rechter (judicial review) loopt via de High Court.",
     },
     windows: {},
     deadlines: [
@@ -38,6 +39,7 @@ export const IE: ProcedureCountry = {
         text: {
           fr: "Huit semaines pour engager un recours juridictionnel (judicial review) devant la High Court, à compter de la décision. La High Court peut accorder une prolongation pour un motif valable et suffisant.",
           en: "Eight weeks to bring a judicial review before the High Court, from the date of the decision. The High Court may grant an extension for good and sufficient reason.",
+          nl: "Acht weken om een rechterlijke toetsing (judicial review) te starten bij de High Court, te rekenen vanaf het besluit. De High Court kan een verlenging toestaan om een geldige en toereikende reden.",
         },
         cite: "Planning and Development Act 2024 (No. 34 of 2024), s. 281(1)",
         url: "https://www.irishstatutebook.ie/eli/2024/act/34/section/281/enacted/en/html",

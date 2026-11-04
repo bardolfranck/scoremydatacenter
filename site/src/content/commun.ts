@@ -15,7 +15,7 @@
 // accueille tout ce qui pourrait servir ailleurs devient un fourre-tout, et on ne sait plus
 // quelle page on casse en le touchant.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   // Le titre SERP nomme la CATÉGORIE et la COMMUNE : « data center Fouju » est la requête
@@ -29,13 +29,37 @@ const FR = {
   // une propriété de la langue — comme la virgule décimale. Elle vit ici et non en code,
   // pour qu'une langue nouvelle la déclare au lieu d'aller modifier un gabarit.
   colon: " : ",
+  // Même nature que le deux-points : le français met une espace avant le point
+  // d'interrogation, l'anglais et le néerlandais non. C'était écrit en dur dans la fonction
+  // qui compose les questions du portrait — avec les deux langues énumérées à la main, donc
+  // la troisième perdue en silence [[absence-ressemble-a-zero]].
+  interrogation: " ?",
 };
 
 const EN: typeof FR = {
   place: "data center in {municipality}",
   placeFallback: "data center",
   colon: ": ",
+  interrogation: "?",
+};
+
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  // Le titre SERP nomme la CATÉGORIE et la COMMUNE — en néerlandais la requête du
+  // riverain est « datacenter Almere » : datacenter EN UN MOT (lexique du rapport figé).
+  place: "datacenter in {municipality}",
+  placeFallback: "datacenter",
+  // Pas d'espace avant le deux-points ni avant le point d'interrogation en néerlandais
+  // (convention typographique NL, la même que l'anglais).
+  colon: ": ",
+  interrogation: "?",
 };
 
 /** Les chaînes partagées : `COMMUN[lang]`. */
-export const COMMUN: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const COMMUN: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

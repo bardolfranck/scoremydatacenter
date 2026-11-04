@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   title: "Glossaire des data centers — ScoreMyDataCenter",
@@ -164,5 +164,86 @@ const EN: typeof FR = {
   ],
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  title: "Glossarium van datacenters — ScoreMyDataCenter",
+  metaDescription: "Het vocabulaire van datacenters eenvoudig uitgelegd: PUE, ISO 30134, waterstress, bodemverharding, maatschappelijke acceptatie, verzet… De woorden van de sector en die van onze territoriale lens.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "Glossarium",
+  intro:
+    "<p>De woorden die u nodig hebt om een datacenter te lezen. Die van de <strong>sector</strong> (wat zij al meet) en die van onze <strong>territoriale lens</strong> (wat alleen wij aggregeren). Elke definitie is kort; technische termen verwijzen naar de pagina die ze uitwerkt.</p>",
+  legendAria: "Families van termen",
+  fam: { filiere: "🏭 Sector", territoire: "🌍 Gebied", secteur: "📖 Markt" },
+  dir: { lower: "↓ lager = beter", higher: "↑ hoger = beter" },
+  backHref: "/nl/",
+  backLabel: "← Terug naar de startpagina",
+  entries: [
+    { term: "Maatschappelijke acceptatie", slug: "acceptabilite", fam: "territoire",
+      def: "<p>Het vermogen van een project om zonder grote wrijving in zijn gebied te passen — water, bodem, omwonenden, governance. Dat is wat wij beoordelen, van A tot E. De sector meet de efficiëntie van de machine; wij meten de maatschappelijke acceptatie.</p>",
+      more: { href: "/nl/methodologie/", label: "Onze methode" } },
+    { term: "Bodemverharding", slug: "artificialisation", fam: "territoire",
+      def: "<p>De omzetting van natuurlijke of landbouwgrond in verhard oppervlak (bebouwing, parkeerterrein, wegen). Een datacenter op maagdelijke grond weegt zwaarder in het bodemcijfer dan een project op een al verhard terrein.</p>" },
+    { term: "Restwarmte", slug: "chaleur-fatale", fam: "filiere",
+      def: "<p>De warmte die de servers afgeven. Verloren als ze wordt weggekoeld, benut als ze gebouwen of een warmtenet verwarmt. De sector volgt die via de indicator ERF.</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "Colocatie (colo)", slug: "colocation", fam: "secteur",
+      def: "<p>Een datacenter dat de servers van meerdere klanten huisvest, tegenover het ‘captieve’ datacenter van één onderneming. Het grootste deel van het Europese park is colocatie.</p>" },
+    { term: "Documentair vertrouwen", slug: "confiance-documentaire", fam: "territoire",
+      def: "<p>Onze betrouwbaarheidsindex van de bronnen achter een cijfer. Een cijfer verschijnt er nooit zonder; onder 40% dekking schrijven we ‘onvoldoende gegevens’. Het onbekende beoordelen we niet.</p>",
+      more: { href: "/nl/methodologie/", label: "Onze methode" } },
+    { term: "Verzet", slug: "contestation", fam: "territoire",
+      def: "<p>Het waarneembare publieke verzet tegen een project: petities, actiegroepen, beroepen, moratoria. Wij noteren het <em>feit</em> dat het bestaat en gedocumenteerd is — nooit een intentie die iemand wordt toegedicht.</p>" },
+    { term: "DCp", slug: "dcp", fam: "filiere",
+      def: "<p>Data Center Performance (ETSI-norm). Een label van <strong>A tot I</strong>, zoals het energielabel van een koelkast — maar het beoordeelt de efficiëntie van de machine, niet de acceptatie van de site.</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "ENAF", slug: "enaf", fam: "territoire",
+      def: "<p>Espaces Naturels, Agricoles et Forestiers — de Franse categorie van natuur-, landbouw- en bosgronden. Dit zijn de gronden die verharding opsoupeert; hun behoud is een publiek doel (het Franse ‘zéro artificialisation nette’).</p>" },
+    { term: "Inspraak (enquête publique)", slug: "enquete-publique", fam: "territoire",
+      def: "<p>De reglementaire procedure waarmee omwonenden vóór de vergunning over een project worden geraadpleegd — in Frankrijk de <em>enquête publique</em>, in Nederland de terinzagelegging met zienswijzen, in Vlaanderen het openbaar onderzoek. Het verloop, de kwaliteit en het vervolg ervan voeden de pijler governance.</p>" },
+    { term: "Hyperscaler", slug: "hyperscaler", fam: "secteur",
+      def: "<p>Een exploitant van zeer grote datacenters, doorgaans de reuzen van cloud en internet. Hun sites bundelen elektrische vermogens vergelijkbaar met die van een stad.</p>" },
+    { term: "ICPE", slug: "icpe", fam: "territoire",
+      def: "<p>Installation Classée pour la Protection de l'Environnement — de Franse categorie van vergunningsplichtige milieubelastende inrichtingen. Het regime waar de grote datacenters in Frankrijk onder vallen; het dossier ervan is een publieke bron van eerste orde.</p>" },
+    { term: "ISO/IEC 30134", slug: "iso-30134", fam: "filiere",
+      def: "<p>De reeks internationale normen die de officiële indicatoren van het datacenter vastlegt (PUE, REF…). De taal die gezag heeft — en waarop wij onze pijler energie laten steunen.</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "Moratorium", slug: "moratoire", fam: "territoire",
+      def: "<p>De tijdelijke opschorting van projecten waartoe een lokale overheid besluit, om eerst spelregels op te stellen. Een sterk signaal van lokale spanning rond de komst van datacenters.</p>" },
+    { term: "Natura 2000 · ZNIEFF", slug: "natura-2000", fam: "territoire",
+      def: "<p>Beschermde natuurgebieden (Natura 2000) of om hun ecologische waarde geïnventariseerde zones (ZNIEFF, Frankrijk). De nabijheid van zo'n gebied weegt mee in het cijfer bodem &amp; biodiversiteit.</p>" },
+    { term: "PPA", slug: "ppa", fam: "filiere",
+      def: "<p>Power Purchase Agreement: een rechtstreeks stroomafnamecontract, vaak hernieuwbaar, tussen een exploitant en een producent. Een echte hefboom — maar aangekondigd ≠ gemeten zolang het niet bewezen is.</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "PUE", slug: "pue", fam: "filiere", dir: "lower",
+      def: "<p>Power Usage Effectiveness: het energierendement van de infrastructuur. Dicht bij 1 = zeer efficiënt; 2,0 = het gemiddelde van het Franse datacenterpark; 1,28 = de nieuwste sites. De koning onder de indicatoren van de sector (norm ISO/IEC 30134-2).</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "REF", slug: "ref", fam: "filiere", dir: "higher",
+      def: "<p>Renewable Energy Factor (norm ISO/IEC 30134-3): het aandeel hernieuwbare energie dat het datacenter verbruikt, tussen 0 en 1.</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "Sitecijfer · projectcijfer", slug: "score-site-projet", fam: "territoire",
+      def: "<p>Onze twee cijfers. Het <strong>sitecijfer</strong> beoordeelt de context die het project <em>ondergaat</em> (water, net, bodem); het <strong>cijfer project &amp; proces</strong> beoordeelt wat de exploitant <em>kiest</em>. Bewijs verhoogt het tweede, nooit het eerste.</p>",
+      more: { href: "/nl/methodologie/", label: "Onze methode" } },
+    { term: "Seveso", slug: "seveso", fam: "territoire",
+      def: "<p>De classificatie van sites met een groot industrieel risico. Een Seveso-site in de buurt van een project weegt mee in zijn cijfer voor lokale impact.</p>" },
+    { term: "Waterstress", slug: "stress-hydrique", fam: "territoire",
+      def: "<p>De druk op de watervoorraad van een gebied. Niet te verwarren met het waterverbruik van de machine (de WUE): wij meten de <em>druk op de lokale voorraad</em>, niet alleen de dorst van de site.</p>" },
+    { term: "Tier (Uptime)", slug: "tier", fam: "secteur",
+      def: "<p>Een classificatie (I tot IV) van de betrouwbaarheid en redundantie van een datacenter. Hij zegt iets over de bedrijfszekerheid, niet over de milieu-impact.</p>" },
+    { term: "TVB", slug: "tvb", fam: "territoire",
+      def: "<p>Trame Verte et Bleue — het Franse netwerk van ecologische verbindingen (corridors, biodiversiteitsreservoirs), vergelijkbaar met de groenblauwe dooradering, dat een ontwikkeling niet mag doorbreken.</p>" },
+    { term: "WUE", slug: "wue", fam: "filiere", dir: "lower",
+      def: "<p>Water Usage Effectiveness: het water dat het datacenter per eenheid IT-energie verbruikt. Een maat aan de machinekant — die wij aanvullen met de waterstress van het gebied.</p>",
+      more: { href: "/nl/normen/", label: "De normen" } },
+    { term: "ZRE", slug: "zre", fam: "territoire",
+      def: "<p>Zone de Répartition des Eaux — een Franse zone waar de watervoorraad al chronisch tekortschiet en verscherpte verdeelregels gelden. Een project dat zich er vestigt, begint met een achterstand op de pijler water.</p>" },
+  ],
+};
+
 /** La table servie au gabarit : `GLOSSAIRE[lang]`. */
-export const GLOSSAIRE: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const GLOSSAIRE: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

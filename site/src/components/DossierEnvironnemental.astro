@@ -45,6 +45,7 @@ import scales from "@phosphor-icons/core/assets/regular/scales.svg?raw";
 import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 import { DOSSIER } from "../content/dossier";
 import type { Langue } from "../content/langues";
+import { libelleFait } from "../config/indicatorValues";
 
 const { dossier, lang = "fr" } = Astro.props;
 const avis = (dossier?.opinions ?? []).filter((a: any) => a?.facts?.length || a?.authority_recommendations?.length);
@@ -89,9 +90,13 @@ const DATE = (d?: string) => {
   const [a, m, j] = iso ? [iso[1], iso[2], iso[3]] : [jma![3], jma![2], jma![1]];
   return t.datePattern.replace("{a}", a).replace("{m}", m).replace("{j}", j);
 };
-const NUM = (v: any) => typeof v === "number"
+// 🔴 `String(v)` publiait la CLÉ DU MOTEUR quand la valeur est une chaîne : « Carburant des
+// groupes fuel_oil_or_diesel », sur 43 pages servies, dans les trois langues. Ce qui va pour
+// un nombre ne va pas pour une catégorie. Le libellé se lit dans `VALEURS_DOSSIER` ; sans
+// libellé, la valeur sort brute — mais c'est alors un trou qui se compte, pas un oubli.
+const NUM = (v: any, indicateur?: string) => typeof v === "number"
   ? v.toLocaleString(loc, { maximumFractionDigits: 2 })
-  : String(v ?? "");
+  : (typeof v === "string" ? libelleFait(indicateur ?? "", v, lang) : String(v ?? ""));
 // Nettoyage d'AFFICHAGE seulement, jamais de sens : la phrase stockée reste celle du PDF.
 // On enlève la puce de liste et les glyphes de police privée que pypdf rend en carré, et le
 // « (p. » que le découpage de phrase laisse pendre en fin d'extrait.
@@ -184,7 +189,7 @@ const parPhrase = (vals: any[]) => {
   const out: any[] = [];
   for (const x of vals) {
     const ph = PHRASE(x.evidence_excerpt);
-    const v = `${NUM(x.value)}${x.unit ? " " + x.unit : ""}`;
+    const v = `${NUM(x.value, x.indicator)}${x.unit ? " " + x.unit : ""}`;
     const g = out.find((o: any) => o.evidence_excerpt === ph);
     if (g) { if (!g.valeurs.includes(v)) g.valeurs.push(v); }
     else out.push({ evidence_excerpt: ph, page_pdf: x.page_pdf, valeurs: [v] });
@@ -196,7 +201,7 @@ const prendre = (facts: any[], ids: string[]) =>
   ids.flatMap((id) => facts.filter((f: any) => f.indicator === id));
 // « min–max » ou valeur ferme : les deux formes sortent de l'extraction, aucune n'est arrondie.
 const borne = (b: any) => !b ? null
-  : (b.value !== undefined && b.value !== null ? NUM(b.value)
+  : (b.value !== undefined && b.value !== null ? NUM(b.value, b.indicator)
      : (b.min !== undefined ? `${NUM(b.min)} – ${NUM(b.max)}` : null));
 ---
 
@@ -244,8 +249,8 @@ const borne = (b: any) => !b ? null
     const ph = PHRASE(n.evidence_excerpt);
     if (phrasesDeja.has(ph)) continue;
     const g = niveaux.find((x: any) => x.evidence_excerpt === ph);
-    if (g) g.valeurs.push(`${NUM(n.value)} ${n.unit ?? ""}`.trim());
-    else niveaux.push({ evidence_excerpt: ph, page_pdf: n.page_pdf, valeurs: [`${NUM(n.value)} ${n.unit ?? ""}`.trim()] });
+    if (g) g.valeurs.push(`${NUM(n.value, n.indicator)} ${n.unit ?? ""}`.trim());
+    else niveaux.push({ evidence_excerpt: ph, page_pdf: n.page_pdf, valeurs: [`${NUM(n.value, n.indicator)} ${n.unit ?? ""}`.trim()] });
   }
   const recos = avis.flatMap((a: any, i: number) => marque(a.authority_recommendations, a, i));
   // Un indicateur qui revient plusieurs fois dans un même avis (GES par poste, puissances
@@ -275,7 +280,7 @@ const borne = (b: any) => !b ? null
   // l'écran mais disparaît au copier-coller et n'existe pas pour un lecteur d'écran, qui lisait
   // « 30personnes ». Insécable parce qu'une valeur ne se sépare pas de son unité en fin de ligne.
   const Val = (x: any) => (
-    <>{NUM(x.value)}{x.unit ? <>{" "}<span class="de-u">{x.unit}</span></> : null}</>
+    <>{NUM(x.value, x.indicator)}{x.unit ? <>{" "}<span class="de-u">{x.unit}</span></> : null}</>
   );
   // Une valeur qui n'est pas la même d'un dossier à l'autre est SIGNALÉE, jamais interprétée.
   //

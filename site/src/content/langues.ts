@@ -11,3 +11,83 @@
 
 export const LANGUES_VIVANTES = ["fr", "en"] as const;
 export type Langue = (typeof LANGUES_VIVANTES)[number];
+
+// Les langues EN PRÉPARATION : leurs tables existent, leurs clés sont gardées comme celles
+// des langues vivantes, mais aucune page ne les sert. C'est l'état dans lequel une langue
+// s'écrit — et il est DÉCLARÉ, pas implicite, pour qu'on sache ce qui est en cours.
+//
+// 🔴 Faire passer une langue d'ici à `LANGUES_VIVANTES` est la décision qui la met en ligne.
+// `test_une_langue_ne_devient_vivante_que_traduite` l'empêche tant que ses valeurs sont
+// encore celles du français : sans ce garde, ouvrir le néerlandais publierait 740 chaînes
+// françaises sur des pages néerlandaises — exactement la façon dont l'anglais a décroché,
+// mais dans l'autre sens et en une seule fois.
+export const LANGUES_EN_PREPARATION = ["nl"] as const;
+
+/** Toutes les langues qui ont une table, servies ou non. */
+export const LANGUES_DECLAREES = [...LANGUES_VIVANTES, ...LANGUES_EN_PREPARATION] as const;
+export type LangueDeclaree = (typeof LANGUES_DECLAREES)[number];
+
+// 🔴 OÙ VIT CHAQUE LANGUE, déclaré une fois. Le layout disait `lang === "en" ? "/" : "/fr/"` :
+// un ternaire binaire, juste tant qu'il n'y a que deux langues, et qui renvoie le lecteur
+// néerlandais vers l'accueil FRANÇAIS dès qu'il y en a trois. Un ternaire ne dit pas qu'il
+// ignore un cas, il en choisit un [[absence-ressemble-a-zero]].
+export const RACINE: Record<LangueDeclaree, string> = { en: "/", fr: "/fr/", nl: "/nl/" };
+
+// 🔴 CE QUI RESTE À TRANCHER AVANT QUE LE NÉERLANDAIS SOIT SERVI : `altHref`/`altLabel`.
+// Tout le site suppose DEUX langues — « l'autre langue », au singulier. Chaque page passe un
+// `altHref` unique, et `Base.astro` construit son cluster hreflang sur cette paire. À trois
+// langues, « l'autre » devient « les autres » : c'est un sélecteur, pas un lien, et le
+// hreflang doit lister les trois. Ce n'est pas un détail d'affichage — un hreflang qui ment
+// déclare à Google qu'une page néerlandaise est la version anglaise d'une page française.
+// Décision de structure : elle appartient à Franck, pas au harnais de préviz.
+
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// LE PLURIEL EST UNE RÈGLE DE LANGUE, PAS UN `s` À COLLER
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// Le français met zéro au SINGULIER (« 0 site »), l'anglais et le néerlandais au PLURIEL
+// (« 0 sites », « 0 sites »). Un `n > 1 ? "sites" : "site"` dans un gabarit n'est donc pas
+// une commodité : c'est la règle du français, appliquée au néerlandais, en silence. La règle
+// se déclare par langue ; les FORMES vivent dans la table de chaînes, avec le reste de la
+// prose, parce que ce sont des mots.
+export type FormePluriel = "un" | "autres";
+
+export const REGLE_PLURIEL: Record<LangueDeclaree, (n: number) => FormePluriel> = {
+  fr: (n) => (Math.abs(n) < 2 ? "un" : "autres"),
+  en: (n) => (Math.abs(n) === 1 ? "un" : "autres"),
+  nl: (n) => (Math.abs(n) === 1 ? "un" : "autres"),
+};
+
+/**
+ * La forme à servir pour `n`, choisie par la règle de la langue.
+ *
+ * La table écrit `{ un: "…{n} site…", autres: "…{n} sites…" }` — DEUX phrases entières, pas
+ * un radical et une terminaison : une langue a le droit de tourner sa phrase autrement au
+ * singulier, et « 1 site » n'est pas partout « {n} site ». Le trou `{n}` reste dans les deux
+ * formes, et c'est l'appelant qui le remplit avec SON format de nombre (l'espace fine
+ * insécable du français n'est pas celle du néerlandais).
+ */
+export function pluriel(
+  lang: LangueDeclaree,
+  n: number,
+  formes: Record<FormePluriel, string>,
+): string {
+  return formes[REGLE_PLURIEL[lang](n)];
+}
+
+/**
+ * La copie d'un composant pour `lang`, avec repli DÉCLARÉ sur l'anglais.
+ *
+ * 🔴 Huit composants portent encore leur copie EN DUR, par langue, dans le composant —
+ * ~301 chaînes hors des tables gardées. Tant qu'elles y sont, `T[lang]` rend `undefined`
+ * pour toute langue nouvelle, et la page ne s'affiche pas mal : **elle ne se construit
+ * pas**. L'accueil néerlandais est tombé exactement là (`Cannot read properties of
+ * undefined (reading 'eyebrow')`), et aucun garde de parité ne pouvait le voir : ils
+ * lisent `content/`, pas les composants.
+ *
+ * Ce repli n'est pas la réparation — la réparation est de sortir ces chaînes dans un
+ * module de `TABLES_MODULES`, où la parité se vérifie. Il évite qu'un bloc manquant
+ * EMPÊCHE la page d'exister, et le bandeau de préviz dit lesquels sont encore en anglais.
+ */
+export function copie<T>(table: Record<string, T>, lang: string): T {
+  return table[lang] ?? table.en;
+}

@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   title: "Sources & licences — ScoreMyDataCenter",
@@ -138,5 +138,73 @@ const EN: typeof FR = {
   backLabel: "← Back to the home page",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  title: "Bronnen & licenties — ScoreMyDataCenter",
+  metaDescription: "Alle gegevens achter onze cijfers, fiches en indexen: de bron, wat ze voedt, haar licentie. Open methode — het publieke antwoord op ‘welke gegevens gebruiken jullie?’.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "Bronnen & licenties",
+  intro:
+    "<p>Onze methode is open. Dit is <strong>elke bron</strong> die een cijfer, een fiche of een landenindex voedt — wat ze aanlevert, en onder welke licentie. Het publieke, volledige antwoord op ‘welke gegevens gebruiken jullie?’.</p>",
+  boundaryTitle: "Wat we publiceren, en waar de grens ligt",
+  boundaryBody:
+    "<p>Dit register noemt onze bronnen op het niveau van elke <strong>pijler en indicator</strong>. Dat is de open laag.</p><p>De herkomst per waarde van één specifieke site (welke bron voor welk getal, gemeten of geschat) is onze <strong>operationele laag</strong>. Bundeling, export en actualiteit in bulk zijn het <strong>product</strong> (onze API).</p>",
+  cols: { source: "Bron", feeds: "Wat ze voedt", license: "Licentie" },
+  groups: [
+    { title: "Identiteit & locatie van de site", rows: [
+      { source: "DCWatch (Hubblo)", url: "https://dcwatch.hubblo.org", feeds: "Een van de vertrekpunten van het corpus: naam, exploitant, coördinaten, aangekondigd vermogen, projectstatus — die onze pipeline daarna opnieuw afleidt en verifieert.", license: "<strong>ODbL</strong>" },
+      { source: "DCmag-kaart", url: "https://carte.dcmag.fr", feeds: "Locatie en status van aangekondigde projecten (project of site in bedrijf), fiche voor fiche tegen elkaar gelegd.", license: "Publieke kaart" },
+      { source: "PeeringDB", url: "https://www.peeringdb.com", feeds: "Wekelijkse controle van de status ‘in bedrijf’: netwerken die in het gebouw op elkaar aansluiten.", license: "Publieke PeeringDB-gegevens" },
+      { source: "SIRENE-register (INSEE)", url: "https://annuaire-entreprises.data.gouv.fr", feeds: "Identificatie van de exploitant wanneer die ontbreekt (Frans ondernemingsregister).", license: "Licence Ouverte" },
+      { source: "geo.api.gouv.fr", url: "https://geo.api.gouv.fr", feeds: "Gemeente en departement (opnieuw afgeleid uit de coördinaten).", license: "Licence Ouverte" },
+      { source: "OpenStreetMap · OpenFreeMap", url: "https://www.openstreetmap.org/copyright", feeds: "Basiskaart.", license: "<strong>ODbL</strong>" },
+      { source: "Esri World Imagery", url: "https://www.esri.com", feeds: "Satellietbeeld op de fiches.", license: "© Esri (vermelding op het beeld)" },
+    ]},
+    { title: "Pijler Energie", rows: [
+      { source: "RTE — eCO2mix", url: "https://www.rte-france.com/eco2mix", feeds: "Koolstofintensiteit van de regionale elektriciteitsmix.", license: "Licence Ouverte" },
+      { source: "RTE — Caparéseau · S3REnR", url: "https://www.capareseau.fr", feeds: "Aansluitcapaciteit en -nabijheid.", license: "Licence Ouverte" },
+      { source: "RTE · ODRÉ", url: "https://odre.opendatasoft.com", feeds: "Netcongestie en wachtrij voor aansluiting.", license: "Licence Ouverte" },
+      { source: "ICPE-dossiers · pers", feeds: "Aangekondigde PUE (declaratief, met voorzichtigheid beoordeeld).", license: "Publieke documenten" },
+    ]},
+    { title: "Pijler Water", rows: [
+      { source: "ZRE (prefectorale besluiten) · Propluvia", url: "https://propluvia.developpement-durable.gouv.fr", feeds: "Waterstress en beperkingen in de zone.", license: "Regelgevend / Licence Ouverte" },
+      { source: "Hub'Eau", url: "https://hubeau.eaufrance.fr", feeds: "Toestand van het waterlichaam.", license: "Licence Ouverte" },
+      { source: "BNPE · Hub'Eau", url: "https://bnpe.eaufrance.fr", feeds: "Onttrekkingsdruk op het stroomgebied.", license: "Licence Ouverte" },
+      { source: "ICPE-dossiers", feeds: "Koeling en aangekondigd watervolume.", license: "Publieke documenten" },
+    ]},
+    { title: "Pijler Bodem & biodiversiteit", rows: [
+      { source: "INPN · Natura 2000 · ZNIEFF", url: "https://inpn.mnhn.fr", feeds: "Overlap met en afstand tot beschermde gebieden.", license: "Licence Ouverte" },
+      { source: "Cerema · RPG", url: "https://www.cerema.fr", feeds: "Status van de grond (verhard, landbouw, natuur).", license: "Licence Ouverte" },
+      { source: "SRADDET · INPN (TVB)", feeds: "Ecologische verbindingen (groenblauwe dooradering).", license: "Publieke regionale gegevens" },
+      { source: "Vergunningen · ICPE-dossiers", feeds: "Grondoppervlak van het project.", license: "Publieke documenten" },
+    ]},
+    { title: "Pijler Lokale impact", rows: [
+      { source: "INSEE", url: "https://www.insee.fr", feeds: "Sociaal-economisch profiel en absorptievermogen van de gemeente.", license: "Licence Ouverte" },
+      { source: "Géorisques", url: "https://www.georisques.gouv.fr", feeds: "Technologisch / Seveso-risico in de omgeving.", license: "Licence Ouverte" },
+      { source: "Pers · persberichten · raadsnotulen", feeds: "Aangekondigde banen en baten, waargenomen verzet, standpunt van de bestuurders — <strong>gedocumenteerde feiten; we publiceren nooit het artikel zelf opnieuw</strong>.", license: "Links + korte citaten" },
+    ]},
+    { title: "Transparantie & governance", rows: [
+      { source: "Inspraak · overleg", feeds: "Instemming en governance van het project.", license: "Publieke documenten" },
+    ]},
+    { title: "Verificatie & dekking buiten Frankrijk", rows: [
+      { source: "EED- / RVO-registers (Nederland)", feeds: "Werkelijke vermogens en verificatiebron (de eerste A's van Europa).", license: "Open register" },
+      { source: "Eurostat (NUTS)", url: "https://ec.europa.eu/eurostat", feeds: "Koppeling voor inkomen / landgebruik voor landen buiten Frankrijk.", license: "Vrij hergebruik (Eurostat)" },
+      { source: "datacentertracker.org", url: "https://www.datacentertracker.org", feeds: "Noord-Amerikaanse gevallen.", license: "<strong>CC BY</strong>" },
+      { source: "GDELT", url: "https://www.gdeltproject.org", feeds: "Vangnet voor het ontdekken van verzet (monitoring; precisie bij de redactionele selectie).", license: "Publiek domein" },
+    ]},
+  ],
+  closeP: "Een cijfer steunt uitsluitend op <strong>gedocumenteerde feiten</strong>. Elke waarde op een fiche verwijst naar haar herkomst; onder 40% documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van het onbekende te beoordelen.",
+  methodHref: "/nl/methodologie/",
+  ctaMethod: "Bekijk onze methode →",
+  backHref: "/nl/",
+  backLabel: "← Terug naar de startpagina",
+};
+
 /** La table servie au gabarit : `SOURCES[lang]`. */
-export const SOURCES: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const SOURCES: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

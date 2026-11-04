@@ -1,3 +1,4 @@
+import re
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 # https://scoremydatacenter.org · independent data center acceptability-risk score
@@ -5,6 +6,7 @@
 they are an independent check of the engine, not a copy of its output."""
 
 from engine.scoring import score_datacenter
+from engine.core import REPO_ROOT
 
 
 def test_alpha_dual_grades(methodology, alpha):
@@ -109,17 +111,42 @@ def test_alpha_pillar_subscores(methodology, alpha):
     assert set(pillars) == {"energy", "water", "land_biodiversity", "local_impact", "transparency_governance"}
 
 
+def _langues_declarees() -> set[str]:
+    """Les langues déclarées, lues à leur source unique — jamais recopiées dans un test."""
+    texte = (REPO_ROOT / "site" / "src" / "content" / "langues.ts").read_text(encoding="utf-8")
+    vivantes = re.search(r"LANGUES_VIVANTES = \[([^\]]*)\]", texte)
+    prepa = re.search(r"LANGUES_EN_PREPARATION = \[([^\]]*)\]", texte)
+    assert vivantes, "LANGUES_VIVANTES introuvable"
+    return set(re.findall(r'"(\w+)"', vivantes.group(1))) | (
+        set(re.findall(r'"(\w+)"', prepa.group(1))) if prepa else set()
+    )
+
+
 def test_documentation_accompanies_every_grade(methodology, alpha):
-    # Product rule n°1: a letter is never shown without its documentation chip.
+    """Une lettre ne s'affiche jamais sans sa pastille de documentation.
+
+    🔴 La liste des langues n'est plus écrite ici. Elle l'était — `== {"fr", "en"}` — et
+    l'arrivée du néerlandais a fait échouer dix-neuf tests sur une donnée SAINE : la pastille
+    portait une langue de plus, ce qu'on venait précisément de lui demander. Une égalité
+    stricte sur un ensemble de langues est une liste à deux endroits de plus ; on exige donc
+    la PRÉSENCE de chaque langue déclarée, et le droit d'en porter une nouvelle.
+    """
+    langues = _langues_declarees()
     r = score_datacenter(alpha, methodology)
     for badge in ("site", "project_process"):
         doc = r["grades"][badge]["documentation"]
         assert doc["level"] in {"high", "medium", "low"}
         assert 1 <= doc["dots"] <= 4
-        assert set(doc["label"]) == {"fr", "en"}
+        assert langues <= set(doc["label"]), (
+            f"pastille de documentation du badge {badge} : {sorted(doc['label'])}, "
+            f"il manque {sorted(langues - set(doc['label']))}"
+        )
     for pillar, detail in r["pillars"].items():
         assert 1 <= detail["documentation"]["dots"] <= 4, pillar
-        assert set(detail["documentation"]["label"]) == {"fr", "en"}
+        assert langues <= set(detail["documentation"]["label"]), (
+            f"pastille du pilier {pillar} : il manque "
+            f"{sorted(langues - set(detail['documentation']['label']))}"
+        )
 
 
 def test_no_documentation_without_a_grade(methodology, beta):
@@ -208,3 +235,38 @@ def test_estimated_is_a_distinct_confidence_cause(methodology, alpha):
     assert abs(shifted["causes"]["unverifiable_declarative"] + moved
                - baseline["causes"]["unverifiable_declarative"]) <= 0.0015
     assert shifted["score"] == baseline["score"]                # same penalty → same confidence
+
+
+def test_les_quatre_phrases_du_titre_citable_existent_dans_chaque_langue_declaree():
+    """Les gabarits du titre citable : un cas manquant dans une langue est un cas MUET.
+
+    Cette phrase voyage seule — c'est celle qu'un journaliste copie telle quelle. Elle est
+    sortie du code (quatre branches de `return` avec deux langues énumérées à la main) vers
+    une table par cas et par langue. Le risque a changé de forme : ce n'est plus une langue
+    oubliée dans un f-string, c'est une CASE vide dans la table. Ce test la voit.
+
+    🔴 Le témoin sur le corpus privé n'éprouve que trois des quatre cas : 389 fiches en
+    « contraste », 71 en « projet insuffisant », 1 en « deux notes », et AUCUNE en « site
+    insuffisant ». Ce cas-là est donc tenu ici, et il le mérite : c'est lui qui empêche la
+    phrase de sortir « Noté insufficient_data sur le site » dans un article.
+    """
+    from engine.scoring import CITABLE, _phrase
+
+    attendus = {"site_insuffisant", "contraste", "projet_insuffisant", "deux_notes"}
+    assert set(CITABLE) == attendus, f"cas déclarés : {set(CITABLE)}"
+
+    langues = set(CITABLE["site_insuffisant"])
+    assert {"fr", "en"} <= langues, langues
+    for cas, gabarits in CITABLE.items():
+        manquantes = langues - set(gabarits)
+        assert not manquantes, f"le cas « {cas} » ne parle pas {manquantes}"
+
+    # et le cas sans interpolation doit sortir une phrase, pas un gabarit
+    phrase = _phrase("site_insuffisant")
+    assert set(phrase) == langues
+    for langue, texte in phrase.items():
+        assert "{" not in texte, (langue, texte)
+        assert "insufficient_data" not in texte, (
+            f"la phrase {langue} contient l'énumération interne — c'est exactement ce que "
+            f"ce cas existe pour empêcher"
+        )

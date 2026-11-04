@@ -22,7 +22,7 @@ import {
 
 const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
 
-const contactPath = lang === "fr" ? "/fr/contact" : "/contact";
+const contactPath = lang === "fr" ? "/fr/contact/" : "/contact/";
 const flagshipLangs = briefLanguages(FLAGSHIP);
 const num = (i: number) => String(i + 1).padStart(2, "0");
 ---

@@ -16,11 +16,13 @@ export const AT: ProcedureCountry = {
   frame: {
     fr: "En Autriche, le droit de la construction appartient aux Länder : le permis et ses conditions se lisent dans le Baurecht du Land. Le délai de recours devant le tribunal administratif, lui, est fédéral.",
     en: "In Austria building law belongs to the Länder: the permit and its conditions are read in that Land's Baurecht. The deadline to appeal to the administrative court, however, is federal.",
+    nl: "In Oostenrijk ligt het bouwrecht bij de Länder: de vergunning en haar voorwaarden staan in het Baurecht van het Land. De beroepstermijn bij de bestuursrechter is daarentegen federaal.",
   },
   national: {
     authority: {
       fr: "l'autorité du Land ou la commune selon le Baurecht applicable, puis le tribunal administratif du Land",
       en: "the Land authority or the municipality under the applicable Baurecht, then the Land's administrative court",
+      nl: "de autoriteit van het Land of de gemeente naargelang het toepasselijke Baurecht, daarna de bestuursrechter van het Land",
     },
     windows: {},
     deadlines: [
@@ -28,6 +30,7 @@ export const AT: ProcedureCountry = {
         text: {
           fr: "Quatre semaines pour former un recours contre la décision d'une autorité devant le tribunal administratif.",
           en: "Four weeks to bring an appeal against an authority's decision before the administrative court.",
+          nl: "Vier weken om tegen het besluit van een autoriteit beroep in te stellen bij de bestuursrechter.",
         },
         cite: "VwGVG § 7 Abs. 4",
         url: "https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20008255&Paragraf=7",

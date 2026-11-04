@@ -16,7 +16,7 @@ import scoresData from "../../public/data/scores.json";
 interface Props { lang: "fr" | "en"; }
 const { lang } = Astro.props;
 const fr = lang === "fr";
-const keyPath = fr ? "/fr/developpeurs/cle" : "/developers/key";
+const keyPath = fr ? "/fr/developpeurs/cle/" : "/developers/key/";
 
 // A discreet, factual counter (agent-GPT review) — never drifts, read from the
 // served corpus, not hand-typed.

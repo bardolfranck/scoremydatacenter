@@ -7,6 +7,7 @@
 // structure; editorial texts land block by block from the methodology lead
 // (block 3, the five-pillar checklist one-pager, ships first).
 import Base from "../layouts/Base.astro";
+import type { LangueDeclaree } from "../content/langues";
 import type { Checklist } from "../content/questions";
 import type { WhatIsDC } from "../content/what-is-a-dc";
 import type { RichBlock } from "../content/understand-blocks";
@@ -14,7 +15,7 @@ import PillarIcon from "./PillarIcon.astro";
 import PowerScale from "./PowerScale.astro";
 
 interface Props {
-  lang: "en" | "fr";
+  lang: LangueDeclaree;
   t: Record<string, any>;
   checklist?: Checklist;
   whatIs?: WhatIsDC;
@@ -73,12 +74,12 @@ const faqJsonLd = qas.length
             {block.body && <p>{block.body}</p>}
             {block.pending && <span class="fixture-tag">{t.pendingLabel}</span>}
             <div class="block-content">
-            {block.slot === "rich" && rich[block.anchor] && (
+            {block.slot === "rich" && rich[block.id] && (
               <div class="richblock">
-                {rich[block.anchor].intro && <p class="whatis-p" set:html={rich[block.anchor].intro}></p>}
-                {rich[block.anchor].points && (
+                {rich[block.id].intro && <p class="whatis-p" set:html={rich[block.id].intro}></p>}
+                {rich[block.id].points && (
                   <div class="rich-points">
-                    {rich[block.anchor].points.map((point: any) => (
+                    {rich[block.id].points.map((point: any) => (
                       <p class="whatis-p rich-point">
                         {point.icon && <PillarIcon name={point.icon} size={17} />}
                         <span><strong>{point.lead}</strong> <span set:html={point.body}></span></span>
@@ -86,9 +87,9 @@ const faqJsonLd = qas.length
                     ))}
                   </div>
                 )}
-                {rich[block.anchor].qas && (
+                {rich[block.id].qas && (
                   <div class="rich-qas">
-                    {rich[block.anchor].qas.map((qa: any) => (
+                    {rich[block.id].qas.map((qa: any) => (
                       <div class="rich-qa">
                         <p class="checklist-q">« {qa.q} »</p>
                         <p class="checklist-why" set:html={qa.a}></p>
@@ -96,9 +97,9 @@ const faqJsonLd = qas.length
                     ))}
                   </div>
                 )}
-                {rich[block.anchor].linkGroups && (
+                {rich[block.id].linkGroups && (
                   <div class="rich-linkgroups">
-                    {rich[block.anchor].linkGroups.map((group: any) => (
+                    {rich[block.id].linkGroups.map((group: any) => (
                       <section class="checklist-group">
                         <h4>{group.title}</h4>
                         <ul class="rich-links">
@@ -115,18 +116,18 @@ const faqJsonLd = qas.length
                     ))}
                   </div>
                 )}
-                {rich[block.anchor].inFrance && (
-                  <p class="in-france"><strong>{t.inFranceLabel}</strong> <span set:html={rich[block.anchor].inFrance}></span></p>
+                {rich[block.id].inFrance && (
+                  <p class="in-france"><strong>{t.inFranceLabel}</strong> <span set:html={rich[block.id].inFrance}></span></p>
                 )}
-                {rich[block.anchor].closing && <p class="whatis-p" set:html={rich[block.anchor].closing}></p>}
-                {rich[block.anchor].takeaway && (
-                  <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> <span set:html={rich[block.anchor].takeaway}></span></p>
+                {rich[block.id].closing && <p class="whatis-p" set:html={rich[block.id].closing}></p>}
+                {rich[block.id].takeaway && (
+                  <p class="checklist-takeaway"><strong>{t.takeawayLabel}</strong> <span set:html={rich[block.id].takeaway}></span></p>
                 )}
-                {rich[block.anchor].sources && (
+                {rich[block.id].sources && (
                   <p class="block-sources">
                     {t.sourcesLabel}
-                    {rich[block.anchor].sources.map((src: any, n: number) => (
-                      <span class="src-item" id={`src-${block.anchor}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.anchor].sources.length - 1 ? " ·" : ""}</span>
+                    {rich[block.id].sources.map((src: any, n: number) => (
+                      <span class="src-item" id={`src-${block.id}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < rich[block.id].sources.length - 1 ? " ·" : ""}</span>
                     ))}
                   </p>
                 )}
@@ -155,7 +156,7 @@ const faqJsonLd = qas.length
                 <p class="block-sources">
                   {whatIs.sourcesLabel}
                   {whatIs.sources.map((src, n) => (
-                    <span class="src-item" id={`src-${block.anchor}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " ·" : ""}</span>
+                    <span class="src-item" id={`src-${block.id}-${n + 1}`}> {n + 1}. <a href={src.url} target="_blank" rel="noopener">{src.label}</a>{n < whatIs.sources.length - 1 ? " ·" : ""}</span>
                   ))}
                 </p>
               </div>

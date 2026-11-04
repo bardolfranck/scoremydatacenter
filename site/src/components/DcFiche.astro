@@ -7,6 +7,7 @@
 // dc/{id}.json artifact (never hand-written); a grade letter only ever appears
 // through <ScoreBadge>. Bilingual data reads label[lang]/synthesis .fr/.en.
 import Base from "../layouts/Base.astro";
+import type { LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import ScoreBadge from "./ScoreBadge.astro";
 import PillarIcon from "./PillarIcon.astro";
@@ -14,7 +15,7 @@ import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import methodologyData from "../../public/data/methodology.json";
-import { STATS, fmtPct } from "../config/stats";
+import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
 import { operateurIdentifie } from "../config/operator";
 import { COUNTRY_NAME } from "../config/flags";
 import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
@@ -33,7 +34,7 @@ import infoIcon from "@phosphor-icons/core/assets/regular/info.svg?raw";
 import mapPin from "@phosphor-icons/core/assets/regular/map-pin.svg?raw";
 
 const { dc, lang, t, nav, altHref, altLabel, related = [], geo = null } = Astro.props as {
-  dc: any; lang: "fr" | "en"; t: any; nav: NavNode[];
+  dc: any; lang: LangueDeclaree; t: any; nav: NavNode[];
   altHref: string; altLabel: string; related?: any[];
   geo?: [number, number] | null;
 };
@@ -73,7 +74,8 @@ const methodology = methodologyData as any;
 // Indices pays (brief 2026-07-18/19 §2.3) : la ligne de croisement — l'indice
 // SITE du pays de cette fiche, avec sa réserve A-25 si elle s'applique.
 import indicesData from "../../public/data/indices.json";
-import { COUNTRY_NAMES } from "../config/indices";
+import { nomDePaysEnPhrase } from "../config/indices";
+import { RACINE } from "../content/langues";
 // 🔴 « pas operational » n'est pas « est un projet ». La note sous l'image satellite
 // (« le terrain visible ici peut ne pas encore accueillir le data center ») sortait dès que
 // le statut n'était pas `operational` — donc aussi pour un statut NON ÉTABLI, ce qui en
@@ -82,19 +84,32 @@ import { enProjet } from "../content/statuts";
 const _idxEntry = (indicesData as any).countries?.[dc.country];
 let idxLine: { text: string; href: string } | null = null;
 if (_idxEntry?.eligible) {
-  const cname = (COUNTRY_NAMES as any)[dc.country]?.[lang] ?? dc.country;
+  const cname = nomDePaysEnPhrase(dc.country, lang);
   // La virgule décimale est un FORMAT, pas un mot : elle suit la locale et n'a rien à faire
   // dans la table — une langue nouvelle n'aurait pas à décider comment on écrit « 3,4 ».
-  const score = /* i18n:format */ lang === "fr" ? String(_idxEntry.score).replace(".", ",") : String(_idxEntry.score);
+  // 🔴 Le commentaire au-dessus disait déjà « c'est un FORMAT, une langue nouvelle n'aurait
+  // pas à décider » — et la ligne en dessous était quand même un ternaire fr/en. Le
+  // néerlandais écrivait donc « 3.4 » là où il écrit « 3,4 ». La table des formes décide.
+  // Un indice ÉLIGIBLE peut n'avoir pas de score (Israël : note retenue au niveau du pays).
+  // L'ancienne écriture rendait alors « (undefined) » en toutes lettres ; on ne publie pas
+  // une parenthèse vide de sens, on ne publie pas la ligne.
+  const score = typeof _idxEntry.score === "number"
+    ? /* i18n:format */ fmtDec(_idxEntry.score, lang)
+    : null;
   const res = _idxEntry.reserved_from === "A" ? t.idx.reserved : "";
-  idxLine = {
-    text: t.idx.line
-      .replace("{country}", cname)
-      .replace("{grade}", _idxEntry.grade)
-      .replace("{reserved}", res)
-      .replace("{score}", score),
-    href: `${/* i18n:route */ lang === "fr" ? "/fr" : ""}/indices/?pays=${dc.country}`,
-  };
+  // La ligne annonce « indice du pays : X (n) ». Sans lettre OU sans score, elle n'annonce
+  // rien : on ne l'écrit pas. La publier à moitié ferait sortir le mot interne « en_attente »
+  // ou un « (undefined) » dans une phrase lue comme un verdict.
+  if (score !== null && /^[A-E]$/.test(_idxEntry.grade ?? "")) {
+    idxLine = {
+      text: t.idx.line
+        .replace("{country}", cname)
+        .replace("{grade}", _idxEntry.grade)
+        .replace("{reserved}", res)
+        .replace("{score}", score),
+      href: `${/* i18n:route */ RACINE[lang]}indices/?pays=${dc.country}`,
+    };
+  }
 }
 
 const SITE_ORIGIN = "https://scoremydatacenter.org";
@@ -447,7 +462,7 @@ const distanceVoisin = (km: number) => {
   if (km < PLANCHER_KM)
     return enMiles ? t.related.relation.nearbyUnderMi : t.related.relation.nearbyUnder;
   const v = enMiles ? km / 1.609344 : km;
-  const n = v < 10 ? v.toFixed(1) : String(Math.round(v));
+  const n = v < 10 ? fmtDec(v, lang) : fmtInt(Math.round(v), lang);
   return (enMiles ? t.related.relation.nearbyMi : t.related.relation.nearby)
     .replace(enMiles ? "{mi}" : "{km}", n);
 };
@@ -473,13 +488,16 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
     // interne, en anglais, dans l'onglet du navigateur et dans les résultats de recherche.
     : dc.grades.site.grade === "insufficient_data"
       ? t.seo.insufficient
-      // 🔴 ET LE MÊME DÉFAUT EST REVENU AVEC UNE AUTRE SENTINELLE. Le 2026-11-02, la
-      // rétention de lettre sur coordonnée tenue écrit `grade: "en_attente"` dans
-      // l'artefact ; ce code l'a interpolée telle quelle et DIX-NEUF titres servis
-      // annonçaient « note en_attente » — avec le souligné, dans l'onglet du navigateur et
-      // dans les résultats de recherche. Le correctif précédent nommait UNE valeur ; on
-      // ferme la CLASSE : on n'interpole `{grade}` que si c'est vraiment une lettre, et
-      // toute autre valeur est une note qu'on ne publie pas.
+      // 🔴 ET ON NE PUBLIE UNE LETTRE QUE SI C'EN EST UNE. Trois fois cette famille est
+      // sortie, par trois chemins différents, et deux fois on a corrigé la valeur du jour :
+      //   · 2026-10-02 — `insufficient_data` dans un titre servi.
+      //   · 2026-11-02 — la rétention de lettre sur coordonnée tenue écrit `en_attente`
+      //     dans l'artefact ; ce code l'interpolait telle quelle et DIX-NEUF titres servis
+      //     annonçaient « note en_attente », souligné compris.
+      //   · 2026-11-03 — huit fiches israéliennes, grade retenu au niveau du PAYS sans
+      //     `provisional_band` : un chemin qu'aucune branche ne couvrait.
+      // Énumérer les mauvaises valeurs est une course qu'on perd — il en reste toujours une.
+      // Vérifier que la valeur est une LETTRE la termine.
       : /^[A-E]$/.test(dc.grades.site.grade ?? "")
         ? t.seo.grade.replace("{grade}", dc.grades.site.grade)
         : t.seo.pending;

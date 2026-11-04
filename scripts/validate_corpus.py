@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from engine.core import datacenter_paths, load_methodology   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
 from engine.validate import (_schema_errors, geo_gate, operator_gate, position_gate,  # noqa: E402
-                             prose_gate, statut_gate, filigrane_gate)
+                             prose_gate, statut_gate, filigrane_gate, grandeurs_gate)
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -191,6 +191,7 @@ def main() -> int:
     # gate est ce qui l'y maintient. Le point d'écriture est un gabarit de pipeline : une
     # vague suivante peut le réintroduire sans que personne ne relise 3 275 résumés.
     problems += filigrane_gate(paths)
+    problems += grandeurs_gate(CAL)
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "

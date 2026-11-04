@@ -15,11 +15,13 @@ export const IT: ProcedureCountry = {
   frame: {
     fr: "En Italie l'évaluation environnementale est conduite par la région, mais le délai pour contester la décision devant le tribunal administratif est fixé par la loi nationale.",
     en: "In Italy the environmental assessment is run by the region, but the deadline to challenge the decision before the administrative court is set by national law.",
+    nl: "In Italië voert de regio de milieubeoordeling uit, maar de termijn om het besluit bij de bestuursrechter aan te vechten staat in de nationale wet.",
   },
   national: {
     authority: {
       fr: "la commune pour le permis de construire, la région pour l'évaluation environnementale ; recours devant le tribunal administratif régional (TAR)",
       en: "the municipality for the building permit, the region for the environmental assessment; appeal to the regional administrative court (TAR)",
+      nl: "de gemeente voor de bouwvergunning, de regio voor de milieubeoordeling; beroep bij de regionale administratieve rechtbank (TAR)",
     },
     windows: {},
     deadlines: [
@@ -27,6 +29,7 @@ export const IT: ProcedureCountry = {
         text: {
           fr: "Soixante jours, à peine de forclusion, pour demander l'annulation de la décision — pour violation de la loi, incompétence ou excès de pouvoir.",
           en: "Sixty days, on pain of forfeiture, to seek annulment of the decision — for breach of law, lack of competence or misuse of power.",
+          nl: "Zestig dagen, op straffe van verval van recht, om de vernietiging van het besluit te vragen — wegens schending van de wet, onbevoegdheid of machtsoverschrijding.",
         },
         cite: "Codice del processo amministrativo (d.lgs. 104/2010, allegato 1), art. 29",
         url: "https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.legislativo:2010-07-02;104",

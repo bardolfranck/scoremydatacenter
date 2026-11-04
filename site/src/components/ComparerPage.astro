@@ -10,6 +10,7 @@
 // donc pas par une requête au runtime : la page est statique, et `prune-public-json` peut
 // continuer à vider /data/ sans rien casser — l'anti-pillage et le produit ne se gênent pas.
 import type { NavNode } from "../config/nav";
+import { copie } from "../content/langues";
 import Base from "../layouts/Base.astro";
 import Comparateur from "./Comparateur.astro";
 
@@ -27,7 +28,7 @@ for (const [chemin, mod] of Object.entries(brut)) {
   else pays[code] = (mod as any).default;
 }
 
-const T = {
+const T = copie({
   fr: {
     title: "Comparer un site ou un projet — ScoreMyDataCenter",
     desc: "Pour un data center ou un projet, les sites de son pays qui lui ressemblent le plus, ce qui les rapproche, et ce qu'ils sont devenus.",
@@ -36,7 +37,7 @@ const T = {
     title: "Compare a site or a project — ScoreMyDataCenter",
     desc: "For a data centre or a project, the sites in its country it most resembles, what brings them together, and what became of them.",
   },
-}[lang];
+}, lang);
 ---
 
 <Base lang={lang} nav={nav} altHref={altHref} altLabel={altLabel}

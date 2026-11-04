@@ -383,7 +383,7 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
                 "n_present": band["n_present"], "n_base": band["n_base"],
                 "confidence": confidence or _coverage_confidence(band["n_present"], methodology),
                 "label": {"fr": "note probable (fenêtre large) — la plage se resserre à la collecte",
-                          "en": "probable grade (wide window) — the range narrows as data lands"}}
+                          "en": "probable grade (wide window) — the range narrows as data lands", "nl": "waarschijnlijk cijfer (breed venster) — de bandbreedte versmalt naarmate de data binnenkomen"}}
 
     central = reserved_letter(site_score_from_subscores(present, methodology))
     # Endpoint letters other than the central one, in SCALE ORDER (A→E). Deterministic: a set literal
@@ -406,7 +406,7 @@ def servable_band(status: str, present: dict, country: str, methodology: dict,
         "worst": round(kw, 1), "best": round(kb, 1), "span": span,
         "n_present": band["n_present"], "n_base": band["n_base"],
         "label": {"fr": "note provisoire (plage) — se resserre à la livraison",
-                  "en": "provisional grade (range) — narrows at delivery"},
+                  "en": "provisional grade (range) — narrows at delivery", "nl": "voorlopig cijfer (bandbreedte) — versmalt bij levering van de gegevens"},
     }
 
 
@@ -515,7 +515,7 @@ def pillar_bands(status: str, present: dict, country: str, methodology: dict,
             "n_present": len(here), "n_base": len(defs),
             "confidence": confidence or _coverage_confidence(band_n(present), methodology),
             "label": {"fr": "sous-note probable — la plage se resserre à la collecte",
-                      "en": "probable sub-grade — the range narrows as data lands"},
+                      "en": "probable sub-grade — the range narrows as data lands", "nl": "waarschijnlijk subcijfer — de bandbreedte versmalt naarmate de data binnenkomen"},
         }
     return out
 

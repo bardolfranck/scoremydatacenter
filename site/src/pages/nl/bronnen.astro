@@ -1,0 +1,15 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL "Sources & licences" : thin page, template in Sources.astro.
+import Sources from "../../components/Sources.astro";
+import { NL_NAV } from "../../config/nav";
+import { SOURCES } from "../../content/sources";
+
+const repo = "https://github.com/bardolfranck/scoremydatacenter";
+
+const t = SOURCES.nl;
+---
+
+<Sources lang="nl" t={t} nav={NL_NAV} />

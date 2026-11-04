@@ -14,7 +14,7 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   title: "Méthodologie — ScoreMyDataCenter",
@@ -31,7 +31,7 @@ const FR = {
     "<p class=\"meth-nerd\">🤓 <strong>Méthode reproductible</strong> : quiconque clone le dépôt et lance <code>make score</code> retombe exactement sur les lettres affichées.</p>",
   ],
   scaleH2: "L'échelle",
-  expertCrochet: "💡 La filière note <strong>déjà</strong> en lettres (PI de A à G, DCp de A à I) — mais l'<strong>efficacité</strong> de la machine, auto-déclarée et anonyme. Nous notons l'<strong>acceptabilité</strong> d'un site réel, de l'extérieur. → <a href=\"/fr/normes\">Les normes, et où nous nous situons</a>.",
+  expertCrochet: "💡 La filière note <strong>déjà</strong> en lettres (PI de A à G, DCp de A à I) — mais l'<strong>efficacité</strong> de la machine, auto-déclarée et anonyme. Nous notons l'<strong>acceptabilité</strong> d'un site réel, de l'extérieur. → <a href=\"/fr/normes/\">Les normes, et où nous nous situons</a>.",
   aProvenH2: "Le A se prouve, il ne se promet pas",
   aProvenP: "<p>L'échelle a un sens précis, verrouillé par construction : <i class=\"gl gl-e\">E</i> — opaque, ou vérifié défavorable · <i class=\"gl gl-d\">D</i> / <i class=\"gl gl-c\">C</i> — promesses partielles ou bonnes · <i class=\"gl gl-b\">B</i> — promesses complètes, chiffrées, processus exemplaire · <i class=\"gl gl-a\">A</i> — <strong>réservé à l'exploitation vérifiée</strong>. Un dossier entièrement déclaratif, aussi excellent soit-il, <strong>plafonne mathématiquement sous le <i class=\"gl gl-a\">A</i></strong> : les valeurs annoncées sont notées avec prudence (« annoncé ≠ mesuré »), et seule la preuve lève ce plafond. Personne ne « reçoit » un <i class=\"gl gl-a\">A</i> — on le démontre.</p>",
   aProvenExTitle: "Opérateurs — comment obtenir votre <i class=\"gl gl-a\">A</i>",
@@ -110,7 +110,7 @@ const EN: typeof FR = {
     "<p class=\"meth-nerd\">🤓 <strong>Reproducible method</strong>: anyone who clones the repository and runs <code>make score</code> lands exactly on the displayed letters.</p>",
   ],
   scaleH2: "The scale",
-  expertCrochet: "💡 The industry <strong>already</strong> grades in letters (PI from A to G, DCp from A to I) — but the <strong>efficiency</strong> of the machine, self-declared and anonymous. We grade the <strong>acceptability</strong> of a real site, from the outside. → <a href=\"/standards\">The standards, and where we sit</a>.",
+  expertCrochet: "💡 The industry <strong>already</strong> grades in letters (PI from A to G, DCp from A to I) — but the <strong>efficiency</strong> of the machine, self-declared and anonymous. We grade the <strong>acceptability</strong> of a real site, from the outside. → <a href=\"/standards/\">The standards, and where we sit</a>.",
   aProvenH2: "An A is proven, never promised",
   aProvenP: "<p>The scale has a precise meaning, locked by construction: <i class=\"gl gl-e\">E</i> — opaque, or verified unfavorable · <i class=\"gl gl-d\">D</i> / <i class=\"gl gl-c\">C</i> — partial or good promises · <i class=\"gl gl-b\">B</i> — complete, quantified promises and an exemplary process · <i class=\"gl gl-a\">A</i> — <strong>reserved for verified operation</strong>. A fully declarative file, however excellent, <strong>mathematically caps below the <i class=\"gl gl-a\">A</i></strong>: announced values are graded with caution (“announced ≠ measured”), and only proof lifts that cap. Nobody “receives” an <i class=\"gl gl-a\">A</i> — it is demonstrated.</p>",
   aProvenExTitle: "Operators — how to earn your <i class=\"gl gl-a\">A</i>",
@@ -174,5 +174,91 @@ const EN: typeof FR = {
   backLabel: "← Back to the home page",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  title: "Methodologie — ScoreMyDataCenter",
+  metaDescription: "De beoordelingsmethode: een cijfer A–E voor de site, een tweede voor het project wanneer het dossier openbaar is, documentair vertrouwen, 26 indicatoren in 5 pijlers, drempels verankerd in publieke referentiekaders. Open, geversioneerde, gedateerde methode.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "Methodologie",
+  banner: "Versie <strong>{version}</strong>. De methode is <strong>openbaar, geversioneerd en gedateerd</strong> (zo is controleerbaar wat er het eerst was); de code en de meetlat staan op <a href=\"{repo}\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
+  download: "Download de methodologie (FR)",
+  print: "Afdrukken / PDF",
+  oneSentenceH2: "Het cijfer in één zin",
+  oneSentence: [
+    "<p>Elk project krijgt <strong>twee cijfers van A tot E</strong> — één voor de <strong>site</strong> (de context die het project <span class=\"hl-yellow\">ondergaat</span>) en één voor <strong>project &amp; proces</strong> (wat de exploitant <span class=\"hl-yellow\">kiest</span>) — telkens met een <strong>documentair vertrouwensniveau</strong>. Een cijfer verschijnt nooit zonder dat niveau; onder 40% dekking schrijven we ‘onvoldoende gegevens’. Het onbekende beoordelen we niet.</p>",
+    "<p>De score wordt berekend uit de waarden mét bron in het gegevensbestand van elk project — en uit niets anders.</p>",
+    "<p class=\"meth-nerd\">🤓 <strong>Reproduceerbare methode</strong>: wie de repository kloont en <code>make score</code> draait, komt exact uit op de getoonde letters.</p>",
+  ],
+  scaleH2: "De schaal",
+  expertCrochet: "💡 De sector deelt <strong>al</strong> letters uit (PI van A tot G, DCp van A tot I) — maar voor de <strong>efficiëntie</strong> van de machine, zelfgerapporteerd en anoniem. Wij beoordelen de <strong>maatschappelijke acceptatie</strong> van een echte site, van buitenaf. → <a href=\"/nl/normen/\">De normen, en waar wij staan</a>.",
+  aProvenH2: "Een A bewijs je, een A beloof je niet",
+  aProvenP: "<p>De schaal heeft een precieze betekenis, vergrendeld in de opzet zelf: <i class=\"gl gl-e\">E</i> — ondoorzichtig, of geverifieerd ongunstig · <i class=\"gl gl-d\">D</i> / <i class=\"gl gl-c\">C</i> — gedeeltelijke of goede beloften · <i class=\"gl gl-b\">B</i> — volledige, becijferde beloften en een voorbeeldig proces · <i class=\"gl gl-a\">A</i> — <strong>voorbehouden aan geverifieerde exploitatie</strong>. Een volledig declaratief dossier, hoe uitstekend ook, <strong>blijft wiskundig onder de <i class=\"gl gl-a\">A</i></strong>: aangekondigde waarden worden met voorzichtigheid beoordeeld (‘aangekondigd ≠ gemeten’), en alleen bewijs heft dat plafond op. Niemand ‘krijgt’ een <i class=\"gl gl-a\">A</i> — je toont hem aan.</p>",
+  aProvenExTitle: "Exploitanten — zo behaalt u uw <i class=\"gl gl-a\">A</i>",
+  aProvenEx: [
+    "<p>Lever bewijs <strong>van een onafhankelijke derde</strong> voor uw waarden in exploitatie: een kopie van uw <strong>EED-rapportage</strong> aan de toezichthouder, een <strong>ISO/IEC 30134-auditcertificaat</strong> van een geaccrediteerde instelling, of een attest van een onafhankelijke keuringsinstantie — nooit een marketingpagina. Dien het in via het publieke correctiekanaal (bron verplicht, belangenverklaring). De waarde gaat dan van ‘aangekondigd’ naar ‘gemeten’, het declaratieve plafond vervalt, en de herberekening wordt <strong>vastgelegd in het publieke auditlogboek</strong>. U hoeft op geen enkele brief van ons te wachten, u betaalt niets — het bewijs doet al het werk.</p>",
+    "<p>Twee preciseringen die iedereen beschermen. Bewijs verhoogt uw cijfer <strong>project &amp; proces</strong> — <strong>nooit dat van de site</strong>: het gebied (water, net, bodem) is een gegeven en laat zich niet bewijzen. En niemand krijgt er grip op: geen betaling, bewijs van een derde, een cijfer dat alleen beweegt omdat <strong>geverifieerde feiten</strong> zijn veranderd.</p>",
+  ],
+  pillarsH2: "De 5 pijlers",
+  bulletinH2: "Het cijfer, als een schoolrapport",
+  bulletin: [
+    "<p>Een datacenter krijgt een rapport. De vijf grote thema's — de <strong>pijlers</strong> — zijn de vakken: Energie, Water, Bodem &amp; biodiversiteit, Lokale impact, Transparantie &amp; governance. Binnen elk vak geven meerdere ‘proefwerken’ — de <strong>indicatoren</strong> — cijfers.</p>",
+    "<p><strong>Stap 1</strong>: binnen elke pijler worden de indicatoren gemiddeld volgens hun interne coëfficiënt (het ene proefwerk telt zwaarder dan het andere).</p>",
+    "<p><strong>Stap 2</strong>: de pijlerscores worden gemiddeld volgens de bovenstaande gewichten. Eén principe: <strong>geen dubbeltelling tussen pijlers</strong> — een indicator telt alleen in zijn eigen pijler, nooit elders.</p>",
+  ],
+  exampleTitle: "Voorbeeld (2 pijlers, scores al genormaliseerd op 100)",
+  exampleItems: [
+    "<b>Energie</b> (gewicht 25%) — koolstof 80 (coëf 0,6) · PUE 40 (coëf 0,4) → <b>80×0,6 + 40×0,4 = 64</b>",
+    "<b>Water</b> (gewicht 20%) — stress 30 (coëf 0,7) · verbruik 50 (coëf 0,3) → <b>30×0,7 + 50×0,3 = 36</b>",
+    "Totaal (gewichten hernormaliseerd 25/45 en 20/45) → 64×0,56 + 36×0,44 ≈ <b>52</b> → letter <strong>C</strong> (drempel 50–64)",
+  ],
+  twoNotesH2: "Twee cijfers — en dat is níét het gemiddelde van de pijlers",
+  twoNotesP: "<p>Dit is de nuance die verrast. De twee hoofdcijfers aggregeren niet per pijler maar <strong>per blok</strong>: het cijfer <strong>site</strong> = de <em>ondergane</em> indicatoren (wat het gebied oplegt — koolstof van het net, waterstress, bodem); het cijfer <strong>project &amp; proces</strong> = de <em>gekozen</em> indicatoren (efficiëntie, koeling, overleg, transparantie). De <strong>subscores per pijler</strong> groeperen elk thema en mengen daarbij ondergaan en gekozen. De twee indelingen staan haaks op elkaar: <strong>een cijfer laat zich niet lezen als het gemiddelde van de getoonde pijlers.</strong></p>",
+  thresholdsH2: "Van meting naar cijfer — twee families van drempels",
+  thresholdsP: "<p>Elke indicator zet een ruwe waarde om in een subscore 0–100 via een drempel. Die drempel wordt op twee manieren gelegd, en het onderscheid wordt <strong>openlijk vermeld</strong>, niet verborgen:</p>",
+  thresholdFamilies: [
+    "<strong>Familie A — extern referentiekader.</strong> We verankeren op een bestaande, gedocumenteerde en verdedigbare standaard (ISO 30134 voor efficiëntie, de Kaderrichtlijn Water voor de toestand van waterlichamen, WRI Aqueduct voor waterstress…).",
+    "<strong>Familie B — verklaarde redactionele ratio.</strong> Waar geen norm bestaat (‘hoe groot is te groot?’) verzinnen we geen absolute drempel: we drukken een <strong>contextuele ratio</strong> uit (het project afgezet tegen de gemeente, tegen het stroomgebied) en we <strong>staan voor die redactionele keuze</strong>.",
+  ],
+  rule: "Regel: <strong>maximaal referentiekader, minimaal redactie — en dat er hardop bij zeggen.</strong> De kolom ‘Referentiekader’ in het detail hieronder zegt, indicator per indicator, waarop de drempel steunt.",
+  lockedH2: "Wat in de opzet zelf vergrendeld is",
+  locked: [
+    "<strong>Aangekondigd ≠ gemeten</strong>: een waarde die de exploitant zelf opgeeft, krijgt het label ‘aangekondigd’, wordt met voorzichtigheid beoordeeld en is achteraf opnieuw verifieerbaar.",
+    "<strong>Transparantievloer</strong>: een gegeven openbaar maken kan het cijfer nooit slechter maken dan het verzwijgen.",
+    "<strong>Ethisch slot</strong>: de kwetsbaarheid van een gemeente kan het cijfer van een project nooit verbeteren.",
+    "<strong>Firewall ‘project ≠ cijfer’</strong>: we helpen het project, nooit het cijfer. Het publieke cijfer beweegt alleen als het <strong>echte project</strong> verandert (gedocumenteerde feiten, herberekening vastgelegd in het publieke auditlogboek) — nooit omdat een exploitant heeft betaald.",
+    "<strong>Governance</strong>: elke wijziging van de meetlat verloopt via een getagde versie en een gemotiveerde, ondertekende changelog-regel.",
+  ],
+  statusH2: "Status, grenzen & kalibratie",
+  statusP: "<p>Deze versie is <strong>voorlopig en kan nog veranderen</strong>. Wat het cijfer <strong>niet</strong> is: een statistisch gevalideerd voorspellend model, en evenmin een orakel. Wat het <strong>wel</strong> is: een <strong>meetlat van experts, gedocumenteerd, geversioneerd en reproduceerbaar</strong>, die drempels toepast die verankerd zijn in publieke referentiekaders en die zijn redactionele keuzes verklaart.</p>",
+  statusItems: [
+    "<strong>Voorlopige gewichten en drempels</strong>: ze zijn gekalibreerd via <strong>retrospectieve validatie</strong> op gevallen met bekende afloop (aanvaarde / afgebroken projecten), niet a priori geponeerd.",
+    "<strong>Traceerbaarheid</strong>: elk cijfer is gedateerd en gekoppeld aan een methodeversie; een ‘A’ betekent ‘het beste dat vandaag haalbaar is’, niet ‘het beste voor altijd’.",
+  ],
+  refsH2: "Referenties & standaarden",
+  references: [
+    { label: "ISO/IEC 30134 (2 PUE · 3 REF · 4 CUE) — prestatie-indicatoren voor datacenters", url: "https://www.iso.org/standard/63451.html" },
+    { label: "EU Code of Conduct for Data Centres (JRC)", url: "https://e3p.jrc.ec.europa.eu/communities/data-centres-code-conduct" },
+    { label: "Energie-efficiëntierichtlijn (EED) 2023/1791 — rapportage voor datacenters", url: "https://eur-lex.europa.eu/eli/dir/2023/1791/oj" },
+    { label: "WRI Aqueduct — waterstress per stroomgebied", url: "https://www.wri.org/aqueduct" },
+    { label: "Kaderrichtlijn Water 2000/60/EG — toestand van waterlichamen", url: "https://eur-lex.europa.eu/eli/dir/2000/60/oj" },
+    { label: "ADEME Base Empreinte — emissiefactoren van het net", url: "https://base-empreinte.ademe.fr/" },
+    { label: "RTE eCO2mix / Caparéseau — koolstof en capaciteit van het net", url: "https://www.rte-france.com/eco2mix" },
+    { label: "Kader ‘Social Licence to Operate’ — maatschappelijke acceptatie van projecten", url: "https://en.wikipedia.org/wiki/Social_license" },
+  ],
+  detailsSummary: "Bekijk het detail van de 26 indicatoren",
+  detailsIntro: "<p>Elke indicator draagt zijn <strong>coëfficiënt</strong> (gewicht binnen de pijler), zijn <strong>beoordelingsrichting</strong>, de <strong>basis van zijn drempel</strong> (extern referentiekader of verklaarde redactionele keuze) en zijn <strong>databron</strong> — een schemaverplichting, geen vrijblijvende goede praktijk.</p>",
+  th: { indicator: "Indicator", block: "Blok", coef: "Coëf.", direction: "Richting", thresholdRef: "Drempelreferentie", source: "Bron" },
+  blockLabel: { base: "Site (ondergaan)", project: "Project (gekozen)", process: "Proces" },
+  dirLabel: { lower_is_better: "lager = beter", higher_is_better: "hoger = beter", encoded_in_scoring: "kwalitatief", non_monotonic: "genuanceerd" },
+  backHref: "/nl/",
+  backLabel: "← Terug naar de startpagina",
+};
+
 /** La table servie au gabarit : `METHODOLOGIE[lang]`. */
-export const METHODOLOGIE: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const METHODOLOGIE: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };

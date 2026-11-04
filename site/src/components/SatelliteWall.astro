@@ -18,6 +18,7 @@
 import showcaseData from "../../public/data/home_showcase.json";
 import { ACCUEIL } from "../content/accueil";
 import type { Langue } from "../content/langues";
+import { copie } from "../content/langues";
 
 interface Props {
   lang: "fr" | "en";
@@ -26,7 +27,7 @@ interface Props {
 const { lang, dcById } = Astro.props;
 const SHOWCASE = showcaseData as any;
 
-const T = {
+const T = copie({
   fr: {
     eyebrow: "La preuve par l'image",
     titleA: "sites.\u00a0", titleEm: "Vus du ciel.", titleB: "\u00a0Notés.",
@@ -49,7 +50,7 @@ const T = {
     credit: "Imagery © Esri, Maxar, Earthstar Geographics",
     hint: "Hover to pause · click for the site's fiche",
   },
-}[lang];
+}, lang);
 
 const PIPELINE = ["announced", "permitting", "under_construction"];
 const ROWS = 3;
@@ -94,7 +95,14 @@ const hasPlanned = tiles.some((t) => t.planned);
               <a class="otile" href={`${ficheBase}/${tile.id}/`}
                 tabindex={pass === 0 ? 0 : -1} aria-hidden={pass === 1 ? "true" : undefined}>
                 <img src={tile.thumb} alt="" loading="lazy" decoding="async" width="400" height="267" />
-                <span class={`otile-chip grade-${tile.grade.toLowerCase()}`}>{tile.grade}</span>
+                {/* 🔴 La puce ne porte une lettre QUE si c'en est une. Le mur affichait
+                    « en_attente » sur la vignette d'un site dont la note est retenue — avec
+                    une classe CSS `grade-en_attente` qui n'existe pas, donc une puce nue.
+                    Même famille que les titres de fiche : énumérer les mauvaises valeurs est
+                    une course qu'on perd, vérifier que c'est une LETTRE la termine. */}
+                {/^[A-E]$/.test(tile.grade ?? "") && (
+                  <span class={`otile-chip grade-${tile.grade.toLowerCase()}`}>{tile.grade}</span>
+                )}
                 {tile.planned && <span class="otile-status">⏳ {T.projectTag}</span>}
                 <span class="otile-cap">{tile.name}<small>{tile.country} · {T.seeFiche}</small></span>
               </a>

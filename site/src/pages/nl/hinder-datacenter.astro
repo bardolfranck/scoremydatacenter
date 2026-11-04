@@ -1,0 +1,41 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL « Les nuisances des data centers » : page de concept, gabarit dans PagePilier.astro.
+//
+// 🔴 PAGE LA PLUS EXPOSÉE DU LOT : elle publie ce que NOS relevés disent, sur une page qui
+// vante nos relevés. Donc CHAQUE PHRASE PORTE SON PÉRIMÈTRE — « sur les avis que nous avons
+// dépouillés », jamais en note de bas de page. Deux affirmations ont déjà été corrigées avant
+// écriture : le bruit n'est PAS la nuisance la plus relevée (groupes 32, cuves 26, bruit 26
+// sur 41 avis), et les groupes ne sont PAS « le plus souvent au fioul domestique » (sur les
+// 25 avis qui nomment le carburant : 11 huile végétale hydrotraitée, 8 fioul/gazole, 6 fioul
+// domestique).
+//
+// 🔴 ET UNE RÈGLE D'ÉCRITURE : les comptes fins (25 avis, onze, quatorze…) NE SONT PAS PUBLIÉS
+// dans la prose. Ils vieillissent à chaque avis dépouillé — c'est une dette technique qu'on
+// s'inflige — et ils n'apprennent rien au lecteur que l'ORDRE n'apprend déjà. On publie le
+// classement en mots, et le périmètre en toutes lettres. Les comptes restent dans les données.
+//
+// ⚠️ Les attributs HTML sont en guillemets SIMPLES (la chaîne est délimitée par des doubles).
+// ⚠️ Les valeurs réglementaires citées sont ATTRIBUÉES (arrêté du 23 janvier 1997) : sur une
+// page lue par des élus, un ordre de grandeur sans source est pire que pas d'ordre de grandeur.
+import PagePilier from "../../components/PagePilier.astro";
+import { NL_NAV } from "../../config/nav";
+// LES DEUX COMPTES PUBLIÉS PLUS BAS SE DÉRIVENT, ils ne se recopient pas : la page annonçait
+// « 1 565 sites » — l'effectif EUROPE d'une version périmée — alors que le corpus en compte
+// plus du double, et donnait du même coup une couverture de la distance deux fois trop
+// flatteuse. La règle était pourtant écrite en tête de ce fichier.
+// 🔴 Et un compte qui MANQUE ne se remplace pas : `monde` n'est émis que s'il diffère de
+// l'Europe, et un build sans corpus n'émet aucun périmètre — la page plantait alors au build
+// (CI rouge depuis le 2026-10-23). Les accesseurs rendent `null`, pas 0, et la phrase se lit
+// SANS chiffre : publier « 0 sites » aurait transformé une lecture ratée en mesure.
+import { perimeterSites, derivedCount } from "../../config/stats";
+import { nuisances } from "../../content/nuisances";
+const nSites = perimeterSites("monde");
+const nDistance = derivedCount("n_nearest_dwelling");
+const t = nuisances("nl", nSites, nDistance);
+
+---
+
+<PagePilier lang="nl" t={t} nav={NL_NAV} />

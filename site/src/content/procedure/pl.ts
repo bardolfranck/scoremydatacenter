@@ -27,6 +27,7 @@ export const PL: ProcedureCountry = {
     authority: {
       fr: "le starosta, ou le président d'une ville à statut de powiat ; l'appel monte au voïvode (wojewoda)",
       en: "the starosta (district head), or the mayor of a city with powiat status; the appeal goes up to the voivode (wojewoda)",
+      nl: "de starosta, of de burgemeester van een stad met powiat-status; het beroep gaat omhoog naar de woiwode (wojewoda)",
     },
     windows: {},
     deadlines: [
@@ -34,6 +35,7 @@ export const PL: ProcedureCountry = {
         text: {
           fr: "Quatorze jours pour faire appel de la décision (odwołanie), par l'intermédiaire de l'autorité qui l'a rendue, à compter de sa notification. Passé ce délai, la décision devient définitive.",
           en: "Fourteen days to appeal the decision (odwołanie), through the authority that issued it, from the day it is served. After that, the decision becomes final.",
+          nl: "Veertien dagen om administratief beroep in te stellen tegen het besluit (odwołanie), via de autoriteit die het nam, te rekenen vanaf de kennisgeving. Daarna wordt het besluit onherroepelijk.",
         },
         cite: "Ustawa z dnia 14 czerwca 1960 r. — Kodeks postępowania administracyjnego, art. 129 § 2",
         url: "https://dziennikustaw.gov.pl/D2025000169101.pdf",
@@ -43,6 +45,7 @@ export const PL: ProcedureCountry = {
         text: {
           fr: "Faire appel dans le délai SUSPEND l'exécution de la décision : les travaux ne peuvent pas démarrer tant que l'appel est pendant, sauf si la décision a reçu la force exécutoire immédiate.",
           en: "Filing the appeal in time SUSPENDS the decision: works cannot start while the appeal is pending, unless the decision was given immediate enforceability.",
+          nl: "Tijdig beroep SCHORST de uitvoering van het besluit: de bouw kan niet beginnen zolang het beroep loopt, tenzij het besluit onmiddellijk uitvoerbaar is verklaard.",
         },
         cite: "Ustawa z dnia 14 czerwca 1960 r. — Kodeks postępowania administracyjnego, art. 130 § 2 (exception : § 3)",
         url: "https://dziennikustaw.gov.pl/D2025000169101.pdf",

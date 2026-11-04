@@ -23,6 +23,7 @@ export const BE: ProcedureCountry = {
   frame: {
     fr: "En Belgique, le permis d'environnement est régional : la Flandre, la Wallonie et Bruxelles ont chacune le leur, avec leurs propres délais. Nous ne publions pas de procédure tant que le droit de la région concernée n'a pas été lu.",
     en: "In Belgium the environmental permit is regional: Flanders, Wallonia and Brussels each have their own, with their own deadlines. We publish no procedure until the relevant region's law has been read.",
+    nl: "In België is de omgevingsvergunning gewestelijk: Vlaanderen, Wallonië en Brussel hebben elk de hunne, met eigen termijnen. We publiceren geen procedure zolang het recht van het betrokken gewest niet is gelezen.",
   },
   subdivisions: {},
 };

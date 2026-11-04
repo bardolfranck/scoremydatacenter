@@ -1,0 +1,14 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+import Understand from "../../components/Understand.astro";
+import { CHECKLIST_NL } from "../../content/questions";
+import { WHATIS_NL } from "../../content/what-is-a-dc";
+import { RICH_NL } from "../../content/understand-blocks";
+import { COMPRENDRE } from "../../content/comprendre";
+
+const t = COMPRENDRE.nl;
+---
+
+<Understand lang="nl" t={t} checklist={CHECKLIST_NL} whatIs={WHATIS_NL} rich={RICH_NL} />

@@ -14,15 +14,15 @@
 // dans la page, en silence. Le garde qui mord est le test pytest, que `make deploy` lance
 // AVANT le build. Ne pas confondre les deux.
 
-import type { Langue } from "./langues";
+import type { Langue, LangueDeclaree } from "./langues";
 // `nav` n'est pas de la copie : c'est la structure du menu, que le gabarit lit dans `t`. La
 // source reste unique (`config/nav.ts`) ; une langue nouvelle y déclarera son menu.
-import { FR_NAV, EN_NAV } from "../config/nav";
+import { FR_NAV, EN_NAV, NL_NAV } from "../config/nav";
 // 🔴 La table ÉTEND `config/about.ts` par un spread (`...FR_ABOUT`) : une partie de la copie
 // de l'accueil vit donc là-bas, et le garde de parité ne l'a jamais vue — un spread n'a pas
 // de clés à relever. C'est un second endroit à remplir pour une langue nouvelle, et il est
 // désormais nommé ici.
-import { FR_ABOUT, EN_ABOUT } from "../config/about";
+import { FR_ABOUT, EN_ABOUT, NL_ABOUT } from "../config/about";
 // Les chiffres de « pourquoi maintenant » sont CALCULÉS au build : la table porte les
 // gabarits de phrase, le helper plus bas les remplit.
 import { STATS, statView, fmtInt, type Lang } from "../config/stats";
@@ -46,7 +46,7 @@ const FR = {
   // déclare ses adresses, elle ne modifie pas le gabarit.
   chemins: {
     fiche: "/fr/dc",
-    classement: "/fr/classement",
+    classement: "/fr/classement/",
     carte: "/fr/carte/",
     indices: "/fr/indices/",
     indicesPays: "/fr/indices?pays=",
@@ -130,7 +130,7 @@ const FR = {
     { name: "Citoyens", line: "Le projet près de chez vous, en clair — la carte.", href: "/fr/carte/" },
     { name: "Journalistes", line: "Des faits sourcés, citables, avec leurs archives.", href: "/fr/classement/" },
     { name: "Élus", line: "Comparer votre commune, préparer le débat.", href: "/fr/classement/" },
-    { name: "ONG", line: "Oppositions et moratoires — la couche veille.", href: "/fr/carte?veille=tout" },
+    { name: "ONG", line: "Oppositions et moratoires — la couche veille.", href: "/fr/carte/?veille=tout" },
     { name: "Chercheurs", line: "La méthode, les données, tout se recalcule.", href: "/fr/methodologie/" },
     { name: "Opérateurs", line: "Corriger, répondre — et améliorer le projet réel.", href: "/fr/contact/" },
   ],
@@ -166,11 +166,11 @@ const FR = {
     repli: "europe" as string | null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} sur poste électrique saturé",
-      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#reseau-sature" },
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres/#reseau-sature" },
     { genre: "vue", id: "pue_published", figure: "{big} publient leur PUE",
-      attribution: "Les chiffres du parc · déclarations opérateurs · n = {n}", url: "/fr/chiffres#pue-publie" },
+      attribution: "Les chiffres du parc · déclarations opérateurs · n = {n}", url: "/fr/chiffres/#pue-publie" },
     { genre: "vue", id: "water_stress_high", figure: "{big} en zone de stress hydrique fort",
-      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres#stress-hydrique" },
+      attribution: "Les chiffres du parc · {src} · n = {n}", url: "/fr/chiffres/#stress-hydrique" },
     ],
   },
   whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
@@ -251,7 +251,7 @@ const FR = {
       // telle qu'elle se pose — « un projet arrive, par où commencer ? » — en trois lignes,
       // et renvoie. Le reste de cette FAQ parle de NOTRE note ; celle-ci parle de leur projet.
       q: "Un projet est annoncé près de chez moi. Par où commencer ?",
-      a: "Par le calendrier, parce qu'il décide de tout : la même question posée en concertation peut changer le projet, posée après l'autorisation elle ne change plus rien. Les délais de recours sont de <b>deux mois</b> — à compter du premier jour d'affichage pour un permis de construire, de la dernière formalité accomplie pour une autorisation environnementale. Et quand le site fonctionne déjà, il reste la réclamation au préfet sur les <i>prescriptions</i> (bruit, rejets, eau). Tout le parcours, étape par étape, est dans <a href='/fr/comprendre#droits'>Droits et calendrier</a>, avec les textes.",
+      a: "Par le calendrier, parce qu'il décide de tout : la même question posée en concertation peut changer le projet, posée après l'autorisation elle ne change plus rien. Les délais de recours sont de <b>deux mois</b> — à compter du premier jour d'affichage pour un permis de construire, de la dernière formalité accomplie pour une autorisation environnementale. Et quand le site fonctionne déjà, il reste la réclamation au préfet sur les <i>prescriptions</i> (bruit, rejets, eau). Tout le parcours, étape par étape, est dans <a href='/fr/comprendre/#droits'>Droits et calendrier</a>, avec les textes.",
     },
     {
       q: "Le nutri-score des DC. Comment un data center est-il noté ?",
@@ -323,7 +323,7 @@ const FR = {
     },
     {
       q: "Quelles sont les étapes d'un projet de data center, de l'annonce à la mise en service ?",
-      a: "En France, schématiquement : 1) l'annonce et, parfois, une concertation préalable ; 2) le dépôt des demandes — permis de construire et, le plus souvent, autorisation environnementale au titre des installations classées (ICPE) ; 3) l'instruction : avis de l'autorité environnementale, puis enquête publique ; 4) la décision : permis délivré par le maire (ou par le préfet dans certains cas), autorisation environnementale par arrêté préfectoral ; 5) les délais de recours ; 6) les travaux, souvent par phases ; 7) la mise en service, puis les contrôles pendant l'exploitation. Les étapes peuvent se chevaucher, et un projet peut s'arrêter à chacune d'elles. Les droits du public à chaque étape : <a href='/fr/comprendre#droits'>Droits et calendrier</a>.",
+      a: "En France, schématiquement : 1) l'annonce et, parfois, une concertation préalable ; 2) le dépôt des demandes — permis de construire et, le plus souvent, autorisation environnementale au titre des installations classées (ICPE) ; 3) l'instruction : avis de l'autorité environnementale, puis enquête publique ; 4) la décision : permis délivré par le maire (ou par le préfet dans certains cas), autorisation environnementale par arrêté préfectoral ; 5) les délais de recours ; 6) les travaux, souvent par phases ; 7) la mise en service, puis les contrôles pendant l'exploitation. Les étapes peuvent se chevaucher, et un projet peut s'arrêter à chacune d'elles. Les droits du public à chaque étape : <a href='/fr/comprendre/#droits'>Droits et calendrier</a>.",
     },
     {
       q: "Qu'est-ce qu'un « moratoire » sur les data centers ? Est-ce que ça arrête un projet ?",
@@ -360,7 +360,7 @@ const EN: typeof FR = {
 
   chemins: {
     fiche: "/dc",
-    classement: "/ranking",
+    classement: "/ranking/",
     carte: "/map/",
     indices: "/indices/",
     indicesPays: "/indices?pays=",
@@ -465,11 +465,11 @@ const EN: typeof FR = {
     repli: null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} on already-saturated substations",
-      attribution: "Fleet figures · {src} · n = {n}", url: "/figures#reseau-sature" },
+      attribution: "Fleet figures · {src} · n = {n}", url: "/figures/#reseau-sature" },
     { genre: "vue", id: "pue_published", figure: "{big} publish their PUE",
-      attribution: "Fleet figures · operators' declarations · n = {n}", url: "/figures#pue-publie" },
+      attribution: "Fleet figures · operators' declarations · n = {n}", url: "/figures/#pue-publie" },
     { genre: "vue", id: "water_stress_high", figure: "{big} under high water stress",
-      attribution: "Fleet figures · WRI Aqueduct · n = {n}", url: "/figures#stress-hydrique" },
+      attribution: "Fleet figures · {src} · n = {n}", url: "/figures/#stress-hydrique" },
     ],
   },
   whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",
@@ -546,7 +546,7 @@ const EN: typeof FR = {
   faq: [
     {
       q: "A project has been announced near me. Where do I start?",
-      a: "With the calendar, because it decides everything: the same question asked during consultation can still change the project; asked after the authorisation, it changes nothing. Appeal windows are <b>two months</b> — from the first day of posting for a building permit, from the last formality completed for an environmental authorisation. And once the site is running, what remains is a claim to the prefect about its <i>prescriptions</i> (noise, discharges, water). The whole path, step by step, is in <a href='/fr/comprendre#droits'>Rights and calendar</a> (in French), with the legal texts.",
+      a: "With the calendar, because it decides everything: the same question asked during consultation can still change the project; asked after the authorisation, it changes nothing. Appeal windows are <b>two months</b> — from the first day of posting for a building permit, from the last formality completed for an environmental authorisation. And once the site is running, what remains is a claim to the prefect about its <i>prescriptions</i> (noise, discharges, water). The whole path, step by step, is in <a href='/understand/#droits'>Rights and calendar</a> (in French), with the legal texts.",
     },
     {
       q: "The Nutri-Score of data centers. How is a data center graded?",
@@ -618,7 +618,7 @@ const EN: typeof FR = {
     },
     {
       q: "What are the stages of a data center project, from announcement to operation?",
-      a: "In France, broadly: 1) announcement and, sometimes, a prior public consultation; 2) filing — building permit and, most often, an environmental authorization under the classified-installations regime (ICPE); 3) review: opinion of the environmental authority, then public inquiry; 4) decision: permit granted by the mayor (or by the préfet in some cases), environmental authorization by prefectoral order; 5) appeal periods; 6) construction, often in phases; 7) commissioning, then inspections during operation. Stages can overlap, and a project can stop at any of them. The public's rights at each stage: <a href='/understand#rights'>Rights and timeline</a>.",
+      a: "In France, broadly: 1) announcement and, sometimes, a prior public consultation; 2) filing — building permit and, most often, an environmental authorization under the classified-installations regime (ICPE); 3) review: opinion of the environmental authority, then public inquiry; 4) decision: permit granted by the mayor (or by the préfet in some cases), environmental authorization by prefectoral order; 5) appeal periods; 6) construction, often in phases; 7) commissioning, then inspections during operation. Stages can overlap, and a project can stop at any of them. The public's rights at each stage: <a href='/understand/#rights'>Rights and timeline</a>.",
     },
     {
       q: "What is a “moratorium” on data centers? Does it stop a project?",
@@ -645,8 +645,310 @@ const EN: typeof FR = {
   contactCta: "Contact",
 };
 
+
+// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
+// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
+// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
+// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
+// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
+// ses valeurs sont celles du français.
+const NL: typeof FR = {
+  blocs: {
+    actu: { heading: "Laatste sectornieuws", seeAll: "Al het nieuws →", href: "/nl/nieuws/", projet: "Project", locale: "nl-NL" },
+    projets: { heading: "Nieuw gesignaleerde projecten", seeAll: "Bekijk de monitoring →", href: "/nl/kaart/", veille: "gevolgd", carte: "/nl/kaart/" },
+    pays: { label: "landen gevolgd", aria: "{n} landen gevolgd: {pays}" },
+    mur: { fiche: "/nl/dc" },
+  },
+
+  chemins: {
+    fiche: "/nl/dc",
+    classement: "/nl/ranglijst/",
+    carte: "/nl/kaart/",
+    indices: "/nl/indices/",
+    indicesPays: "/nl/indices?pays=",
+    methodologie: "/nl/methodologie/",
+    bibliotheque: "/nl/bibliotheek/",
+  },
+  formes: { locale: "nl-NL", decimale: "," },
+  indices: {
+    h2: "De ranglijst van de landen",
+    lead: "Deze index aggregeert de cijfers van SITES (de territoriale context: net, water, bodem, risico's). Hij beoordeelt geen exploitanten en niet het gedrag van projecten.",
+    reserve: "A alleen op bewijs · ",
+    plus: "Bekijk de kaart en de {n} landen",
+  },
+  powerUnknown: "vermogen niet meegedeeld",
+
+  title: "ScoreMyDataCenter — het publieke acceptatiecijfer van datacenters",
+  description:
+    "De maatschappelijke acceptatie van datacenters: beoordeeld, gedocumenteerd, openbaar. Een cijfer A–E per site, met bronnen, vertrouwensniveau en een open methode.",
+  altHref: "/",
+  altLabel: "EN",
+  tagline: "Onafhankelijk observatorium",
+  nav: NL_NAV,
+  heroEyebrow: "Onafhankelijk & publiek observatorium",
+  heroTitle: "Een datacenter komt niet langer zomaar ergens te staan.<br><span class='hero-red'>Wij meten het risico.</span>",
+  heroLede:
+    "Datacenters veranderen onze leefomgeving. Water, energie, grond, lokale impact, transparantie: ScoreMyDataCenter beoordeelt publiekelijk de acceptatiescore van elk project, volgens een open methode en gedocumenteerde feiten.",
+  heroStandards:
+    "We zijn onafhankelijk. We passen de standaarden van de sector toe — <strong>PUE</strong> (ISO/IEC&nbsp;30134), energie, koolstof — en meten vervolgens wat zij negeren: <strong>het water, de bodem, het gebied</strong>. Het resultaat is een nutri-score voor {n} echte sites.",
+  heroChecks: [
+    "Het cijfer is <strong>gratis</strong>",
+    "De methode is <strong>openbaar</strong> (v0.1.0 bevroren)",
+    "De bronnen zijn <strong>verifieerbaar</strong>",
+  ],
+  corpus: {
+    aria: "Het corpus in één oogopslag",
+    label: "Het corpus in één oogopslag",
+    noted: "beoordeelde projecten",
+    countries: "landen gedekt",
+    stress: "sites in een zone met hoge waterstress of in watercrisis",
+    watch: "projecten gevolgd, nog niet beoordeeld (verzet, moratoria)",
+    scaleNote: "<strong>Eén cijfer A–E voor de site</strong> — wat de plek oplegt: water, net, grond, omwonenden. En een <strong>tweede cijfer, project &amp; proces</strong>, voor wat de initiatiefnemer aankondigt en documenteert: het is alleen te berekenen wanneer het projectdossier openbaar is, en dat blijft zeldzaam. Altijd getoond mét hun documentair vertrouwen.",
+  },
+  manifesto: {
+    aria: "Ons manifest",
+    line1: "Een criticus beoordeelt een film zonder toestemming van de studio. Een journalist publiceert zijn onderzoek zonder die van wie het stoort. ScoreMyDataCenter staat in die traditie: de vrijheid van kritiek en de bijdrage aan het publieke debat.",
+    contractLead: "Ons contract in ruil:",
+    contract: "een openbare methode, gedocumenteerde feiten, afgewogen woorden, en een permanent recht op correctie en weerwoord.",
+    link: "Lees waarom",
+  },
+  mattersTitle: "Waarom het telt",
+  mattersSub: "Een datacenter is niet zomaar een IT-gebouw: het is een project dat vitale hulpbronnen mobiliseert en een gebied voor lange tijd vastlegt.",
+  matters: [
+    { icon: "water", title: "Watervoorraad", body: "<strong>{stress} van de {mesures} sites</strong> staan in een zone met hoge waterstress of in watercrisis. Water weegt zwaar in de cijfers van het corpus.", href: "/nl/kaart/", link: "Bekijk de kaart" },
+    { icon: "energy", title: "Elektriciteitsnet", body: "Verzadigde netten remmen aansluitingen en drukken de scores. Locatiekeuzes met zware gevolgen.", href: "/nl/kaart/", link: "Bekijk de kaart" },
+    { icon: "land", title: "Gebied & biodiversiteit", body: "Verharding, bodem, biodiversiteit: lokale effecten die even zwaar tellen als de megawatts.", href: "/nl/datacenters-begrijpen/", link: "Begrijp wat er speelt" },
+    { icon: "transparency", title: "Transparantie", body: "<strong>{noPower} van de {total} projecten</strong> maken hun vermogen niet bekend. Wij beoordelen op publieke documenten — ondoorzichtigheid loont nooit.", href: "/nl/methodologie/", link: "Begrijp de methode" },
+  ],
+  principlesTitle: "Onze methode, in 4 principes",
+  exploreTitle: "Verken de scores",
+  exploreSub: "Zoek. Vergelijk. Begrijp.",
+  exploreMapLabel: "Kaart van de projecten",
+  exploreRankLabel: "Ranglijst — positie in de verdeling",
+  exploreRankMore: "Bekijk de volledige ranglijst",
+  exploreLatestLabel: "De krachtigste gevolgde sites",
+  exploreLatestMore: "Bekijk alle sites",
+  searchPlaceholder: "Zoek een site, een exploitant, een land…",
+  library: {
+    title: "Intelligence Library — de analyse bovenop de scores",
+    coverTitle: "State of Data Center Acceptability in Europe",
+    lede: "De site zegt hoeveel. Onze analyses zeggen waar het heen gaat, en wat het betekent.",
+    items: ["Trends per land en voor Europa", "Risico's per thema — water, energie, grond, transparantie", "Benchmarks van exploitanten"],
+    cta: "Ontdek de analyses",
+  },
+  whoTitle: "Voor wie? Om te handelen.",
+  whoSub: "Dezelfde toegang, verschillende toepassingen — elk profiel heeft zijn eigen ingang.",
+  who: [
+    { name: "Burgers", line: "Het project bij u in de buurt, in klare taal — de kaart.", href: "/nl/kaart/" },
+    { name: "Journalisten", line: "Gedocumenteerde, citeerbare feiten, met hun archieven.", href: "/nl/ranglijst/" },
+    { name: "Bestuurders", line: "Vergelijk uw gemeente, bereid het debat voor.", href: "/nl/ranglijst/" },
+    { name: "Ngo's", line: "Verzet en moratoria — de monitoringlaag.", href: "/nl/kaart/?veille=tout" },
+    { name: "Onderzoekers", line: "De methode, de data — alles is na te rekenen.", href: "/nl/methodologie/" },
+    { name: "Exploitanten", line: "Corrigeer, reageer — en verbeter het echte project.", href: "/nl/contact/" },
+  ],
+  heroScaleLabel: "De acceptatieschaal",
+  ctaScores: "Bekijk de cijfers",
+  mapOpen: "Open de kaart",
+  mapReserved: "· A alleen op bewijs",
+  viewFiche: "Bekijk de fiche →",
+  ctaMethod: "Lees de methode",
+  panelAria: "Voorbeeld van een scorefiche",
+  siteScore: "Site",
+  operatorScore: "Exploitant",
+  insufficient: "onvoldoende gegevens",
+  confidence: { high: "vertrouwen: hoog", medium: "vertrouwen: gemiddeld", low: "vertrouwen: laag" },
+  fixtureNote:
+    "Fictieve testfixture, getoond voor het formaat — de eerste echte fiches zijn in voorbereiding.",
+  whyNowAria: "Waarom nu",
+  whyNow: {
+    // Règle signée Franck (2026-10-30) : même trio partout, périmètre = le pays de la
+    // langue, Europe en repli. Les trois ids existent dans le périmètre NL (stats.json).
+    perimetre: "NL" as string,
+    repli: "europe" as string | null,
+    stats: [
+    { genre: "vue", id: "grid_saturated", figure: "{big} op een vol onderstation",
+      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers/#vol-station" },
+    { genre: "vue", id: "pue_published", figure: "{big} publiceren hun PUE",
+      attribution: "Kerncijfers van het datacenterpark · opgaven van exploitanten · n = {n}", url: "/nl/kerncijfers/#pue-gepubliceerd" },
+    { genre: "vue", id: "water_stress_high", figure: "{big} in een zone met hoge waterstress",
+      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers/#waterstress" },
+    ],
+  },
+  whyNowPunch: "Het heetste onderwerp van AI heeft geen enkele onafhankelijke scheidsrechter. <b>Die scheidsrechter zijn wij.</b>",
+  missionLine:
+    "Onze missie: de maatschappelijke acceptatie van elk datacenterproject meten, documenteren en openbaar maken. Het debat verankeren in de feiten.",
+  whyTitle: "Waarom dit observatorium",
+  whyMotto: "We vragen geen toestemming om onze cijfers te publiceren. We leggen onszelf de methode op.",
+  whyLede: "Een datacenter van 900 MW wordt aangekondigd bij u in de buurt. Waar leest u, helder, wat het waard is — en wat de lokale impact is?",
+  whyBody:
+    "De bestaande kaarten zetten technische kenmerken op een rij; de observatoria van het verzet tellen conflicten. Niemand legt, project per project, de werkelijkheid van elk dossier op tafel: een cijfer, bronnen, een methode die iedereen kan controleren en overdoen. Dát gat vult ScoreMyDataCenter: <span class='hl-red'>het eerste onafhankelijke en publieke acceptatiecijfer, waarop iedereen zich kan beroepen</span> — een feitelijke, gedocumenteerde en methodische beoordeling, gepubliceerd als bijdrage aan het publieke debat. En een schaal die bindt: <b>de <i class='gl gl-a'>A</i> bewijs je in exploitatie, je belooft hem niet</b> — beloften, hoe uitstekend ook, plafonneren op <i class='gl gl-b'>B</i>; alleen geverifieerd bewijs maakt de <i class='gl gl-a'>A</i>. Onze missie: <b>alle datacenters scoren</b> — methodisch, openbaar, dossier per dossier.",
+  ...NL_ABOUT,
+  principlesAria: "Principes",
+  principles: [
+    { title: "Openbare methode", body: "Open, geversioneerde, citeerbare meetlat. Iedereen kan elk cijfer overdoen." },
+    { title: "Traceerbare gegevens", body: "Elke waarde verwijst naar haar bron. Het aangekondigde wordt nooit vermengd met het gemetene." },
+    { title: "Correctie en weerwoord van de exploitant", body: "Lijkt een gegeven onjuist? Het kan met zijn bron worden gemeld. Na verificatie wordt de fiche gecorrigeerd en de wijziging gedateerd. De exploitant kan ook een weerwoord insturen, gepubliceerd in een eigen ruimte." },
+    { title: "Onafhankelijkheid", body: "Beoordeelde partijen betalen nooit voor hun cijfer. Geen invloed, vóór noch tegen: het cijfer volgt de methode." },
+  ],
+  scoresTitle: "Laatst beoordeelde projecten",
+  scoresLede:
+    "Eén citeerbare pagina per project: twee cijfers, vijf subscores per pijler, documentair vertrouwen, bronnen en volledige historiek.",
+  demo: {
+    kicker: "Het cijfer, terwijl het ontstaat",
+    caption: "Echt geval: {name} — de vijf pijlers, het cijfer van de site, dan de letter. Openbare methode, gedocumenteerde gegevens.",
+    sr: "Animatie: de fiche van {name} wordt beoordeeld — de vijf pijler-subscores verschijnen, het cijfer van de site vult zich, dan wordt de letter gestempeld.",
+    replay: "Opnieuw afspelen",
+    why: "Waarom deze site? Zijn score ({score}/100) ligt het dichtst bij de mediaan van de {n} sites van het corpus: de gewoonste site van Europa, geen etalage en geen schoolvoorbeeld. De selectieregel is mechanisch en gepubliceerd.",
+  },
+  status: { announced: "Aangekondigd", permitting: "In behandeling", under_construction: "In aanbouw", operational: "In bedrijf", unknown: "Status niet vastgesteld" },
+  fixtureTag: "Fictieve testfixture",
+  pillarShort: {
+    energy: "Energie",
+    water: "Water",
+    land_biodiversity: "Bodem",
+    local_impact: "Lokaal",
+    transparency_governance: "Transp.",
+  },
+  repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
+  methodTitle: "Eén methode, twee cijfers, altijd met het vertrouwen erbij.",
+  methodLede:
+    "26 indicatoren in 5 pijlers, verdeeld naar wat het project <span class='term'>ondergaat</span> en wat de exploitant <span class='term'>kiest</span>. De meetlat, haar gewichten en drempels zijn <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>openbaar en downloadbaar</a>.",
+  methodPedago: "Begrijp het cijfer, stap voor stap",
+  siteScoreExplain: "De context die het project <span class='term'>ondergaat</span>: koolstofintensiteit van het elektriciteitsnet, waterstress, bodem, lokaal weefsel en economie van de gemeente.",
+  operatorScoreExplain: "De hefbomen die de exploitant <span class='term'>kiest</span>: energie-efficiëntie, koeling, banen, overleg, transparantie.",
+  confidenceTitle: "Documentair vertrouwen",
+  confidenceExplain:
+    "Een cijfer verschijnt er nooit zonder. Onder 40% dekking schrijven we ‘onvoldoende gegevens’. Het onbekende beoordelen we niet.",
+  weightsAria: "Gewichten van de pijlers",
+  weightsCaption: "Gewicht van de pijler in het totaalcijfer",
+  weightsNote: "Openbare, geversioneerde en gedateerde methodologie — zo is controleerbaar wat er het eerst was.",
+  openTitle: "Wij spelen open kaart.",
+  openLede: "De laag die het oordeel maakt, is open: methode, data en rekenmotor, door iedereen te verifiëren.",
+  openCta: "Bekijk de code op GitHub",
+  openCols: [
+    {
+      title: "Open methode, data en rekenmotor",
+      body: "Motor <span class='lic' tabindex='0'>AGPL<span class='info-tip'>De code van de rekenmotor is vrij: wie hem verbetert, moet de verbeteringen opnieuw delen.</span></span>, gepubliceerde data <span class='lic' tabindex='0'>ODbL<span class='info-tip'>Open databank: vrij herbruikbaar, op voorwaarde van bronvermelding en delen onder gelijke voorwaarden.</span></span>, methodologie <span class='lic' tabindex='0'>CC BY-SA<span class='info-tip'>Vrije inhoud: herbruikbaar met naamsvermelding en delen onder dezelfde voorwaarden.</span></span>. De code is <a href='https://github.com/bardolfranck/scoremydatacenter'>publiek op GitHub</a>: iedereen kan elk cijfer nauwgezet overdoen.",
+    },
+    {
+      title: "We helpen het project, nooit het cijfer",
+      body: "Beoordeelde partijen betalen nooit voor hun publieke cijfer. Een exploitant kan zijn project laten analyseren; maar het cijfer beweegt alleen als het echte project verandert — nooit omdat er betaald is. ‘Hij betaalt, het cijfer stijgt’ is structureel uitgesloten.",
+    },
+    {
+      title: "Publiek auditlogboek",
+      body: "Elke beoordeling, herziening en correctie is gedateerd, geversioneerd en gemotiveerd. Een cijfer beweegt nooit in stilte.",
+    },
+    {
+      title: "Begeleide bijdragen",
+      body: "Correcties van gegevens zijn gratis en worden nagelezen. Om manipulatie van een cijfer te verhinderen zijn de principes van onze detectieregels openbaar; hun exacte drempelwaarden blijven vertrouwelijk — ze tonen zou de handleiding geven om door de mazen van het net te glippen.",
+    },
+  ],
+  redline: "Onze belofte: het cijfer van een project en zijn motivering zijn <b>openbaar en gratis, voor altijd</b>.",
+  faqTitle: "Veelgestelde vragen",
+  faq: [
+    {
+      q: "Er is een project aangekondigd bij mij in de buurt. Waar begin ik?",
+      a: "Bij het tijdpad, want dat beslist alles: dezelfde vraag gesteld tijdens het overleg kan het project veranderen; gesteld na de vergunning verandert ze niets meer. In Frankrijk zijn de beroepstermijnen <b>twee maanden</b> — vanaf de eerste dag van aanplakking voor een bouwvergunning, vanaf de laatste vervulde formaliteit voor een milieuvergunning. En als de site al draait, rest nog de klacht bij de prefect over de <i>voorschriften</i> (geluid, lozingen, water). Het hele parcours, stap voor stap, staat in <a href='/nl/datacenters-begrijpen/#rechten'>Rechten en tijdpad</a>, met de teksten.",
+    },
+    {
+      q: "De nutri-score van datacenters. Hoe wordt een datacenter beoordeeld?",
+      a: "Elk project krijgt twee cijfers <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> — één voor de site, één voor de exploitant — op basis van 26 indicatoren in 5 pijlers (energie, water, bodem, lokale impact, transparantie). Een getalscore wordt berekend en vertaald naar een letter, precies zoals bij de Nutri-Score op voedsel die iedereen kent; daarnaast zegt een vertrouwensniveau of het cijfer op stevige of op fragiele gegevens steunt.",
+    },
+    {
+      q: "Wat scheidt een datacenter met een A van een datacenter met een B?",
+      a: "Het aantal pijlers onder spanning, en hun ernst. <b>A</b>: geen uitgesproken zwakte op de gepubliceerde pijlers van de fiche. <b>B</b>: stevig, met één schaduwzijde. <b>C</b>: twee duidelijke spanningen. <b>D</b> en <b>E</b>: meerdere pijlers in het rood, of één grote spanning op zichzelf. Zoals bij de Nutri-Score op voedsel vat de letter meerdere criteria in één keer samen — en één heel slecht criterium volstaat om haar omlaag te trekken. Eén kanttekening die telt: het plafond gaat alleen omhoog op bewijs dat door een derde is geverifieerd, en <b>geen enkele site in Europa haalt vandaag een A</b>.",
+    },
+    {
+      q: "Waarom publiceren jullie de exacte drempelwaarden niet?",
+      a: "Opdat het cijfer niet te manipuleren valt. We publiceren de meetlat, de gewichten van de 5 pijlers, de bronnen van elke indicator en, op elke fiche, de factor die het zwaarst weegt — dus wat telt en in welke richting. We publiceren de exacte positie van de drempels niet: daarmee zou een initiatiefnemer op de letter kunnen mikken in plaats van op het terrein. De methode is verifieerbaar, het recept is niet te optimaliseren.",
+    },
+    {
+      q: "Wat betekenen de twee cijfers, ‘site’ en ‘exploitant’?",
+      a: "Het sitecijfer beoordeelt wat het project ondergaat — gebied, water, net, grond — wie er ook achter zit. Het exploitantcijfer beoordeelt wat hij kiest — efficiëntie, overleg, transparantie, toezeggingen. We scheiden het terrein van de beslissingen.",
+    },
+    {
+      q: "Kan ik het project bij mij in de buurt laten beoordelen?",
+      a: "Ja. Stel het voor via de <a href='#contact'>contactpagina</a>: we geven voorrang aan de best gedocumenteerde en meest besproken dossiers. Eén kanttekening over onafhankelijkheid: we beoordelen nooit in opdracht van een partij, vóór noch tegen — het cijfer volgt de methode, niet de aanvrager.",
+    },
+    {
+      q: "Waar komen de gegevens vandaan?",
+      a: "Uit publieke bronnen: elektriciteitsnet, water, bodem, INSEE, registers, lokale pers. Elke getoonde waarde verwijst naar haar bron, en de methode is open: iedereen kan de berekening overdoen.",
+    },
+    {
+      q: "Waarom hebben de Amerikaanse projecten (nog) geen cijfer?",
+      a: "Omdat we pas diep gaan waar de data het toelaten. Een cijfer vraagt per land gekalibreerde drempels (elektriciteitsnet, water, bodem, registers, procedures) en een werkend kanaal voor correctie en weerwoord — dat is vandaag het geval in Europa. In de Verenigde Staten publiceren we eerst de monitoringlaag: burgerverzet ✋🏼 en moratoria ⏸️ — gedocumenteerde feiten, nooit een cijfer. De eerste Amerikaanse cijfers komen wanneer de data en de kalibratie op niveau zijn, niet eerder: het onbekende beoordelen we niet.",
+    },
+    {
+      q: "Kan een exploitant betalen om zijn cijfer te verbeteren?",
+      a: "Nee, nooit. Beoordeelde partijen betalen niet voor hun cijfer. Het cijfer van een project en zijn motivering zijn openbaar en gratis, voor altijd.",
+    },
+    {
+      q: "Waarom heeft nog geen enkel datacenter het cijfer <i class='gl gl-a'>A</i>?",
+      a: "Omdat een <i class='gl gl-a'>A</i> bewezen wordt, niet beloofd: hij is voorbehouden aan waarden die in exploitatie zijn geverifieerd. Een volledig declaratief dossier, hoe uitstekend ook, komt niet boven een <i class='gl gl-b'>B</i> uit — ‘aangekondigd ≠ gemeten’. Een exploitant behaalt zijn <i class='gl gl-a'>A</i> door bewijs van een derde aan te leveren (EED-rapportage aan de toezichthouder, ISO/IEC 30134-audit door een geaccrediteerde instelling — nooit een marketingpagina) via het publieke correctiekanaal: de waarde gaat dan van ‘aangekondigd’ naar ‘gemeten’, het plafond vervalt, en de herberekening wordt vastgelegd in het auditlogboek. De <i class='gl gl-a'>A</i> is niet te koop en niet op eigen verklaring te krijgen: hij wordt aangetoond. En bewijs verhoogt het cijfer project &amp; proces — nooit dat van de site: het gebied is een gegeven — daar valt niets te bewijzen.",
+    },
+    {
+      q: "Waarom we publiceren zonder toestemming te vragen",
+      a: "Een criticus beoordeelt een film zonder akkoord van de studio. Een journalist publiceert zijn onderzoek zonder dat van wie het stoort. ScoreMyDataCenter staat in die traditie: de vrijheid van kritiek en de bijdrage aan het publieke debat. Het cijfer valt onder de vrijheid van kritiek; zijn soliditeit hangt af van de transparantie van de methode, de kwaliteit van de bronnen en de afgewogenheid van de woorden. We vragen geen toestemming om een onafhankelijke beoordeling te publiceren. In ruil leggen we onszelf een openbare methode op, gedocumenteerde feiten, afgewogen woorden en een permanent recht op correctie en weerwoord.",
+    },
+    {
+      q: "En als een gegeven onjuist is, of de exploitant het er niet mee eens is?",
+      a: "Twee aparte instrumenten: de feitelijke correctie — elk gegeven wordt op bewijs gecorrigeerd, de wijziging wordt gedateerd, en als de berekening wordt geraakt, wordt het cijfer herberekend bij gelijke methodeversie — en het weerwoord van de exploitant, gepubliceerd in een eigen ruimte, met duidelijke naamsvermelding en datum. De publicatie van een weerwoord wijzigt het cijfer niet automatisch: dat beweegt alleen wanneer nieuwe of gecorrigeerde feiten de uitkomst van de methode veranderen.",
+    },
+    {
+      q: "Kan een exploitant de verwijdering van zijn fiche vragen?",
+      a: "Een onjuist gegeven wordt op bewijs gecorrigeerd, en de exploitant kan een weerwoord insturen dat naast het cijfer wordt gepubliceerd. Maar een gedocumenteerd en methodisch cijfer wordt niet op verzoek ingetrokken: intrekken omdat het niet bevalt, zou het langs de achterdeur verkopen zijn. Het cijfer blijft; de tegenspraak komt erbij.",
+    },
+    {
+      q: "Is het cijfer een definitief oordeel?",
+      a: "Nee: het is een cijfer voor acceptatierisico, met een vertrouwensniveau, en het kan meebewegen met het project. De getalscore wordt gepubliceerd om de berekening transparant te maken, maar de letter <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> is maatgevend — het cijfer past een meetlat van experts toe, gedocumenteerd en geversioneerd; het pretendeert geen orakelnauwkeurigheid.",
+    },
+    {
+      q: "Beweegt het cijfer mee met de technische vooruitgang? Is een goed beoordeeld datacenter dat over tien jaar nog?",
+      a: "Ja, en dat is gewild. Een cijfer verandert om twee redenen: het project evolueert (nieuwe gegevens), of de maatstaf evolueert met de stand van de techniek. Onze drempels zijn verankerd in normen die mettertijd strenger worden (ISO, Europese regelgeving): een <i class='gl gl-a'>A</i> betekent altijd ‘het beste dat vandaag haalbaar is’, niet ‘het beste van 2026’. Anders zou iedereen op den duur een <i class='gl gl-a'>A</i> halen naarmate de technologie vordert — precies daarom is het Europese energielabel in 2021 herschaald, toen bijna alle apparaten A+++ waren geworden. Elk cijfer is dus gedateerd en gekoppeld aan een methodeversie: een datacenter dat in 2026 uitstekend is, kan naar de normen van 2036 ‘middelmatig’ zijn — en dat is exact de rol van de score: vooruitgang belonen, en signaleren wat veroudert.",
+    },
+    {
+      q: "Wie zijn de spelers in de datacentersector?",
+      a: "Meerdere families, die elkaar op één project vaak kruisen. <b>Ontwikkelaars en gebiedsontwikkelaars</b>: zij vinden de grond, halen de vergunningen en de netaansluiting binnen, en verkopen of verhuren daarna. <b>Colocatie-exploitanten</b>: zij exploiteren datacenters en verhuren er ruimte, energie en connectiviteit aan hun klanten. <b>Hyperscalers</b>: de cloudreuzen, die hun eigen campussen bouwen en exploiteren. <b>AI-neoclouds</b>: gespecialiseerde aanbieders die rekenkracht voor kunstmatige intelligentie verhuren. <b>Energiebedrijven en netbeheerders</b>: zij produceren en leveren de elektriciteit en sluiten de site aan (in Frankrijk RTE voor het transport, Enedis voor de distributie). <b>Bouwers en toeleveranciers</b>: zij bouwen en leveren koeling, noodstroom, servers. <b>Overheden</b>: de gemeente of het samenwerkingsverband stelt de stedenbouwkundige regels vast en verleent doorgaans de bouwvergunning; in Frankrijk behandelt de prefect de milieuvergunning. <b>Investeerders en vastgoedfondsen</b>: fondsen en vastgoedmaatschappijen die de panden financieren of bezitten.",
+    },
+    {
+      q: "Hoe onderscheid je de spelers: ontwikkelaar of exploitant?",
+      a: "De ontwikkelaar maakt het terrein en het gebouw klaar (grond, vergunningen, aansluiting) en verkoopt of verhuurt het daarna; de exploitant laat er de servers draaien en verkoopt de hosting aan klanten. De analogie: de projectontwikkelaar en de hotelier — de een bouwt het hotel, de ander brengt het tot leven. Allebei tegelijk, bestaat dat? Ja, het is zelfs het dominante model bij de groten: Data4, Equinix en Digital Realty ontwikkelen én exploiteren hun campussen. De zuivere ontwikkelaars zijn eerder de nieuwkomers uit het vastgoed: H&DC, Prologis, Goodman, Segro, Altarea — ze komen uit de logistiek of de projectontwikkeling. Een site die door een ontwikkelaar wordt aangekondigd, is dus van nature een vastgoedproject, geen datacenter in bedrijf.",
+    },
+    {
+      q: "Wie praat met de gemeente, en wie praat er nooit mee?",
+      a: "Vijf rollen — en vooral: wie praat met het gebied, en wie nooit. <b>De ontwikkelaar</b> zet de operatie op — grond, vergunningen, aansluiting — bouwt, en verkoopt of verhuurt dan. Hij is het die in het begin bij de burgemeester langsgaat; vaak verdwijnt hij zodra de vergunning binnen is. <b>De eigenaar</b> bezit het pand (een vastgoedfonds): hij praat lokaal met niemand, maar hij is het die incasseert. <b>De exploitant</b> verkoopt — hij verhuurt zalen, energie en connectiviteit aan klanten: zijn naam staat op de fiche, en hij is het aanspreekpunt van het gebied zodra de site in bedrijf is. <b>De technisch beheerder</b> laat het gebouw dagelijks draaien (koeling, elektriciteit, onderhoud), vaak een onderaannemer die het publiek nooit ziet — maar hij beheert het geluid en de noodaggregaten, dus wat de omwonenden hindert. <b>De eindklant</b> huurt de zalen of het vermogen (een bank, een hyperscaler, een neocloud die verder doorverkoopt): hij praat nooit met de gemeente en zijn naam is zelden publiek. Bij de groten zijn de eerste drie rollen vaak hetzelfde bedrijf — Data4, Equinix, Digital Realty ontwikkelen en exploiteren hun campussen; bij de nieuwkomers uit het vastgoed zijn ze gescheiden. <b>Wat dit verandert voor een bestuurder:</b> wie de banen en de restwarmte belooft, is niet wie ze zal leveren, en wie werkelijk verbruikt, zit bijna nooit aan tafel.",
+    },
+    {
+      q: "Wat zijn de stappen van een datacenterproject, van aankondiging tot ingebruikname?",
+      a: "In Frankrijk, schematisch: 1) de aankondiging en soms een voorafgaand overleg; 2) de indiening van de aanvragen — bouwvergunning en meestal een milieuvergunning onder het regime van de geklasseerde installaties (ICPE); 3) de behandeling: advies van de milieuautoriteit, dan de inspraak; 4) de beslissing: vergunning verleend door de burgemeester (of in bepaalde gevallen de prefect), milieuvergunning bij prefectoraal besluit; 5) de beroepstermijnen; 6) de bouw, vaak in fasen; 7) de ingebruikname, en daarna de controles tijdens de exploitatie. Stappen kunnen elkaar overlappen, en een project kan bij elk ervan stoppen. De rechten van het publiek bij elke stap: <a href='/nl/datacenters-begrijpen/#rechten'>Rechten en tijdpad</a>.",
+    },
+    {
+      q: "Wat is een ‘moratorium’ op datacenters? Stopt dat een project?",
+      a: "Het woord dekt heel verschillende ladingen. Een politieke motie of raadsbeslissing die om een pauze vraagt, heeft op zichzelf geen juridisch effect op een al verleende vergunning. Er bestaat in Frankrijk wél een juridisch instrument: het <b>sursis à statuer</b> (aanhouden van de beslissing). Wanneer een lokaal stedenbouwkundig plan wordt opgesteld of herzien, kan de gemeente haar antwoord op een vergunningsaanvraag uitstellen, voor ten hoogste twee jaar (Franse stedenbouwwet, art. L.424-1). Een algemene pauze op nationale schaal zou een wet of een besluit vergen. Op deze site wordt een moratorium gemeld als een gedocumenteerd feit, nooit als een cijfer.",
+    },
+    {
+      q: "Wie kan een bouwplaats stilleggen? Wat kan de bestuursrechter beslissen?",
+      a: "Meerdere wegen, met verschillende effecten. <b>De bestuursrechter</b>: een beroep tegen een vergunning legt de bouw niet uit zichzelf stil. Om die snel te schorsen is een <b>référé-suspension</b> (kort geding tot schorsing) nodig, alleen toegekend bij spoed en ernstige twijfel over de rechtmatigheid (Franse code van bestuursrechtspraak, art. L.521-1). In de bodemprocedure kan de rechter de vergunning vernietigen, of de initiatiefnemer tijd geven om een herstelbaar gebrek te corrigeren (stedenbouwwet, art. L.600-5-1). Tegen die uitspraken staat in beginsel hoger beroep open, daarna de Conseil d'État. <b>De burgemeester of de prefect</b>: zij kunnen bouwwerkzaamheden die zonder vergunning of in strijd ermee worden uitgevoerd, laten stilleggen (stedenbouwwet, art. L.480-2); voor een geklasseerde installatie kan de prefect de exploitant in gebreke stellen en daarna de activiteit schorsen (milieuwet, art. L.171-8). <b>De initiatiefnemer</b>, ten slotte, kan zelf opschorten of afzien, om financiële, technische of commerciële redenen.",
+    },
+    {
+      q: "Kan een geschorst project, of een project onder moratorium, herstarten?",
+      a: "Ja, in meerdere gevallen: het aanhouden van de beslissing loopt af (aan het einde moet de gemeente binnen twee maanden beslissen als de aanvrager zijn aanvraag bevestigt); een schorsing wordt door de rechter opgeheven; de vergunning wordt geregulariseerd; een vernietiging wordt in hoger beroep tenietgedaan; of de initiatiefnemer dient een nieuw dossier in. Omgekeerd verloopt een bouwvergunning: in de regel als de bouw niet binnen drie jaar begint, of langer dan een jaar stilligt; die termijn kan twee keer met een jaar worden verlengd (Franse stedenbouwwet, art. R.424-17 en R.424-21). Een stilgevallen project is dus niet noodzakelijk een opgegeven project — daarom halen we het nooit weg zonder bron.",
+    },
+    {
+      q: "Wat betekent ‘aangekondigd’ op een fiche?",
+      a: "Dat het datacenter nog niet in bedrijf is: project publiek gemaakt, in vergunningsprocedure of in aanbouw. Zolang het niet in bedrijf is, krijgt het geen definitief cijfer maar een voorlopige bandbreedte, berekend op wat het gebied ondergaat.",
+    },
+    {
+      q: "Wie zijn jullie, en hoe blijven jullie onafhankelijk?",
+      a: "Een onafhankelijk observatorium, opgericht door Franck Bardol. De methode is open, beoordeelde partijen betalen niet, en onze werking staat beschreven in de sectie <a href='#open'>Open model</a>.",
+    },
+  ],
+  contactTitle: "Stel een project voor, of bereik het observatorium.",
+  contactCta: "Contact",
+};
+
 /** La table servie au gabarit : `ACCUEIL[lang]`. */
-export const ACCUEIL: Record<Langue, typeof FR> = { fr: FR, en: EN };
+export const ACCUEIL: Record<LangueDeclaree, typeof FR> = { fr: FR, en: EN, nl: NL };
 
 /**
  * Les trois chiffres de « pourquoi maintenant », remplis — `chiffresAccueil(lang)`.

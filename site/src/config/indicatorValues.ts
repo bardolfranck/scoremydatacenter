@@ -1,3 +1,5 @@
+import type { LangueDeclaree } from "../content/langues";
+import { fmtInt, fmtDec, type Lang } from "./stats";
 // Libellés lisibles des valeurs catégorielles et des unités.
 //
 // POURQUOI. La fiche affichait la clé technique du moteur — `saturated`,
@@ -19,59 +21,65 @@
 // tranchés lui-même : le profil social d'une commune (favorable / intermédiaire /
 // fragile), le dossier de l'opérateur, et les retombées annoncées.
 
-type Libelle = { fr: string; en: string };
+// 🔴 LE TYPE DISAIT DEUX LANGUES ET LE FICHIER EN PORTAIT TROIS. `FACTEUR_DOMINANT` était
+// déclaré `{ fr; en }` alors que ses entrées portent déjà `nl` : le type mentait, et
+// `astro build` ne lance pas `astro check` — donc personne ne le voyait. Une langue de plus
+// est une clé OPTIONNELLE : tant qu'elle manque, `libelleValeur` rend la valeur BRUTE, pas
+// l'anglais, et c'est la barrière de langue servie qui compte le trou.
+type Libelle = { fr: string; en: string; nl?: string };
 
-const L = (fr: string, en: string): Libelle => ({ fr, en });
+const L = (fr: string, en: string, nl?: string): Libelle =>
+  nl === undefined ? { fr, en } : { fr, en, nl };
 
 export const VALEURS: Record<string, Record<string, Libelle>> = {
   // ——— Énergie ———
   E2: {
-    ample: L("capacité de raccordement largement disponible", "ample connection capacity"),
-    adequate: L("capacité de raccordement suffisante", "adequate connection capacity"),
-    constrained: L("capacité de raccordement contrainte", "constrained connection capacity"),
-    saturated: L("réseau saturé au point de raccordement", "grid saturated at the connection point"),
+    ample: L("capacité de raccordement largement disponible", "ample connection capacity", "ruim beschikbare aansluitcapaciteit"),
+    adequate: L("capacité de raccordement suffisante", "adequate connection capacity", "voldoende aansluitcapaciteit"),
+    constrained: L("capacité de raccordement contrainte", "constrained connection capacity", "beperkte aansluitcapaciteit"),
+    saturated: L("réseau saturé au point de raccordement", "grid saturated at the connection point", "net verzadigd op het aansluitpunt"),
   },
   E3: {
-    low: L("réseau local peu encombré", "little local grid congestion"),
-    moderate: L("réseau local moyennement encombré", "moderate local grid congestion"),
-    high: L("réseau local très encombré", "heavy local grid congestion"),
-    critical: L("réseau local en congestion critique", "critical local grid congestion"),
+    low: L("réseau local peu encombré", "little local grid congestion", "weinig congestie op het lokale net"),
+    moderate: L("réseau local moyennement encombré", "moderate local grid congestion", "matige congestie op het lokale net"),
+    high: L("réseau local très encombré", "heavy local grid congestion", "zware congestie op het lokale net"),
+    critical: L("réseau local en congestion critique", "critical local grid congestion", "kritieke congestie op het lokale net"),
   },
   E6: {
-    raccordable: L("raccordable à un réseau de chaleur existant", "connectable to an existing heat network"),
-    proche: L("réseau de chaleur à proximité", "heat network nearby"),
-    eloigne: L("aucun réseau de chaleur à proximité", "no heat network nearby"),
+    raccordable: L("raccordable à un réseau de chaleur existant", "connectable to an existing heat network", "aansluitbaar op een bestaand warmtenet"),
+    proche: L("réseau de chaleur à proximité", "heat network nearby", "warmtenet in de buurt"),
+    eloigne: L("aucun réseau de chaleur à proximité", "no heat network nearby", "geen warmtenet in de buurt"),
   },
   E7: {
-    realise: L("récupération de chaleur réalisée", "heat recovery in operation"),
+    realise: L("récupération de chaleur réalisée", "heat recovery in operation", "warmteterugwinning gerealiseerd"),
     contrat_signe: L("contrat de récupération de chaleur signé", "heat-recovery contract signed"),
-    etude: L("récupération de chaleur à l'étude", "heat recovery under study"),
+    etude: L("récupération de chaleur à l'étude", "heat recovery under study", "warmteterugwinning in onderzoek"),
     intention: L("intention annoncée, sans engagement", "stated intention, no commitment"),
     aucun: L("aucune récupération de chaleur annoncée", "no heat recovery announced"),
   },
 
   // ——— Eau ———
   W1: {
-    no_stress: L("zone sans stress hydrique mesuré", "no measured water stress in the area"),
-    moderate: L("stress hydrique modéré", "moderate water stress"),
-    high: L("stress hydrique élevé", "high water stress"),
-    zre_or_crisis: L("zone de répartition des eaux ou arrêté de crise", "water-allocation zone or drought order"),
+    no_stress: L("zone sans stress hydrique mesuré", "no measured water stress in the area", "geen gemeten waterstress in het gebied"),
+    moderate: L("stress hydrique modéré", "moderate water stress", "matige waterstress"),
+    high: L("stress hydrique élevé", "high water stress", "hoge waterstress"),
+    zre_or_crisis: L("zone de répartition des eaux ou arrêté de crise", "water-allocation zone or drought order", "waterverdelingszone of droogtebesluit"),
   },
   W2: {
-    very_good: L("masse d'eau en très bon état", "water body in very good status"),
-    good: L("masse d'eau en bon état", "water body in good status"),
-    moderate: L("masse d'eau en état moyen", "water body in moderate status"),
-    poor: L("masse d'eau en état médiocre", "water body in poor status"),
-    bad: L("masse d'eau en mauvais état", "water body in bad status"),
+    very_good: L("masse d'eau en très bon état", "water body in very good status", "waterlichaam in zeer goede toestand"),
+    good: L("masse d'eau en bon état", "water body in good status", "waterlichaam in goede toestand"),
+    moderate: L("masse d'eau en état moyen", "water body in moderate status", "waterlichaam in matige toestand"),
+    poor: L("masse d'eau en état médiocre", "water body in poor status", "waterlichaam in ontoereikende toestand"),
+    bad: L("masse d'eau en mauvais état", "water body in bad status", "waterlichaam in slechte toestand"),
   },
   W3: {
-    low: L("prélèvements faibles sur le bassin", "low abstraction in the basin"),
-    moderate: L("prélèvements modérés sur le bassin", "moderate abstraction in the basin"),
-    high: L("prélèvements élevés sur le bassin", "high abstraction in the basin"),
-    very_high: L("prélèvements très élevés sur le bassin", "very high abstraction in the basin"),
+    low: L("prélèvements faibles sur le bassin", "low abstraction in the basin", "lage onttrekkingen uit het stroomgebied"),
+    moderate: L("prélèvements modérés sur le bassin", "moderate abstraction in the basin", "matige onttrekkingen uit het stroomgebied"),
+    high: L("prélèvements élevés sur le bassin", "high abstraction in the basin", "hoge onttrekkingen uit het stroomgebied"),
+    very_high: L("prélèvements très élevés sur le bassin", "very high abstraction in the basin", "zeer hoge onttrekkingen uit het stroomgebied"),
   },
   W4: {
-    closed_loop_dry: L("refroidissement en circuit fermé, sans eau", "dry closed-loop cooling"),
+    closed_loop_dry: L("refroidissement en circuit fermé, sans eau", "dry closed-loop cooling", "koeling in gesloten kringloop, zonder water"),
     hybrid_adiabatic: L("refroidissement hybride adiabatique", "hybrid adiabatic cooling"),
     evaporative_open: L("refroidissement évaporatif en circuit ouvert", "open-circuit evaporative cooling"),
     unknown: L("technologie de refroidissement non communiquée", "cooling technology not disclosed"),
@@ -79,69 +87,147 @@ export const VALEURS: Record<string, Record<string, Libelle>> = {
 
   // ——— Foncier & biodiversité ———
   F1: {
-    overlap: L("recoupe une zone naturelle protégée", "overlaps a protected natural area"),
-    adjacent_under_1km: L("zone naturelle protégée à moins de 1 km", "protected natural area within 1 km"),
-    near_1_to_5km: L("zone naturelle protégée entre 1 et 5 km", "protected natural area 1–5 km away"),
+    overlap: L("recoupe une zone naturelle protégée", "overlaps a protected natural area", "overlapt een beschermd natuurgebied"),
+    adjacent_under_1km: L("zone naturelle protégée à moins de 1 km", "protected natural area within 1 km", "beschermd natuurgebied binnen 1 km"),
+    near_1_to_5km: L("zone naturelle protégée entre 1 et 5 km", "protected natural area 1–5 km away", "beschermd natuurgebied tussen 1 en 5 km"),
     distant_over_5km: L(
       "aucune zone naturelle protégée recensée à moins de 5 km, à notre connaissance",
-      "no protected natural area on record within 5 km, to our knowledge",
+      "no protected natural area on record within 5 km, to our knowledge", "geen beschermd natuurgebied geregistreerd binnen 5 km, voor zover ons bekend"),
+  },
+  F7: {
+    oui: L(
+      "procédure de mise en compatibilité du document d'urbanisme engagée",
+      "a procedure is under way to align the planning document with the project",
+      "procedure gestart om het bestemmingsplan aan het project aan te passen",
     ),
   },
   F2: {
-    artificialized: L("terrain déjà artificialisé", "previously developed land"),
-    transitional: L("terrain en transition", "transitional land"),
-    agricultural: L("terre agricole", "farmland"),
-    natural_or_enaf: L("espace naturel, agricole ou forestier", "natural, agricultural or forest land"),
+    artificialized: L("terrain déjà artificialisé", "previously developed land", "reeds verhard terrein"),
+    transitional: L("terrain en transition", "transitional land", "terrein in overgang"),
+    agricultural: L("terre agricole", "farmland", "landbouwgrond"),
+    natural_or_enaf: L("espace naturel, agricole ou forestier", "natural, agricultural or forest land", "natuur-, landbouw- of bosgrond"),
+  },
+  // F6 et F7 posent DEUX questions différentes et reçoivent la même valeur `oui` — le
+  // terrain est-il déjà désigné à l'urbanisation (F6), et une procédure est-elle engagée
+  // pour rendre le document compatible (F7). Un seul libellé pour les deux aurait fait
+  // dire au second ce que dit le premier : c'est pourquoi la table est indexée par PAIRE
+  // (indicateur, valeur) et non par valeur seule.
+  F6: {
+    oui: L(
+      "terrain désigné à l'urbanisation dans un plan supra-communal",
+      "land designated for urban development in a supra-municipal plan",
+      "terrein aangewezen voor verstedelijking in een bovengemeentelijk plan",
+    ),
   },
   F5: {
-    erc_complet: L("mesures éviter-réduire-compenser complètes", "full avoid-reduce-offset measures"),
-    partiel: L("mesures éviter-réduire-compenser partielles", "partial avoid-reduce-offset measures"),
+    erc_complet: L("mesures éviter-réduire-compenser complètes", "full avoid-reduce-offset measures", "volledige maatregelen om te vermijden, te beperken en te compenseren"),
+    partiel: L("mesures éviter-réduire-compenser partielles", "partial avoid-reduce-offset measures", "gedeeltelijke maatregelen om te vermijden, te beperken en te compenseren"),
     aucun: L("aucune mesure éviter-réduire-compenser", "no avoid-reduce-offset measures"),
   },
 
   // ——— Impact local ———
   L1: {
-    strong_fit: L("profil social de la commune : favorable", "municipality's social profile: favourable"),
-    neutral: L("profil social de la commune : intermédiaire", "municipality's social profile: intermediate"),
-    sensitive: L("profil social de la commune : fragile", "municipality's social profile: fragile"),
+    strong_fit: L("profil social de la commune : favorable", "municipality's social profile: favourable", "sociaal profiel van de gemeente: gunstig"),
+    neutral: L("profil social de la commune : intermédiaire", "municipality's social profile: intermediate", "sociaal profiel van de gemeente: gemiddeld"),
+    sensitive: L("profil social de la commune : fragile", "municipality's social profile: fragile", "sociaal profiel van de gemeente: kwetsbaar"),
   },
   L3: {
     none_within_5km: L(
       "aucun site à risque technologique recensé dans un rayon de 5 km, à notre connaissance",
-      "no technological-risk site on record within 5 km, to our knowledge",
-    ),
-    seveso_low_within_5km: L("un établissement Seveso recensé à moins de 5 km", "a Seveso establishment on record within 5 km"),
+      "no technological-risk site on record within 5 km, to our knowledge", "geen industriële risicosite geregistreerd binnen een straal van 5 km, voor zover ons bekend"),
+    seveso_low_within_5km: L("un établissement Seveso recensé à moins de 5 km", "a Seveso establishment on record within 5 km", "een Seveso-inrichting geregistreerd binnen 5 km"),
     seveso_high_within_2km: L(
       "un établissement Seveso seuil haut recensé à moins de 2 km",
-      "an upper-tier Seveso establishment on record within 2 km",
-    ),
+      "an upper-tier Seveso establishment on record within 2 km", "een Seveso-inrichting met hoge drempel geregistreerd binnen 2 km"),
   },
   L5: {
     documented_significant: L("retombées fiscales documentées", "documented tax revenue"),
-    announced_unquantified: L("retombées annoncées sans chiffrage", "revenue announced without figures"),
+    announced_unquantified: L("retombées annoncées sans chiffrage", "revenue announced without figures", "aangekondigde baten, zonder bedragen"),
     none: L("aucune retombée fiscale annoncée", "no tax revenue announced"),
   },
 
   // ——— Transparence & gouvernance ———
   T2: {
-    full_dossier_online: L("dossier complet publié en ligne", "full dossier published online"),
+    full_dossier_online: L("dossier complet publié en ligne", "full dossier published online", "volledig dossier online gepubliceerd"),
     partial: L("dossier partiellement publié", "dossier partially published"),
-    minimal: L("dossier minimal", "minimal dossier"),
+    minimal: L("dossier minimal", "minimal dossier", "minimaal dossier"),
     unavailable: L("dossier non accessible", "dossier not accessible"),
   },
 };
 
-// Unités : on traduit ce qui est une phrase, on garde ce qui est une notation
-// standard (gCO2e/kWh, PUE, L/kWh se lisent pareil dans les deux langues).
-const UNITES: Record<string, string> = {
-  hectares: "hectares",
-  "% renewable": "% renouvelable",
-  "MW per 1000 inhabitants": "MW pour 1000 habitants",
-  "permanent jobs per 100 MW": "emplois permanents pour 100 MW",
+
+// ─────────────────────────────────────────────────────────────────────────────────────────
+// LES VALEURS DU DOSSIER ENVIRONNEMENTAL — une autre famille, un autre nommage.
+//
+// 🔴 Celles-là sortaient BRUTES dans les trois langues : « Carburant des groupes
+// fuel_oil_or_diesel », « Valorisation de la chaleur under_study ». 43 pages servies, en
+// production, en français comme en anglais. Le composant du dossier affiche `String(value)`
+// — ce qui va pour un nombre et publie une clé de moteur pour une chaîne.
+//
+// Ce ne sont PAS les valeurs de `VALEURS` : elles sont indexées par le nom du champ extrait
+// du dossier (`backup_generator_fuel`), pas par l'identifiant d'un indicateur noté. Deux
+// familles de clés, deux tables — les confondre ferait chercher `adiabatic` sous « W4 ».
+//
+// Règle tenue sur les champs déclaratifs : le libellé dit ce que le DOCUMENT dit, pas ce
+// qu'on en conclut. `closed_loop` ne reçoit donc pas le « sans eau » de `closed_loop_dry`,
+// que le dossier ne dit pas.
+export const VALEURS_DOSSIER: Record<string, Record<string, Libelle>> = {
+  backup_generator_fuel: {
+    fuel_oil_or_diesel: L("fioul ou gazole", "fuel oil or diesel", "stookolie of diesel"),
+    domestic_fuel_oil: L("fioul domestique", "domestic heating oil", "huisbrandolie"),
+    hvo: L("HVO (gazole d'origine végétale)", "HVO (hydrotreated vegetable oil)", "HVO (gehydrogeneerde plantaardige olie)"),
+  },
+  waste_heat_recovery_status: {
+    under_study: L("valorisation de la chaleur à l'étude", "heat reuse under study", "warmtebenutting in onderzoek"),
+  },
+  cooling_technology: {
+    adiabatic: L("refroidissement adiabatique", "adiabatic cooling", "adiabatische koeling"),
+    free_cooling: L("free cooling (refroidissement par l'air extérieur)", "free cooling (outside-air cooling)", "free cooling (koeling met buitenlucht)"),
+    closed_loop: L("refroidissement en circuit fermé", "closed-loop cooling", "koeling in gesloten kringloop"),
+  },
+};
+
+/** Le libellé d'une valeur du dossier, ou la valeur brute si elle n'en a pas. */
+export function libelleFait(indicateur: string, valeur: string, lang: string): string {
+  const l = VALEURS_DOSSIER[indicateur]?.[valeur];
+  // Même règle que `libelleValeur` : un libellé qui manque rend la valeur BRUTE, jamais
+  // l'anglais — une langue à moitié remplie se lirait sinon comme une langue complète.
+  return l?.[lang as keyof typeof l] ?? valeur;
+}
+
+// Unités : on traduit ce qui est une PHRASE, on garde ce qui est une notation standard
+// (gCO2e/kWh, PUE, L/kWh se lisent pareil dans toutes les langues).
+//
+// 🔴 La table ne portait que le français, et la fonction disait `if (lang !== "fr") return
+// unite` : toute langue qui n'est pas le français recevait donc l'ANGLAIS. Un portrait
+// néerlandais affichait « 0,59 MW per 1000 inhabitants » — le nombre dans la bonne langue,
+// l'unité dans une autre. Une unité réécrite est un fait faux, et une unité pas réécrite
+// est une phrase anglaise au milieu d'une phrase néerlandaise.
+//
+// La table est donc indexée PAR LANGUE, et l'anglais y est la clé d'origine : l'unité telle
+// que la méthodologie l'écrit. Une langue absente rend la notation inchangée.
+const UNITES: Record<string, Partial<Record<LangueDeclaree, string>>> = {
+  hectares: { fr: "hectares", nl: "hectare" },
+  "% renewable": { fr: "% renouvelable", nl: "% hernieuwbaar" },
+  "MW per 1000 inhabitants": {
+    fr: "MW pour 1000 habitants", nl: "MW per 1000 inwoners",
+  },
+  "permanent jobs per 100 MW": {
+    fr: "emplois permanents pour 100 MW", nl: "vaste banen per 100 MW",
+  },
 };
 
 /** Le libellé d'une valeur, ou la valeur brute si elle n'en a pas encore. */
 export function libelleValeur(indicateur: string, valeur: unknown, lang: string): string {
+  // 🔴 UN NOMBRE S'ÉCRIT SELON LA LANGUE QUI LE LIT. `String(valeur)` rendait « 59.9 » et
+  // « 3264 » au milieu d'une page néerlandaise — point décimal anglais, milliers sans
+  // séparateur — relevé par la relecture native. Le français et le néerlandais écrivent
+  // « 59,9 », et les milliers prennent une espace fine en français, un point en néerlandais.
+  if (typeof valeur === "number") {
+    return Number.isInteger(valeur)
+      ? fmtInt(valeur, lang as Lang)
+      : fmtDec(valeur, lang as Lang);
+  }
   if (typeof valeur !== "string") return String(valeur);
   const l = VALEURS[indicateur]?.[valeur];
   if (!l) return valeur;
@@ -153,8 +239,7 @@ export function libelleValeur(indicateur: string, valeur: unknown, lang: string)
 
 /** L'unité dans la langue de la page ; inchangée si c'est une notation. */
 export function libelleUnite(unite: string, lang: string): string {
-  if (lang !== "fr") return unite;
-  return UNITES[unite] ?? unite;
+  return UNITES[unite]?.[lang as LangueDeclaree] ?? unite;
 }
 
 // « CE QUI PÈSE LE PLUS ICI » — les mots d'habitant du facteur dominant.
@@ -168,32 +253,32 @@ export function libelleUnite(unite: string, lang: string): string {
 // formulation ». Les huit indicateurs de tier 1 qui peuvent dominer sont tous couverts ;
 // E6 n'y est pas parce que le moteur écarte les tiers 2 de cette position (un tier 2 qui
 // domine est le drapeau d'une couverture tier 1 trop mince, pas un signal).
-const FACTEUR_DOMINANT: Record<string, { fr: string; en: string }> = {
-  E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix" },
-  E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection" },
-  E3: { fr: "une capacité réseau déjà largement réservée", en: "grid capacity already heavily reserved" },
-  W1: { fr: "un bassin d'eau sous tension", en: "a water-stressed basin" },
-  W2: { fr: "la proximité d'un milieu aquatique fragile", en: "closeness to a fragile water body" },
-  F1: { fr: "la proximité d'une zone naturelle protégée", en: "closeness to a protected natural area" },
-  F2: { fr: "la consommation de terres agricoles ou naturelles", en: "building on farmland or natural land" },
-  W3: { fr: "de forts prélèvements d'eau sur le bassin", en: "heavy water abstraction on the basin" },
-  L3: { fr: "la proximité d'un site industriel à risque (Seveso)", en: "closeness to a major-hazard (Seveso) site" },
+const FACTEUR_DOMINANT: Record<string, Libelle> = {
+  E1: { fr: "un mix électrique national très carboné", en: "a carbon-heavy national electricity mix", nl: "een zeer koolstofrijke nationale stroommix" },
+  E2: { fr: "un réseau électrique saturé au raccordement", en: "a saturated local power-grid connection", nl: "een verzadigd elektriciteitsnet op het aansluitpunt" },
+  E3: { fr: "une capacité réseau déjà largement réservée", en: "grid capacity already heavily reserved", nl: "al grotendeels gereserveerde netcapaciteit" },
+  W1: { fr: "un bassin d'eau sous tension", en: "a water-stressed basin", nl: "een stroomgebied onder waterstress" },
+  W2: { fr: "la proximité d'un milieu aquatique fragile", en: "closeness to a fragile water body", nl: "de nabijheid van een kwetsbaar waterlichaam" },
+  F1: { fr: "la proximité d'une zone naturelle protégée", en: "closeness to a protected natural area", nl: "de nabijheid van een beschermd natuurgebied" },
+  F2: { fr: "la consommation de terres agricoles ou naturelles", en: "building on farmland or natural land", nl: "het bebouwen van landbouwgrond of natuur" },
+  W3: { fr: "de forts prélèvements d'eau sur le bassin", en: "heavy water abstraction on the basin", nl: "zware wateronttrekkingen uit het stroomgebied" },
+  L3: { fr: "la proximité d'un site industriel à risque (Seveso)", en: "closeness to a major-hazard (Seveso) site", nl: "de nabijheid van een industriële risicosite (Seveso)" },
 };
 
 const GENTILES: Record<string, { fr: string; en: string }> = {
-  FR: { fr: "français", en: "French" },
-  NL: { fr: "néerlandais", en: "Dutch" },
-  DE: { fr: "allemands", en: "German" },
-  GB: { fr: "britanniques", en: "British" },
-  IT: { fr: "italiens", en: "Italian" },
-  ES: { fr: "espagnols", en: "Spanish" },
-  PL: { fr: "polonais", en: "Polish" },
-  BE: { fr: "belges", en: "Belgian" },
-  CH: { fr: "suisses", en: "Swiss" },
-  SE: { fr: "suédois", en: "Swedish" },
-  NO: { fr: "norvégiens", en: "Norwegian" },
-  DK: { fr: "danois", en: "Danish" },
-  FI: { fr: "finlandais", en: "Finnish" },
+  FR: { fr: "français", en: "French", nl: "Franse" },
+  NL: { fr: "néerlandais", en: "Dutch", nl: "Nederlandse" },
+  DE: { fr: "allemands", en: "German", nl: "Duitse" },
+  GB: { fr: "britanniques", en: "British", nl: "Britse" },
+  IT: { fr: "italiens", en: "Italian", nl: "Italiaanse" },
+  ES: { fr: "espagnols", en: "Spanish", nl: "Spaanse" },
+  PL: { fr: "polonais", en: "Polish", nl: "Poolse" },
+  BE: { fr: "belges", en: "Belgian", nl: "Belgische" },
+  CH: { fr: "suisses", en: "Swiss", nl: "Zwitserse" },
+  SE: { fr: "suédois", en: "Swedish", nl: "Zweedse" },
+  NO: { fr: "norvégiens", en: "Norwegian", nl: "Noorse" },
+  DK: { fr: "danois", en: "Danish", nl: "Deense" },
+  FI: { fr: "finlandais", en: "Finnish", nl: "Finse" },
 };
 
 /** Les deux phrases du bloc « ce qui tire la note », un motif par langue.
@@ -207,9 +292,12 @@ const GENTILES: Record<string, { fr: string; en: string }> = {
  *  recopiée telle quelle : la corriger changerait ce qui est affiché, et ce lot ne doit rien
  *  changer. À trancher à part.
  */
-const PHRASES: Record<"fr" | "en", { ici: string; part: string }> = {
+const PHRASES: Record<LangueDeclaree, { ici: string; part: string }> = {
   fr: { ici: "Ce qui pèse le plus ici : {facteur}.", part: "{base} Premier facteur pour {pct} % des sites {gentile} que nous avons notés." },
   en: { ici: "What weighs most here: {facteur}.", part: "{base} Leading factor for {pct}% of the {gentile} sites we have graded." },
+  // Néerlandais : pas d'espace avant le `%`, comme l'anglais. Et les gentilés-adjectifs
+  // prennent la MAJUSCULE en néerlandais (« Nederlandse ») — ce n'est pas une coquille.
+  nl: { ici: "Wat hier het zwaarst weegt: {facteur}.", part: "{base} Belangrijkste factor voor {pct}% van de {gentile} sites die we hebben beoordeeld." },
 };
 
 /** La phrase « ce qui pèse le plus ici », ou null si on n'a pas de mots sûrs pour ce facteur. */
@@ -219,15 +307,24 @@ export function phraseFacteurDominant(
 ): string | null {
   const mots = drag?.indicator ? FACTEUR_DOMINANT[drag.indicator] : undefined;
   if (!mots) return null;
-  const lg = lang as "fr" | "en";
+  const lg = lang as LangueDeclaree;
+  // 🔴 PAS DE MOTS DANS CETTE LANGUE = PAS DE PHRASE, comme pour un facteur sans mots sûrs.
+  // Les trois tables de ce fichier (FACTEUR_DOMINANT, GENTILES, PHRASES) s'arrêtent au
+  // français et à l'anglais. `PHRASES[lg].ici` sur une troisième langue ne rendait pas une
+  // phrase bancale : il FAISAIT ÉCHOUER LE BUILD de la page (vu sur la fiche néerlandaise,
+  // « Cannot read properties of undefined (reading 'ici') »). Se taire est ici la bonne
+  // sortie — ce bloc dit au lecteur ce qui tire SA note, en mots d'habitant ; le servir en
+  // anglais au milieu d'une page néerlandaise serait pire que ne pas le servir.
+  const phrases = PHRASES[lg];
   const facteur = mots[lg];
-  const base = PHRASES[lg].ici.replace("{facteur}", facteur);
+  if (!phrases || !facteur) return null;
+  const base = phrases.ici.replace("{facteur}", facteur);
   // La part n'est servie que si le pays a assez de fiches pour qu'elle veuille dire quelque
   // chose (le moteur l'omet sinon). Elle ne révèle rien des seuils : c'est la distribution
   // des faiblesses dans le pays, et elle dit au lecteur la chose utile — la contrainte est
   // systémique, elle n'est pas le fait de ce projet-là.
   const g = drag?.country ? GENTILES[drag.country] : undefined;
-  if (drag?.country_share === undefined || !g) return base;
+  if (drag?.country_share === undefined || !g || !g[lg]) return base;
   const pct = Math.round(drag.country_share * 100);
   // ON DONNE LE CHIFFRE, ON NE LE QUALIFIE PAS. Première version : « C'est AUSSI le premier
   // facteur sur X % » — qui marche à 83 % et devient une non-information à 1 % (cas réel : les
@@ -235,7 +332,7 @@ export function phraseFacteurDominant(
   // au-dessus de tant, « peu fréquent » en dessous) ; la formulation neutre est vraie aux deux
   // bouts et laisse le lecteur conclure — 83 % se lit comme une contrainte de pays, 1 % comme
   // une singularité. Décrire le fait, ne pas le juger : la même règle que partout ailleurs.
-  return PHRASES[lg].part
+  return phrases.part
     .replace("{base}", base)
     .replace("{pct}", String(pct))
     .replace("{gentile}", g[lg]);

@@ -4,15 +4,27 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 import "../styles/global.css";
 import { isGroup, type NavNode } from "../config/nav";
+import {
+  RACINE,
+  LANGUES_VIVANTES,
+  LANGUES_DECLAREES,
+  type LangueDeclaree,
+} from "../content/langues";
+import { autresLangues } from "../config/routes";
+import { PREVIZ } from "../config/previz";
 import { CHROME } from "../content/chrome";
 
 interface Props {
-  lang: "en" | "fr";
+  lang: LangueDeclaree;
   title: string;
   description: string;
   tagline: string;
-  altHref: string; // path of the same page in the other language
-  altLabel: string;
+  // 🔴 REPLI DÉCLARÉ, plus la règle. Les versions d'une page viennent de
+  // `config/routes.ts`, d'après l'adresse servie. Ces deux propriétés ne servent QUE les
+  // pages hors table — la préviz, qui n'est pas un gabarit public. Elles restent acceptées
+  // parce que 81 pages les passent encore ; les retirer est un nettoyage, pas une règle.
+  altHref?: string;
+  altLabel?: string;
   nav: NavNode[];
   ogImage?: string; // absolute URL of the social card
 }
@@ -26,8 +38,17 @@ const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = A
 // `.map()` du pied de page décale l'indentation rendue d'un espace sur les 13 168 pages, et
 // un diff de non-régression se met alors à mentir sur ce qu'il a vraiment vérifié.
 const c = CHROME[lang];
-const altLang = lang === "en" ? "fr" : "en";
-const home = lang === "en" ? "/" : "/fr/";
+const home = RACINE[lang];
+
+// 🔴 « L'AUTRE LANGUE » N'EXISTE PLUS. Le layout disait `lang === "en" ? "fr" : "en"` et
+// chaque page passait un `altHref` unique : un site à deux langues, écrit en dur à 81
+// endroits. Les versions d'une page se lisent désormais dans `config/routes.ts`, d'après
+// l'adresse servie — une langue de plus est une colonne à remplir, pas 81 fichiers à
+// rouvrir, et le sélecteur n'offre que les langues RÉELLEMENT écrites pour cette page.
+//
+// Une langue en préparation n'apparaît qu'en préviz : elle a des tables, pas de lecteurs.
+const servies = PREVIZ ? LANGUES_DECLAREES : LANGUES_VIVANTES;
+const autres = autresLangues(Astro.url.pathname, servies);
 
 // Canonical + hreflang cluster. Canonical points at the served path WITHOUT query
 // (?q=, ?dc=, ?veille=… would otherwise let Google index dozens of duplicates of
@@ -35,10 +56,25 @@ const home = lang === "en" ? "/" : "/fr/";
 // (the EN version = the default the search engine serves when no language fits).
 // Trailing slash matches the built canonical (…/press/), so the whole hreflang
 // cluster points at the exact canonical URLs — no redirect hop, fully reciprocal.
-const withSlash = (p: string) => (p.endsWith("/") ? p : p + "/");
+const withSlash = (p: string) =>
+  p.endsWith("/") || p.includes("#") || p.includes("?") ? p : p + "/";
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const altAbs = new URL(withSlash(altHref), Astro.site).href;
-const enAbs = lang === "en" ? canonical : altAbs;
+// Repli DÉCLARÉ, pour les pages hors table (la préviz) : on garde leur paire d'origine.
+// Un repli qui se nomme vaut mieux qu'un sélecteur qui disparaît sans dire pourquoi.
+const liens: { langue: LangueDeclaree; href: string; etiquette: string }[] = autres.length
+  ? autres.map((a) => ({
+      langue: a.langue, href: withSlash(a.href), etiquette: a.langue.toUpperCase(),
+    }))
+  : [{
+      langue: (lang === "en" ? "fr" : "en") as LangueDeclaree,
+      href: withSlash(altHref ?? RACINE.en),
+      etiquette: altLabel ?? "EN",
+    }];
+const abs = (p: string) => new URL(p, Astro.site).href;
+// x-default = l'anglais, qui est ce qu'un moteur sert quand aucune langue ne convient. S'il
+// n'y a pas de version anglaise de cette page, la page elle-même fait le défaut.
+const enAbs =
+  lang === "en" ? canonical : abs(liens.find((l) => l.langue === "en")?.href ?? Astro.url.pathname);
 
 // Social card: pages may pass their own ogImage; otherwise a single on-brand
 // default so EVERY shared link (LinkedIn, X, Slack, press) carries a visual.
@@ -102,7 +138,7 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
     <meta name="twitter:image" content={ogImageResolved} />
     <link rel="icon" type="image/svg+xml" href="/assets/smdc-icon.svg" />
     <link rel="alternate" hreflang={lang} href={canonical} />
-    <link rel="alternate" hreflang={altLang} href={altAbs} />
+    {liens.map((l) => <link rel="alternate" hreflang={l.langue} href={abs(l.href)} />)}
     <link rel="alternate" hreflang="x-default" href={enAbs} />
     <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />
   </head>
@@ -147,7 +183,16 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
                aria-current={isActive(item.href) ? "page" : undefined}>{item.label}</a>
           )
         ))}
-        <a class="lang-switch" href={altHref}>{altLabel}</a>
+        {/* 🔴 LA MÊME ADRESSE QUE LE SIGNAL ENVOYÉ AUX MOTEURS. Le lien visible prenait
+            `altHref` BRUT pendant que le cluster hreflang prenait `withSlash(altHref)` :
+            40 des 63 pages déclaraient une adresse canonique et en proposaient une autre au
+            lecteur, qui passait donc par une redirection à chaque changement de langue.
+            Deux normalisations pour une même valeur, c'est une de trop. La valeur vient
+            maintenant de `config/routes.ts`, et la normalisation est faite UNE fois, ici,
+            pour le lien visible comme pour le cluster hreflang. */}
+        {liens.map((l) => (
+          <a class="lang-switch" href={l.href} lang={l.langue} hreflang={l.langue}>{l.etiquette}</a>
+        ))}
       </nav>
       <script>
         // Progressive enhancement over native <details> (which already gives

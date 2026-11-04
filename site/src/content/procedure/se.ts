@@ -14,6 +14,7 @@ export const SE: ProcedureCountry = {
     authority: {
       fr: "la commune pour le permis de construire, le conseil régional (länsstyrelsen) pour l'autorisation environnementale",
       en: "the municipality for the building permit, the county board (länsstyrelsen) for the environmental permit",
+      nl: "de gemeente voor de bouwvergunning, het regionale bestuur (länsstyrelsen) voor de milieuvergunning",
     },
     windows: {},
     deadlines: [
@@ -21,6 +22,7 @@ export const SE: ProcedureCountry = {
         text: {
           fr: "Trois semaines pour contester la décision, à compter du jour où elle vous a été communiquée. C'est l'un des délais les plus courts du corpus.",
           en: "Three weeks to contest the decision, from the day it reached you. One of the shortest deadlines in the corpus.",
+          nl: "Drie weken om het besluit aan te vechten, te rekenen vanaf de dag waarop het u is meegedeeld. Een van de kortste termijnen van het corpus.",
         },
         cite: "Förvaltningslag (2017:900), 44 §",
         url: "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/svensk-forfattningssamling/forvaltningslag-2017900_sfs-2017-900/",

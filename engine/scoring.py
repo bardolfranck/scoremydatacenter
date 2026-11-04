@@ -148,9 +148,9 @@ def _confidence(dc_entries: dict[str, dict], definitions: list[dict],
 
 
 _DOC_LABELS = {
-    "high": {"fr": "documentation solide", "en": "well documented"},
-    "medium": {"fr": "documentation moyenne", "en": "moderately documented"},
-    "low": {"fr": "documentation faible", "en": "sparsely documented"},
+    "high": {"fr": "documentation solide", "en": "well documented", "nl": "ruim gedocumenteerd"},
+    "medium": {"fr": "documentation moyenne", "en": "moderately documented", "nl": "gedeeltelijk gedocumenteerd"},
+    "low": {"fr": "documentation faible", "en": "sparsely documented", "nl": "dun gedocumenteerd"},
 }
 
 _GRADE_ORDER = "ABCDE"  # index rises with severity (A best, E worst)
@@ -183,6 +183,69 @@ def _documentation(conf: dict) -> dict:
 _CITABLE_MIN_INDICATEURS = 2
 
 
+# ───────────────────────────────────────────────────────────────────────────────────────
+# LE TITRE CITABLE, UNE PHRASE PAR CAS ET PAR LANGUE.
+#
+# Ces quatre phrases vivaient en f-strings dans les quatre branches de `return` de
+# `_citable_quote` : deux langues énumérées à la main, quatre fois. Une troisième langue s'y
+# perdait en silence — et c'est précisément la phrase qui VOYAGE SEULE, celle qu'un
+# journaliste copie telle quelle. Servie en anglais sur un portrait néerlandais, elle est
+# la dernière chose qu'on voudrait voir décrocher.
+#
+# Les guillemets font partie de la PHRASE, pas du code : le français met des chevrons avec
+# espaces insécables, l'anglais des guillemets courbes, et le néerlandais a sa propre
+# convention. Chaque langue porte donc la sienne, à l'intérieur de son gabarit.
+#
+# `{lettre}` est la note du site, `{pire}` celle du pilier le plus bas, `{pilier}` son nom
+# dans la langue, `{projet}` la note projet & processus.
+#
+# ⚠ Les gabarits ci-dessous ont été EXTRAITS du code octet pour octet (espaces insécables
+# compris) : la sortie est inchangée, et le test de non-régression du moteur le vérifie.
+CITABLE: dict[str, dict[str, str]] = {
+    "site_insuffisant": {
+        "fr": "Données insuffisantes pour noter ce site ; aucune note n'est publiée.",
+        "en": "Insufficient data to grade this site; no grade is published.",
+        "nl": "Onvoldoende gegevens om deze site een cijfer te geven; er wordt geen cijfer gepubliceerd.",
+    },
+    "contraste": {
+        "fr": "Noté {lettre} sur le site, mais {pire} sur « {pilier} ».",
+        "en": "Rated {lettre} on site, but {pire} on “{pilier}”.",
+        "nl": "Beoordeeld met {lettre} op de site, maar {pire} op ‘{pilier}’.",
+    },
+    "projet_insuffisant": {
+        "fr": "Noté {lettre} sur le site ; données de projet insuffisantes pour une note projet & processus.",
+        "en": "Rated {lettre} on site; project data insufficient to grade project & process.",
+        "nl": "Beoordeeld met {lettre} op de site; onvoldoende projectgegevens voor een cijfer project & proces.",
+    },
+    "deux_notes": {
+        "fr": "Noté {lettre} sur le site, {projet} en projet & processus.",
+        "en": "Rated {lettre} on site, {projet} on project & process.",
+        "nl": "Beoordeeld met {lettre} op de site, {projet} op project & proces.",
+    },
+}
+
+
+def _phrase(cas: str, **valeurs) -> dict:
+    """La phrase du cas, dans chaque langue que le gabarit porte.
+
+    Une langue absente du gabarit n'apparaît pas dans le résultat : l'affichage retombe
+    alors sur son repli déclaré, et la barrière de langue servie le compte. Mieux qu'une
+    phrase composée avec un nom de pilier emprunté à une autre langue.
+
+    Une valeur peut être un dict par langue (le nom d'un pilier) ou une chaîne (une lettre,
+    la même partout).
+    """
+    sortie = {}
+    for langue, gabarit in CITABLE[cas].items():
+        v = {
+            cle: (val.get(langue) if isinstance(val, dict) else val)
+            for cle, val in valeurs.items()
+        }
+        if any(x is None for x in v.values()):
+            continue
+        sortie[langue] = gabarit.format(**v)
+    return sortie
+
 def _citable_quote(site: dict, project_process: dict, pillar_details: dict, methodology: dict,
                    assise: dict[str, int] | None = None) -> dict:
     """The headline the journalist screenshots — GENERATED, never editorial, so it stays
@@ -209,10 +272,7 @@ def _citable_quote(site: dict, project_process: dict, pillar_details: dict, meth
     # Et quand on ne note ni le site ni le projet, la seule phrase opposable est celle qui le
     # dit — pas une qui compare deux notes absentes.
     if site_grade == INSUFFICIENT_DATA:
-        return {
-            "fr": "Données insuffisantes pour noter ce site ; aucune note n'est publiée.",
-            "en": "Insufficient data to grade this site; no grade is published.",
-        }
+        return _phrase("site_insuffisant")
     graded = {pid: d for pid, d in pillar_details.items()
               if d["grade"] != INSUFFICIENT_DATA
               and (assise is None or assise.get(pid, 0) >= _CITABLE_MIN_INDICATEURS)}
@@ -221,20 +281,11 @@ def _citable_quote(site: dict, project_process: dict, pillar_details: dict, meth
         worst = graded[worst_id]
         if _GRADE_ORDER.index(worst["grade"]) > _GRADE_ORDER.index(site_grade):
             lab = labels[worst_id]
-            return {
-                "fr": f"Noté {site_grade} sur le site, mais {worst['grade']} sur « {lab['fr']} ».",
-                "en": f"Rated {site_grade} on site, but {worst['grade']} on “{lab['en']}”.",
-            }
+            return _phrase("contraste", lettre=site_grade, pire=worst["grade"], pilier=lab)
     pp = project_process["grade"]
     if pp == INSUFFICIENT_DATA:
-        return {
-            "fr": f"Noté {site_grade} sur le site ; données de projet insuffisantes pour une note projet & processus.",
-            "en": f"Rated {site_grade} on site; project data insufficient to grade project & process.",
-        }
-    return {
-        "fr": f"Noté {site_grade} sur le site, {pp} en projet & processus.",
-        "en": f"Rated {site_grade} on site, {pp} on project & process.",
-    }
+        return _phrase("projet_insuffisant", lettre=site_grade)
+    return _phrase("deux_notes", lettre=site_grade, projet=pp)
 
 
 def score_datacenter(dc: dict, methodology: dict) -> dict:
