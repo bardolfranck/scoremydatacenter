@@ -1332,6 +1332,43 @@ def test_la_prose_hors_table_ne_grossit_jamais():
 
 DONNEE_SERVIE = REPO_ROOT / "site" / "public" / "data"
 
+# 🔴 CES TROIS ÉPREUVES LISENT UN SOUS-PRODUIT, PAS UNE SOURCE. `site/public/data/` est
+# ignoré par git : il est ÉCRIT par `make build`. Or `make deploy` lance la suite AVANT le
+# build (c'est écrit dans la cible). Un artefact plus vieux que le code qui l'émet fait donc
+# tomber la suite en accusant « un pipeline a cessé d'émettre » — alors que rien n'a cessé :
+# le fichier date d'avant le changement. C'est arrivé le 2026-11-04, dans l'arbre de
+# déploiement, sur un artefact du 2 novembre, le jour où le néerlandais est arrivé sur main.
+#
+# On ne peut pas conclure d'un artefact périmé. On se TAIT donc, exactement comme on se tait
+# quand il est absent — et les dents, elles, sont APRÈS le build : `scripts/
+# check_langue_donnee_servie.py`, lancé par `make deploy` sur l'artefact frais.
+SOURCES_DONNEE_SERVIE = (
+    REPO_ROOT / "engine",            # scoring.py (_DOC_LABELS, CITABLE), artifacts.py
+    REPO_ROOT / "data" / "methodology",  # d'où sort methodology.json
+)
+
+
+def _perimee(fichiers) -> str | None:
+    """« Rien à comparer » : l'artefact est absent, ou plus vieux que ce qui l'écrit."""
+    manquants = [f for f in fichiers if not f.is_file()]
+    if manquants:
+        return "donnée servie absente de ce checkout — rien à comparer"
+    artefact = min(f.stat().st_mtime for f in fichiers)
+    sources = [
+        s for racine in SOURCES_DONNEE_SERVIE
+        for s in (racine.rglob("*.py") if racine.name == "engine" else racine.rglob("*.json"))
+        if "tests" not in s.parts
+    ]
+    recentes = [s for s in sources if s.stat().st_mtime > artefact]
+    if recentes:
+        return (
+            f"artefact servi PÉRIMÉ ({len(recentes)} source(s) plus récentes, p.ex. "
+            f"{recentes[0].relative_to(REPO_ROOT)}) — on ne conclut pas d'un sous-produit "
+            f"d'avant le changement. Relancez `make build` ; les dents sont de toute façon "
+            f"après le build (scripts/check_langue_donnee_servie.py)."
+        )
+    return None
+
 
 def _objets_bilingues(noeud, sortie: list) -> None:
     """Les objets de la donnée servie qui portent une chaîne PAR LANGUE."""
@@ -1374,8 +1411,8 @@ def test_la_donnee_servie_parle_toutes_les_langues_vivantes():
     import json
 
     fichiers = [DONNEE_SERVIE / "scores.json", DONNEE_SERVIE / "methodology.json"]
-    if not all(f.is_file() for f in fichiers):
-        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+    if (raison := _perimee(fichiers)) is not None:
+        pytest.skip(raison)
 
     vivantes = set(_langues_vivantes())
     objets: list = []
@@ -1407,8 +1444,9 @@ def test_le_garde_de_la_donnee_servie_mord_vraiment(monkeypatch):
     Elle s'appuie donc sur une langue qui n'existera jamais dans la donnée. Ce que le test
     doit prouver, c'est qu'il SAIT DIRE NON — pas que le néerlandais est incomplet.
     """
-    if not (DONNEE_SERVIE / "scores.json").is_file():
-        pytest.skip("donnée servie absente de ce checkout")
+    if (raison := _perimee([DONNEE_SERVIE / "scores.json",
+                            DONNEE_SERVIE / "methodology.json"])) is not None:
+        pytest.skip(raison)
     monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "en", "zz"])
     with pytest.raises(AssertionError, match="ne portent pas toutes les langues vivantes"):
         test_la_donnee_servie_parle_toutes_les_langues_vivantes()
@@ -1425,8 +1463,8 @@ def test_la_donnee_servie_porte_deja_le_neerlandais():
     import json
 
     fichiers = [DONNEE_SERVIE / "scores.json", DONNEE_SERVIE / "methodology.json"]
-    if not all(f.is_file() for f in fichiers):
-        pytest.skip("donnée servie absente de ce checkout — rien à comparer")
+    if (raison := _perimee(fichiers)) is not None:
+        pytest.skip(raison)
     objets: list = []
     for f in fichiers:
         _objets_bilingues(json.loads(f.read_text(encoding="utf-8")), objets)
@@ -2275,3 +2313,125 @@ def test_la_dette_de_routes_de_la_langue_en_preparation_ne_peut_que_baisser():
             f"colonne(s) sans page (déclaré : {DETTE_ROUTES_EN_PREPARATION}). Abaissez "
             f"DETTE_ROUTES_EN_PREPARATION à {len(absentes)}."
         )
+
+
+# ---------------------------------------------------------------------------
+# Les barrières d'après-build existent-elles, et sont-elles lancées ?
+# ---------------------------------------------------------------------------
+
+MAKEFILE = REPO_ROOT / "Makefile"
+
+
+def _cibles() -> dict[str, tuple[list[str], str]]:
+    """Le Makefile en {cible: (prérequis, recette)} — lecture plate, pas d'évaluation."""
+    cibles: dict[str, tuple[list[str], str]] = {}
+    nom, prereqs, recette = None, [], []
+    for ligne in MAKEFILE.read_text(encoding="utf-8").splitlines():
+        if ligne.startswith("\t"):
+            recette.append(ligne)
+            continue
+        m = re.match(r"^([a-z][\w.-]*):(?!=)(.*)$", ligne)
+        if m:
+            if nom:
+                cibles[nom] = (prereqs, "\n".join(recette))
+            nom, prereqs, recette = m.group(1), m.group(2).split(), []
+    if nom:
+        cibles[nom] = (prereqs, "\n".join(recette))
+    return cibles
+
+
+def _cible_deploy() -> str:
+    """La recette de `deploy`, SEULE — ce qui est lancé après le build est ici."""
+    return _cibles()["deploy"][1]
+
+
+def _recettes_atteintes_par_deploy() -> str:
+    """🔴 LA FERMETURE, pas la seule cible. `check_headers.py` n'est pas dans le corps de
+    `deploy` : il est lancé par `headers-check`, prérequis de `test`, que `deploy` appelle.
+    Un relevé qui ne regarde que `deploy` l'aurait déclaré « jamais lancé » — un garde qui
+    mesure à côté, exactement ce qu'on corrige ici. On suit donc les prérequis ET les
+    `$(MAKE) x`, de proche en proche.
+    """
+    cibles = _cibles()
+    vues, pile, morceaux = set(), ["deploy"], []
+    while pile:
+        nom = pile.pop()
+        if nom in vues or nom not in cibles:
+            continue
+        vues.add(nom)
+        prereqs, recette = cibles[nom]
+        morceaux.append(recette)
+        pile += prereqs + re.findall(r"\$\(MAKE\)\s+([a-z][\w.-]*)", recette)
+    return "\n".join(morceaux)
+
+
+def test_toute_barriere_dapres_build_est_lancee_par_deploy():
+    """Un contrôle qui vit dans `scripts/check_*` et que `deploy` n'appelle pas ne garde rien.
+
+    🔴 CE TEST NAÎT D'UN DÉPLACEMENT. Le garde de la donnée servie était une épreuve de
+    cette suite ; il lisait un fichier qu'`make build` écrit, et la suite tourne AVANT le
+    build. Il est donc parti en barrière d'après-build. Déplacer des dents d'un test vers une
+    ligne de Makefile, c'est les rendre supprimables sans que rien ne crie — à moins qu'un
+    test ne tienne la ligne. Il la tient.
+
+    La règle est dans un sens seulement : une barrière DOIT être appelée. On ne demande pas
+    l'inverse (`deploy` appelle aussi des scripts qui ne s'appellent pas `check_*`).
+    """
+    barrieres = sorted(p.name for p in (REPO_ROOT / "scripts").glob("check_*.py"))
+    assert barrieres, "plus aucun script scripts/check_*.py — le relevé cherche à côté"
+    atteintes = _recettes_atteintes_par_deploy()
+    absentes = [n for n in barrieres if n not in atteintes]
+    assert not absentes, (
+        f"{len(absentes)} barrière(s) existent dans scripts/ mais `make deploy` ne les "
+        f"lance pas : {absentes}. Un contrôle qu'on n'appelle pas rassure sans garder — "
+        f"soit on le câble dans la cible deploy, soit on le supprime."
+    )
+
+
+def test_la_barriere_de_la_donnee_servie_est_bien_apres_le_build():
+    """L'ORDRE porte la règle : cette barrière ne peut pas être vérifiée avant `make build`.
+
+    Elle lit `site/public/data/`, que le build écrit. Placée avant, elle jugerait l'artefact
+    du déploiement PRÉCÉDENT — c'est la faute exacte qu'on vient de corriger, réintroduite à
+    l'envers.
+    """
+    corps = _cible_deploy()
+    i_build = corps.find("$(MAKE) build")
+    i_barriere = corps.find("check_langue_donnee_servie.py")
+    assert i_build >= 0, "`deploy` n'appelle plus `make build` — l'ordre n'a plus de sens"
+    assert i_barriere > i_build, (
+        "check_langue_donnee_servie.py est lancé AVANT `make build` : il jugerait "
+        "l'artefact du déploiement précédent, pas celui qui part."
+    )
+
+
+def test_le_garde_des_barrieres_mord_vraiment(monkeypatch, tmp_path):
+    """Contre-épreuve : on décâble une barrière du Makefile, le garde doit refuser.
+
+    Sans ça, le garde passerait au vert parce qu'il ne trouve rien à relever — pas parce que
+    tout est câblé.
+    """
+    faux = tmp_path / "Makefile"
+    faux.write_text(
+        MAKEFILE.read_text(encoding="utf-8").replace(
+            "\tuv run python scripts/check_langue_donnee_servie.py\n", ""
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "MAKEFILE", faux)
+    with pytest.raises(AssertionError, match="check_langue_donnee_servie.py"):
+        test_toute_barriere_dapres_build_est_lancee_par_deploy()
+
+
+def test_le_garde_de_lordre_mord_vraiment(monkeypatch, tmp_path):
+    """Contre-épreuve : on remonte la barrière AVANT le build, le garde doit refuser."""
+    corps = MAKEFILE.read_text(encoding="utf-8")
+    ligne = "\tuv run python scripts/check_langue_donnee_servie.py\n"
+    faux = tmp_path / "Makefile"
+    faux.write_text(
+        corps.replace(ligne, "").replace("\t$(MAKE) build\n", ligne + "\t$(MAKE) build\n"),
+        encoding="utf-8",
+    )
+    monkeypatch.setitem(globals(), "MAKEFILE", faux)
+    with pytest.raises(AssertionError, match="AVANT `make build`"):
+        test_la_barriere_de_la_donnee_servie_est_bien_apres_le_build()
