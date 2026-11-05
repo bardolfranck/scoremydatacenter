@@ -462,13 +462,12 @@ def _branches_nues(chemin) -> list[str]:
 # en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
 # reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
 # qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
-# État au 2026-11-05, après la fiche, le chrome, le portrait, « Comprendre », l'ACCUEIL et le bloc de retrait d'un rapport : 60 branches nues dans 15 fichiers.
+# État au 2026-11-05, après la fiche, le chrome, le portrait, « Comprendre », l'ACCUEIL, le bloc de retrait d'un rapport et les FORMATS déclarés par langue (virgule décimale) : 58 branches nues dans 14 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/ActuFeed.astro": 6,
     "components/Comparateur.astro": 12,
     "components/DevelopersPage.astro": 1,
-    "components/IndicesMap.astro": 1,
-    "components/IndicesPage.astro": 5,
+    "components/IndicesPage.astro": 4,
     "components/KeyReveal.astro": 1,
     "components/LibraryIndex.astro": 2,
     "components/LibraryRevue.astro": 7,

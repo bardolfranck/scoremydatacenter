@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo root, so
 from engine.artifacts import build_artifacts
 from engine.core import ARTIFACTS_DIR, load_datacenters, load_methodology, load_watchlist
 from engine.validate import retient_la_note  # noqa: E402
+from engine.langues import langues_declarees  # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL", Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
 
@@ -396,12 +397,28 @@ def patch_operator_source(sources: dict) -> None:
 # NAF codes we publish as a real-estate DEVELOPMENT activity (an opposable register fact), with a
 # short FR/EN label. Restricted to promotion/construction — never the ambiguous 68.10Z (marchand de
 # biens) or a rental code, which are not "a developer" on their own.
-NAF_DEVELOPER_PUBLISH = {
-    "41.10A": ("promotion immobilière", "real-estate development"),
-    "41.10B": ("promotion immobilière", "real-estate development"),
-    "41.10C": ("promotion immobilière", "real-estate development"),
-    "41.20A": ("construction de bâtiments", "building construction"),
-    "41.20B": ("construction de bâtiments", "building construction"),
+# 🔴 UNE COLONNE PAR LANGUE, PAS UN COUPLE. C'était un tuple `(fr, en)` : ajouter une langue
+# y changeait l'ARITÉ, donc tous les points d'appel — la façon la plus sûre de ne jamais
+# l'ajouter. Les clés sont les codes NAF, qui ne se traduisent pas.
+NAF_DEVELOPER_PUBLISH: dict[str, dict[str, str]] = {
+    "41.10A": {"fr": "promotion immobilière", "en": "real-estate development",
+               "nl": "vastgoedontwikkeling"},
+    "41.10B": {"fr": "promotion immobilière", "en": "real-estate development",
+               "nl": "vastgoedontwikkeling"},
+    "41.10C": {"fr": "promotion immobilière", "en": "real-estate development",
+               "nl": "vastgoedontwikkeling"},
+    "41.20A": {"fr": "construction de bâtiments", "en": "building construction",
+               "nl": "bouw van gebouwen"},
+    "41.20B": {"fr": "construction de bâtiments", "en": "building construction",
+               "nl": "bouw van gebouwen"},
+}
+
+# Le repli quand l'acte administratif ne nomme pas l'activité : il dit ce qu'on SAIT — que
+# cette société a déposé le dossier — et rien de plus.
+ACTIVITE_PAR_DEFAUT: dict[str, str] = {
+    "fr": "pétitionnaire du dossier",
+    "en": "applicant on the case file",
+    "nl": "aanvrager van het dossier",
 }
 
 
@@ -427,9 +444,9 @@ def apply_developer_identity(dcs: dict) -> dict:
         siren_id = r["siren"]
         if str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none"):
             dc["identity"]["operator"] = registry_display_name(r["denomination"])
-        activity_fr, activity_en = NAF_DEVELOPER_PUBLISH[naf]
+        activite = NAF_DEVELOPER_PUBLISH[naf]
         sources[dc_id] = {"source": "SIRENE", "siren": siren_id, "naf": naf,
-                          "activity_fr": activity_fr, "activity_en": activity_en,
+                          **{f"activity_{lg}": activite[lg] for lg in langues_declarees()},
                           "url": f"https://annuaire-entreprises.data.gouv.fr/entreprise/{siren_id}",
                           "checked_at": e.get("checked_at")}
     # Second chemin, plus fort que le registre des entreprises : le fait déclaré DANS la fiche,
@@ -446,8 +463,8 @@ def apply_developer_identity(dcs: dict) -> dict:
         if not dev.get("name") or not (dev.get("source") or {}).get("url"):
             continue
         sources[dc_id] = {"source": dev["source"].get("title") or "acte administratif",
-                          "activity_fr": dev.get("activity_fr") or "pétitionnaire du dossier",
-                          "activity_en": dev.get("activity_en") or "applicant on the case file",
+                          **{f"activity_{lg}": dev.get(f"activity_{lg}")
+                             or ACTIVITE_PAR_DEFAUT[lg] for lg in langues_declarees()},
                           "url": dev["source"]["url"],
                           "checked_at": dev["source"].get("accessed")}
         if str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none"):
