@@ -2094,6 +2094,97 @@ def test_la_dette_de_pages_de_la_langue_en_preparation_ne_peut_que_baisser():
         )
 
 
+# La barrière d'après-build qui tient la dette de PROSE de la langue en préparation. Elle est
+# lue ici pour son chiffre, pas exécutée : son relevé réclame un `site/dist`, la suite tourne
+# AVANT le build.
+BARRIERE_PROSE = REPO_ROOT / "scripts" / "check_langue_servie.py"
+
+
+def _dettes_de_prose() -> dict[str, int]:
+    """Les dettes de prose déclarées par la barrière, par langue — lues à leur source.
+
+    `DETTE_SURFACES_NL = 9` → `{"nl": 9}`. Le nom de la constante PORTE la langue : c'est
+    la seule chose qui relie le chiffre au drapeau sous lequel il partirait.
+    """
+    texte = BARRIERE_PROSE.read_text(encoding="utf-8")
+    dettes = {
+        lg.lower(): int(n)
+        for lg, n in re.findall(r"^DETTE_SURFACES_(\w+) = (\d+)$", texte, re.M)
+    }
+    assert dettes, (
+        f"aucune DETTE_SURFACES_* dans {BARRIERE_PROSE.name} — ce verrou ne sait plus quelle "
+        f"dette empêche quelle langue de passer en ligne, et un verrou qui ne trouve rien "
+        f"ne dit pas qu'il n'a rien trouvé : il laisse tout passer"
+    )
+    return dettes
+
+
+def test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court():
+    """Une langue dont la dette de PROSE n'est pas à zéro n'entre pas dans `LANGUES_VIVANTES`.
+
+    🔴 CE VERROU N'EXISTAIT PAS, ET C'EST LA MOITIÉ MANQUANTE D'UNE DOCTRINE DÉJÀ ÉCRITE.
+    `check_langue_servie.py` dit en en-tête : « À zéro, la langue peut passer vivante. » La
+    réciproque — tant qu'elle n'est PAS à zéro, la langue ne passe pas — n'était vérifiée par
+    rien. Et la barrière ne pouvait pas la dire : c'est un CLIQUET, elle ne refuse qu'une
+    RÉGRESSION au-dessus du compte déclaré. À dette égale elle sort 0, langue ouverte ou non.
+    Mesuré le 2026-11-05 en remplaçant l'accesseur de langues vivantes : avec `nl` en ligne,
+    trois gardes mordaient (sept pages promises sans page, onze liens de menu morts, `NL_NAV`
+    à 26 nœuds contre 29) — tous STRUCTURELS. **Aucun ne parlait de la prose**, et la
+    barrière sortait 0. Donc réparer les trois gardes structurels aurait suffi à mettre en
+    ligne une édition néerlandaise servant 3 141 fiches sur 3 292 en anglais, sans qu'un seul
+    contrôle ne s'y oppose — [[exemption-nest-pas-obligation]] : une règle écrite en prose
+    dans un en-tête n'est pas une règle.
+
+    🔴 POURQUOI ICI ET PAS DANS LA BARRIÈRE. Ce qui est jugé est une DÉCLARATION de source
+    (`LANGUES_VIVANTES`), décidable sans aucun build — et `make deploy` lance la suite AVANT
+    le build. Le mettre dans la barrière le ferait parler après le travail
+    [[controle-au-mauvais-niveau]]. La barrière garde ce qui réclame l'artefact : le compte.
+
+    Ce verrou s'ouvre comme la doctrine le dit : la dette tombe à zéro, la constante suit, et
+    la langue peut passer. Il ne demande rien d'autre.
+    """
+    vivantes = set(_langues_vivantes())
+    fautifs = sorted(
+        (lg, dette) for lg, dette in _dettes_de_prose().items()
+        if dette > 0 and lg in vivantes
+    )
+    assert not fautifs, (
+        "une langue est SERVIE alors que sa dette de prose court encore :\n"
+        + "\n".join(
+            f"  · {lg.upper()} — {dette} surface(s) reprennent encore le texte d'une autre "
+            f"langue ({BARRIERE_PROSE.name})"
+            for lg, dette in fautifs
+        )
+        + "\n\nUne surface endettée ne s'affiche pas vide et ne lève aucune erreur : elle "
+        "sert l'anglais sous drapeau étranger, et le repli déclaré langue → en → fr fait "
+        "exactement ce pour quoi il est écrit. Remettez la langue dans "
+        "`LANGUES_EN_PREPARATION`, ou abaissez la dette à zéro d'abord."
+    )
+
+
+def test_le_verrou_de_dette_de_prose_mord_vraiment(tmp_path, monkeypatch):
+    """Contre-épreuve : une langue vivante avec une dette qui court doit faire rougir.
+
+    Et la seconde moitié compte autant : à dette NULLE, le verrou laisse passer. Un verrou
+    qui refuserait toujours serait retiré au premier go-live, donc il ne garderait rien.
+    """
+    fausse = tmp_path / "barriere.py"
+    fausse.write_text("DETTE_SURFACES_XX = 3\n", encoding="utf-8")
+    monkeypatch.setitem(globals(), "BARRIERE_PROSE", fausse)
+    monkeypatch.setitem(globals(), "_langues_vivantes", lambda: ["fr", "xx"])
+    with pytest.raises(AssertionError, match="dette de prose court"):
+        test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court()
+
+    fausse.write_text("DETTE_SURFACES_XX = 0\n", encoding="utf-8")
+    test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court()
+
+    # Et il refuse de conclure s'il ne trouve plus aucune dette : une constante renommée
+    # rendrait ce verrou muet, et un verrou muet ressemble à un verrou ouvert.
+    fausse.write_text("SURFACES_EN_DETTE_XX = 3\n", encoding="utf-8")
+    with pytest.raises(AssertionError, match="aucune DETTE_SURFACES"):
+        test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court()
+
+
 def test_aucun_lien_de_navigation_ne_perd_sa_barre_finale():
     """Menu et pied de page : chaque adresse interne porte sa barre, sinon c'est un détour.
 
