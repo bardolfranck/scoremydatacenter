@@ -43,7 +43,19 @@ RACINE = Path(__file__).resolve().parents[1]
 #   · 2 familles — la fiche et le portrait, qui attendent la traduction des champs de
 #     SYNTHÈSE (`summary`, `citable_quote`), produits par le pipeline sur 1 399 fiches.
 # 10 → 9 le 2026-11-03 : le one-pager est propre (bouton d'impression et libellé de retour
-# en néerlandais). Le compte ne peut que baisser. À zéro, `nl` rejoint `LANGUES_VIVANTES`.
+# en néerlandais). Le compte ne peut que baisser. À zéro, `nl` rejoint `LANGUES_VIVANTES` —
+# et `test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court` tient la
+# réciproque, que cette barrière ne peut pas tenir : un cliquet ne refuse qu'une régression,
+# donc à dette égale il sort 0, langue ouverte ou non.
+#
+# 🔴 ÉTAT AU 2026-11-05, ET POURQUOI LE COMPTE NE BOUGE PAS. Les 151 fiches néerlandaises
+# portent désormais leur prose en `nl` (identité, chapeaux, corps des deux piliers). Le
+# compte reste 9 quand même, et ce n'est pas une anomalie : l'édition néerlandaise sert une
+# fiche pour CHACUN des 3 292 sites du corpus, pas pour les 152 sites néerlandais. Sur
+# l'échantillon régulier que cette barrière tire (30 identifiants, qui balaient les pays),
+# UNE page sur trente porte sa prose en néerlandais. Les deux familles restent donc
+# endettées, et traduire un pays ne les en sort pas : il faut le corpus — mesuré le
+# 2026-11-05 à 3 141 fiches, ~1,43 M caractères.
 DETTE_SURFACES_NL = 9
 
 # Les blocs qui sont les MÊMES dans toutes les langues PAR DÉCISION, pas par négligence.
