@@ -39,6 +39,11 @@ from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+# La racine du dépôt dans le chemin, pour qu'`engine` s'importe quand ce fichier est lancé
+# comme un script — même geste que `build_prod_artifacts.py` et `build_comparator.py`.
+sys.path.insert(0, str(REPO))
+
+from engine.langues import langues_declarees  # noqa: E402
 SORTIE = REPO / "site" / "public" / "data" / "lieux"
 CACHE = Path(os.environ.get(
     "SMDC_GEONAMES", REPO.parent / "smdc-newsroom" / ".media-sat" / "geonames"))
@@ -48,6 +53,9 @@ LONGUEUR_PREFIXE = 2
 # ADM4/ADM5 = commune (ou équivalent). C'est à ce niveau que GeoNames porte les communes
 # françaises, et elles entrent SANS condition de population.
 CODES_COMMUNE = {"ADM4", "ADM5"}
+
+# Les langues que ce producteur doit émettre — lues à leur source unique, jamais recopiées.
+LANGUES = tuple(langues_declarees())
 
 
 def normalise(nom: str) -> str:
@@ -109,18 +117,24 @@ def regions(cache: Path) -> tuple[dict[str, str], dict[str, dict]]:
                 if len(champs) < 4:
                     continue
                 code = voulus.get(champs[1])
-                if code is None or champs[2] not in ("fr", "en"):
+                if code is None or champs[2] not in LANGUES:
                     continue
                 prefere = len(champs) > 4 and champs[4] == "1"
                 courant = locaux[code].get(champs[2])
                 if courant is None or (prefere and not courant[1]):
                     locaux[code][champs[2]] = (champs[3], prefere)
 
+    # 🔴 UNE COLONNE PAR LANGUE DÉCLARÉE, et le repli est le nom par DÉFAUT de la région,
+    # pas celui d'une autre langue. GeoNames porte déjà les noms néerlandais ; c'est le filtre
+    # ci-dessus qui les jetait, et la langue déclarée arrivait donc vide jusqu'au `donnee()`
+    # du gabarit, qui servait l'anglais en silence. Le nom local est un meilleur repli qu'une
+    # traduction d'à-côté : « Noord-Holland » dit plus à un lecteur néerlandais que
+    # « North Holland ».
     noms: dict[str, dict] = {}
     for code, (defaut, _) in reference.items():
-        fr = locaux.get(code, {}).get("fr", (defaut, False))[0]
-        en = locaux.get(code, {}).get("en", (defaut, False))[0]
-        noms[code] = {"fr": fr, "en": en} if fr != en else {"fr": fr, "en": fr}
+        noms[code] = {
+            lg: locaux.get(code, {}).get(lg, (defaut, False))[0] for lg in LANGUES
+        }
     return {code: v["en"] for code, v in noms.items()}, noms
 
 
@@ -199,7 +213,9 @@ def main() -> int:
     SORTIE.mkdir(parents=True, exist_ok=True)
 
     # La table des régions, à part : quelques centaines d'entrées pour 165 000 lieux, et
-    # elle porte les deux langues. Le client la charge une fois et traduit le code.
+    # elle porte UNE COLONNE PAR LANGUE DÉCLARÉE (« les deux langues » jusqu'au 2026-11-05 —
+    # un chiffre écrit dans un commentaire se périme, celui-là a vécu une langue de trop).
+    # Le client la charge une fois et traduit le code.
     # Restreinte aux régions RÉELLEMENT citées par le dictionnaire : la table de GeoNames
     # couvre le monde entier (3 865 entrées, 47 ko compressés) alors que nos dix-neuf pays
     # en utilisent une fraction. Le lecteur la télécharge à sa première recherche ; lui

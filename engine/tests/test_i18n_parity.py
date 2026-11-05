@@ -2129,11 +2129,19 @@ def test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court():
     RÉGRESSION au-dessus du compte déclaré. À dette égale elle sort 0, langue ouverte ou non.
     Mesuré le 2026-11-05 en remplaçant l'accesseur de langues vivantes : avec `nl` en ligne,
     trois gardes mordaient (sept pages promises sans page, onze liens de menu morts, `NL_NAV`
-    à 26 nœuds contre 29) — tous STRUCTURELS. **Aucun ne parlait de la prose**, et la
-    barrière sortait 0. Donc réparer les trois gardes structurels aurait suffi à mettre en
-    ligne une édition néerlandaise servant 3 141 fiches sur 3 292 en anglais, sans qu'un seul
-    contrôle ne s'y oppose — [[exemption-nest-pas-obligation]] : une règle écrite en prose
-    dans un en-tête n'est pas une règle.
+    à 26 nœuds contre 29) — tous STRUCTURELS, donc tous réparables en une demi-journée de
+    slugs et de pages. **Aucun ne parlait du TEXTE**, et la barrière de prose sortait 0 :
+    sept surfaces fixes du périmètre signé (mentions légales, indices, bibliothèque et son
+    index, classement, comparateur, contact) servaient encore leurs phrases en français ou
+    en anglais sur des pages néerlandaises. Réparer le structurel aurait donc suffi à ouvrir
+    la langue avec ces sept-là en l'état, sans qu'un contrôle s'y oppose —
+    [[exemption-nest-pas-obligation]] : une règle écrite en prose dans un en-tête n'est pas
+    une règle.
+
+    ⚠️ Ce que ce verrou ne dit PAS, et que j'avais d'abord cru qu'il disait : les fiches
+    ÉTRANGÈRES servies en anglais sur l'édition néerlandaise ne sont pas une dette. La
+    doctrine est PAR PAYS (Franck, 2026-11-05) — la prose d'une langue est due sur les fiches
+    de son pays. C'est l'échantillon de la barrière qui le dit maintenant, pas ce verrou.
 
     🔴 POURQUOI ICI ET PAS DANS LA BARRIÈRE. Ce qui est jugé est une DÉCLARATION de source
     (`LANGUES_VIVANTES`), décidable sans aucun build — et `make deploy` lance la suite AVANT

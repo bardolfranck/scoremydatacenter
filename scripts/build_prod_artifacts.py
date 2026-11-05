@@ -286,11 +286,22 @@ def patch_context_maps() -> int:
             **({"url": f"{base}/{key}"} if key in confirmed else {}),
             **({"thumb": f"{base}/{thumb}"} if thumb in confirmed else {}),
             "credit": "Esri, Maxar, Earthstar Geographics · OpenStreetMap (ODbL)",
+            # 🔴 UNE COLONNE PAR LANGUE DÉCLARÉE. Écrite en `fr`/`en` seulement, cette
+            # légende titrait en ANGLAIS au bas de chaque portrait néerlandais, sans erreur
+            # et sans blanc : elle est de la DONNÉE, donc invisible aux gardes de parité qui
+            # lisent les gabarits. `test_un_producteur_emet_chaque_langue_declaree` tient
+            # désormais la règle sur tous les producteurs.
+            # `nl` : moteur à glossaire maison — `afstandsbuffer` est le terme SIG, et
+            # `wettelijke bestemming` dit l'affectation à valeur légale (pas
+            # `omgevingsplan`, qui nomme l'INSTRUMENT néerlandais et sur-corrigerait une
+            # légende générique).
             "caveat": {
                 "fr": "Distances à vol d'oiseau depuis la coordonnée de référence. "
                       "Les anneaux sont des tampons de distance, non un zonage réglementaire.",
                 "en": "Straight-line distances from the reference coordinate. "
                       "The rings are distance buffers, not statutory zoning.",
+                "nl": "Afstanden in vogelvlucht vanaf het referentiepunt. "
+                      "De ringen zijn afstandsbuffers, geen wettelijke bestemming.",
             },
         }
         write_json(f, d)
