@@ -54,11 +54,13 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
       ]).map((r) => (
         <a class="lib-real-card" href={r.href}>
           {isWithdrawn(r.slug) ? (
-            /* Le rapport complet est retiré : l'aperçu reste libre, mais la vitrine ne doit
-               pas inviter à un téléchargement qui n'aura pas lieu. Dérivé de la table
-               d'état, jamais écrit en dur ici — sinon la vitrine survit au retrait. */
+            /* Le rapport est retiré : la vitrine ne doit inviter ni à un téléchargement
+               qui n'aura pas lieu, ni à un APERÇU qui n'existe plus — le fichier d'aperçu
+               sert désormais la note de retrait. Ce qui est public, c'est la note. Dérivé
+               de la table d'état, jamais écrit en dur ici — sinon la vitrine survit au
+               retrait. */
             <span class="lib-real-free lib-real-withdrawn">
-              {lang === "fr" ? "Aperçu libre · rapport complet retiré" : "Open preview · full report withdrawn"}
+              {lang === "fr" ? "Rapport retiré · la note est publique" : "Report withdrawn · the notice is public"}
             </span>
           ) : (
             <span class="lib-real-free">{lang === "fr" ? "Gratuit · aperçu libre" : "Free · open preview"}</span>

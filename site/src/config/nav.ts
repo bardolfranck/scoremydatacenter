@@ -71,7 +71,6 @@ export const FR_NAV: NavNode[] = [
   { href: "/fr/actu/", label: "Actu" },
   { label: "Bibliothèque", children: [
     { href: "/fr/rapports/france/", label: "Rapport — La France" },
-    { href: "/fr/rapports/nederland/", label: "Rapport — Les Pays-Bas" },
     { href: "/fr/rapports/big-tech/", label: "Rapport Big Tech-AI" },
     { href: "/fr/rapports/banques/", label: "Rapport — Les banques" },
     { href: "/fr/bibliotheque/", label: "Toute la bibliothèque" },
@@ -111,7 +110,6 @@ export const EN_NAV: NavNode[] = [
   { href: "/news/", label: "News" },
   { label: "Library", children: [
     { href: "/reports/france/", label: "France report" },
-    { href: "/reports/nederland/", label: "Netherlands report" },
     { href: "/reports/big-tech/", label: "Big Tech-AI report" },
     { href: "/reports/banks/", label: "The banks report" },
     { href: "/intelligence/", label: "The whole library" },
@@ -130,10 +128,12 @@ export const EN_NAV: NavNode[] = [
 // néerlandaise n'est servie tant que `nl` est en préparation. Ce menu existe pour la préviz
 // et pour que le câblage des routes ait sa cible écrite.
 //
-// 🔴 LES QUATRE RAPPORTS N'Y SONT PAS. La bibliothèque est hors du périmètre de traduction
-// signé, et je n'ai pas de slug néerlandais pour eux : en inventer quatre serait écrire des
-// adresses que personne n'a décidées. Le groupe ne garde donc que son entrée générale, et
-// les quatre manquent SCIEMMENT — un trou déclaré vaut mieux qu'une route fabriquée.
+// 🔴 LES RAPPORTS N'Y SONT PAS. La bibliothèque est hors du périmètre de traduction signé,
+// et je n'ai pas de slug néerlandais pour eux : en inventer serait écrire des adresses que
+// personne n'a décidées. Le groupe ne garde donc que son entrée générale, et ils manquent
+// SCIEMMENT — un trou déclaré vaut mieux qu'une route fabriquée. (Ils étaient quatre ; le
+// rapport Pays-Bas est retiré depuis le 2026-10-07 et n'est plus annoncé dans aucun menu —
+// un chiffre écrit dans un commentaire se périme, cf. `config/reportStatus.ts`.)
 export const NL_NAV: NavNode[] = [
   { label: "Verkennen", children: [
     { href: "/nl/kaart/", label: "Kaart" },

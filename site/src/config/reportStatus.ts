@@ -15,6 +15,19 @@
 //                  Une note de bas de page ne porterait pas ça : on retire le
 //                  téléchargement, on dit pourquoi, et le rapport revient réécrit.
 //
+// 🔴 `withdrawn` VEUT DIRE « PLUS SERVI », PAS « PLUS TÉLÉCHARGEABLE » (Franck, 2026-11-05).
+// Du 7 octobre au 5 novembre 2026, le fichier était bien retiré — 410 à la livraison, aperçu
+// remplacé par la note, `subscribe` qui refuse — et la page CONTINUAIT de vendre le document :
+// pastille « gratuit », titre d'accroche, sommaire, maquette de couverture ; et le menu
+// l'annonçait sur chaque page du site. Présenter un rapport, c'est le servir. Toute surface
+// qui lit cette table doit donc tirer la conséquence ENTIÈRE, dans toutes les langues :
+//   · la page du rapport devient la RÉTRACTATION (titre, description, h1 portent le nom du
+//     document et la note datée ; ni sommaire, ni couverture, ni chiffre d'accroche) ;
+//   · le menu ne l'annonce plus — on ne met pas en vitrine ce qu'on ne sert pas ;
+//   · la vitrine de la bibliothèque n'y promet ni rapport ni aperçu, seulement la note.
+// Ce que le retrait ne touche PAS : l'adresse, qui répond toujours (marque-page, indexée) et
+// qui est ce qui adresse les copies déjà sorties. Un 404 ne rétracte rien.
+//
 // Retirer ne « dé-distribue » pas : ça protège les téléchargements futurs, pas les
 // passés. Ce qui adresse les copies déjà sorties, c'est la note publique et datée —
 // d'où le refus de répondre par un 404, qui n'explique rien (et laisserait en plus
