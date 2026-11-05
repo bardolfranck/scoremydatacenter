@@ -52,6 +52,7 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from engine.core import ARTIFACTS_DIR  # noqa: E402
+from engine.langues import langues_declarees  # noqa: E402
 from engine import puissance as _puissance  # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
@@ -153,18 +154,63 @@ UMAP_PARAMS = {"n_components": 2, "n_neighbors": 8, "min_dist": 0.03,
                "spread": 1.4, "random_state": 0}
 DBSCAN_PARAMS = {"eps": 0.42, "min_samples": 5}
 
-STATUT_FR = {
-    "operational": "Site implanté", "construction": "En construction", "announced": "Annoncé",
-    "permitting": "En autorisation", "permitted": "Autorisé", "planned": "Projet",
-    "suspended": "Suspendu", "abandoned": "Abandonné", "litigation": "Contesté",
-    "consultation": "En consultation", "study": "À l'étude", "decommissioned": "Fermé",
+# 🔴 LES LIBELLÉS DE STATUT, CLÉS = L'ENUM DU SCHÉMA, UNE COLONNE PAR LANGUE.
+#
+# Ce qui était là avant : deux tables binaires `STATUT_FR`/`STATUT_EN` de DOUZE entrées, et
+# elles étaient fausses dans les deux sens. Le schéma (`data/schema/datacenter.schema.json`)
+# n'autorise que CINQ codes — announced, permitting, under_construction, operational,
+# unknown — et le corpus ne porte que ceux-là. Or ces tables :
+#   · ÉCRIVAIENT `construction` là où le schéma dit `under_construction`, et ignoraient
+#     `unknown` → deux codes réels sans libellé, sur 28 fiches ;
+#   · déclaraient HUIT codes qui n'existent dans aucun schéma (permitted, planned,
+#     suspended, abandoned, litigation, consultation, study, decommissioned).
+#
+# ⚠️ CE N'ÉTAIT PAS UN DÉFAUT SERVI, vérifié avant de le dire : les 28 fiches concernées
+# n'entrent pas dans le comparateur, qui sert 3 218 lignes avec trois libellés justes. C'est
+# un piège qui attend, et son détonateur était `.get(statut, statut)` — un repli MUET, qui
+# aurait affiché le code anglais brut le jour où l'une de ces fiches entre. Et la barrière de
+# langue ne l'aurait pas vu non plus : un code brut est identique en FR et en EN, donc
+# « neutre par nature » pour elle. [[absence-ressemble-a-zero]]
+#
+# `test_les_libelles_de_statut_collent_a_l_enum_du_schema` lie cette table à l'enum DANS LES
+# DEUX SENS : un code sans libellé, et un libellé sans code.
+#
+# ⚠️ OUVERT, PAS TRANCHÉ PAR MOI : le classement sert d'AUTRES mots pour les mêmes statuts
+# (« En service » / « En instruction » là où le comparateur dit « Site implanté » / « En
+# autorisation »). Unifier changerait du texte PUBLIÉ sur l'une des deux pages : c'est un
+# choix éditorial, remonté à Franck. Ce qui est unifié ici est le VOCABULAIRE DE CODES, qui
+# est la part qui n'appartient à personne — c'est le schéma qui la dit.
+# Les deux libellés ajoutés (under_construction, unknown) reprennent les mots du classement,
+# seule formulation maison existante pour ces deux codes.
+STATUTS: dict[str, dict[str, str]] = {
+    "announced": {"fr": "Annoncé", "en": "Announced", "nl": "Aangekondigd"},
+    "permitting": {"fr": "En autorisation", "en": "In permitting", "nl": "In behandeling"},
+    "under_construction": {"fr": "En construction", "en": "Under construction",
+                           "nl": "In aanbouw"},
+    "operational": {"fr": "Site implanté", "en": "In operation", "nl": "In bedrijf"},
+    # Forme COURTE : ce libellé tient dans une colonne de tableau et dans un menu
+    # déroulant. Le texte long (« aucune source publique ne mentionne… ») est l'aide du
+    # classement, pas une étiquette.
+    "unknown": {"fr": "Statut non établi", "en": "Status not established",
+                "nl": "Niet vastgesteld"},
 }
-STATUT_EN = {
-    "operational": "In operation", "construction": "Under construction", "announced": "Announced",
-    "permitting": "In permitting", "permitted": "Permitted", "planned": "Planned",
-    "suspended": "Suspended", "abandoned": "Abandoned", "litigation": "Contested",
-    "consultation": "In consultation", "study": "Under study", "decommissioned": "Closed",
-}
+
+
+def _libelles(statut: str | None) -> dict[str, str]:
+    """`{"statut_fr": …, "statut_en": …, "statut_nl": …}` — une colonne par langue DÉCLARÉE.
+
+    🔴 PAS DE REPLI SUR LE CODE BRUT. Un statut hors table est une faute de donnée, que
+    `validate-corpus` refuse en amont (l'enum du schéma) et que le test de cette table
+    refuse ici. Le faire crier coûte un build ; le taire coûte un code anglais affiché dans
+    une colonne, sans que rien ne le signale.
+    """
+    libelles = STATUTS.get(statut or "")
+    if libelles is None:
+        raise SystemExit(
+            f"comparator: statut de projet inconnu « {statut} » — il n'est ni dans l'enum du "
+            f"schéma ni dans STATUTS. Ajoutez-le aux deux, ou corrigez la fiche."
+        )
+    return {f"statut_{lg}": libelles[lg] for lg in langues_declarees()}
 
 
 def _fiches() -> list[dict]:
@@ -372,8 +418,7 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
         sites.append({
             "id": f["id"], "nom": f.get("name"), "commune": f.get("municipality"),
             "operateur": f.get("operator"), "statut": f.get("project_status"),
-            "statut_fr": STATUT_FR.get(f.get("project_status"), f.get("project_status")),
-            "statut_en": STATUT_EN.get(f.get("project_status"), f.get("project_status")),
+            **_libelles(f.get("project_status")),
             # Même lettre, pas la même affirmation : « D » définitif et « D probable » ne se
             # lisent pas pareil. Le drapeau voyage avec la lettre pour que le tableau puisse
             # le marquer, au lieu de laisser croire à une note arrêtée.
@@ -442,6 +487,21 @@ def main() -> int:
         par_pays.setdefault(f.get("country") or "??", []).append(f)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
+    # 🔴 ON VIDE AVANT D'ÉCRIRE, et ce n'est pas de l'hygiène : ce répertoire n'est écrit que
+    # pour les pays QUI ONT des comparables. Les autres sont « retirés de la liste et nommés
+    # sur la page » — mais leur fichier de la fois d'avant restait sur le disque. Trouvé le
+    # 2026-11-05 : ONZE fichiers pays du 15 octobre, trois semaines d'âge, portant l'ancien
+    # vocabulaire de statuts et aucune colonne néerlandaise, dans le répertoire que le build
+    # du site LIT. Ils n'étaient pas servis (le `prune` les retire de `dist`), donc ce n'était
+    # pas une fuite — c'était une archive vivante dans l'arbre, et une archive dans l'arbre
+    # est réécrite par les passes suivantes au lieu d'être un commit
+    # [[archive-en-arbre-derive]].
+    #
+    # Le gazetteer le faisait déjà (`for vieux in SORTIE.glob("*.json"): vieux.unlink()`), le
+    # comparateur non — et c'est la différence entre « je produis N fichiers » et « ce
+    # répertoire EST ma sortie ». Rien n'est perdu : tout est reconstruit à chaque passe.
+    for vieux in OUT_DIR.glob("*.json"):
+        vieux.unlink()
     index, total = [], 0
     minces, sans = [], []
     for pays, lot in sorted(par_pays.items()):

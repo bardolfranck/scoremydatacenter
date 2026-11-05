@@ -49,6 +49,36 @@ export const RACINE: Record<LangueDeclaree, string> = { en: "/", fr: "/fr/", nl:
 // une commodité : c'est la règle du français, appliquée au néerlandais, en silence. La règle
 // se déclare par langue ; les FORMES vivent dans la table de chaînes, avec le reste de la
 // prose, parce que ce sont des mots.
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// LES FORMATS SONT UNE PROPRIÉTÉ DE LA LANGUE, PAS UN `lang === "fr"`
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// 🔴 Trouvé le 2026-11-05, et c'est la troisième langue qui l'a révélé : la virgule décimale
+// s'écrivait `lang === "fr" ? String(s).replace(".", ",") : String(s)` — dans la carte des
+// indices, dans la page des indices, et le `fr-FR`/`en-GB` du comparateur. Or le NÉERLANDAIS
+// MET AUSSI LA VIRGULE. Le ternaire ne dit pas qu'il ignore un cas : il en choisit un
+// [[absence-ressemble-a-zero]]. Un indice à 80,5 se serait affiché « 80.5 » à un lecteur
+// néerlandais — pas une erreur, pas un blanc, juste faux.
+//
+// Déclarer le format PAR LANGUE le rend vrai pour la langue suivante sans qu'on y pense, et
+// c'est ce que le ternaire ne peut pas faire. `test_langues_ts_declare_chaque_langue` refuse
+// une table de cette section qui oublierait une langue déclarée.
+export const LOCALE: Record<LangueDeclaree, string> = {
+  fr: "fr-FR",
+  en: "en-GB",
+  nl: "nl-NL",
+};
+
+export const SEPARATEUR_DECIMAL: Record<LangueDeclaree, string> = {
+  fr: ",",
+  en: ".",
+  nl: ",",
+};
+
+/** `s` écrit avec la virgule (ou le point) de `lang`. */
+export function nombreDecimal(lang: LangueDeclaree, s: number | string): string {
+  return String(s).replace(".", SEPARATEUR_DECIMAL[lang]);
+}
+
 export type FormePluriel = "un" | "autres";
 
 export const REGLE_PLURIEL: Record<LangueDeclaree, (n: number) => FormePluriel> = {
