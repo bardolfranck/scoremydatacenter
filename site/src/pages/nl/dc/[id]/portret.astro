@@ -6,10 +6,17 @@
 import SitePortrait from "../../../../components/SitePortrait.astro";
 import { NL_NAV } from "../../../../config/nav";
 import { PORTRAIT } from "../../../../content/portrait";
+import { fichesDeLaLangue } from "../../../../content/langues";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../../../public/data/dc/*.json", { eager: true });
-  return Object.values(modules).map((m: any) => ({ params: { id: m.default.id }, props: { dc: m.default } }));
+  // 🔴 LE PORTRAIT EST UNE SECONDE ROUTE, et elle énumère le corpus comme la première.
+  // Le 2026-11-06 le filtre de périmètre n'a été posé que sur la fiche : le portrait a
+  // continué de sortir 3 292 pages néerlandaises, et le plafond de fichiers est resté
+  // franchi. Un périmètre ne tient pas par page, il tient par ROUTE — toute route qui globe
+  // `public/data/dc/*.json` doit lire la déclaration.
+  const dcs = fichesDeLaLangue("nl", Object.values(modules).map((m: any) => m.default));
+  return dcs.map((dc: any) => ({ params: { id: dc.id }, props: { dc } }));
 }
 const { dc } = Astro.props as { dc: any };
 

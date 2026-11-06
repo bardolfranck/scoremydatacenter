@@ -9,12 +9,21 @@
 import DcFiche from "../../../components/DcFiche.astro";
 import { FICHE } from "../../../content/fiche";
 import { NL_NAV } from "../../../config/nav";
+import { fichesDeLaLangue } from "../../../content/langues";
 import { toLite, buildRelated, coordsFromGeojson, type Related } from "../../../config/related";
 import fs from "node:fs";
 
 export async function getStaticPaths() {
   const modules = import.meta.glob("../../../../public/data/dc/*.json", { eager: true });
-  const dcs = Object.values(modules).map((m: any) => m.default);
+  // 🔴 L'ÉDITION NÉERLANDAISE COUVRE LES FICHES NÉERLANDAISES, pas le corpus mondial.
+  // Sans ce filtre, le build sortait 3 292 pages néerlandaises — dont 1 702 américaines,
+  // en prose anglaise sous une adresse néerlandaise, déclarées à Google par le sitemap —
+  // et `dist` dépassait les 20 000 fichiers de Cloudflare Pages, qui refusait TOUTE la
+  // publication. Le périmètre est déclaré dans `content/langues.ts`, avec les langues.
+  //
+  // `lite` en dérive, donc les fiches comparables d'une fiche néerlandaise restent DANS
+  // l'édition : un voisin hors périmètre donnerait un lien vers une page qui n'existe pas.
+  const dcs = fichesDeLaLangue("nl", Object.values(modules).map((m: any) => m.default));
   // map.geojson est lu au build (JSON brut, pas un module) — coords publiques arrondies ~1 km
   const coords = coordsFromGeojson(JSON.parse(fs.readFileSync("public/data/map.geojson", "utf-8")));
   const lite = dcs.map((d: any) => toLite(d, coords));

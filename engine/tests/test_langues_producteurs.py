@@ -259,7 +259,13 @@ def test_la_barriere_de_langue_servie_tient_debout():
         f"{', '.join(manquantes)}. La barrière tire son échantillon de fiches par pays ; "
         f"sans entrée, elle ne saurait pas quelles fiches sont dues dans cette langue."
     )
+    # « tous » est une valeur LÉGITIME depuis le 2026-11-06 : le français et l'anglais sont
+    # les deux éditions de référence et couvrent le corpus entier, là où une édition de pays
+    # liste ses préfixes. Ce test a crié le jour où la forme a changé — c'est ce qu'on lui
+    # demande ; il garde que la valeur veut dire QUELQUE CHOSE, pas qu'elle a une seule forme.
     for lg, prefixes in barriere.PAYS_DE_LA_LANGUE.items():
+        if prefixes == "tous":
+            continue
         assert prefixes and all(
             isinstance(x, str) and CODE_DE_LANGUE.match(x) for x in prefixes
         ), f"préfixes de pays douteux pour {lg} : {prefixes!r}"
