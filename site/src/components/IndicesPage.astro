@@ -9,7 +9,8 @@
 // ?pays=XX shareable state. Letters render ONLY through the map component
 // and the table chips (gate 7 extended).
 import "@fontsource/bricolage-grotesque/700.css";
-import { copie, nombreDecimal, type LangueDeclaree } from "../content/langues";
+import { dateCourte, copie, nombreDecimal, type LangueDeclaree } from "../content/langues";
+import { cheminDePage } from "../config/routes";
 import type { NavNode } from "../config/nav";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
@@ -77,6 +78,10 @@ const T = copie({
     docBands: { solide: "solide", moyenne: "moyenne", faible: "faible" },
     asOf: "Indice au",
     lastEvo: "dernière évolution :",
+    // Ces deux chaînes vivaient en ternaire binaire dans le gabarit : le mot « méthodologie »
+    // et la phrase des dénominateurs. {0} et {1} sont les deux nombres du corpus.
+    methodo: "méthodologie",
+    denoms: "Dénominateurs corpus : {0} sites en service · {1} sites annoncés entrent dans les moyennes — énoncé, jamais caché.",
     method: {
       title: "La méthode de l'indice",
       items: [
@@ -116,6 +121,8 @@ const T = copie({
     docBands: { solide: "solid", moyenne: "medium", faible: "weak" },
     asOf: "Index as of",
     lastEvo: "last change:",
+    methodo: "methodology",
+    denoms: "Corpus denominators: {0} operational · {1} announced sites enter the means — stated, never hidden.",
     method: {
       title: "How this index is computed",
       items: [
@@ -155,6 +162,8 @@ const T = copie({
     docBands: { solide: "degelijk", moyenne: "gemiddeld", faible: "zwak" },
     asOf: "Index per",
     lastEvo: "laatste wijziging:",
+    methodo: "methodologie",
+    denoms: "Noemers van het corpus: {0} sites in bedrijf · {1} aangekondigde sites gaan mee in de gemiddelden — vermeld, nooit verborgen.",
     method: {
       title: "De methode van de index",
       items: [
@@ -170,11 +179,7 @@ const T = copie({
   },
 }, lang);
 
-const dateFmt = (iso: string | null) => {
-  if (!iso) return "";
-  const [y, m, d] = iso.split("-");
-  return lang === "fr" ? `${d}/${m}/${y}` : `${y}-${m}-${d}`;
-};
+const dateFmt = (iso: string | null) => dateCourte(lang as LangueDeclaree, iso);
 
 const name = (iso: string) => (COUNTRY_NAMES as any)[iso]?.[lang] ?? iso;
 const lastEventByCountry: Record<string, any> = {};
@@ -241,7 +246,7 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
     <h1 class="idx-h1">{INDICES.labels.title[lang]}</h1>
     <p class="idx-lede">{T.lede}</p>
     <p class="idx-meta">
-      {T.asOf} <b>{dateFmt(INDICES.computed_at)}</b> · {lang === "fr" ? "méthodologie" : "methodology"} <b>v{INDICES.methodology_version}</b>
+      {T.asOf} <b>{dateFmt(INDICES.computed_at)}</b> · {T.methodo} <b>v{INDICES.methodology_version}</b>
     </p>
 
     <IndicesMap lang={lang} />
@@ -317,9 +322,7 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
           survit donc au retrait de la page. Remettre le lien = restaurer la balise ici. */}
     </p>
     <p class="idx-denoms">
-      {lang === "fr"
-        ? `Dénominateurs corpus : ${denomTotal[0]} sites en service · ${denomTotal[1]} sites annoncés entrent dans les moyennes — énoncé, jamais caché.`
-        : `Corpus denominators: ${denomTotal[0]} operational · ${denomTotal[1]} announced sites enter the means — stated, never hidden.`}
+      {T.denoms.replace("{0}", String(denomTotal[0])).replace("{1}", String(denomTotal[1]))}
     </p>
 
     <div class="idx-method">
@@ -327,7 +330,7 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
       <ul>
         {T.method.items.map((item) => <li>{item}</li>)}
       </ul>
-      <a class="idx-cta" href={lang === "fr" ? "/fr/methodologie/" : "/methodology/"}>{T.method.changelog}</a>
+      <a class="idx-cta" href={cheminDePage(lang as LangueDeclaree, "methodologie")}>{T.method.changelog}</a>
     </div>
   </div>
 

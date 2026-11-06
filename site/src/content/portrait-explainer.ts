@@ -193,9 +193,14 @@ const NL: typeof FR = {
     "De status van elke meting: gemeten, aangekondigd, niet in het dossier",
     "Vergelijkbare sites, beoordeeld langs dezelfde meetlat",
   ],
-  demoPortraitHref: "/dc/fr-campus-ia-fouju/portrait/",
-  demoPortraitLabel: "Bekijk een portret: Campus IA Fouju →",
-  demoSheetHref: "/dc/fr-campus-ia-fouju/",
+  // 🔴 L'EXEMPLE DE L'ÉDITION NÉERLANDAISE EST UN SITE NÉERLANDAIS (Franck, 2026-11-06 :
+  // « prends-en un, emblématique : le mieux noté »). C'était un projet FRANÇAIS, sous une
+  // adresse néerlandaise qui n'existe plus depuis que l'édition couvre son pays. Eurofiber
+  // Nedzone est la meilleure note SITE du corpus néerlandais (83,9 — B), et c'est un site EN
+  // SERVICE : il montre la situation que les deux autres exemples ne montrent pas.
+  demoPortraitHref: "/nl/dc/nl-eurofiber-datacenter-nedzone/portret/",
+  demoPortraitLabel: "Bekijk een portret: Eurofiber Datacenter Nedzone →",
+  demoSheetHref: "/nl/dc/nl-eurofiber-datacenter-nedzone/",
   demoSheetLabel: "De fiche van dezelfde site →",
   notSimplified: "Het portret is geen vereenvoudigde fiche. Het laat niets weg: het ordent anders, en het gaat door tot de vraag die de fiche niet stelt — ‘en wat doe ik nu?’.",
 
@@ -230,13 +235,13 @@ const NL: typeof FR = {
 
   findTitle: "Het portret van een site vinden",
   findBody: "Er is geen lijst van portretten: er is er één per beoordeelde site, en u bereikt het via de site. Vertrek vanaf de plek, of vanaf het cijfer.",
-  mapHref: "/map/",
+  mapHref: "/nl/kaart/",
   mapLabel: "Zoeken op de kaart →",
   rankHref: "/nl/ranglijst/",
   rankLabel: "Door de ranglijst bladeren →",
   examplesIntro: "Drie voorbeelden, drie verschillende situaties:",
   examples: [
-    { href: "/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju (Frankrijk)", why: "een project in behandeling in Seine-et-Marne: de inspraakperiode is open, en de Franse procedure is volledig gelezen." },
+    { href: "/nl/dc/nl-eurofiber-datacenter-nedzone/portret/", name: "Eurofiber Datacenter Nedzone (Nederland)", why: "een site in bedrijf, en het hoogste SITE-cijfer van het Nederlandse corpus: geen inspraakperiode meer — het portret zegt wat er dan nog te vragen valt." },
     { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "een aangekondigd project in de Verenigde Staten: verplichte hoorzitting van het ontwikkelingsagentschap, SEQRA-toetsing, beroep binnen vier maanden." },
     { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "een staat waarvan we de wet nog niet hebben gelezen: het portret zegt wat waar blijft, en wat u in de plaats kunt vragen." },
   ],

@@ -1,0 +1,90 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// NL carte plein écran — jumelle de /map/ et /fr/carte/ (i18n §13 : MapIsland partagé,
+// libellés par langue). Première des sept pages néerlandaises manquantes, et c'est l'ordre
+// donné le 2026-11-06 : « commence par la carte, le cœur du produit ».
+import Base from "../../layouts/Base.astro";
+import MapIsland from "../../components/MapIsland.astro";
+import { reglesDeLien } from "../../config/routes";
+import { CHROME } from "../../content/chrome";
+
+import { NL_NAV } from "../../config/nav";
+---
+
+<Base
+  lang="nl"
+  {/* Le composé néerlandais se FERME : « datacenterkaart », pas « datacenter kaart ». Le
+      traducteur proposait les deux mots pour coller à la requête ; en néerlandais c'est une
+      faute visible, et un moteur néerlandais décompose les composés. Son premier jet disait
+      aussi « van Europa » — or la carte s'ajuste sur TOUS les pays notés, États-Unis et
+      Israël compris : un fait faux dans la balise la plus lue de la page. */}
+  title="Datacenterkaart — vind het datacenter bij u in de buurt"
+  description="Elk datacenter dat wij hebben beoordeeld, op één kaart: zoom in op uw gemeente, open een site en lees het aanvaardbaarheidscijfer A–E — energie, water, grond, lokale impact, met de bronnen."
+  tagline="Onafhankelijk observatorium"
+  nav={NL_NAV}
+>
+  <MapIsland
+    variant="full"
+    labels={{
+      site: "Site",
+      operator: "Exploitant",
+      // Reprises telles quelles de la table néerlandaise de la fiche : le même mot doit dire
+      // la même chose sur la carte et sur la fiche qu'elle ouvre.
+      confidence: { high: "vertrouwen: hoog", medium: "vertrouwen: gemiddeld", low: "vertrouwen: laag" },
+      insufficient: "onvoldoende gegevens",
+      fixture: "fictieve testfixture",
+      reserved: "· A voorbehouden",
+      probable: "waarschijnlijk",
+      range: "bandbreedte",
+      regles: reglesDeLien("nl"),
+      dcwatch: CHROME.nl.dcwatch,
+      mapPath: "/nl/kaart/",
+      viewPortrait: "Portret bekijken →",
+      viewFiche: "Technische fiche bekijken →",
+      powerUnknown: "vermogen niet meegedeeld",
+      search: {
+        label: "Zoek een gemeente of een project op de kaart",
+        placeholder: "Gemeente, project, exploitant…",
+        project: "project",
+        town: "gemeente",
+        none: "Geen gemeente of project met die naam.",
+      },
+      legendGraded: "sitecijfers",
+      legendDonut: "ring = mix van cijfers · centrum = aantal sites",
+      legendPower: "grootte = vermogen (MW) · kleine stip = niet meegedeeld",
+      legendWatch: "Gevolgd — in beeld, nog niet beoordeeld",
+      legendWatchOpp: "Lokaal burgerverzet",
+      // 🔴 « official act » est rendu « officiële handeling », PAS « besluit » : en droit
+      // administratif néerlandais un « besluit » affirme une décision formelle que nous
+      // n'avons pas vérifiée au cas par cas. L'anglais ne porte pas cette qualification, on
+      // ne l'ajoute pas — même règle que le « wettelijk » retiré de la page juridique.
+      legendWatchMor: "Moratorium (officiële handeling 🏛️)",
+      watch: {
+        badge: "Gevolgd",
+        note: "Gevolgd project; nog niet beoordeeld.",
+        source: "Bron:",
+        press: "Pers: ",
+        selfReported: "zelf opgegeven",
+        aria: "Gevolgd project — betwisting",
+        title: "Gevolgd project; nog niet beoordeeld",
+        lang: "nl",
+        typeOpposition: "Lokaal verzet",
+        typeMoratorium: "Moratorium",
+        filterLabel: "Gevolgd:",
+        filterAll: "Alle",
+        filterOppositions: "Verzet",
+        filterMoratoria: "Moratoria",
+        filterAria: "Filter de laag met gevolgde projecten",
+        viewWorld: "🌍 Wereld",
+        viewEurope: "🇪🇺 Europa",
+        watchlistNote: "„Gevolgde” projecten worden niet beoordeeld. Dit gedeelte beschrijft alleen openbare feiten uit geïdentificeerde bronnen.",
+        extSourceNote: "Externe bron aangehaald ter documentatie.",
+        // Les statuts sont FIGÉS : la même colonne néerlandaise que le comparateur et les
+        // fiches servies. Deux vocabulaires pour un même enum diraient deux choses.
+        status: { announced: "Aangekondigd", permitting: "In behandeling", under_construction: "In aanbouw", operational: "In bedrijf", unknown: "Niet vastgesteld" },
+      },
+    }}
+  />
+</Base>

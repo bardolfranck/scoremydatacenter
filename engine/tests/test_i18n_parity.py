@@ -462,12 +462,11 @@ def _branches_nues(chemin) -> list[str]:
 # en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
 # reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
 # qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
-# État au 2026-11-06, après le résolveur de chemin de fiche (classement, chiffres, carte et mini-carte ne devinent plus leur édition) et l'attribution ODbL rendue à la table de chrome : 55 branches nues dans 14 fichiers.
+# État au 2026-11-06, après le lot néerlandais des indices et de la carte (IndicesPage est entièrement en table, la carte néerlandaise existe) : 51 branches nues dans 13 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/ActuFeed.astro": 6,
     "components/Comparateur.astro": 12,
     "components/DevelopersPage.astro": 1,
-    "components/IndicesPage.astro": 4,
     "components/KeyReveal.astro": 1,
     "components/LibraryIndex.astro": 2,
     "components/LibraryRevue.astro": 7,

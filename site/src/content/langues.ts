@@ -116,6 +116,27 @@ export const SEPARATEUR_DECIMAL: Record<LangueDeclaree, string> = {
 };
 
 /** `s` écrit avec la virgule (ou le point) de `lang`. */
+// 🔴 LE MOTIF DE DATE, DÉCLARÉ COMME LA VIRGULE (2026-11-06). Il s'écrivait
+// `lang === "fr" ? "d/m/y" : "y-m-d"` : le néerlandais recevait donc la forme ISO
+// anglo-saxonne, alors qu'il écrit 06-11-2026. Même famille que le séparateur décimal —
+// une propriété de la langue, pas un cas particulier du français.
+export const MOTIF_DATE: Record<LangueDeclaree, "j/m/a" | "a-m-j" | "j-m-a"> = {
+  fr: "j/m/a",
+  en: "a-m-j",
+  nl: "j-m-a",
+};
+
+/** Une date ISO (`2026-11-06`) écrite dans la forme de la langue. */
+export function dateCourte(lang: LangueDeclaree, iso: string | null): string {
+  if (!iso) return "";
+  const [a, m, j] = iso.split("-");
+  switch (MOTIF_DATE[lang]) {
+    case "j/m/a": return `${j}/${m}/${a}`;
+    case "j-m-a": return `${j}-${m}-${a}`;
+    default: return `${a}-${m}-${j}`;
+  }
+}
+
 export function nombreDecimal(lang: LangueDeclaree, s: number | string): string {
   return String(s).replace(".", SEPARATEUR_DECIMAL[lang]);
 }

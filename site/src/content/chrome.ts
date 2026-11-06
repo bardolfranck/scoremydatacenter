@@ -128,6 +128,7 @@ const NL: typeof FR = {
   // Slugs NL choisis AVEC les libellés (règle du fichier : le mot commande l'URL).
   footer: [
     { heading: "Verkennen", links: [
+      { label: "Kaart", href: "/nl/kaart/" },
       { label: "Ranglijst", href: "/nl/ranglijst/" },
       { label: "Landenindex", href: "/nl/indices/" },
       { label: "Datacenters begrijpen", href: "/nl/datacenters-begrijpen/" },

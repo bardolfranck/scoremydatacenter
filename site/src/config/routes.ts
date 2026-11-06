@@ -41,8 +41,8 @@ export interface FamilleDeRoutes {
 // page de `chrome.ts` promettent déjà au lecteur. Une liste à deux endroits finit par mentir,
 // donc `test_la_table_de_routes_et_le_menu_disent_la_meme_chose` les confronte.
 // 🔴 SEPT COLONNES NÉERLANDAISES ONT ÉTÉ RETIRÉES ICI LE 2026-11-06, et ce n'est pas un
-// recul : elles promettaient des pages QUI N'EXISTENT PAS. `carte`, `note-pas-a-pas`,
-// `actu`, `developpeurs`, `cle`, `qui-sommes-nous`, `presse` portaient une adresse `/nl/…`
+// recul : elles promettaient des pages QUI N'EXISTENT PAS. `note-pas-a-pas`, `actu`,
+// `developpeurs`, `cle`, `qui-sommes-nous`, `presse` portaient une adresse `/nl/…`
 // qu'aucun fichier ne servait. Le menu néerlandais, bâti sur ces adresses, offrait donc
 // SEPT liens morts en haut de chaque page de l'édition — 3 572 occurrences en production,
 // trouvées par Franck en cliquant, pas par un garde.
@@ -55,7 +55,9 @@ export interface FamilleDeRoutes {
 // rien, et c'est ce garde-là qui tient la règle [[absence-ressemble-a-zero]].
 export const FAMILLES: FamilleDeRoutes[] = [
   { id: "accueil", chemins: { en: "/", fr: "/fr/", nl: "/nl/" } },
-  { id: "carte", chemins: { en: "/map/", fr: "/fr/carte/" } },
+  // La colonne `nl` est revenue le 2026-11-06 : `pages/nl/kaart.astro` existe. Une
+  // colonne se remplit le jour où la page est bâtie — c'est ce jour-là.
+  { id: "carte", chemins: { en: "/map/", fr: "/fr/carte/", nl: "/nl/kaart/" } },
   { id: "classement", chemins: { en: "/ranking/", fr: "/fr/classement/", nl: "/nl/ranglijst/" } },
   { id: "comparer", chemins: { en: "/compare/", fr: "/fr/comparer/", nl: "/nl/vergelijken/" } },
   { id: "indices", chemins: { en: "/indices/", fr: "/fr/indices/", nl: "/nl/indices/" } },
