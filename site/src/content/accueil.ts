@@ -654,8 +654,8 @@ const EN: typeof FR = {
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
   blocs: {
-    actu: { heading: "Laatste sectornieuws", seeAll: "Al het nieuws →", href: "/nl/nieuws/", projet: "Project", locale: "nl-NL" },
-    projets: { heading: "Nieuw gesignaleerde projecten", seeAll: "Bekijk de monitoring →", href: "/nl/kaart/", veille: "gevolgd", carte: "/nl/kaart/" },
+    actu: { heading: "Laatste sectornieuws", seeAll: "Al het nieuws →", href: "/news/", projet: "Project", locale: "nl-NL" },
+    projets: { heading: "Nieuw gesignaleerde projecten", seeAll: "Bekijk de monitoring →", href: "/map/", veille: "gevolgd", carte: "/map/" },
     pays: { label: "landen gevolgd", aria: "{n} landen gevolgd: {pays}" },
     mur: { fiche: "/nl/dc" },
   },
@@ -663,7 +663,7 @@ const NL: typeof FR = {
   chemins: {
     fiche: "/nl/dc",
     classement: "/nl/ranglijst/",
-    carte: "/nl/kaart/",
+    carte: "/map/",
     indices: "/nl/indices/",
     indicesPays: "/nl/indices?pays=",
     methodologie: "/nl/methodologie/",
@@ -715,8 +715,8 @@ const NL: typeof FR = {
   mattersTitle: "Waarom het telt",
   mattersSub: "Een datacenter is niet zomaar een IT-gebouw: het is een project dat vitale hulpbronnen mobiliseert en een gebied voor lange tijd vastlegt.",
   matters: [
-    { icon: "water", title: "Watervoorraad", body: "<strong>{stress} van de {mesures} sites</strong> staan in een zone met hoge waterstress of in watercrisis. Water weegt zwaar in de cijfers van het corpus.", href: "/nl/kaart/", link: "Bekijk de kaart" },
-    { icon: "energy", title: "Elektriciteitsnet", body: "Verzadigde netten remmen aansluitingen en drukken de scores. Locatiekeuzes met zware gevolgen.", href: "/nl/kaart/", link: "Bekijk de kaart" },
+    { icon: "water", title: "Watervoorraad", body: "<strong>{stress} van de {mesures} sites</strong> staan in een zone met hoge waterstress of in watercrisis. Water weegt zwaar in de cijfers van het corpus.", href: "/map/", link: "Bekijk de kaart" },
+    { icon: "energy", title: "Elektriciteitsnet", body: "Verzadigde netten remmen aansluitingen en drukken de scores. Locatiekeuzes met zware gevolgen.", href: "/map/", link: "Bekijk de kaart" },
     { icon: "land", title: "Gebied & biodiversiteit", body: "Verharding, bodem, biodiversiteit: lokale effecten die even zwaar tellen als de megawatts.", href: "/nl/datacenters-begrijpen/", link: "Begrijp wat er speelt" },
     { icon: "transparency", title: "Transparantie", body: "<strong>{noPower} van de {total} projecten</strong> maken hun vermogen niet bekend. Wij beoordelen op publieke documenten — ondoorzichtigheid loont nooit.", href: "/nl/methodologie/", link: "Begrijp de methode" },
   ],
@@ -739,10 +739,10 @@ const NL: typeof FR = {
   whoTitle: "Voor wie? Om te handelen.",
   whoSub: "Dezelfde toegang, verschillende toepassingen — elk profiel heeft zijn eigen ingang.",
   who: [
-    { name: "Burgers", line: "Het project bij u in de buurt, in klare taal — de kaart.", href: "/nl/kaart/" },
+    { name: "Burgers", line: "Het project bij u in de buurt, in klare taal — de kaart.", href: "/map/" },
     { name: "Journalisten", line: "Gedocumenteerde, citeerbare feiten, met hun archieven.", href: "/nl/ranglijst/" },
     { name: "Bestuurders", line: "Vergelijk uw gemeente, bereid het debat voor.", href: "/nl/ranglijst/" },
-    { name: "Ngo's", line: "Verzet en moratoria — de monitoringlaag.", href: "/nl/kaart/?veille=tout" },
+    { name: "Ngo's", line: "Verzet en moratoria — de monitoringlaag.", href: "/map/?veille=tout" },
     { name: "Onderzoekers", line: "De methode, de data — alles is na te rekenen.", href: "/nl/methodologie/" },
     { name: "Exploitanten", line: "Corrigeer, reageer — en verbeter het echte project.", href: "/nl/contact/" },
   ],
@@ -767,11 +767,11 @@ const NL: typeof FR = {
     repli: "europe" as string | null,
     stats: [
     { genre: "vue", id: "grid_saturated", figure: "{big} op een vol onderstation",
-      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers/#vol-station" },
+      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/figures/#vol-station" },
     { genre: "vue", id: "pue_published", figure: "{big} publiceren hun PUE",
-      attribution: "Kerncijfers van het datacenterpark · opgaven van exploitanten · n = {n}", url: "/nl/kerncijfers/#pue-gepubliceerd" },
+      attribution: "Kerncijfers van het datacenterpark · opgaven van exploitanten · n = {n}", url: "/figures/#pue-gepubliceerd" },
     { genre: "vue", id: "water_stress_high", figure: "{big} in een zone met hoge waterstress",
-      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/nl/kerncijfers/#waterstress" },
+      attribution: "Kerncijfers van het datacenterpark · {src} · n = {n}", url: "/figures/#waterstress" },
     ],
   },
   whyNowPunch: "Het heetste onderwerp van AI heeft geen enkele onafhankelijke scheidsrechter. <b>Die scheidsrechter zijn wij.</b>",

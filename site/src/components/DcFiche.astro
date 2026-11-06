@@ -9,6 +9,13 @@
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
+import { CHROME } from "../content/chrome";
+import {
+  cheminDeFiche,
+  cheminDePortrait,
+  cheminDePage,
+  reglesDeLien,
+} from "../config/routes";
 import ScoreBadge from "./ScoreBadge.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -113,7 +120,18 @@ if (_idxEntry?.eligible) {
 }
 
 const SITE_ORIGIN = "https://scoremydatacenter.org";
-const ficheBase = /* i18n:route */ lang === "fr" ? "/fr/dc" : "/dc";
+// 🔴 L'adresse CANONIQUE d'une fiche néerlandaise désignait la page ANGLAISE : le ternaire
+// binaire ne connaissait que « /fr/dc » et « /dc ». Déclarer à un moteur que la version de
+// référence d'une page est celle d'une autre langue, c'est lui demander de ne pas indexer
+// celle-ci. Dérivé de la table de routes, et du périmètre de l'édition.
+const ficheChemin = cheminDeFiche(lang as LangueDeclaree, dc.id);
+// La mini-carte bâtit les liens de ses voisins DANS LE NAVIGATEUR : elle reçoit les motifs
+// et le périmètre, et choisit. Elle recevait une base unique, donc elle envoyait le lecteur
+// néerlandais vers des pages que l'édition ne bâtit pas.
+const reglesLien = reglesDeLien(lang as LangueDeclaree);
+// L'attribution ODbL DCWatch est un TEXTE : elle vit dans la table de chrome, avec le reste
+// de la copie du cadre. Elle se déduisait d'un `base.startsWith("/fr")` dans le script client.
+const dcwatchAttr = CHROME[lang as LangueDeclaree].dcwatch;
 // En-veille: the public grade is withheld ("note en attente") — the site is
 // visible with its facts, but no letter is shown anywhere (leak-safe by data
 // scrub). For desalination-dominant countries (Israel now) we carry the
@@ -151,7 +169,7 @@ const noteChip = (g: string) => `<span class="note-inline n-${g.toLowerCase()}">
 const bandChips = (b: string) => b.split("–").map(noteChip).join("–");
 const isDesalCountry = dc.country === "IL";
 const mapPath = /* i18n:route */ lang === "fr" ? "/fr/carte/" : "/map/";
-const pageUrl = `${SITE_ORIGIN}${ficheBase}/${dc.id}/`;
+const pageUrl = `${SITE_ORIGIN}${ficheChemin}`;
 const L = (obj: any) => donnee(obj, lang);
 // The synthesis `lead` is per-language like the body. Back-compat: older records carry a bare
 // string (single language) — render it as-is until they are regenerated. New records carry
@@ -395,7 +413,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Place",
   name: dc.name,
-  url: `${SITE_ORIGIN}${/* i18n:route */ lang === "fr" ? "/fr" : ""}/dc/${dc.id}/`,
+  url: `${SITE_ORIGIN}${ficheChemin}`,
   // 🔴 Le balisage est la pire des quatre fuites : il AFFIRME à une machine, sans prose
   // autour pour nuancer, que l'exploitant de ce site est une société nommée « opérateur non
   // identifié ». C'est ce qui était publié sur 162 fiches jusqu'au 2026-10-17. Même prédicat
@@ -427,7 +445,7 @@ const filAriane = {
   itemListElement: [
     { "@type": "ListItem", position: 1, name: "ScoreMyDataCenter", item: `${racine}/` },
     { "@type": "ListItem", position: 2, name: t.breadcrumbMap, item: `${racine}/${/* i18n:route */ lang === "fr" ? "carte" : "map"}/` },
-    { "@type": "ListItem", position: 3, name: dc.name, item: `${racine}/dc/${dc.id}/` },
+    { "@type": "ListItem", position: 3, name: dc.name, item: `${SITE_ORIGIN}${ficheChemin}` },
   ],
 };
 
@@ -699,7 +717,7 @@ const seoDesc = seoLead
           </figure>
         )}
         <span class="fiche-share-label">{t.miniMapTitle}</span>
-        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-fiche-base={ficheBase} aria-label={t.miniMapAria}>
+        <div class="fiche-mini-map" data-dc={dc.id} data-grade={dc.grades.site.grade} data-regles={JSON.stringify(reglesLien)} data-dcwatch={dcwatchAttr} aria-label={t.miniMapAria}>
           <div class="mini-map-canvas" aria-hidden="true"></div>
           <a class="mini-map-open" href={`${mapPath}?dc=${dc.id}`}>{t.openFullMap}</a>
         </div>
@@ -708,7 +726,7 @@ const seoDesc = seoLead
       {/* PASSERELLE VERS L'AUTRE PERSONA. La fiche parle à qui lit vingt-six indicateurs ;
           le portrait parle à qui habite à côté. Mêmes faits, mêmes sources — l'un n'est pas
           une version simplifiée de l'autre, et c'est pour ça que le lien est explicite. */}
-      <a class="fiche-portrait-link" href={`${ficheBase}/${dc.id}/portrait/`}>
+      <a class="fiche-portrait-link" href={cheminDePortrait(lang as LangueDeclaree, dc.id)}>
         {t.portraitLink}<span>{t.portraitLinkSub}</span>
       </a>
 
@@ -1009,7 +1027,7 @@ const seoDesc = seoLead
           <ul>
             {related.map((r: any) => (
               <li>
-                <a href={`${ficheBase}/${r.id}/`}>
+                <a href={cheminDeFiche(lang as LangueDeclaree, r.id)}>
                   <span class="fr-name">{r.name}</span>
                   <span class="fr-meta">
                     {[r.municipality,
@@ -1054,9 +1072,7 @@ const seoDesc = seoLead
       } else {
         const [lon, lat] = f.geometry.coordinates;
         // B-1 (avis cabinet 2026-07-27) : attribution ODbL DCWatch locale sur la carte.
-        const dcwatchAttr = (mini.dataset.ficheBase || "/fr/dc").startsWith("/fr")
-          ? 'Contient des informations de <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL'
-          : 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL';
+        const dcwatchAttr = mini.dataset.dcwatch || "";
         const map = new maplibregl.Map({
           container: mini.querySelector<HTMLElement>(".mini-map-canvas")!,
           style: "https://tiles.openfreemap.org/styles/positron",
@@ -1073,12 +1089,21 @@ const seoDesc = seoLead
         };
         // Neighbours first (cumulative-effects context is the point of this map):
         // small, dimmed, clickable to their own fiche — the data is already here.
-        const ficheBase = (mini.dataset.ficheBase || "/fr/dc");
+        // Le périmètre vient du serveur ; la règle est celle de `cheminDeFiche` :
+        // la page de la langue si l'édition couvre ce site, l'édition de repli sinon.
+        const R = JSON.parse(mini.dataset.regles || "null") as {
+          prefixes: string[] | null; fiche: { couvert: string; repli: string };
+        } | null;
+        const lienDeFiche = (id: string) => {
+          if (!R) return `/dc/${id}/`;
+          const couvert = !R.prefixes || R.prefixes.includes(id.split("-")[0]);
+          return (couvert ? R.fiche.couvert : R.fiche.repli).replace(":id", id);
+        };
         for (const n of geo.features) {
           if (n.properties.id === mini.dataset.dc) continue;
           const el = document.createElement("a");
           el.className = "map-marker mini-neighbour";
-          el.href = `${ficheBase}/${n.properties.id}/`;
+          el.href = lienDeFiche(n.properties.id);
           el.title = n.properties.name;
           el.style.width = el.style.height = "24px";
           el.innerHTML = chipHtml(n.properties.grade_site);

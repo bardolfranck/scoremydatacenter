@@ -6,6 +6,13 @@
 // generated at build time — no hand-written grade ever appears here.
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
+import { CHROME } from "../content/chrome";
+import {
+  cheminDeFiche,
+  cheminDePortrait,
+  cheminDePage,
+  reglesDeLien,
+} from "../config/routes";
 import ScoreBadge from "./ScoreBadge.astro";
 import AboutSection from "./AboutSection.astro";
 import FeedbackBand from "./FeedbackBand.astro";
@@ -140,7 +147,9 @@ const latest = [...real]
 // phrases, le module porte le remplissage (périmètre et format compris, qui diffèrent par
 // langue). Les deux pages composaient la même chose, chacune chez elle.
 const chiffres = chiffresAccueil(lang as Langue);
-const ficheBase = t.chemins.fiche;
+// 🔴 La base de fiche venait de `t.chemins.fiche`, une clé des tables de COPIE. Un chemin
+// se dérive du périmètre, il ne se traduit pas.
+const reglesLien = reglesDeLien(lang as LangueDeclaree);
 const rankPath = t.chemins.classement;
 const pillarOrder = methodology.pillars.map((p: any) => p.id);
 
@@ -372,7 +381,8 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               fixture: t.fixtureTag,
               openMap: t.mapOpen,
               reserved: t.mapReserved,
-              ficheBase: ficheBase,
+              regles: reglesLien,
+              dcwatch: CHROME[lang as LangueDeclaree].dcwatch,
               mapPath: t.chemins.carte,
               viewFiche: t.viewFiche,
               powerUnknown: t.powerUnknown,
@@ -382,7 +392,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <div class="explore-col">
           <p class="explore-label">{t.exploreRankLabel}</p>
           {rankTeaser.map(({ dc, p }) => (
-            <a class="teaser-row" href={`${ficheBase}/${dc.id}/`}>
+            <a class="teaser-row" href={cheminDeFiche(lang as LangueDeclaree, dc.id)}>
               <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
                 confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
                 size="sm" naLabel={t.insufficient} />
@@ -395,7 +405,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <div class="explore-col">
           <p class="explore-label">{t.exploreLatestLabel}</p>
           {latest.map((dc: any) => (
-            <a class="teaser-row" href={`${ficheBase}/${dc.id}/`}>
+            <a class="teaser-row" href={cheminDeFiche(lang as LangueDeclaree, dc.id)}>
               <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
                 confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
                 size="sm" naLabel={t.insufficient} />

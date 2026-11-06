@@ -298,6 +298,10 @@ onepager:
 	(cd site && npx astro preview --port 4399 > /dev/null 2>&1 & echo $$! > /tmp/smdc-preview.pid) && sleep 3
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-fr.pdf" "http://localhost:4399/fr/comprendre/one-pager"
 	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-en.pdf" "http://localhost:4399/understand/one-pager"
+# 🔴 Le néerlandais manquait : la table de copie annonçait `questions-data-center-nl.pdf`,
+# la page one-pager néerlandaise existait, et le PDF n'a jamais été imprimé — un lien de
+# téléchargement en 404 sur la page « datacenters begrijpen ».
+	"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --no-pdf-header-footer --print-to-pdf="site/public/downloads/questions-data-center-nl.pdf" "http://localhost:4399/nl/datacenters-begrijpen/one-pager"
 	lsof -ti :4399 | xargs kill 2>/dev/null || true
 
 # Daily veille — detect new FR data-center projects → candidate drafts → digest in the PRIVATE

@@ -7,6 +7,8 @@
 // from the engine's artifacts; the client script only reorders and filters.
 import Base from "../layouts/Base.astro";
 import type { NavNode } from "../config/nav";
+import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
+import type { LangueDeclaree } from "../content/langues";
 import ScoreBadge from "./ScoreBadge.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
@@ -38,8 +40,12 @@ const colonneAnnee = scores.filter((d) => d.expected_commissioning != null).leng
 const legendeStatuts = [t.statusHelpTitre, ...Object.entries(t.status).map(
   ([k, label]) => `${label} — ${t.statusHelp?.[k] ?? ""}`)].join("\n");
 
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
-const mapPath = lang === "fr" ? "/fr/carte/" : "/map/";
+// 🔴 Les adresses se DÉRIVENT de la table de routes, elles ne se devinent plus d'un
+// ternaire binaire : « lang === "fr" ? "/fr/dc" : "/dc" » envoyait les 3 292 lignes du
+// classement néerlandais vers l'édition ANGLAISE, y compris les 151 sites néerlandais
+// dont la page existe. Et la carte n'est pas écrite en néerlandais : le lien part alors
+// vers l'édition de repli, où la page existe.
+const mapPath = cheminDePage(lang as LangueDeclaree, "carte");
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
@@ -256,9 +262,9 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
               >
                 <td class="rank-index"></td>
                 <td class="rank-project">
-                  <strong><a href={`${ficheBase}/${dc.id}/`}>{dc.name}</a></strong>
+                  <strong><a href={cheminDeFiche(lang as LangueDeclaree, dc.id)}>{dc.name}</a></strong>
                   <span>{dc.municipality} — {dc.operator}{dc.id.startsWith("zz-") ? ` · ${t.fixture}` : ""}</span>
-                  <a class="rank-portrait-link" href={`${ficheBase}/${dc.id}/portrait/`}>{t.viewPortrait} →</a>
+                  <a class="rank-portrait-link" href={cheminDePortrait(lang as LangueDeclaree, dc.id)}>{t.viewPortrait} →</a>
                   <a class="rank-map-link" href={`${mapPath}?dc=${dc.id}`}>{t.viewOnMap} ↗</a>
                 </td>
                 <td class="rank-country">{dc.country}</td>

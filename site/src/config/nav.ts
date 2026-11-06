@@ -134,13 +134,20 @@ export const EN_NAV: NavNode[] = [
 // SCIEMMENT — un trou déclaré vaut mieux qu'une route fabriquée. (Ils étaient quatre ; le
 // rapport Pays-Bas est retiré depuis le 2026-10-07 et n'est plus annoncé dans aucun menu —
 // un chiffre écrit dans un commentaire se périme, cf. `config/reportStatus.ts`.)
+// 🔴 SIX ENTRÉES ONT ÉTÉ RETIRÉES D'ICI LE 2026-11-06 : carte, chiffres clés, note pas à
+// pas, actu, qui sommes-nous, développeurs. Elles annonçaient des pages qui N'EXISTENT PAS
+// en néerlandais — 404, en haut de chaque page de l'édition, ~650 fois chacune dans le site
+// servi. Trouvé par Franck en cliquant.
+//
+// Pourquoi retirer plutôt que renvoyer vers l'anglais : une entrée de menu en néerlandais
+// qui ouvre une page anglaise ne dit pas qu'elle change de langue. Le sélecteur de langue,
+// lui, le dit. ⚠️ C'est une décision éditoriale réversible : le jour où ces pages sont
+// écrites en néerlandais, les entrées reviennent — avec leur colonne dans `FAMILLES`.
 export const NL_NAV: NavNode[] = [
   { label: "Verkennen", children: [
-    { href: "/nl/kaart/", label: "Kaart" },
     { href: "/nl/ranglijst/", label: "Ranglijst" },
     { href: "/nl/portret-van-de-site/", label: "Portret van de site" },
     { href: "/nl/indices/", label: "Landenindex" },
-    { href: "/nl/kerncijfers/", label: "Kerncijfers" },
   ]},
   { label: "Begrijpen", children: [
     { href: "/nl/acceptatie-datacenter/", label: "Maatschappelijke acceptatie" },
@@ -149,20 +156,16 @@ export const NL_NAV: NavNode[] = [
     { href: "/nl/datacenters-begrijpen/", label: "Datacenters begrijpen" },
     { href: "/nl/normen/", label: "De normen · waar wij staan" },
     { href: "/nl/methodologie/", label: "Methode" },
-    { href: "/nl/het-cijfer-stap-voor-stap/", label: "Het cijfer, stap voor stap" },
     { href: "/nl/bronnen/", label: "Bronnen & licenties" },
     { href: "/nl/glossarium/", label: "Glossarium" },
     { href: "/nl/#faq", label: "FAQ" },
   ]},
   { href: "/nl/vergelijken/", label: "Vergelijken" },
-  { href: "/nl/nieuws/", label: "Nieuws" },
   { label: "Bibliotheek", children: [
     { href: "/nl/bibliotheek/", label: "De hele bibliotheek" },
   ]},
   { label: "Het observatorium", children: [
-    { href: "/nl/over-ons/", label: "Over ons" },
     { href: "/nl/#open", label: "Open model" },
-    { href: "/nl/ontwikkelaars/", label: "API voor ontwikkelaars" },
     { href: "/nl/#contact", label: "Contact" },
   ]},
 ];
