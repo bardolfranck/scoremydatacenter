@@ -45,9 +45,10 @@ from engine.langues import pays_de_la_langue  # noqa: E402
 # pourquoi il faut l'écrire : la coïncidence ne tient pas (un jour `en` → GB + IE + US), et
 # un garde qui DÉDUIT son périmètre d'une coïncidence se tromperait en silence le jour où
 # elle cesse.
-# ⚠️ OUVERT, ET JE NE LE TRANCHE PAS : la Flandre. 42 fiches `be-`, dont une part parle
-# néerlandais. Le lot livré ne couvre que `nl-` ; les inclure ici créerait 42 dettes d'un
-# coup, les exclure par défaut est un choix éditorial que personne n'a fait. À Franck.
+# TRANCHÉ LE 2026-11-06 : la Flandre entre. Les 42 fiches `be-` sont traduites, et Franck a
+# dit GO en connaissance de cause — un site WALLON aura donc une page néerlandaise. Ce
+# n'était pas un détail technique : c'est pour ça que la question est restée ouverte ici
+# vingt-quatre heures au lieu d'être réglée par défaut dans un sens ou dans l'autre.
 # 🔴 ET ELLE EST LUE, PLUS RECOPIÉE (2026-11-06). Cette liste vivait ici en dur, et elle
 # y était JUSTE — c'est ce qui rend la recopie dangereuse. Le site a maintenant besoin du
 # même périmètre pour décider quelles PAGES il bâtit : deux listes, et le jour où la
@@ -402,8 +403,26 @@ def main() -> int:
             fautes.append((chemin_nl, langue, len(communs), len(nl), communs))
 
     if not vues:
-        print("langue servie : aucune page néerlandaise dans ce build", file=sys.stderr)
-        return 0
+        # 🔴 ELLE RENDAIT 0 ICI, ET C'ÉTAIT MA PROPRE LEÇON OUBLIÉE. Le 2026-11-06 un build a
+        # échoué sur une faute de syntaxe : `dist` était VIDE, et cette barrière a répondu
+        # « aucune page néerlandaise dans ce build » puis a laissé passer. Le plafond de
+        # fichiers, lui, a refusé de conclure — il a son plancher de plausibilité. Un
+        # contrôle sur l'ensemble vide passe toujours [[jeu-de-validation-perimetre-et-sens]]
+        # ; il doit REFUSER DE CONCLURE, pas conclure que tout va bien.
+        if not any(dossier.glob("*/index.html")):
+            print(
+                f"langue servie : {dossier} ne contient aucune page — le build a échoué sans "
+                f"le dire, ou cette barrière ne regarde pas au bon endroit. Elle refuse de "
+                f"conclure.",
+                file=sys.stderr,
+            )
+            return 1
+        print(
+            "langue servie : aucune page néerlandaise dans ce build, alors que le site est "
+            "bâti — le périmètre de l'édition a disparu",
+            file=sys.stderr,
+        )
+        return 1
     # Une famille à segment variable compte pour UNE surface, pas pour ses trente échantillons.
     def _surface(chemin: str) -> str:
         for nl, _, _ in _trios():

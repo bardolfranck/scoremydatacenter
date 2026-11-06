@@ -10,6 +10,7 @@ import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import { CHROME } from "../content/chrome";
+import { communeEtRegion, regionLisible } from "../config/lieu";
 import {
   cheminDeFiche,
   cheminDePortrait,
@@ -248,7 +249,7 @@ const hasOperator = operateurIdentifie(dc.operator);
 // « environ », car la mesure vise le centre de l'objet OSM ; une zone résidentielle (bâti non tagué,
 // fréquent en rural) est dite comme telle, jamais présentée comme une maison.
 const dwell = dc.nearest_dwelling;
-const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : null].filter(Boolean).join(" ")
+const place = communeEtRegion(dc.municipality, dc.admin_area)
   + (dc.country ? ` · ${dc.country}` : "");
 
 // L'ÉNUMÉRATION DOIT BOUCLER. Elle listait mesurés + annoncés + manquants et s'arrêtait là :
@@ -519,7 +520,7 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
       : /^[A-E]$/.test(dc.grades.site.grade ?? "")
         ? t.seo.grade.replace("{grade}", dc.grades.site.grade)
         : t.seo.pending;
-const seoPlaceRaw = dc.municipality ?? dc.admin_area ?? dc.country ?? "";
+const seoPlaceRaw = dc.municipality ?? (regionLisible(dc.admin_area) || dc.country || "");
 // « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
 // est du bruit qui mange la largeur utile du titre en SERP.
 const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceRaw).toLowerCase())
@@ -534,7 +535,8 @@ const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceR
 const seoLieuSansRegion = dc.municipality
   ? cm.place.replace("{municipality}", dc.municipality)
   : cm.placeFallback;
-const seoLieu = seoLieuSansRegion + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
+const seoLieu = seoLieuSansRegion
+  + (dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
 // 🔴 LE TITRE ÉTAIT COUPÉ AVANT LA NOTE — SUR 100 % DES FICHES (Search Console, 2026-10-23).
 // Mesuré : médiane 92 caractères, p90 109, max 142, quand Google en affiche ~60. Le lecteur
 // voyait « Digital Realty Frankfurt FRA28 (Closed), data center in Frankf… » et JAMAIS

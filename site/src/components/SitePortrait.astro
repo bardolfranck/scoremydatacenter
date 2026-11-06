@@ -19,6 +19,7 @@
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import { RACINE, donnee } from "../content/langues";
+import { regionLisible } from "../config/lieu";
 import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
@@ -169,7 +170,7 @@ const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
 // canonique désignait une page qui n'existe pas. Dérivée de la table de routes.
 const url = `https://scoremydatacenter.org${cheminDePortrait(lang as LangueDeclaree, dc.id)}`;
 const titre = `${dc.name} — ${t.kicker}`;
-const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
+const lieu = [dc.municipality, regionLisible(dc.admin_area)].filter(Boolean).join(", ");
 
 // 🔴 LE TITRE NE PORTAIT NI LA CATÉGORIE NI LE LIEU (audit de demande, 2026-10-26).
 // « Campus IA Fouju — Portrait du site | ScoreMyDataCenter » : « portrait du site » est notre
@@ -189,7 +190,8 @@ const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 const ptLieuCourt = dc.municipality
   ? cm.place.replace("{municipality}", dc.municipality)
   : cm.placeFallback;
-const ptLieu = ptLieuCourt + (dc.municipality && dc.admin_area ? ` (${dc.admin_area})` : "");
+const ptLieu = ptLieuCourt
+  + (dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
 const ptSep = cm.colon;
 const seoTitle = [
   `${dc.name} — ${ptLieu}${ptSep}${t.seoAngle}`,
