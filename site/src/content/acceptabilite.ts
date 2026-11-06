@@ -151,7 +151,7 @@ const NL: typeof FR = {
     { h2: "Een normatieve verankering, geen mening",
       corps: "<p>We meten <strong>genormaliseerde</strong> indicatoren — energie-efficiëntie, watergebruik — in de geest van de reeks <strong>ISO/IEC 30134</strong> over prestatie-indicatoren voor datacenters. We voeren <strong>geen</strong> levenscyclusanalyse uit: we maken gedocumenteerde feiten vergelijkbaar. Zie <a href='/nl/normen/'>de normen, en waar wij staan</a>.</p>" },
     { h2: "Wat maatschappelijke acceptatie niet is",
-      corps: "<p>Het is geen oordeel vóór of tegen datacenters. Een gebied kan een zwaar project onder goede voorwaarden ontvangen, en een klein project kan slecht liggen. We zeggen niet óf er gebouwd moet worden: we zeggen <strong>wat déze plek kost, voor dít project</strong>, met dezelfde meetlat voor iedereen.</p><p>Zie <a href='/map/'>de kaart van de sites</a> en <a href='/nl/ranglijst/'>de ranglijst</a>.</p>" },
+      corps: "<p>Het is geen oordeel vóór of tegen datacenters. Een gebied kan een zwaar project onder goede voorwaarden ontvangen, en een klein project kan slecht liggen. We zeggen niet óf er gebouwd moet worden: we zeggen <strong>wat déze plek kost, voor dít project</strong>, met dezelfde meetlat voor iedereen.</p><p>Zie <a href='/nl/kaart/'>de kaart van de sites</a> en <a href='/nl/ranglijst/'>de ranglijst</a>.</p>" },
   ],
 
   details: [

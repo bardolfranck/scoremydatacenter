@@ -57,36 +57,17 @@ from engine.langues import pays_de_la_langue  # noqa: E402
 PAYS_DE_LA_LANGUE = pays_de_la_langue()
 
 # Les surfaces néerlandaises qui reprennent encore le texte d'une autre langue, au
-# 2026-11-05 — CINQ :
-#   · /nl/indices/ (10 blocs EN) et /nl/vergelijken/ (5 EN) — leur copie vit en TERNAIRE
-#     dans le composant, pas dans une table ; traduction commandée ;
-#   · /nl/ (accueil) — le mur satellite (3 blocs EN, traduction commandée) ET trois titres
-#     d'ACTU en français. Ceux-là ne sont pas de la copie : `headline_i18n`/`summary_i18n`
-#     sont des champs par-langue de la donnée de veille, produits en `fr`/`en` par
-#     `pipelines/veille/actu.py` (dépôt privé). Dette NOMMÉE, différée par Franck
-#     (« presse et actu, on verra après ») — pas une exemption : le cron quotidien
-#     continuera d'émettre deux langues jusqu'à ce qu'on l'ouvre ;
-#   · /nl/bibliotheek/ et /nl/bibliotheek/alles/ — HORS périmètre, Franck n'a pas nommé la
-#     bibliothèque quand il a listé les pages à passer en néerlandais. Déclaré non traduit.
-#
-# 🔴 LES DEUX FAMILLES DE PRODUIT SONT PROPRES : `/nl/dc/:id/` et `/nl/dc/:id/portret/`,
-# 6 534 pages, ne reprennent plus une phrase d'une autre langue. Elles y sont arrivées par
-# deux chemins qu'il faut distinguer, parce qu'on allait les confondre :
-#   · la PROSE des fiches (identité, chapeaux, corps des piliers) a été traduite sur les
-#     152 fiches néerlandaises — le livrable fiche, PAR PAYS (doctrine Franck, 2026-11-05 :
-#     une fiche étrangère servie en anglais sur l'édition néerlandaise est VOULUE) ;
-#   · la LÉGENDE de la carte de contexte était écrite en `fr`/`en` par notre propre build
-#     (`build_prod_artifacts.py`) et titrait en anglais sur CHAQUE portrait néerlandais.
-#     Celle-là n'était pas une dette de traduction : c'était un défaut de producteur, et
-#     `test_un_producteur_emet_chaque_langue_declaree` empêche désormais la suivante.
-#
-# 10 → 9 le 2026-11-03 (le one-pager) · 9 → 8 le 2026-11-05 (les fiches et les portraits)
-# · 8 → 5 le 2026-11-05 (contact, classement, mentions légales traduits). Il ne peut que
-# baisser. À zéro, `nl` rejoint `LANGUES_VIVANTES` — et
-# `test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court` tient la réciproque,
-# que cette barrière ne peut pas tenir : un cliquet ne refuse qu'une régression, donc à dette
-# égale il sort 0, langue ouverte ou non.
-DETTE_SURFACES_NL = 5
+# 2026-11-06 — QUATRE :
+#   · /nl/indices/ est SORTIE de cette liste : ses 8 dernières chaînes (encart, légende,
+#     dénominateurs) sont traduites, et sa page n'a plus une seule branche binaire. La
+#     carte néerlandaise existe aussi — `/nl/kaart/`, première des sept pages manquantes.
+#   · /nl/vergelijken/ (5 blocs EN) — le comparateur porte sa copie en douze ternaires
+#     binaires dans le composant ; c'est de la plomberie à faire, pas une traduction.
+#   · /nl/bibliotheek/ et /nl/bibliotheek/alles/ (FR et EN) — la bibliothèque est déclarée
+#     NON traduite par Franck tant qu'il n'en décide pas autrement.
+#   · /nl/ (3 blocs FR) — les titres d'actu, produits par le pipeline de veille dans le
+#     dépôt privé : `headline_i18n` ne porte que fr et en. Reporté par Franck.
+DETTE_SURFACES_NL = 4
 
 # Les blocs qui sont les MÊMES dans toutes les langues PAR DÉCISION, pas par négligence.
 # Chaque motif est une règle de la maison, pas une exception de confort :

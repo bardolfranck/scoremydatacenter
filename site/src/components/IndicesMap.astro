@@ -23,7 +23,11 @@ const T = copie({
   fr: {
     insert: "Cet indice agrège les notes de SITES (le contexte territorial : réseau, eau, foncier, risques). Il ne note ni les opérateurs ni la conduite des projets.",
     veille: "en veille — n < 5 : moyenne non calculée",
-    aria: "Carte d'Europe : indice SITE par pays",
+    // 🔴 « Carte d'Europe » était faux depuis que les États-Unis et Israël ont une ancre :
+    // `fitBounds` ajuste sur TOUS les pays ancrés. Un texte alternatif est la seule
+    // description qu'un lecteur d'écran reçoit — il ne peut pas voir que la carte le
+    // contredit.
+    aria: "Carte du monde : indice SITE par pays",
     reserved: "A réservé",
     legend: {
       a: "A ≥ 80 — réservé : ne s'affiche qu'adossé à des exploitations vérifiées (A-25)",
@@ -35,7 +39,7 @@ const T = copie({
   en: {
     insert: "This index aggregates SITE grades (the territorial context: grid, water, land, hazards). It grades neither operators nor how projects are run.",
     veille: "on watch — n < 5: no mean computed",
-    aria: "Map of Europe: SITE index per country",
+    aria: "World map: SITE index per country",
     reserved: "A reserved",
     legend: {
       a: "A ≥ 80 — reserved: only shown backed by verified operations (A-25)",
@@ -44,10 +48,22 @@ const T = copie({
       dots: "●●● solid doc · ●●○ medium · ●○○ weak — documentation always ships with the grade (rule #1)",
     },
   },
+  nl: {
+    insert: "Deze index bundelt de SITE-cijfers (de territoriale context: elektriciteitsnet, water, grond, risico's). Hij beoordeelt niet de exploitanten en evenmin hoe projecten worden gevoerd.",
+    veille: "gevolgd — n < 5: geen gemiddelde berekend",
+    aria: "Wereldkaart: SITE-index per land",
+    reserved: "A voorbehouden",
+    legend: {
+      a: "A ≥ 80 — voorbehouden: wordt alleen getoond mits gestaafd door geverifieerde exploitatie (A-25)",
+      b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
+      veille: "gevolgd — n < 5: geen gemiddelde berekend",
+      dots: "●●● degelijke documentatie · ●●○ gemiddeld · ●○○ zwak — documentatie hoort altijd bij het cijfer (regel nr. 1)",
+    },
+  },
 }, lang);
 
 // Visual anchor per country (lon/lat) — cartographic constants, same family
-// as the site map's hardcoded Europe center; NOT corpus data.
+// as the site map's hardcoded center; NOT corpus data.
 const ANCHORS: Record<string, [number, number]> = {
   AT: [15.2, 47.5], BE: [4.0, 50.4], CH: [7.9, 46.4], DE: [10.8, 51.6],
   DK: [9.3, 56.1], ES: [-3.7, 40.0], FI: [26.0, 62.8], FR: [2.3, 46.6],

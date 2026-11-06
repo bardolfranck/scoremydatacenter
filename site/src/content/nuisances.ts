@@ -237,7 +237,7 @@ const NL: typeof FR = {
       q: "Op welke afstand van een datacenter woont u rustig?",
       r: `<p>Er bestaat <strong>geen enkele reglementaire afstand</strong> tussen een datacenter en woningen. Wat de regelgeving vastlegt is niet de afstand maar de <strong>geluidstoename</strong>: hoeveel het geluid bij de buren stijgt wanneer de installatie draait. Het Franse besluit van 23 januari 1997 staat in de regel <strong>+5 dB(A) overdag en +3 dB(A) ’s nachts</strong> toe.</p>
       <p>Het gevolg is contra-intuïtief: <strong>dezelfde machine heeft niet overal hetzelfde effect</strong>. Een plattelandsomgeving die ’s nachts naar 30 dB(A) zakt, laat bijna geen marge, waar een industriezone haar opslokt. Twee huizen op gelijke afstand van twee identieke sites beleven dus niet hetzelfde.</p>
-      <p>Daarom publiceren we op elke fiche, waar we ze hebben, de <strong>afstand tot de dichtstbijzijnde woningen</strong>: de enige parameter die niemand achteraf kan bijstellen, en u leest hem samen met de rest van het dossier. <a href='/map/'>Zoek de site bij u in de buurt op de kaart</a>.</p>` },
+      <p>Daarom publiceren we op elke fiche, waar we ze hebben, de <strong>afstand tot de dichtstbijzijnde woningen</strong>: de enige parameter die niemand achteraf kan bijstellen, en u leest hem samen met de rest van het dossier. <a href='/nl/kaart/'>Zoek de site bij u in de buurt op de kaart</a>.</p>` },
     {
       q: "Is wonen bij een datacenter een gezondheidsrisico?",
       r: `<p>We zijn geen gezondheidsautoriteit en <strong>we meten geen enkel gezondheidseffect</strong> — het bevestigen of het ontkennen zou even oneerlijk zijn. Wat we kunnen zeggen, steunt op de feiten in de dossiers.</p>
@@ -292,7 +292,7 @@ const NL: typeof FR = {
 
     { icone: "measure", h2: "Waar onze meting staat",
       corps: `<p>{mesure} Het detail van de hinder komt uit de <strong>41 doorgenomen milieuadviezen</strong>: de projecten die een beoordeling doorliepen, <strong>niet het hele park</strong>. Deze feiten worden gepubliceerd <strong>naast het cijfer, niet erin</strong>.</p>
-      <p>Zie <a href='/nl/acceptatie-datacenter/'>de maatschappelijke acceptatie van datacenters</a>, <a href='/map/'>de kaart van de sites</a> en <a href='/nl/methodologie/'>de methode</a>.</p>` },
+      <p>Zie <a href='/nl/acceptatie-datacenter/'>de maatschappelijke acceptatie van datacenters</a>, <a href='/nl/kaart/'>de kaart van de sites</a> en <a href='/nl/methodologie/'>de methode</a>.</p>` },
   ],
 
   details: [

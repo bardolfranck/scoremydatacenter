@@ -135,7 +135,7 @@ export const EN_NAV: NavNode[] = [
 // rapport Pays-Bas est retiré depuis le 2026-10-07 et n'est plus annoncé dans aucun menu —
 // un chiffre écrit dans un commentaire se périme, cf. `config/reportStatus.ts`.)
 // 🔴 SIX ENTRÉES ONT ÉTÉ RETIRÉES D'ICI LE 2026-11-06 : carte, chiffres clés, note pas à
-// pas, actu, qui sommes-nous, développeurs. Elles annonçaient des pages qui N'EXISTENT PAS
+// pas, actu, qui sommes-nous, développeurs. La CARTE est revenue le même jour, traduite. Elles annonçaient des pages qui N'EXISTENT PAS
 // en néerlandais — 404, en haut de chaque page de l'édition, ~650 fois chacune dans le site
 // servi. Trouvé par Franck en cliquant.
 //
@@ -145,6 +145,7 @@ export const EN_NAV: NavNode[] = [
 // écrites en néerlandais, les entrées reviennent — avec leur colonne dans `FAMILLES`.
 export const NL_NAV: NavNode[] = [
   { label: "Verkennen", children: [
+    { href: "/nl/kaart/", label: "Kaart" },
     { href: "/nl/ranglijst/", label: "Ranglijst" },
     { href: "/nl/portret-van-de-site/", label: "Portret van de site" },
     { href: "/nl/indices/", label: "Landenindex" },
