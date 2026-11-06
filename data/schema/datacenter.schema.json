@@ -147,8 +147,13 @@
             "en": {
               "type": "string",
               "minLength": 1
+            },
+            "nl": {
+              "type": "string",
+              "minLength": 1
             }
-          }
+          },
+          "description": "Synthèse courte de la fiche, PAR LANGUE. Les langues DÉCLARÉES sont acceptées, `fr` et `en` seules sont exigées : une fiche ne porte la prose d'une langue que si son pays l'a reçue. Le 2026-11-06 ce champ était le SEUL objet par-langue resté binaire quand le néerlandais a été ouvert dans les quatre autres — 151 fiches traduites ont bloqué le déploiement. `test_schema_langues.py` tient l'uniformité."
         },
         "power_mw_status": {
           "enum": [
@@ -301,6 +306,10 @@
                 "minLength": 1
               },
               "en": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nl": {
                 "type": "string",
                 "minLength": 1
               }
