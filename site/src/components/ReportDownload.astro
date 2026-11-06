@@ -80,6 +80,12 @@ const COMMON = {
     svcItems: ["Lecture de portefeuille", "Site avant dépôt / investissement", "Benchmark privé"],
     svcCta: "Parler d'une étude sur mesure",
     svcSubject: "Étude sur mesure — data centers",
+    // Un rapport RETIRÉ : la page ne le présente plus, elle porte la rétractation.
+    retireKicker: "Rapport · retiré",
+    retirePrefixeTitre: "Rapport retiré",
+    retireLead: "Ce rapport n'est plus servi, dans aucune édition. La note ci-contre dit pourquoi, et elle est datée.",
+    retireNoticeTitre: "Rapport retiré du téléchargement",
+    retireNoteBtn: "Lire la note de retrait — 1 page",
   },
   en: {
     tagline: "Independent observatory",
@@ -109,6 +115,12 @@ const COMMON = {
     svcItems: ["Portfolio read", "Site before filing / investment", "Private benchmark"],
     svcCta: "Talk about a bespoke study",
     svcSubject: "Bespoke study — data centers",
+    // A WITHDRAWN report: the page no longer presents it, it carries the retraction.
+    retireKicker: "Report · withdrawn",
+    retirePrefixeTitre: "Report withdrawn",
+    retireLead: "This report is no longer served, in any edition. The notice opposite says why, and it is dated.",
+    retireNoticeTitre: "Report withdrawn from download",
+    retireNoteBtn: "Read the withdrawal notice — 1 page",
   },
 } as const;
 
@@ -261,12 +273,45 @@ const REPORT_COPY: Record<string, Record<"fr" | "en", Record<string, any>>> = {
 
 const rc = (REPORT_COPY[report] ?? REPORT_COPY["big-tech"])[lang];
 const t = { ...COMMON[lang], ...rc };
+
+// 🔴 UN RAPPORT RETIRÉ N'EST PLUS UN PRODUIT — ET « SERVIR », CE N'EST PAS QUE LIVRER.
+// Le 7 octobre 2026 on a retiré le FICHIER du rapport Pays-Bas : téléchargement en 410,
+// aperçu remplacé par la note de retrait, `subscribe` qui refuse. Cette page, elle, a
+// continué de VENDRE le document pendant un mois — pastille « Rapport · gratuit », titre
+// d'accroche, « le chiffre qui dérange », « ce qu'il y a dedans », maquette de couverture
+// avec ses pastilles A→E — et le menu l'annonçait sur CHAQUE page du site. Un lecteur
+// arrivant par le menu voyait donc une vitrine de rapport, et devait descendre jusqu'au
+// pied de la colonne de droite pour apprendre qu'il n'existe plus.
+// DÉCISION FRANCK 2026-11-05 : un rapport retiré n'est plus servi — dans aucune langue, et
+// sur aucune surface. Le cadrage du document était faux, pas un passage : il n'y a rien à
+// présenter.
+// L'ADRESSE RESTE, ELLE. Elle est marque-page (un abonné confirmé la rouvre) et indexée :
+// elle sert la note DATÉE, pas un 404 qui n'explique rien — même raison que le 410 de la
+// fonction de livraison. Le titre et la description de recherche sont donc DÉRIVÉS de la
+// note et portent le NOM du document : c'est sous ce nom qu'on cherche un rapport dont on
+// a gardé une copie, et c'est là que la rétractation doit se trouver.
+const NOM_MAISON = " — ScoreMyDataCenter";
+const titreDoc = t.title.endsWith(NOM_MAISON) ? t.title.slice(0, -NOM_MAISON.length) : t.title;
+const titrePage = retrait ? `${t.retirePrefixeTitre} — ${titreDoc}${NOM_MAISON}` : t.title;
+// La description sort de la note elle-même, jamais réécrite à côté d'elle : deux textes
+// divergeraient, et le plus lu des deux est celui qu'on ne relit jamais (la page de
+// résultats de recherche).
+// 🔴 LA PREMIÈRE PHRASE, ET ELLE SEULE. La suite de la note raconte ce que le rapport
+// AFFIRMAIT — « deux sites néerlandais y portent la note A » — avant de le corriger. Un
+// extrait de recherche coupe où il veut : en prendre deux phrases faisait republier
+// l'affirmation fausse SANS sa correction, dans le seul endroit où personne ne va la
+// relire. La première phrase, elle, se tient toute seule : le rapport est retiré, à telle
+// date. C'est ce qu'un lecteur qui en a gardé une copie doit lire d'abord.
+function premierePhrase(texte: string): string {
+  return texte.split(/(?<=\.)\s+/)[0];
+}
+const descPage = retrait ? premierePhrase(noticeText(retrait, lang)) : t.metaDescription;
 ---
 
 <Base
   lang={lang}
-  title={t.title}
-  description={t.metaDescription}
+  title={titrePage}
+  description={descPage}
   tagline={t.tagline}
   altHref={altHref}
   altLabel={altLabel}
@@ -276,17 +321,22 @@ const t = { ...COMMON[lang], ...rc };
     <div class="section-inner rd-grid">
       <!-- Left: the pitch + cover -->
       <div class="rd-pitch">
-        <p class="hero-eyebrow">{t.kicker}</p>
-        <h1 id="rd-title" class="rd-title">{t.h1}</h1>
-        <p class="rd-lead">{t.lead}</p>
+        <p class="hero-eyebrow">{retrait ? t.retireKicker : t.kicker}</p>
+        <h1 id="rd-title" class="rd-title">{retrait ? titreDoc : t.h1}</h1>
+        <p class="rd-lead">{retrait ? t.retireLead : t.lead}</p>
 
         <!-- The scoop: free, citable, on-page (SEO + press). The single number
-             that makes the report worth reading. -->
+             that makes the report worth reading. Rien de tout cela sur un rapport
+             retiré : le chiffre citable, la couverture et le sommaire présentent un
+             document qu'on ne sert plus. -->
+        {!retrait && (
         <figure class="rd-scoop">
           <figcaption class="rd-scoop-label">{t.scoopLabel}</figcaption>
           <blockquote set:html={t.scoop}></blockquote>
         </figure>
+        )}
 
+        {!retrait && (
         <div class="rd-cover" aria-hidden="true">
           <span class="rd-cover-kicker">{t.coverKicker}</span>
           <span class="rd-cover-title">{t.coverTitle}</span>
@@ -295,11 +345,16 @@ const t = { ...COMMON[lang], ...rc };
             <i class="s-a">A</i><i class="s-b">B</i><i class="s-c">C</i><i class="s-d">D</i><i class="s-e">E</i>
           </span>
         </div>
+        )}
 
-        <h2 class="rd-inside-title">{t.insideTitle}</h2>
-        <ul class="rd-inside">
-          {t.inside.map((li) => <li set:html={li} />)}
-        </ul>
+        {!retrait && (
+        <Fragment>
+          <h2 class="rd-inside-title">{t.insideTitle}</h2>
+          <ul class="rd-inside">
+            {t.inside.map((li) => <li set:html={li} />)}
+          </ul>
+        </Fragment>
+        )}
 
         <!-- ERRATA. Un rapport figé ne se corrige pas en place et une copie téléchargée
              circule : quand une mesure change ce qu'il affirme sur un PASSAGE, la
@@ -321,9 +376,7 @@ const t = { ...COMMON[lang], ...rc };
             <path d="M10 3v9m0 0 3.2-3.2M10 12 6.8 8.8M4 15.5h12" fill="none"
                   stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <span>{retrait
-            ? (lang === "fr" ? "Lire la note de retrait — 1 page" : "Read the withdrawal notice — 1 page")
-            : t.teaserBtn}</span>
+          <span>{retrait ? t.retireNoteBtn : t.teaserBtn}</span>
         </a>
         {/* Le fichier d'aperçu sert désormais la note de retrait : son ancienne couverture
             portait une pastille « A » au-dessus d'Alblasserdam. Le bouton doit donc dire ce
@@ -339,7 +392,7 @@ const t = { ...COMMON[lang], ...rc };
       <div class="rd-form-col">
         {retrait ? (
           <div class="rd-card rd-withdrawn">
-            <h2 class="rd-form-title">{lang === "fr" ? "Rapport retiré du téléchargement" : "Report withdrawn from download"}</h2>
+            <h2 class="rd-form-title">{t.retireNoticeTitre}</h2>
             <p class="rd-withdrawn-body">{noticeText(retrait, lang)}</p>
             <p class="rd-notice-date">
               <time datetime={retrait.since}>{retrait.since}</time>
