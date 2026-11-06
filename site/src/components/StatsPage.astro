@@ -14,6 +14,7 @@
 import "@fontsource/bricolage-grotesque/700.css";
 import type { NavNode } from "../config/nav";
 import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
+import { communeEtRegion } from "../config/lieu";
 import type { LangueDeclaree } from "../content/langues";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
@@ -429,7 +430,7 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
               <article class="stx-proj">
                 <span class="stx-why">{(ex.why as any)[kind]}</span>
                 <div class="stx-projhead">
-                  <h3>{String(e.name).replace(/_/g, " ").replace(/\s+/g, " ").trim()}{e.municipality && <span class="stx-projloc"> — {e.municipality}{e.admin_area ? ` (${e.admin_area})` : ""}</span>}</h3>
+                  <h3>{String(e.name).replace(/_/g, " ").replace(/\s+/g, " ").trim()}{e.municipality && <span class="stx-projloc"> — {communeEtRegion(e.municipality, e.admin_area)}</span>}</h3>
                   {e.grade_site && (
                     <ScoreBadge label={lang === "fr" ? "Note du site" : "Site grade"} grade={{ grade: e.grade_site }}
                       confidence={e.confidence ?? "medium"} confidenceLabel=""
