@@ -9,7 +9,19 @@
 // ses tables sont complètes, sinon les gardes de parité réclameraient des clés qui n'existent
 // pas encore et la suite serait rouge pendant tout le temps de la rédaction.
 
-export const LANGUES_VIVANTES = ["fr", "en"] as const;
+// 🔴 LE NÉERLANDAIS EST PASSÉ VIVANT LE 2026-11-06, sur décision de Franck (« l'accueil
+// doit proposer FR et NL »). Ce qui l'a permis : sa dette de prose est à ZÉRO sur les
+// surfaces dues — 151 fiches, les six pages nommées, les indices, la carte et le
+// comparateur. Les trois surfaces qui restent dans une autre langue sont des EXEMPTIONS
+// déclarées, nommées et datées dans `check_langue_servie.py` : la bibliothèque, son index
+// et les titres d'actu de l'accueil.
+//
+// Ce que cette ligne change, et c'est pour ça qu'elle est une décision : chaque page du
+// site offre désormais le néerlandais dans son sélecteur et le déclare dans son cluster
+// hreflang — mais SEULEMENT là où `FAMILLES` porte une colonne `nl`. Les six pages qui ne
+// sont pas écrites en néerlandais ne l'offrent pas, et c'est la table de routes qui le
+// dit, pas une exception.
+export const LANGUES_VIVANTES = ["fr", "en", "nl"] as const;
 export type Langue = (typeof LANGUES_VIVANTES)[number];
 
 // Les langues EN PRÉPARATION : leurs tables existent, leurs clés sont gardées comme celles
@@ -21,7 +33,10 @@ export type Langue = (typeof LANGUES_VIVANTES)[number];
 // encore celles du français : sans ce garde, ouvrir le néerlandais publierait 740 chaînes
 // françaises sur des pages néerlandaises — exactement la façon dont l'anglais a décroché,
 // mais dans l'autre sens et en une seule fois.
-export const LANGUES_EN_PREPARATION = ["nl"] as const;
+// Vide depuis le 2026-11-06 : le néerlandais est servi. La liste reste déclarée — c'est
+// l'état dans lequel la LANGUE SUIVANTE s'écrira, et un garde qui ne trouve plus la
+// déclaration ne garde rien.
+export const LANGUES_EN_PREPARATION = [] as const;
 
 /** Toutes les langues qui ont une table, servies ou non. */
 export const LANGUES_DECLAREES = [...LANGUES_VIVANTES, ...LANGUES_EN_PREPARATION] as const;
@@ -116,6 +131,23 @@ export const SEPARATEUR_DECIMAL: Record<LangueDeclaree, string> = {
 };
 
 /** `s` écrit avec la virgule (ou le point) de `lang`. */
+// 🔴 L'ESPACE AVANT LES DEUX-POINTS EST UNE RÈGLE DE TYPOGRAPHIE, PAS UN `lang === "fr"`.
+// Le français met une espace fine insécable avant « : », l'anglais et le néerlandais n'en
+// mettent pas. Ça s'écrivait `lang === "fr" ? " :" : ":"` dans le comparateur — donc une
+// règle du français appliquée au néerlandais par défaut, ce qui tombe juste ici et tombera
+// faux à la langue suivante (l'espagnol, le portugais). Même famille que la virgule décimale
+// et le motif de date : une propriété de la langue, déclarée une fois.
+export const ESPACE_INSECABLE_AVANT_DEUX_POINTS: Record<LangueDeclaree, boolean> = {
+  fr: true,
+  en: false,
+  nl: false,
+};
+
+/** « : » précédé de l'espace fine quand la langue l'exige. */
+export function deuxPoints(lang: LangueDeclaree): string {
+  return ESPACE_INSECABLE_AVANT_DEUX_POINTS[lang] ? "\u202f:" : ":";
+}
+
 // 🔴 LE MOTIF DE DATE, DÉCLARÉ COMME LA VIRGULE (2026-11-06). Il s'écrivait
 // `lang === "fr" ? "d/m/y" : "y-m-d"` : le néerlandais recevait donc la forme ISO
 // anglo-saxonne, alors qu'il écrit 06-11-2026. Même famille que le séparateur décimal —
