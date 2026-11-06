@@ -35,6 +35,9 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[1]
 
+sys.path.insert(0, str(RACINE))
+from engine.langues import pays_de_la_langue  # noqa: E402
+
 # 🔴 LES PAYS DONT LA PROSE EST DUE DANS UNE LANGUE — déclaré, jamais déduit d'un préfixe.
 # La doctrine est PAR PAYS (Franck, 2026-11-05) : l'édition néerlandaise doit sa prose aux
 # sites néerlandais, pas aux 3 140 autres du corpus, qui s'y servent en anglais par choix.
@@ -45,7 +48,13 @@ RACINE = Path(__file__).resolve().parents[1]
 # ⚠️ OUVERT, ET JE NE LE TRANCHE PAS : la Flandre. 42 fiches `be-`, dont une part parle
 # néerlandais. Le lot livré ne couvre que `nl-` ; les inclure ici créerait 42 dettes d'un
 # coup, les exclure par défaut est un choix éditorial que personne n'a fait. À Franck.
-PAYS_DE_LA_LANGUE: dict[str, tuple[str, ...]] = {"nl": ("nl",)}
+# 🔴 ET ELLE EST LUE, PLUS RECOPIÉE (2026-11-06). Cette liste vivait ici en dur, et elle
+# y était JUSTE — c'est ce qui rend la recopie dangereuse. Le site a maintenant besoin du
+# même périmètre pour décider quelles PAGES il bâtit : deux listes, et le jour où la
+# Flandre entre, le site sort les pages belges pendant que la barrière continue de mesurer
+# les seules « nl- » — elle se tairait sur une édition entière [[liste-a-deux-endroits-ment]].
+# La source est `site/src/content/langues.ts`, lue par `engine.langues`.
+PAYS_DE_LA_LANGUE = pays_de_la_langue()
 
 # Les surfaces néerlandaises qui reprennent encore le texte d'une autre langue, au
 # 2026-11-05 — CINQ :
@@ -245,6 +254,8 @@ def main() -> int:
             return []
         tous = sorted(d.name for d in racine.iterdir() if d.is_dir())
         prefixes = PAYS_DE_LA_LANGUE["nl"]
+        if prefixes == "tous":
+            prefixes = tuple(sorted({i.split("-", 1)[0] for i in tous}))
         ids = [i for i in tous if i.split("-", 1)[0] in prefixes]
         if tous and not ids:
             raise SystemExit(

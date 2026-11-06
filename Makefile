@@ -224,6 +224,11 @@ media-sat:
 # Pour passer outre en connaissance de cause : `make deploy SANS_TESTS=1`. C'est écrit ici
 # pour que ce soit un geste délibéré et visible, pas un réflexe.
 deploy:
+# 🔴 D'ABORD : OÙ VA CE DÉPLOIEMENT. Le 2026-11-06, `make deploy` lancé depuis une
+# branche a téléversé 17 764 fichiers, annoncé « Deployment complete », purgé le cache
+# et rendu 0 — dans un environnement PREVIEW. Le site public n'avait pas bougé, et rien
+# dans la sortie ne le disait. Ce contrôle ne demande aucun artefact : il passe en tête.
+	uv run python scripts/check_branche_de_publication.py
 	@if [ -z "$(SANS_TESTS)" ]; then $(MAKE) test; \
 	  else echo "⚠ deploy: tests SAUTÉS (SANS_TESTS=1) — mise en ligne sans filet"; fi
 	$(MAKE) build
@@ -239,6 +244,10 @@ deploy:
 	uv run python scripts/check_langue_servie.py
 	uv run python scripts/check_rapport_retire.py
 	uv run python scripts/check_langue_donnee_servie.py
+# 🔴 LE PLAFOND, JUSTE AVANT LE DÉPART. Le 2026-11-06 wrangler a refusé 24 047 fichiers
+# (limite 20 000 par déploiement, refus TOTAL) après que la suite, le build et les sept
+# barrières soient passés : la panne arrive au dernier geste, quand tout a déjà coûté.
+	uv run python scripts/check_plafond_fichiers.py
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
 	$(MAKE) purge-cache
 

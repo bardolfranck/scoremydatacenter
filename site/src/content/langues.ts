@@ -33,6 +33,41 @@ export type LangueDeclaree = (typeof LANGUES_DECLAREES)[number];
 // ignore un cas, il en choisit un [[absence-ressemble-a-zero]].
 export const RACINE: Record<LangueDeclaree, string> = { en: "/", fr: "/fr/", nl: "/nl/" };
 
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// QUELLES FICHES UNE ÉDITION COUVRE — « 151 fiches NL. point final » (Franck, 2026-11-05)
+// ──────────────────────────────────────────────────────────────────────────────────────────
+// 🔴 TROUVÉ PAR UN PLAFOND, LE 2026-11-06. Le néerlandais bâtissait une page pour CHAQUE
+// fiche du monde : 3 292 pages, dont 1 702 américaines, qui servaient de la prose anglaise
+// sous une adresse néerlandaise. Personne n'y liait — mais le sitemap les déclarait toutes
+// à Google, et `dist` passait de 17 445 à 24 047 fichiers : au-dessus de la limite de
+// 20 000 de Cloudflare Pages, qui a refusé la publication entière.
+//
+// LA DOCTRINE EST ANTÉRIEURE AU PLAFOND, c'est elle qui tranche : la prose d'une langue est
+// due sur les fiches de SON pays, et une fiche étrangère servie en anglais dans l'édition
+// néerlandaise est VOULUE, pas une dette. Une édition de pays ne mirroite donc pas le
+// corpus : elle couvre son pays.
+//
+// `"tous"` n'est pas un défaut, c'est une DÉCISION : le français et l'anglais sont les deux
+// éditions de référence et couvrent le corpus entier. Une langue de pays liste ses préfixes
+// d'identifiant — jamais déduits du code de langue, qui coïncide pour `nl` et se trompe
+// pour `en`. ⚠️ La Flandre belge (42 fiches `be-`) attend l'arbitrage de Franck : le run
+// suivant fait BE → NL & FR.
+export const PAYS_DE_LA_LANGUE: Record<LangueDeclaree, readonly string[] | "tous"> = {
+  fr: "tous",
+  en: "tous",
+  nl: ["nl"],
+};
+
+/** Les fiches que l'édition d'une langue publie. Le tri d'origine est conservé. */
+export function fichesDeLaLangue<T extends { id: string }>(
+  lang: LangueDeclaree,
+  fiches: readonly T[],
+): T[] {
+  const pays = PAYS_DE_LA_LANGUE[lang];
+  if (pays === "tous") return [...fiches];
+  return fiches.filter((f) => pays.includes(String(f.id).split("-", 1)[0]));
+}
+
 // 🔴 CE QUI RESTE À TRANCHER AVANT QUE LE NÉERLANDAIS SOIT SERVI : `altHref`/`altLabel`.
 // Tout le site suppose DEUX langues — « l'autre langue », au singulier. Chaque page passe un
 // `altHref` unique, et `Base.astro` construit son cluster hreflang sur cette paire. À trois

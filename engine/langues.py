@@ -55,3 +55,57 @@ def langues_declarees() -> list[str]:
     except AssertionError:
         preparation = []
     return vivantes + [lg for lg in preparation if lg not in vivantes]
+
+def pays_de_la_langue() -> dict[str, list[str] | str]:
+    """Quelles fiches l'édition d'une langue couvre, lu à la source unique.
+
+    🔴 CETTE LISTE ÉTAIT RECOPIÉE ICI, en dur, dans `check_langue_servie.py`. Elle y était
+    juste — et c'est ce qui rend la recopie dangereuse : le jour où la Flandre entre, le
+    site bâtit les pages belges et la barrière continue de mesurer les seules `nl-`, donc
+    elle se tait sur une édition entière [[liste-a-deux-endroits-ment]].
+
+    `"tous"` veut dire le corpus entier (le français et l'anglais sont les deux éditions de
+    référence) ; une liste de préfixes veut dire une édition de pays.
+    """
+    texte = LANGUES_TS.read_text(encoding="utf-8")
+    m = re.search(r"PAYS_DE_LA_LANGUE[^=]*=\s*\{(.*?)\n\};", texte, re.DOTALL)
+    if not m:
+        raise AssertionError(
+            f"PAYS_DE_LA_LANGUE introuvable dans {LANGUES_TS.name} — le périmètre d'une "
+            f"édition ne se devine pas depuis le code de langue : il coïncide pour « nl » "
+            f"et se trompe pour « en »"
+        )
+    table: dict[str, list[str] | str] = {}
+    for ligne in m.group(1).splitlines():
+        cle = re.match(r'\s*(\w+)\s*:\s*(.+?),?\s*$', ligne)
+        if not cle:
+            continue
+        nom, valeur = cle.group(1), cle.group(2).rstrip(",")
+        if valeur.strip() == '"tous"':
+            table[nom] = "tous"
+        elif valeur.strip().startswith("["):
+            table[nom] = re.findall(r'"(\w+)"', valeur)
+    manquantes = [lg for lg in langues_declarees() if lg not in table]
+    if manquantes:
+        raise AssertionError(
+            f"PAYS_DE_LA_LANGUE ne dit rien de {', '.join(manquantes)} : une édition dont le "
+            f"périmètre n'est pas déclaré n'est pas gardée"
+        )
+    return table
+
+
+def racine_de_la_langue() -> dict[str, str]:
+    """Où vit chaque édition : « / », « /fr/ », « /nl/ ». Lu, pas deviné.
+
+    Sert à retrouver la ROUTE d'une édition depuis son code de langue — un test qui
+    composerait le chemin lui-même se tromperait sur la langue servie à la racine.
+    """
+    texte = LANGUES_TS.read_text(encoding="utf-8")
+    m = re.search(r"RACINE[^=]*=\s*\{([^}]*)\}", texte)
+    if not m:
+        raise AssertionError(f"RACINE introuvable dans {LANGUES_TS.name}")
+    table = dict(re.findall(r'(\w+)\s*:\s*"([^"]*)"', m.group(1)))
+    manquantes = [lg for lg in langues_declarees() if lg not in table]
+    if manquantes:
+        raise AssertionError(f"RACINE ne dit pas où vit {', '.join(manquantes)}")
+    return table
