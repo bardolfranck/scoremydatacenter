@@ -1,4 +1,5 @@
 ---
+import type { LangueDeclaree } from "../content/langues";
 import { copie } from "../content/langues";
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
@@ -15,7 +16,7 @@ import { copie } from "../content/langues";
 // by the caption "les data centers ne sont pas des forteresses opaques" (the image LOOKS
 // like an opaque fortress; we are the reason it no longer is). Satellite crop carries its
 // own baked credit cartouche (pipeline A-28).
-interface Props { lang: "fr" | "en"; }
+interface Props { lang: LangueDeclaree; }
 const { lang } = Astro.props;
 
 // A big, dark, monolithic hyperscaler block from above (Amazon DUB-2, IE) — the most
@@ -38,6 +39,20 @@ const T = {
     p2: "Then we set it on <b>both sides of the table</b>: a clear, sourced acceptability grade, in the language of whoever decides locally. Independent and free — because data that never reaches the people it concerns is worth nothing.",
     caption: "Data centers are not opaque fortresses.",
     alt: "Satellite view of a large data center, seen from above",
+  },
+  nl: {
+    // 🔴 « ONZE BESTAANSREDEN » et non « ONZE RAISON D'ÊTRE ». Le français et l'anglais
+    // gardent l'expression française à dessein — elle est lexicalisée en anglais. Elle ne
+    // l'est pas en néerlandais, où `bestaansreden` est le mot courant : garder la forme
+    // française y serait de l'exotisme, pas une signature. Même doctrine que les slugs
+    // traduits (« maatschappelijke acceptatie ») — la langue du lecteur passe avant la
+    // cohérence de marque.
+    eyebrow: "ONZE BESTAANSREDEN",
+    heading: "Data die ondoorzichtig blijft. De ene kant heeft alle cijfers — de andere geen enkel.",
+    p1: "Datacenters verrijzen overal; wat ze verbruiken — de bodem, het water, het gebied waarop ze neerstrijken — blijft versnipperd en onleesbaar. Wij brengen die data samen, leggen ze langs één meetlat, en maken ze <b>openbaar, gratis en verifieerbaar</b>.",
+    p2: "Vervolgens leggen wij ze <b>aan beide kanten van de tafel</b>: een helder, gedocumenteerd aanvaardbaarheidscijfer, in de taal van wie lokaal beslist. Onafhankelijk en gratis — want data die niet aankomt bij wie ze aangaat, dient nergens toe.",
+    caption: "Datacenters zijn geen ondoorzichtige forten.",
+    alt: "Satellietbeeld van een groot datacenter, van bovenaf gezien.",
   },
 } as const;
 const t = copie(T, lang);

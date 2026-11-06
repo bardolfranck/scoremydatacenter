@@ -1,0 +1,65 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+// Page « Over ons » néerlandaise — même contenu que la section #about de l'accueil
+// (composant partagé), avec son titre, sa description et ses données structurées
+// Schema.org (Person + Organization). Jumelle de /who-we-are/ et /fr/qui-sommes-nous/.
+import Base from "../../layouts/Base.astro";
+import RaisonDetre from "../../components/RaisonDetre.astro";
+import AboutSection from "../../components/AboutSection.astro";
+import { NL_ABOUT } from "../../config/about";
+import { NL_NAV } from "../../config/nav";
+
+const SITE = "https://scoremydatacenter.org";
+// Des faits seulement — chaque affirmation ci-dessous est énoncée sur cette page même.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE}/#organization`,
+      name: "ScoreMyDataCenter",
+      url: SITE,
+      logo: `${SITE}/assets/smdc-icon.svg`,
+      description:
+        "Onafhankelijk observatorium van het aanvaardbaarheidsrisico van datacenters: een cijfer A–E per site, bronnen, betrouwbaarheid en een open methode.",
+      founder: { "@id": `${SITE}/#founder` },
+      sameAs: ["https://github.com/bardolfranck/scoremydatacenter"],
+    },
+    {
+      "@type": "Person",
+      "@id": `${SITE}/#founder`,
+      name: "Franck Bardol",
+      jobTitle: "Oprichter",
+      worksFor: { "@id": `${SITE}/#organization` },
+      url: `${SITE}/nl/over-ons/`,
+      image: `${SITE}/assets/franck-bardol.jpg`,
+      sameAs: [
+        "https://www.linkedin.com/in/franckbardol/",
+        "https://www.meetup.com/paris-machine-learning-applications-group/",
+      ],
+    },
+    {
+      "@type": "AboutPage",
+      "@id": `${SITE}/nl/over-ons/#page`,
+      url: `${SITE}/nl/over-ons/`,
+      name: "Over ons — ScoreMyDataCenter",
+      inLanguage: "nl",
+      about: { "@id": `${SITE}/#organization` },
+    },
+  ],
+};
+---
+
+<Base
+  lang="nl"
+  title="Franck Bardol — oprichter van ScoreMyDataCenter"
+  description="Franck Bardol, oprichter van ScoreMyDataCenter, het onafhankelijke observatorium voor de aanvaardbaarheid van datacenters. Op het snijpunt van AI-infrastructuur, ethiek en publieke besluitvorming."
+  tagline="Onafhankelijk observatorium"
+  nav={NL_NAV}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  <RaisonDetre lang="nl" />
+  <AboutSection lang="nl" t={NL_ABOUT} />
+</Base>

@@ -192,7 +192,7 @@ const NL: typeof FR = {
   oneSentenceH2: "Het cijfer in één zin",
   oneSentence: [
     "<p>Elk project krijgt <strong>twee cijfers van A tot E</strong> — één voor de <strong>site</strong> (de context die het project <span class=\"hl-yellow\">ondergaat</span>) en één voor <strong>project &amp; proces</strong> (wat de exploitant <span class=\"hl-yellow\">kiest</span>) — telkens met een <strong>documentair vertrouwensniveau</strong>. Een cijfer verschijnt nooit zonder dat niveau; onder 40% dekking schrijven we ‘onvoldoende gegevens’. Het onbekende beoordelen we niet.</p>",
-    "<p>De score wordt berekend uit de waarden mét bron in het gegevensbestand van elk project — en uit niets anders.</p>",
+    "<p>Het cijfer wordt berekend uit de waarden mét bron in het gegevensbestand van elk project — en uit niets anders.</p>",
     "<p class=\"meth-nerd\">🤓 <strong>Reproduceerbare methode</strong>: wie de repository kloont en <code>make score</code> draait, komt exact uit op de getoonde letters.</p>",
   ],
   scaleH2: "De schaal",
@@ -211,7 +211,7 @@ const NL: typeof FR = {
     "<p><strong>Stap 1</strong>: binnen elke pijler worden de indicatoren gemiddeld volgens hun interne coëfficiënt (het ene proefwerk telt zwaarder dan het andere).</p>",
     "<p><strong>Stap 2</strong>: de pijlerscores worden gemiddeld volgens de bovenstaande gewichten. Eén principe: <strong>geen dubbeltelling tussen pijlers</strong> — een indicator telt alleen in zijn eigen pijler, nooit elders.</p>",
   ],
-  exampleTitle: "Voorbeeld (2 pijlers, scores al genormaliseerd op 100)",
+  exampleTitle: "Voorbeeld (2 pijlers, waarden al genormaliseerd op 100)",
   exampleItems: [
     "<b>Energie</b> (gewicht 25%) — koolstof 80 (coëf 0,6) · PUE 40 (coëf 0,4) → <b>80×0,6 + 40×0,4 = 64</b>",
     "<b>Water</b> (gewicht 20%) — stress 30 (coëf 0,7) · verbruik 50 (coëf 0,3) → <b>30×0,7 + 50×0,3 = 36</b>",

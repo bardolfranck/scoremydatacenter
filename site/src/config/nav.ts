@@ -166,6 +166,7 @@ export const NL_NAV: NavNode[] = [
     { href: "/nl/bibliotheek/", label: "De hele bibliotheek" },
   ]},
   { label: "Het observatorium", children: [
+    { href: "/nl/over-ons/", label: "Over ons" },
     { href: "/nl/#open", label: "Open model" },
     { href: "/nl/#contact", label: "Contact" },
   ]},

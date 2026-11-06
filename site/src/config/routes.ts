@@ -106,8 +106,9 @@ export const FAMILLES: FamilleDeRoutes[] = [
     en: "/developers/", fr: "/fr/developpeurs/" } },
   { id: "cle", chemins: {
     en: "/developers/key/", fr: "/fr/developpeurs/cle/" } },
+  // Colonne `nl` rendue le 2026-11-06 : `pages/nl/over-ons.astro` existe.
   { id: "qui-sommes-nous", chemins: {
-    en: "/who-we-are/", fr: "/fr/qui-sommes-nous/" } },
+    en: "/who-we-are/", fr: "/fr/qui-sommes-nous/", nl: "/nl/over-ons/" } },
   { id: "presse", chemins: { en: "/press/", fr: "/fr/presse/" } },
   { id: "contact", chemins: { en: "/contact/", fr: "/fr/contact/", nl: "/nl/contact/" } },
   { id: "mentions", chemins: { en: "/legal/", fr: "/fr/mentions-legales/", nl: "/nl/juridisch/" } },

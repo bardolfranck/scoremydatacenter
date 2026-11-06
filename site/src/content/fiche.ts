@@ -471,7 +471,7 @@ const NL: typeof FR = {
   shareMail: "Delen per e-mail",
   copyLink: "Link kopiëren",
   copied: "Link gekopieerd",
-  download: "Download de score als afbeelding",
+  download: "Download het cijfer als afbeelding",
   signal: "Een fout melden",
   signalSubject: "Correctie of weerwoord",
   signalBody: "Betrokken fiche: {url}\nAard van het verzoek: [ ] Correctie van een gegeven [ ] Weerwoord van de exploitant [ ] Anders\nBetrokken informatie:\nVoorgestelde correctie of weerwoord:\nBron of bewijsstuk:\nNaam en hoedanigheid van de aanvrager:\nEventuele band met het project of de exploitant:\n",

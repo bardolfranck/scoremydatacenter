@@ -716,12 +716,12 @@ const NL: typeof FR = {
   mattersSub: "Een datacenter is niet zomaar een IT-gebouw: het is een project dat vitale hulpbronnen mobiliseert en een gebied voor lange tijd vastlegt.",
   matters: [
     { icon: "water", title: "Watervoorraad", body: "<strong>{stress} van de {mesures} sites</strong> staan in een zone met hoge waterstress of in watercrisis. Water weegt zwaar in de cijfers van het corpus.", href: "/nl/kaart/", link: "Bekijk de kaart" },
-    { icon: "energy", title: "Elektriciteitsnet", body: "Verzadigde netten remmen aansluitingen en drukken de scores. Locatiekeuzes met zware gevolgen.", href: "/nl/kaart/", link: "Bekijk de kaart" },
+    { icon: "energy", title: "Elektriciteitsnet", body: "Verzadigde netten remmen aansluitingen en drukken de cijfers. Locatiekeuzes met zware gevolgen.", href: "/nl/kaart/", link: "Bekijk de kaart" },
     { icon: "land", title: "Gebied & biodiversiteit", body: "Verharding, bodem, biodiversiteit: lokale effecten die even zwaar tellen als de megawatts.", href: "/nl/datacenters-begrijpen/", link: "Begrijp wat er speelt" },
     { icon: "transparency", title: "Transparantie", body: "<strong>{noPower} van de {total} projecten</strong> maken hun vermogen niet bekend. Wij beoordelen op publieke documenten — ondoorzichtigheid loont nooit.", href: "/nl/methodologie/", link: "Begrijp de methode" },
   ],
   principlesTitle: "Onze methode, in 4 principes",
-  exploreTitle: "Verken de scores",
+  exploreTitle: "Verken de cijfers",
   exploreSub: "Zoek. Vergelijk. Begrijp.",
   exploreMapLabel: "Kaart van de projecten",
   exploreRankLabel: "Ranglijst — positie in de verdeling",
@@ -730,7 +730,7 @@ const NL: typeof FR = {
   exploreLatestMore: "Bekijk alle sites",
   searchPlaceholder: "Zoek een site, een exploitant, een land…",
   library: {
-    title: "Intelligence Library — de analyse bovenop de scores",
+    title: "Intelligence Library — de analyse bovenop de cijfers",
     coverTitle: "State of Data Center Acceptability in Europe",
     lede: "De site zegt hoeveel. Onze analyses zeggen waar het heen gaat, en wat het betekent.",
     items: ["Trends per land en voor Europa", "Risico's per thema — water, energie, grond, transparantie", "Benchmarks van exploitanten"],
@@ -798,7 +798,7 @@ const NL: typeof FR = {
     caption: "Echt geval: {name} — de vijf pijlers, het cijfer van de site, dan de letter. Openbare methode, gedocumenteerde gegevens.",
     sr: "Animatie: de fiche van {name} wordt beoordeeld — de vijf pijler-subscores verschijnen, het cijfer van de site vult zich, dan wordt de letter gestempeld.",
     replay: "Opnieuw afspelen",
-    why: "Waarom deze site? Zijn score ({score}/100) ligt het dichtst bij de mediaan van de {n} sites van het corpus: de gewoonste site van Europa, geen etalage en geen schoolvoorbeeld. De selectieregel is mechanisch en gepubliceerd.",
+    why: "Waarom deze site? Zijn cijfer ({score}/100) ligt het dichtst bij de mediaan van de {n} sites van het corpus: de gewoonste site van Europa, geen etalage en geen schoolvoorbeeld. De selectieregel is mechanisch en gepubliceerd.",
   },
   status: { announced: "Aangekondigd", permitting: "In behandeling", under_construction: "In aanbouw", operational: "In bedrijf", unknown: "Status niet vastgesteld" },
   fixtureTag: "Fictieve testfixture",
@@ -904,7 +904,7 @@ const NL: typeof FR = {
     },
     {
       q: "Beweegt het cijfer mee met de technische vooruitgang? Is een goed beoordeeld datacenter dat over tien jaar nog?",
-      a: "Ja, en dat is gewild. Een cijfer verandert om twee redenen: het project evolueert (nieuwe gegevens), of de maatstaf evolueert met de stand van de techniek. Onze drempels zijn verankerd in normen die mettertijd strenger worden (ISO, Europese regelgeving): een <i class='gl gl-a'>A</i> betekent altijd ‘het beste dat vandaag haalbaar is’, niet ‘het beste van 2026’. Anders zou iedereen op den duur een <i class='gl gl-a'>A</i> halen naarmate de technologie vordert — precies daarom is het Europese energielabel in 2021 herschaald, toen bijna alle apparaten A+++ waren geworden. Elk cijfer is dus gedateerd en gekoppeld aan een methodeversie: een datacenter dat in 2026 uitstekend is, kan naar de normen van 2036 ‘middelmatig’ zijn — en dat is exact de rol van de score: vooruitgang belonen, en signaleren wat veroudert.",
+      a: "Ja, en dat is gewild. Een cijfer verandert om twee redenen: het project evolueert (nieuwe gegevens), of de maatstaf evolueert met de stand van de techniek. Onze drempels zijn verankerd in normen die mettertijd strenger worden (ISO, Europese regelgeving): een <i class='gl gl-a'>A</i> betekent altijd ‘het beste dat vandaag haalbaar is’, niet ‘het beste van 2026’. Anders zou iedereen op den duur een <i class='gl gl-a'>A</i> halen naarmate de technologie vordert — precies daarom is het Europese energielabel in 2021 herschaald, toen bijna alle apparaten A+++ waren geworden. Elk cijfer is dus gedateerd en gekoppeld aan een methodeversie: een datacenter dat in 2026 uitstekend is, kan naar de normen van 2036 ‘middelmatig’ zijn — en dat is exact de rol van het cijfer: vooruitgang belonen, en signaleren wat veroudert.",
     },
     {
       q: "Wie zijn de spelers in de datacentersector?",

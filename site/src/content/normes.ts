@@ -239,7 +239,7 @@ const NL: typeof FR = {
   ],
   etatNote: "<p><strong>Wat dit voor ons verandert — en wat niet.</strong> Deze criteria zijn geen beoordelingsdrempels en geen nationaal recht: het zijn de punten die een regionale prefectuur, dossier per dossier, onderzoekt voor <em>één</em> goedkeuring. Ze leveren geen letter op, geen vergelijking tussen sites, en niets ervan wordt gepubliceerd in een vorm die zich laat toetsen.</p><p>Precies daar ligt de grens. De staat behandelt <strong>van geval tot geval en achter gesloten deuren</strong>; wij meten dezelfde dimensies <strong>van buitenaf, met dezelfde meetlat, over het hele corpus</strong> — en we publiceren ze. Wij beoordelen wat de staat al bekijkt: het beste argument tegen het idee dat deze dimensies onze uitvinding zouden zijn.</p>",
 
-  closeP: "De sector schrijft de regel in zijn witboeken. Wij publiceren de score — openbaar, site per site — en we citeren zijn normen om onaantastbaar te zijn, niet om een ridderslag te krijgen.",
+  closeP: "De sector schrijft de regel in zijn witboeken. Wij publiceren het cijfer — openbaar, site per site — en we citeren zijn normen om onaantastbaar te zijn, niet om een ridderslag te krijgen.",
 
   ctaMethod: "Bekijk onze methode →",
   backHref: "/nl/",
