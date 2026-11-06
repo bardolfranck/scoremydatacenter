@@ -20,9 +20,14 @@
 import plotlyUrl from "plotly.js-basic-dist-min/plotly-basic.min.js?url";
 import outlines from "../data/outlines.json";
 import { operateurIdentifie } from "../config/operator";
+import { LOCALE, copie, deuxPoints, type LangueDeclaree } from "../content/langues";
+import { reglesDeLien } from "../config/routes";
 
 const { lang, index, pays: paysBrut } = Astro.props as {
-  lang: "fr" | "en";
+  // 🔴 Le type disait DEUX langues alors que `pages/nl/vergelijken.astro` passe « nl »
+  // depuis des semaines : `astro build` tourne sans `astro check`, donc le mensonge ne
+  // coûtait rien au build et tout à la lecture.
+  lang: LangueDeclaree;
   index: any;
   pays: Record<string, any>;
 };
@@ -38,7 +43,13 @@ const pays = Object.fromEntries(Object.entries(paysBrut).map(([cc, d]: [string, 
     operateurIdentifie(s.operateur) ? s : { ...s, operateur: null }),
 }]));
 
-const t = lang === "fr" ? {
+// 🔴 TROIS COLONNES, PLUS UN TERNAIRE. Cette table était `lang === "fr" ? {…} : {…}` :
+// trente-sept clés dans un ternaire binaire, qui servait donc l'ANGLAIS à un lecteur
+// néerlandais — sans erreur et sans blanc [[absence-ressemble-a-zero]]. Les sept chaînes
+// qui vivaient en ternaire DANS le gabarit (en-têtes du tableau, « note », « exploitant
+// non documenté ») y sont entrées aussi : un mot va dans la table de sa surface.
+const t = copie({
+  fr: {
   titre: "À quels projets celui-ci ressemble-t-il ?",
   lede: "Choisissez un site ou un projet. Nous ne comparons qu'à TAILLE et MÉTIER comparables — même ordre de grandeur de puissance, même type d'exploitant — puis, dans ce groupe, nous cherchons les sites dont le territoire ressemble le plus au sien.",
   pays: "Pays", recherche: "Commune, nom du site ou exploitant",
@@ -76,7 +87,15 @@ const t = lang === "fr" ? {
   methodeTxt: " D'abord le groupe : même ordre de grandeur de puissance et même type d'exploitant — colocation, télécom, banque, hyperscaler. Ensuite, dans ce groupe seulement, la distance sur les variables du score, normalisées, valeurs manquantes estimées à partir des sites les plus proches. Un site n'est retenu que si le site de départ figure lui aussi parmi ses plus proches DANS SON GROUPE : la ressemblance vaut dans les deux sens, et la liste s'arrête où elle s'arrête plutôt que d'être complétée pour tenir un chiffre rond.",
   limite: "Ce que cette liste ne dit pas.",
   limiteTxt: " Le groupe de puissance est large — petit, moyen, grand — parce que les puissances dont nous disposons sont annoncées ou estimées, jamais mesurées : une bande absorbe cette imprécision, un chiffre la masquerait. Et un site dont nous ignorons la puissance ou l'exploitant n'a pas de comparables du tout : c'est un choix, pas un oubli.",
-} : {
+  opInconnu: "exploitant non documenté",
+  noteCourte: "note",
+  thSite: "Site",
+  thCommune: "Commune",
+  thStatut: "État",
+  thPuissance: "Puissance",
+  thNote: "Note",
+  },
+  en: {
   titre: "Which projects does this one resemble?",
   lede: "Pick a site or a project. We only compare like with like — same order of magnitude of power, same kind of operator — and then, within that group, we look for the sites whose territory most resembles its own.",
   pays: "Country", recherche: "Municipality, site name or operator",
@@ -114,18 +133,75 @@ const t = lang === "fr" ? {
   methodeTxt: " First the group: same order of magnitude of power and same kind of operator — colocation, telecom, bank, hyperscaler. Then, within that group only, distance over the score's variables, normalised, missing values estimated from the nearest sites. A site is kept only if the starting site is also among its nearest WITHIN ITS GROUP: the resemblance holds both ways, and the list stops where it stops rather than being padded to a round number.",
   limite: "What this list does not say.",
   limiteTxt: " The power group is deliberately broad — small, medium, large — because the figures we hold are announced or estimated, never measured: a band absorbs that imprecision, a single number would hide it. And a site whose power or operator we do not know has no comparables at all: that is a choice, not an oversight.",
-};
+  opInconnu: "operator not documented",
+  noteCourte: "grade",
+  thSite: "Site",
+  thCommune: "Municipality",
+  thStatut: "Status",
+  thPuissance: "Power",
+  thNote: "Grade",
+  },
+  nl: {
+  titre: "Op welke projecten lijkt dit project?",
+  lede: "Kies een site of een project. Wij vergelijken alleen bij vergelijkbare OMVANG en ACTIVITEIT — zelfde ordegrootte van vermogen, zelfde type exploitant — en zoeken dan, binnen die groep, de sites waarvan het gebied het meest op het zijne lijkt.",
+  pays: "Land",
+  placeholder: "Bijv. Marseille, Equinix, Slough…",
+  vues: ["Geografische kaart", "Gelijkenisweergave", "Tabel"],
+  devenus: "Wat er is geworden van deze",
+  comparables: "De vergelijkbare sites",
+  aucun: "Geen vergelijkbare sites voor deze site.",
+  aucunDetail: "Ofwel ontbreken ons zijn vermogen of zijn type exploitant — en dan weigeren wij het op geografie alleen met een andere site te vergelijken —, ofwel telt geen enkele site van zijn omvang en activiteit het mee onder zijn eigen buren. Wij tonen liever niets dan een vergelijking die wij niet zouden kunnen verdedigen.",
+  identique: "Identiek aan",
+  rapproche: "Brengt het dichter bij",
+  varPartagees: "gedeelde variabelen",
+  piliers: { energy: "Energie", water: "Water", land_biodiversity: "Grond", local_impact: "Lokaal", transparency_governance: "Transpar." },
+  pilierNational: "nationaal cijfer — hetzelfde voor alle beoordeelde sites in dit land",
+  pilierMince: "te weinig beoordeelde sites in dit land om vast te stellen of dit cijfer deze onderscheidt",
+  pilierAbsent: "geen cijfer voor deze pijler",
+  pilierLegende: "De pijlerkolommen dragen de letter van elk deelcijfer. Een grijze letter onderscheidt deze site niet: ze geldt voor het hele land.",
+  exploitant: "Exploitant",
+  noteProbable: "Waarschijnlijk cijfer — het dossier is onvolledig, het cijfer kan nog verschuiven binnen het venster {f}.",
+  chargement: "Weergave laden…",
+  ecartPuissance: "vermogensverschil binnen dezelfde ordegrootte.",
+  rien: "Geen enkele site komt overeen.",
+  mince: "Landen waarvan het corpus nog geen vergelijking toelaat",
+  sitesDoc: "vergelijkbare sites",
+  sansComparaison: "Gedocumenteerde landen waarvan nog geen enkele site vergelijkbaar is, bij gebrek aan bekend vermogen",
+  portee: "Deze telling beschrijft díe sites. Ze zegt niets over wat er zal gebeuren met",
+  axes: "De assen zijn niet interpreteerbaar; alleen de lokale structuur is dat.",
+  molette: "Scrollwiel om te zoomen · klik om de fiche te openen",
+  fond: "sites van het land",
+  familles: "families",
+  avertissement: "De selectie werkt op de gedocumenteerde variabelen van elke site: hoe breder de documentatie, hoe fijner de selectie.",
+  ici: "Hier berusten de vergelijkingen op",
+  variablesCommunes: "gemeenschappelijke variabelen",
+  methode: "Hoe deze lijst tot stand komt.",
+  methodeTxt: " Eerst de groep: zelfde ordegrootte van vermogen en zelfde type exploitant — colocation, telecom, bank, hyperscaler. Vervolgens, alleen binnen die groep, de afstand over de beoordelingsvariabelen, genormaliseerd, ontbrekende waarden geschat op basis van de dichtstbijzijnde sites. Een site wordt alleen behouden als de startsite óók tot haar dichtstbijzijnde behoort BINNEN HAAR GROEP: de gelijkenis geldt in beide richtingen, en de lijst stopt waar ze stopt in plaats van te worden aangevuld om een rond getal te halen.",
+  limite: "Wat deze lijst niet zegt.",
+  limiteTxt: " De vermogensgroep is bewust breed — klein, middelgroot, groot — omdat de vermogens waarover wij beschikken aangekondigd of geschat zijn, nooit gemeten: een bandbreedte vangt die onnauwkeurigheid op, een getal zou ze verbergen. En een site waarvan wij het vermogen of de exploitant niet kennen, heeft helemaal geen vergelijkbare sites: dat is een keuze, geen vergetelheid.",
+  opInconnu: "exploitant niet gedocumenteerd",
+  noteCourte: "cijfer",
+  thSite: "Site",
+  thCommune: "Gemeente",
+  thStatut: "Status",
+  thPuissance: "Vermogen",
+  thNote: "Cijfer",
+  },
+}, lang);
 
-const NOM_PAYS: Record<string, { fr: string; en: string }> = {
-  FR: { fr: "France", en: "France" }, DE: { fr: "Allemagne", en: "Germany" },
-  NL: { fr: "Pays-Bas", en: "Netherlands" }, IT: { fr: "Italie", en: "Italy" },
-  PL: { fr: "Pologne", en: "Poland" }, ES: { fr: "Espagne", en: "Spain" },
-  CH: { fr: "Suisse", en: "Switzerland" }, SE: { fr: "Suède", en: "Sweden" },
-  NO: { fr: "Norvège", en: "Norway" }, BE: { fr: "Belgique", en: "Belgium" },
-  FI: { fr: "Finlande", en: "Finland" }, DK: { fr: "Danemark", en: "Denmark" },
-  GB: { fr: "Royaume-Uni", en: "United Kingdom" }, IE: { fr: "Irlande", en: "Ireland" },
-  LU: { fr: "Luxembourg", en: "Luxembourg" }, AT: { fr: "Autriche", en: "Austria" },
-  PT: { fr: "Portugal", en: "Portugal" },
+// Les noms de pays sont des mots : ils vivent ici, par langue. La colonne néerlandaise a
+// été ajoutée le 2026-11-06 — sans elle `NOM_PAYS[c]?.[lang]` rendait `undefined`, et le
+// repli affichait le CODE ISO brut à un lecteur néerlandais.
+const NOM_PAYS: Record<string, Record<LangueDeclaree, string>> = {
+  FR: { fr: "France", en: "France", nl: "Frankrijk" }, DE: { fr: "Allemagne", en: "Germany", nl: "Duitsland" },
+  NL: { fr: "Pays-Bas", en: "Netherlands", nl: "Nederland" }, IT: { fr: "Italie", en: "Italy", nl: "Italië" },
+  PL: { fr: "Pologne", en: "Poland", nl: "Polen" }, ES: { fr: "Espagne", en: "Spain", nl: "Spanje" },
+  CH: { fr: "Suisse", en: "Switzerland", nl: "Zwitserland" }, SE: { fr: "Suède", en: "Sweden", nl: "Zweden" },
+  NO: { fr: "Norvège", en: "Norway", nl: "Noorwegen" }, BE: { fr: "Belgique", en: "Belgium", nl: "België" },
+  FI: { fr: "Finlande", en: "Finland", nl: "Finland" }, DK: { fr: "Danemark", en: "Denmark", nl: "Denemarken" },
+  GB: { fr: "Royaume-Uni", en: "United Kingdom", nl: "Verenigd Koninkrijk" }, IE: { fr: "Irlande", en: "Ireland", nl: "Ierland" },
+  LU: { fr: "Luxembourg", en: "Luxembourg", nl: "Luxemburg" }, AT: { fr: "Autriche", en: "Austria", nl: "Oostenrijk" },
+  PT: { fr: "Portugal", en: "Portugal", nl: "Portugal" },
 };
 const nomPays = (c: string) => NOM_PAYS[c]?.[lang] ?? c;
 
@@ -137,7 +213,8 @@ const minces = (index.corpus_trop_mince ?? []).map((m: any) => ({ ...m, nom: nom
 // ils sont NOMMÉS avec leur compte et leur raison. Un pays absent reste un pays qu'on
 // documente ; c'est la puissance qui manque, pas les sites.
 const sans = (index.sans_comparaison ?? []).map((m: any) => ({ ...m, nom: nomPays(m.pays) }));
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+const regles = reglesDeLien(lang);
+const locale = LOCALE[lang];
 ---
 
 <section class="cmp">
@@ -170,7 +247,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
        puissance, qui est la moitié du critère. On le dit plutôt que de les offrir au choix
        pour rien — et on donne le compte, qui dit l'ampleur du trou sans le commenter. */
     <p class="cmp-minces">
-      <strong>{t.sansComparaison}{lang === "fr" ? " :" : ":"}</strong>{" "}
+      <strong>{t.sansComparaison}{deuxPoints(lang)}</strong>{" "}
       {sans.map((m: any, i: number) => (
         <>{i > 0 ? " · " : ""}{m.nom} ({m.sites})</>
       ))}
@@ -184,7 +261,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
     <p class="cmp-minces">
       {/* L'espace avant les deux-points est une convention FRANÇAISE : en anglais c'est une
           faute, et le lecteur anglophone la voit avant de lire la phrase. */}
-      <strong>{t.mince}{lang === "fr" ? " :" : ":"}</strong>{" "}
+      <strong>{t.mince}{deuxPoints(lang)}</strong>{" "}
       {minces.map((m: any, i: number) => (
         <>{i > 0 ? " · " : ""}{m.nom} ({m.sites})</>
       ))}
@@ -192,11 +269,12 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   )}
 </section>
 
-<script define:vars={{ lang, pays, outlines, plotlyUrl, ficheBase, t, dispos }}>
+<script define:vars={{ lang, pays, outlines, plotlyUrl, regles, locale, t, dispos }}>
   const $ = (s) => document.querySelector(s);
   const GC = { A: "#0a7046", B: "#79b03a", C: "#f0c419", D: "#e8701c", E: "#8a1a10" };
   const gcol = (g) => GC[g] || "#8fa0b3";
-  const loc = lang === "fr" ? "fr-FR" : "en-GB";
+  // La locale est déclarée par langue dans `content/langues.ts` et voyage en `define:vars`.
+  const loc = locale;
   const nb = (n) => new Intl.NumberFormat(loc).format(n);
   const norm = (s) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
   // Tous ces tableaux sont assemblés en chaînes puis posés en innerHTML. Les noms viennent de
@@ -204,10 +282,17 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
   // et une raison sociale est précisément le genre de champ où un caractère se glisse.
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  const op = (v) => (!v || v === "unknown")
-    ? (lang === "fr" ? "exploitant non documenté" : "operator not documented") : v;
-  const statut = (s) => lang === "fr" ? s.statut_fr : s.statut_en;
-  const fiche = (id) => `${ficheBase}/${id}/`;
+  const op = (v) => (!v || v === "unknown") ? t.opInconnu : v;
+  // Le producteur écrit une colonne par langue déclarée (`statut_fr`, `statut_en`,
+  // `statut_nl`) : on la LIT, on ne choisit plus entre deux.
+  const statut = (s) => s[`statut_${lang}`] ?? s.statut_en;
+  // 🔴 Le chemin d'une fiche se DÉRIVE du périmètre de l'édition : la page de la langue si
+  // elle couvre ce site, l'édition de repli sinon. Une base unique a produit 3 641 liens
+  // morts le 2026-11-06.
+  const fiche = (id) => {
+    const couvert = !regles.prefixes || regles.prefixes.includes(String(id).split("-")[0]);
+    return (couvert ? regles.fiche.couvert : regles.fiche.repli).replace(":id", id);
+  };
 
   // 🔴 ON OUVRE SUR LA COMPARAISON, PAS SUR UNE CARTE (Franck 2026-10-20).
   // La page demande « à quels projets celui-ci ressemble-t-il ? » et répondait par une carte :
@@ -371,7 +456,7 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
     const sel = new Set(c.map((x) => x.id));
     const bulle = (s) => `<b>${esc(s.nom)}</b><br>${esc(s.commune)} · ${statut(s)}` +
       (s.puissance_mw ? ` · ${nb(s.puissance_mw)} MW` : "") +
-      `<br>${lang === "fr" ? "note" : "grade"} ${s.note}<extra></extra>`;
+      `<br>${t.noteCourte} ${s.note}<extra></extra>`;
     // `scatter` et non `scattergl` : le canvas WebGL recouvre la couche SVG où Plotly dessine
     // les formes, et le contour du pays disparaît sous lui — présent dans le DOM, invisible.
     const pt = (arr, key, size, width, opacity) => ({
@@ -486,13 +571,13 @@ const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
       <td class="cmp-num">${moi ? "" : c.find((x) => x.id === s.id).variables_partagees}</td>
       <td class="cmp-fin">${pastille(s.note, s.note_probable, s.note_fenetre)}</td></tr>`;
     return `<div class="cmp-tab-wrap"><table class="cmp-table">
-      <thead><tr><th>${lang === "fr" ? "Site" : "Site"}</th><th>${lang === "fr" ? "Commune" : "Municipality"}</th>
+      <thead><tr><th>${t.thSite}</th><th>${t.thCommune}</th>
       <th>${t.exploitant}</th>
-      <th>${lang === "fr" ? "État" : "Status"}</th>
-      <th class="cmp-num">${lang === "fr" ? "Puissance" : "Power"}</th>
+      <th>${t.thStatut}</th>
+      <th class="cmp-num">${t.thPuissance}</th>
       ${PILIERS_VUS.map((pid) => `<th class="cmp-pil">${t.piliers[pid]}</th>`).join("")}
       <th class="cmp-num">${t.varPartagees}</th>
-      <th class="cmp-fin">${lang === "fr" ? "Note" : "Grade"}</th></tr></thead>
+      <th class="cmp-fin">${t.thNote}</th></tr></thead>
       <tbody>${ligne(a, true)}${c.map((x) => ligne(BY[x.id], false)).join("")}</tbody>
       </table>${[a, ...c.map((x) => BY[x.id])].some((s) =>
           PILIERS_VUS.some((pid) => { const p = (s.piliers_portee ?? {})[pid];

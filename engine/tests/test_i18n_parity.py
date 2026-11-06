@@ -462,10 +462,9 @@ def _branches_nues(chemin) -> list[str]:
 # en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
 # reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
 # qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
-# État au 2026-11-06, après le lot néerlandais des indices et de la carte (IndicesPage est entièrement en table, la carte néerlandaise existe) : 51 branches nues dans 13 fichiers.
+# État au 2026-11-06, après le comparateur (table à trois colonnes, sept chaînes du gabarit rentrées, chemin et locale dérivés) : 39 branches nues dans 12 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/ActuFeed.astro": 6,
-    "components/Comparateur.astro": 12,
     "components/DevelopersPage.astro": 1,
     "components/KeyReveal.astro": 1,
     "components/LibraryIndex.astro": 2,
@@ -586,21 +585,55 @@ def test_le_menu_offre_les_memes_gestes_dans_les_deux_langues():
     « Map and Ranking are real EN pages, not homepage anchors or FR fallbacks » : une
     promesse écrite en commentaire, que ce test transforme en garantie.
     """
-    langues = [lg.upper() for lg in _langues_vivantes()]
-    reference = _menu(langues[0])
+    import importlib
+
+    barriere = importlib.import_module("scripts.check_langue_servie")
+    pays = barriere.PAYS_DE_LA_LANGUE
+    # Les ÉDITIONS DE RÉFÉRENCE couvrent le corpus entier : leurs menus doivent être
+    # identiques nœud pour nœud, c'est la garantie d'origine et elle ne bouge pas.
+    references = [lg.upper() for lg in _langues_vivantes() if pays.get(lg) == "tous"]
+    assert len(references) >= 2, (
+        "moins de deux éditions de référence : ce test ne compare plus rien"
+    )
+    reference = _menu(references[0])
     assert reference, "le menu de la langue de référence est vide — le relevé ne lit plus nav.ts"
-    for lg in langues[1:]:
+    for lg in references[1:]:
         autre = _menu(lg)
         assert len(autre) == len(reference), (
-            f"{lg}_NAV a {len(autre)} nœuds contre {len(reference)} pour {langues[0]}_NAV : "
-            f"une langue offre un geste que l'autre n'offre pas"
+            f"{lg}_NAV a {len(autre)} nœuds contre {len(reference)} pour {references[0]}_NAV : "
+            f"une édition de référence offre un geste que l'autre n'offre pas"
         )
         for i, (a, b) in enumerate(zip(reference, autre)):
             assert a == b, (
-                f"{lg}_NAV diffère de {langues[0]}_NAV au nœud {i} : {b} contre {a}. Un lien "
+                f"{lg}_NAV diffère de {references[0]}_NAV au nœud {i} : {b} contre {a}. Un lien "
                 f"de page d'un côté et une ancre de l'accueil de l'autre, c'est exactement la "
                 f"façon dont l'anglais a décroché deux fois."
             )
+
+    # 🔴 UNE ÉDITION DE PAYS A UN MENU PLUS COURT, ET C'EST VOULU : six familles ne sont pas
+    # écrites en néerlandais, donc leur colonne est absente de `FAMILLES` et leur entrée ne
+    # doit PAS être offerte. Comparer les longueurs ici n'aurait rien gardé — ça aurait
+    # seulement exigé qu'on remette les sept liens morts que Franck a trouvés en cliquant.
+    # Ce qui se garde, c'est l'autre sens : toute famille qui EXISTE dans cette langue et que
+    # l'édition de référence offre dans son menu doit y être offerte aussi. C'est le défaut
+    # qu'on ne voit jamais — une page écrite, traduite, publiée… et que rien n'annonce.
+    for lg in (l.upper() for l in _langues_vivantes() if pays.get(l) != "tous"):
+        offerts = {h for h in _liens_de_chrome(lg.lower()) if h.startswith("/")}
+        attendus = {
+            chemin
+            for fam, colonnes in _familles().items()
+            for langue, chemin in colonnes.items()
+            if langue == lg.lower()
+            and any(c in _liens_de_chrome(references[0].lower())
+                    for c in colonnes.values())
+            and ":id" not in chemin
+        }
+        oublies = sorted(attendus - offerts)
+        assert not oublies, (
+            f"{lg} : ces pages EXISTENT dans cette langue et l'édition de référence les "
+            f"annonce dans son menu, mais {lg}_NAV et son pied de page ne les offrent pas — "
+            f"une page traduite que rien n'annonce : " + ", ".join(oublies)
+        )
 
 
 def test_le_garde_du_menu_mord_vraiment(tmp_path, monkeypatch):
@@ -2040,10 +2073,19 @@ def test_le_releve_des_liens_de_navigation_voit_bien_les_deux_fichiers():
     Le menu d'une langue vivante porte une vingtaine de liens de page et le pied une
     douzaine. Si le relevé en voyait trois, le test suivant passerait en ne gardant rien.
     """
+    # 🔴 LE PLANCHER EST PROPORTIONNÉ À CE QUE LA LANGUE A, pas à un chiffre rond. Il valait
+    # 25 pour tout le monde : le jour où le néerlandais est passé vivant avec un menu plus
+    # court — six familles ne sont pas écrites dans cette langue — ce plancher a crié sur une
+    # édition parfaitement saine. Un plancher qui refuse l'état normal finit baissé jusqu'à
+    # ne plus rien garder ; celui-ci se compare au nombre de familles que la langue DÉCLARE.
     for langue in _langues_vivantes():
         liens = _liens_de_chrome(langue)
-        assert len(liens) >= 25, (
-            f"{len(liens)} liens de page relevés pour « {langue} » : le relevé ne lit plus "
+        familles = sum(1 for colonnes in _familles().values()
+                       if langue in colonnes and ":id" not in colonnes[langue])
+        plancher = max(10, familles // 2)
+        assert len(liens) >= plancher, (
+            f"{len(liens)} liens de page relevés pour « {langue} », plancher {plancher} "
+            f"({familles} familles déclarées dans cette langue) : le relevé ne lit plus "
             f"nav.ts ou chrome.ts, et le garde des liens morts ne garde plus rien"
         )
     # et il doit savoir dire qu'une adresse n'existe pas
@@ -2120,6 +2162,63 @@ def _dettes_de_prose() -> dict[str, int]:
         f"ne dit pas qu'il n'a rien trouvé : il laisse tout passer"
     )
     return dettes
+
+
+# Le nombre d'EXEMPTIONS de prose déclarées, au 2026-11-06 : trois (la bibliothèque, son
+# index, les titres d'actu de l'accueil). Un cliquet qui ne peut que BAISSER — on ajoute une
+# exemption en la discutant, pas en la glissant.
+EXEMPTIONS_PROSE_ATTENDUES = 3
+
+
+def test_les_exemptions_de_prose_sont_nommees_datees_et_ne_peuvent_que_baisser():
+    """Une surface qu'on décide de ne pas traduire sort du COMPTE, jamais de la VUE.
+
+    🔴 POURQUOI CE TEST EXISTE. Jusqu'au 2026-11-06, « 4 surfaces » mélangeait une DETTE (du
+    travail qui reste) et des DÉCISIONS (la bibliothèque n'est pas traduite, les titres
+    d'actu sont reportés). Trois des quatre étaient des choix de Franck : le compte ne
+    pouvait donc jamais tomber à zéro, et le verrou qui garde `LANGUES_VIVANTES` ne pouvait
+    JAMAIS s'ouvrir. Un verrou qu'aucun travail n'ouvre n'est pas un verrou, c'est un mur —
+    et un mur finit contourné.
+
+    Séparer les deux crée le risque inverse, qui est pire : une exemption est une clé que le
+    garde ne regarde plus [[exemption-nest-pas-obligation]]. D'où trois conditions, toutes
+    vérifiées ici : chaque exemption porte une RAISON lisible, elle nomme QUI a décidé ou
+    QUAND, et leur NOMBRE est un cliquet qui ne peut que baisser. La barrière, de son côté,
+    les imprime à chaque passage et signale celles qui ne servent plus.
+    """
+    import importlib
+
+    barriere = importlib.import_module("scripts.check_langue_servie")
+    exemptions = getattr(barriere, "EXEMPTIONS_NL", None)
+    assert isinstance(exemptions, dict), (
+        "EXEMPTIONS_NL a disparu de check_langue_servie.py — les surfaces décidées "
+        "retomberaient dans la dette, et le verrou redeviendrait un mur"
+    )
+    assert len(exemptions) <= EXEMPTIONS_PROSE_ATTENDUES, (
+        f"{len(exemptions)} exemptions déclarées pour {EXEMPTIONS_PROSE_ATTENDUES} "
+        f"attendues : une surface vient d'être EXEMPTÉE au lieu d'être traduite. Si c'est "
+        f"une décision, elle se discute et ce chiffre monte avec elle."
+    )
+    if len(exemptions) < EXEMPTIONS_PROSE_ATTENDUES:
+        raise AssertionError(
+            f"bonne nouvelle : plus que {len(exemptions)} exemption(s) sur "
+            f"{EXEMPTIONS_PROSE_ATTENDUES}. Abaissez EXEMPTIONS_PROSE_ATTENDUES — un "
+            f"cliquet qui garde un vieux chiffre autorise une exemption à revenir."
+        )
+    muettes = sorted(k for k, v in exemptions.items() if len(str(v).strip()) < 40)
+    assert not muettes, (
+        "ces exemptions n'expliquent rien, donc elles ne se relisent pas : "
+        + ", ".join(muettes)
+    )
+    sans_attribution = sorted(
+        k for k, v in exemptions.items()
+        if "Franck" not in str(v) and not re.search(r"\d{4}-\d{2}-\d{2}", str(v))
+        and "même décision" not in str(v)
+    )
+    assert not sans_attribution, (
+        "ces exemptions ne disent ni QUI a décidé ni QUAND — dans six mois personne ne "
+        "saura si c'est un choix ou un oubli : " + ", ".join(sans_attribution)
+    )
 
 
 def test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court():

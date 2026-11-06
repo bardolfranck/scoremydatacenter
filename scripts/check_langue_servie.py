@@ -67,7 +67,34 @@ PAYS_DE_LA_LANGUE = pays_de_la_langue()
 #     NON traduite par Franck tant qu'il n'en décide pas autrement.
 #   · /nl/ (3 blocs FR) — les titres d'actu, produits par le pipeline de veille dans le
 #     dépôt privé : `headline_i18n` ne porte que fr et en. Reporté par Franck.
-DETTE_SURFACES_NL = 4
+# 🔴 DEUX CHOSES VIVAIENT DANS UN SEUL CHIFFRE, ET ÇA RENDAIT LE VERROU INOUVRABLE.
+# « 4 surfaces » mélangeait une DETTE (du travail qui reste) et des EXEMPTIONS (des
+# décisions prises). Trois des quatre étaient des choix de Franck — la bibliothèque n'est
+# pas traduite, les titres d'actu sont reportés — donc le compte ne pouvait pas tomber à
+# zéro, donc la langue ne pouvait JAMAIS être offerte. Un verrou qu'aucun travail n'ouvre
+# n'est pas un verrou, c'est un mur.
+#
+# Les deux sont donc séparés, et les exemptions sont NOMMÉES, DATÉES et ATTRIBUÉES — jamais
+# un silence. Elles restent COMPTÉES et AFFICHÉES à chaque passage : une exemption muette
+# rend le garde aveugle [[exemption-nest-pas-obligation]], et leur nombre ne peut que
+# baisser (`test_les_exemptions_de_prose_ne_peuvent_que_baisser`).
+EXEMPTIONS_NL: dict[str, str] = {
+    "/nl/bibliotheek/":
+        "bibliothèque déclarée NON traduite (Franck, 2026-11-05) — produit payant, sa prose "
+        "se décide avec son modèle, pas avec l'ouverture d'une langue",
+    "/nl/bibliotheek/alles/":
+        "même décision que l'index de la bibliothèque",
+    "/nl/":
+        "trois titres d'ACTU, produits par le pipeline de veille du dépôt privé : "
+        "`headline_i18n` ne porte que fr et en. Reporté par Franck le 2026-11-05 — le jour "
+        "où la veille émet `nl`, cette exemption tombe sans rien changer ici",
+}
+
+# Ce qui RESTE À PAYER, et seulement ça. À zéro, la langue peut passer vivante — et elle y
+# est passée le 2026-11-06, le comparateur étant le dernier : sa table est à trois colonnes,
+# ses sept chaînes de gabarit sont rentrées, son chemin de fiche et sa locale sont dérivés.
+# Le cliquet reste à 0 : il refuse désormais la PREMIÈRE surface qui reviendrait.
+DETTE_SURFACES_NL = 0
 
 # Les blocs qui sont les MÊMES dans toutes les langues PAR DÉCISION, pas par négligence.
 # Chaque motif est une règle de la maison, pas une exception de confort :
@@ -302,7 +329,18 @@ def main() -> int:
                     return nl
         return chemin
 
-    surfaces = {_surface(f[0]) for f in fautes}
+    toutes = {_surface(f[0]) for f in fautes}
+    # Une exemption déclarée sort du COMPTE, jamais de la VUE.
+    exemptees = sorted(s for s in toutes if s in EXEMPTIONS_NL)
+    surfaces = {s for s in toutes if s not in EXEMPTIONS_NL}
+    for s in exemptees:
+        print(f"  exemptée — {s:40} {EXEMPTIONS_NL[s]}")
+    disparues = sorted(s for s in EXEMPTIONS_NL if s not in toutes)
+    if disparues:
+        print(
+            "  bonne nouvelle : ces surfaces sont propres et leur exemption ne sert plus — "
+            + ", ".join(disparues) + " (retirez-les de EXEMPTIONS_NL)"
+        )
     if len(surfaces) > DETTE_SURFACES_NL:
         print(
             f"langue servie : {len(surfaces)} surfaces néerlandaises reprennent le texte "

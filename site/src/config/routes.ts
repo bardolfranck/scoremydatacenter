@@ -272,6 +272,19 @@ export function autresLangues(
   if (!trouve) return [];
   return servies
     .filter((lg) => lg !== trouve.langue)
+    // 🔴 UNE ÉDITION N'OFFRE QUE CE QU'ELLE BÂTIT. Trouvé le 2026-11-06, à la minute où le
+    // néerlandais est passé vivant : le sélecteur et le cluster hreflang se sont mis à
+    // proposer la version néerlandaise de CHAQUE fiche du monde — 6 280 adresses vers des
+    // pages que l'édition néerlandaise ne bâtit pas, soit 12 560 liens morts, dont la
+    // moitié en `hreflang` (donc annoncés à Google comme des traductions existantes).
+    // La colonne `nl` de la famille `fiche` existe bien ; ce qui n'existe pas, c'est la page
+    // de CE site dans cette langue. Le périmètre d'édition tranche, comme pour les liens
+    // [[chemin-nest-pas-de-la-copie]].
+    .filter((lg) => {
+      const motif = trouve.famille.chemins[lg as LangueDeclaree];
+      if (!motif || !motif.includes(":id")) return true;
+      return langueCouvreLaFiche(lg as LangueDeclaree, trouve.params[0] ?? "");
+    })
     .map((lg) => ({
       langue: lg as LangueDeclaree,
       href: cheminDansLaLangue(trouve.famille, lg as LangueDeclaree, trouve.params),
