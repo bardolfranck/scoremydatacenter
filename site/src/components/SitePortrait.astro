@@ -19,6 +19,7 @@
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import { RACINE, donnee } from "../content/langues";
+import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
@@ -159,12 +160,14 @@ const photoCredit = dc.context_map?.credit ?? dc.satellite_image?.credit ?? null
 // se lit comme une carte officielle.
 const photoCaveat = L(dc.context_map?.caveat) ?? null;
 
-const ficheHref = /* i18n:route */ `${RACINE[lang]}dc/${dc.id}/`;
+const ficheHref = cheminDeFiche(lang as LangueDeclaree, dc.id);
 // Le pied de page affichait le seul chemin (« /fr/dc/ch-cdrom-le-noirmont/ »). Un portrait
 // est fait pour être IMPRIMÉ et posé sur une table : sur papier, un chemin sans domaine ne
 // mène nulle part. L'adresse s'écrit donc en entier, celle qu'on peut recopier.
 const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
-const url = `https://scoremydatacenter.org${/* i18n:route */ RACINE[lang]}dc/${dc.id}/portrait/`;
+// 🔴 « portrait » est un MOT, et en néerlandais la route dit « portret » : cette URL
+// canonique désignait une page qui n'existe pas. Dérivée de la table de routes.
+const url = `https://scoremydatacenter.org${cheminDePortrait(lang as LangueDeclaree, dc.id)}`;
 const titre = `${dc.name} — ${t.kicker}`;
 const lieu = [dc.municipality, dc.admin_area].filter(Boolean).join(", ");
 

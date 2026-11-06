@@ -5,6 +5,8 @@
 // EN full-screen living map — twin of /fr/carte (i18n §13: shared MapIsland, per-language labels).
 import Base from "../layouts/Base.astro";
 import MapIsland from "../components/MapIsland.astro";
+import { reglesDeLien } from "../config/routes";
+import { CHROME } from "../content/chrome";
 
 import { EN_NAV } from "../config/nav";
 ---
@@ -33,7 +35,8 @@ import { EN_NAV } from "../config/nav";
       reserved: "· A reserved",
       probable: "probable",
       range: "range",
-      ficheBase: "/dc",
+      regles: reglesDeLien("en"),
+      dcwatch: CHROME.en.dcwatch,
       mapPath: "/map",
       // La bulle mène au PORTRAIT, pas à la fiche : un pin est un lieu, et un
       // lieu est là où quelqu'un habite. La fiche reste à un clic depuis le portrait.

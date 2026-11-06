@@ -74,7 +74,7 @@ const NL: typeof FR = {
     { h2: "Het vertrouwen laat zich nooit van het cijfer scheiden",
       corps: "<p>Onder 40% documentaire dekking schrijven we ‘onvoldoende gegevens’ in plaats van een letter. <strong>Een <span class='note-inline n-a'>A</span> bewijs je, een A beloof je niet</strong>: ontbrekende gegevens leveren nooit een goed cijfer op — anders zou de minst transparante site het best beoordeeld zijn.</p>" },
     { h2: "Een reproduceerbare methode",
-      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het gegevensbestand van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/nl/het-cijfer-stap-voor-stap/\">het cijfer, stap voor stap</a>, <a href=\"/nl/ranglijst/\">de ranglijst</a>, <a href=\"/nl/kaart/\">de kaart</a>.</p>" },
+      corps: "<p>De berekening steunt uitsluitend op de waarden mét bron in het gegevensbestand van elk project, en de methode is open. Om de methode stap voor stap toegepast te zien: <a href=\"/the-grade-step-by-step/\">het cijfer, stap voor stap</a>, <a href=\"/nl/ranglijst/\">de ranglijst</a>, <a href=\"/map/\">de kaart</a>.</p>" },
   ],
 };
 

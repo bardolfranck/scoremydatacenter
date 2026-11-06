@@ -19,6 +19,8 @@ import showcaseData from "../../public/data/home_showcase.json";
 import { ACCUEIL } from "../content/accueil";
 import type { Langue } from "../content/langues";
 import { copie } from "../content/langues";
+import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
+import type { LangueDeclaree } from "../content/langues";
 
 interface Props {
   lang: "fr" | "en";
@@ -70,7 +72,10 @@ const PIPELINE = ["announced", "permitting", "under_construction"];
 const ROWS = 3;
 const PER_ROW = 13;
 
-const ficheBase = ACCUEIL[lang as Langue].blocs.mur.fiche;
+// 🔴 La base de fiche venait de la table de COPIE (`blocs.mur.fiche`). Un chemin n'est
+// pas de la copie : il ne se traduit pas, il se dérive. En néerlandais elle valait
+// « /nl/dc » pour TOUS les sites, dont les étrangers, dont l'édition néerlandaise ne
+// bâtit pas la page — 47 liens morts sur l'accueil.
 const tiles = (SHOWCASE.wall_candidates as string[])
   .map((id) => dcById[id])
   .filter((dc: any) => dc?.satellite_image?.thumb)
@@ -106,7 +111,7 @@ const hasPlanned = tiles.some((t) => t.planned);
           {/* the set is rendered twice: the track translates by -50% and loops seamlessly */}
           <div class={`orbital-track otrack-${i}`}>
             {[0, 1].map((pass) => row.map((tile) => (
-              <a class="otile" href={`${ficheBase}/${tile.id}/`}
+              <a class="otile" href={cheminDeFiche(lang as LangueDeclaree, tile.id)}
                 tabindex={pass === 0 ? 0 : -1} aria-hidden={pass === 1 ? "true" : undefined}>
                 <img src={tile.thumb} alt="" loading="lazy" decoding="async" width="400" height="267" />
                 {/* 🔴 La puce ne porte une lettre QUE si c'en est une. Le mur affichait

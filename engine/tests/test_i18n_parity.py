@@ -462,7 +462,7 @@ def _branches_nues(chemin) -> list[str]:
 # en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
 # reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
 # qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
-# État au 2026-11-05, après la fiche, le chrome, le portrait, « Comprendre », l'ACCUEIL, le bloc de retrait d'un rapport et les FORMATS déclarés par langue (virgule décimale) : 58 branches nues dans 14 fichiers.
+# État au 2026-11-06, après le résolveur de chemin de fiche (classement, chiffres, carte et mini-carte ne devinent plus leur édition) et l'attribution ODbL rendue à la table de chrome : 55 branches nues dans 14 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/ActuFeed.astro": 6,
     "components/Comparateur.astro": 12,
@@ -472,9 +472,9 @@ DETTE_I18N: dict[str, int] = {
     "components/LibraryIndex.astro": 2,
     "components/LibraryRevue.astro": 7,
     "components/PressPage.astro": 1,
-    "components/Ranking.astro": 3,
+    "components/Ranking.astro": 1,
     "components/ReportDownload.astro": 4,
-    "components/StatsPage.astro": 11,
+    "components/StatsPage.astro": 10,
     "config/reportStatus.ts": 1,
     "pages/og/indices/[key].png.ts": 4,
     "pages/og/stats/[key].png.ts": 1,
@@ -1987,7 +1987,12 @@ CHROME_TS = REPO_ROOT / "site" / "src" / "content" / "chrome.ts"
 # celles qui portent leur PROPRE copie de référencement (titre, description) dans la page
 # au lieu d'une table — carte, actu, développeurs, la note pas à pas, chiffres, presse,
 # qui sommes-nous. Ce n'est pas du harnais : il faut les écrire en néerlandais.
-DETTE_PAGES_EN_PREPARATION = 7
+# 🔴 TOMBÉ DE 7 À 0 LE 2026-11-06, et ce cliquet avait déjà vu la faute : sept adresses du
+# menu néerlandais n'avaient pas de page. Il les comptait, il ne les refusait pas — et
+# pendant ce temps le site servait 3 572 liens morts, en haut de chaque page de l'édition.
+# Une dette déclarée n'empêche pas un 404 : c'est `check_liens_servis.py`, sur l'artefact,
+# qui refuse maintenant [[cliquet-nest-pas-verrou]].
+DETTE_PAGES_EN_PREPARATION = 0
 
 
 def _liens_de_chrome(langue: str) -> list[str]:
@@ -2364,7 +2369,9 @@ def test_chaque_bloc_de_langue_porte_le_menu_de_SA_langue():
 # du parc, les développeurs et leur clé, la presse, qui-sommes-nous, la note pas à pas. Ce
 # sont les pages dont le GABARIT ne parle que deux langues — leur colonne reste dans la
 # table parce qu'elle dit où la page ira, et le compte dit qu'elle n'y est pas encore.
-DETTE_ROUTES_EN_PREPARATION = 7
+# Tombé de 7 à 0 le 2026-11-06 : les colonnes néerlandaises fantômes ont été retirées de
+# `FAMILLES`. Une colonne se remplit le jour où la page est bâtie, pas avant.
+DETTE_ROUTES_EN_PREPARATION = 0
 
 
 def _routes_sans_page(langue: str) -> list[str]:

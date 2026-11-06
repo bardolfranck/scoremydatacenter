@@ -20,6 +20,12 @@
 import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
+  // 🔴 L'ATTRIBUTION ODbL EST UN TEXTE, DONC ELLE EST ICI (B-1, avis cabinet
+  // 2026-07-27 : « contient des informations de », jamais « basé sur »). Elle se
+  // décidait dans DEUX scripts client, chacun par un test sur la langue — et
+  // `MapIsland` la déduisait d'un `base.startsWith("/fr")`, c'est-à-dire d'un
+  // préfixe d'URL. Une mention légale choisie par la forme d'une adresse.
+  dcwatch: 'Contient des informations de <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL',
   // La même phrase sert la description schema.org de l'organisation ET l'accroche du pied de
   // page. Elle était écrite deux fois dans Base.astro, à 130 lignes d'écart.
   baseline: "Observatoire indépendant du risque d'acceptabilité des data centers.",
@@ -62,6 +68,7 @@ const FR = {
 };
 
 const EN: typeof FR = {
+  dcwatch: 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL',
   baseline: "Independent observatory of data-center acceptability risk.",
   ogLocale: "en_GB",
   search: {
@@ -109,6 +116,7 @@ const EN: typeof FR = {
 // `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
+  dcwatch: 'Bevat informatie van <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL',
   // Baseline = description schema.org ET accroche du pied de page (une seule phrase).
   baseline: "Onafhankelijk observatorium van het acceptatierisico van datacenters.",
   ogLocale: "nl_NL",
@@ -120,22 +128,17 @@ const NL: typeof FR = {
   // Slugs NL choisis AVEC les libellés (règle du fichier : le mot commande l'URL).
   footer: [
     { heading: "Verkennen", links: [
-      { label: "Kaart", href: "/nl/kaart/" },
       { label: "Ranglijst", href: "/nl/ranglijst/" },
       { label: "Landenindex", href: "/nl/indices/" },
-      { label: "Kerncijfers van het datacenterpark", href: "/nl/kerncijfers/" },
       { label: "Datacenters begrijpen", href: "/nl/datacenters-begrijpen/" },
     ] },
     { heading: "Hulpmiddelen", links: [
       { label: "Methodologie", href: "/nl/methodologie/" },
       { label: "Open model", href: "/nl/#open" },
       { label: "Bibliotheek", href: "/nl/bibliotheek/" },
-      { label: "API voor ontwikkelaars", href: "/nl/ontwikkelaars/" },
       { label: "FAQ", href: "/nl/#faq" },
     ] },
     { heading: "Over", links: [
-      { label: "Over ons", href: "/nl/over-ons/" },
-      { label: "Pers", href: "/nl/pers/" },
       { label: "Contact", href: "/nl/contact/" },
       { label: "Juridische informatie", href: "/nl/juridisch/" },
     ] },

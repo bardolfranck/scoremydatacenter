@@ -5,6 +5,8 @@
 // Full-screen living map — target of the whereismydatacenter.org redirect.
 import Base from "../../layouts/Base.astro";
 import MapIsland from "../../components/MapIsland.astro";
+import { reglesDeLien } from "../../config/routes";
+import { CHROME } from "../../content/chrome";
 
 import { FR_NAV } from "../../config/nav";
 
@@ -38,7 +40,8 @@ const nav = FR_NAV;
       reserved: "· A réservé",
       probable: "probable",
       range: "plage",
-      ficheBase: "/fr/dc",
+      regles: reglesDeLien("fr"),
+      dcwatch: CHROME.fr.dcwatch,
       mapPath: "/fr/carte/",
       // La bulle mène au PORTRAIT, pas à la fiche : un pin est un lieu, et un
       // lieu est là où quelqu'un habite. La fiche reste à un clic depuis le portrait.

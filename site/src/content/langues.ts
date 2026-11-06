@@ -58,14 +58,20 @@ export const PAYS_DE_LA_LANGUE: Record<LangueDeclaree, readonly string[] | "tous
   nl: ["nl"],
 };
 
+/** L'édition de cette langue publie-t-elle la fiche `id` ? */
+export function langueCouvreLaFiche(lang: LangueDeclaree, id: string): boolean {
+  const pays = PAYS_DE_LA_LANGUE[lang];
+  if (pays === "tous") return true;
+  return pays.includes(String(id).split("-", 1)[0]);
+}
+
 /** Les fiches que l'édition d'une langue publie. Le tri d'origine est conservé. */
 export function fichesDeLaLangue<T extends { id: string }>(
   lang: LangueDeclaree,
   fiches: readonly T[],
 ): T[] {
-  const pays = PAYS_DE_LA_LANGUE[lang];
-  if (pays === "tous") return [...fiches];
-  return fiches.filter((f) => pays.includes(String(f.id).split("-", 1)[0]));
+  if (PAYS_DE_LA_LANGUE[lang] === "tous") return [...fiches];
+  return fiches.filter((f) => langueCouvreLaFiche(lang, f.id));
 }
 
 // 🔴 CE QUI RESTE À TRANCHER AVANT QUE LE NÉERLANDAIS SOIT SERVI : `altHref`/`altLabel`.

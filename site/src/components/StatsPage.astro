@@ -13,6 +13,8 @@
 // au build (plus fort bonus publié + plus forte friction — zéro LLM).
 import "@fontsource/bricolage-grotesque/700.css";
 import type { NavNode } from "../config/nav";
+import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
+import type { LangueDeclaree } from "../content/langues";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
 import ScoreBadge from "./ScoreBadge.astro";
@@ -189,7 +191,7 @@ function exemplarBullets(kind: string, e: any): string[] {
   }
   return bullets.slice(0, 3);
 }
-const ficheBase = lang === "fr" ? "/fr/dc" : "/dc";
+
 
 // Region payload (FR) — act-1 swap + story recomposition, same rule as build.
 const territoireSec = SECTIONS[0];
@@ -438,7 +440,7 @@ const pipelineProjects = peri.stats?.pipeline?.projects ?? 0;
                   {exemplarBullets(kind, e).map((b) => <li>{b}</li>)}
                 </ul>
                 <p class="stx-crit">{(ex.crit as any)[kind]}</p>
-                <a class="stx-cta" href={`${ficheBase}/${e.id}/`}>{ex.fiche}</a>
+                <a class="stx-cta" href={cheminDeFiche(lang as LangueDeclaree, e.id)}>{ex.fiche}</a>
               </article>
             );
           })}

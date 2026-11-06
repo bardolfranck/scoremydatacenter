@@ -23,7 +23,12 @@
 // n'est pas un oubli : c'est une page dont la prose n'est pas écrite en néerlandais. Le
 // sélecteur n'offre alors pas cette langue sur cette page — mieux qu'un lien vers une page
 // française déguisée en néerlandais [[absence-ressemble-a-zero]].
-import { LANGUES_VIVANTES, type LangueDeclaree } from "../content/langues";
+import {
+  LANGUES_VIVANTES,
+  PAYS_DE_LA_LANGUE,
+  langueCouvreLaFiche,
+  type LangueDeclaree,
+} from "../content/langues";
 
 export interface FamilleDeRoutes {
   /** Ce que la page EST, indépendamment de la langue. Passé par la page à `Base`. */
@@ -35,9 +40,22 @@ export interface FamilleDeRoutes {
 // Les slugs néerlandais ne sont pas inventés ici : ce sont ceux que `NL_NAV` et le pied de
 // page de `chrome.ts` promettent déjà au lecteur. Une liste à deux endroits finit par mentir,
 // donc `test_la_table_de_routes_et_le_menu_disent_la_meme_chose` les confronte.
+// 🔴 SEPT COLONNES NÉERLANDAISES ONT ÉTÉ RETIRÉES ICI LE 2026-11-06, et ce n'est pas un
+// recul : elles promettaient des pages QUI N'EXISTENT PAS. `carte`, `note-pas-a-pas`,
+// `actu`, `developpeurs`, `cle`, `qui-sommes-nous`, `presse` portaient une adresse `/nl/…`
+// qu'aucun fichier ne servait. Le menu néerlandais, bâti sur ces adresses, offrait donc
+// SEPT liens morts en haut de chaque page de l'édition — 3 572 occurrences en production,
+// trouvées par Franck en cliquant, pas par un garde.
+//
+// La règle était déjà écrite quatre lignes plus haut : une famille sans colonne dans une
+// langue est une page dont la prose n'est pas écrite. La remplir par avance, « pour que ce
+// soit prêt », inverse le sens de la table — elle cesse de dire ce qui EXISTE pour dire ce
+// qu'on espère. Une colonne se remplit le jour où la page est bâtie, pas avant.
+// `check_liens_servis.py` refuse maintenant toute adresse interne servie qui ne mène à
+// rien, et c'est ce garde-là qui tient la règle [[absence-ressemble-a-zero]].
 export const FAMILLES: FamilleDeRoutes[] = [
   { id: "accueil", chemins: { en: "/", fr: "/fr/", nl: "/nl/" } },
-  { id: "carte", chemins: { en: "/map/", fr: "/fr/carte/", nl: "/nl/kaart/" } },
+  { id: "carte", chemins: { en: "/map/", fr: "/fr/carte/" } },
   { id: "classement", chemins: { en: "/ranking/", fr: "/fr/classement/", nl: "/nl/ranglijst/" } },
   { id: "comparer", chemins: { en: "/compare/", fr: "/fr/comparer/", nl: "/nl/vergelijken/" } },
   { id: "indices", chemins: { en: "/indices/", fr: "/fr/indices/", nl: "/nl/indices/" } },
@@ -74,23 +92,21 @@ export const FAMILLES: FamilleDeRoutes[] = [
   { id: "methodologie", chemins: {
     en: "/methodology/", fr: "/fr/methodologie/", nl: "/nl/methodologie/" } },
   { id: "note-pas-a-pas", chemins: {
-    en: "/the-grade-step-by-step/",
-    fr: "/fr/la-note-pas-a-pas/",
-    nl: "/nl/het-cijfer-stap-voor-stap/" } },
+    en: "/the-grade-step-by-step/", fr: "/fr/la-note-pas-a-pas/" } },
   { id: "sources", chemins: { en: "/sources/", fr: "/fr/sources/", nl: "/nl/bronnen/" } },
   { id: "glossaire", chemins: { en: "/glossary/", fr: "/fr/glossaire/", nl: "/nl/glossarium/" } },
-  { id: "actu", chemins: { en: "/news/", fr: "/fr/actu/", nl: "/nl/nieuws/" } },
+  { id: "actu", chemins: { en: "/news/", fr: "/fr/actu/" } },
   { id: "bibliotheque", chemins: {
     en: "/intelligence/", fr: "/fr/bibliotheque/", nl: "/nl/bibliotheek/" } },
   { id: "bibliotheque-tous", chemins: {
     en: "/intelligence/all/", fr: "/fr/bibliotheque/tous/", nl: "/nl/bibliotheek/alles/" } },
   { id: "developpeurs", chemins: {
-    en: "/developers/", fr: "/fr/developpeurs/", nl: "/nl/ontwikkelaars/" } },
+    en: "/developers/", fr: "/fr/developpeurs/" } },
   { id: "cle", chemins: {
-    en: "/developers/key/", fr: "/fr/developpeurs/cle/", nl: "/nl/ontwikkelaars/sleutel/" } },
+    en: "/developers/key/", fr: "/fr/developpeurs/cle/" } },
   { id: "qui-sommes-nous", chemins: {
-    en: "/who-we-are/", fr: "/fr/qui-sommes-nous/", nl: "/nl/over-ons/" } },
-  { id: "presse", chemins: { en: "/press/", fr: "/fr/presse/", nl: "/nl/pers/" } },
+    en: "/who-we-are/", fr: "/fr/qui-sommes-nous/" } },
+  { id: "presse", chemins: { en: "/press/", fr: "/fr/presse/" } },
   { id: "contact", chemins: { en: "/contact/", fr: "/fr/contact/", nl: "/nl/contact/" } },
   { id: "mentions", chemins: { en: "/legal/", fr: "/fr/mentions-legales/", nl: "/nl/juridisch/" } },
 
@@ -144,6 +160,99 @@ export function cheminDansLaLangue(
   // comme une adresse relative au protocole et refuse. Le build est tombé exactement là,
   // sur `/fr/` — le cas vide d'une construction par concaténation, celui qu'on ne teste pas.
   return segments.length ? "/" + segments.join("/") + "/" : "/";
+}
+
+/**
+ * L'ÉDITION DE REPLI : celle qui porte le corpus entier quand une édition de pays ne porte
+ * pas cette fiche. L'anglais, parce que c'est l'édition servie à la racine et que sa prose
+ * couvre les 3 292 fiches.
+ */
+export const EDITION_DE_REPLI: LangueDeclaree = "en";
+
+/**
+ * Le chemin de la fiche `id` DANS l'édition d'une langue — ou dans l'édition de repli si
+ * cette édition ne couvre pas ce site.
+ *
+ * 🔴 POURQUOI CETTE FONCTION EXISTE (2026-11-06). Le préfixe d'une fiche se calculait à
+ * CINQ endroits et de trois façons : un ternaire binaire sur la langue dans le classement,
+ * la page de chiffres et la fiche elle-même ; et une clé `chemins.fiche` dans les TABLES DE
+ * COPIE du mur satellite et de l'accueil. Un chemin n'est pas de la copie : il ne se
+ * traduit pas, il se dérive. Résultat, deux fautes symétriques et toutes deux muettes :
+ * · le classement néerlandais envoyait ses 3 292 lignes vers `/dc/<id>/`, l'édition
+ *   anglaise — y compris pour les 151 sites néerlandais, dont la page existe ;
+ * · le mur de l'accueil néerlandais pointait vers `/nl/dc/<id>/` pour des sites étrangers,
+ *   dont l'édition néerlandaise ne bâtit PAS la page — 47 liens morts le jour où le
+ *   périmètre d'édition a été posé.
+ *
+ * Les deux disparaissent si le chemin est DÉRIVÉ du périmètre au lieu d'être écrit : la
+ * page de la langue si elle existe, l'édition de repli sinon.
+ */
+export function cheminDeFiche(
+  langue: LangueDeclaree,
+  id: string,
+  famille: "fiche" | "portrait" = "fiche",
+): string {
+  const f = FAMILLES.find((x) => x.id === famille);
+  if (!f) throw new Error(`famille de routes inconnue : ${famille}`);
+  const cible = langueCouvreLaFiche(langue, id) ? langue : EDITION_DE_REPLI;
+  const chemin = cheminDansLaLangue(f, cible, [id]);
+  if (!chemin) throw new Error(`la famille ${famille} n'a pas de colonne ${cible}`);
+  return chemin;
+}
+
+/**
+ * La même règle, SÉRIALISABLE, pour les liens bâtis dans le navigateur.
+ *
+ * Les bulles de la carte et le tableau du comparateur composent leurs adresses côté client,
+ * à partir d'identifiants qu'ils reçoivent en JSON : ils ne peuvent pas appeler
+ * `cheminDeFiche`. Ils recevaient donc une BASE unique (`"/nl/dc"`), c'est-à-dire la faute
+ * décrite plus haut, figée dans une chaîne — et `MapIsland` allait jusqu'à déduire la langue
+ * d'un `base.startsWith("/fr")`.
+ *
+ * On leur passe les MOTIFS et le périmètre ; le client choisit et substitue `:id`. La liste
+ * des préfixes reste déclarée à un seul endroit : `PAYS_DE_LA_LANGUE`. `prefixes: null` veut
+ * dire « cette édition couvre tout le corpus ».
+ */
+export interface ReglesDeLien {
+  prefixes: string[] | null;
+  fiche: { couvert: string; repli: string };
+  portrait: { couvert: string; repli: string };
+}
+
+export function reglesDeLien(langue: LangueDeclaree): ReglesDeLien {
+  const motif = (lg: LangueDeclaree, id: string): string => {
+    const f = FAMILLES.find((x) => x.id === id);
+    const m = f?.chemins[lg];
+    if (!m) throw new Error(`la famille ${id} n'a pas de colonne ${lg}`);
+    return m;
+  };
+  const pays = PAYS_DE_LA_LANGUE[langue];
+  return {
+    prefixes: pays === "tous" ? null : [...pays],
+    fiche: { couvert: motif(langue, "fiche"), repli: motif(EDITION_DE_REPLI, "fiche") },
+    portrait: {
+      couvert: motif(langue, "portrait"),
+      repli: motif(EDITION_DE_REPLI, "portrait"),
+    },
+  };
+}
+
+/** Le chemin d'une PAGE (sans identifiant) dans une langue, ou dans l'édition de repli.
+ *
+ * Une famille sans colonne dans cette langue est une page dont la prose n'est pas écrite :
+ * le lien part alors vers l'édition de repli, où la page existe, au lieu de pointer vers une
+ * adresse que rien ne sert. C'est le cas de la carte en néerlandais le 2026-11-06. */
+export function cheminDePage(langue: LangueDeclaree, familleId: string): string {
+  const f = FAMILLES.find((x) => x.id === familleId);
+  if (!f) throw new Error(`famille de routes inconnue : ${familleId}`);
+  const chemin = f.chemins[langue] ?? f.chemins[EDITION_DE_REPLI];
+  if (!chemin) throw new Error(`la famille ${familleId} n'a aucune colonne servable`);
+  return chemin;
+}
+
+/** Le portrait de site, même règle. */
+export function cheminDePortrait(langue: LangueDeclaree, id: string): string {
+  return cheminDeFiche(langue, id, "portrait");
 }
 
 /**

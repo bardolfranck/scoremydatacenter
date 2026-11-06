@@ -16,7 +16,17 @@ interface Props {
     openMap?: string;
     // i18n (§13): link bases + strings the client script renders. FR defaults
     // apply when absent so existing callers keep working.
-    ficheBase?: string;   // "/fr/dc" | "/dc"
+    // 🔴 PLUS DE BASE UNIQUE. Une base ne peut pas dire « la page néerlandaise si
+    // l'édition couvre ce site, l'anglaise sinon » : elle a fabriqué 47 liens morts sur
+    // l'accueil néerlandais. On reçoit les MOTIFS et le périmètre (`reglesDeLien`).
+    regles?: {
+      prefixes: string[] | null;
+      fiche: { couvert: string; repli: string };
+      portrait: { couvert: string; repli: string };
+    };
+    // Le texte d'attribution ODbL, décidé là où la langue est connue — il se déduisait
+    // d'un `base.startsWith("/fr")`, c'est-à-dire d'un préfixe d'URL.
+    dcwatch?: string;
     mapPath?: string;     // "/fr/carte/" | "/map"
     viewFiche?: string;
     viewPortrait?: string;
@@ -90,9 +100,16 @@ const { variant, labels } = Astro.props;
 
     // B-1 (avis cabinet 2026-07-27) : attribution ODbL LOCALE là où de la donnée
     // DCWatch s'affiche — « contient des informations de » (jamais « basé sur »).
-    const dcwatchAttr = (labels.ficheBase ?? labels.mapPath ?? "/fr").startsWith("/fr")
-      ? 'Contient des informations de <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL'
-      : 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL';
+    const dcwatchAttr = labels.dcwatch
+      ?? 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL';
+
+    // La même règle que `cheminDeFiche`, côté navigateur : les ids arrivent en JSON.
+    const lien = (quoi: "fiche" | "portrait", id: string): string => {
+      const r = labels.regles;
+      if (!r) return `/dc/${id}/${quoi === "portrait" ? "portrait/" : ""}`;
+      const couvert = !r.prefixes || r.prefixes.includes(String(id).split("-")[0]);
+      return (couvert ? r[quoi].couvert : r[quoi].repli).replace(":id", String(id));
+    };
     const map = new maplibregl.Map({
       container: canvas,
       style: STYLE_URL,
@@ -152,8 +169,8 @@ const { variant, labels } = Astro.props;
               : `<span>${labels.site} ${chip(p.grade_site)}${p.reserved_site ? `<span class="map-popup-reserved">${labels.reserved}</span>` : ""}</span>`}
           </div>
           ${fixtureTag}
-          <a class="map-popup-link" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}/portrait/">${labels.viewPortrait || "Voir le portrait →"}</a>
-          <a class="map-popup-link map-popup-link-alt" href="${labels.ficheBase ?? "/fr/dc"}/${p.id}/">${labels.viewFiche || "Voir la fiche →"}</a>
+          <a class="map-popup-link" href="${lien("portrait", p.id)}">${labels.viewPortrait || "Voir le portrait →"}</a>
+          <a class="map-popup-link map-popup-link-alt" href="${lien("fiche", p.id)}">${labels.viewFiche || "Voir la fiche →"}</a>
         </div>`;
     };
 
