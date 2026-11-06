@@ -5,6 +5,7 @@
 // validated R4 design (draft-4 screen 3d): dark navy, Chivo, "My" grey, pillar
 // strip with icons, dual 118px badge, citable quote. Hand-built SVG → resvg (no
 // headless browser); Chivo TTF vendored for text.
+import { communeEtRegion } from "../../../config/lieu";
 import type { APIRoute } from "astro";
 import { Resvg } from "@resvg/resvg-js";
 import { join } from "node:path";
@@ -89,7 +90,7 @@ function dualBadge(x: number, y: number, grade: string, label: string, doc: stri
 function card(dc: any): string {
   const d = dc.score_history?.[dc.score_history.length - 1]?.date;
   const dateFr = d ? d.split("-").reverse().join("/") : "";
-  const place = [dc.municipality, dc.admin_area ? `(${dc.admin_area})` : "", dc.country].filter(Boolean).join(" ");
+  const place = [communeEtRegion(dc.municipality, dc.admin_area), dc.country].filter(Boolean).join(" ");
   const kicker = ["Fiche projet", place, dc.power_mw ? `${dc.power_mw} MW` : ""].filter(Boolean).join(" · ");
   const strip = PILLARS.map(([id, label, ic], i) => {
     const x = 64 + i * 60, g = dc.pillars?.[id]?.grade ?? "insufficient_data", c = gr(g);

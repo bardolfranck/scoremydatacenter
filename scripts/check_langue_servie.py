@@ -403,8 +403,26 @@ def main() -> int:
             fautes.append((chemin_nl, langue, len(communs), len(nl), communs))
 
     if not vues:
-        print("langue servie : aucune page néerlandaise dans ce build", file=sys.stderr)
-        return 0
+        # 🔴 ELLE RENDAIT 0 ICI, ET C'ÉTAIT MA PROPRE LEÇON OUBLIÉE. Le 2026-11-06 un build a
+        # échoué sur une faute de syntaxe : `dist` était VIDE, et cette barrière a répondu
+        # « aucune page néerlandaise dans ce build » puis a laissé passer. Le plafond de
+        # fichiers, lui, a refusé de conclure — il a son plancher de plausibilité. Un
+        # contrôle sur l'ensemble vide passe toujours [[jeu-de-validation-perimetre-et-sens]]
+        # ; il doit REFUSER DE CONCLURE, pas conclure que tout va bien.
+        if not any(dossier.glob("*/index.html")):
+            print(
+                f"langue servie : {dossier} ne contient aucune page — le build a échoué sans "
+                f"le dire, ou cette barrière ne regarde pas au bon endroit. Elle refuse de "
+                f"conclure.",
+                file=sys.stderr,
+            )
+            return 1
+        print(
+            "langue servie : aucune page néerlandaise dans ce build, alors que le site est "
+            "bâti — le périmètre de l'édition a disparu",
+            file=sys.stderr,
+        )
+        return 1
     # Une famille à segment variable compte pour UNE surface, pas pour ses trente échantillons.
     def _surface(chemin: str) -> str:
         for nl, _, _ in _trios():
