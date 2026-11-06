@@ -65,12 +65,18 @@ export const RACINE: Record<LangueDeclaree, string> = { en: "/", fr: "/fr/", nl:
 // `"tous"` n'est pas un défaut, c'est une DÉCISION : le français et l'anglais sont les deux
 // éditions de référence et couvrent le corpus entier. Une langue de pays liste ses préfixes
 // d'identifiant — jamais déduits du code de langue, qui coïncide pour `nl` et se trompe
-// pour `en`. ⚠️ La Flandre belge (42 fiches `be-`) attend l'arbitrage de Franck : le run
-// suivant fait BE → NL & FR.
+// pour `en`. La Flandre a été tranchée le 2026-11-06 : la Belgique est servie en NL ET
+// en FR, décision de Franck — voir le commentaire de la colonne `nl`.
 export const PAYS_DE_LA_LANGUE: Record<LangueDeclaree, readonly string[] | "tous"> = {
   fr: "tous",
   en: "tous",
-  nl: ["nl"],
+  // 🔴 LA BELGIQUE EST ENTRÉE LE 2026-11-06, sur décision de Franck — et c'est une décision
+  // ÉDITORIALE, pas une conséquence technique. Les 42 fiches belges sont traduites ; les
+  // servir en néerlandais veut dire qu'un site WALLON aura une page néerlandaise. C'est
+  // défendable (le néerlandais est langue officielle en Belgique, et la Flandre pèse la
+  // moitié du corpus belge) et ça restait son arbitrage : l'édition française couvre déjà
+  // la Belgique, donc aucun lecteur ne perd sa langue — il en gagne une.
+  nl: ["nl", "be"],
 };
 
 /** L'édition de cette langue publie-t-elle la fiche `id` ? */
