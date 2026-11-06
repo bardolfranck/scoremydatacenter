@@ -96,6 +96,19 @@ EXEMPTIONS_NL: dict[str, str] = {
 # Le cliquet reste à 0 : il refuse désormais la PREMIÈRE surface qui reviendrait.
 DETTE_SURFACES_NL = 0
 
+# 🔴 LE VOCABULAIRE DE LA NOTE — trou trouvé le 2026-11-06, en vérifiant une affirmation
+# d'un pair : il annonçait qu'un garde refuserait « score » nu. Ce garde n'existait pas.
+# Il existe maintenant, et il a trouvé NEUF chaînes distinctes, dont une servie sur les
+# 152 fiches néerlandaises (« Download de score als afbeelding » — le néerlandais dit
+# « cijfer »). Les neuf sont reformulées le même jour ; à zéro, ce cliquet refuse la
+# PREMIÈRE qui reviendrait.
+# Les pages déclarées NON TRADUITES EN ENTIER : elles servent du français, donc juger leur
+# vocabulaire néerlandais n'a aucun sens. La liste est courte et distincte de celle des
+# exemptions de prose, pour qu'un motif n'en couvre jamais un autre.
+EXEMPTIONS_VOCABULAIRE = {"/nl/bibliotheek/", "/nl/bibliotheek/alles/"}
+
+DETTE_VOCABULAIRE_NL = 0
+
 # Les blocs qui sont les MÊMES dans toutes les langues PAR DÉCISION, pas par négligence.
 # Chaque motif est une règle de la maison, pas une exception de confort :
 #   · les identifiants juridiques (AGPL-3.0, ODbL, CC BY-SA) et le copyright ne se
@@ -226,6 +239,77 @@ def _blocs(fichier: Path) -> list[str]:
     ]
 
 
+# 🔴 LE VOCABULAIRE DE LA NOTE, GARDÉ SUR LE TEXTE SERVI (2026-11-06). Le néerlandais dit
+# `cijfer` : « score » et « note » nus sont des mots d'une AUTRE langue posés dans une phrase
+# néerlandaise, et c'est le genre de fuite qu'aucune comparaison de blocs ne voit — la phrase
+# n'est pas identique au français, elle est juste fausse d'un mot. Le trou était connu et
+# écrit depuis le 2026-11-05 ; il se referme ici.
+#
+# LE MASQUAGE EST DANS LE GARDE, PAS DANS UNE LISTE D'EXCEPTIONS. La marque contient le mot
+# (« ScoreMyDataCenter », « scoremydatacenter.org ») : l'exempter par une liste de phrases
+# reviendrait à exempter toute phrase citant la marque — c'est-à-dire la plupart. On masque
+# donc la marque, le domaine et les noms d'instruments AVANT de chercher le mot nu
+# [[exemption-nest-pas-obligation]].
+MOTS_DUNE_AUTRE_LANGUE = re.compile(r"\b(scores?|notes?)\b", re.I)
+MASQUES = re.compile(
+    r"ScoreMyDataCenter|scoremydatacenter(\.org)?|Nutri-Score|score-?my-?data-?center",
+    re.I,
+)
+
+
+# 🔴 UN PREMIER FAUX POSITIF, TROUVÉ EN LISANT LE RELEVÉ. La page de la carte sérialise ses
+# libellés pour le script du navigateur, et cette charge JSON ressort du relevé de texte
+# visible. Le garde y a vu « note »… qui était un NOM DE CLÉ (`"note": "Gevolgd project"`).
+# Accuser une clé JSON d'être un mot d'une autre langue, c'est un garde qui crie à faux — et
+# un garde qui crie à faux finit désactivé. Le discriminant est précis : un texte visible ne
+# contient pas de séparateur de clé JSON.
+DONNEE_SERIALISEE = re.compile(r'"\s*:\s*"')
+
+
+# 🔴 LE SECOND FAUX PAS ÉTAIT UNE CÉCITÉ, PAS UN FAUX POSITIF. Ce contrôle réutilisait
+# `_blocs`, qui écarte tout texte de moins de 25 caractères — un seuil juste pour COMPARER
+# deux langues (un mot isolé coïncide légitimement), et aveugle pour chercher un mot : une
+# étiquette de bouton comme « Download de score » fait 17 caractères et ne serait jamais
+# passée sous les yeux du garde. Le vocabulaire se cherche donc sur TOUT le texte.
+#
+# Et la marque se masque AVANT de retirer les balises, parce qu'elle est composée : le
+# gabarit écrit `Score<span class="brand-my">My</span>DataCenter`. Masquer la chaîne
+# contiguë laissait passer « Score » seul sur chaque page du site — mon propre contrôle à la
+# main s'y est fait prendre, et c'est ce qui a révélé les deux défauts.
+MARQUE_COMPOSEE = re.compile(r"Score(?:<[^>]+>)*My(?:<[^>]+>)*DataCenter", re.I)
+
+
+def _texte_visible(fichier: Path) -> list[str]:
+    """Tout le texte visible d'une page, sans seuil de longueur, marque masquée."""
+    import html
+
+    t = fichier.read_text(encoding="utf-8", errors="replace")
+    # 🔴 UNE COMMANDE N'EST PAS DE LA PROSE. La page de méthodologie montre « make score » :
+    # c'est le nom d'une cible de Makefile, et le traduire casserait la commande. Les
+    # contenus de `<code>` et `<pre>` sortent donc du contrôle de vocabulaire, comme les
+    # scripts — pas par exception, par NATURE [[exemption-nest-pas-obligation]].
+    t = re.sub(
+        r"<script.*?</script>|<style.*?</style>|<code.*?</code>|<pre.*?</pre>",
+        " ", t, flags=re.S,
+    )
+    if "<body" in t:
+        t = t[t.index("<body") :]
+    t = MARQUE_COMPOSEE.sub(" MARQUE ", t)
+    return [s for s in (html.unescape(x).strip() for x in re.split(r"<[^>]+>", t)) if s]
+
+
+def _vocabulaire_fautif(fichier: Path) -> list[tuple[str, str]]:
+    """Les textes néerlandais servis qui emploient « score » ou « note » nus."""
+    fautes = []
+    for b in _texte_visible(fichier):
+        if DONNEE_SERIALISEE.search(b):
+            continue
+        nu = MOTS_DUNE_AUTRE_LANGUE.search(MASQUES.sub(" ", b))
+        if nu:
+            fautes.append((nu.group(0), b))
+    return fautes
+
+
 def main() -> int:
     dossier = Path(sys.argv[1]) if len(sys.argv) > 1 else RACINE / "site" / "dist"
     if not dossier.is_dir():
@@ -328,6 +412,55 @@ def main() -> int:
                 if chemin.startswith(avant) and chemin.endswith(apres):
                     return nl
         return chemin
+
+    # Le vocabulaire se juge page par page, indépendamment de la comparaison de blocs.
+    vocab: list[tuple[str, str, str]] = []
+    for chemin_nl in sorted(vues):
+        # 🔴 UNE EXEMPTION N'EXEMPTE QUE CE POUR QUOI ELLE A ÉTÉ ACCORDÉE. J'ai d'abord
+        # écrit `if _surface(...) in EXEMPTIONS_NL: continue` — et l'accueil est exempté
+        # pour TROIS TITRES D'ACTU : il sortait donc aussi du contrôle de vocabulaire, avec
+        # ses cinq « score » nus. Une exemption accordée pour un motif et appliquée à tout
+        # est précisément la façon dont une clé devient invisible
+        # [[exemption-nest-pas-obligation]]. Seules les pages déclarées non traduites EN
+        # ENTIER sortent d'ici, et elles sont listées à part.
+        if _surface(chemin_nl) in EXEMPTIONS_VOCABULAIRE:
+            continue
+        f = dossier / chemin_nl.strip("/") / "index.html"
+        for mot, b in _vocabulaire_fautif(f):
+            vocab.append((chemin_nl, mot, b))
+    # 🔴 LE COMPTE EST EN CHAÎNES DISTINCTES, PAS EN OCCURRENCES. « Download de score als
+    # afbeelding » est UNE chaîne à traduire ; elle sort sur 152 fiches, et l'échantillon en
+    # voit trente. Compter les occurrences ferait bouger la dette au rythme de
+    # l'échantillonnage — un chiffre qui change sans qu'on ait rien fait est un chiffre que
+    # personne ne tient à jour.
+    distinctes = {b for _, _, b in vocab}
+    if len(distinctes) > DETTE_VOCABULAIRE_NL:
+        print(
+            f"langue servie : {len(distinctes)} chaîne(s) néerlandaise(s) emploient « score » "
+            f"ou « note » pour {DETTE_VOCABULAIRE_NL} déclarée(s) — le néerlandais dit "
+            f"« cijfer » :",
+            file=sys.stderr,
+        )
+        for chemin, mot, b in vocab[:12]:
+            print(f"  {chemin:38} « {mot} »  · {b[:90]}", file=sys.stderr)
+        return 1
+    if vocab:
+        print(
+            f"  vocabulaire : {len(distinctes)} chaîne(s) emploient encore « score »/"
+            f"« note » "
+            f"(dette déclarée {DETTE_VOCABULAIRE_NL}) — en traduction :"
+        )
+        vu = set()
+        for chemin, mot, b in vocab:
+            if b in vu:
+                continue
+            vu.add(b)
+            print(f"    {chemin:36} « {mot} »  · {b[:80]}")
+    elif DETTE_VOCABULAIRE_NL:
+        print(
+            f"  bonne nouvelle : plus aucun « score »/« note » nu (déclaré : "
+            f"{DETTE_VOCABULAIRE_NL}). Abaissez DETTE_VOCABULAIRE_NL à 0."
+        )
 
     toutes = {_surface(f[0]) for f in fautes}
     # Une exemption déclarée sort du COMPTE, jamais de la VUE.

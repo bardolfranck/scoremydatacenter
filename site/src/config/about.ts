@@ -132,7 +132,7 @@ export const NL_ABOUT = {
   aboutLinkedinUrl: "https://www.linkedin.com/in/franckbardol/",
   ia: {
     heading: "AI in dienst van de methode, niet in de plaats van de mens.",
-    sub: "Omdat <strong class=\"hero-red\">een nutri-score berekenen voor alle datacenters van Europa zich niet laat improviseren</strong>. Een architectuur van gespecialiseerde agenten verwerkt tienduizenden bronnen om elk datacenter rigoureus te beoordelen — onder menselijke controle.",
+    sub: "Omdat <strong class=\"hero-red\">een Nutri-Score berekenen voor alle datacenters van Europa zich niet laat improviseren</strong>. Een architectuur van gespecialiseerde agenten verwerkt tienduizenden bronnen om elk datacenter rigoureus te beoordelen — onder menselijke controle.",
     steps: [
       { icon: "collect", title: "Verzamelen", body: "De agenten sporen de nuttige publieke bronnen op: reglementaire dossiers, institutionele data, documenten van exploitanten, kaarten, lokale besluiten en persartikelen." },
       { icon: "structure", title: "Structureren", body: "Ze zetten die heterogene bronnen om in vergelijkbare gegevens: vermogen, water, grond, net, overleg, transparantie, projectstatus." },
@@ -159,7 +159,7 @@ export const NL_ABOUT = {
   founderFacts: [
     { icon: "gradcap", text: "Geassocieerd hoogleraar (Universiteit van Genève, onder meer) · onafhankelijk AI-expert voor de <strong>Europese Commissie</strong>" },
     { icon: "users", text: "Erkend als een van <a href=\"https://www.usinenouvelle.com/article/portraits-les-mediateurs-de-l-ia.N650229\" target=\"_blank\" rel=\"noopener\">de 100 Franse AI-experts</a> · medewerker aan het <strong>rapport-Villani</strong> over de Franse AI-strategie" },
-    { icon: "chartup", text: "Eerste loopbaan in de zakenbank als hoofd kwantitatief onderzoek: <strong>rigoureuze, verdedigbare scores bouwen is zijn oorspronkelijke vak</strong>" },
+    { icon: "chartup", text: "Eerste loopbaan in de zakenbank als hoofd kwantitatief onderzoek: <strong>rigoureuze, verdedigbare scoringsmodellen bouwen is zijn oorspronkelijke vak</strong>" },
     { icon: "book", text: "Auteur van <a href=\"https://www.lgdj.fr/concevoir-une-ia-responsable-9782297287678.html\" target=\"_blank\" rel=\"noopener\">‘Concevoir une IA responsable — Pourquoi ce n'est jamais “juste un outil” ? Manuel d'éthique de terrain’</a> (LGDJ), <a href=\"https://www.amazon.fr/High-performance-Algorithmic-Trading-Machine-Learning/dp/9365893895\" target=\"_blank\" rel=\"noopener\">‘High-Performance Algorithmic Trading using AI’</a> en <a href=\"https://www.amazon.fr/Baby-Sitters-lIA-syndrome-Reprenez-attention-ebook/dp/B0GX34RW3P\" target=\"_blank\" rel=\"noopener\">‘Les Baby-Sitters de l'IA’</a>" },
     { icon: "bank", text: "Oprichter van <a href=\"https://www.meetup.com/paris-machine-learning-applications-group/\" target=\"_blank\" rel=\"noopener\">Paris Machine Learning</a> (8.500 AI-experts) · ruim 50.000 professionals opgeleid via LinkedIn Learning" },
   ],

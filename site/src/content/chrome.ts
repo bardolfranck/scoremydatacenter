@@ -140,6 +140,7 @@ const NL: typeof FR = {
       { label: "FAQ", href: "/nl/#faq" },
     ] },
     { heading: "Over", links: [
+      { label: "Over ons", href: "/nl/over-ons/" },
       { label: "Contact", href: "/nl/contact/" },
       { label: "Juridische informatie", href: "/nl/juridisch/" },
     ] },
