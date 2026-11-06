@@ -35,16 +35,49 @@ from pathlib import Path
 
 RACINE = Path(__file__).resolve().parents[1]
 
-# Les surfaces néerlandaises qui reprennent encore une autre langue, au 2026-11-03 :
-#   · 9 pages fixes — l'accueil (le mur satellite et une manchette d'actu sont en anglais),
-#     la bibliothèque et son index, le comparateur, les indices, le classement, le contact,
-#     les mentions légales, le one-pager. Six d'entre elles sont HORS du périmètre de
-#     traduction signé, et leurs gabarits sont binaires (`lang === "fr" ? … : …`).
-#   · 2 familles — la fiche et le portrait, qui attendent la traduction des champs de
-#     SYNTHÈSE (`summary`, `citable_quote`), produits par le pipeline sur 1 399 fiches.
-# 10 → 9 le 2026-11-03 : le one-pager est propre (bouton d'impression et libellé de retour
-# en néerlandais). Le compte ne peut que baisser. À zéro, `nl` rejoint `LANGUES_VIVANTES`.
-DETTE_SURFACES_NL = 9
+# 🔴 LES PAYS DONT LA PROSE EST DUE DANS UNE LANGUE — déclaré, jamais déduit d'un préfixe.
+# La doctrine est PAR PAYS (Franck, 2026-11-05) : l'édition néerlandaise doit sa prose aux
+# sites néerlandais, pas aux 3 140 autres du corpus, qui s'y servent en anglais par choix.
+# Le préfixe d'identifiant et le code de langue coïncident pour `nl`, et c'est précisément
+# pourquoi il faut l'écrire : la coïncidence ne tient pas (un jour `en` → GB + IE + US), et
+# un garde qui DÉDUIT son périmètre d'une coïncidence se tromperait en silence le jour où
+# elle cesse.
+# ⚠️ OUVERT, ET JE NE LE TRANCHE PAS : la Flandre. 42 fiches `be-`, dont une part parle
+# néerlandais. Le lot livré ne couvre que `nl-` ; les inclure ici créerait 42 dettes d'un
+# coup, les exclure par défaut est un choix éditorial que personne n'a fait. À Franck.
+PAYS_DE_LA_LANGUE: dict[str, tuple[str, ...]] = {"nl": ("nl",)}
+
+# Les surfaces néerlandaises qui reprennent encore le texte d'une autre langue, au
+# 2026-11-05 — CINQ :
+#   · /nl/indices/ (10 blocs EN) et /nl/vergelijken/ (5 EN) — leur copie vit en TERNAIRE
+#     dans le composant, pas dans une table ; traduction commandée ;
+#   · /nl/ (accueil) — le mur satellite (3 blocs EN, traduction commandée) ET trois titres
+#     d'ACTU en français. Ceux-là ne sont pas de la copie : `headline_i18n`/`summary_i18n`
+#     sont des champs par-langue de la donnée de veille, produits en `fr`/`en` par
+#     `pipelines/veille/actu.py` (dépôt privé). Dette NOMMÉE, différée par Franck
+#     (« presse et actu, on verra après ») — pas une exemption : le cron quotidien
+#     continuera d'émettre deux langues jusqu'à ce qu'on l'ouvre ;
+#   · /nl/bibliotheek/ et /nl/bibliotheek/alles/ — HORS périmètre, Franck n'a pas nommé la
+#     bibliothèque quand il a listé les pages à passer en néerlandais. Déclaré non traduit.
+#
+# 🔴 LES DEUX FAMILLES DE PRODUIT SONT PROPRES : `/nl/dc/:id/` et `/nl/dc/:id/portret/`,
+# 6 534 pages, ne reprennent plus une phrase d'une autre langue. Elles y sont arrivées par
+# deux chemins qu'il faut distinguer, parce qu'on allait les confondre :
+#   · la PROSE des fiches (identité, chapeaux, corps des piliers) a été traduite sur les
+#     152 fiches néerlandaises — le livrable fiche, PAR PAYS (doctrine Franck, 2026-11-05 :
+#     une fiche étrangère servie en anglais sur l'édition néerlandaise est VOULUE) ;
+#   · la LÉGENDE de la carte de contexte était écrite en `fr`/`en` par notre propre build
+#     (`build_prod_artifacts.py`) et titrait en anglais sur CHAQUE portrait néerlandais.
+#     Celle-là n'était pas une dette de traduction : c'était un défaut de producteur, et
+#     `test_un_producteur_emet_chaque_langue_declaree` empêche désormais la suivante.
+#
+# 10 → 9 le 2026-11-03 (le one-pager) · 9 → 8 le 2026-11-05 (les fiches et les portraits)
+# · 8 → 5 le 2026-11-05 (contact, classement, mentions légales traduits). Il ne peut que
+# baisser. À zéro, `nl` rejoint `LANGUES_VIVANTES` — et
+# `test_une_langue_ne_passe_pas_vivante_tant_que_sa_dette_de_prose_court` tient la réciproque,
+# que cette barrière ne peut pas tenir : un cliquet ne refuse qu'une régression, donc à dette
+# égale il sort 0, langue ouverte ou non.
+DETTE_SURFACES_NL = 5
 
 # Les blocs qui sont les MÊMES dans toutes les langues PAR DÉCISION, pas par négligence.
 # Chaque motif est une règle de la maison, pas une exception de confort :
@@ -153,14 +186,27 @@ def _trios() -> list[tuple[str, str, str]]:
 
 
 def _blocs(fichier: Path) -> list[str]:
-    """Le texte VISIBLE d'une page, par blocs — scripts et styles exclus."""
+    """Le texte VISIBLE d'une page, par blocs — scripts et styles exclus.
+
+    🔴 LE TEXTE EST DÉSÉCHAPPÉ, et ce n'est pas une politesse. Le relevé comparait du HTML
+    échappé à des noms propres lus dans `map.geojson`, qui ne l'est pas : « Interconnect
+    Services DC3 's-Hertogenbosch » arrivait ici en `&#39;s-Hertogenbosch`, ne correspondait
+    à aucun nom du corpus, et remontait comme une phrase non traduite sur chaque fiche
+    néerlandaise qui le cite. Un nom de ville néerlandais sur deux porte cette apostrophe
+    ('s-Hertogenbosch, 's-Gravenhage) : c'est la troisième langue qui a révélé le défaut,
+    pas un changement de code [[troisieme-langue-revele-les-binaires]].
+    """
+    import html
+
     t = fichier.read_text(encoding="utf-8", errors="replace")
     t = re.sub(r"<script.*?</script>|<style.*?</style>", " ", t, flags=re.S)
     if "<body" in t:
         t = t[t.index("<body") :]
     # 25 caractères : en dessous, un mot isolé peut légitimement coïncider (« Contact »,
     # « API », un nom de commune). Au-dessus, une phrase identique est une phrase non traduite.
-    return [b for b in (s.strip() for s in re.split(r"<[^>]+>", t)) if len(b) > 25]
+    return [
+        b for b in (html.unescape(s).strip() for s in re.split(r"<[^>]+>", t)) if len(b) > 25
+    ]
 
 
 def main() -> int:
@@ -177,13 +223,37 @@ def main() -> int:
         🔴 Les fiches et les portraits sont 6 534 pages néerlandaises : ce sont LE produit,
         et les exclure du contrôle parce qu'elles sont nombreuses reviendrait à ne vérifier
         que les pages qui comptent le moins. On en tire donc un échantillon régulier —
-        trente, répartis dans l'ordre alphabétique des identifiants, ce qui balaie les pays.
+        trente, répartis dans l'ordre alphabétique des identifiants.
+
+        🔴 ET L'ÉCHANTILLON EST CELUI DU PAYS DE LA LANGUE (Franck, 2026-11-05). Première
+        version : trente identifiants tirés de TOUT le corpus, « ce qui balaie les pays ».
+        Ça mesurait une dette qui n'existe pas. La doctrine est PAR PAYS : la prose
+        néerlandaise est due sur les sites néerlandais, et une fiche texane servie en anglais
+        sur l'édition néerlandaise est VOULUE, pas un trou. Un balayage du corpus faisait
+        donc remonter 29 pages sur 30 comme fautives, et aucune quantité de travail n'aurait
+        pu les rendre vertes : l'instrument interdisait l'ouverture de la langue pour une
+        raison fausse.
+
+        ⚠️ L'EXEMPTION NE DOIT PAS RENDRE LA FAMILLE MUETTE. Ce qui sort du contrôle, ce sont
+        les fiches ÉTRANGÈRES — pas la famille. Les 152 fiches néerlandaises restent gardées,
+        et si le relevé n'en trouve aucune il REFUSE DE CONCLURE : un échantillon vide passe
+        toujours, et c'est la façon la plus discrète de perdre un garde.
         """
         avant, apres = motif_nl.split(":id", 1)
         racine = dossier / avant.strip("/")
         if not racine.is_dir():
             return []
-        ids = sorted(d.name for d in racine.iterdir() if d.is_dir())
+        tous = sorted(d.name for d in racine.iterdir() if d.is_dir())
+        prefixes = PAYS_DE_LA_LANGUE["nl"]
+        ids = [i for i in tous if i.split("-", 1)[0] in prefixes]
+        if tous and not ids:
+            raise SystemExit(
+                f"langue servie : aucune fiche d'un pays de la langue néerlandaise parmi "
+                f"{len(tous)} identifiants de {avant} (préfixes attendus : "
+                f"{', '.join(sorted(prefixes))}). Le relevé ne sait plus reconnaître les "
+                f"fiches dues dans cette langue — il ne mesurerait plus rien, et un contrôle "
+                f"sur l'ensemble vide passe toujours."
+            )
         if not ids:
             return []
         pas = max(1, len(ids) // 30)

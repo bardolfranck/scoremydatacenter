@@ -10,7 +10,7 @@
 // the map (amendement 2026-07-19 + §4 presence gate): any surface that
 // renders the map renders the insert.
 import indicesData from "../../public/data/indices.json";
-import { copie } from "../content/langues";
+import { copie, nombreDecimal, type LangueDeclaree } from "../content/langues";
 
 interface Props {
   lang: "fr" | "en";
@@ -67,7 +67,9 @@ const ANCHORS: Record<string, [number, number]> = {
 const HANG_LEFT = new Set(["IE", "PT", "FR", "BE"]);
 
 const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
-const fmtScore = (s: number) => (lang === "fr" ? String(s).replace(".", ",") : String(s));
+// La virgule décimale est déclarée par langue : le néerlandais la met aussi, et le ternaire
+// `lang === "fr"` l'envoyait au point anglais sans qu'une erreur ne soit levée.
+const fmtScore = (s: number) => nombreDecimal(lang as LangueDeclaree, s);
 
 // Markers are server-computed (grade, score, dots) — the client script only
 // places them; no grade logic ever runs front-side.

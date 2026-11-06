@@ -9,7 +9,7 @@
 // ?pays=XX shareable state. Letters render ONLY through the map component
 // and the table chips (gate 7 extended).
 import "@fontsource/bricolage-grotesque/700.css";
-import { copie } from "../content/langues";
+import { copie, nombreDecimal, type LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
@@ -129,6 +129,45 @@ const T = copie({
     },
     ogTitle: (name: string) => `${name}'s site index`,
   },
+  nl: {
+    pageTitle: "SITE-index per land — ScoreMyDataCenter",
+    metaDescription: "De SITE-index per land: het gemiddelde van de sitecijfers (net, water, grond, risico's) geaggregeerd land per land — met zijn documentatie, drempels en geschiedenis. Hij beoordeelt noch de exploitanten noch de uitvoering van de projecten.",
+    tagline: "Onafhankelijk observatorium",
+    lede: "Het gelijkgewogen gemiddelde van de gepubliceerde SITE-cijfers, land per land — de context die de projecten ondergaan (net, water, grond, risico's).",
+    tableTitle: "De ranglijst (tabelweergave)",
+    th: { country: "Land", index: "Index", score: "Waarde", n: "n sites", doc: "Documentatie", cov: "Wat we hebben gemeten", cmp: "Vergelijker", denom: "In bedrijf / aangekondigd", last: "Laatste wijziging" },
+    cmp: {
+      ouvert: (v: number, n: number) => `tot ${n} vergelijkbare · ${v} gemeenschappelijke variabelen`,
+      mince: (n: number) => `corpus te dun (${n} sites)`,
+      absent: "—",
+      note: "De kolom „vergelijker” geeft, land per land, aan tot hoeveel nabije sites we tonen en op hoeveel gemeenschappelijke variabelen de vergelijking berust. Een land onder de ondergrens heeft helemaal geen vergelijker: dat is een hiaat in onze verzameling, geen afwezigheid van sites.",
+      lien: "De vergelijker openen",
+    },
+    comparability: {
+      title: "Deze landen worden niet op dezelfde basis gemeten",
+      body: "Onze indicatoren hangen af van de open data van elk land, en die zijn zeer ongelijk. Frankrijk beschikt over een openbaar register van de capaciteit van het elektriciteitsnet (Caparéseau): zijn sites worden dus beoordeeld op de verzadiging van de aansluiting. Duitsland, Italië, Spanje of Zwitserland hebben geen equivalent — die dimensie wordt daar helemaal niet gemeten. Hetzelfde geldt voor het profiel van de gastgemeenten, in Frankrijk vastgelegd en bijna nergens anders. Laatste toevoeging, 30 september 2026: de aansluitbaarheid op een warmtenet, die Frankrijk publiceert en waarvoor geen enkel ander land in ons corpus een open equivalent heeft. Het is onze meting die zich uitbreidt, niet het cijfer van de anderen dat daalt — maar Frankrijk wordt daardoor het enige land waarvan de pijler Energie als „volledig” wordt gemeten.",
+      consequence: "Gevolg: een rijk gedocumenteerd land wordt beoordeeld op wat het onthult, zwakke punten inbegrepen, terwijl een land zonder gegevens eraan ontsnapt. Deze indexen lezen daarom als PROFIELEN, niet als een ranglijst — en de kolom „wat we hebben gemeten” geeft, pijler per pijler, aan op welke basis elk wordt beoordeeld.",
+      why: "Waarom we ze toch publiceren: de dekking is zelf informatie. Een pijler die „afwezig” is, zegt niet dat een land het goed doet, hij zegt dat we het niet weten.",
+    },
+    covPillars: { energy: "Energie", water: "Water", land_biodiversity: "Grond", local_impact: "Lokale impact" },
+    veilleRow: "gevolgd — geen gemiddelde berekend",
+    reserved: "· A voorbehouden",
+    docBands: { solide: "degelijk", moyenne: "gemiddeld", faible: "zwak" },
+    asOf: "Index per",
+    lastEvo: "laatste wijziging:",
+    method: {
+      title: "De methode van de index",
+      items: [
+        "Aggregatie: gelijkgewogen gemiddelde van de gepubliceerde continue SITE-waarden (alle beoordeelde sites tellen mee in het gemiddelde, ook de aangekondigde — de sitewaarde meet het gebied). Het naar vermogen (MW) gewogen aggregaat wordt ernaast gepubliceerd wanneer een land genoeg vermogens meedeelt.",
+        "Drempels: A ≥ 80 · B ≥ 65 · C ≥ 50 · D ≥ 35 · E < 35 — het raster van de fiches, ongewijzigd.",
+        "Voorbehoud A-25: een index ≥ 80 wordt weergegeven als „B · A voorbehouden” zolang geen enkele site in het land een verificatie door derden in bedrijf draagt.",
+        "Documentatie: mediaan van de SITE-documentatiewaarden — degelijk ≥ 0,75 · gemiddeld ≥ 0,5 · zwak. Ze vergezelt altijd het cijfer, ze filtert nooit.",
+        "Ondergrens: n ≥ 5 beoordeelde sites. Daaronder is het land „gevolgd” — een gemiddelde van 2 is geen gemiddelde.",
+      ],
+      changelog: "Methodologie met versiebeheer →",
+    },
+    ogTitle: (name: string) => `De SITE-index van ${name}`,
+  },
 }, lang);
 
 const dateFmt = (iso: string | null) => {
@@ -179,7 +218,7 @@ const NOTE_PUBLIABLE = (e: any) => e.eligible && /^[A-E]$/.test(String(e.grade ?
 const fmtScore = (s: number | null | undefined) =>
   s === null || s === undefined || Number.isNaN(s)
     ? "—"
-    : (lang === "fr" ? String(s).replace(".", ",") : String(s));
+    : nombreDecimal(lang as LangueDeclaree, s);
 const flag = (iso: string) => countryFlag(iso);
 // Page-level OG = the top-ranked eligible country's card (the ranking's own
 // headline; per-country cards live at /og/indices/{lang}-{cc}.png for shares).

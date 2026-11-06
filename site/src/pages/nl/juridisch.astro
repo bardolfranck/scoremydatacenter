@@ -8,57 +8,57 @@ import ProsePage from "../../components/ProsePage.astro";
 import { NL_NAV } from "../../config/nav";
 
 const t = {
-  title: "Mentions légales — ScoreMyDataCenter",
-  metaDescription: "Mentions légales de ScoreMyDataCenter : éditeur, hébergement, licences, données personnelles, avertissement sur la notation, indépendance et contradictoire.",
-  tagline: "Observatoire indépendant",
-  h1: "Mentions légales",
+  title: "Juridische informatie — ScoreMyDataCenter",
+  metaDescription: "Juridische informatie van ScoreMyDataCenter: uitgever, hosting, licenties, persoonsgegevens, voorbehoud bij de beoordeling, onafhankelijkheid en weerwoord.",
+  tagline: "Onafhankelijk observatorium",
+  h1: "Juridische informatie",
   sections: [
     {
-      h2: "Éditeur",
-      html: ["<p>ScoreMyDataCenter, observatoire indépendant fondé par <strong>Franck Bardol</strong>. Contact : <a href=\"mailto:contact@scoremydatacenter.org\">contact@scoremydatacenter.org</a>. Le statut juridique de l'éditeur et son adresse seront précisés à la publication.</p>"],
+      h2: "Uitgever",
+      html: ["<p>ScoreMyDataCenter, onafhankelijk observatorium opgericht door <strong>Franck Bardol</strong>. Contact: <a href=\"mailto:contact@scoremydatacenter.org\">contact@scoremydatacenter.org</a>. De rechtsvorm van de uitgever en zijn adres worden bij publicatie vermeld.</p>"],
     },
     {
-      h2: "Hébergement",
-      html: ["<p>Site statique hébergé par Cloudflare, Inc. (Cloudflare Pages), 101 Townsend Street, San Francisco, CA 94107, États-Unis.</p>"],
+      h2: "Hosting",
+      html: ["<p>Statische site gehost door Cloudflare, Inc. (Cloudflare Pages), 101 Townsend Street, San Francisco, CA 94107, Verenigde Staten.</p>"],
     },
     {
-      h2: "Propriété intellectuelle et licences",
+      h2: "Intellectueel eigendom en licenties",
       html: [
-        "<p>Le projet est ouvert par conception (« on ouvre la vérité ») :</p>",
-        "<ul><li>Moteur de calcul et parsers : <strong>AGPL-3.0</strong>.</li><li>Données : <strong>licence selon la source</strong> — OpenStreetMap et DCWatch (Hubblo) sous ODbL, données institutionnelles sous Licence Ouverte ou licence propre ; chaque valeur affichée cite sa source.</li><li>Méthodologie et contenus éditoriaux : <strong>CC BY-SA 4.0</strong>.</li></ul>",
-        "<p>Le code et les données sont publics sur <a href=\"https://github.com/bardolfranck/scoremydatacenter\" target=\"_blank\" rel=\"noopener\">GitHub</a>. Les articles de presse cités ne sont jamais reproduits : seuls le lien, une copie archivée et le fait extrait sont publiés.</p>",
+        "<p>Het project is open van opzet („we openen de waarheid”):</p>",
+        "<ul><li>Rekenmotor en parsers: <strong>AGPL-3.0</strong>.</li><li>Gegevens: <strong>licentie afhankelijk van de bron</strong> — OpenStreetMap en DCWatch (Hubblo) onder ODbL, institutionele gegevens onder Licence Ouverte of eigen licentie; elke weergegeven waarde vermeldt haar bron.</li><li>Methodologie en redactionele inhoud: <strong>CC BY-SA 4.0</strong>.</li></ul>",
+        "<p>De code en de gegevens zijn openbaar op <a href=\"https://github.com/bardolfranck/scoremydatacenter\" target=\"_blank\" rel=\"noopener\">GitHub</a>. Geciteerde persartikelen worden nooit gereproduceerd: alleen de link, een gearchiveerde kopie en het geëxtraheerde feit worden gepubliceerd.</p>",
       ],
     },
     {
-      h2: "Données personnelles",
+      h2: "Persoonsgegevens",
       html: [
-        "<p>Le site n'utilise aucun traceur publicitaire. La mesure d'audience (Google Analytics 4) n'est activée qu'avec votre consentement : aucun cookie de mesure n'est déposé tant que vous n'avez pas cliqué « Accepter » dans le bandeau, et refuser ne change rien à votre navigation. Votre choix est conservé au plus 6 mois, puis la question est reposée. Vous pouvez le modifier à tout moment : <button type=\"button\" class=\"linklike\" onclick=\"window.smdcConsentReset && window.smdcConsentReset()\">réafficher le bandeau de consentement</button>. Les notes ne contiennent aucune donnée personnelle : la position des élus n'est enregistrée que sous forme de faits votés (délibérations), jamais de nom de personne.</p>",
-        "<p>Le formulaire « Votre avis » transmet vos réponses (message, nom et fonction) à un formulaire Google Forms géré par nos soins. Un témoignage n'est publié que si vous avez coché la case d'accord explicite ; sans elle, il reste privé. Pour retirer un témoignage publié : contact@scoremydatacenter.org.</p>",
+        "<p>De site gebruikt geen enkele reclametracker. De bezoekersmeting (Google Analytics 4) wordt alleen met uw toestemming geactiveerd: er wordt geen meetcookie geplaatst zolang u niet op „Accepteren” in de banner hebt geklikt, en weigeren verandert niets aan uw bezoek. Uw keuze wordt maximaal 6 maanden bewaard, daarna wordt de vraag opnieuw gesteld. U kunt deze op elk moment wijzigen: <button type=\"button\" class=\"linklike\" onclick=\"window.smdcConsentReset && window.smdcConsentReset()\">de toestemmingsbanner opnieuw tonen</button>. De cijfers bevatten geen enkel persoonsgegeven: het standpunt van gekozen bestuurders wordt alleen vastgelegd als gestemde feiten (besluiten), nooit als naam van een persoon.</p>",
+        "<p>Het formulier „Uw mening” stuurt uw antwoorden (bericht, naam en functie) naar een door ons beheerd Google Forms-formulier. Een getuigenis wordt alleen gepubliceerd als u het vakje voor uitdrukkelijke toestemming hebt aangevinkt; zonder dat blijft ze privé. Om een gepubliceerde getuigenis in te trekken: contact@scoremydatacenter.org.</p>",
         // Section données personnelles proportionnée — validée par Franck Bardol le 2026-07-16
-        "<p>Lorsque des données personnelles apparaissent dans nos contenus, elles se limitent à des faits publics et professionnels (délibérations, votes, prises de position publiques de personnes intervenant dans un projet). Finalité : informer sur l'acceptabilité des projets de data centers. Base : l'intérêt légitime, mis en balance avec les droits des personnes. Nous ne constituons aucun profil personnel et n'inférons aucune intention. Pour exercer vos droits (accès, rectification, opposition) : contact@scoremydatacenter.org.</p>",
+        "<p>Wanneer persoonsgegevens in onze inhoud voorkomen, beperken deze zich tot openbare en professionele feiten (besluiten, stemmen, openbare standpunten van personen die bij een project betrokken zijn). Doel: informeren over de aanvaardbaarheid van datacenterprojecten. Grondslag: het gerechtvaardigd belang, afgewogen tegen de rechten van de betrokkenen. Wij stellen geen persoonlijk profiel op en leiden geen enkele intentie af. Om uw rechten uit te oefenen (inzage, rectificatie, bezwaar): contact@scoremydatacenter.org.</p>",
       ],
     },
     {
-      h2: "Avertissement — à propos de la notation",
+      h2: "Voorbehoud — over de beoordeling",
       html: [
-        "<p>ScoreMyDataCenter est un observatoire indépendant qui évalue le <strong>risque d'acceptabilité</strong> des projets de data centers. Les notes publiées constituent une <strong>appréciation méthodique fondée sur des faits publics et sourcés</strong>. La note est une évaluation résultant de l'application de la méthodologie publiée aux données disponibles. Elle ne constitue ni une certification réglementaire, ni une mesure de la conformité juridique du projet, ni une recommandation d'investissement ou de boycott. Elles sont publiées <strong>au titre de la contribution au débat d'intérêt général</strong>.</p>",
-        "<p><strong>Méthode ouverte.</strong> La méthodologie (indicateurs, poids, seuils, sources) est publique, datée et versionnée : chacun peut vérifier et refaire une note. Une note exprime l'acceptabilité estimée au regard de l'état de l'art à sa date ; elle peut évoluer avec le projet ou avec la révision de la méthode.</p>",
-        "<p><strong>Faits, pas intentions.</strong> Les informations relatives aux personnes (notamment les élus) se limitent à des faits publics (votes, délibérations, prises de position publiques) ; aucune intention n'est imputée.</p>",
-        "<p><strong>Neutralité.</strong> ScoreMyDataCenter n'appelle à aucun boycott ni action contre une entreprise.</p>",
+        "<p>ScoreMyDataCenter is een onafhankelijk observatorium dat het <strong>aanvaardbaarheidsrisico</strong> van datacenterprojecten beoordeelt. De gepubliceerde cijfers vormen een <strong>methodische beoordeling op basis van openbare en gedocumenteerde feiten</strong>. Het cijfer is een beoordeling die voortvloeit uit de toepassing van de gepubliceerde methodologie op de beschikbare gegevens. Het vormt geen wettelijke certificering, geen maatstaf voor de juridische conformiteit van het project, en geen beleggingsadvies of oproep tot boycot. Ze worden gepubliceerd <strong>als bijdrage aan het debat van algemeen belang</strong>.</p>",
+        "<p><strong>Open methode.</strong> De methodologie (indicatoren, wegingen, drempels, bronnen) is openbaar, gedateerd en van een versie voorzien: iedereen kan een cijfer controleren en opnieuw berekenen. Een cijfer drukt de geschatte aanvaardbaarheid uit ten opzichte van de stand van de techniek op dat moment; het kan evolueren met het project of met de herziening van de methode.</p>",
+        "<p><strong>Feiten, geen intenties.</strong> De informatie over personen (met name gekozen bestuurders) beperkt zich tot openbare feiten (stemmen, besluiten, openbare standpunten); er wordt geen enkele intentie toegeschreven.</p>",
+        "<p><strong>Neutraliteit.</strong> ScoreMyDataCenter roept niet op tot boycot of actie tegen een onderneming.</p>",
       ],
     },
     {
-      h2: "Indépendance, correction et réponse",
+      h2: "Onafhankelijkheid, correctie en weerwoord",
       html: [
-        "<p><strong>On aide le projet, jamais la note.</strong> Les entités notées ne paient jamais leur note publique. Un opérateur peut faire analyser son projet (leviers d'amélioration) ; mais la note publique ne bouge que si le <strong>projet réel</strong> change — nouveaux faits sourcés, re-scoring tracé au journal d'audit. « Il paie, la note monte » est structurellement exclu (ce serait la capture qui a tué la crédibilité des agences de notation).</p>",
-        "<p><strong>Correction des données.</strong> ScoreMyDataCenter publie ses notes à partir des informations disponibles à la date indiquée. Toute personne peut signaler une information inexacte ou incomplète en joignant une source ou un justificatif vérifiable. Après vérification, les corrections sont intégrées et datées. Lorsque la modification affecte le calcul, la note est recalculée selon la même version de la méthode.</p>",
-        "<p><strong>Réponse des opérateurs.</strong> L'opérateur concerné peut transmettre une réponse relative à une fiche. Cette réponse peut être publiée dans un espace dédié, clairement attribuée et datée. ScoreMyDataCenter peut refuser ou raccourcir un contenu sans rapport avec la fiche, manifestement illicite, inutilement injurieux, publicitaire ou contenant des informations confidentielles ou personnelles non nécessaires. La publication d'une réponse ne modifie pas automatiquement la note : celle-ci évolue uniquement lorsque des faits nouveaux ou corrigés changent le résultat obtenu par la méthode.</p>",
-        "<p>En présence d'une information particulièrement sensible ou incertaine, ScoreMyDataCenter peut solliciter l'opérateur avant publication. Cet espace volontaire de réponse est distinct d'une éventuelle demande formelle de droit de réponse prévue par la loi, qui serait traitée comme telle.</p>",
+        "<p><strong>We helpen het project, nooit het cijfer.</strong> Beoordeelde entiteiten betalen nooit voor hun openbare cijfer. Een exploitant kan zijn project laten analyseren (verbeterpunten); maar het openbare cijfer verandert alleen als het <strong>werkelijke project</strong> verandert — nieuwe gedocumenteerde feiten, herberekening vastgelegd in het auditlogboek. „Hij betaalt, het cijfer stijgt” is structureel uitgesloten (dat zou de belangenverstrengeling zijn die de geloofwaardigheid van de ratingbureaus heeft ondermijnd).</p>",
+        "<p><strong>Correctie van gegevens.</strong> ScoreMyDataCenter publiceert zijn cijfers op basis van de informatie die beschikbaar is op de aangegeven datum. Iedereen kan onjuiste of onvolledige informatie melden door een verifieerbare bron of bewijsstuk bij te voegen. Na verificatie worden de correcties verwerkt en gedateerd. Wanneer de wijziging de berekening beïnvloedt, wordt het cijfer opnieuw berekend volgens dezelfde versie van de methode.</p>",
+        "<p><strong>Weerwoord van de exploitanten.</strong> De betrokken exploitant kan een reactie met betrekking tot een fiche indienen. Deze reactie kan in een daarvoor bestemde ruimte worden gepubliceerd, duidelijk toegeschreven en gedateerd. ScoreMyDataCenter kan inhoud weigeren of inkorten die geen verband houdt met de fiche, kennelijk onrechtmatig, nodeloos beledigend of reclame-achtig is, of vertrouwelijke of onnodige persoonsgegevens bevat. De publicatie van een reactie wijzigt het cijfer niet automatisch: dit evolueert alleen wanneer nieuwe of gecorrigeerde feiten het door de methode verkregen resultaat veranderen.</p>",
+        "<p>Bij bijzonder gevoelige of onzekere informatie kan ScoreMyDataCenter de exploitant vóór publicatie raadplegen. Deze vrijwillige ruimte voor weerwoord staat los van een eventueel formeel verzoek om weerwoord, dat als zodanig zou worden behandeld.</p>",
       ],
     },
   ],
   backHref: "/nl/",
-  backLabel: "← Retour à l'accueil",
+  backLabel: "← Terug naar de startpagina",
 };
 ---
 
