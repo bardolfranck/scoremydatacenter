@@ -90,6 +90,11 @@ export const PROCEDURE: Record<string, ProcedureCountry | null> = {
   //                      se rattrape en une passe.
   PT: null,
   IL: null,  // hors Union, hors socle — trou déclaré, voir en-tête
+  // SG : 47 fiches publiées le 2026-11-08, loi NON lue. Le socle européen ne s'y applique
+  //      pas et rien d'autre ne s'y substitue : la procédure singapourienne (Planning Act,
+  //      URA written permission, et l'appel au Minister for National Development) n'a pas
+  //      été lue au TEXTE, donc elle n'est pas déclarée. Trou déclaré, pas omis.
+  SG: null,
 };
 
 /** Pays dont le bloc national complète le socle européen plutôt que de s'y substituer. */

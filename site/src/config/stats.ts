@@ -49,6 +49,7 @@ export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
   NL: { fr: "Pays-Bas", en: "Netherlands", nl: "Nederland" }, NO: { fr: "Norvège", en: "Norway", nl: "Noorwegen" },
   PL: { fr: "Pologne", en: "Poland", nl: "Polen" }, PT: { fr: "Portugal", en: "Portugal", nl: "Portugal" },
   SE: { fr: "Suède", en: "Sweden", nl: "Zweden" },
+  SG: { fr: "Singapour", en: "Singapore", nl: "Singapore" },
 };
 
 export const REGION_NAMES: Record<string, string> = {

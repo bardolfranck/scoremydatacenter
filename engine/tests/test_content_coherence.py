@@ -10,6 +10,7 @@ quantitative claim on the landing pages must match the methodology and the
 engine constants. Change a parameter -> the build breaks until the copy is
 updated (and vice versa)."""
 
+import sys
 import json
 import re
 from pathlib import Path
@@ -1024,4 +1025,63 @@ def test_le_titre_de_fiche_ne_sert_JAMAIS_une_valeur_D_ENUMERATION():
     suite = gabarit[i : i + 400]
     assert "t.seo.pending" in suite, (
         "une note non publiable doit sortir « note en attente », pas un repli muet"
+    )
+
+
+def test_le_motif_sans_comparaison_nomme_la_cause_constatee():
+    """UNE CAUSE DÉDUITE D'UN TOTAL QUI NE LA DISTINGUE PAS.
+
+    Une « cellule » du comparateur exige DEUX choses : une zone de puissance et un usage
+    reconnu à l'exploitant. Le motif publié était choisi sur `avec_cellule == 0` seul, donc
+    la phrase « aucune puissance connue » parlait aussi pour un pays dont la puissance EST
+    publiée et dont aucun exploitant ne tombe dans un motif d'usage.
+
+    Vrai par accident jusqu'au 2026-11-07 : les douze pays concernés ne servaient AUCUNE
+    puissance. Faux dès la publication de Singapour — `sg-airtrunk-sgp1` 78 MW,
+    `sg-nxera-dc-tuas` 58 MW, `sg-dayone-data-centers-sg1` 20 MW — et faux dans les trois
+    langues, puisque la page portait la cause dans son intitulé.
+
+    Le test porte sur la FONCTION, donc il juge sur un cas fabriqué et ne dépend pas de
+    l'état du corpus.
+    """
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    from build_comparator import motif_sans_comparaison
+
+    assert motif_sans_comparaison({"avec_puissance": 0, "avec_cellule": 0}) == \
+        "aucune puissance connue"
+    # Le cas qui n'avait pas de phrase : de la puissance, aucun usage identifié.
+    sg = motif_sans_comparaison({"avec_puissance": 3, "avec_cellule": 0})
+    assert "aucune puissance connue" not in sg, (
+        "un pays qui publie 3 puissances ne peut pas être motivé par « aucune puissance "
+        f"connue » — reçu : {sg!r}"
+    )
+    assert "3" in sg, f"le motif doit dire combien de sites servent une puissance — reçu : {sg!r}"
+    assert motif_sans_comparaison({"avec_puissance": 9, "avec_cellule": 4}) == \
+        "pas assez de sites comparables entre eux"
+
+
+def test_aucun_pays_motive_par_labsence_de_puissance_nen_publie_une():
+    """La même règle, confrontée aux ARTEFACTS SERVIS.
+
+    Le test ci-dessus fige la fonction ; celui-ci vérifie que ce qui part en production
+    s'accorde avec les fiches. Un pays rangé sous « aucune puissance connue » dont une seule
+    fiche servie publie une puissance est une contradiction publique.
+    """
+    artefacts = REPO_ROOT / "site" / "public" / "data"
+    index, fiches = artefacts / "comparator" / "index.json", artefacts / "dc"
+    if not index.exists() or not any(fiches.glob("*.json")):
+        pytest.skip("artefacts non construits (corpus privé) — rien à confronter")
+
+    sans = json.loads(index.read_text()).get("sans_comparaison") or []
+    motives = {m["pays"] for m in sans if m.get("raison") == "aucune puissance connue"}
+    assert motives, "contrôle vide : aucun pays n'est motivé par l'absence de puissance"
+
+    avec = {}
+    for p in fiches.glob("*.json"):
+        d = json.loads(p.read_text())
+        if d.get("country") in motives and d.get("power_mw"):
+            avec.setdefault(d["country"], []).append(d["id"])
+    assert not avec, (
+        "ces pays sont donnés « sans puissance connue » et publient pourtant une puissance : "
+        + "; ".join(f"{k} ({len(v)}) p.ex. {sorted(v)[0]}" for k, v in sorted(avec.items()))
     )
