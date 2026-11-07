@@ -531,6 +531,49 @@
           "type": "string",
           "minLength": 1,
           "description": "Pourquoi cet indicateur est dans l'état où il est, en clair — typiquement un `not_collected` dont on dit la cause (« collecteur spatial du pays non implémenté »). C'est la même exigence que la trace de lecture : on ne laisse pas une absence muette."
+        },
+        "power_mw": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "description": "FACTEUR du ratio, pas une copie décorative : la puissance RETENUE pour calculer cet indicateur. Même famille que `nearest_km` — la mesure brute à côté de la catégorie. Elle peut différer de `identity.power_mw` (fourchette tranchée, millésime), et c'est précisément pourquoi elle se note ICI : le ratio doit être recalculable depuis ses deux facteurs, par une machine, sans lire une phrase."
+        },
+        "local_population": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "FACTEUR du ratio : le dénominateur réellement utilisé. 🔴 Mesuré le 2026-11-07 sur les 305 fiches servies qui portent un L2 chiffré — 302 avaient leur dénominateur dans une PHRASE (le titre de source), ZÉRO dans un champ, et 3 nulle part. Aucun garde ne pouvait donc le vérifier, et c'est exactement pour ça que les trois sont passées. Le titre de source reste pour l'humain ; ce champ fait foi."
+        },
+        "population_base": {
+          "enum": [
+            "place",
+            "county_unincorporated",
+            "radius"
+          ],
+          "description": "La NATURE du dénominateur, rendue explicite. Elle était implicite et le même nombre ne voulait pas dire la même chose d'une fiche à l'autre : médiane 32 434 sur une commune contre 91 503 sur un comté, soit 2,82× — donc à projet égal un site non incorporé obtenait un MEILLEUR score, l'erreur du côté favorable à l'exploitant. Deux fiches ne sont comparables que si cette base est la même, et le rayon le même. ⚠️ `radius` est DÉCLARÉ et PAS ENCORE DÉCIDÉ : il attend l'arbitrage de Franck sur le SENS de l'indicateur, parce qu'un dénominateur par rayon ne mesure plus « le projet rapporté à la commune » mais « rapporté à la population près du site ». Il est posé ici pour que la décision, si elle vient, n'impose pas une seconde migration — déclarer une capacité n'est pas affirmer un choix."
+        },
+        "population_vintage": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 3,
+          "maxLength": 60,
+          "description": "Le millésime OFFICIEL ET DATÉ du dénominateur, tel que la source le nomme — « Census 2020 », « INSEE 2023 ». L'année est exigée par le motif : un millésime sans date ne reproduit rien. La démonstration est minuscule et suffit : Les Ulis valait 25 886 habitants au millésime INSEE en vigueur et 25 887 au servi, non daté. L'écart de 1 ne change aucune note ; une fiche dont on ne peut pas refaire le calcul, si.",
+          "pattern": ".*\\d{4}.*"
+        },
+        "population_radius_km": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "exclusiveMinimum": 0,
+          "maximum": 100,
+          "description": "Le RÉGLAGE du rayon, séparé de la NATURE de la base — jamais encodé dans la valeur d'enum (`radius_10km` aurait fait d'un changement de réglage une migration de données et un libellé de plus à traduire par rayon). Obligatoire quand `population_base` vaut `radius`, absent sinon. Deux fiches ne sont comparables que si ce nombre est le même. ⚠️ Contrainte mesurée le 2026-11-07 : à 2 km, 98 des 305 fiches notées n'ont AUCUN habitant dans le rayon (ratio indéfini) ; à 20 km, une seule. Le 2 km éprouvé pour F1 (le bâtiment d'habitation le plus proche) ne se transpose donc pas — les deux mesures ne cherchent pas la même chose."
         }
       },
       "allOf": [
