@@ -85,8 +85,10 @@
             "permitting",
             "under_construction",
             "operational",
-            "unknown"
-          ]
+            "unknown",
+            "decommissioned"
+          ],
+          "description": "« decommissioned » = site MIS HORS SERVICE : il a existé, sa note est conservée comme ARCHIVE (décision Franck, 2026-11-07), et la fiche doit l'annoncer. Ce n'est ni un stade du pipeline ni « unknown » : c'est une fin établie. Un site hors service sort de la vitrine, de la médiane et du classement par construction (ces calculs exigent `operational`) — et `identity.vintage.decommissioned_year` doit alors dater la note, sans quoi une note d'archive se lit comme une note d'aujourd'hui."
         },
         "vintage": {
           "type": "object",
@@ -106,6 +108,12 @@
               "type": "string",
               "minLength": 1,
               "description": "Provenance du millésime, en clair (ex. « DCWatch (Hubblo) ODbL, export 7dd5b5e9 — date_service »). C'est une PHRASE, pas un objet `source` : le millésime vient d'un champ d'export, il n'a pas d'URL propre."
+            },
+            "decommissioned_year": {
+              "type": "integer",
+              "minimum": 1990,
+              "maximum": 2100,
+              "description": "Année de MISE HORS SERVICE, exigée dès que `project_status` vaut « decommissioned ». Sa provenance se met dans `vintage.source`, comme les autres millésimes. Sans elle, la note d'archive n'a pas de date et le garde refuse de la servir."
             }
           }
         },

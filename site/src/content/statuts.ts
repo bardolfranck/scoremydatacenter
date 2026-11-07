@@ -24,12 +24,28 @@
 /** Les stades qu'une source publique peut établir, dans l'ordre du cycle de vie. */
 export const PIPELINE = ["announced", "permitting", "under_construction"] as const;
 
-/** Tout le vocabulaire servi, `unknown` compris. */
-export const STATUTS = [...PIPELINE, "operational", "unknown"] as const;
+// 🔴 LE SIXIÈME EST ARRIVÉ LE 2026-11-07, et il regarde en arrière.
+// Huit fiches servies disaient « (closed) » ou « ** INACTIVE ** » dans leur nom, portaient une
+// note, et déclaraient `operational` : nous affirmions que des sites fermés étaient en
+// exploitation. Décision de Franck : on ne retire pas la page — « fermé mais a existé, donc on
+// garde la note » — on ANNONCE la fermeture, dans la fiche et dans le statut.
+// `decommissioned` n'est donc ni un stade du pipeline (il ne mène à rien) ni `unknown` (on sait,
+// justement) : c'est une FIN ÉTABLIE. Sa note devient une note d'ARCHIVE, et une archive sans
+// date se lit comme le présent — d'où `identity.vintage.decommissioned_year`, exigé par
+// `hors_service_gate`. Les calculs qui parlent du parc en activité (vitrine, médiane,
+// classement) exigent déjà `operational` : ils l'excluent par construction, pas par une liste.
+
+/** Tout le vocabulaire servi, `unknown` et `decommissioned` compris. */
+export const STATUTS = [...PIPELINE, "operational", "decommissioned", "unknown"] as const;
 
 export type Statut = (typeof STATUTS)[number];
 
 /** Vrai pour un site dont une source publique dit qu'il est EN PROJET. */
 export function enProjet(statut: string | null | undefined): boolean {
   return (PIPELINE as readonly string[]).includes(statut ?? "");
+}
+
+/** Vrai pour un site MIS HORS SERVICE : sa note est une archive, pas un état présent. */
+export function horsService(statut: string | null | undefined): boolean {
+  return statut === "decommissioned";
 }
