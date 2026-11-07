@@ -58,14 +58,27 @@ const LIBELLES: Record<Exclude<OriginePuissance, "measured">, Libelle> = {
 
 // Le libellé du plafond. Le néerlandais vient du moteur à glossaire (`smdc-fr-nl`), pas de mon
 // intuition : la table NL est servie et une relecture native y a déjà rattrapé mes erreurs.
-const PLAFOND: Libelle = {
-  fr: "fourchette annoncée : jusqu'à {max} MW",
-  en: "announced range: up to {max} MW",
-  nl: "aangekondigd bereik: tot {max} MW",
+// 🔴 LA PREMIÈRE VERSION NE MONTRAIT QUE LE PLAFOND, et elle a raté son deuxième cas en une
+// journée. Écrite pour Matador — point retenu 6 000, fourchette {6 000, 17 000} — elle
+// n'affichait la borne haute que si elle dépassait le point. Arrive Singapour :
+// `sg-airtrunk-sgp1` porte {60, 78} et sert **78**, le HAUT, parce que la règle de prudence
+// retient le maximum (minorer la puissance d'un projet le rendrait moins impactant). Donc
+// max == point, mon test « max > retenu » rendait null, et la fiche cachait que l'annonce
+// disait « 60 à 78 ». Le cas symétrique de celui pour lequel j'avais codé.
+//
+// LA RÈGLE DEVIENT UNE : on affiche la fourchette ANNONCÉE telle qu'elle est, dès que ses deux
+// bornes diffèrent. Le point retenu reste devant — et la redondance apparente (« 6 000 MW …
+// fourchette 6 000 à 17 000 ») est INFORMATIVE : elle montre à quelle extrémité de l'annonce
+// nous nous sommes placés. Trois cas de figure auraient donné trois libellés, donc trois
+// traductions et un vocabulaire éclaté [[liste-a-deux-endroits-ment]].
+const PLAGE: Libelle = {
+  fr: "fourchette annoncée : {min} à {max} MW",
+  en: "announced range: {min} to {max} MW",
+  nl: "aangekondigd bereik: {min} tot {max} MW",
 };
 
-export function libellePlafond(lang: string): string {
-  return PLAFOND[lang as keyof Libelle] ?? PLAFOND.en;
+export function libellePlage(lang: string): string {
+  return PLAGE[lang as keyof Libelle] ?? PLAGE.en;
 }
 
 /** La provenance d'une puissance SERVIE — jamais `undefined`, parce qu'un champ absent est
@@ -110,11 +123,15 @@ const ecrire = (v: number, lang: Lang | string): string => {
 // calculée sur la valeur RETENUE (L2 = 6000/200393×1000 = 29,94), pas sur le haut de la
 // fourchette. Afficher « 6 000 à 17 000 MW » en tête laisserait croire que la note porte sur
 // 17 GW. On montre donc ce qu'on a retenu, puis le plafond annoncé, nommé comme tel.
-const plafondAnnonce = (plage: unknown, retenu: number): number | null => {
+const plageAnnoncee = (plage: unknown): { min: number; max: number } | null => {
   if (!plage || typeof plage !== "object") return null;
-  const max = (plage as { max?: unknown }).max;
-  // Un plafond égal ou inférieur au point retenu n'ajoute rien : on ne répète pas un nombre.
-  return typeof max === "number" && isFinite(max) && max > retenu ? max : null;
+  const { min, max } = plage as { min?: unknown; max?: unknown };
+  if (typeof min !== "number" || typeof max !== "number") return null;
+  if (!isFinite(min) || !isFinite(max)) return null;
+  // Une fourchette dégénérée (« 40 à 40 ») n'annonce rien : on ne sert pas deux fois un nombre.
+  // Une fourchette inversée est une donnée fausse, pas un affichage à deviner — on se taît et
+  // c'est au schéma de la refuser.
+  return max > min ? { min, max } : null;
 };
 
 /** Ce qu'une surface affiche pour une puissance : le chiffre, le mot de sa provenance, et le
@@ -132,7 +149,9 @@ export function puissanceServie(
   const origine = originePuissance(statut);
   const brut = origine === "estimated" ? arrondirEstimation(n) : n;
   const valeur = `${origine === "estimated" ? "~" : ""}${ecrire(brut, lang)} MW`;
-  const max = plafondAnnonce(plage, n);
-  const plafond = max === null ? null : libellePlafond(String(lang)).replace("{max}", ecrire(max, lang));
+  const bornes = plageAnnoncee(plage);
+  const plafond = bornes === null ? null : libellePlage(String(lang))
+    .replace("{min}", ecrire(bornes.min, lang))
+    .replace("{max}", ecrire(bornes.max, lang));
   return { valeur, origine, libelle: libelleOrigine(origine, String(lang)), plafond };
 }
