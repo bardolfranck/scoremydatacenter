@@ -283,6 +283,17 @@ def test_la_dette_nommee_est_reelle_et_dans_cet_etat():
         return  # dépôt privé absent : ce test ne peut rien dire, il se tait au lieu de mentir
     par_id = {p.stem: p for p in datacenter_paths(CAL)}
     assert len(par_id) > 1000, f"corpus de {len(par_id)} fiches : trop petit pour conclure"
+
+    # ⚠️ DETTE VIDE : l'affirmation devient PLUS forte, pas plus faible. Un ensemble vide ferait
+    # passer la boucle ci-dessous sans rien vérifier — un contrôle sur le vide ment toujours.
+    # On exige donc que le corpus n'ait réellement AUCUNE contradiction à couvrir.
+    if not DETTE_NOM_CONTREDIT_STATUT:
+        assert nom_et_statut_gate(CAL) == [], (
+            "la dette est vide alors que le corpus servi porte encore des contradictions "
+            "nom/statut — soit on les règle, soit on les nomme, jamais on ne les ignore"
+        )
+        return
+
     perimes, corriges = [], []
     for dc_id in sorted(DETTE_NOM_CONTREDIT_STATUT):
         path = par_id.get(dc_id)
