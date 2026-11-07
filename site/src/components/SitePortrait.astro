@@ -20,6 +20,7 @@ import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import { RACINE, donnee } from "../content/langues";
 import { regionLisible } from "../config/lieu";
+import { nomVisible, apresLeNomCache } from "../config/titre";
 import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
@@ -194,11 +195,22 @@ const ptLieuCourt = dc.municipality
 const ptLieu = ptLieuCourt
   + (dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
 const ptSep = cm.colon;
+// 🔴 MÊME MARCHE MANQUANTE QUE SUR LA FICHE, MÊME COHORTE DE 14 (Franck 2026-11-07) : les
+// trois étapes ci-dessus dégradent la région puis l'angle, jamais le nom — et quand le nom
+// mange seul la largeur visible, la commune sort de l'écran sans sortir de la balise.
+// Quatrième candidat : le nom raccourci, marqué par une ellipsis. Règle unique, partagée
+// avec la fiche → `config/titre.ts`.
+// ⚠️ Même correction que sur la fiche : la marche est un REPLI, jamais un candidat du
+// `.find()`. Mélangée au budget de 65 elle raccourcissait 22 portraits au lieu de 14.
+const ptRepli = `${dc.name} — ${ptLieuCourt}`;
 const seoTitle = [
   `${dc.name} — ${ptLieu}${ptSep}${t.seoAngle}`,
   `${dc.name} — ${ptLieuCourt}${ptSep}${t.seoAngle}`,
-  `${dc.name} — ${ptLieuCourt}`,
-].find((s) => s.length <= 65) ?? `${dc.name} — ${ptLieuCourt}`;
+  ptRepli,
+].find((s) => s.length <= 65)
+  ?? (apresLeNomCache(ptRepli)
+    ? `${nomVisible(dc.name, 3)} — ${ptLieuCourt}${ptSep}${t.seoAngle}`
+    : ptRepli);
 ---
 
 <Base

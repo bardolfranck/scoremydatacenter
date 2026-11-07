@@ -8,6 +8,7 @@
 import Base from "../layouts/Base.astro";
 import type { NavNode } from "../config/nav";
 import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
+import { puissanceServie } from "../config/puissance";
 import type { LangueDeclaree } from "../content/langues";
 import ScoreBadge from "./ScoreBadge.astro";
 import scoresData from "../../public/data/scores.json";
@@ -274,11 +275,11 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
                     publiée deux fois, elle a simplement changé de place. */}
                 <td>{t.status[dc.project_status]}</td>
                 <td class="rank-power" set:html={(() => {
-                  if (!dc.power_mw) return `<span title="${t.powerUnknown}">—</span>`;
-                  const est = dc.power_mw_status === "estimated";
-                  const r = (v: number) => Number(v.toPrecision(2));
-                  const val = est ? `~${r(dc.power_mw)}` : dc.power_mw;
-                  return `${val} MW${est ? `<span class="pw-est"> ${t.powerEstimated}</span>` : ""}`;
+                  // La provenance se dit ICI aussi : une colonne triable qui n'affiche que
+                  // le chiffre range côte à côte une mesure, une annonce et un trou.
+                  const pw = puissanceServie(dc.power_mw, dc.power_mw_status, lang);
+                  if (!pw) return `<span title="${t.powerUnknown}">—</span>`;
+                  return `${pw.valeur}${pw.libelle ? `<span class="pw-est"> ${pw.libelle}</span>` : ""}`;
                 })()}></td>
                 <td class="rank-rails">
                   {(() => { const p = pctInfo(sitePool, dc.grades.site, dc, "site"); return (

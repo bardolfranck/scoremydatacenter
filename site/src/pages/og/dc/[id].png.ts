@@ -6,6 +6,7 @@
 // strip with icons, dual 118px badge, citable quote. Hand-built SVG → resvg (no
 // headless browser); Chivo TTF vendored for text.
 import { communeEtRegion } from "../../../config/lieu";
+import { puissanceServie } from "../../../config/puissance";
 import type { APIRoute } from "astro";
 import { Resvg } from "@resvg/resvg-js";
 import { join } from "node:path";
@@ -91,7 +92,11 @@ function card(dc: any): string {
   const d = dc.score_history?.[dc.score_history.length - 1]?.date;
   const dateFr = d ? d.split("-").reverse().join("/") : "";
   const place = [communeEtRegion(dc.municipality, dc.admin_area), dc.country].filter(Boolean).join(" ");
-  const kicker = ["Fiche projet", place, dc.power_mw ? `${dc.power_mw} MW` : ""].filter(Boolean).join(" · ");
+  // L'image de partage est la surface la plus RECOPIÉE : un chiffre nu posé là circule sans
+  // la page qui le nuance. Même dérivation que la fiche (carte en français).
+  const pw = puissanceServie(dc.power_mw, dc.power_mw_status, "fr");
+  const kicker = ["Fiche projet", place,
+    pw ? `${pw.valeur}${pw.libelle ? ` (${pw.libelle})` : ""}` : ""].filter(Boolean).join(" · ");
   const strip = PILLARS.map(([id, label, ic], i) => {
     const x = 64 + i * 60, g = dc.pillars?.[id]?.grade ?? "insufficient_data", c = gr(g);
     return pIcon(ic, x + 17, 300) +

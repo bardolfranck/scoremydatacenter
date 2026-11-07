@@ -11,6 +11,8 @@ import type { LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import { CHROME } from "../content/chrome";
 import { communeEtRegion, regionLisible } from "../config/lieu";
+import { puissanceServie } from "../config/puissance";
+import { nomVisible, apresLeNomCache } from "../config/titre";
 import {
   cheminDeFiche,
   cheminDePortrait,
@@ -206,19 +208,14 @@ const ppDocLabel = isNa(dc.grades.project_process)
 const confPct = Math.round((dc.confidence.score ?? 0) * 100);
 
 const commissioning = dc.vintage?.expected_commissioning;
-// Power carries its documentation status (measured>announced>estimated, A-16 v0.1.x):
-// an estimated figure is flagged « ~X MW · estimé » (prudence family), never served
-// as a bare fact. null/legacy → plain, unchanged.
-const powerEstimated = dc.power_mw && dc.power_mw_status === "estimated";
-// An estimate is a raw model float (e.g. 0.518008551) — round it for display so the
-// figure READS as approximate (precision loss is the point). Measured/announced/legacy
-// values are shown untouched.
-// 2 significant figures — aligned with the source rounding (data-pipeline 949bc49):
-// idempotent, so source ≈ display (no double-round), and defensive if a raw float slips.
-const roundEst = (v: number) => Number(v.toPrecision(2));
-const powerText = dc.power_mw
-  ? `${powerEstimated ? `~${roundEst(dc.power_mw)}` : dc.power_mw} MW`
-  : t.powerUnknown;
+// 🔴 LA PUISSANCE PORTE SA PROVENANCE, LES QUATRE ÉTATS (Franck 2026-11-07). Le commentaire
+// qui était ici disait déjà la règle — « an estimated figure … never served as a bare fact,
+// null/legacy → plain, unchanged » — et c'est ce « plain, unchanged » qui était le trou :
+// « annoncé » et « rien du tout » s'affichaient comme une mesure. Mesuré sur le corpus servi :
+// 349 fiches portent une puissance, AUCUNE n'est mesurée, et 257 s'affichaient nues. La
+// dérivation est unique pour les six surfaces qui servent ce chiffre → `config/puissance.ts`.
+const power = puissanceServie(dc.power_mw, dc.power_mw_status, lang);
+const powerText = power ? power.valeur : t.powerUnknown;
 // Status proof (Franck 2026-09-17): an operational fiche says whether its « en service » is
 // independently confirmed (weekly job, PeeringDB) or not yet — never silent, never guessed.
 const sc = dc.project_status === "operational" ? dc.status_check : null;
@@ -239,7 +236,7 @@ const statusCheck = !sc ? null
 const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   statusCheck,
   powerText,
-  powerEstimated ? `<span class="pw-est">${t.powerEstimated}</span>` : null,
+  power?.libelle ? `<span class="pw-est">${power.libelle}</span>` : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
 
 // 🔴 UN SITE HORS SERVICE LE DIT, ET SA NOTE EST DATÉE. Décision de Franck (2026-11-07) sur huit
@@ -570,10 +567,27 @@ const seoLieu = seoLieuSansRegion
 //
 // On dégrade donc dans l'ordre du moins coûteux, et le lieu ne part jamais : la région entre
 // parenthèses d'abord (-815 fiches au-dessus de la limite), et c'est tout.
+// 🔴 LA MARCHE QUI MANQUAIT À LA CASCADE (Franck 2026-11-07). Les deux étapes ci-dessus
+// dégradent le LIEU, jamais le NOM — donc sur 14 fiches, où le nom dépasse à lui seul la
+// largeur visible, le lieu restait dans la balise et sortait de l'écran. Le raisonnement du
+// 2026-10-26 était juste (« 65 est une limite d'affichage, Google indexe le titre entier »)
+// et il s'arrêtait une marche trop tôt. Troisième candidat : le nom raccourci, coupé sur une
+// frontière de mot et MARQUÉ par une ellipsis, pour que la commune redevienne visible.
+// Règle unique, partagée avec le portrait → `config/titre.ts`.
+// ⚠️ LA MARCHE EST UN REPLI, PAS UN CANDIDAT. Première version : je l'avais glissée dans le
+// `.find()` avec le budget de 65. Résultat mesuré au rendu — **117 fiches raccourcies au
+// lieu de 14** : un nom de 55 caractères ne cache rien (il laisse voir la note et le lieu),
+// mais « nom(55) — note | commune » dépasse 65, donc il tombait dans la marche. Le budget de
+// 65 et la largeur visible ne mesurent pas la même chose, et les confondre élargit la
+// cohorte en silence. La marche ne s'ouvre donc QUE si le repli cache ce qui suit le nom.
+const seoRepli = `${dc.name} — ${seoGrade} | ${seoLieuSansRegion}`;
 const seoTitle = [
   `${dc.name} — ${seoGrade} | ${seoLieu}`,
-  `${dc.name} — ${seoGrade} | ${seoLieuSansRegion}`,
-].find((s) => s.length <= 65) ?? `${dc.name} — ${seoGrade} | ${seoLieuSansRegion}`;
+  seoRepli,
+].find((s) => s.length <= 65)
+  ?? (apresLeNomCache(seoRepli)
+    ? `${nomVisible(dc.name, 3)} — ${seoGrade} | ${seoLieuSansRegion}`
+    : seoRepli);
 // La meta reprend l'accroche générée du contrat d'artefact plutôt qu'un gabarit : c'est une
 // phrase écrite pour CE site, donc un extrait SERP qui dit quelque chose.
 // 🔴 LE MÊME CHAMP, RÉSOLU DEUX FOIS DIFFÉREMMENT DANS CE FICHIER. `Lead()` (plus haut)
