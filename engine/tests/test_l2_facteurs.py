@@ -72,16 +72,24 @@ def test_le_rayon_separe_sa_nature_de_son_reglage():
     )
 
 
-def test_le_millesime_exige_une_annee():
-    """Un millésime sans date ne reproduit rien — c'est tout l'objet du champ."""
-    import re
+def test_le_millesime_est_une_annee_bornee_pas_une_chaine():
+    """Un millésime sans date ne reproduit rien — et une chaîne en autorise trois écritures.
 
+    Première version de ce champ : une chaîne avec un motif exigeant quatre chiffres
+    (« Census 2020 »). La calibration a tranché mieux, et pour une raison que j'avais
+    manquée : la SOURCE vit déjà en provenance, donc la répéter dans le millésime crée deux
+    autorités pour un même fait [[liste-a-deux-endroits-ment]] — tandis que « Census 2020 »,
+    « census 2020 » et « 2020 Census » sont trois écritures d'un seul nombre.
+    """
     champ = _schema()["$defs"]["indicator"]["properties"]["population_vintage"]
-    motif = champ.get("pattern")
-    assert motif, "`population_vintage` n'exige aucune date : il accepterait « INSEE »"
-    assert re.match(motif, "INSEE 2023"), "un millésime daté doit passer"
-    assert re.match(motif, "Census 2020"), "la convention de la lane monde doit passer"
-    assert not re.match(motif, "INSEE"), "un millésime sans année doit être refusé"
+    assert "integer" in champ["type"], (
+        "le millésime doit être une ANNÉE entière : une chaîne autorise plusieurs écritures "
+        "du même fait, et redonde la source déjà portée par la provenance"
+    )
+    assert champ["minimum"] >= 1990 and champ["maximum"] <= 2035, (
+        "l'année doit être bornée, sinon 20 ou 202 passent pour un millésime"
+    )
+    assert "pattern" not in champ, "un motif de chaîne n'a plus de sens sur un entier"
 
 
 def test_aucun_champ_ne_stocke_le_ratio():

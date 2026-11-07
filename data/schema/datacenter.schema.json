@@ -558,13 +558,12 @@
         },
         "population_vintage": {
           "type": [
-            "string",
+            "integer",
             "null"
           ],
-          "minLength": 3,
-          "maxLength": 60,
-          "description": "Le millésime OFFICIEL ET DATÉ du dénominateur, tel que la source le nomme — « Census 2020 », « INSEE 2023 ». L'année est exigée par le motif : un millésime sans date ne reproduit rien. La démonstration est minuscule et suffit : Les Ulis valait 25 886 habitants au millésime INSEE en vigueur et 25 887 au servi, non daté. L'écart de 1 ne change aucune note ; une fiche dont on ne peut pas refaire le calcul, si.",
-          "pattern": ".*\\d{4}.*"
+          "minimum": 1990,
+          "maximum": 2035,
+          "description": "L'ANNÉE DE RÉFÉRENCE du dénominateur — le millésime du chiffre, pas la date où on l'a cherché : le nombre d'habitants dépend du millésime, jamais du jour du fetch. ⚠️ Année de RÉFÉRENCE (millésime INSEE, end-year ACS, date du dump GeoNames), PAS l'année « en vigueur », qui pour l'INSEE pointe environ trois ans en arrière et ferait croire à deux millésimes différents pour un même chiffre. Un entier et non une chaîne : « Census 2020 », « census 2020 » et « 2020 Census » sont trois écritures d'un seul fait, et la SOURCE vit déjà en provenance — la redupliquer ici recréerait deux autorités pour une même information. Reproductible = base + source (provenance) + année de référence. La démonstration est minuscule : Les Ulis valait 25 886 habitants à un millésime et 25 887 au servi, non daté."
         },
         "population_radius_km": {
           "type": [
