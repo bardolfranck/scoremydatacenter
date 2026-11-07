@@ -215,3 +215,63 @@ def test_la_provenance_et_le_champ_servi_disent_la_meme_chose():
         + "\n→ écrire le statut dans `identity.power_mw_status`, le champ que lit la chaîne "
           "servie. Le `.provenance.json` documente, il n'affiche pas."
     )
+
+
+def test_le_producteur_transporte_la_fourchette():
+    """Un champ écrit par la filière qui n'atteint pas la page ne sert à personne.
+
+    `identity.power_mw_range` existe dans le schéma depuis le 2026-10-15 — « sans ce champ il
+    fallait choisir un point, et choisir c'est fabriquer » — et pendant trois semaines aucune
+    surface ne pouvait l'afficher, parce que l'artefact ne le portait pas. Même famille que le
+    statut de provenance, trouvée le même jour : la donnée en sait plus que la page n'en dit.
+    """
+    art = (REPO_ROOT / "engine" / "artifacts.py").read_text(encoding="utf-8")
+    bloc = art[art.index('"power_mw": identity.get("power_mw")'):]
+    bloc = bloc[: bloc.index("}")]
+    assert '"power_mw_range"' in bloc, (
+        "l'artefact de fiche embarque `power_mw` sans `power_mw_range` : la fourchette "
+        "annoncée resterait invisible, quelle que soit la source qui la documente"
+    )
+
+
+def test_le_point_retenu_precede_le_plafond_annonce():
+    """L'ORDRE porte la règle : la note est calculée sur le point, pas sur le plafond.
+
+    Afficher « 6 000 à 17 000 MW » en tête ferait croire que la note de Matador porte sur
+    17 GW, alors que L2 vaut 6000/200393×1000 = 29,94. Le point retenu passe donc devant, et
+    le plafond suit, nommé comme un plafond annoncé.
+    """
+    src = (REPO_ROOT / "site" / "src" / "components" / "DcFiche.astro").read_text(
+        encoding="utf-8")
+    bloc = src[src.index("const metaLine = ["):]
+    bloc = bloc[: bloc.index("].filter(Boolean)")]
+    assert "powerText" in bloc and "power?.plafond" in bloc, (
+        "la ligne de méta ne porte plus les deux : vérifier avant de relâcher ce test"
+    )
+    assert bloc.index("powerText") < bloc.index("power?.plafond"), (
+        "le plafond annoncé passe AVANT le point retenu — un lecteur attribuerait la note au "
+        "haut de la fourchette"
+    )
+
+
+def test_un_plafond_qui_n_ajoute_rien_ne_s_affiche_pas():
+    """`{min: 40, max: 40}` ne doit pas écrire deux fois le même nombre."""
+    regle = (REPO_ROOT / "site" / "src" / "config" / "puissance.ts").read_text(
+        encoding="utf-8")
+    assert "max > retenu" in regle, (
+        "rien ne compare le plafond au point retenu : une fourchette dégénérée répéterait "
+        "le chiffre, et une fourchette dont le haut est SOUS le point retenu se servirait"
+    )
+
+
+def test_le_libelle_du_plafond_existe_dans_les_trois_langues():
+    regle = (REPO_ROOT / "site" / "src" / "config" / "puissance.ts").read_text(
+        encoding="utf-8")
+    bloc = regle[regle.index("const PLAFOND"):]
+    bloc = bloc[: bloc.index("};")]
+    for langue in ("fr:", "en:", "nl:"):
+        assert langue in bloc, (
+            f"le plafond ne se dit pas en {langue[:-1]} — une langue manquante ferait sortir "
+            "l'anglais sur une page néerlandaise"
+        )
+    assert "{max}" in bloc, "le libellé n'a pas de place pour le nombre"

@@ -56,6 +56,18 @@ const LIBELLES: Record<Exclude<OriginePuissance, "measured">, Libelle> = {
   non_documente: { fr: "non sourcé", en: "unsourced", nl: "bron onbekend" },
 };
 
+// Le libellé du plafond. Le néerlandais vient du moteur à glossaire (`smdc-fr-nl`), pas de mon
+// intuition : la table NL est servie et une relecture native y a déjà rattrapé mes erreurs.
+const PLAFOND: Libelle = {
+  fr: "fourchette annoncée : jusqu'à {max} MW",
+  en: "announced range: up to {max} MW",
+  nl: "aangekondigd bereik: tot {max} MW",
+};
+
+export function libellePlafond(lang: string): string {
+  return PLAFOND[lang as keyof Libelle] ?? PLAFOND.en;
+}
+
 /** La provenance d'une puissance SERVIE — jamais `undefined`, parce qu'un champ absent est
  *  un état, pas une absence d'état. */
 export function originePuissance(statut: unknown): OriginePuissance {
@@ -88,18 +100,39 @@ const ecrire = (v: number, lang: Lang | string): string => {
   return v % 1 === 0 ? fmtInt(v, l) : fmtDec(v, l, 2);
 };
 
-/** Ce qu'une surface affiche pour une puissance : le chiffre, et le mot de sa provenance.
+// 🔴 LA FOURCHETTE ÉTAIT DANS LA DONNÉE ET NULLE PART À L'ÉCRAN (Franck 2026-11-07). Le projet
+// Matador porte `identity.power_mw_range = {min: 6000, max: 17000}` — le dépôt SEC parle d'un
+// campus « jusqu'à 11 GW », l'annonce de mars 2026 de 17 GW — et la fiche n'affichait que le
+// point retenu, 6 000 MW. Même défaut que la provenance deux heures plus tôt, d'un étage
+// au-dessus : la donnée en sait plus que la page n'en dit.
+//
+// ⚠️ LE POINT RESTE EN TÊTE, ET CE N'EST PAS UN DÉTAIL DE MISE EN PAGE. La note de ce site est
+// calculée sur la valeur RETENUE (L2 = 6000/200393×1000 = 29,94), pas sur le haut de la
+// fourchette. Afficher « 6 000 à 17 000 MW » en tête laisserait croire que la note porte sur
+// 17 GW. On montre donc ce qu'on a retenu, puis le plafond annoncé, nommé comme tel.
+const plafondAnnonce = (plage: unknown, retenu: number): number | null => {
+  if (!plage || typeof plage !== "object") return null;
+  const max = (plage as { max?: unknown }).max;
+  // Un plafond égal ou inférieur au point retenu n'ajoute rien : on ne répète pas un nombre.
+  return typeof max === "number" && isFinite(max) && max > retenu ? max : null;
+};
+
+/** Ce qu'une surface affiche pour une puissance : le chiffre, le mot de sa provenance, et le
+ *  plafond annoncé quand la source en donne un.
  *  UNE seule dérivation pour les six surfaces qui servaient leur propre version. */
 export function puissanceServie(
   powerMw: unknown,
   statut: unknown,
   lang: Lang | string,
-): { valeur: string; origine: OriginePuissance; libelle: string } | null {
+  plage?: unknown,
+): { valeur: string; origine: OriginePuissance; libelle: string; plafond: string | null } | null {
   // `isFinite` global plutôt que `Number.isFinite` : la cible TS du site ne garantit pas ES2015.
   const n = typeof powerMw === "number" && isFinite(powerMw) && powerMw > 0 ? powerMw : null;
   if (n === null) return null;
   const origine = originePuissance(statut);
   const brut = origine === "estimated" ? arrondirEstimation(n) : n;
   const valeur = `${origine === "estimated" ? "~" : ""}${ecrire(brut, lang)} MW`;
-  return { valeur, origine, libelle: libelleOrigine(origine, String(lang)) };
+  const max = plafondAnnonce(plage, n);
+  const plafond = max === null ? null : libellePlafond(String(lang)).replace("{max}", ecrire(max, lang));
+  return { valeur, origine, libelle: libelleOrigine(origine, String(lang)), plafond };
 }

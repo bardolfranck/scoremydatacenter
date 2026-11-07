@@ -74,6 +74,13 @@ def _summary(dc: dict, result: dict) -> dict:
         # Consumer contract (agent-site): the fiche/ranking renders "~X MW · estimé" on this
         # enum (measured | announced | estimated); null = legacy fill, undisclosed provenance.
         "power_mw_status": identity.get("power_mw_status"),
+        # 🔴 LA FOURCHETTE NE VOYAGEAIT PAS. `identity.power_mw_range` existe dans le schéma
+        # depuis le 2026-10-15 (« choisir un point, c'est fabriquer ») et aucune surface ne
+        # pouvait l'afficher : l'artefact ne la portait pas. Trouvé le 2026-11-07 sur Matador,
+        # dont le dépôt SEC annonce « jusqu'à 11 GW » et l'annonce de mars 2026 17 GW, pendant
+        # que la fiche montrait 6 000 MW seuls. Même famille que le statut de provenance : un
+        # champ écrit par la filière qui n'atteint pas la page ne sert à personne.
+        "power_mw_range": identity.get("power_mw_range"),
         # commissioning year (identity.vintage) — the ranking sorts on it; null = not disclosed
         "expected_commissioning": (identity.get("vintage") or {}).get("expected_commissioning"),
         "grades": result["grades"],
