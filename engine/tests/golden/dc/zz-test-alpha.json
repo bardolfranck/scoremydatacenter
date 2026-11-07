@@ -9,6 +9,7 @@
   "first_seen": null,
   "power_mw": 120,
   "power_mw_status": null,
+  "power_mw_range": null,
   "expected_commissioning": 2028,
   "grades": {
     "site": {

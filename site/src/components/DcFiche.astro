@@ -214,7 +214,7 @@ const commissioning = dc.vintage?.expected_commissioning;
 // « annoncé » et « rien du tout » s'affichaient comme une mesure. Mesuré sur le corpus servi :
 // 349 fiches portent une puissance, AUCUNE n'est mesurée, et 257 s'affichaient nues. La
 // dérivation est unique pour les six surfaces qui servent ce chiffre → `config/puissance.ts`.
-const power = puissanceServie(dc.power_mw, dc.power_mw_status, lang);
+const power = puissanceServie(dc.power_mw, dc.power_mw_status, lang, dc.power_mw_range);
 const powerText = power ? power.valeur : t.powerUnknown;
 // Status proof (Franck 2026-09-17): an operational fiche says whether its « en service » is
 // independently confirmed (weekly job, PeeringDB) or not yet — never silent, never guessed.
@@ -237,6 +237,9 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   statusCheck,
   powerText,
   power?.libelle ? `<span class="pw-est">${power.libelle}</span>` : null,
+  // Le plafond annoncé vient APRÈS le point retenu et la provenance : c'est un fait de plus,
+  // pas une correction du chiffre. L'ordre porte la règle — la note est calculée sur le point.
+  power?.plafond ? `<span class="pw-est">${power.plafond}</span>` : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
 
 // 🔴 UN SITE HORS SERVICE LE DIT, ET SA NOTE EST DATÉE. Décision de Franck (2026-11-07) sur huit
