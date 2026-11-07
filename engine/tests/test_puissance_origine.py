@@ -254,24 +254,36 @@ def test_le_point_retenu_precede_le_plafond_annonce():
     )
 
 
-def test_un_plafond_qui_n_ajoute_rien_ne_s_affiche_pas():
-    """`{min: 40, max: 40}` ne doit pas écrire deux fois le même nombre."""
+def test_la_fourchette_s_affiche_des_que_ses_BORNES_DIFFERENT():
+    """🔴 Le défaut que Singapour a révélé en une journée.
+
+    Première version, écrite pour Matador (point 6 000, fourchette {6 000, 17 000}) : elle
+    n'affichait la borne haute que `si max > retenu`. Arrive `sg-airtrunk-sgp1`, qui porte
+    {60, 78} et sert **78** — le HAUT, parce que la règle de prudence retient le maximum. Donc
+    `max == retenu`, le test rendait null, et la fiche CACHAIT que l'annonce disait « 60 à 78 ».
+    Le cas symétrique de celui pour lequel j'avais codé, trouvé avant publication.
+    """
     regle = (REPO_ROOT / "site" / "src" / "config" / "puissance.ts").read_text(
         encoding="utf-8")
-    assert "max > retenu" in regle, (
-        "rien ne compare le plafond au point retenu : une fourchette dégénérée répéterait "
-        "le chiffre, et une fourchette dont le haut est SOUS le point retenu se servirait"
+    assert "max > min" in regle, (
+        "la fourchette n'est plus comparée à elle-même : si la condition redevient « max > "
+        "point retenu », toute fiche qui sert le HAUT de son annonce cachera sa borne basse"
+    )
+    assert "retenu" not in regle.split("const plageAnnoncee")[1].split("};")[0], (
+        "la décision d'afficher la fourchette dépend encore du point retenu — c'est ce qui a "
+        "fait rater AirTrunk"
     )
 
 
-def test_le_libelle_du_plafond_existe_dans_les_trois_langues():
+def test_le_libelle_de_la_fourchette_existe_dans_les_trois_langues():
     regle = (REPO_ROOT / "site" / "src" / "config" / "puissance.ts").read_text(
         encoding="utf-8")
-    bloc = regle[regle.index("const PLAFOND"):]
+    bloc = regle[regle.index("const PLAGE"):]
     bloc = bloc[: bloc.index("};")]
     for langue in ("fr:", "en:", "nl:"):
         assert langue in bloc, (
-            f"le plafond ne se dit pas en {langue[:-1]} — une langue manquante ferait sortir "
-            "l'anglais sur une page néerlandaise"
+            f"la fourchette ne se dit pas en {langue[:-1]} — une langue manquante ferait "
+            "sortir l'anglais sur une page néerlandaise"
         )
-    assert "{max}" in bloc, "le libellé n'a pas de place pour le nombre"
+    for repere in ("{min}", "{max}"):
+        assert repere in bloc, f"le libellé n'a pas de place pour {repere}"
