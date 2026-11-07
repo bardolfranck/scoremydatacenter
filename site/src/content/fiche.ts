@@ -39,6 +39,7 @@ const FR = {
   horsServiceAnnee: "Ce site a été mis hors service en {annee}.",
   horsServiceSansAnnee: "Ce site a été mis hors service.",
   horsServiceNote: "Sa note est conservée comme archive : elle décrit l'état du site à sa fermeture, pas son état aujourd'hui.",
+  horsServiceDossier: "Voir le dossier de fermeture",
   statusCheck: {
     verified: "statut vérifié",
     networksSingular: "réseau interconnecté",
@@ -245,6 +246,7 @@ const EN: typeof FR = {
   horsServiceAnnee: "This site was decommissioned in {annee}.",
   horsServiceSansAnnee: "This site was decommissioned.",
   horsServiceNote: "Its grade is kept as an archive: it describes the site as it stood when it closed, not as it stands today.",
+  horsServiceDossier: "See the closure record",
   statusCheck: {
     verified: "status verified",
     networksSingular: "network interconnected",
@@ -443,6 +445,7 @@ const NL: typeof FR = {
   horsServiceAnnee: "Deze site is in {annee} buiten dienst gesteld.",
   horsServiceSansAnnee: "Deze site is buiten dienst gesteld.",
   horsServiceNote: "Het cijfer blijft bewaard als archief: het beschrijft de site zoals die bij de sluiting was, niet zoals die vandaag is.",
+  horsServiceDossier: "Bekijk het sluitingsdossier",
   statusCheck: {
     verified: "status geverifieerd",
     networksSingular: "netwerk geïnterconnecteerd",

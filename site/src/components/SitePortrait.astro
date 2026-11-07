@@ -24,6 +24,7 @@ import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes"
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
+import BandeauHorsService from "./BandeauHorsService.astro";
 import methodologyData from "../../public/data/methodology.json";
 import { libelleValeur, libelleUnite } from "../config/indicatorValues";
 import { questionsPour } from "../content/questions-derivees";
@@ -210,6 +211,7 @@ const seoTitle = [
   nav={nav}
 >
   <article class="pt">
+    <BandeauHorsService statut={dc.project_status} vintage={dc.vintage} t={t} />
     <header class="pt-head">
       <div>
         <p class="pt-kicker">{t.kicker}</p>
