@@ -540,7 +540,7 @@ def geo_gate(data_dir: Path) -> list[str]:
 #   · le sidecar hebdomadaire de preuve de statut dit `verified` — des réseaux sont
 #     interconnectés DANS ce bâtiment (PeeringDB) ; c'est une preuve intrinsèque d'exploitation ;
 #   · la fiche porte un `project_status_provenance` qui justifie `operational` avec sa source.
-STATUT_NON_SOURCE = 1196
+STATUT_NON_SOURCE = 1191
 
 
 def statut_gate(data_dir: Path) -> list[str]:
@@ -671,6 +671,67 @@ def retient_la_note(verdict: dict) -> bool:
     éprouvée, et le build l'APPELLE au lieu de la réécrire.
     """
     return bool(verdict.get("hold")) and verdict.get("portee") == "hold"
+
+
+# 🔴 LES CINQ NOMS QUI AFFIRMENT ENCORE UNE FERMETURE QUE LE STATUT NE DIT PAS (2026-11-07).
+# Dette NOMMÉE, pas un seuil : chacune est listée, donc une sixième est refusée tout de suite.
+# Pour les payer, deux voies honnêtes et une seule interdite :
+#   · sourcer la fermeture → `decommissioned` + `vintage.decommissioned_year` (+ le dossier) ;
+#   · nettoyer le nom et garder `unknown` — le marqueur de registre va dans la provenance, pas
+#     dans le titre servi ;
+#   · JAMAIS inventer une année pour faire taire le gate.
+DETTE_NOM_CONTREDIT_STATUT = {
+    "de-eunetworks-duesseldorf-site-closed",
+    "us-american-express-travel-related-services-co-inactive",
+    "us-disney-kings-mountain-technology-center-inactive",
+    "us-hosted-solutions-acquisition-north-raleigh-inactive",
+    "us-university-of-north-carolina-hospitals-mead-inactive",
+}
+
+_MARQUEURS_DE_FERMETURE = ("inactive", "closed", "decommission", "shut down", "ceased")
+
+
+def nom_et_statut_gate(data_dir: Path = DATA_DIR) -> list[str]:
+    """Le NOM servi ne peut pas affirmer une fermeture que le STATUT refuse d'affirmer.
+
+    🔴 CE QUI A AMENÉ CE GARDE (2026-11-07). Huit fiches servaient « (closed) » ou
+    « ** INACTIVE ** » dans leur nom — donc dans la balise de titre que Google montre — avec
+    `project_status: "operational"`. Vérification faite : TROIS n'étaient pas fermées du tout
+    (artefact de nom PeeringDB, interconnexions vérifiées) et leur nom a été nettoyé ; les
+    CINQ autres sont passées à `unknown`, faute de source datant une fermeture.
+
+    Reste alors une page qui se contredit elle-même : le titre AFFIRME « inactive », le champ
+    de statut dit « stade non établi ». L'un des deux est faux, et le lecteur n'a aucun moyen
+    de savoir lequel. `unknown` est le refus d'affirmer [[exemption-nest-pas-obligation]] : il
+    ne peut pas cohabiter avec une affirmation dans le titre.
+
+    ⚠️ CE GARDE NE DEMANDE PAS L'IMPOSSIBLE. Il n'exige pas qu'on source une fermeture — on
+    n'invente pas une année pour faire taire un contrôle. Il exige que les DEUX surfaces
+    disent la même chose, ce qui se règle aussi en nettoyant le nom. Et il porte une dette
+    nommée des cinq cas connus : il refuse la SIXIÈME, il ne bloque pas le corpus d'aujourd'hui
+    [[cliquet-nest-pas-verrou]].
+    """
+    fautives: list[str] = []
+    for path in datacenter_paths(data_dir):
+        ident = (load_json(path).get("identity") or {})
+        nom = (ident.get("name") or "").lower()
+        if not any(m in nom for m in _MARQUEURS_DE_FERMETURE):
+            continue
+        if ident.get("project_status") == "decommissioned":
+            continue  # le nom et le statut disent la même chose : rien à redire
+        if path.stem in DETTE_NOM_CONTREDIT_STATUT:
+            continue
+        fautives.append(path.stem)
+    if fautives:
+        return [
+            "GATE NOM/STATUT: "
+            f"{len(fautives)} fiche(s) servent un nom qui affirme une fermeture que leur "
+            "statut n'affirme pas. Le titre dit « fermé », le champ dit autre chose : l'un "
+            "des deux est faux. Deux issues — sourcer la fermeture (`decommissioned` + "
+            "`vintage.decommissioned_year`), ou nettoyer le nom et laisser le statut. Jamais "
+            "une année inventée : " + ", ".join(sorted(fautives))
+        ]
+    return []
 
 
 def hors_service_gate(data_dir: Path = DATA_DIR) -> list[str]:
@@ -1129,6 +1190,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     problems += geo_gate(data_dir)
     problems += statut_gate(data_dir)
     problems += hors_service_gate(data_dir)
+    problems += nom_et_statut_gate(data_dir)
     problems += filigrane_gate(datacenter_paths(data_dir))
     problems += grandeurs_gate(data_dir)
 

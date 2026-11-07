@@ -114,6 +114,10 @@
               "minimum": 1990,
               "maximum": 2100,
               "description": "Année de MISE HORS SERVICE, exigée dès que `project_status` vaut « decommissioned ». Sa provenance se met dans `vintage.source`, comme les autres millésimes. Sans elle, la note d'archive n'a pas de date et le garde refuse de la servir."
+            },
+            "decommissioned_source": {
+              "$ref": "#/$defs/source",
+              "description": "Le DOSSIER qui prouve la fermeture — un objet source complet, pas une phrase : son `url` est servie en haut de la fiche et du portrait, pour qu'un lecteur puisse vérifier la fermeture lui-même (Franck, 2026-11-07). Distinct de `vintage.source`, qui explique d'où vient un millésime sans pointer de document. Facultatif : une fermeture sourcée par un document est le cas souhaitable, pas une condition — l'exiger pousserait à inventer un lien, et `url` peut valoir `null` quand la preuve existe sans page publique. Quand une page existe, `archived_url` la met à l'abri."
             }
           }
         },

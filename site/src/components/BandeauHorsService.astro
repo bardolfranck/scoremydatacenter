@@ -1,0 +1,71 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// LE BANDEAU « SITE MIS HORS SERVICE » — déclaré UNE fois, servi par la fiche ET le portrait.
+//
+// 🔴 POURQUOI UN COMPOSANT ET PAS DEUX BLOCS. Le 2026-11-07, huit fiches servies portaient
+// « (closed) » ou « ** INACTIVE ** » dans leur nom, une note, et un statut « operational ».
+// Décision de Franck : on garde la note comme ARCHIVE, et on annonce la fermeture — « tout en
+// haut, en mode impossible de ne pas voir », sur la fiche technique comme sur le portrait.
+// Deux surfaces, un seul fait : écrire le bandeau deux fois, c'est accepter qu'une des deux
+// copies parle un jour autrement que l'autre.
+//
+// 🔴 ET LE LIEN EST LE CŒUR, PAS L'ORNEMENT. « Ce qui serait top serait un lien url vers le
+// dossier administratif qui prouve sa fermeture » (Franck). Nous reprochons aux exploitants
+// d'affirmer sans produire ; une fermeture que nous affirmons sans document se tiendrait
+// exactement sur ce terrain-là. Le lien n'est pourtant PAS une condition — « si tu as pas ça
+// c'est pas bloquant » : sans document, le bandeau dit le fait et se tait sur la preuve,
+// plutôt que de taire la fermeture ou d'inventer une adresse.
+//
+// ⚠️ TROIS DEGRÉS, et chacun dit la vérité de ce qu'on sait :
+//   fermeture + année + dossier  → le fait, sa date, et le document à vérifier
+//   fermeture + année            → le fait et sa date
+//   fermeture seule              → le fait. Une note d'archive sans millésime est refusée par
+//                                  `hors_service_gate`, donc ce dernier cas ne vient que d'une
+//                                  donnée en cours de reprise — il ne doit pas faire DISPARAÎTRE
+//                                  la fermeture, qui est l'information la plus importante ici.
+import { horsService } from "../content/statuts";
+
+interface Props {
+  statut: string | null | undefined;
+  vintage?: { decommissioned_year?: number | null;
+              decommissioned_source?: { title?: string; url?: string | null;
+                                        archived_url?: string } | null } | null;
+  t: { horsServiceTitre: string; horsServiceAnnee: string; horsServiceSansAnnee: string;
+       horsServiceNote: string; horsServiceDossier: string };
+}
+
+const { statut, vintage, t } = Astro.props;
+
+const annee = vintage?.decommissioned_year ?? null;
+// ⚠️ La phrase est assemblée ICI, pas dans le gabarit : deux expressions voisines dans du JSX
+// sont rendues collées (vu à l'écran le 2026-11-07 — « …en 2024.Sa note est conservée… »).
+const fait = [
+  annee ? t.horsServiceAnnee.replace("{annee}", String(annee)) : t.horsServiceSansAnnee,
+  t.horsServiceNote,
+].join(" ");
+
+// `url` peut valoir `null` quand la preuve existe sans page publique (doctrine du schéma) :
+// on ne sert un lien que s'il y a une adresse. `archived_url` passe devant en cas de lien
+// mort annoncé, mais le document d'origine reste le lien principal quand il existe.
+const dossier = vintage?.decommissioned_source ?? null;
+const lien = dossier?.url || dossier?.archived_url || null;
+---
+
+{horsService(statut) && (
+  <aside class="hs-bandeau" role="note">
+    <p class="hs-titre">{t.horsServiceTitre}</p>
+    <p class="hs-texte">
+      {fait}
+      {lien && (
+        <>
+          {" "}
+          <a class="hs-dossier" href={lien} target="_blank" rel="noopener"
+             title={dossier?.title ?? undefined}>{t.horsServiceDossier}</a>
+        </>
+      )}
+    </p>
+  </aside>
+)}
