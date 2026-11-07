@@ -673,20 +673,22 @@ def retient_la_note(verdict: dict) -> bool:
     return bool(verdict.get("hold")) and verdict.get("portee") == "hold"
 
 
-# 🔴 LES CINQ NOMS QUI AFFIRMENT ENCORE UNE FERMETURE QUE LE STATUT NE DIT PAS (2026-11-07).
-# Dette NOMMÉE, pas un seuil : chacune est listée, donc une sixième est refusée tout de suite.
-# Pour les payer, deux voies honnêtes et une seule interdite :
+# 🔴 DETTE PAYÉE LE MÊME JOUR, ET C'EST LA RAISON DE LA GARDER VIDE PLUTÔT QUE DE LA SUPPRIMER.
+# Ouverte le 2026-11-07 avec CINQ fiches dont le titre affirmait « ** INACTIVE ** » ou
+# « - site closed » tandis que leur statut disait « stade non établi ». Elles ont été nettoyées
+# dans la journée (newsroom `c9e2e466`) : marqueur de registre rangé dans le sidecar de
+# provenance, titre servi débarrassé, statut inchangé. Vérifié sur le corpus servi : zéro nom
+# porte encore un marqueur de fermeture.
+#
+# L'ensemble reste donc déclaré et VIDE. Un cliquet à zéro n'est pas décoratif : il refuse le
+# PREMIER cas suivant, et il garde écrit pourquoi — sans quoi la prochaine ingestion qui
+# recopie un libellé d'annuaire (« (closed) » de PeeringDB, « ** INACTIVE ** » d'EPA ECHO)
+# repasserait sans bruit. Pour en sortir une légitimement, deux voies honnêtes et une seule
+# interdite :
 #   · sourcer la fermeture → `decommissioned` + `vintage.decommissioned_year` (+ le dossier) ;
-#   · nettoyer le nom et garder `unknown` — le marqueur de registre va dans la provenance, pas
-#     dans le titre servi ;
+#   · nettoyer le nom et garder le statut — le marqueur va dans la provenance, pas dans le titre ;
 #   · JAMAIS inventer une année pour faire taire le gate.
-DETTE_NOM_CONTREDIT_STATUT = {
-    "de-eunetworks-duesseldorf-site-closed",
-    "us-american-express-travel-related-services-co-inactive",
-    "us-disney-kings-mountain-technology-center-inactive",
-    "us-hosted-solutions-acquisition-north-raleigh-inactive",
-    "us-university-of-north-carolina-hospitals-mead-inactive",
-}
+DETTE_NOM_CONTREDIT_STATUT: set[str] = set()
 
 _MARQUEURS_DE_FERMETURE = ("inactive", "closed", "decommission", "shut down", "ceased")
 
