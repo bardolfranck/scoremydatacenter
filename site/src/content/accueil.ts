@@ -199,7 +199,7 @@ const FR = {
     replay: "Rejouer",
     why: "Pourquoi ce site ? Sa note ({score}/100) est la plus proche de la médiane des {n} sites du corpus : c'est le site le plus ordinaire d'Europe, ni vitrine ni cas d'école. La règle de sélection est mécanique et publiée.",
   },
-  status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service", unknown: "Statut non établi" },
+  status: { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service", decommissioned: "Hors service", unknown: "Statut non établi" },
   fixtureTag: "Fixture de test fictive",
   pillarShort: {
     energy: "Énergie",
@@ -498,7 +498,7 @@ const EN: typeof FR = {
     replay: "Replay",
     why: "Why this site? Its score ({score}/100) sits closest to the median of the {n} sites in the corpus: the most ordinary site in Europe, neither showcase nor cautionary tale. The selection rule is mechanical and published.",
   },
-  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational", unknown: "Status not established" },
+  status: { announced: "Announced", permitting: "Permitting", under_construction: "Under construction", operational: "Operational", decommissioned: "Decommissioned", unknown: "Status not established" },
   fixtureTag: "Fictional test fixture",
   pillarShort: {
     energy: "Energy",
@@ -800,7 +800,7 @@ const NL: typeof FR = {
     replay: "Opnieuw afspelen",
     why: "Waarom deze site? Zijn cijfer ({score}/100) ligt het dichtst bij de mediaan van de {n} sites van het corpus: de gewoonste site van Europa, geen etalage en geen schoolvoorbeeld. De selectieregel is mechanisch en gepubliceerd.",
   },
-  status: { announced: "Aangekondigd", permitting: "In behandeling", under_construction: "In aanbouw", operational: "In bedrijf", unknown: "Status niet vastgesteld" },
+  status: { announced: "Aangekondigd", permitting: "In behandeling", under_construction: "In aanbouw", operational: "In bedrijf", decommissioned: "Buiten dienst", unknown: "Status niet vastgesteld" },
   fixtureTag: "Fictieve testfixture",
   pillarShort: {
     energy: "Energie",

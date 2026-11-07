@@ -1145,6 +1145,13 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-badges .scorebadge-label { color: var(--sidebar-muted); }
 .fiche-badges .scorebadge-doc { color: #fff; font-size: 0.86rem; }
 .fiche-badges hr { width: 100%; height: 1px; border: 0; background: rgba(255, 255, 255, 0.1); margin: 0; }
+/* Site mis hors service — un FAIT, dit avant la lettre, dans la colonne sombre de la fiche.
+   La note est conservée comme archive (Franck, 2026-11-07) : le bandeau existe pour que
+   personne ne lise une note d'archive comme une note d'aujourd'hui. Il se distingue du reste
+   de la colonne sans crier — pas une alerte rouge : le site n'est pas un danger, il est fini. */
+.fiche-hors-service { margin: 10px 0 0; padding: 10px 12px; border-left: 3px solid rgba(255, 255, 255, 0.34); background: rgba(255, 255, 255, 0.07); border-radius: 0 10px 10px 0; font-size: 0.84rem; line-height: 1.5; color: #e8eef6; }
+.fiche-hors-service strong { color: #fff; }
+
 /* « Ce qui pèse le plus ici » — une phrase, pas une alerte, dans la colonne sombre de la
    fiche : elle se lit juste après la lettre, là où le lecteur se demande pourquoi celle-là. */
 .fiche-drag { margin: 0; padding: 11px 13px; border-left: 3px solid rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.06); border-radius: 0 10px 10px 0; font-size: 0.92rem; line-height: 1.5; color: #e8eef6; }

@@ -88,7 +88,7 @@ import { RACINE, donnee } from "../content/langues";
 // (« le terrain visible ici peut ne pas encore accueillir le data center ») sortait dès que
 // le statut n'était pas `operational` — donc aussi pour un statut NON ÉTABLI, ce qui en
 // faisait une affirmation. `enProjet` teste l'appartenance au cycle de vie DÉCLARÉ.
-import { enProjet } from "../content/statuts";
+import { enProjet, horsService } from "../content/statuts";
 const _idxEntry = (indicesData as any).countries?.[dc.country];
 let idxLine: { text: string; href: string } | null = null;
 if (_idxEntry?.eligible) {
@@ -240,6 +240,20 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   powerText,
   powerEstimated ? `<span class="pw-est">${t.powerEstimated}</span>` : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
+
+// 🔴 UN SITE HORS SERVICE LE DIT, ET SA NOTE EST DATÉE. Décision de Franck (2026-11-07) sur huit
+// fiches qui portaient « (closed) » ou « ** INACTIVE ** » dans leur nom, une note, et un statut
+// « operational » : on ne retire pas la page — « fermé mais a existé, donc on garde la note » —
+// on ANNONCE la fermeture. Garder une note n'est tenable que si elle est DATÉE : sans année, le
+// lecteur lit l'état d'un site qui n'existe plus comme s'il était l'état d'aujourd'hui. L'année
+// vient de `identity.vintage.decommissioned_year` et `hors_service_gate` l'exige dès que le
+// statut vaut « decommissioned » ; le repli sans année existe pour ne jamais SE TAIRE sur la
+// fermeture elle-même, qui est le fait le plus important de la page.
+const estHorsService = horsService(dc.project_status);
+const anneeHorsService = dc.vintage?.decommissioned_year ?? null;
+const horsServiceFait = anneeHorsService
+  ? t.horsServiceAnnee.replace("{annee}", String(anneeHorsService))
+  : t.horsServiceSansAnnee;
 
 // Operator (Franck 2026-09-17): shown when known; a register-resolved one links to its SIRENE entry.
 // « Connu » se décide à UN seul endroit (config/operator.ts) : trois copies de la réponse
@@ -617,6 +631,11 @@ const seoDesc = seoLead
           </p>
         )}
         <p class="fiche-meta" set:html={metaLine}></p>
+        {estHorsService && (
+          <p class="fiche-hors-service">
+            <strong>{t.horsServiceTitre}</strong> — {horsServiceFait} {t.horsServiceNote}
+          </p>
+        )}
       </div>
 
       <div class="fiche-badges">

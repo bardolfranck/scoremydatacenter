@@ -23,7 +23,7 @@ const FR = {
   // vraiment, et dont le premier est un terme mesuré que nous ne portions nulle part.
   seoAngle: "bruit, eau, terrain",
   metaDescription: "{name}, {place} : le bruit en continu, l'eau, le terrain, et ce que le projet change pour la commune. Ce qu'il reste à faire écrire dans l'autorisation, et jusqu'à quand.",
-  status: { announced: "annoncé", permitting: "en instruction", under_construction: "en chantier", operational: "en service", unknown: "non établi" },
+  status: { announced: "annoncé", permitting: "en instruction", under_construction: "en chantier", operational: "en service", decommissioned: "hors service", unknown: "non établi" },
   siteGrade: "Note du site",
   probable: "note probable",
   probableWindow: "note probable · fenêtre {w}",
@@ -70,7 +70,7 @@ const EN: typeof FR = {
   // See fr/dc/[id]/portrait.astro: the title angle, led by a measured term.
   seoAngle: "noise, water, land",
   metaDescription: "{name}, {place}: how loud, how close, the water, the land, and what the project changes for the community. What to get written into the permit, and until when.",
-  status: { announced: "announced", permitting: "under review", under_construction: "under construction", operational: "operating", unknown: "not established" },
+  status: { announced: "announced", permitting: "under review", under_construction: "under construction", operational: "operating", decommissioned: "decommissioned", unknown: "not established" },
   siteGrade: "Site grade",
   probable: "probable grade",
   probableWindow: "probable grade · window {w}",
@@ -124,7 +124,7 @@ const NL: typeof FR = {
   // L'angle du titre : trois mots mesurés (cf. SitePortrait.astro).
   seoAngle: "geluid, water, grond",
   metaDescription: "{name}, {place}: het continue geluid, het water, de grond, en wat het project verandert voor de gemeente. Wat er nog in de vergunning moet komen, en tot wanneer.",
-  status: { announced: "aangekondigd", permitting: "in behandeling", under_construction: "in aanbouw", operational: "in bedrijf", unknown: "niet vastgesteld" },
+  status: { announced: "aangekondigd", permitting: "in behandeling", under_construction: "in aanbouw", operational: "in bedrijf", decommissioned: "buiten dienst", unknown: "niet vastgesteld" },
   siteGrade: "Cijfer van de site",
   probable: "waarschijnlijk cijfer",
   probableWindow: "waarschijnlijk cijfer · venster {w}",

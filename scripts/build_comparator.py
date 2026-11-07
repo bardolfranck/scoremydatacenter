@@ -188,6 +188,10 @@ STATUTS: dict[str, dict[str, str]] = {
     "under_construction": {"fr": "En construction", "en": "Under construction",
                            "nl": "In aanbouw"},
     "operational": {"fr": "Site implanté", "en": "In operation", "nl": "In bedrijf"},
+    # Forme COURTE elle aussi : la phrase « la note est conservée comme archive » est
+    # l'aide du classement et le bandeau de la fiche, pas une étiquette de colonne.
+    "decommissioned": {"fr": "Hors service", "en": "Decommissioned",
+                       "nl": "Buiten dienst"},
     # Forme COURTE : ce libellé tient dans une colonne de tableau et dans un menu
     # déroulant. Le texte long (« aucune source publique ne mentionne… ») est l'aide du
     # classement, pas une étiquette.

@@ -85,7 +85,16 @@ def build_showcase(datacenters: dict[str, dict], results: dict[str, dict],
               if dc_id in results
               and isinstance(results[dc_id]["grades"]["site"].get("score"), (int, float))]
 
-    median = round(_median([r["grades"]["site"]["score"] for _, _, r in scored]), 1) if scored else None
+    # 🔴 LA MÉDIANE EST CELLE DU PARC EN ACTIVITÉ, PAS DES ARCHIVES (2026-11-07).
+    # Depuis que `decommissioned` existe, le corpus contient des sites qui ont FERMÉ : leur
+    # note est conservée comme archive (décision Franck), elle décrit un état révolu. La
+    # laisser peser dans la médiane revient à choisir le site « le plus ordinaire »
+    # d'aujourd'hui avec un étalon qui mélange hier et aujourd'hui. L'exclusion de la démo
+    # existait déjà (`_is_neutral` exige `operational`) ; celle de l'ÉTALON manquait, et
+    # c'est un test qui l'a révélée, pas une relecture.
+    vivants = [t for t in scored
+               if t[1]["identity"].get("project_status") != "decommissioned"]
+    median = round(_median([r["grades"]["site"]["score"] for _, _, r in vivants]), 1) if vivants else None
 
     # --- demo: the most ordinary site, exclusions first -------------------
     eligible = [(dc_id, dc, r) for dc_id, dc, r in scored if _is_neutral(dc, r, watchlist)]

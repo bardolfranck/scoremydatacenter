@@ -673,6 +673,45 @@ def retient_la_note(verdict: dict) -> bool:
     return bool(verdict.get("hold")) and verdict.get("portee") == "hold"
 
 
+def hors_service_gate(data_dir: Path = DATA_DIR) -> list[str]:
+    """Une note d'ARCHIVE doit porter sa date, sinon elle se lit comme une note d'aujourd'hui.
+
+    🔴 CE QUI A AMENÉ CE GARDE (2026-11-07). Huit fiches servies portaient « (closed) » ou
+    « ** INACTIVE ** » dans leur nom, une note, et `project_status: "operational"` : nous
+    affirmions que huit sites fermés étaient en exploitation. Décision de Franck : on NE
+    retire pas — « fermé mais a existé, donc on garde la note » — on DÉCLARE la fermeture.
+
+    Garder la note est tenable à une condition : qu'elle soit datée. Une note sans millésime
+    sur un site hors service dit au lecteur « voilà l'état de ce site », au présent, alors
+    qu'elle décrit un état révolu. C'est la même faute que de servir une mesure sans sa
+    période. Donc : `decommissioned` SANS `vintage.decommissioned_year` est refusé.
+
+    ⚠️ Et le garde se tait sur l'ensemble vide SANS mentir : s'il n'y a aucun site hors
+    service, il n'a rien à dire — mais il DIT combien il en a vu, pour qu'un jour où
+    l'ingestion en produirait mille on ne lise pas « ✓ » sans savoir sur quoi.
+    """
+    manquantes: list[str] = []
+    vus = 0
+    for path in datacenter_paths(data_dir):
+        ident = (load_json(path).get("identity") or {})
+        if ident.get("project_status") != "decommissioned":
+            continue
+        vus += 1
+        annee = (ident.get("vintage") or {}).get("decommissioned_year")
+        if not isinstance(annee, int):
+            manquantes.append(path.stem)
+    if manquantes:
+        return [
+            "GATE HORS SERVICE: "
+            f"{len(manquantes)} fiche(s) sur {vus} déclarent « decommissioned » sans "
+            "`identity.vintage.decommissioned_year`. La note est conservée comme ARCHIVE : "
+            "sans année, elle se lit comme une note d'aujourd'hui sur un site qui n'existe "
+            "plus. Poser l'année de mise hors service et sa provenance dans `vintage.source` : "
+            + ", ".join(sorted(manquantes)[:8])
+        ]
+    return []
+
+
 def filigrane_gate(paths: list[Path]) -> list[str]:
     """Aucun résumé SERVI ne doit porter une mention de brouillon.
 
@@ -1089,6 +1128,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
 
     problems += geo_gate(data_dir)
     problems += statut_gate(data_dir)
+    problems += hors_service_gate(data_dir)
     problems += filigrane_gate(datacenter_paths(data_dir))
     problems += grandeurs_gate(data_dir)
 
