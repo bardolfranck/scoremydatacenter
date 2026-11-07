@@ -7,6 +7,7 @@
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import { CHROME } from "../content/chrome";
+import { puissanceServie } from "../config/puissance";
 import {
   cheminDeFiche,
   cheminDePortrait,
@@ -143,6 +144,16 @@ const latest = [...real]
   .filter((d: any) => typeof d.power_mw === "number")
   .sort((a: any, b: any) => b.power_mw - a.power_mw)
   .slice(0, 5);
+// 🔴 « the highest DECLARED power » était écrit dans le commentaire au-dessus, et nulle part
+// à l'écran : la colonne vedette de l'accueil affichait 10 000 MW, 10 000, 9 000 et 6 000
+// comme des faits, alors qu'aucune de ces quatre fiches ne porte même un qualificatif
+// (Franck 2026-11-07). Les vignettes disent maintenant la provenance, par la MÊME dérivation
+// que la fiche et le classement. Au passage, `Math.round` affichait « 1 MW » pour une
+// estimation de 0,518 — l'arrondi à deux chiffres significatifs rend « ~0,52 MW ».
+const vignettePuissance = (d: any) => {
+  const pw = puissanceServie(d.power_mw, d.power_mw_status, lang);
+  return pw ? ` — ${pw.valeur}${pw.libelle ? ` (${pw.libelle})` : ""}` : "";
+};
 // Les trois chiffres de « pourquoi maintenant », calculés au build : la table porte les
 // phrases, le module porte le remplissage (périmètre et format compris, qui diffèrent par
 // langue). Les deux pages composaient la même chose, chacune chez elle.
@@ -396,7 +407,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
                 confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
                 size="sm" naLabel={t.insufficient} />
-              <span class="teaser-name">{dc.name}<small>{dc.country}{dc.power_mw ? ` — ${Math.round(dc.power_mw)} MW` : ""}{dc.grades.site.reserved_from ? ` — ${t.mapReserved.replace("· ", "")}` : ""}</small></span>
+              <span class="teaser-name">{dc.name}<small>{dc.country}{vignettePuissance(dc)}{dc.grades.site.reserved_from ? ` — ${t.mapReserved.replace("· ", "")}` : ""}</small></span>
               <span class="teaser-pct">P{p}</span>
             </a>
           ))}
@@ -409,7 +420,7 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
               <ScoreBadge label={t.siteScore} grade={dc.grades.site} confidence={dc.confidence.level}
                 confidenceLabel={t.confidence[dc.confidence.level]} renderConfidence={false} renderLabel={false}
                 size="sm" naLabel={t.insufficient} />
-              <span class="teaser-name">{dc.name}<small>{dc.country} — {Math.round(dc.power_mw)} MW</small></span>
+              <span class="teaser-name">{dc.name}<small>{dc.country}{vignettePuissance(dc)}</small></span>
             </a>
           ))}
           <a class="teaser-more" href={rankPath}>{t.exploreLatestMore} →</a>

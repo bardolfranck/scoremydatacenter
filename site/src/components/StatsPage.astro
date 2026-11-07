@@ -15,6 +15,7 @@ import "@fontsource/bricolage-grotesque/700.css";
 import type { NavNode } from "../config/nav";
 import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
 import { communeEtRegion } from "../config/lieu";
+import { puissanceServie } from "../config/puissance";
 import type { LangueDeclaree } from "../content/langues";
 import "@fontsource/bricolage-grotesque/800.css";
 import Base from "../layouts/Base.astro";
@@ -175,7 +176,10 @@ function exemplarBullets(kind: string, e: any): string[] {
   const bullets: string[] = [];
   if (kind === "representative") {
     const status = (ex.status as any)[e.project_status] ?? e.project_status;
-    bullets.push(`${status}${typeof e.power_mw === "number" ? ` · ${fmtInt(Math.round(e.power_mw), lang)} MW` : ` · ${ex.mwUnknown}`}`);
+    // La provenance suit le chiffre ici aussi : un exemplaire « représentatif » cité sur la
+    // page chiffres est lu comme une référence.
+    const pw = puissanceServie(e.power_mw, e.power_mw_status, lang);
+    bullets.push(`${status} · ${pw ? `${pw.valeur}${pw.libelle ? ` (${pw.libelle})` : ""}` : ex.mwUnknown}`);
     if (f.e2 === "saturated") bullets.push(ex.facts.e2);
     if (f.f2 === "artificialized") bullets.push(ex.facts.f2);
   } else if (kind === "constrained") {

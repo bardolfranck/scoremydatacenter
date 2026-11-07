@@ -311,6 +311,11 @@ def _exemplar_payload(dc: dict, result: dict | None) -> dict:
         "country": ident["country"],
         "project_status": ident["project_status"],
         "power_mw": ident.get("power_mw"),
+        # 🔴 LE CHIFFRE VOYAGEAIT SANS SA PROVENANCE. L'exemplaire portait `power_mw` seul :
+        # l'affichage, qui lit désormais la provenance, aurait rendu « non sourcé » pour les
+        # 221 puissances FRANÇAISES qui sont pourtant qualifiées dans la donnée — un champ
+        # absent se lit comme un état ([[absence-ressemble-a-zero]]). On le transporte.
+        "power_mw_status": ident.get("power_mw_status"),
         "grade_site": (result or {}).get("grades", {}).get("site", {}).get("grade"),
         "confidence": (result or {}).get("confidence", {}).get("level"),
         "confidence_score": (result or {}).get("confidence", {}).get("score"),
