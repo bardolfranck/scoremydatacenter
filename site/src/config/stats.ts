@@ -38,7 +38,11 @@ export const derivedCount = (key: string): number | null => {
   return typeof n === "number" && n > 0 ? n : null;
 };
 
-export const COUNTRY_NAMES: Record<string, { fr: string; en: string }> = {
+// ⚠️ Le type ne déclarait que fr+en alors que le néerlandais est dans la DONNÉE depuis le
+// 2026-11-06 : un appelant qui indexait par `lang` typé fr|en|nl se faisait refuser par
+// TypeScript pour une clé qui existe. Un type qui mentend sur sa propre donnée pousse les
+// appelants à recopier la table ailleurs — c'est exactement ce qui est arrivé.
+export const COUNTRY_NAMES: Record<string, { fr: string; en: string; nl: string }> = {
   US: { fr: "États-Unis", en: "United States", nl: "Verenigde Staten" }, IL: { fr: "Israël", en: "Israel", nl: "Israël" },
   AT: { fr: "Autriche", en: "Austria", nl: "Oostenrijk" }, BE: { fr: "Belgique", en: "Belgium", nl: "België" },
   CH: { fr: "Suisse", en: "Switzerland", nl: "Zwitserland" }, DE: { fr: "Allemagne", en: "Germany", nl: "Duitsland" },

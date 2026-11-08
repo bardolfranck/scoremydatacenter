@@ -2728,3 +2728,32 @@ def test_le_garde_du_repli_mord_vraiment(tmp_path, monkeypatch):
     with pytest.raises(AssertionError) as e:
         test_aucun_composant_ne_redeclare_son_repli_de_langue()
     assert "Fautif.astro" in str(e.value) and "Ile.astro" in str(e.value)
+
+
+def test_le_comparateur_lit_la_table_unique_des_noms_de_pays():
+    """🔴 UNE SECONDE TABLE DE NOMS DE PAYS A SERVI UN CODE ISO EN PRODUCTION.
+
+    `test_chaque_pays_du_corpus_a_son_nom_dans_chaque_langue_servie` lit `config/stats.ts`.
+    `Comparateur.astro` portait sa PROPRE table, hors de sa portée. Le 2026-11-08, le soir de
+    la publication de Singapour, cette table n'avait pas SG : la page a servi « SG (47) » au
+    milieu de dix pays nommés, en français, en anglais et en néerlandais, pendant que le garde
+    restait vert. Un code ISO se lit comme une donnée non traduite, parce que c'en est une.
+
+    Le comparateur lit désormais la table unique. Ce test l'y tient : il refuse qu'une seconde
+    liste revienne dans ce fichier. Il est volontairement ÉTROIT — un relevé qui chercherait
+    « toutes les tables qui ressemblent à des noms de pays » attrape `flags.ts`,
+    `indicatorValues.ts` et les blocs de procédure, qui emploient la même forme pour autre
+    chose : un garde qui accuse à faux finit désarmé.
+    """
+    f = REPO_ROOT / "site" / "src" / "components" / "Comparateur.astro"
+    texte = f.read_text(encoding="utf-8")
+    assert 'from "../config/stats"' in texte and "COUNTRY_NAMES" in texte, (
+        "le comparateur ne lit plus la table unique des noms de pays (config/stats.ts) — "
+        "s'il en redéclare une, elle sortira du périmètre du garde de parité"
+    )
+    # Une table de noms de pays dans CE fichier, c'est au moins cinq entrées ISO nommées.
+    locales = re.findall(r'\b([A-Z]{2}):\s*\{[^}]*\bfr:\s*"', texte)
+    assert len(locales) < 5, (
+        f"{len(locales)} noms de pays sont redéclarés dans Comparateur.astro ({sorted(set(locales))[:6]}) "
+        "— la réparation est de lire config/stats.ts, pas d'y recopier les pays"
+    )
