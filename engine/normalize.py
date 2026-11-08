@@ -9,6 +9,8 @@ a declarative indicator is only possible with a verification_source (schema)
 and is then uncapped — that is the ex-post re-score.
 """
 
+import math
+
 from .core import GateError
 
 
@@ -22,6 +24,53 @@ def _thresholds(norm: dict, value: float) -> float:
     if above is None:
         raise GateError(f"thresholds normalization has no 'above' step for value {value}")
     return float(above)
+
+
+def _log_linear(norm: dict, value: float, indicator_id: str) -> float:
+    """Échelle LOGARITHMIQUE entre deux ancres de ratio — pour une grandeur qui vit sur
+    plusieurs décades.
+
+    Pourquoi elle existe (L2, bassin de 50 km, 2026-11-08) : les paliers 1 / 10 / 100 de
+    `thresholds` étaient calés sur un ratio de COMMUNE. Rapporté à un bassin, le même site
+    rend un ratio cent à mille fois plus petit, et 265 des 275 fiches chiffrées passaient
+    sous le premier palier — Fouju, 1400 MW pour une commune de 650 habitants, obtenait le
+    meilleur score accessible. Mesuré : 38 fiches perdaient leur signal de disproportion et
+    AUCUNE ne le gagnait. Une grandeur qui s'étale sur six décades ne se note pas par
+    paliers : elle se note par décade.
+
+    `ratio_full` = le ratio qui vaut 100 (et en dessous) ; `ratio_zero` = celui qui vaut 0
+    (et au-dessus). Les deux sont des ratios, donc strictement positifs, et `ratio_full`
+    est le plus petit : la pente est décroissante, un gros projet pour peu d'habitants note
+    mal. Le score est écrêté aux bornes, jamais extrapolé.
+
+    ⚠️ Le plafond déclaratif s'applique APRÈS (voir `normalize`) : sur un indicateur dont
+    aucune valeur n'est `measured`, cette courbe n'est visible que là où elle descend sous
+    le plafond. Un test qui ne regarde que la formule nue ne prouve rien de ce qui est servi.
+    """
+    full, zero = norm.get("ratio_full"), norm.get("ratio_zero")
+    for nom, v in (("ratio_full", full), ("ratio_zero", zero)):
+        if not isinstance(v, (int, float)) or isinstance(v, bool) or v <= 0:
+            raise GateError(
+                f"GATE 1: indicator {indicator_id}: log_linear normalization needs {nom} > 0 "
+                f"(got {v!r}) — a ratio scale has no zero and no negative anchor"
+            )
+    if not zero > full:
+        raise GateError(
+            f"GATE 1: indicator {indicator_id}: log_linear needs ratio_zero > ratio_full "
+            f"(got {full!r} and {zero!r}) — otherwise the scale has no direction"
+        )
+    if value is None or value < 0:
+        raise GateError(
+            f"GATE 1: indicator {indicator_id}: log_linear value must be a ratio >= 0 (got {value!r})"
+        )
+    # Une valeur nulle est un ratio parfait, pas un logarithme impossible : on l'écrête à
+    # l'ancre haute au lieu de la passer à log10.
+    if value <= full:
+        return 100.0
+    if value >= zero:
+        return 0.0
+    etendue = math.log10(zero) - math.log10(full)
+    return 100.0 * (math.log10(zero) - math.log10(value)) / etendue
 
 
 def _bounded_linear(norm: dict, direction: str, value: float) -> float:
@@ -128,6 +177,8 @@ def normalized_score(definition: dict, entry: dict, parameters: dict) -> float |
         score = _thresholds(norm, entry["value"])
     elif kind == "bounded_linear":
         score = _bounded_linear(norm, definition["direction"], entry["value"])
+    elif kind == "log_linear":
+        score = _log_linear(norm, entry["value"], definition["id"])
     elif kind == "categorical":
         score = _categorical(norm, entry["value"], definition["id"])
     elif kind == "proxy_rubric":
