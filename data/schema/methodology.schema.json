@@ -587,6 +587,30 @@
               }
             },
             {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type",
+                "ratio_full",
+                "ratio_zero"
+              ],
+              "properties": {
+                "type": {
+                  "const": "log_linear"
+                },
+                "ratio_full": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Ratio qui vaut 100, et tout ratio plus petit avec lui. Strictement positif : une échelle de ratio n'a ni zéro ni borne négative."
+                },
+                "ratio_zero": {
+                  "type": "number",
+                  "exclusiveMinimum": 0,
+                  "description": "Ratio qui vaut 0, et tout ratio plus grand avec lui. Doit être STRICTEMENT SUPÉRIEUR à ratio_full, sinon l'échelle n'a pas de sens de lecture. Le score est écrêté aux deux bornes, jamais extrapolé."
+                }
+              }
+            },
+            {
               "type": "null"
             }
           ]
