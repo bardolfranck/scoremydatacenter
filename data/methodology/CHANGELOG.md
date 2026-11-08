@@ -29,13 +29,22 @@ Every methodology change is a version bump with a rationale and a signatory. No 
   aucun seuil de lettre, aucun autre indicateur ne change. **Le plafond déclaratif (60) est inchangé** :
   aucune L2 n'étant `measured` (toutes `announced`/`estimated`), chaque L2 reste bornée à 60 — **la courbe
   n'est visible que là où elle descend sous le plafond.**
-- **Effet sur le corpus** — DEUX mouvements couplés : (1) le dénominateur-bassin remonte des L2 (net-favorable,
-  surtout sites isolés) ; (2) la courbe les rabaisse ou les tient vs les anciens paliers (les méga-sites US
-  descendent sous le plafond et discriminent). Le **delta de lettres servies est mesuré par le témoin de
-  déploiement** (reconstruction sur l'état déployé, contrôle à 0 écart contre les artefacts publiés) **et
-  renvoyé à la calibration AVANT publication** — aucune lettre ne bouge en silence. La mesure qui a décidé
-  Franck : en bassin, **38 fiches perdent leur signal de disproportion et 0 ne le gagnent** — monotone dans
-  le sens que le garde-fou interdit, d'où le couplage courbe+bassin en un seul changement.
+- **Effet sur le corpus, mesuré après déploiement (témoin par cause, contrôle à 0 écart contre les artefacts
+  publiés)** — un delta de notation se lit sur DEUX verdicts : la lettre ferme (après blanchiment / réserve A)
+  ET la note probable (`provisional_band.central`). **Effet de la GRILLE v0.4.0 — la courbe, à données
+  constantes : 23 notes probables en baisse (12 C→D, 9 D→E, 2 B→C), 0 hausse, aucune lettre ferme touchée.**
+  La courbe est strictement correctrice. De-bunching mesuré : la sous-note d'impact local passe de **3 à 77
+  valeurs distinctes servies** (196 au plafond de 60, 79 en dessous) — l'indicateur recommence à distinguer les
+  sites, ce qui était l'objet.
+- **Deux événements de donnée concurrents, déployés le même jour, nommés et NON confondus avec la grille :**
+  (1) la migration du dénominateur vers le bassin de 50 km (décision Franck) aurait, SEULE, révisé **24 notes
+  probables américaines À LA HAUSSE** — l'effet net-favorable déclaré — et déplacé 9 lettres fermes françaises
+  (4 hausses, dont `fr-campus-ia-fouju` E→D : son L2 reste au plafond dans les deux barèmes, c'est donc l'effet
+  bassin assumé, pas la courbe) ; (2) 8 nouvelles puissances US écrites le même soir. 🔑 **La preuve du
+  couplage est chiffrée : le bassin seul publiait 24 révisions US à la hausse, la courbe en ramène 23 —
+  « bassin + courbe » est un seul changement, pas deux qu'on peut séquencer.** C'est l'arbitrage de Franck
+  (bassin + courbe, et non bassin seul) qui a évité de publier ces 24 révisions à la hausse. Aucune note ne
+  bouge en silence : chaque mouvement est inscrit au `score_history` de sa fiche avec ce rationale.
 - **Réparation de donnée liée (côté newsroom, pas la grille)** : 269 fiches servaient une PHRASE de source
   qui nommait encore la commune pendant que la valeur divisait par le bassin (fait faux servi, invisible au
   contrôleur de ratio) → réécrites au gabarit bassin GHS-POP, et le producteur corrigé pour qu'un run futur
