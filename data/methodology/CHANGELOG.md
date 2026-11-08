@@ -43,8 +43,9 @@ Every methodology change is a version bump with a rationale and a signatory. No 
   bassin assumé, pas la courbe) ; (2) 8 nouvelles puissances US écrites le même soir. 🔑 **La preuve du
   couplage est chiffrée : le bassin seul publiait 24 révisions US à la hausse, la courbe en ramène 23 —
   « bassin + courbe » est un seul changement, pas deux qu'on peut séquencer.** C'est l'arbitrage de Franck
-  (bassin + courbe, et non bassin seul) qui a évité de publier ces 24 révisions à la hausse. Aucune note ne
-  bouge en silence : chaque mouvement est inscrit au `score_history` de sa fiche avec ce rationale.
+  (bassin + courbe, et non bassin seul) qui a évité de publier ces 24 révisions à la hausse. Le mouvement est
+  mesuré par cause et consigné ici, avec son rationale. Le journal par fiche (`score_history`) n'est aujourd'hui
+  tenu que sur les fixtures du dépôt public : le corpus servi n'en porte pas encore, et c'est une dette déclarée.
 - **Réparation de donnée liée (côté newsroom, pas la grille)** : 269 fiches servaient une PHRASE de source
   qui nommait encore la commune pendant que la valeur divisait par le bassin (fait faux servi, invisible au
   contrôleur de ratio) → réécrites au gabarit bassin GHS-POP, et le producteur corrigé pour qu'un run futur
