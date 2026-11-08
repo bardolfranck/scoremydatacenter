@@ -284,3 +284,63 @@ def test_la_sous_note_probable_ne_contredit_pas_la_lettre_du_moteur():
         assert b["central"] == attendu, (
             f"{pillar} : sous-note probable {b['central']} contre {attendu} au point renormalisé"
         )
+
+
+def test_la_bande_connait_tous_les_baremes_du_schema():
+    """🔴 DEUX AIGUILLAGES SUR LA MÊME ÉNUMÉRATION.
+
+    `engine.normalize` aiguille sur `normalization.type` pour calculer un sous-score ;
+    `engine.plage_bands.extreme_subscores` aiguille sur le MÊME ensemble pour borner la
+    bande. Le 2026-11-08, `log_linear` a été câblé dans le premier et pas dans le second :
+    la bande levait sur les 3 339 fiches. Le build s'arrêtait — donc rien de faux ne partait,
+    mais rien ne partait non plus, et la cause était à deux fichiers de l'endroit modifié.
+
+    Ce test part du SCHÉMA, qui est la seule liste des types admis, et refuse qu'un type
+    déclaré manque dans la bande. Ajouter un barème au schéma sans l'y câbler échoue ici,
+    au lieu d'échouer au build d'après-demain.
+    """
+    import json
+
+    from engine.core import REPO_ROOT
+    from engine.plage_bands import extreme_subscores
+
+    schema = json.loads((REPO_ROOT / "data" / "schema" / "methodology.schema.json").read_text())
+
+    def trouver(o):
+        if isinstance(o, dict):
+            if isinstance(o.get("normalization"), dict) and "oneOf" in o["normalization"]:
+                return o["normalization"]
+            for v in o.values():
+                r = trouver(v)
+                if r:
+                    return r
+        if isinstance(o, list):
+            for v in o:
+                r = trouver(v)
+                if r:
+                    return r
+
+    variantes = trouver(schema)["oneOf"]
+    types = [b.get("properties", {}).get("type", {}).get("const") for b in variantes]
+    types = [t for t in types if t]
+    assert len(types) >= 4, f"le relevé des barèmes ne cherche plus : {types}"
+
+    # Un exemplaire MINIMAL par type — la bande borne sur l'échelle, pas sur une valeur.
+    exemples = {
+        "thresholds": {"type": "thresholds",
+                       "thresholds": [{"up_to": 1, "score": 100}, {"above": True, "score": 0}]},
+        "bounded_linear": {"type": "bounded_linear", "min": 0, "max": 50},
+        "categorical": {"type": "categorical", "categories": {"a": 0, "b": 100}},
+        "proxy_rubric": {"type": "proxy_rubric", "rubric": {"k": {"true": 10, "false": 0}}},
+        "log_linear": {"type": "log_linear", "ratio_full": 1e-4, "ratio_zero": 1e2},
+    }
+    manquants = [t for t in types if t not in exemples]
+    assert not manquants, (
+        f"barème(s) déclaré(s) au schéma sans exemplaire dans ce test : {manquants} — "
+        "ajoutez-le ici ET vérifiez qu'extreme_subscores le borne"
+    )
+    for t in types:
+        if t == "proxy_rubric":
+            continue  # hors bloc base : jamais borné par la bande (rubrique de points)
+        pire, mieux = extreme_subscores({"id": f"ZZ-{t}", "normalization": exemples[t]})
+        assert 0 <= pire <= mieux <= 100, f"{t} borne mal : ({pire}, {mieux})"

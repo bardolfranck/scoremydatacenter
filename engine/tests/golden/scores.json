@@ -14,7 +14,7 @@
     "grades": {
       "site": {
         "grade": "B",
-        "score": 79.8,
+        "score": 78.9,
         "documentation": {
           "level": "high",
           "score": 1.0,
@@ -98,8 +98,8 @@
         }
       },
       "local_impact": {
-        "grade": "B",
-        "score": 65.9,
+        "grade": "C",
+        "score": 63.1,
         "coverage": 1.0,
         "documentation": {
           "level": "high",
@@ -129,9 +129,9 @@
       }
     },
     "citable_quote": {
-      "fr": "Noté B sur le site, C en projet & processus.",
-      "en": "Rated B on site, C on project & process.",
-      "nl": "Beoordeeld met B op de site, C op project & proces."
+      "fr": "Noté B sur le site, mais C sur « Impact local ».",
+      "en": "Rated B on site, but C on “Local impact”.",
+      "nl": "Beoordeeld met B op de site, maar C op ‘Lokale impact’."
     },
     "publication_status": "published",
     "provisional_band": {
@@ -143,8 +143,8 @@
       "a_reserved": true,
       "confidence": "high",
       "band": "B",
-      "worst": 73.3,
-      "best": 85.3,
+      "worst": 72.6,
+      "best": 84.6,
       "span": 0,
       "n_present": 15,
       "n_base": 15,
@@ -222,14 +222,14 @@
         "kind": "provisional_band",
         "provisional": true,
         "wide": false,
-        "central": "B",
+        "central": "C",
         "edges": [
-          "C"
+          "B"
         ],
         "band": "B–C",
         "a_reserved": false,
-        "worst": 62.0,
-        "best": 74.0,
+        "worst": 58.8,
+        "best": 70.8,
         "floor": 12.0,
         "width": 12.0,
         "n_present": 5,
