@@ -76,6 +76,12 @@ const ANCHORS: Record<string, [number, number]> = {
   // mais sa carte prétendait que le pays n'était pas noté. Israël manquait pour la même
   // raison. Un pays du corpus sans ancre fait désormais échouer le build (voir plus bas).
   US: [-98.5, 39.5], IL: [34.9, 31.5],
+  // 🔴 QUATRIÈME AFFIRMATION QUE SINGAPOUR RENDAIT FAUSSE (2026-11-08). Les 47 fiches
+  // singapouriennes entraient dans l'indice pays le soir de leur publication, et ce garde a
+  // arrêté le déploiement : un pays noté absent de sa propre carte se lit comme un pays non
+  // noté. Le garde a fait exactement ce pour quoi il a été écrit — après les États-Unis et
+  // Israël, qui disparaissaient sans un mot.
+  SG: [103.8, 1.35],
 };
 
 // Crowded coastline fix: these markers hang LEFT of their anchor (into the
