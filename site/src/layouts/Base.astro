@@ -8,8 +8,11 @@ import {
   RACINE,
   LANGUES_VIVANTES,
   LANGUES_DECLAREES,
+  listeDeMots,
+  paysDeLEdition,
   type LangueDeclaree,
 } from "../content/langues";
+import { COUNTRY_NAMES } from "../config/stats";
 import { autresLangues } from "../config/routes";
 import { PREVIZ } from "../config/previz";
 import { CHROME } from "../content/chrome";
@@ -61,14 +64,37 @@ const withSlash = (p: string) =>
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 // Repli DÉCLARÉ, pour les pages hors table (la préviz) : on garde leur paire d'origine.
 // Un repli qui se nomme vaut mieux qu'un sélecteur qui disparaît sans dire pourquoi.
-const liens: { langue: LangueDeclaree; href: string; etiquette: string }[] = autres.length
+// 🔴 CE QUE « NL » NE DISAIT PAS. Une édition de pays ne couvre que ses pays depuis le
+// 2026-11-06 : cliquer « NL » mène à une édition où les fiches américaines sont en anglais.
+// Décision éditoriale, documentée — et muette pour le lecteur, qui ne pouvait pas la
+// distinguer d'une traduction en retard. L'aperçu la dit au survol.
+//
+// Il DÉRIVE de `PAYS_DE_LA_LANGUE`, source unique : le sélecteur n'a aucune liste à lui, et
+// une édition de référence (`null`) n'a par construction rien à annoncer. Les noms de pays
+// sont dits dans la langue de QUI LIT — un francophone doit comprendre l'avertissement
+// avant de changer de langue, pas après.
+//
+// ⚠️ Les préfixes de `PAYS_DE_LA_LANGUE` sont des préfixes d'IDENTIFIANT DE FICHE, pas des
+// codes ISO : ils coïncident pour `nl` et `be`, et le repli garde le préfixe tel quel plutôt
+// que d'afficher un blanc si un jour l'un d'eux n'est pas un pays du corpus.
+const apercuDeLEdition = (cible: LangueDeclaree): string | undefined => {
+  const pays = paysDeLEdition(cible);
+  if (!pays?.length) return undefined;
+  const noms = pays.map((p) => COUNTRY_NAMES[p.toUpperCase()]?.[lang] ?? p.toUpperCase());
+  return c.apercuEdition.replace("{pays}", listeDeMots(lang, noms));
+};
+const liens: {
+  langue: LangueDeclaree; href: string; etiquette: string; apercu?: string;
+}[] = autres.length
   ? autres.map((a) => ({
       langue: a.langue, href: withSlash(a.href), etiquette: a.langue.toUpperCase(),
+      apercu: apercuDeLEdition(a.langue),
     }))
   : [{
       langue: (lang === "en" ? "fr" : "en") as LangueDeclaree,
       href: withSlash(altHref ?? RACINE.en),
       etiquette: altLabel ?? "EN",
+      apercu: apercuDeLEdition((lang === "en" ? "fr" : "en") as LangueDeclaree),
     }];
 const abs = (p: string) => new URL(p, Astro.site).href;
 // x-default = l'anglais, qui est ce qu'un moteur sert quand aucune langue ne convient. S'il
@@ -191,7 +217,9 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
             maintenant de `config/routes.ts`, et la normalisation est faite UNE fois, ici,
             pour le lien visible comme pour le cluster hreflang. */}
         {liens.map((l) => (
-          <a class="lang-switch" href={l.href} lang={l.langue} hreflang={l.langue}>{l.etiquette}</a>
+          <a class="lang-switch" href={l.href} lang={l.langue} hreflang={l.langue}
+             aria-label={l.apercu ? `${l.etiquette} — ${l.apercu}` : undefined}>{l.etiquette}{l.apercu &&
+            <span class="lang-apercu" lang={lang} aria-hidden="true">{l.apercu}</span>}</a>
         ))}
       </nav>
       <script>
