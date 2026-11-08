@@ -184,3 +184,111 @@ def test_aucun_L2_servi_ne_contredit_ses_propres_facteurs():
         # On l'affirme explicitement : sinon ce test passera encore le jour où le champ
         # sera écrit DE TRAVERS et où plus personne ne saura qu'il n'a jamais rien vu.
         assert fautes == [], "contrôle sur l'ensemble vide — aucune fiche ne porte encore ses facteurs"
+
+
+def _source_ne_nomme_pas_le_bassin(fiches):
+    """Une L2 dont le dénominateur est un bassin (`population_base == "radius"`) mais dont la phrase
+    de source ne nomme pas la source-bassin (GHS-POP + rayon) décrit une AUTRE population que sa
+    propre valeur.
+
+    🔴 Le contrôleur de ratio ci-dessus NE LE VOIT PAS : `value = power / pop_bassin × 1000` reste
+    cohérent — c'est la PROSE qui ment (elle a continué de nommer la commune après le passage au
+    bassin de 50 km, sur 269 fiches servies). D'où un garde SÉPARÉ sur la phrase : le dénominateur
+    vit dans un champ, sa description doit dire le même dénominateur, pas un autre
+    [[prose-unite-reecrite-fait-faux]] [[liste-a-deux-endroits-ment]].
+    """
+    fautes = []
+    for fiche in fiches:
+        for e in fiche.get("indicators") or []:
+            if (e.get("code") or e.get("id")) != "L2":
+                continue
+            if e.get("population_base") != "radius":
+                continue
+            titre = ((e.get("source") or {}).get("title") or "")
+            if "GHS-POP" not in titre or "rayon" not in titre:
+                fautes.append(
+                    f"{fiche.get('id')} : base=radius mais la phrase de source ne nomme pas le "
+                    f"bassin GHS-POP — « {titre[:72]}… »")
+    return fautes
+
+
+def test_le_controleur_de_source_attrape_une_phrase_commune_fabriquee():
+    """Le garde doit mordre une phrase qui nomme la commune sous un dénominateur de bassin."""
+    bon = {"id": "zz-bon", "indicators": [
+        {"id": "L2", "population_base": "radius", "source": {
+            "title": "GHS-POP R2023A E2020 (30″, rayon 50 km) — 164892 hab. ; "
+                     "puissance 300 MW (annoncée). Ratio MW/1000 hab, calcul déterministe"}}]}
+    faux = {"id": "zz-faux", "indicators": [
+        {"id": "L2", "population_base": "radius", "source": {
+            "title": "INSEE populations légales — Fouju (~650 hab.) ; puissance 1400 MW"}}]}
+    assert _source_ne_nomme_pas_le_bassin([bon]) == []
+    assert len(_source_ne_nomme_pas_le_bassin([faux])) == 1
+
+
+def test_aucune_phrase_L2_base_radius_ne_nomme_la_commune():
+    """Une valeur de bassin sous une phrase de commune est un fait faux servi.
+
+    Le garde balaye le corpus. Toutes les lanes ont réécrit leur phrase au gabarit bassin
+    (FR + US/IL faites) : vert sur 275/275. Rouge signifierait qu'un run a réintroduit une
+    phrase de commune — famille « témoin avant un lot ».
+    """
+    cal = REPO_ROOT.parent / "smdc-newsroom" / "calibration"
+    if not cal.is_dir():
+        pytest.skip("corpus privé absent de cette copie")
+    from engine.core import datacenter_paths
+
+    fiches = [json.loads(p.read_text(encoding="utf-8")) for p in datacenter_paths(cal)]
+    fautes = _source_ne_nomme_pas_le_bassin(fiches)
+    assert not fautes, (
+        f"{len(fautes)} L2 base=radius servent une phrase qui ne nomme pas leur bassin :\n  - "
+        + "\n  - ".join(fautes[:10]))
+
+
+def _l2_servie_sans_bassin(fiches):
+    """Une L2 QUI PORTE UNE VALEUR doit reposer sur un bassin : `population_base == "radius"` avec
+    `population_radius_km`. Sinon sa valeur divise par autre chose (commune, comté) que ce que la
+    méthodo v0.4.0 note.
+
+    🔴 Plus fort que le garde de titre, et c'est voulu : une L2 de COMMUNE cohérente (base=place,
+    titre et valeur d'accord, tous deux faux) passe SOUS le garde de titre, qui n'inspecte que les
+    fiches base=radius. Celui-ci l'attrape. C'est le jumeau SERVI du garde PRODUIT de `country.py`
+    (codeur-site) : le producteur ne peut plus écrire une L2 hors bassin — us.py/sg.py calculaient
+    encore sur la commune et auraient réécrit valeur ET titre, cohérents et faux — et ce test jure
+    qu'aucune L2 hors bassin n'est SERVIE.
+    """
+    fautes = []
+    for fiche in fiches:
+        for e in fiche.get("indicators") or []:
+            if (e.get("code") or e.get("id")) != "L2":
+                continue
+            if not isinstance(e.get("value"), (int, float)):
+                continue
+            if e.get("population_base") != "radius" or not e.get("population_radius_km"):
+                fautes.append(
+                    f"{fiche.get('id')} : L2 porte une valeur mais population_base="
+                    f"{e.get('population_base')!r} (pas 'radius' + population_radius_km)")
+    return fautes
+
+
+def test_le_controleur_de_base_attrape_une_L2_hors_bassin_fabriquee():
+    """Le garde doit mordre une L2 chiffrée dont le dénominateur n'est pas un bassin."""
+    bon = {"id": "zz-bon", "indicators": [
+        {"id": "L2", "value": 1.3, "population_base": "radius", "population_radius_km": 50}]}
+    faux = {"id": "zz-faux", "indicators": [
+        {"id": "L2", "value": 1.3, "population_base": "place"}]}
+    assert _l2_servie_sans_bassin([bon]) == []
+    assert len(_l2_servie_sans_bassin([faux])) == 1
+
+
+def test_aucune_L2_servie_porteuse_de_valeur_hors_bassin():
+    """Jumeau servi du garde produit de country.py : 275/275 L2 chiffrées reposent sur un bassin."""
+    cal = REPO_ROOT.parent / "smdc-newsroom" / "calibration"
+    if not cal.is_dir():
+        pytest.skip("corpus privé absent de cette copie")
+    from engine.core import datacenter_paths
+
+    fiches = [json.loads(p.read_text(encoding="utf-8")) for p in datacenter_paths(cal)]
+    fautes = _l2_servie_sans_bassin(fiches)
+    assert not fautes, (
+        f"{len(fautes)} L2 servies portent une valeur sans dénominateur de bassin :\n  - "
+        + "\n  - ".join(fautes[:10]))
