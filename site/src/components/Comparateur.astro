@@ -22,6 +22,7 @@ import outlines from "../data/outlines.json";
 import { operateurIdentifie } from "../config/operator";
 import { LOCALE, copie, deuxPoints, type LangueDeclaree } from "../content/langues";
 import { reglesDeLien } from "../config/routes";
+import { COUNTRY_NAMES } from "../config/stats";
 
 const { lang, index, pays: paysBrut } = Astro.props as {
   // 🔴 Le type disait DEUX langues alors que `pages/nl/vergelijken.astro` passe « nl »
@@ -189,21 +190,14 @@ const t = copie({
   },
 }, lang);
 
-// Les noms de pays sont des mots : ils vivent ici, par langue. La colonne néerlandaise a
-// été ajoutée le 2026-11-06 — sans elle `NOM_PAYS[c]?.[lang]` rendait `undefined`, et le
-// repli affichait le CODE ISO brut à un lecteur néerlandais.
-const NOM_PAYS: Record<string, Record<LangueDeclaree, string>> = {
-  FR: { fr: "France", en: "France", nl: "Frankrijk" }, DE: { fr: "Allemagne", en: "Germany", nl: "Duitsland" },
-  NL: { fr: "Pays-Bas", en: "Netherlands", nl: "Nederland" }, IT: { fr: "Italie", en: "Italy", nl: "Italië" },
-  PL: { fr: "Pologne", en: "Poland", nl: "Polen" }, ES: { fr: "Espagne", en: "Spain", nl: "Spanje" },
-  CH: { fr: "Suisse", en: "Switzerland", nl: "Zwitserland" }, SE: { fr: "Suède", en: "Sweden", nl: "Zweden" },
-  NO: { fr: "Norvège", en: "Norway", nl: "Noorwegen" }, BE: { fr: "Belgique", en: "Belgium", nl: "België" },
-  FI: { fr: "Finlande", en: "Finland", nl: "Finland" }, DK: { fr: "Danemark", en: "Denmark", nl: "Denemarken" },
-  GB: { fr: "Royaume-Uni", en: "United Kingdom", nl: "Verenigd Koninkrijk" }, IE: { fr: "Irlande", en: "Ireland", nl: "Ierland" },
-  LU: { fr: "Luxembourg", en: "Luxembourg", nl: "Luxemburg" }, AT: { fr: "Autriche", en: "Austria", nl: "Oostenrijk" },
-  PT: { fr: "Portugal", en: "Portugal", nl: "Portugal" },
-};
-const nomPays = (c: string) => NOM_PAYS[c]?.[lang] ?? c;
+// 🔴 TABLE UNIQUE. Ce fichier portait sa PROPRE liste de noms de pays, et le soir de la
+// publication de Singapour elle n'avait pas SG : la page a servi « SG (47) » au milieu de
+// dix pays nommés, en français, en anglais et en néerlandais. Un code ISO se lit comme une
+// donnée non traduite, parce que c'en est une. Le garde d'i18n existait déjà — il lisait
+// `config/stats.ts`, et cette table-ci lui échappait. Deux listes pour une question : la
+// seconde finit toujours par être celle qu'on oublie (cf. l'avertissement en tête de
+// config/operator.ts, où la même question avait quatre réponses divergentes).
+const nomPays = (c: string) => COUNTRY_NAMES[c]?.[lang] ?? c;
 
 const dispos = index.pays.map((p: any) => ({ ...p, nom: nomPays(p.pays) }))
   .sort((a: any, b: any) => a.nom.localeCompare(b.nom, lang));

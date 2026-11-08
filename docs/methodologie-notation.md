@@ -1,7 +1,7 @@
 # Méthodologie de notation — ScoreMyDataCenter
 
 **The data center acceptability-risk score** · observatoire indépendant · fondé par Franck Bardol
-Version **0.1.0-draft** · brouillon non figé · licence **CC BY-SA 4.0**
+Version **0.4.0** · 2026-11-08 · licence **CC BY-SA 4.0**
 Document généré depuis `methodology.json` (la grille est de la donnée versionnée, pas de la prose).
 
 > Document de travail du calibrage — **PROVISOIRE**, pédagogique et citable.
@@ -55,16 +55,18 @@ et la distinction est **déclarée** :
 
 **Règle : maximiser le référentiel, minimiser l'éditorial — et le déclarer.**
 
-## 5. La grille — les 26 indicateurs
+## 5. La grille — les 24 indicateurs
 
 ### Énergie — 25 %
 
 | Indicateur | Bloc | Coef. | Sens | Référentiel de seuil | Source |
 |---|---|---|---|---|---|
-| **Intensité carbone du réseau local** | Site (subi) | 15 % | plus bas = mieux | [ADEME Base Empreinte — grid emission factors](https://base-empreinte.ademe.fr/) | RTE eCO2mix |
-| **Capacité / proximité de raccordement** | Site (subi) | 35 % | qualitatif | — | RTE Caparéseau, S3REnR |
-| **Congestion / file d'attente réseau** | Site (subi) | 25 % | qualitatif | — | RTE / ODRÉ |
-| **PUE (efficacité énergétique annoncée)** | Projet (choisi) | 15 % | plus bas = mieux | — | ICPE filing, press |
+| **Intensité carbone du réseau local** | Site (subi) | 12 % | plus bas = mieux | [ADEME Base Empreinte — grid emission factors](https://base-empreinte.ademe.fr/) | RTE eCO2mix |
+| **Capacité / proximité de raccordement** | Site (subi) | 28 % | qualitatif | — | RTE Caparéseau, S3REnR |
+| **Congestion / file d'attente réseau** | Site (subi) | 16 % | qualitatif | — | RTE / ODRÉ |
+| **PUE (efficacité énergétique annoncée)** | Projet (choisi) | 13 % | plus bas = mieux | — | ICPE filing, press |
+| **Raccordabilité à un réseau de chaleur** | Site (subi) | 14 % | qualitatif | [Raccordable = ≤300 m d'un tracé OU dans un périmètre de développement prioritaire (PDP) ; proche = ≤1000 m ; sinon éloigné. Source France Chaleur Urbaine.](https://www.data.gouv.fr/datasets/traces-des-reseaux-de-chaleur-et-de-froid) | France Chaleur Urbaine (data.gouv, Licence Ouverte v2) |
+| **Récupération de la chaleur fatale — engagement** | Projet (choisi) | 10 % | qualitatif | [ISO/IEC 30134-6 — Energy Reuse Factor (ERF)](https://www.iso.org/standard/79095.html) | operator, permitting file |
 
 ### Eau — 20 %
 
@@ -82,15 +84,17 @@ et la distinction est **déclarée** :
 | **Recouvrement / distance zones protégées** | Site (subi) | 20 % | qualitatif | — | INPN, Natura 2000, ZNIEFF |
 | **Statut du sol (artificialisé / ENAF / agricole)** | Site (subi) | 35 % | qualitatif | [Cerema artificialization inventory + ZAN framework categories](https://artificialisation.developpement-durable.gouv.fr/) | Cerema, RPG |
 | **Continuités écologiques (TVB)** | Site (subi) | 20 % | qualitatif | — | SRADDET, INPN |
-| **Surface au sol du projet** | Projet (choisi) | 15 % | plus bas = mieux | — | ICPE filing, building permit |
-| **Mesures ERC / récupération de chaleur** | Projet (choisi) | 10 % | qualitatif | [ISO/IEC 30134-6 — Energy Reuse Factor (ERF), le référentiel international de la réutilisation de la chaleur fatale des data centers](https://www.iso.org/standard/79095.html) | operator, permitting file |
+| **Surface au sol du site** | Projet (choisi) | 15 % | plus bas = mieux | — | ICPE filing, building permit |
+| **Mesures ERC (éviter-réduire-compenser)** | Projet (choisi) | 10 % | qualitatif | Séquence Éviter-Réduire-Compenser (code de l'environnement, art. L110-1) | operator, permitting file |
+| **Désignation à l'urbanisation dans un plan supra-communal** | Projet (choisi) | 0 % | qualitatif | — | schéma régional d'aménagement, document d'urbanisme supra-communal |
+| **Procédure de mise en compatibilité du document d'urbanisme en cours** | Projet (choisi) | 0 % | qualitatif | — | délibération communale, dossier de concertation, acte administratif |
 
 ### Impact local — 20 %
 
 | Indicateur | Bloc | Coef. | Sens | Référentiel de seuil | Source |
 |---|---|---|---|---|---|
 | **Profil socio-économique de la commune** | Site (subi) | 15 % | nuancé | — | INSEE |
-| **Capacité d'absorption (taille du projet vs commune)** | Site (subi) | 15 % | plus bas = mieux | — | INSEE |
+| **Capacité d'absorption (taille du projet vs bassin de population)** | Site (subi) | 15 % | plus bas = mieux | — | GHS-POP R2023A (JRC) |
 | **Aléa technologique / Seveso environnant** | Site (subi) | 10 % | qualitatif | — | Géorisques |
 | **Emplois annoncés** | Projet (choisi) | 15 % | plus haut = mieux | — | press releases, press |
 | **Retombées fiscales annoncées** | Projet (choisi) | 10 % | qualitatif | — | council deliberations, press |
@@ -134,5 +138,5 @@ Ce qu'elle **est** : une grille experte, sourcée, versionnée et reproductible.
 
 ---
 
-*Franck Bardol · ScoreMyDataCenter · méthode 0.1.0-draft · CC BY-SA 4.0.*
+*Franck Bardol · ScoreMyDataCenter · méthode 0.4.0 · CC BY-SA 4.0.*
 *Grille de référence machine-lisible : `site/public/data/methodology.json`. Doc reproductible : `python scripts/gen_methodology_doc.py`.*
