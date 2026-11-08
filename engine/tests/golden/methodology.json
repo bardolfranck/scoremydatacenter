@@ -1,7 +1,7 @@
 {
-  "version": "0.3.0",
+  "version": "0.4.0",
   "status": "draft",
-  "published_at": "2026-09-30",
+  "published_at": "2026-11-08",
   "pillars": [
     {
       "id": "energy",
@@ -877,50 +877,34 @@
     {
       "id": "L2",
       "label": {
-        "fr": "Capacité d'absorption (taille du projet vs commune)",
-        "en": "Absorption capacity (project size vs municipality)",
-        "nl": "Absorptievermogen (project vs gemeente)"
+        "fr": "Capacité d'absorption (taille du projet vs bassin de population)",
+        "en": "Absorption capacity (project size vs surrounding population)",
+        "nl": "Absorptievermogen (project versus omliggende bevolking)"
       },
       "description": {
-        "fr": "La taille du projet rapportée à celle de la commune : un très gros projet dans une petite commune bouleverse davantage.",
-        "en": "The project's size relative to the town: a very large project in a small town disrupts more.",
-        "nl": "De omvang van het project afgezet tegen die van de gemeente: een zeer groot project in een kleine gemeente ontwricht meer."
+        "fr": "La taille du projet rapportée à la population de son bassin (dans un rayon de 50 km) : un très gros projet au regard de la population qui l'entoure pèse davantage.",
+        "en": "The project's size relative to the population of its 50 km basin: a very large project relative to the surrounding population weighs more heavily.",
+        "nl": "De omvang van het project afgezet tegen de bevolking binnen een straal van 50 km: een zeer groot project ten opzichte van de omringende bevolking weegt zwaarder."
       },
       "pillar": "local_impact",
       "weight_in_pillar": 0.15,
       "block": "base",
       "tier": 1,
       "nature": "public_fact",
-      "unit": "MW per 1000 inhabitants",
+      "unit": "MW per 1000 inhabitants (50 km basin)",
       "direction": "lower_is_better",
       "mvp": true,
       "sources": [
-        "INSEE"
+        "GHS-POP R2023A (JRC)"
       ],
       "normalization": {
-        "type": "thresholds",
-        "thresholds": [
-          {
-            "up_to": 1,
-            "score": 100
-          },
-          {
-            "up_to": 10,
-            "score": 60
-          },
-          {
-            "up_to": 100,
-            "score": 30
-          },
-          {
-            "above": true,
-            "score": 0
-          }
-        ]
+        "type": "log_linear",
+        "ratio_full": 0.0001,
+        "ratio_zero": 100.0
       },
       "threshold_basis": {
         "type": "editorial_choice",
-        "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
+        "rationale": "Recalibrated 2026-11-08 for the 50 km population basin (v0.4.0). The denominator is the population within a 50 km radius of the site, measured on the GHS-POP R2023A raster (epoch E2020, EPSG:4326, 30 arc-sec) — a frontier-agnostic, cross-country-comparable source; modelled (dasymetric), hence comparable rather than exact. The scale is absolute and logarithmic: score 100 at a ratio <= 1e-4 MW per 1000 inhabitants (a data centre negligible at community scale), score 0 at a ratio >= 1e2 (a load that dwarfs the local population), linear in log10 between and clamped. Anchors are set by meaning, not by corpus quantiles; checked against 265 basin ratios (FR+US, 2026-11-07). Moving from a municipality to a basin denominator is net-favourable for isolated rural sites and is declared as such: a sparsely populated surrounding area weighs more, which is a real effect, not a penalty. Because no L2 value is yet 'measured', every L2 is bounded by declarative_score_cap (60); this curve is therefore visible only where it falls below that cap, which is why two sites with very different ratios can show the same capped sub-score."
       },
       "calibration_status": "calibrated"
     },

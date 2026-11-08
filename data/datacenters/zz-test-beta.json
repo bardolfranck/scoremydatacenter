@@ -245,6 +245,17 @@
       "confidence": "medium",
       "event": "methodology_change",
       "rationale": "Méthodo v0.3.0 : F6 (désignation à l'urbanisation dans un plan supra-communal) et F7 (procédure de mise en compatibilité) entrent comme indicateurs INFORMATIONNELS — publiés comme faits, poids nul, hors de toute note. Re-score enregistré pour acter que les lettres NE BOUGENT PAS : c'est l'inertie promise par weight_in_pillar 0 qui est constatée, pas un changement de verdict."
+    },
+    {
+      "date": "2026-11-08",
+      "methodology_version": "0.4.0",
+      "grades": {
+        "site": "E",
+        "project_process": "insufficient_data"
+      },
+      "confidence": "medium",
+      "event": "methodology_change",
+      "rationale": "Méthodologie 0.4.0 : L2 se note par décade sur le bassin de population de 50 km (log_linear, ancres 1e-4 / 1e2) au lieu de paliers calés sur la commune. Décision Franck du 2026-11-08."
     }
   ],
   "synthesis": {

@@ -14,7 +14,7 @@
   "grades": {
     "site": {
       "grade": "B",
-      "score": 79.8,
+      "score": 78.9,
       "documentation": {
         "level": "high",
         "score": 1.0,
@@ -98,8 +98,8 @@
       }
     },
     "local_impact": {
-      "grade": "B",
-      "score": 65.9,
+      "grade": "C",
+      "score": 63.1,
       "coverage": 1.0,
       "documentation": {
         "level": "high",
@@ -129,9 +129,9 @@
     }
   },
   "citable_quote": {
-    "fr": "Noté B sur le site, C en projet & processus.",
-    "en": "Rated B on site, C on project & process.",
-    "nl": "Beoordeeld met B op de site, C op project & proces."
+    "fr": "Noté B sur le site, mais C sur « Impact local ».",
+    "en": "Rated B on site, but C on “Local impact”.",
+    "nl": "Beoordeeld met B op de site, maar C op ‘Lokale impact’."
   },
   "publication_status": "published",
   "provisional_band": {
@@ -143,8 +143,8 @@
     "a_reserved": true,
     "confidence": "high",
     "band": "B",
-    "worst": 73.3,
-    "best": 85.3,
+    "worst": 72.6,
+    "best": 84.6,
     "span": 0,
     "n_present": 15,
     "n_base": 15,
@@ -222,14 +222,14 @@
       "kind": "provisional_band",
       "provisional": true,
       "wide": false,
-      "central": "B",
+      "central": "C",
       "edges": [
-        "C"
+        "B"
       ],
       "band": "B–C",
       "a_reserved": false,
-      "worst": 62.0,
-      "best": 74.0,
+      "worst": 58.8,
+      "best": 70.8,
       "floor": 12.0,
       "width": 12.0,
       "n_present": 5,
@@ -620,16 +620,16 @@
     {
       "id": "L2",
       "label": {
-        "fr": "Capacité d'absorption (taille du projet vs commune)",
-        "en": "Absorption capacity (project size vs municipality)",
-        "nl": "Absorptievermogen (project vs gemeente)"
+        "fr": "Capacité d'absorption (taille du projet vs bassin de population)",
+        "en": "Absorption capacity (project size vs surrounding population)",
+        "nl": "Absorptievermogen (project versus omliggende bevolking)"
       },
       "pillar": "local_impact",
       "block": "base",
       "status": "measured",
       "value": 14.1,
       "proxies": null,
-      "score": 30.0,
+      "score": 14.2,
       "source": {
         "title": "Fictional census, municipality population 8500 (test)",
         "url": "https://example.org/zz/l2",
@@ -785,7 +785,7 @@
     }
   ],
   "dominant_drag": {
-    "indicator": "W1",
+    "indicator": "L2",
     "country": "ZZ"
   },
   "pillar_scope": {
@@ -825,6 +825,17 @@
       "confidence": "high",
       "event": "methodology_change",
       "rationale": "Méthodo v0.3.0 : F6 (désignation à l'urbanisation dans un plan supra-communal) et F7 (procédure de mise en compatibilité) entrent comme indicateurs INFORMATIONNELS — publiés comme faits, poids nul, hors de toute note. Re-score enregistré pour acter que les lettres NE BOUGENT PAS : c'est l'inertie promise par weight_in_pillar 0 qui est constatée, pas un changement de verdict."
+    },
+    {
+      "date": "2026-11-08",
+      "methodology_version": "0.4.0",
+      "grades": {
+        "site": "B",
+        "project_process": "C"
+      },
+      "confidence": "high",
+      "event": "methodology_change",
+      "rationale": "Méthodologie 0.4.0 : L2 se note par décade sur le bassin de population de 50 km (log_linear, ancres 1e-4 / 1e2) au lieu de paliers calés sur la commune. Décision Franck du 2026-11-08."
     }
   ],
   "contestation": [

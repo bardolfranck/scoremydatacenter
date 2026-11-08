@@ -110,7 +110,18 @@ def extreme_subscores(defn: dict) -> tuple[float, float]:
     if t == "thresholds":
         vals = [s["score"] for s in norm["thresholds"]]
         return float(min(vals)), float(max(vals))
-    if t == "bounded_linear":
+    if t in ("bounded_linear", "log_linear"):
+        # log_linear est ÉCRÊTÉ aux deux bornes par construction (voir engine.normalize) :
+        # 0 et 100 sont donc atteints exactement, pas approchés. Rien de la largeur de bande
+        # ne change pour L2 — ses paliers donnaient déjà (0, 100).
+        #
+        # 🔴 CE POINT A FAILLI PASSER (2026-11-08). Le barème `log_linear` a été câblé dans le
+        # dispatcher de `normalize.py` ; ICI vit un SECOND aiguillage sur le même ensemble de
+        # types, et il ne le connaissait pas. La bande provisoire levait sur les 3 339 fiches —
+        # le build s'arrêtait, donc rien de faux ne partait, mais rien ne partait non plus.
+        # Deux aiguillages sur la même énumération, c'est la même liste à deux endroits : le
+        # test `test_la_bande_connait_tous_les_baremes_du_schema` part désormais du SCHÉMA,
+        # qui est la seule liste, et refuse qu'un type déclaré manque ici.
         return 0.0, 100.0
     raise ValueError(f"plage_bands: unexpected base normalization {t!r} on {defn['id']}")
 

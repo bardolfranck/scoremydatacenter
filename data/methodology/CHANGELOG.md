@@ -2,6 +2,49 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.4.0 — 2026-11-08 — L2 : le dénominateur devient le BASSIN (50 km), et la note devient une COURBE
+
+- **Décision (Franck Bardol, 2026-11-08, « bassin + courbe aujourd'hui », en session agent-codeur-site)** :
+  L2 (« capacité d'absorption ») ne se rapporte plus à la population de la COMMUNE mais à celle du
+  **bassin de 50 km** autour du site, et sa note passe des paliers 1/10/100 à une **courbe log-linéaire
+  absolue**. Mot de Franck : *« un site irrigue un bassin, pas juste une commune ; les emplois ne se
+  comptent pas sur UNE commune mais sur un bassin »*. Libellé, description et source réécrits en
+  conséquence (`vs commune` → `vs bassin de population` ; `INSEE` → `GHS-POP R2023A (JRC)`), en fr/en/nl.
+- **Pourquoi le dénominateur.** Rapporté à une commune, un méga-site posé dans un village obtenait le
+  MEILLEUR score d'absorption (Fouju, 1400 MW pour ~650 habitants : L2 au plancher favorable), sur
+  l'indicateur dont le garde-fou dit l'inverse. Le bassin est **agnostique à la frontière administrative**
+  (la commune sous-compte les voisins, le comté américain sur-compte via des villes lointaines) et
+  **comparable d'un pays à l'autre** — mesuré sur raster GHS-POP (modélisé/dasymétrique : comparable, pas
+  exact). Le passage au bassin est **net-favorable** pour les sites isolés, et il est **déclaré comme tel**,
+  pas caché : une zone peu peuplée pèse davantage, c'est un effet réel, pas une pénalité.
+- **Pourquoi la courbe.** Les paliers 1/10/100 étaient calés sur des ratios de COMMUNE ; rapportés à un
+  bassin, 265 des 275 L2 chiffrées passaient sous le premier palier — l'indicateur cessait de discriminer
+  (3 valeurs servies distinctes). La courbe est **absolue** (ancrée par le sens, pas par les quantiles du
+  corpus) : 100 à un ratio ≤ 1e-4 MW/1000 hab (data center négligeable à l'échelle du bassin), 0 à ≥ 1e2
+  (charge qui écrase la population locale), linéaire en log10 entre, écrêtée. Elle est **≤ les anciens
+  paliers à ratio égal** : à dénominateur égal elle ne peut que baisser ou tenir — c'est elle qui retient
+  le flatteur que le bassin seul produirait, tout en séparant les méga-sites.
+- **Mécanisme** : `normalization.type` `thresholds` → **`log_linear`** (`ratio_full: 1e-4`, `ratio_zero: 1e2`),
+  dispatché par `engine/normalize.py` (`_log_linear`, lève sur un type ou une ancre invalides). Aucun poids,
+  aucun seuil de lettre, aucun autre indicateur ne change. **Le plafond déclaratif (60) est inchangé** :
+  aucune L2 n'étant `measured` (toutes `announced`/`estimated`), chaque L2 reste bornée à 60 — **la courbe
+  n'est visible que là où elle descend sous le plafond.**
+- **Effet sur le corpus** — DEUX mouvements couplés : (1) le dénominateur-bassin remonte des L2 (net-favorable,
+  surtout sites isolés) ; (2) la courbe les rabaisse ou les tient vs les anciens paliers (les méga-sites US
+  descendent sous le plafond et discriminent). Le **delta de lettres servies est mesuré par le témoin de
+  déploiement** (reconstruction sur l'état déployé, contrôle à 0 écart contre les artefacts publiés) **et
+  renvoyé à la calibration AVANT publication** — aucune lettre ne bouge en silence. La mesure qui a décidé
+  Franck : en bassin, **38 fiches perdent leur signal de disproportion et 0 ne le gagnent** — monotone dans
+  le sens que le garde-fou interdit, d'où le couplage courbe+bassin en un seul changement.
+- **Réparation de donnée liée (côté newsroom, pas la grille)** : 269 fiches servaient une PHRASE de source
+  qui nommait encore la commune pendant que la valeur divisait par le bassin (fait faux servi, invisible au
+  contrôleur de ratio) → réécrites au gabarit bassin GHS-POP, et le producteur corrigé pour qu'un run futur
+  ne réécrive plus la commune. Les 36 fiches à coordonnée fabriquée ne reçoivent PAS de bassin (L2 →
+  `not_collected`) : on ne somme pas une population autour d'un centroïde de mairie.
+- Signataire : **décision Franck Bardol (« bassin + courbe aujourd'hui », 2026-11-08)** ; grille
+  `agent-calibration-index-ML/R&D` ; moteur (`_log_linear`) `agent-codeur-site` ; dénominateur-raster
+  et field-ification `data-pipeline-FR` / `-WORLD`.
+
 ## 0.3.0 (errata) — 2026-10-26 — F4 : c'est la PARCELLE, pas le bâti
 
 - **Décision (Franck Bardol, 2026-10-26)** : F4 mesure l'emprise au sol du **SITE** — le terrain

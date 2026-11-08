@@ -1,3 +1,4 @@
+import pytest
 import re
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
@@ -15,7 +16,10 @@ def test_alpha_dual_grades(methodology, alpha):
     # no editorial gloss: the letter and the one-decimal score, nothing else
     # 79,3 -> 79,8 le 2026-10-17 : L1 est passé en `penalty_only`, donc son état « aucune
     # pénalité » est inerte et ne tire plus la moyenne du pilier. La LETTRE ne bouge pas.
-    assert (site["grade"], site["score"]) == ("B", 79.8)
+    # 79,8 -> 78,9 le 2026-11-08 : L2 se note par décade (barème 0.4.0, bassin de 50 km) et
+    # le ratio d'alpha vaut 14,2 au lieu de 30. La LETTRE ne bouge pas non plus — le détail
+    # du mouvement est figé dans test_le_barème_0_4_0_fait_tomber_limpact_local_dalpha.
+    assert (site["grade"], site["score"]) == ("B", 78.9)
     assert "close_to" not in site
     pp = r["grades"]["project_process"]
     # v0.2.0: heat recovery split out of F5 → E7 (project) entered MVP; alpha discloses no
@@ -204,11 +208,42 @@ def test_la_phrase_citable_ne_designe_pas_un_pilier_porte_par_un_seul_indicateur
     assert deux["fr"].replace(chr(0xa0), " ") == "Noté B sur le site, mais E sur « Eau »."
 
 
-def test_citable_quote_is_factual_without_a_worse_pillar(methodology, alpha):
-    # alpha: no graded pillar worse than site B -> no invented contrast, both notes stated.
-    q = score_datacenter(alpha, methodology)["citable_quote"]
+def test_citable_quote_is_factual_without_a_worse_pillar(methodology):
+    """AUCUN PILIER PLUS BAS QUE LE SITE → pas de contraste inventé, les deux notes énoncées.
+
+    Ce test s'appuyait sur la fiche alpha, « sans pilier plus bas que B ». Le barème 0.4.0 a
+    fait tomber son impact local à C (63,1) : la prémisse du test est devenue fausse et le
+    test aurait pu être « réparé » en recopiant la nouvelle phrase — ce qui aurait supprimé
+    le garde au lieu de le tenir. Il construit donc son cas lui-même, comme le test voisin
+    sur l'assise, et ne dépend plus d'un millésime de méthodologie.
+    """
+    from engine.scoring import _citable_quote
+    site = {"grade": "B"}
+    pp = {"grade": "C"}
+    # Deux piliers notés, tous deux au moins aussi bons que le site : rien à contraster.
+    piliers = {"water": {"grade": "B", "score": 70.0, "coverage": 0.9},
+               "energy": {"grade": "A", "score": 85.0, "coverage": 0.9}}
+    q = _citable_quote(site, pp, piliers, methodology, assise={"water": 3, "energy": 3})
     assert q["fr"] == "Noté B sur le site, C en projet & processus."
     assert q["en"] == "Rated B on site, C on project & process."
+    assert "mais" not in q["fr"], "aucun pilier plus bas : la phrase n'invente pas de contraste"
+
+
+def test_le_barème_0_4_0_fait_tomber_limpact_local_dalpha(methodology, alpha):
+    """La conséquence CHIFFRÉE du barème sur la fiche de référence, figée exprès.
+
+    alpha sert un ratio L2 d'environ 14 MW pour 1000 habitants. Par paliers il valait 30 ;
+    par décade il vaut 14,2. Son pilier d'impact local passe donc de B à C et la note du site
+    de 79,8 à 78,9 — la lettre tient (B), et c'est le seul mouvement attendu sur la fiche.
+
+    Figé ici pour que le prochain changement de barème se voie sur un cas lisible, au lieu
+    d'apparaître d'abord comme une dérive du golden.
+    """
+    r = score_datacenter(alpha, methodology)
+    assert r["indicators"]["L2"] == pytest.approx(14.2, abs=0.05)
+    assert r["pillars"]["local_impact"]["grade"] == "C"
+    assert r["grades"]["site"]["grade"] == "B"
+    assert r["grades"]["site"]["score"] == pytest.approx(78.9, abs=0.05)
 
 
 def test_grade_boundary_is_inclusive(methodology, alpha):
