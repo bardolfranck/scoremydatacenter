@@ -457,12 +457,42 @@ def construire(pays: str, fiches: list[dict], libelles: dict, froid: bool, force
     # nous copier ou nous attaquer. Dire la finesse sans détailler la faiblesse.
     vp = [v["variables_partagees"] for s_ in sites for v in s_["comparables"]]
     avec_cellule = sum(1 for c in cellules if c is not None)
+    # 🔴 DEUX CAUSES, UNE SEULE PHRASE (2026-11-08). Une cellule exige DEUX choses : une zone
+    # de puissance ET un usage reconnu à l'exploitant. Le motif « aucune puissance connue »
+    # était choisi sur `avec_cellule == 0`, donc il parlait aussi pour un pays dont la
+    # puissance EST publiée et dont les exploitants ne tombent dans aucun motif d'usage.
+    # Vrai par accident sur les douze pays d'alors (aucun ne servait de puissance), faux dès
+    # Singapour : trois fiches y publient 78, 58 et 20 MW. On compte donc la cause, au lieu
+    # de la déduire d'un total qui ne la distingue pas.
+    avec_puissance = sum(
+        1 for f in fiches
+        if _puissance.groupe({"power_mw": f.get("power_mw"),
+                              "power_mw_range": f.get("power_mw_range"),
+                              "power_mw_status": f.get("power_mw_status")}) is not None
+    )
     return {"pays": pays, "k_mutuel": K_MUTUEL, "affiches": affiches,
             "comparable_sur": list(COMPARABLE_SUR), "avec_cellule": avec_cellule,
+            "avec_puissance": avec_puissance,
             "selectivite": round(affiches / len(fiches), 3),
             "variables_medianes": int(np.median(vp)) if vp else 0,
             "umap": UMAP_PARAMS, "dbscan": DBSCAN_PARAMS,
             "familles": familles, "sites": sites}
+
+
+def motif_sans_comparaison(doc: dict) -> str:
+    """Pourquoi ce pays ne sert aucun rapprochement — la cause CONSTATÉE, pas déduite.
+
+    Trois états, et ils ne se confondent pas : aucune puissance publiée ; de la puissance
+    mais aucun exploitant dont l'usage est reconnu (donc aucune cellule) ; des cellules mais
+    aucune paire réciproque. Le deuxième état n'avait pas de phrase, et empruntait celle du
+    premier.
+    """
+    if doc["avec_puissance"] == 0:
+        return "aucune puissance connue"
+    if doc["avec_cellule"] == 0:
+        return (f"puissance connue sur {doc['avec_puissance']} site(s), "
+                "aucun usage d'exploitant identifié")
+    return "pas assez de sites comparables entre eux"
 
 
 def main() -> int:
@@ -528,8 +558,8 @@ def main() -> int:
         if servis == 0:
             sans.append({"pays": pays, "sites": len(lot),
                          "avec_cellule": doc["avec_cellule"],
-                         "raison": ("aucune puissance connue" if doc["avec_cellule"] == 0
-                                    else "pas assez de sites comparables entre eux")})
+                         "avec_puissance": doc["avec_puissance"],
+                         "raison": motif_sans_comparaison(doc)})
             continue
         (OUT_DIR / f"{pays}.json").write_text(json.dumps(doc, ensure_ascii=False))
         moy = np.mean([len(s["comparables"]) for s in doc["sites"]])
