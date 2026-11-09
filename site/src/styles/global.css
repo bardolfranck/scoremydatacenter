@@ -118,6 +118,26 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
 .main-nav a { white-space: nowrap; }
 .main-nav a:hover { color: var(--accent); }
 .lang-switch { padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 0.8rem; }
+/* Aperçu de l'édition visée, au survol du code de langue. Une édition de pays ne couvre
+   que ses pays : le lecteur l'apprenait en arrivant, maintenant il l'apprend avant de
+   partir. Pas de JS — `:hover` pour la souris, `:focus-visible` pour le clavier, et le
+   texte reste dans l'`aria-label` du lien pour les lecteurs d'écran (le span est
+   `aria-hidden`, sinon le nom du lien deviendrait la phrase entière). */
+.lang-switch { position: relative; }
+.lang-apercu {
+  position: absolute; top: calc(100% + 9px); right: 0; z-index: 20;
+  width: max-content; max-width: min(272px, calc(100vw - 32px));
+  padding: 9px 11px; border: 1px solid var(--line); border-radius: 12px;
+  background: var(--paper); box-shadow: 0 14px 34px rgba(20, 30, 45, 0.15);
+  font-size: 0.76rem; font-weight: 500; line-height: 1.45; color: var(--ink-soft);
+  white-space: normal; text-align: left; text-wrap: pretty;
+  opacity: 0; visibility: hidden; transition: opacity 0.16s ease;
+}
+/* pont invisible : le pointeur traverse l'espace sans refermer la bulle */
+.lang-apercu::before { content: ""; position: absolute; left: 0; right: 0; top: -9px; height: 9px; }
+.lang-switch:hover > .lang-apercu,
+.lang-switch:focus-visible > .lang-apercu { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .lang-apercu { transition: none; } }
 
 /* ── Grouped header: 4 heads, dropdowns on desktop, accordions on mobile ── */
 .nav-group { position: relative; }
@@ -164,6 +184,7 @@ h1, h2, h3, p { overflow-wrap: break-word; margin: 0; }
   .nav-menu::before { display: none; }
   .main-nav > .nav-link { width: 100%; padding: 11px 2px; border-top: 1px solid var(--line); }
   .main-nav > .lang-switch { align-self: flex-start; width: auto; margin-top: 8px; }
+  .lang-apercu { right: auto; left: 0; }
 }
 
 /* Hero — split, image right, dual-grade panel anchored to the real product */

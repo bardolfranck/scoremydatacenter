@@ -2757,3 +2757,105 @@ def test_le_comparateur_lit_la_table_unique_des_noms_de_pays():
         f"{len(locales)} noms de pays sont redéclarés dans Comparateur.astro ({sorted(set(locales))[:6]}) "
         "— la réparation est de lire config/stats.ts, pas d'y recopier les pays"
     )
+
+
+# ──────────────────────────────────────────────────────────────────────────────────────────
+# UNE ÉDITION QUI NE COUVRE PAS TOUT DOIT LE DIRE — ET LE DIRE SANS LISTE À ELLE
+# ──────────────────────────────────────────────────────────────────────────────────────────
+# 🔴 Depuis le 2026-11-06, `PAYS_DE_LA_LANGUE` restreint l'édition néerlandaise aux fiches
+# néerlandaises et belges. La décision est documentée et VOULUE — mais elle était muette : le
+# sélecteur offrait « NL » sans dire qu'on arrivait sur une édition de deux pays. Une
+# restriction éditoriale appliquée sans être annoncée se lit comme une page incomplète.
+#
+# Ce garde tient les deux bouts, et le second est celui qui compte le jour d'après : que
+# l'annonce EXISTE, et qu'elle DÉRIVE de la déclaration au lieu de nommer les pays en dur.
+# Une phrase qui écrit « Pays-Bas et Belgique » dans la table est vraie aujourd'hui et
+# devient fausse à la première édition de pays suivante, sans que rien ne casse — la famille
+# des trois phrases vraies par accident que l'arrivée de Singapour a révélées le 2026-11-07.
+
+
+def _pays_par_edition() -> dict[str, list[str] | None]:
+    """`PAYS_DE_LA_LANGUE`, lu à sa source. `None` = l'édition couvre le corpus entier."""
+    litteral = bloc(LANGUES_TS.read_text(encoding="utf-8"), "PAYS_DE_LA_LANGUE")
+    par_edition: dict[str, list[str] | None] = {}
+    for langue, valeur in re.findall(r"^\s{2}(\w+):\s*(\"tous\"|\[[^\]]*\])", litteral, re.M):
+        par_edition[langue] = None if valeur == '"tous"' else re.findall(r'"(\w+)"', valeur)
+    assert par_edition, "PAYS_DE_LA_LANGUE : aucune édition relevée — le garde ne garde rien"
+    return par_edition
+
+
+def test_une_edition_de_pays_sannonce_dans_chaque_langue():
+    partielles = {lg: p for lg, p in _pays_par_edition().items() if p}
+    if not partielles:
+        pytest.skip("aucune édition de pays déclarée — rien à annoncer")
+
+    chrome = CHROME_TS.read_text(encoding="utf-8")
+    stats = (REPO_ROOT / "site" / "src" / "config" / "stats.ts").read_text(encoding="utf-8")
+    for langue in _langues_declarees():
+        litteral = bloc(chrome, langue.upper())
+        m = re.search(r'apercuEdition:\s*"((?:[^"\\]|\\.)*)"', litteral)
+        assert m, (
+            f"chrome.ts / {langue.upper()} n'a pas d'`apercuEdition`, alors que "
+            f"{sorted(partielles)} ne couvre(nt) qu'une partie du corpus. Le sélecteur "
+            f"offrirait cette édition sans dire ce qu'on y trouve."
+        )
+        phrase = m.group(1)
+        assert "{pays}" in phrase, (
+            f"chrome.ts / {langue.upper()} : `apercuEdition` n'a pas le trou `{{pays}}` — "
+            f"la phrase ne peut donc pas nommer les pays de l'édition, et le lecteur reçoit "
+            f"une annonce qui ne dit rien de ce qui la motive"
+        )
+        # Le trou est là pour être rempli par la DÉCLARATION. Un nom de pays écrit en clair
+        # dans la phrase est une liste parallèle : vraie ce jour-là, fausse à l'édition
+        # suivante, et muette au moment de le devenir.
+        for prefixe in sorted({p for pays in partielles.values() for p in pays}):
+            noms = re.search(
+                rf'\b{prefixe.upper()}:\s*\{{([^}}]*)\}}', stats)
+            for nom in re.findall(r'"([^"]+)"', noms.group(1) if noms else ""):
+                assert nom not in phrase, (
+                    f"chrome.ts / {langue.upper()} : `apercuEdition` nomme « {nom} » en dur. "
+                    f"Les pays viennent de PAYS_DE_LA_LANGUE via COUNTRY_NAMES — une liste "
+                    f"écrite ici ne suivrait pas la prochaine édition de pays"
+                )
+
+
+def test_le_selecteur_de_langue_derive_la_couverture_au_lieu_de_la_coder():
+    """Le gabarit ne doit pas reconnaître une édition de pays à son code de langue.
+
+    🔴 C'est la régression qui ne se voit pas. `=== "nl"` dans `Base.astro` marcherait
+    parfaitement, jusqu'au jour où une seconde édition de pays arrive : elle n'aurait pas son
+    aperçu, et rien ne tomberait. Le gabarit doit passer par `paysDeLEdition`, qui rend `null`
+    pour une édition de référence — un ternaire ne dit pas qu'il ignore un cas, il en choisit un.
+
+    ⚠️ CE GARDE A RATÉ SA PREMIÈRE CIBLE, et c'est pour ça qu'il est écrit comme ça. Version
+    initiale : il cherchait `lang === "nl"` et vérifiait que `paysDeLEdition` était PRÉSENT
+    dans le fichier. Mutation réelle du 2026-11-08 — remplacer l'appel par
+    `cible === "nl" ? ["nl","be"] : null` — et il est resté vert : la variable ne s'appelait
+    pas `lang`, et l'import suffisait à satisfaire la présence. Un garde se mesure sur la
+    mutation qu'il doit attraper, jamais sur le fait qu'il passe
+    ([[figer-par-test-revele-les-fantomes]]).
+    """
+    texte = (REPO_ROOT / "site" / "src" / "layouts" / "Base.astro").read_text(encoding="utf-8")
+    assert "paysDeLEdition(" in texte, (
+        "Base.astro n'APPELLE pas `paysDeLEdition` : l'aperçu de l'édition ne dérive plus de "
+        "PAYS_DE_LA_LANGUE, donc il peut mentir sans que rien ne le dise. Un import sans "
+        "appel ne garde rien."
+    )
+    # Les codes à surveiller sont ceux des éditions de pays — DÉRIVÉS, pas listés ici.
+    # `"en"` et `"fr"` restent comparables en dur : ce sont les éditions de référence, et le
+    # gabarit a de bonnes raisons de les nommer (x-default, repli de la préviz).
+    codes = sorted(lg for lg, pays in _pays_par_edition().items() if pays)
+    if not codes:
+        pytest.skip("aucune édition de pays déclarée")
+    motif = re.compile(r'===\s*"(' + "|".join(map(re.escape, codes)) + r')"')
+    nu = [
+        ligne.strip()
+        for ligne in texte.splitlines()
+        if motif.search(ligne[: i] if (i := debut_de_commentaire(ligne)) > 0 else ligne)
+        and i != 0
+    ]
+    assert not nu, (
+        f"Base.astro compare un code d'édition de pays en dur ({nu[:2]}) — la couverture "
+        f"d'une édition se lit dans PAYS_DE_LA_LANGUE, pas dans son nom. Codes surveillés : "
+        f"{codes}"
+    )

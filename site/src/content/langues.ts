@@ -86,6 +86,25 @@ export function langueCouvreLaFiche(lang: LangueDeclaree, id: string): boolean {
   return pays.includes(String(id).split("-", 1)[0]);
 }
 
+/**
+ * Les pays que l'édition d'une langue couvre — ou `null` quand elle couvre le corpus entier.
+ *
+ * 🔴 CE QUI EST SERVI N'EST PAS CE QUI EST VISIBLE. `PAYS_DE_LA_LANGUE` décide depuis le
+ * 2026-11-06 quelles fiches une édition publie ; rien ne le DISAIT au lecteur. Un visiteur
+ * français qui cliquait « NL » arrivait sur une édition où les fiches américaines sont en
+ * anglais, sans avoir été averti que cette édition couvre deux pays et non le monde. Une
+ * restriction éditoriale qu'on applique sans l'annoncer se lit comme une page incomplète.
+ *
+ * Cette fonction existe pour que l'ANNONCE dérive de la DÉCISION, et d'elle seule : le
+ * sélecteur de langue n'a aucune liste à lui. Une édition de pays supplémentaire reçoit
+ * son aperçu sans qu'on rouvre le gabarit, et une édition de référence n'en reçoit pas —
+ * c'est `null` qui le dit, pas un test sur le code de langue.
+ */
+export function paysDeLEdition(langue: LangueDeclaree): readonly string[] | null {
+  const pays = PAYS_DE_LA_LANGUE[langue];
+  return pays === "tous" ? null : pays;
+}
+
 /** Les fiches que l'édition d'une langue publie. Le tri d'origine est conservé. */
 export function fichesDeLaLangue<T extends { id: string }>(
   lang: LangueDeclaree,
@@ -129,6 +148,25 @@ export const LOCALE: Record<LangueDeclaree, string> = {
   en: "en-GB",
   nl: "nl-NL",
 };
+
+// 🔴 « ET » EST UN MOT DE LA LANGUE, PAS UN SÉPARATEUR. Énumérer deux pays demande une
+// conjonction — « Pays-Bas et Belgique », « Netherlands and Belgium », « Nederland en
+// België » — et elle se serait écrite dans le gabarit, en dur, donc en français pour toute
+// langue nouvelle. Même famille que la virgule décimale et l'espace avant les deux-points :
+// une propriété de la langue, déclarée une fois. Le séparateur des éléments NON FINAUX en
+// est une autre : le français et l'anglais mettent une virgule, et une langue peut en
+// décider autrement.
+export const CONJONCTION_LISTE: Record<LangueDeclaree, string> = {
+  fr: "et",
+  en: "and",
+  nl: "en",
+};
+
+/** `mots` énumérés avec la conjonction de `lang` : « a », « a et b », « a, b et c ». */
+export function listeDeMots(lang: LangueDeclaree, mots: readonly string[]): string {
+  if (mots.length <= 1) return mots[0] ?? "";
+  return `${mots.slice(0, -1).join(", ")} ${CONJONCTION_LISTE[lang]} ${mots[mots.length - 1]}`;
+}
 
 export const SEPARATEUR_DECIMAL: Record<LangueDeclaree, string> = {
   fr: ",",

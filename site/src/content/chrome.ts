@@ -57,6 +57,26 @@ const FR = {
       { label: "Mentions légales", href: "/fr/mentions-legales/" },
     ] },
   ],
+  // 🔴 CE QUE LE SÉLECTEUR DE LANGUE NE DISAIT PAS. Depuis le 2026-11-06, une édition de
+  // pays ne couvre QUE ses pays (`PAYS_DE_LA_LANGUE`) : l'édition néerlandaise publie les
+  // fiches néerlandaises et belges, et sert les autres en anglais. C'était vrai, voulu,
+  // documenté — et invisible. Un lecteur qui cliquait « NL » ne pouvait pas distinguer un
+  // choix éditorial d'une traduction en retard.
+  //
+  // Le trou `{pays}` est rempli par le gabarit avec les pays que la DÉCLARATION donne, dans
+  // la langue de qui lit : la phrase ne nomme donc aucun pays en dur, et l'édition suivante
+  // sera décrite juste sans qu'on rouvre cette table. La phrase est servie dans la langue de
+  // la PAGE, pas dans celle de l'édition visée — un francophone qui hésite doit comprendre
+  // l'avertissement avant de changer de langue, pas après.
+  //
+  // 🔴 ET LA LISTE VIENT APRÈS UN DEUX-POINTS, PAS EN COMPLÉMENT. Première version :
+  // « les fiches de {pays} » — rendu « les fiches de Pays-Bas et Belgique » dans le
+  // navigateur. L'article contracté devant un nom de pays (« des Pays-Bas », « de la
+  // Belgique ») est une règle du français, et une liste DÉRIVÉE ne peut pas la porter :
+  // il faudrait déclarer le genre et l'article de chaque pays, dans chaque langue, pour
+  // une phrase de huit mots. Mettre la liste après un deux-points supprime le besoin — et
+  // vaut pour un pays comme pour cinq. Trouvé en REGARDANT la page, pas par un test.
+  apercuEdition: "Fiches et pages d'explication\u202f: {pays}. Ailleurs, l'anglais.",
   consent: {
     aria: "Consentement à la mesure d'audience",
     text: "Mesure d'audience : nous utilisons Google Analytics pour compter les visites et comprendre ce qui est lu. Aucun cookie n'est déposé sans votre accord.",
@@ -98,6 +118,7 @@ const EN: typeof FR = {
       { label: "Legal notices", href: "/legal/" },
     ] },
   ],
+  apercuEdition: "Sites and explainer pages: {pays}. Elsewhere, English.",
   consent: {
     aria: "Audience-measurement consent",
     text: "Audience measurement: we use Google Analytics to count visits and understand what gets read. No cookie is set without your consent.",
@@ -109,12 +130,12 @@ const EN: typeof FR = {
 };
 
 
-// ── NÉERLANDAIS — EN PRÉPARATION, PAS ENCORE SERVI (voir `content/langues.ts`).
-// ⚠️ Les valeurs ci-dessous sont encore LE TEXTE FRANÇAIS, copié tel quel. Elles sont là
-// pour qu'un traducteur natif ait la source sous les yeux, à sa place dans la structure.
-// Elles NE DOIVENT PAS partir en ligne : `nl` n'est pas dans `LANGUES_VIVANTES`, et
-// `test_une_langue_ne_devient_vivante_que_traduite` refuse de l'y faire entrer tant que
-// ses valeurs sont celles du français.
+// ── NÉERLANDAIS — SERVI DEPUIS LE 2026-11-06 (voir `content/langues.ts`).
+// ⚠️ Ce commentaire disait encore « EN PRÉPARATION, PAS ENCORE SERVI » et « les valeurs
+// ci-dessous sont encore LE TEXTE FRANÇAIS » : les deux étaient faux depuis le 2026-11-06.
+// Un commentaire périmé sur un bloc SERVI est pire qu'une absence de commentaire — il
+// autorise à traiter ces chaînes comme un brouillon alors qu'elles sont sur chaque page
+// néerlandaise. Corrigé le 2026-11-08, en ajoutant `apercuEdition`.
 const NL: typeof FR = {
   dcwatch: 'Bevat informatie van <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL',
   // Baseline = description schema.org ET accroche du pied de page (une seule phrase).
@@ -145,6 +166,7 @@ const NL: typeof FR = {
       { label: "Juridische informatie", href: "/nl/juridisch/" },
     ] },
   ],
+  apercuEdition: "Datacenters en uitlegpagina's: {pays}. Elders Engels.",
   consent: {
     aria: "Toestemming voor bezoekersstatistieken",
     text: "Bezoekersstatistieken: we gebruiken Google Analytics om bezoeken te tellen en te begrijpen wat er wordt gelezen. Zonder uw toestemming wordt geen cookie geplaatst.",
