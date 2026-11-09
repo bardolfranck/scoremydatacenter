@@ -979,7 +979,15 @@ const { variant, labels } = Astro.props;
         };
       };
 
-      champ.addEventListener("input", () => { void proposer(); });
+      // UNE REQUÊTE QUAND LA FRAPPE SE POSE, pas une par lettre (2026-11-09). La recherche de
+      // projets passe par le serveur, et /api/* est limité à 6 requêtes par 10 secondes et par
+      // adresse : « equinix » tapé d'un trait en envoyait 7 et faisait bloquer un vrai lecteur.
+      // Même délai que la recherche du classement.
+      let attenteFrappe = 0;
+      champ.addEventListener("input", () => {
+        clearTimeout(attenteFrappe);
+        attenteFrappe = window.setTimeout(() => { void proposer(); }, 250);
+      });
       champ.addEventListener("keydown", (e) => { if (e.key === "Escape") fermer(); });
       // Un clic ailleurs referme : une liste de suggestions qui reste ouverte masque la
       // carte qu'on vient d'ouvrir.
