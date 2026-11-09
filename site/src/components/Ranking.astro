@@ -47,6 +47,13 @@ const legendeStatuts = [t.statusHelpTitre, ...Object.entries(t.status).map(
 // dont la page existe. Et la carte n'est pas écrite en néerlandais : le lien part alors
 // vers l'édition de repli, où la page existe.
 const mapPath = cheminDePage(lang as LangueDeclaree, "carte");
+// Pagination serveur (2026-11-09) : libellés du pager, par langue servie.
+const PAGER_LIBELLES: Record<string, { prev: string; next: string; page: string; aria: string }> = {
+  fr: { prev: "← Précédents", next: "Suivants →", page: "Page {n} sur {total}", aria: "Pages du classement" },
+  nl: { prev: "← Vorige", next: "Volgende →", page: "Pagina {n} van {total}", aria: "Pagina's van de ranglijst" },
+  en: { prev: "← Previous", next: "Next →", page: "Page {n} of {total}", aria: "Ranking pages" },
+};
+const PAGER = PAGER_LIBELLES[lang] ?? PAGER_LIBELLES.en;
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
@@ -355,12 +362,14 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
           </tbody>
         </table>
       </div>
-      {/* PAGINATION SERVEUR (2026-11-09). Le bouton n'existe que quand la page a été découpée
-          au build (data-api sur le tbody) : en `astro dev`, toutes les lignes sont là. */}
-      <button type="button" class="button rank-plus" id="rank-plus" hidden
-              data-label={(t as any).more ?? ({ fr: "Afficher les suivants · {reste} restants",
-                                                 nl: "Meer tonen · nog {reste}" } as Record<string, string>)[lang]
-                          ?? "Show more · {reste} remaining"}></button>
+      {/* PAGINATION SERVEUR (2026-11-09) — UNE PAGE À LA FOIS (Franck : « on clique suivant,
+          les précédents disparaissent »). N'apparaît que quand la page a été découpée au
+          build (data-api sur le tbody) : en `astro dev`, toutes les lignes sont là. */}
+      <nav class="rank-pager" id="rank-pager" hidden aria-label={PAGER.aria} data-page-label={PAGER.page}>
+        <button type="button" class="button" data-sens="-1">{PAGER.prev}</button>
+        <span class="rank-pager-pos" aria-live="polite"></span>
+        <button type="button" class="button" data-sens="1">{PAGER.next}</button>
+      </nav>
       <p class="rank-note">{t.note}</p>
       {/* La ligne de méthode est une note de bas de page, pas une entrée en matière : elle
           s'intercalait entre les filtres et le tableau, où personne ne la lit et où elle
@@ -393,26 +402,31 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   // qui applique EXACTEMENT les règles de tri ci-dessous (applyLocal) sur les mêmes
   // attributs. Sans `data-api` (astro dev), la page a toutes ses lignes et on trie ici.
   const API = tbody.dataset.api || "";
-  const boutonPlus = document.getElementById("rank-plus") as HTMLButtonElement;
+  const pager = document.getElementById("rank-pager") as HTMLElement;
+  const PAR = parseInt(tbody.dataset.par ?? "25", 10) || 25;
   let totalServeur = parseInt(tbody.dataset.total ?? "0", 10) || 0;
-  let pageServeur = 1;
+  let pageServeur = Math.max(1, parseInt(new URLSearchParams(location.search).get("page") ?? "1", 10) || 1);
   let requeteServeur = 0;
 
   const numeroter = () => {
-    let rank = 0;
+    // Le rang continue d'une page à l'autre : la 2ᵉ page commence à 26, pas à 1.
+    let rank = API ? (pageServeur - 1) * PAR : 0;
     for (const row of Array.from(tbody.querySelectorAll("tr")) as HTMLElement[]) {
       if (row.style.display === "none") continue;
       rank += 1;
       row.querySelector(".rank-index")!.textContent = String(rank);
     }
   };
-  const majPlus = () => {
+  const nbPages = () => Math.max(1, Math.ceil(totalServeur / PAR));
+  const majPager = () => {
     if (!API) return;
-    const reste = totalServeur - tbody.querySelectorAll("tr").length;
-    boutonPlus.hidden = reste <= 0;
-    boutonPlus.textContent = (boutonPlus.dataset.label ?? "").replace("{reste}", reste.toLocaleString(document.documentElement.lang));
+    pager.hidden = totalServeur <= PAR;
+    pager.querySelector(".rank-pager-pos")!.textContent = (pager.dataset.pageLabel ?? "")
+      .replace("{n}", String(pageServeur)).replace("{total}", String(nbPages()));
+    (pager.querySelector('[data-sens="-1"]') as HTMLButtonElement).disabled = pageServeur <= 1;
+    (pager.querySelector('[data-sens="1"]') as HTMLButtonElement).disabled = pageServeur >= nbPages();
   };
-  async function chargerServeur(page: number, ajouter: boolean) {
+  async function chargerServeur(page: number) {
     const params = new URLSearchParams({
       src: location.pathname, tri: triCle, ordre: triAsc ? "asc" : "desc",
       statut: statusSel.value, q: searchInput.value.trim(), page: String(page),
@@ -420,15 +434,22 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     const jeton = ++requeteServeur;
     const r = await fetch(`${API}?${params}`).then((x) => (x.ok ? x.json() : null)).catch(() => null);
     if (jeton !== requeteServeur || !r) return;      // une demande plus récente a pris la main
-    if (!ajouter) tbody.innerHTML = "";
-    tbody.insertAdjacentHTML("beforeend", r.lignes.join(""));
+    tbody.innerHTML = r.lignes.join("");              // la page en cours SEULE
     totalServeur = r.total;
     pageServeur = r.page;
     numeroter();
-    majPlus();
+    majPager();
     peutEtreUnLieu();
   }
-  boutonPlus?.addEventListener("click", () => { void chargerServeur(pageServeur + 1, true); });
+  pager?.addEventListener("click", (e) => {
+    const b = (e.target as HTMLElement).closest("button");
+    if (!b || b.disabled) return;
+    const cible = Math.min(nbPages(), Math.max(1, pageServeur + Number(b.dataset.sens)));
+    void chargerServeur(cible).then(() => {
+      majUrl();
+      table.scrollIntoView({ block: "start", behavior: "smooth" });
+    });
+  });
 
   function majUrl() {
     const params = new URLSearchParams();
@@ -436,14 +457,17 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     if (triAsc) params.set("ordre", "asc");
     if (statusSel.value !== "all") params.set("statut", statusSel.value);
     if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
+    if (API && pageServeur > 1) params.set("page", String(pageServeur));
     const query = params.toString();
     history.replaceState(null, "", query ? `?${query}` : location.pathname);
   }
 
+  // Changer de tri, de filtre ou de recherche repart de la page 1 ; seule l'ouverture
+  // d'un lien partagé (?page=3) garde sa page.
   function apply(updateUrl = true) {
     if (API) {
-      void chargerServeur(1, false);
-      if (updateUrl) majUrl();
+      if (updateUrl) pageServeur = 1;
+      void chargerServeur(pageServeur).then(() => { if (updateUrl) majUrl(); });
       return;
     }
     applyLocal(updateUrl);
@@ -764,8 +788,9 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   });
   // La page arrive déjà triée par défaut : on ne redemande au serveur que si l'URL
   // demande une autre vue (?tri=, ?statut=, ?q=…).
-  const vueParDefaut = triCle === "site" && !triAsc && statusSel.value === "all" && !searchInput.value.trim();
-  if (API && vueParDefaut) { numeroter(); majPlus(); }
+  const vueParDefaut = triCle === "site" && !triAsc && statusSel.value === "all"
+    && !searchInput.value.trim() && pageServeur === 1;
+  if (API && vueParDefaut) { numeroter(); majPager(); }
   else apply(false);
   marquerTri();
   if (!API) peutEtreUnLieu();

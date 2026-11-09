@@ -916,9 +916,11 @@ h3 { font-size: 1.06rem; line-height: 1.3; }
 .rank-project span { display: block; color: var(--muted); font-size: 0.82rem; }
 .rank-grade { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
 .rank-note { margin-top: 14px; color: var(--muted); font-size: 0.84rem; }
-/* Pagination serveur du classement (2026-11-09) : la suite arrive par paquets. */
-.rank-plus { display: block; margin: 18px auto 0; }
-.rank-plus[hidden] { display: none; }
+/* Pagination serveur du classement (2026-11-09) : une page à la fois. */
+.rank-pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 18px; }
+.rank-pager[hidden] { display: none; }
+.rank-pager-pos { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+.rank-pager button:disabled { opacity: 0.4; cursor: default; }
 /* Ranking ↔ map coupling */
 .rank-map-cta { display: inline-flex; align-items: center; margin-top: 8px; color: var(--accent); font-weight: 750; font-size: 0.95rem; }
 .rank-map-cta:hover { text-decoration: underline; }

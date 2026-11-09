@@ -61,7 +61,8 @@ def anonymiser(geo: dict, champs: tuple) -> dict:
 # deux endroits finit par diverger). Ce script les DÉCOUPE après le build : la page n'en
 # garde que les premières, dans l'ordre par défaut, et les autres partent dans la fonction
 # /api/classement, qui les sert par paquets de RANG_PAR_PAGE (tri, filtre, recherche).
-RANG_PAR_PAGE = 50
+# 25 (Franck 2026-11-09 : « 50 c'est beaucoup, 25 est largement suffisant »).
+RANG_PAR_PAGE = 25
 API_CLASSEMENT = "/api/classement"
 _TBODY = re.compile(r'(<table class="rank-table" id="rank-table">.*?<tbody)([^>]*)>(.*?)(</tbody>)', re.S)
 _LIGNE = re.compile(r"<tr\b.*?</tr>", re.S)
@@ -115,7 +116,7 @@ def classement_cote_serveur() -> str:
         brut = "".join(lignes).encode("utf-8")
         comp = zlib.compressobj(9, zlib.DEFLATED, -15)
         z = base64.b64encode(comp.compress(brut) + comp.flush()).decode("ascii")
-        donnees[chemin] = {"meta": metas, "z": z, "off": off}
+        donnees[chemin] = {"meta": metas, "z": z, "off": off, "par": RANG_PAR_PAGE}
         tete = [lignes[i] for i in ordre_par_defaut(metas)[:RANG_PAR_PAGE]]
         attributs = (f'{m.group(2)} data-api="{API_CLASSEMENT}" data-total="{len(lignes)}" '
                      f'data-par="{RANG_PAR_PAGE}"')

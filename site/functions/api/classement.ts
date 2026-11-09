@@ -16,9 +16,8 @@ import { km, reponse } from "../_shared/carte";
 import donnees from "../_data/classement.json";
 
 type Meta = [string, string, string, number | null, number | null, Record<string, number>];
-type Page = { meta: Meta[]; z: string; off: number[] };
+type Page = { meta: Meta[]; z: string; off: number[]; par: number };
 const PAGES = donnees as unknown as Record<string, Page>;
-const PAR = 50;
 
 // Le HTML d'une langue arrive compressé (deflate brut, base64) : on ne le décompresse
 // qu'à la première demande de cette langue, puis il reste en mémoire de l'instance.
@@ -62,6 +61,8 @@ export const onRequestGet: PagesFunction = async ({ request }) => {
   const asc = q.get("ordre") === "asc";
   const statut = q.get("statut") ?? "all";
   const cherche = norm((q.get("q") ?? "").trim().slice(0, 100));
+  // La taille de page vient du build (RANG_PAR_PAGE), la même que celle de la page servie.
+  const PAR = page.par;
   const numero = Math.max(1, Math.min(1000, parseInt(q.get("page") ?? "1", 10) || 1));
 
   let idx = Array.from({ length: n }, (_, i) => i);
