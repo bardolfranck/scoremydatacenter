@@ -10,6 +10,7 @@ import type { NavNode } from "../config/nav";
 import { cheminDeFiche, cheminDePortrait, cheminDePage } from "../config/routes";
 import { puissanceServie } from "../config/puissance";
 import type { LangueDeclaree } from "../content/langues";
+import { copie } from "../content/langues";
 import ScoreBadge from "./ScoreBadge.astro";
 import scoresData from "../../public/data/scores.json";
 import methodologyData from "../../public/data/methodology.json";
@@ -53,7 +54,7 @@ const PAGER_LIBELLES: Record<string, { prev: string; next: string; page: string;
   nl: { prev: "← Vorige", next: "Volgende →", page: "Pagina {n} van {total}", aria: "Pagina's van de ranglijst" },
   en: { prev: "← Previous", next: "Next →", page: "Page {n} of {total}", aria: "Ranking pages" },
 };
-const PAGER = PAGER_LIBELLES[lang] ?? PAGER_LIBELLES.en;
+const PAGER = copie(PAGER_LIBELLES, lang);
 const confidenceRank: Record<string, number> = { high: 3, medium: 2, low: 1 };
 
 const sortValue = (graded: any) => (graded && typeof graded.score === "number" ? graded.score : -1);
