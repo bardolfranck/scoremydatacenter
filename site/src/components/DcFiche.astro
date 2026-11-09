@@ -1090,13 +1090,31 @@ const seoDesc = seoLead
   import "maplibre-gl/dist/maplibre-gl.css";
   import { whitenBasemap } from "../scripts/basemap";
 
-  // Geographic context: a still mini-map centred on THIS project (coords come from
-  // map.geojson, the same artifact the big maps read — the fiche adds no data).
+  // Geographic context: a still mini-map centred on THIS project.
+  // 🔴 ELLE NE CHARGE PLUS LE CORPUS (2026-11-09). Elle téléchargeait les 3 339 fiches
+  // de /data/map.geojson pour en montrer une poignée au zoom 8 ; ce fichier ne nomme
+  // plus aucun site. Le serveur rend le site et ses voisins proches (/api/carte/voisins).
+  // En développement (`astro dev`, sans fonctions), repli sur le fichier encore complet.
   const mini = document.querySelector<HTMLElement>(".fiche-mini-map");
   if (mini) {
     try {
-      const geo = await (await fetch("/data/map.geojson")).json();
-      const f = geo.features.find((x: any) => x.properties.id === mini.dataset.dc);
+      const id = mini.dataset.dc || "";
+      let centre: [number, number] | null = null;
+      let voisins: any[] = [];
+      const r = await fetch(`/api/carte/voisins?id=${encodeURIComponent(id)}`).catch(() => null);
+      if (r && r.ok && (r.headers.get("content-type") || "").includes("json")) {
+        const d = await r.json();
+        centre = d.centre;
+        voisins = d.voisins;
+      } else {
+        const geo = await (await fetch("/data/map.geojson")).json();
+        const soi = geo.features.find((x: any) => x.properties.id === id);
+        if (soi) {
+          centre = soi.geometry.coordinates;
+          voisins = geo.features.filter((x: any) => x !== soi && x.properties.id);
+        }
+      }
+      const f = centre ? { geometry: { coordinates: centre } } : null;
       if (!f) {
         mini.style.display = "none"; // no coordinates published — no empty frame
       } else {
@@ -1129,8 +1147,7 @@ const seoDesc = seoLead
           const couvert = !R.prefixes || R.prefixes.includes(id.split("-")[0]);
           return (couvert ? R.fiche.couvert : R.fiche.repli).replace(":id", id);
         };
-        for (const n of geo.features) {
-          if (n.properties.id === mini.dataset.dc) continue;
+        for (const n of voisins) {
           const el = document.createElement("a");
           el.className = "map-marker mini-neighbour";
           el.href = lienDeFiche(n.properties.id);

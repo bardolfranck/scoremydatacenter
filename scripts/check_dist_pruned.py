@@ -17,8 +17,12 @@ et la vérification doit porter sur ce qui part, pas sur ce qui est censé parti
 
 ⚠️ À appeler depuis la cible `deploy`, et à rappeler si un jour quelqu'un déploie à la main.
 """
+import json
 import pathlib
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from prune_public_json import CHAMPS_POINT_SITE, CHAMPS_POINT_VEILLE, FONCTIONS_DATA  # noqa: E402
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DIST = RACINE / "site" / "dist"
@@ -47,6 +51,25 @@ def main() -> int:
             continue
         if MARQUE not in f.read_text()[:200]:
             fautes.append(f"data/{f.name} n'est pas un bouchon")
+
+    # 🔴 LA CARTE NE DOIT PLUS LIVRER LE CORPUS EN UN FICHIER (2026-11-09). Le geojson servi
+    # ne porte que des points anonymes ; un champ hors de la liste fermée (un nom, un
+    # opérateur, un identifiant) referait de ce fichier l'aspiration en un clic.
+    for fichier, champs in (("map.geojson", CHAMPS_POINT_SITE), ("watchlist.geojson", CHAMPS_POINT_VEILLE)):
+        f = DIST / "data" / fichier
+        if not f.exists():
+            continue
+        permis = {"t", *champs}
+        geo = json.loads(f.read_text())
+        en_trop = sorted({k for ft in geo["features"] for k in (ft.get("properties") or {})} - permis)
+        if en_trop:
+            fautes.append(f"data/{fichier} publie des champs nominatifs : {', '.join(en_trop)}")
+        # Et les infobulles doivent avoir leur source : sans la copie serveur, chaque clic
+        # sur la carte rendrait un 404 en production.
+        cible = FONCTIONS_DATA / ("carte.json" if fichier == "map.geojson" else "veille.json")
+        if not cible.exists() or len(json.loads(cible.read_text())["features"]) != len(geo["features"]):
+            fautes.append(f"functions/_data/{cible.name} absent ou désaccordé avec data/{fichier} "
+                          f"— les infobulles de la carte seraient vides")
 
     red = DIST / "_redirects"
     if not red.exists() or "/data/dc/*" not in red.read_text():

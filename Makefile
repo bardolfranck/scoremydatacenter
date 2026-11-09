@@ -111,7 +111,8 @@ build:
 # scores.json still 200/2.7 MB 20 h after the prune). Instead we OVERWRITE each
 # with a tiny no-store STUB, so the asset still EXISTS in the deployment:
 # Cloudflare then has something authoritative to serve and replaces the stale
-# corpus. Only the two geojson the map fetches at runtime keep real (Seau-A) data.
+# corpus. The two geojson the map fetches at runtime are served ANONYMOUS (points
+# only, 2026-11-09); names reach the browser one site per request via /api/carte/*.
 # `data/lieux/` est EXCLU du bouchonnage, et ce n'est pas une entorse à l'anti-pillage :
 # ce dictionnaire de communes n'est pas notre donnée, c'est GeoNames (CC BY 4.0), déjà
 # public à la source. Le protéger ne défendrait rien et casserait la recherche par lieu,
