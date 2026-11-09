@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// The living map — fed by map.geojson (engine artifact). Markers are grade
+// The living map — fed by map.geojson (engine artifact; served ANONYMOUS since
+// 2026-11-09 — names arrive per click from /api/carte/*). Markers are grade
 // chips; every popup shows both grades WITH the confidence level (the
 // ScoreBadge invariant holds in client-rendered HTML too).
 interface Props {
@@ -174,6 +175,27 @@ const { variant, labels } = Astro.props;
         </div>`;
     };
 
+    // 🔴 LE POINT NE NOMME PLUS LE SITE (Franck 2026-11-09). /data/map.geojson ne porte que
+    // de quoi PEINDRE la carte (position ~1 km, couleur, taille, pays) et `t`, un rang.
+    // Le nom, l'opérateur, la commune et les liens se demandent au serveur, UN site par
+    // clic : le corpus ne se télécharge plus en un fichier. En développement (`astro dev`,
+    // pas de fonctions), le fichier est encore complet et on s'en sert tel quel.
+    const detailsSite = async (p: any): Promise<any | null> => {
+      if (p.name) return p;
+      try {
+        const r = await fetch(`/api/carte/site?t=${encodeURIComponent(p.t)}`);
+        return r.ok ? (await r.json()).properties : null;
+      } catch { return null; }
+    };
+    const ATTENTE = `<div class="map-popup"><span class="map-popup-sub">…</span></div>`;
+    // L'infobulle s'ouvre tout de suite (le clic répond) et se remplit à l'arrivée.
+    const ouvrirInfobulle = (lngLat: [number, number], p: any) => {
+      const pop = new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
+        .setLngLat(lngLat).setHTML(ATTENTE).addTo(map);
+      void detailsSite(p).then((d) => (d ? pop.setHTML(sitePopupHtml(d)) : pop.remove()));
+      return pop;
+    };
+
     // Assigned by the full-map cluster setup; lets the watch kind-filter hide the graded
     // corpus (dots + donuts) even though there are no per-site DOM markers to toggle.
     let toggleClusteredSites: (visible: boolean) => void = () => {};
@@ -225,7 +247,8 @@ const { variant, labels } = Astro.props;
       const na = p.grade_site === "insufficient_data" || p.grade_site === "en_attente";
       const dot = document.createElement("span");
       dot.className = `map-dot ${na ? "dot-na" : `dot-${p.grade_site.toLowerCase()}`}${tier === 0 ? " mw-unknown" : ""}`;
-      dot.title = `${p.name}${operateurIdentifie(p.operator) ? ` — ${p.operator}` : ""}`;
+      // Le titre au survol nommait le site : il n'est plus dans le point (voir detailsSite).
+      if (p.name) dot.title = `${p.name}${operateurIdentifie(p.operator) ? ` — ${p.operator}` : ""}`;
       el.appendChild(dot);
       if (animateIntro) {
         // Armed but hidden until the section scrolls into view (see below).
@@ -234,13 +257,20 @@ const { variant, labels } = Astro.props;
         introDots.push(dot);
       }
 
-      const popupHtml = sitePopupHtml(p);
+      // Infobulle remplie à l'ouverture, une seule fois : le nom vient du serveur.
+      const popup = new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "320px" }).setHTML(ATTENTE);
+      let remplie = false;
+      popup.on("open", () => {
+        if (remplie) return;
+        remplie = true;
+        void detailsSite(p).then((d) => (d ? popup.setHTML(sitePopupHtml(d)) : popup.remove()));
+      });
 
       const marker = new maplibregl.Marker({ element: el })
         .setLngLat([lon, lat])
-        .setPopup(new maplibregl.Popup({ offset: 18, closeButton: false, maxWidth: "320px" }).setHTML(popupHtml))
+        .setPopup(popup)
         .addTo(map);
-      markerById[p.id] = { marker, center: [lon, lat] };
+      markerById[p.id ?? `t${p.t}`] = { marker, center: [lon, lat] };
     });
 
     // Play the cascade WHEN THE SECTION SCROLLS INTO VIEW, not on load (Franck
@@ -411,8 +441,7 @@ const { variant, labels } = Astro.props;
       const startClusters = () => {
         mountSites();
         map.on("click", "site-dot", (e: any) => {
-          new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
-            .setLngLat(e.features[0].geometry.coordinates).setHTML(sitePopupHtml(e.features[0].properties)).addTo(map);
+          ouvrirInfobulle(e.features[0].geometry.coordinates, e.features[0].properties);
         });
         map.on("mouseenter", "site-dot", () => { map.getCanvas().style.cursor = "pointer"; });
         map.on("mouseleave", "site-dot", () => { map.getCanvas().style.cursor = ""; });
@@ -422,13 +451,19 @@ const { variant, labels } = Astro.props;
 
         // Deep-link (?dc=<id>): fly past the cluster zoom so the target is an individual
         // dot, and open its popup at the coordinates.
+        // Le point servi ne porte plus d'identifiant : la position du site se demande au
+        // serveur (en développement, le fichier complet la donne encore).
         if (focusId) {
-          const f = geo.features.find((ft: any) => ft.properties.id === focusId);
-          if (f) {
+          const local = geo.features.find((ft: any) => ft.properties.id === focusId);
+          const cible = local
+            ? Promise.resolve(local)
+            : fetch(`/api/carte/site?id=${encodeURIComponent(focusId)}`)
+                .then((r) => (r.ok ? r.json() : null)).catch(() => null);
+          void cible.then((f: any) => {
+            if (!f) return;
             map.flyTo({ center: f.geometry.coordinates, zoom: 11.5, duration: 800 });
-            new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
-              .setLngLat(f.geometry.coordinates).setHTML(sitePopupHtml(f.properties)).addTo(map);
-          }
+            ouvrirInfobulle(f.geometry.coordinates, f.properties);
+          });
         }
         updateDonuts();
       };
@@ -509,6 +544,21 @@ const { variant, labels } = Astro.props;
         const fitWorld = (ms = 600) => map.fitBounds(watchBounds, { padding: 60, maxZoom: 6, duration: ms });
         const fitEurope = (ms = 600) => map.fitBounds(bounds, { padding: 120, maxZoom: 7, duration: ms });
 
+        // Même règle que les sites : le point de veille ne porte que sa position et sa
+        // nature ; les faits et les sources de presse se demandent au clic.
+        const detailsVeille = async (p: any): Promise<any | null> => {
+          if (p.name) return p;
+          try {
+            const r = await fetch(`/api/veille/site?t=${encodeURIComponent(p.t)}`);
+            return r.ok ? (await r.json()).properties : null;
+          } catch { return null; }
+        };
+        const ouvrirVeille = (lngLat: any, p: any) => {
+          const pop = new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
+            .setLngLat(lngLat).setHTML(ATTENTE).addTo(map);
+          void detailsVeille(p).then((d) => (d ? pop.setHTML(watchPopupHtml(d)) : pop.remove()));
+        };
+
         const watchPopupHtml = (p: any) => {
           const facts = typeof p.facts === "string" ? JSON.parse(p.facts) : (p.facts || []);
           const src = typeof p.source === "string" && p.source.startsWith("{") ? JSON.parse(p.source) : p.source;
@@ -583,8 +633,7 @@ const { variant, labels } = Astro.props;
               "icon-image": "watch-speak", "icon-size": 0.7, "icon-allow-overlap": true,
             }});
             map.on("click", "watch-announced-pins", (e: any) => {
-              new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
-                .setLngLat(e.lngLat).setHTML(watchPopupHtml(e.features[0].properties)).addTo(map);
+              ouvrirVeille(e.lngLat, e.features[0].properties);
             });
             map.on("mouseenter", "watch-announced-pins", () => { map.getCanvas().style.cursor = "pointer"; });
             map.on("mouseleave", "watch-announced-pins", () => { map.getCanvas().style.cursor = ""; });
@@ -621,8 +670,7 @@ const { variant, labels } = Astro.props;
           // Handlers bind to layer ids and survive a remove/re-add, so bind once.
           for (const layerId of ["watch-opposition", "watch-moratorium"]) {
             map.on("click", layerId, (e: any) => {
-              new maplibregl.Popup({ offset: 12, closeButton: false, maxWidth: "300px" })
-                .setLngLat(e.lngLat).setHTML(watchPopupHtml(e.features[0].properties)).addTo(map);
+              ouvrirVeille(e.lngLat, e.features[0].properties);
             });
             map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer"; });
             map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = ""; });
@@ -834,14 +882,22 @@ const { variant, labels } = Astro.props;
         const jeton = ++frappe;
 
         // Les projets viennent des points déjà en mémoire : aucune requête, réponse immédiate.
-        const projets = geo.features
-          .filter((f: any) => normLieu(
-            [f.properties.name, f.properties.municipality, f.properties.operator]
-              .filter(Boolean).join(" ")).includes(q))
-          .slice(0, 4)
-          .map((f: any) => ({
+        // Les points servis ne portent plus de nom : la recherche de projets se fait au
+        // serveur, quatre réponses au plus, avec la même règle de correspondance. En
+        // développement, le fichier complet suffit encore.
+        const trouves: any[] = geo.features[0]?.properties?.name !== undefined
+          ? geo.features.filter((f: any) => normLieu(
+              [f.properties.name, f.properties.municipality, f.properties.operator]
+                .filter(Boolean).join(" ")).includes(q)).slice(0, 4)
+          : await fetch(`/api/carte/recherche?q=${encodeURIComponent(brut)}`)
+              .then((r) => (r.ok ? r.json() : { features: [] }))
+              .then((d) => d.features)
+              .catch(() => []);
+        if (jeton !== frappe) return;                 // une frappe plus récente a pris la main
+        const projets = trouves.map((f: any) => ({
             type: "dc" as const,
             id: f.properties.id,
+            props: f.properties,
             titre: f.properties.name,
             sous: [f.properties.municipality, f.properties.country].filter(Boolean).join(" · "),
             c: f.geometry.coordinates as [number, number],
@@ -906,13 +962,7 @@ const { variant, labels } = Astro.props;
             repereCourant?.remove();   // le « vous êtes ici » d'une recherche précédente
             repereCourant = null;
             map.flyTo({ center: r.c, zoom: 11.5, duration: 700 });
-            const f = geo.features.find((ft: any) => ft.properties.id === r.id);
-            if (f) {
-              new maplibregl.Popup({ offset: 14, closeButton: false, maxWidth: "320px" })
-                .setLngLat(f.geometry.coordinates)
-                .setHTML(sitePopupHtml(f.properties))
-                .addTo(map);
-            }
+            ouvrirInfobulle(r.c, r.props);
             url.searchParams.set("dc", r.id);
             url.searchParams.delete("lieu"); url.searchParams.delete("nom");
           } else {

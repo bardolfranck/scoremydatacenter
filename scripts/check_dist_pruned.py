@@ -17,8 +17,13 @@ et la vérification doit porter sur ce qui part, pas sur ce qui est censé parti
 
 ⚠️ À appeler depuis la cible `deploy`, et à rappeler si un jour quelqu'un déploie à la main.
 """
+import json
 import pathlib
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from prune_public_json import (  # noqa: E402
+    _LIGNE, _TBODY, CHAMPS_POINT_SITE, CHAMPS_POINT_VEILLE, FONCTIONS_DATA, RANG_PAR_PAGE)
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DIST = RACINE / "site" / "dist"
@@ -47,6 +52,41 @@ def main() -> int:
             continue
         if MARQUE not in f.read_text()[:200]:
             fautes.append(f"data/{f.name} n'est pas un bouchon")
+
+    # 🔴 LA CARTE NE DOIT PLUS LIVRER LE CORPUS EN UN FICHIER (2026-11-09). Le geojson servi
+    # ne porte que des points anonymes ; un champ hors de la liste fermée (un nom, un
+    # opérateur, un identifiant) referait de ce fichier l'aspiration en un clic.
+    for fichier, champs in (("map.geojson", CHAMPS_POINT_SITE), ("watchlist.geojson", CHAMPS_POINT_VEILLE)):
+        f = DIST / "data" / fichier
+        if not f.exists():
+            continue
+        permis = {"t", *champs}
+        geo = json.loads(f.read_text())
+        en_trop = sorted({k for ft in geo["features"] for k in (ft.get("properties") or {})} - permis)
+        if en_trop:
+            fautes.append(f"data/{fichier} publie des champs nominatifs : {', '.join(en_trop)}")
+        # Et les infobulles doivent avoir leur source : sans la copie serveur, chaque clic
+        # sur la carte rendrait un 404 en production.
+        cible = FONCTIONS_DATA / ("carte.json" if fichier == "map.geojson" else "veille.json")
+        if not cible.exists() or len(json.loads(cible.read_text())["features"]) != len(geo["features"]):
+            fautes.append(f"functions/_data/{cible.name} absent ou désaccordé avec data/{fichier} "
+                          f"— les infobulles de la carte seraient vides")
+
+    # 🔴 LE CLASSEMENT NE DOIT PLUS TENIR EN UNE PAGE (2026-11-09). Une page de classement
+    # qui repartirait avec toutes ses lignes republierait le corpus en un téléchargement.
+    classement = json.loads((FONCTIONS_DATA / "classement.json").read_text()) \
+        if (FONCTIONS_DATA / "classement.json").exists() else {}
+    for page in DIST.rglob("index.html"):
+        m = _TBODY.search(page.read_text())
+        if not m:
+            continue
+        chemin = "/" + str(page.parent.relative_to(DIST)) + "/"
+        n = len(_LIGNE.findall(m.group(3)))
+        if n > RANG_PAR_PAGE or "data-api=" not in m.group(2):
+            fautes.append(f"{chemin} publie {n} lignes de classement (plafond {RANG_PAR_PAGE})")
+        elif chemin not in classement or not classement[chemin]["meta"]:
+            fautes.append(f"{chemin} : lignes absentes de functions/_data/classement.json "
+                          f"— le classement n'aurait que sa première page")
 
     red = DIST / "_redirects"
     if not red.exists() or "/data/dc/*" not in red.read_text():

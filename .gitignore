@@ -11,6 +11,8 @@ __pycache__/
 
 # Generated artifacts — never hand-edited, never committed (built in CI)
 site/public/data/
+# Copie COMPLÈTE des geojson de carte, empaquetée dans les fonctions au build (prune_public_json.py).
+site/functions/_data/
 
 # OS
 .DS_Store
