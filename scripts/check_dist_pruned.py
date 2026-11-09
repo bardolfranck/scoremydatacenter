@@ -22,7 +22,8 @@ import pathlib
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-from prune_public_json import CHAMPS_POINT_SITE, CHAMPS_POINT_VEILLE, FONCTIONS_DATA  # noqa: E402
+from prune_public_json import (  # noqa: E402
+    _LIGNE, _TBODY, CHAMPS_POINT_SITE, CHAMPS_POINT_VEILLE, FONCTIONS_DATA, RANG_PAR_PAGE)
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DIST = RACINE / "site" / "dist"
@@ -70,6 +71,22 @@ def main() -> int:
         if not cible.exists() or len(json.loads(cible.read_text())["features"]) != len(geo["features"]):
             fautes.append(f"functions/_data/{cible.name} absent ou désaccordé avec data/{fichier} "
                           f"— les infobulles de la carte seraient vides")
+
+    # 🔴 LE CLASSEMENT NE DOIT PLUS TENIR EN UNE PAGE (2026-11-09). Une page de classement
+    # qui repartirait avec toutes ses lignes republierait le corpus en un téléchargement.
+    classement = json.loads((FONCTIONS_DATA / "classement.json").read_text()) \
+        if (FONCTIONS_DATA / "classement.json").exists() else {}
+    for page in DIST.rglob("index.html"):
+        m = _TBODY.search(page.read_text())
+        if not m:
+            continue
+        chemin = "/" + str(page.parent.relative_to(DIST)) + "/"
+        n = len(_LIGNE.findall(m.group(3)))
+        if n > RANG_PAR_PAGE or "data-api=" not in m.group(2):
+            fautes.append(f"{chemin} publie {n} lignes de classement (plafond {RANG_PAR_PAGE})")
+        elif chemin not in classement or not classement[chemin]["meta"]:
+            fautes.append(f"{chemin} : lignes absentes de functions/_data/classement.json "
+                          f"— le classement n'aurait que sa première page")
 
     red = DIST / "_redirects"
     if not red.exists() or "/data/dc/*" not in red.read_text():

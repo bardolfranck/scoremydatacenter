@@ -355,6 +355,12 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
           </tbody>
         </table>
       </div>
+      {/* PAGINATION SERVEUR (2026-11-09). Le bouton n'existe que quand la page a été découpée
+          au build (data-api sur le tbody) : en `astro dev`, toutes les lignes sont là. */}
+      <button type="button" class="button rank-plus" id="rank-plus" hidden
+              data-label={(t as any).more ?? ({ fr: "Afficher les suivants · {reste} restants",
+                                                 nl: "Meer tonen · nog {reste}" } as Record<string, string>)[lang]
+                          ?? "Show more · {reste} remaining"}></button>
       <p class="rank-note">{t.note}</p>
       {/* La ligne de méthode est une note de bas de page, pas une entrée en matière : elle
           s'intercalait entre les filtres et le tableau, où personne ne la lit et où elle
@@ -380,7 +386,70 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   // Same normalisation as the build-time haystack: accent-insensitive matching.
   const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
+  // 🔴 LE CLASSEMENT NE TIENT PLUS DANS LA PAGE (Franck 2026-11-09). Il publiait ses 3 339
+  // lignes en un HTML de 10 Mo : un téléchargement emportait le corpus entier, notes par
+  // pilier comprises. Le build ne laisse plus dans la page que les premières lignes ; le
+  // tri, le filtre, la recherche et la suite se demandent au serveur (/api/classement),
+  // qui applique EXACTEMENT les règles de tri ci-dessous (applyLocal) sur les mêmes
+  // attributs. Sans `data-api` (astro dev), la page a toutes ses lignes et on trie ici.
+  const API = tbody.dataset.api || "";
+  const boutonPlus = document.getElementById("rank-plus") as HTMLButtonElement;
+  let totalServeur = parseInt(tbody.dataset.total ?? "0", 10) || 0;
+  let pageServeur = 1;
+  let requeteServeur = 0;
+
+  const numeroter = () => {
+    let rank = 0;
+    for (const row of Array.from(tbody.querySelectorAll("tr")) as HTMLElement[]) {
+      if (row.style.display === "none") continue;
+      rank += 1;
+      row.querySelector(".rank-index")!.textContent = String(rank);
+    }
+  };
+  const majPlus = () => {
+    if (!API) return;
+    const reste = totalServeur - tbody.querySelectorAll("tr").length;
+    boutonPlus.hidden = reste <= 0;
+    boutonPlus.textContent = (boutonPlus.dataset.label ?? "").replace("{reste}", reste.toLocaleString(document.documentElement.lang));
+  };
+  async function chargerServeur(page: number, ajouter: boolean) {
+    const params = new URLSearchParams({
+      src: location.pathname, tri: triCle, ordre: triAsc ? "asc" : "desc",
+      statut: statusSel.value, q: searchInput.value.trim(), page: String(page),
+    });
+    const jeton = ++requeteServeur;
+    const r = await fetch(`${API}?${params}`).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    if (jeton !== requeteServeur || !r) return;      // une demande plus récente a pris la main
+    if (!ajouter) tbody.innerHTML = "";
+    tbody.insertAdjacentHTML("beforeend", r.lignes.join(""));
+    totalServeur = r.total;
+    pageServeur = r.page;
+    numeroter();
+    majPlus();
+    peutEtreUnLieu();
+  }
+  boutonPlus?.addEventListener("click", () => { void chargerServeur(pageServeur + 1, true); });
+
+  function majUrl() {
+    const params = new URLSearchParams();
+    if (triCle !== "site") params.set("tri", triCle);
+    if (triAsc) params.set("ordre", "asc");
+    if (statusSel.value !== "all") params.set("statut", statusSel.value);
+    if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
+    const query = params.toString();
+    history.replaceState(null, "", query ? `?${query}` : location.pathname);
+  }
+
   function apply(updateUrl = true) {
+    if (API) {
+      void chargerServeur(1, false);
+      if (updateUrl) majUrl();
+      return;
+    }
+    applyLocal(updateUrl);
+  }
+
+  function applyLocal(updateUrl = true) {
     const key = triCle;
     const asc = triAsc;
     const status = statusSel.value;
@@ -419,15 +488,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       tbody.appendChild(row);
     }
 
-    if (updateUrl) {
-      const params = new URLSearchParams();
-      if (key !== "site") params.set("tri", key);
-      if (asc) params.set("ordre", "asc");
-      if (status !== "all") params.set("statut", status);
-      if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
-      const query = params.toString();
-      history.replaceState(null, "", query ? `?${query}` : location.pathname);
-    }
+    if (updateUrl) majUrl();
   }
 
   // TRIER EN CLIQUANT L'EN-TÊTE, comme dans un tableur (Franck, 2026-10-21). On pilote les
@@ -594,7 +655,18 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
     // « Berlin (US) » ne permet pas de choisir : il y a plusieurs Berlin aux États-Unis.
     // Le pays ne situe rien À L'INTÉRIEUR d'un pays — c'est l'État ou la région qui le fait.
     const situe = (code: string, p: string) => [nomRegion(code), p].filter(Boolean).join(" · ");
-    const proches = Array.from(tbody.querySelectorAll("tr"))
+    const proches = API
+      ? await (async () => {
+          // Les lignes ne sont pas toutes dans la page : le serveur rend les cinq plus
+          // proches, avec leur distance (même formule, même rayon terrestre).
+          const r = await fetch(`${API}?src=${encodeURIComponent(location.pathname)}&lieu=${lat},${lon}`)
+            .then((x) => (x.ok ? x.json() : null)).catch(() => null);
+          if (!r) return [];
+          const tpl = document.createElement("tbody");
+          tpl.innerHTML = r.lignes.join("");
+          return (Array.from(tpl.querySelectorAll("tr")) as HTMLElement[]).map((row, i) => ({ row, d: r.km[i] }));
+        })()
+      : Array.from(tbody.querySelectorAll("tr"))
       .map((row) => {
         const rLat = parseFloat((row as HTMLElement).dataset.lat ?? "");
         const rLon = parseFloat((row as HTMLElement).dataset.lon ?? "");
@@ -604,6 +676,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
       .filter(Boolean)
       .sort((a: any, b: any) => a.d - b.d)
       .slice(0, 5) as { row: HTMLElement; d: number }[];
+    if (jeton !== demandeEnCours) return;
     if (!proches.length) return masquerBloc();
 
     // ⚠️ ON LISTE PAR DISTANCE, JAMAIS PAR NOTE. Un rayon traverse les frontières et nos
@@ -672,16 +745,28 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   function peutEtreUnLieu() {
     const saisie = searchInput.value.trim();
     if (!saisie) return masquerBloc();
-    const visibles = Array.from(tbody.querySelectorAll("tr"))
-      .some((r) => (r as HTMLElement).style.display !== "none");
+    const visibles = API
+      ? totalServeur > 0
+      : Array.from(tbody.querySelectorAll("tr")).some((r) => (r as HTMLElement).style.display !== "none");
     // Le bloc ne parle QUE dans le silence : si des lignes répondent, le lecteur a trouvé.
     if (visibles) return masquerBloc();
     void repondreParLieu(saisie);
   }
 
   statusSel.addEventListener("change", () => { apply(); marquerTri(); });
-  searchInput.addEventListener("input", () => { apply(); peutEtreUnLieu(); });
-  apply(false);
+  // Au serveur, une requête par frappe serait du bruit : on attend que la frappe se pose.
+  // Le bloc « lieu » se décide quand la réponse arrive (chargerServeur), pas avant.
+  let attenteFrappe = 0;
+  searchInput.addEventListener("input", () => {
+    if (!API) { apply(); peutEtreUnLieu(); return; }
+    clearTimeout(attenteFrappe);
+    attenteFrappe = window.setTimeout(() => apply(), 250);
+  });
+  // La page arrive déjà triée par défaut : on ne redemande au serveur que si l'URL
+  // demande une autre vue (?tri=, ?statut=, ?q=…).
+  const vueParDefaut = triCle === "site" && !triAsc && statusSel.value === "all" && !searchInput.value.trim();
+  if (API && vueParDefaut) { numeroter(); majPlus(); }
+  else apply(false);
   marquerTri();
-  peutEtreUnLieu();
+  if (!API) peutEtreUnLieu();
 </script>

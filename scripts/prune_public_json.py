@@ -17,9 +17,13 @@ corps. Ce qui change est le nombre de fichiers déployés, pas ce que reçoit l'
 peut-être appelés : ils doivent répondre, pas disparaître en 404. Un `rm` sans la règle de
 réécriture transformerait un bouchon en trou.
 """
+import base64
+import html as html_mod
 import json
 import pathlib
+import re
 import sys
+import zlib
 
 RACINE = pathlib.Path(__file__).resolve().parent.parent
 DIST = RACINE / "site" / "dist"
@@ -47,6 +51,82 @@ def anonymiser(geo: dict, champs: tuple) -> dict:
         garde = {k: p[k] for k in champs if k in p and p[k] is not None}
         sortie.append({"type": "Feature", "geometry": f["geometry"], "properties": {"t": t, **garde}})
     return {"type": "FeatureCollection", "features": sortie}
+
+
+# 🔴 LE CLASSEMENT NE PUBLIE PLUS LE CORPUS EN UNE PAGE (Franck 2026-11-09). La page
+# Classement rendait les 3 339 lignes — nom, commune, lettre, notes par pilier, confiance,
+# position — dans un seul HTML de 10 Mo : un téléchargement, tout le corpus, mieux rangé
+# que l'ancien fichier de la carte. Les lignes restent RENDUES PAR ASTRO, au même endroit,
+# avec le même code : on ne réécrit pas le gabarit d'une ligne ailleurs (une ligne écrite à
+# deux endroits finit par diverger). Ce script les DÉCOUPE après le build : la page n'en
+# garde que les premières, dans l'ordre par défaut, et les autres partent dans la fonction
+# /api/classement, qui les sert par paquets de RANG_PAR_PAGE (tri, filtre, recherche).
+RANG_PAR_PAGE = 50
+API_CLASSEMENT = "/api/classement"
+_TBODY = re.compile(r'(<table class="rank-table" id="rank-table">.*?<tbody)([^>]*)>(.*?)(</tbody>)', re.S)
+_LIGNE = re.compile(r"<tr\b.*?</tr>", re.S)
+_ATTR = re.compile(r'data-([a-z_-]+)="([^"]*)"')
+
+
+def meta_ligne(tr: str) -> list:
+    """Ce dont le serveur a besoin pour trier, filtrer, chercher et mesurer une distance —
+    lu sur la ligne rendue, jamais recalculé : c'est le même attribut que lisait le
+    navigateur."""
+    ouverture = tr[: tr.index(">") + 1]
+    a = {k: html_mod.unescape(v) for k, v in _ATTR.findall(ouverture)}
+    k = {cle[2:]: float(v) for cle, v in a.items() if cle.startswith("k-") and v not in ("", "undefined")}
+    num = lambda v: float(v) if v not in (None, "", "undefined") else None  # noqa: E731
+    return [a.get("status", ""), a.get("country", ""), a.get("search", ""),
+            num(a.get("lat")), num(a.get("lon")), k]
+
+
+def ordre_par_defaut(metas: list) -> list:
+    """Le tri que la page appliquait au chargement : note site, mieux noté d'abord, les
+    lignes sans note (-1) en fin. Tri STABLE sur l'ordre du build, comme Array.sort."""
+    idx = list(range(len(metas)))
+    return sorted(idx, key=lambda i: (metas[i][5].get("site", -1) < 0, -metas[i][5].get("site", -1)))
+
+
+def classement_cote_serveur() -> str:
+    faits, donnees = [], {}
+    for page in sorted(DIST.rglob("index.html")):
+        texte = page.read_text()
+        m = _TBODY.search(texte)
+        if not m:
+            continue
+        if "data-api=" in m.group(2):
+            faits.append(f"{page.parent.relative_to(DIST)} déjà découpé")
+            continue
+        lignes = _LIGNE.findall(m.group(3))
+        metas = [meta_ligne(tr) for tr in lignes]
+        chemin = "/" + str(page.parent.relative_to(DIST)).strip(".") + "/"
+        chemin = chemin.replace("//", "/")
+        # Le HTML des lignes, bout à bout, avec ses décalages : la fonction en découpe une
+        # par `slice`. COMPRESSÉ : 10 Mo par langue en clair faisaient charger la fonction
+        # en ~0,7 s, trop près de la limite de démarrage de Cloudflare (1 s) — et toutes les
+        # fonctions du site partagent ce paquet. Compressé, c'est 0,5 Mo par langue, et la
+        # fonction ne le décompresse qu'à la première demande (~10 ms, une fois par
+        # instance). Les décalages sont comptés en unités UTF-16, comme `slice` en JS.
+        off, pos = [], 0
+        for tr in lignes:
+            off.append(pos)
+            pos += len(tr.encode("utf-16-le")) // 2
+        off.append(pos)
+        brut = "".join(lignes).encode("utf-8")
+        comp = zlib.compressobj(9, zlib.DEFLATED, -15)
+        z = base64.b64encode(comp.compress(brut) + comp.flush()).decode("ascii")
+        donnees[chemin] = {"meta": metas, "z": z, "off": off}
+        tete = [lignes[i] for i in ordre_par_defaut(metas)[:RANG_PAR_PAGE]]
+        attributs = (f'{m.group(2)} data-api="{API_CLASSEMENT}" data-total="{len(lignes)}" '
+                     f'data-par="{RANG_PAR_PAGE}"')
+        page.write_text(texte[: m.start()] + m.group(1) + attributs + ">" + "".join(tete)
+                        + m.group(4) + texte[m.end():])
+        faits.append(f"{chemin} {len(lignes)} → {len(tete)} lignes")
+    if donnees or not (FONCTIONS_DATA / "classement.json").exists():
+        FONCTIONS_DATA.mkdir(parents=True, exist_ok=True)
+        (FONCTIONS_DATA / "classement.json").write_text(
+            json.dumps(donnees, ensure_ascii=False, separators=(",", ":")))
+    return " · ".join(faits) or "aucune page de classement"
 
 
 def carte_cote_serveur() -> str:
@@ -119,12 +199,14 @@ def main() -> int:
     red.write_text((red.read_text() if red.exists() else "") + entete + "\n".join(regles) + "\n")
 
     carte = carte_cote_serveur()
+    classement = classement_cote_serveur()
     geo = " ".join(sorted(p.name for p in DATA.glob("*.geojson")))
     tranches = len([p for p in (DATA / "lieux").glob("*.json") if p.name != "regions.json"]) \
         if (DATA / "lieux").is_dir() else 0
     print(f"prune: {retires} fichiers retirés + {len(regles)} règle(s) de réécriture, "
           f"{sur_place} bouchés sur place ; geojson gardés → {geo} ({carte}) · "
-          f"dictionnaire de lieux servi ({tranches} tranches + table des régions)")
+          f"dictionnaire de lieux servi ({tranches} tranches + table des régions) · "
+          f"classement : {classement}")
     return 0
 
 
