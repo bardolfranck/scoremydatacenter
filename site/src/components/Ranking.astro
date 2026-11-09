@@ -404,7 +404,7 @@ const coordsParId: Record<string, [number, number]> = Object.fromEntries(
   // attributs. Sans `data-api` (astro dev), la page a toutes ses lignes et on trie ici.
   const API = tbody.dataset.api || "";
   const pager = document.getElementById("rank-pager") as HTMLElement;
-  const PAR = parseInt(tbody.dataset.par ?? "25", 10) || 25;
+  const PAR = parseInt(tbody.dataset.par ?? "10", 10) || 10;
   let totalServeur = parseInt(tbody.dataset.total ?? "0", 10) || 0;
   let pageServeur = Math.max(1, parseInt(new URLSearchParams(location.search).get("page") ?? "1", 10) || 1);
   let requeteServeur = 0;

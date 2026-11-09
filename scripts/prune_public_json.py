@@ -61,8 +61,8 @@ def anonymiser(geo: dict, champs: tuple) -> dict:
 # deux endroits finit par diverger). Ce script les DÉCOUPE après le build : la page n'en
 # garde que les premières, dans l'ordre par défaut, et les autres partent dans la fonction
 # /api/classement, qui les sert par paquets de RANG_PAR_PAGE (tri, filtre, recherche).
-# 25 (Franck 2026-11-09 : « 50 c'est beaucoup, 25 est largement suffisant »).
-RANG_PAR_PAGE = 25
+# 10 (Franck 2026-11-09 : 50 puis 25 « encore trop » — un écran de portable montre ~6 lignes).
+RANG_PAR_PAGE = 10
 API_CLASSEMENT = "/api/classement"
 _TBODY = re.compile(r'(<table class="rank-table" id="rank-table">.*?<tbody)([^>]*)>(.*?)(</tbody>)', re.S)
 _LIGNE = re.compile(r"<tr\b.*?</tr>", re.S)
