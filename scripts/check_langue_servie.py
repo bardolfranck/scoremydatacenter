@@ -155,7 +155,16 @@ def _noms_propres(dossier: Path) -> set[str]:
     """
     import json
 
-    chemin = dossier / "data" / "map.geojson"
+    # 🔴 LES NOMS NE SONT PLUS DANS LE FICHIER SERVI (2026-11-09). /data/map.geojson ne porte
+    # plus que des points anonymes ; les noms vivent dans la copie complète que le même build
+    # écrit pour les fonctions de la carte (scripts/prune_public_json.py). Lire le fichier
+    # servi rendait un ensemble VIDE — et sans noms propres, chaque nom de data center d'une
+    # fiche néerlandaise remontait comme une phrase non traduite : le déploiement a été
+    # refusé pour une raison fausse. Repli sur le fichier servi pour un dist d'avant ce
+    # changement (préviz), qui porte encore les noms.
+    chemin = RACINE / "site" / "functions" / "_data" / "carte.json"
+    if not chemin.is_file():
+        chemin = dossier / "data" / "map.geojson"
     if not chemin.is_file():
         return set()
     noms: set[str] = set()
