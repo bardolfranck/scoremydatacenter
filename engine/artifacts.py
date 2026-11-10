@@ -423,12 +423,12 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # capacité répartie, aucune installation à pointer. Lui inventer un point l'aurait
     # épinglé sur la carte à un endroit qui n'existe pas, soit exactement le défaut qu'on
     # corrige ailleurs. Une entrée sans coordonnées reste donc suivie, mais n'entre pas
-    # dans la couche cartographique.
-    watch_features = [{
-        "type": "Feature",
-        # Coords rounded to ~1 km like the graded layer (no precise GPS in a public file).
-        "geometry": {"type": "Point", "coordinates": [round(e["coordinates"]["lon"], 2), round(e["coordinates"]["lat"], 2)]},
-        "properties": {
+    # dans la couche cartographique — elle est servie à côté (`unlocated`, membre étranger
+    # GeoJSON que MapLibre ignore), pour que la page d'accueil la montre avec sa SOURCE.
+    # Sans ça, « suivie sans lieu » = invisible partout = pas suivie du tout (décision
+    # Franck 2026-11-10, option B Cannes).
+    def watch_props(e: dict) -> dict:
+        return {
             "id": e["id"],
             "name": e["name"],
             "operator": e.get("operator"),
@@ -447,8 +447,15 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             "kind": _watchlist_kind(e),
             "source": e["source"],
             "facts": e.get("facts") or [],
-        },
+        }
+
+    watch_features = [{
+        "type": "Feature",
+        # Coords rounded to ~1 km like the graded layer (no precise GPS in a public file).
+        "geometry": {"type": "Point", "coordinates": [round(e["coordinates"]["lon"], 2), round(e["coordinates"]["lat"], 2)]},
+        "properties": watch_props(e),
     } for e in watchlist if e.get("coordinates")]
+    watch_unlocated = [watch_props(e) for e in watchlist if not e.get("coordinates")]
 
     write_json(out_dir / "scores.json", scores)
     # T0 « Les chiffres du parc » — corpus aggregates, one file per build
@@ -462,7 +469,8 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # not an accident of filtering — the engine ranks, the site renders.
     write_json(out_dir / "home_showcase.json", build_showcase(datacenters, results, watchlist))
     write_json(out_dir / "map.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": features})
-    write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "credit": CREDIT, "features": watch_features})
+    write_json(out_dir / "watchlist.geojson", {"type": "FeatureCollection", "credit": CREDIT,
+                                                "features": watch_features, "unlocated": watch_unlocated})
     write_json(out_dir / "audit.json", sorted(audit, key=lambda e: (e["date"], e["dc_id"])))
     write_json(out_dir / "methodology.json", methodology)
     return results
