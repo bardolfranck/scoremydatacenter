@@ -58,3 +58,31 @@ def test_watchlist_marker_kind_is_derived_moratorium_over_opposition():
     assert _watchlist_kind(both) == "moratorium"
     assert _watchlist_kind({"facts": [{"kind": "opposition"}, {"kind": "petition"}]}) == "opposition"
     assert _watchlist_kind({"facts": []}) == "announced_project"
+
+
+def test_unlocated_entry_is_served_off_the_map(tmp_path):
+    # Cas fondateur : cloud fédéré (Cannes/PoliCloud) — suivi comme FAIT, sans lieu unique.
+    # Le schéma l'accepte sans coordonnées ; il n'entre PAS dans la couche carte (aucun
+    # point inventé) mais il est servi dans `unlocated`, sinon « suivi » = invisible partout.
+    from engine.core import load_json, DATA_DIR
+    from engine.validate import _schema_errors
+
+    entry = {
+        "id": "zz-watch-federated",
+        "name": "ZZ Federated Cloud (test)",
+        "country": "ZZ",
+        "project_status": "announced",
+        "source": {"title": "Annonce (test)", "url": "https://example.org/w/federe", "accessed": "2026-11-10"},
+        "facts": [],
+    }
+    schema = load_json(DATA_DIR / "schema" / "watchlist.schema.json")
+    assert _schema_errors([entry], schema, "t") == []
+
+    located = load_watchlist()
+    build_artifacts(load_datacenters(), load_methodology(), out_dir=tmp_path, watchlist=located + [entry])
+    geo = json.loads((tmp_path / "watchlist.geojson").read_text())
+    assert entry["id"] not in {f["properties"]["id"] for f in geo["features"]}
+    assert len(geo["features"]) == sum(1 for e in located if e.get("coordinates"))
+    [served] = [p for p in geo["unlocated"] if p["id"] == entry["id"]]
+    assert served["source"]["url"] == entry["source"]["url"]
+    assert _grade_leak(served) is None

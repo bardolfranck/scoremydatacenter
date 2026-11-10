@@ -18,8 +18,12 @@ let feats: any[] = [];
 try {
   const raw = fs.readFileSync(new URL("../../public/data/watchlist.geojson", import.meta.url), "utf-8");
   const gj = JSON.parse(raw);
-  feats = (gj.features ?? [])
-    .map((f: any) => f.properties ?? {})
+  // `unlocated` = entries tracked WITHOUT a place (federated/distributed projects): they
+  // are not on the map, so they are listed here linking to their SOURCE, never to the map.
+  feats = [
+    ...(gj.features ?? []).map((f: any) => f.properties ?? {}),
+    ...(gj.unlocated ?? []).map((p: any) => ({ ...p, _unlocated: true })),
+  ]
     // en-veille neutral PROJECT detections only — never the contestation entries
     .filter((p: any) => p.watchlist_status === "en_veille" && !["opposition", "moratorium"].includes(p.kind));
   // newest first (detected_at is ISO; missing sorts last)
@@ -31,8 +35,11 @@ if (items.length === 0) return; // nothing fresh → no strip
 
 // En-veille projects have NO fiche page (A-19: no note → no /dc/{id}). Link to the MAP
 // where they appear in context — never to a non-existent fiche (that was a 404 bug).
+// An entry with no place is NOT on the map: link to its entry-level source instead.
 const L = ACCUEIL[lang as Langue].blocs.projets;
 const mapPath = L.carte;
+const href = (p: any) => (p._unlocated ? p.source?.url : null) ?? mapPath;
+const external = (p: any) => Boolean(p._unlocated && p.source?.url);
 const place = (p: any) => [p.municipality, p.country].filter(Boolean).join(" · ");
 ---
 
@@ -46,7 +53,7 @@ const place = (p: any) => [p.municipality, p.country].filter(Boolean).join(" · 
       <ul>
         {items.map((p: any) => (
           <li>
-            <a class="np-t" href={mapPath}>{p.name}</a>
+            <a class="np-t" href={href(p)} {...(external(p) ? { rel: "noopener", target: "_blank" } : {})}>{p.name}</a>
             {place(p) && <span class="np-mu">{place(p)}</span>}
             <span class="np-veille">{L.veille}</span>
           </li>
