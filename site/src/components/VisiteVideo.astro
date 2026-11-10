@@ -1,0 +1,193 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// LA VISITE EN VIDÉO — un composant, trois poses (Franck, 2026-11-10) :
+//   · variant="hero"  : l'accueil. Une carte « aperçu vivant » — boucle MUETTE de 10 s du
+//                       zoom de la carte (monde → US → Europe), libellé, durée. Au clic, la
+//                       vraie vidéo s'ouvre en plein écran, avec le son.
+//   · variant="link"  : la barre latérale des fiches. Un simple lien, même ouverture plein écran.
+//   · variant="agent" : la méthodologie. L'extrait où l'agent explique la répartition du
+//                       travail, lu sur place.
+//
+// 🔴 LE LECTEUR PLEIN ÉCRAN N'EXISTE PAS DANS LE HTML. Il est fabriqué au premier clic par le
+// script ci-dessous. Raison : le lien vit dans le modèle de fiche, donc sur ~6 600 pages ; un
+// <dialog> + <video> par page, c'est 6 600 fois du balisage que presque personne n'ouvre.
+// La vidéo n'est téléchargée QU'AU CLIC (preload="none" jusque-là).
+//
+// Zéro tiers : fichiers servis par notre R2, lecteur natif du navigateur, aucun cookie.
+import type { LangueDeclaree } from "../content/langues";
+import { VISITE, VISITE_MEDIA } from "../content/visite";
+
+interface Props {
+  lang: LangueDeclaree;
+  variant: "hero" | "link" | "agent";
+}
+const { lang, variant } = Astro.props;
+const t = VISITE[lang];
+const M = VISITE_MEDIA;
+
+// Balisage VideoObject : dit à Google que la vidéo est servie ICI (le résultat vidéo pointe
+// vers notre page, pas vers une plateforme). Posé sur l'accueil et sur la méthodologie
+// seulement — pas sur les fiches, dont la vidéo n'est pas le sujet.
+const ldTour = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: t.ldName,
+  description: t.ldDescription,
+  thumbnailUrl: [M.tourPoster],
+  uploadDate: M.uploadDate,
+  duration: M.tourDuration,
+  contentUrl: M.tour,
+  inLanguage: "en",
+  publisher: { "@id": "https://scoremydatacenter.org/#org" },
+};
+const ldAgent = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: t.ldAgentName,
+  description: t.ldAgentDescription,
+  thumbnailUrl: [M.agentPoster],
+  uploadDate: M.uploadDate,
+  duration: M.agentDuration,
+  contentUrl: M.agent,
+  inLanguage: "en",
+  publisher: { "@id": "https://scoremydatacenter.org/#org" },
+};
+---
+
+{variant === "hero" && (
+  <>
+    <button type="button" class="visite-card" data-visite-open data-src={M.tour} data-poster={M.tourPoster}
+      data-close={t.close} aria-label={t.play}>
+      <span class="visite-thumb">
+        <video class="visite-loop" src={M.loop} poster={M.tourPoster} muted loop playsinline autoplay
+          preload="metadata" aria-hidden="true" tabindex="-1"></video>
+        <span class="visite-play" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg>
+        </span>
+      </span>
+      <span class="visite-text">
+        <b>{t.cta}</b>
+        <span>{t.sub}</span>
+      </span>
+    </button>
+    <script type="application/ld+json" set:html={JSON.stringify(ldTour)} />
+  </>
+)}
+
+{variant === "link" && (
+  <button type="button" class="visite-link" data-visite-open data-src={M.tour} data-poster={M.tourPoster}
+    data-close={t.close}>
+    <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg>
+    {t.ficheLink}
+  </button>
+)}
+
+{variant === "agent" && (
+  <>
+    <h2>{t.agentH2}</h2>
+    <p>{t.agentLead}</p>
+    <figure class="visite-agent">
+      <video src={M.agent} poster={M.agentPoster} controls playsinline preload="none"></video>
+    </figure>
+    <script type="application/ld+json" set:html={JSON.stringify(ldAgent)} />
+  </>
+)}
+
+<script>
+  // UN script pour toutes les poses (Astro le dédoublonne). Le lecteur plein écran est
+  // fabriqué au premier clic, puis réutilisé.
+  let dlg: HTMLDialogElement | null = null;
+  let player: HTMLVideoElement | null = null;
+
+  function lecteur(src: string, poster: string, close: string) {
+    if (!dlg) {
+      dlg = document.createElement("dialog");
+      dlg.className = "visite-dialog";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "visite-close";
+      btn.setAttribute("aria-label", close);
+      btn.textContent = "×";
+      btn.addEventListener("click", () => dlg!.close());
+      player = document.createElement("video");
+      player.controls = true;
+      player.playsInline = true;
+      player.preload = "none";
+      dlg.append(btn, player);
+      // Clic sur le fond = fermer ; fermer = arrêter le son.
+      dlg.addEventListener("click", (e) => { if (e.target === dlg) dlg!.close(); });
+      dlg.addEventListener("close", () => player!.pause());
+      document.body.append(dlg);
+    }
+    if (player!.getAttribute("src") !== src) { player!.src = src; player!.poster = poster; }
+    dlg.showModal();
+    player!.play().catch(() => { /* lecture refusée : les contrôles restent là */ });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-visite-open]").forEach((el) => {
+    el.addEventListener("click", () =>
+      lecteur(el.dataset.src!, el.dataset.poster!, el.dataset.close || "Close"));
+  });
+
+  // Mouvement réduit demandé par le système : la boucle s'arrête sur son image fixe.
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    document.querySelectorAll<HTMLVideoElement>(".visite-loop").forEach((v) => {
+      v.removeAttribute("autoplay");
+      v.pause();
+    });
+  }
+</script>
+
+<style is:global>
+  .visite-card {
+    display: flex; align-items: center; gap: 16px; margin-top: 22px; padding: 10px 18px 10px 10px;
+    width: 100%; max-width: 520px; text-align: left; cursor: pointer; font: inherit; color: inherit;
+    background: var(--surface, #fff); border: 1px solid var(--line, #dde3e9); border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(16, 42, 67, 0.06); transition: box-shadow 0.15s, transform 0.15s;
+  }
+  .visite-card:hover { box-shadow: 0 6px 22px rgba(16, 42, 67, 0.14); transform: translateY(-1px); }
+  .visite-card:focus-visible { outline: 3px solid var(--blue, #0f5fb8); outline-offset: 2px; }
+  .visite-thumb { position: relative; flex: 0 0 auto; width: 176px; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #e8eef4; }
+  .visite-loop { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .visite-play {
+    position: absolute; inset: 0; margin: auto; width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; padding-left: 3px;
+    background: rgba(16, 42, 67, 0.82); color: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  .visite-text { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .visite-text b { font-size: 1.05rem; }
+  .visite-text span { font-size: 0.9rem; color: var(--muted, #5a6b7d); }
+  @media (max-width: 480px) {
+    .visite-card { gap: 12px; padding: 8px 12px 8px 8px; }
+    .visite-thumb { width: 128px; }
+  }
+
+  .visite-link {
+    display: inline-flex; align-items: center; gap: 8px; margin: 14px 0 4px; padding: 0;
+    background: none; border: 0; cursor: pointer; font: inherit; font-size: 0.92rem; font-weight: 600;
+    color: var(--blue, #0f5fb8); text-align: left;
+  }
+  .visite-link:hover { text-decoration: underline; }
+  /* Dans la barre latérale SOMBRE des fiches : même famille que le partage (bord clair, texte blanc). */
+  .fiche-side .visite-link {
+    display: flex; width: 100%; justify-content: center; min-height: 38px; margin: 0 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.35); border-radius: var(--radius, 8px); color: #fff; font-size: 0.85rem;
+  }
+  .fiche-side .visite-link:hover { text-decoration: none; background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.6); }
+
+  .visite-agent { margin: 14px 0 26px; }
+  .visite-agent video { width: 100%; border-radius: 10px; background: #000; display: block; }
+
+  .visite-dialog {
+    width: min(1100px, 94vw); padding: 0; border: 0; border-radius: 12px; background: #000; overflow: visible;
+  }
+  .visite-dialog::backdrop { background: rgba(8, 16, 28, 0.82); }
+  .visite-dialog video { width: 100%; display: block; border-radius: 12px; }
+  .visite-close {
+    position: absolute; top: -44px; right: 0; width: 38px; height: 38px; border-radius: 50%;
+    border: 0; background: rgba(255, 255, 255, 0.92); color: #102a43; font-size: 26px; line-height: 1; cursor: pointer;
+  }
+</style>
