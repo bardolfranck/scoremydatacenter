@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from engine.core import datacenter_paths, load_methodology   # noqa: E402
+from engine.core import datacenter_paths, load_methodology, watchlist_paths   # noqa: E402
 from engine.scoring import score_datacenter                  # noqa: E402
 from engine.validate import (_schema_errors, geo_gate, operator_gate, position_gate,  # noqa: E402
                              prose_gate, statut_gate, filigrane_gate, grandeurs_gate,
@@ -195,6 +195,25 @@ def main() -> int:
     problems += nom_et_statut_gate(CAL)
     problems += filigrane_gate(paths)
     problems += grandeurs_gate(CAL)
+    # GATE WATCHLIST — la couche « En veille » est SERVIE (build_prod_artifacts lit
+    # load_watchlist(CAL)), mais son schéma n'était vérifié que par `make validate`, qui ne
+    # voit que la fixture zz du dépôt. Mesuré le 2026-11-10 (trouvé par agent-data-pipeline-EU) :
+    # 17 écarts servis (sources sans `accessed`, entrées sans coordonnée, kind hors enum).
+    # Même accesseur que le build — pas de glob maison — et refus d'un dossier vide : un
+    # contrôle qui ne lit rien est vert à vide.
+    wl_schema = json.loads((Path(__file__).resolve().parent.parent
+                            / "data" / "schema" / "watchlist.schema.json").read_text())
+    wl_paths = watchlist_paths(CAL)
+    if not wl_paths:
+        problems.append(f"GATE WATCHLIST: aucun fichier sous {CAL / 'watchlist'} — "
+                        "la couche servie « En veille » serait validée à vide")
+    for wp in wl_paths:
+        try:
+            entries = json.loads(wp.read_text())
+        except Exception as e:  # noqa: BLE001
+            problems.append(f"GATE WATCHLIST {wp.name}: JSON illisible ({e})")
+            continue
+        problems += _schema_errors(entries, wl_schema, f"watchlist/{wp.name}")
 
     if problems:
         print(f"GATE CORPUS: {len(problems)} problème(s) sur {len(paths)} fiches "
