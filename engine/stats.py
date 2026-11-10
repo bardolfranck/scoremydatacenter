@@ -165,7 +165,9 @@ _SHARE_STATS = [
     {"id": "protected_area_close", "indicator": "F1", "values": {"adjacent_under_1km", "overlap"}, "denominator": "assessed"},
     {"id": "seveso_high_2km", "indicator": "L3", "values": {"seveso_high_within_2km"}, "denominator": "assessed"},
     {"id": "pue_published", "indicator": "E4", "values": None, "denominator": "sites"},
-    {"id": "heat_reuse", "indicator": "F5", "values": None, "denominator": "sites"},
+    # Waste-heat recovery lives in E7 (split out of F5 at méthodo v0.2.0; F5 is
+    # now ERC). « déclarent valoriser » = recovery done, not a study or intent.
+    {"id": "heat_reuse", "indicator": "E7", "values": {"realise"}, "denominator": "sites"},
 ]
 
 _PIPELINE_STATUSES = ("announced", "permitting", "under_construction")
