@@ -223,3 +223,34 @@ def test_un_pays_sous_le_seuil_de_parts_garde_sa_page():
     peri = build_stats(dcs, METHODOLOGY)["perimeters"]
     assert "BE" in peri
     assert "grid_saturated" not in peri["BE"]["stats"] and peri["BE"]["gated"]["grid_saturated"] == STATS_MIN_N - 1
+
+
+def test_share_stats_point_at_the_indicator_they_name():
+    """Each share stat must read the indicator its public label describes, with
+    values that exist in that indicator's categories. heat_reuse once read F5
+    (ERC since méthodo v0.2.0) and served « valorisent leur chaleur fatale » for
+    two ERC dossiers."""
+    from engine.core import load_methodology
+    from engine.stats import _SHARE_STATS
+
+    meth = load_methodology()
+    by_id = {}
+
+    def walk(o):
+        if isinstance(o, dict):
+            if isinstance(o.get("id"), str) and "normalization" in o:
+                by_id[o["id"]] = o
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+
+    walk(meth)
+    for spec in _SHARE_STATS:
+        ind = by_id[spec["indicator"]]
+        cats = (ind.get("normalization") or {}).get("categories")
+        if spec["values"] is not None and cats:
+            assert spec["values"] <= set(cats), (spec["id"], spec["values"], sorted(cats))
+    heat = next(s for s in _SHARE_STATS if s["id"] == "heat_reuse")
+    assert "heat" in by_id[heat["indicator"]]["label"]["en"].lower(), heat
