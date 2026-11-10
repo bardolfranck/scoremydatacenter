@@ -18,6 +18,7 @@ import ScoreBadge from "./ScoreBadge.astro";
 import AboutSection from "./AboutSection.astro";
 import FeedbackBand from "./FeedbackBand.astro";
 import MapIsland from "./MapIsland.astro";
+import VisiteVideo from "./VisiteVideo.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import scoresData from "../../public/data/scores.json";
@@ -222,6 +223,8 @@ const donutGradient = "conic-gradient(" + methodology.pillars.map((p: any) => {
         <a class="button button-primary" href="#scores">{t.ctaScores}</a>
         <a class="button button-secondary" href="#method">{t.ctaMethod}</a>
       </div>
+      {/* La visite en vidéo (Franck, 2026-11-10) : boucle muette de la carte, plein écran au clic. */}
+      <VisiteVideo lang={lang} variant="hero" />
     </div>
     <aside class="hero-corpus hero-ring-aside" aria-label={t.corpus.aria}>
       <p class="corpus-label">{t.corpus.label}</p>

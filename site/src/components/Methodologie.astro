@@ -11,6 +11,7 @@ import type { LangueDeclaree } from "../content/langues";
 import { donnee } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import PillarIcon from "./PillarIcon.astro";
+import VisiteVideo from "./VisiteVideo.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import methodologyData from "../../public/data/methodology.json";
 
@@ -58,6 +59,9 @@ const refBasis = (i: any) =>
 
       <h2>{t.oneSentenceH2}</h2>
       {t.oneSentence.map((block: string) => <Fragment set:html={block} />)}
+
+      {/* Qui fait le travail — l'extrait où l'agent explique la répartition (Franck, 2026-11-10). */}
+      <VisiteVideo lang={lang} variant="agent" />
 
       <h2>{t.scaleH2}</h2>
       <div class="meth-scale">

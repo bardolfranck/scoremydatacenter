@@ -20,6 +20,7 @@ import {
   reglesDeLien,
 } from "../config/routes";
 import ScoreBadge from "./ScoreBadge.astro";
+import VisiteVideo from "./VisiteVideo.astro";
 import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
@@ -759,6 +760,10 @@ const seoDesc = seoLead
       <a class="fiche-portrait-link" href={cheminDePortrait(lang as LangueDeclaree, dc.id)}>
         {t.portraitLink}<span>{t.portraitLinkSub}</span>
       </a>
+
+      {/* La visite en 2 minutes (Franck, 2026-11-10) : la plupart des lecteurs arrivent de Google
+          sur une fiche, jamais par l'accueil. Le lecteur n'est fabriqué qu'au clic. */}
+      <VisiteVideo lang={lang as LangueDeclaree} variant="link" />
 
       <div class="fiche-share">
         <span class="fiche-share-label">{t.share}</span>
