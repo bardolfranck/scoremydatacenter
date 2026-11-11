@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 from .core import ARTIFACTS_DIR, GateError, load_watchlist, write_json
+from .esg import esg_fields
 
 # A-28: the credit travels WITH the data — every object artifact carries it
 # (scores.json/audit.json are arrays: adding a key would break consumers;
@@ -413,6 +414,9 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             # AFTER scoring, then stored on the source DC. The engine only passes
             # it through — never computed at render, never re-derived here.
             "synthesis": dc.get("synthesis"),
+            # Lecture ESG (chantier 2026-11-11) : indicateurs INFORMATIFS, HORS NOTE — le
+            # scoring ne les lit pas. Champ absent quand rien n'est calculable sur des faits.
+            **esg_fields(dc),
         })
 
         audit += [{"dc_id": dc_id, "dc_name": dc["identity"]["name"], **event} for event in dc["score_history"]]

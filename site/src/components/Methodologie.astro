@@ -14,6 +14,7 @@ import PillarIcon from "./PillarIcon.astro";
 import VisiteVideo from "./VisiteVideo.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import methodologyData from "../../public/data/methodology.json";
+import { ESG, ESRS_PAR_PILIER, ANCRE_ESG } from "../content/esg";
 
 const { lang, t, nav, altHref, altLabel } = Astro.props as {
   lang: LangueDeclaree; t: any; nav: NavNode[];
@@ -33,6 +34,12 @@ const grades = [...m.grade_thresholds].sort((a: any, b: any) => b.min - a.min);
 const byPillar = m.pillars.map((p: any) => ({
   pillar: p,
   items: m.indicators.filter((i: any) => i.pillar === p.id && i.mvp),
+}));
+// Lecture ESG : la correspondance pilier → norme vit dans content/esg.ts (une seule table,
+// lue aussi par la fiche). Les piliers sans norme ne sont pas listés : la section dit pourquoi.
+const esg = ESG[lang];
+const esgRows = m.pillars.filter((p: any) => ESRS_PAR_PILIER[p.id]).map((p: any) => ({
+  pillar: p, code: ESRS_PAR_PILIER[p.id],
 }));
 const refBasis = (i: any) =>
   i.threshold_basis?.reference ?? i.threshold_basis?.justification ?? "—";
@@ -114,6 +121,36 @@ const refBasis = (i: any) =>
       <Fragment set:html={t.statusP} />
       <ul>
         {t.statusItems.map((item: string) => <li set:html={item}></li>)}
+      </ul>
+
+      <h2 id={ANCRE_ESG}>{esg.methH2}</h2>
+      <p class="meth-esg-accroche">{esg.methAccroche}</p>
+      <Fragment set:html={esg.methIntro} />
+      <h3>{esg.methEsrsH3}</h3>
+      <Fragment set:html={esg.methEsrsIntro} />
+      <div class="fiche-ind-wrap">
+        <table class="meth-table meth-esg">
+          <thead><tr><th>{esg.methColPilier}</th><th>{esg.methColNorme}</th><th>{esg.methColQuoi}</th></tr></thead>
+          <tbody>
+            {esgRows.map((r: any) => (
+              <tr>
+                <td><span class="meth-pillar-name"><PillarIcon name={pillarIcon[r.pillar.id]} size={16} />{L(r.pillar.label)}</span></td>
+                <td><strong>ESRS {r.code}</strong> · {(esg.normes as any)[r.code]}</td>
+                <td>{(esg.methApport as any)[r.pillar.id]}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Fragment set:html={esg.methSansNorme} />
+      <h3>{esg.methCadresH3}</h3>
+      <ul>
+        {esg.methCadres.map((item: string) => <li set:html={item}></li>)}
+      </ul>
+      <h3>{esg.methIdxH3}</h3>
+      <Fragment set:html={esg.methIdxIntro} />
+      <ul>
+        {esg.methIdx.map((item: string) => <li set:html={item}></li>)}
       </ul>
 
       <h2>{t.refsH2}</h2>

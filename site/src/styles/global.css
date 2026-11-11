@@ -1122,6 +1122,8 @@ sup a { color: var(--accent); font-weight: 750; }
 .meth-table { width: 100%; border-collapse: collapse; min-width: 640px; font-size: 0.92rem; }
 .meth-table th { text-align: left; padding: 8px 12px; font-family: var(--font-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); }
 .meth-table td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-soft); }
+.meth-table.meth-esg { min-width: 520px; }
+.meth-esg-accroche { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin: 0.2em 0 0.6em; }
 .meth-table strong { display: block; color: var(--ink); font-weight: 700; }
 .meth-desc { display: block; margin-top: 3px; color: var(--muted); font-size: 0.85rem; font-weight: 400; }
 .meth-table a { color: var(--accent); }
@@ -1306,6 +1308,25 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-signal-note { margin-top: 6px; font-family: var(--font-mono); font-size: 0.62rem; line-height: 1.45; color: var(--sidebar-muted); }
 .fiche-signal-note strong { color: #fff; }
 .fiche-share-native { display: none; }
+
+/* Lecture ESG — correspondance thématique, hors note (content/esg.ts) */
+.fiche-esg { margin: 0 32px 6px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--wash, #f6f5f0); }
+.fiche-esg-kicker { margin: 0 0 6px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.fiche-esg-intro { margin: 0 0 8px; font-size: 0.88rem; color: var(--ink-soft); }
+.fiche-esg-list { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 4px; }
+.fiche-esg-list li { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: baseline; font-size: 0.88rem; }
+.fiche-esg-pilier { display: inline-flex; align-items: center; gap: 6px; min-width: 12rem; font-weight: 650; color: var(--ink); }
+.fiche-esg-norme { color: var(--ink-soft); }
+.fiche-esg-ief { margin: 4px 0 10px; padding: 10px 12px; border-radius: 10px; background: var(--surface, #fff); border: 1px dashed var(--line); }
+.fiche-esg-ief p { margin: 0; }
+.fiche-esg-ief-head { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; color: var(--ink); }
+.fiche-esg-tip { display: inline-flex; color: var(--muted); cursor: help; }
+.fiche-esg-ief-val { font-size: 1.05rem; color: var(--ink); margin-top: 2px !important; }
+.fiche-esg-ief-in, .fiche-esg-ief-info { font-size: 0.78rem; color: var(--muted); }
+.fiche-esg-reserve { margin: 0; font-size: 0.78rem; color: var(--muted); }
+.fiche-esg-reserve a { color: var(--accent, #0f5fb8); }
+@media (max-width: 640px) { .fiche-esg { margin: 0 16px 6px; } .fiche-esg-pilier { min-width: 0; } }
+@media (prefers-color-scheme: dark) { .fiche-esg { background: #141a24; } .fiche-esg-ief { background: #0f141c; } }
 
 /* Indicators table */
 .fiche-section { padding: 22px 32px; }
@@ -2317,6 +2338,10 @@ th.dev-cmp-pro { color: var(--accent); }
 .dev-usecases { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 30px; }
 .dev-uc-label { font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
 .dev-uc-chip { font-size: 0.85rem; color: var(--ink-soft); background: var(--wash); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; }
+.dev-esg { margin-top: 34px; max-width: 760px; }
+.dev-esg p { color: var(--ink-soft); }
+.dev-esg-list { margin: 12px 0; padding-left: 1.1em; display: grid; gap: 8px; color: var(--ink-soft); }
+.dev-esg-note { font-size: 0.85rem; color: var(--muted) !important; }
 
 .dev-h1 { margin: 0 0 4px; }
 .dev-h2 { font-size: 1.35rem; margin: 0 0 18px; }

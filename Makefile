@@ -245,6 +245,7 @@ deploy:
 	uv run python scripts/check_langue_servie.py
 	uv run python scripts/check_rapport_retire.py
 	uv run python scripts/check_langue_donnee_servie.py
+	uv run python scripts/check_vocabulaire_esg.py
 # 🔴 LE PLAFOND, JUSTE AVANT LE DÉPART. Le 2026-11-06 wrangler a refusé 24 047 fichiers
 # (limite 20 000 par déploiement, refus TOTAL) après que la suite, le build et les sept
 # barrières soient passés : la panne arrive au dernier geste, quand tout a déjà coûté.
