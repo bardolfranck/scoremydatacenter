@@ -91,9 +91,10 @@
             "under_construction",
             "operational",
             "unknown",
-            "decommissioned"
+            "decommissioned",
+            "withdrawn"
           ],
-          "description": "« decommissioned » = site MIS HORS SERVICE : il a existé, sa note est conservée comme ARCHIVE (décision Franck, 2026-11-07), et la fiche doit l'annoncer. Ce n'est ni un stade du pipeline ni « unknown » : c'est une fin établie. Un site hors service sort de la vitrine, de la médiane et du classement par construction (ces calculs exigent `operational`) — et `identity.vintage.decommissioned_year` doit alors dater la note, sans quoi une note d'archive se lit comme une note d'aujourd'hui."
+          "description": "« decommissioned » = site MIS HORS SERVICE : il a existé, sa note est conservée comme ARCHIVE (décision Franck, 2026-11-07), et la fiche doit l'annoncer. Ce n'est ni un stade du pipeline ni « unknown » : c'est une fin établie. Un site hors service sort de la vitrine, de la médiane et du classement par construction (ces calculs exigent `operational`) — et `identity.vintage.decommissioned_year` doit alors dater la note, sans quoi une note d'archive se lit comme une note d'aujourd'hui. « withdrawn » = PROJET REFUSÉ OU RETIRÉ (décision Franck, 2026-11-11) : il n'a jamais été construit ; sa note est conservée comme archive du projet tel qu'il était proposé, la fiche l'annonce, et il sort de la vitrine, de la médiane et du classement comme `decommissioned`. `identity.vintage.withdrawn_date` est alors exigée."
         },
         "vintage": {
           "type": "object",
@@ -119,6 +120,15 @@
               "minimum": 1990,
               "maximum": 2100,
               "description": "Année de MISE HORS SERVICE, exigée dès que `project_status` vaut « decommissioned ». Sa provenance se met dans `vintage.source`, comme les autres millésimes. Sans elle, la note d'archive n'a pas de date et le garde refuse de la servir."
+            },
+            "withdrawn_date": {
+              "type": "string",
+              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+              "description": "Date (AAAA-MM-JJ) du REFUS ou du RETRAIT du projet, exigée dès que `project_status` vaut « withdrawn ». Sans elle, la note d'archive d'un projet abandonné se lit comme celle d'un projet en cours."
+            },
+            "withdrawn_source": {
+              "$ref": "#/$defs/source",
+              "description": "La DÉCISION qui prouve le refus ou le retrait (délibération, arrêté, retrait du dossier, presse qui le rapporte) — objet source complet ; son `url` est servie en haut de la fiche et du portrait. Facultatif, comme `decommissioned_source` : souhaité, jamais inventé."
             },
             "decommissioned_source": {
               "$ref": "#/$defs/source",

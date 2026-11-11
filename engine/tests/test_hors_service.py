@@ -310,3 +310,62 @@ def test_la_dette_nommee_est_reelle_et_dans_cet_etat():
         "ces fiches sont réglées — retirez-les de DETTE_NOM_CONTREDIT_STATUT, sinon la liste "
         f"couvre le vide : {corriges}"
     )
+
+
+# ─── `withdrawn` : projet REFUSÉ OU RETIRÉ (Franck, 2026-11-11) ────────────────────────────
+# Même doctrine que `decommissioned` — la note est une archive datée, la fiche l'annonce, la
+# médiane l'ignore — mais un jour et non une année : un refus ou un retrait a une date.
+
+def _retire(dc_id, jour=None, lat=48.0):
+    dc = _dc(dc_id, status="withdrawn", lat=lat)
+    if jour is not None:
+        dc["identity"]["vintage"] = {"withdrawn_date": jour}
+    return dc
+
+
+def test_withdrawn_est_dans_le_schema_avec_sa_date_et_sa_decision():
+    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    ident = schema["properties"]["identity"]["properties"]
+    assert "withdrawn" in ident["project_status"]["enum"]
+    vintage = ident["vintage"]["properties"]
+    assert vintage["withdrawn_date"]["pattern"] == "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    assert vintage["withdrawn_source"]["$ref"] == "#/$defs/source"
+
+
+def test_withdrawn_est_servi_mais_nest_pas_un_stade_du_pipeline():
+    source = STATUTS_TS.read_text(encoding="utf-8")
+    pipeline = source.split("export const PIPELINE")[1].split("\n")[0]
+    statuts = source.split("export const STATUTS")[1].split("\n")[0]
+    assert "withdrawn" not in pipeline, "un projet refusé ne mène plus à rien"
+    assert "withdrawn" in statuts
+
+
+def test_le_gate_refuse_un_projet_retire_sans_date(tmp_path):
+    racine = _ecris(tmp_path, [_retire("us-refuse"), _retire("us-mal-date", jour="2026")])
+    problemes = hors_service_gate(racine)
+    assert problemes and "withdrawn_date" in problemes[0]
+    assert "us-refuse" in problemes[0] and "us-mal-date" in problemes[0]
+
+
+def test_le_gate_accepte_un_projet_retire_date(tmp_path):
+    racine = _ecris(tmp_path, [_retire("us-refuse", jour="2026-07-16")])
+    assert hors_service_gate(racine) == []
+
+
+def test_un_projet_retire_ne_pese_pas_sur_la_mediane():
+    dcs = {f"fr-{i:02d}": _dc(f"fr-{i:02d}") for i in range(3)}
+    results = {f"fr-{i:02d}": _result(s) for i, s in enumerate([40.0, 50.0, 60.0])}
+    for j, bas in enumerate([5.0, 7.0]):
+        did = f"us-ret{j}"
+        dcs[did] = _retire(did, jour="2026-07-02", lat=48.5 + j)
+        results[did] = _result(bas)
+    assert build_showcase(dcs, results)["median_site_score"] == 50.0
+
+
+def test_les_trois_langues_disent_le_retrait():
+    for fichier in (FICHE_TS, PORTRAIT_TS):
+        source = fichier.read_text(encoding="utf-8")
+        for clef in ("retireTitre", "retireDate", "retireSansDate", "retireNote", "retireDossier"):
+            assert source.count(f"  {clef}:") == 3, f"{fichier.name} : {clef} pas dans les 3 langues"
+    bandeau = BANDEAU.read_text(encoding="utf-8")
+    assert "projetRetire(statut)" in bandeau and "withdrawn_source" in bandeau

@@ -41,7 +41,7 @@ const PILLARS: [string, string, string][] = [
   ["energy", "Énergie", "energy"], ["water", "Eau", "water"], ["land_biodiversity", "Foncier", "land"],
   ["local_impact", "Impact", "local"], ["transparency_governance", "Transp.", "transparency"],
 ];
-const STATUS: Record<string, string> = { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service", decommissioned: "Hors service", unknown: "Statut non établi" };
+const STATUS: Record<string, string> = { announced: "Annoncé", permitting: "En instruction", under_construction: "En construction", operational: "En service", decommissioned: "Hors service", withdrawn: "Refusé ou retiré", unknown: "Statut non établi" };
 
 // Brand icon (smdc-icon.svg inlined), scaled to 46px on the navy card.
 const BRAND_ICON = `<g transform="translate(64,56) scale(0.71875)">
