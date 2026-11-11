@@ -29,6 +29,7 @@ export type StadeProjet =
   | "permitting"
   | "under_construction"
   | "operational"
+  | "withdrawn"
   | "unknown";
 
 /** Une question par indicateur du bloc projet/process. Aucune pour le bloc base. */
@@ -91,6 +92,14 @@ export const VERBES: Record<StadeProjet, { fr: string; en: string; nl?: string }
     fr: "à réclamer auprès de l'autorité — le site fonctionne, seules les prescriptions sont encore opposables",
     en: "to claim from the authority — the site is running, only its operating conditions still bite",
     nl: "op te eisen bij de autoriteit — de site draait, alleen de voorschriften zijn nog afdwingbaar",
+  },
+  // 2026-11-11 : projet REFUSÉ OU RETIRÉ. Plus aucune procédure ouverte : la question ne
+  // s'adresse plus à ce dossier, mais au suivant — un projet abandonné revient souvent,
+  // sous un autre nom ou un autre porteur, et repart alors de zéro.
+  withdrawn: {
+    fr: "à reposer si le projet revient — il a été refusé ou retiré, et un nouveau dossier repartirait de zéro",
+    en: "to raise again if the project returns — it was refused or withdrawn, and a new application would start from scratch",
+    nl: "opnieuw te stellen als het project terugkomt — het is geweigerd of ingetrokken, en een nieuw dossier begint dan opnieuw",
   },
   // 🔴 Le stade n'est pas établi : on ne dit donc NI « le site fonctionne » NI « le chantier
   // a commencé ». On dit à qui demander, et quoi.
