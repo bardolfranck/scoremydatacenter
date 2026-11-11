@@ -257,6 +257,10 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
 // « Connu » se décide à UN seul endroit (config/operator.ts) : trois copies de la réponse
 // vivaient ici, dans related.ts et dans le balisage, et elles divergeaient.
 const hasOperator = operateurIdentifie(dc.operator);
+// Rôle (Franck 2026-11-11) : quand le nom affiché a été RECOPIÉ du porteur (pétitionnaire d'un
+// acte en IE, promoteur au registre en FR), ce n'est pas un exploitant constaté. Le dire
+// « Opérateur » affirmerait un fait qu'on n'a pas. Le producteur le marque : fills_operator.
+const isApplicant = dc.developer_source?.fills_operator === true;
 // Distance aux premières habitations (Franck 2026-09-21) : un FAIT à côté de la note, jamais dedans.
 // « environ », car la mesure vise le centre de l'objet OSM ; une zone résidentielle (bâti non tagué,
 // fréquent en rural) est dite comme telle, jamais présentée comme une maison.
@@ -459,7 +463,7 @@ const jsonLd = {
   // identifié ». C'est ce qui était publié sur 162 fiches jusqu'au 2026-10-17. Même prédicat
   // que l'affichage : une seule réponse à « l'opérateur est-il identifié ? ».
   ...(operateurIdentifie(dc.operator)
-    ? { additionalProperty: [{ "@type": "PropertyValue", name: t.schemaOperator, value: dc.operator }] }
+    ? { additionalProperty: [{ "@type": "PropertyValue", name: isApplicant ? t.schemaApplicant : t.schemaOperator, value: dc.operator }] }
     : {}),
   address: {
     "@type": "PostalAddress",
@@ -667,7 +671,7 @@ const seoDesc = seoLead
         )}
         {hasOperator && (
           <p class="fiche-meta fiche-operator">
-            {t.operatorLabel} {dc.operator_source
+            {isApplicant ? t.applicantLabel : t.operatorLabel} {dc.operator_source
               ? <a class="op-src" href={dc.operator_source.url} target="_blank" rel="noopener" title={t.operatorFromRegister}>{dc.operator}</a>
               : dc.operator}
             {/* Developer-when-known (Franck 2026-09-25): a SOURCED register fact, never our verdict —

@@ -462,13 +462,17 @@ def apply_developer_identity(dcs: dict) -> dict:
         if not r.get("denomination") or not r.get("siren"):
             continue
         siren_id = r["siren"]
-        if str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none"):
+        rempli = str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none")
+        if rempli:
             dc["identity"]["operator"] = registry_display_name(r["denomination"])
         activite = NAF_DEVELOPER_PUBLISH[naf]
         sources[dc_id] = {"source": "SIRENE", "siren": siren_id, "naf": naf,
                           **{f"activity_{lg}": activite[lg] for lg in langues_declarees()},
                           "url": f"https://annuaire-entreprises.data.gouv.fr/entreprise/{siren_id}",
-                          "checked_at": e.get("checked_at")}
+                          "checked_at": e.get("checked_at"),
+                          # Le nom affiché vient du PORTEUR, pas d'un exploitant constaté : la fiche
+                          # dit « Porteur du projet », jamais « Opérateur » (Franck 2026-11-11).
+                          **({"fills_operator": True} if rempli else {})}
     # Second chemin, plus fort que le registre des entreprises : le fait déclaré DANS la fiche,
     # quand il vient d'un acte administratif nommant le pétitionnaire de CETTE installation.
     # Le rapprochement par nom au registre des entreprises produit des homonymes (leçon COLT,
@@ -489,6 +493,7 @@ def apply_developer_identity(dcs: dict) -> dict:
                           "checked_at": dev["source"].get("accessed")}
         if str(dc["identity"].get("operator") or "").strip().lower() in ("", "unknown", "none"):
             dc["identity"]["operator"] = dev["name"]
+            sources[dc_id]["fills_operator"] = True
     return sources
 
 

@@ -43,3 +43,30 @@ def test_signed_but_non_promotion_naf_is_not_published(tmp_path, monkeypatch):
     # 68.10Z (marchand de biens) is NOT a development activity → not published even when signed.
     _sidecar(tmp_path, monkeypatch, {"fr-x": _entry("developer_confirmed", "68.10Z", denom="LA CITADELLE")})
     assert B.apply_developer_identity(_dcs("fr-x")) == {}
+
+
+# Porteur ≠ opérateur (Franck 2026-11-11) : quand le nom affiché est RECOPIÉ du porteur, la source
+# le marque — la fiche dit alors « Porteur du projet », jamais « Opérateur ».
+def test_operator_filled_from_register_developer_is_marked(tmp_path, monkeypatch):
+    _sidecar(tmp_path, monkeypatch, {"fr-x": _entry("developer_confirmed", "41.10A")})
+    assert B.apply_developer_identity(_dcs("fr-x"))["fr-x"]["fills_operator"] is True
+
+
+def test_operator_filled_from_permit_applicant_is_marked(tmp_path, monkeypatch):
+    _sidecar(tmp_path, monkeypatch, {})
+    dcs = {"ie-x": {"identity": {"operator": None, "name": "ie-x", "developer": {
+        "name": "Mayo Data Hub Limited",
+        "source": {"title": "Planning register", "url": "http://www.eplanning.ie/x", "accessed": "2026-11-11"}}}}}
+    src = B.apply_developer_identity(dcs)["ie-x"]
+    assert src["fills_operator"] is True
+    assert dcs["ie-x"]["identity"]["operator"] == "Mayo Data Hub Limited"
+
+
+def test_known_operator_is_not_marked(tmp_path, monkeypatch):
+    # Un exploitant déjà connu reste « Opérateur » : le porteur ne l'écrase pas, rien n'est marqué.
+    _sidecar(tmp_path, monkeypatch, {})
+    dcs = {"fr-x": {"identity": {"operator": "Equinix", "name": "fr-x", "developer": {
+        "name": "SCI Foo", "source": {"url": "https://example.org/avis"}}}}}
+    src = B.apply_developer_identity(dcs)["fr-x"]
+    assert "fills_operator" not in src
+    assert dcs["fr-x"]["identity"]["operator"] == "Equinix"
