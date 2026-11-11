@@ -12,20 +12,24 @@
 // Hébergement : R2 (media.scoremydatacenter.org/video/), lecteur natif du navigateur — aucun
 // cookie, aucun tiers. Les fichiers sont versionnés DANS LEUR NOM : une nouvelle coupe = un
 // nouveau nom, jamais un écrasement (cache immutable d'un an côté R2).
+//
+// v3 (2026-11-11, GO Franck) : narrée par la voix de synthèse du début à la fin — plus
+// d'image ni de voix de Franck sur la version SITE (la version jury reste sur YouTube).
+// L'affiche (la carte) et l'extrait « agent » de la méthodologie ne changent pas.
 import type { LangueDeclaree } from "./langues";
 
 const MEDIA = "https://media.scoremydatacenter.org/video/";
 
 export const VISITE_MEDIA = {
-  tour: MEDIA + "tour-en.mp4",
+  tour: MEDIA + "tour-en-v3.mp4",
   tourPoster: MEDIA + "tour-poster.jpg",
   loop: MEDIA + "tour-loop.mp4",
   agent: MEDIA + "tour-agent-en.mp4",
   agentPoster: MEDIA + "tour-agent-poster.jpg",
   /** ISO 8601, pour le balisage VideoObject. */
-  tourDuration: "PT1M49S",
+  tourDuration: "PT1M51S",
   agentDuration: "PT21S",
-  uploadDate: "2026-11-10",
+  uploadDate: "2026-11-11",
 } as const;
 
 export const VISITE: Record<LangueDeclaree, {
@@ -43,7 +47,7 @@ export const VISITE: Record<LangueDeclaree, {
 }> = {
   en: {
     cta: "The 2-minute tour",
-    sub: "Why we score data centers, and how — 1:49.",
+    sub: "Why we score data centers, and how — 1:51.",
     ficheLink: "New here? Take the 2-minute tour",
     close: "Close",
     play: "Play the 2-minute tour",
@@ -56,7 +60,7 @@ export const VISITE: Record<LangueDeclaree, {
   },
   fr: {
     cta: "La visite en 2 minutes",
-    sub: "Pourquoi et comment nous notons les data centers — 1:49, en anglais sous-titré.",
+    sub: "Pourquoi et comment nous notons les data centers — 1:51, en anglais sous-titré.",
     ficheLink: "Nouveau ici ? La visite en 2 minutes",
     close: "Fermer",
     play: "Lancer la visite en 2 minutes",
@@ -69,7 +73,7 @@ export const VISITE: Record<LangueDeclaree, {
   },
   nl: {
     cta: "De rondleiding in 2 minuten",
-    sub: "Waarom en hoe we datacenters een cijfer geven — 1:49, in het Engels ondertiteld.",
+    sub: "Waarom en hoe we datacenters een cijfer geven — 1:51, in het Engels ondertiteld.",
     ficheLink: "Nieuw hier? Bekijk de rondleiding van 2 minuten",
     close: "Sluiten",
     play: "Start de rondleiding van 2 minuten",
