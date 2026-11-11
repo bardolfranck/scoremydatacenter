@@ -15,6 +15,9 @@
 // AVANT le build. Ne pas confondre les deux.
 
 import type { Langue, LangueDeclaree } from "./langues";
+// Les cadres ESG et la correspondance pilier → thème ESRS vivent UNE fois, dans esg.ts
+// (lus aussi par la méthode et la fiche) : on les DÉRIVE ici, on ne les recopie pas.
+import { ESG } from "./esg";
 
 const FR = {
   // Le chemin de la page « Méthode » dans cette langue : un SLUG localisé, pas un mot.
@@ -22,7 +25,7 @@ const FR = {
   // nouvelle ne va pas le chercher.
   methHref: "/fr/methodologie/",
   title: "Les normes — où nous nous situons — ScoreMyDataCenter",
-  metaDescription: "Ce que la filière data center mesure déjà (PUE, ISO/IEC 30134, Green Grid, ETSI) — et la case vide que nous occupons : la première note d'acceptabilité indépendante, site par site.",
+  metaDescription: "Ce que la filière data center mesure déjà (PUE, ISO/IEC 30134, Green Grid, ETSI), ce que regardent les cadres ESG — et la case vide que nous occupons : la première note d'acceptabilité indépendante, site par site.",
   tagline: "Observatoire indépendant",
   h1: "Les normes. Où nous nous situons.",
   intro:
@@ -84,6 +87,15 @@ const FR = {
   ],
   etatNote: "<p><strong>Ce que cela change pour nous — et ce que cela ne change pas.</strong> Ces critères ne sont ni des seuils de notation, ni du droit national : ce sont les points qu'une préfecture de région examine, dossier par dossier, pour <em>un</em> agrément. Ils ne produisent aucune lettre, aucune comparaison entre sites, et rien n'en est publié sous une forme que l'on puisse confronter.</p><p>C'est précisément la frontière. L'État instruit <strong>au cas par cas et à huis clos</strong> ; nous mesurons les mêmes dimensions <strong>de l'extérieur, selon la même grille, sur tout le corpus</strong> — et nous les publions. Nous notons ce que l'État regarde déjà : c'est le meilleur argument contre l'idée que ces dimensions seraient notre invention.</p>",
 
+  // ── Les cadres ESG (finance durable, reporting de durabilité). Positionnement seulement :
+  // la liste des cadres et les thèmes ESRS viennent d'esg.ts. 🔴 Vocabulaire : jamais
+  // « notation ESG » / « score ESG » (règlement (UE) 2024/3005, 16-ESG/04).
+  esgH2: "Les cadres ESG, et où nous nous situons",
+  esgIntro: `<p>La finance durable et le reporting de durabilité regardent aussi les data centers : les critères ESG (environnement, social, gouvernance) des investisseurs, le rapport de durabilité que la directive CSRD impose aux grandes entreprises. Leurs lectures portent presque toujours sur l'<strong>opérateur</strong> — l'efficacité de ses installations, son électricité, ses engagements. Le risque, lui, tient aussi au <strong>lieu</strong>. Quatre de nos cinq piliers recoupent un thème des normes européennes de reporting (ESRS, simplifiées en 2026) : ${ESG.fr.normes.E1}, ${ESG.fr.normes.E3}, ${ESG.fr.normes.E4}, ${ESG.fr.normes.S3}. C'est une correspondance thématique, pas une conformité : nous publions des données ESG au niveau du site, et nous ne notons pas d'entreprise.</p>`,
+  esgCadresIntro: "<p>Les cadres qui comptent, et ce que notre lecture par le lieu leur apporte :</p>",
+  esgCadres: ESG.fr.methCadres,
+  esgNote: "<p>La correspondance pilier par pilier, et les indicateurs territoriaux du Guide du Data Center Durable et Acceptable, sont détaillés dans <a href=\"/fr/methodologie/#esg\">la méthode</a>.</p>",
+
   closeP: "La filière écrit la règle dans ses livres blancs. Nous publions le score — en public, site par site — et nous citons ses normes pour être inattaquables, pas pour être adoubés.",
 
   ctaMethod: "Voir notre méthode →",
@@ -97,7 +109,7 @@ const EN: typeof FR = {
   // nouvelle ne va pas le chercher.
   methHref: "/methodology/",
   title: "The standards — where we sit — ScoreMyDataCenter",
-  metaDescription: "What the data center industry already measures (PUE, ISO/IEC 30134, Green Grid, ETSI) — and the empty seat we take: the first independent acceptability score, site by site.",
+  metaDescription: "What the data center industry already measures (PUE, ISO/IEC 30134, Green Grid, ETSI), what ESG frameworks look at — and the empty seat we take: the first independent acceptability score, site by site.",
   tagline: "Independent observatory",
   h1: "The standards. Where we sit.",
   intro:
@@ -159,6 +171,12 @@ const EN: typeof FR = {
   ],
   etatNote: "<p><strong>What this changes for us — and what it does not.</strong> These criteria are neither scoring thresholds nor national law: they are the points one French regional prefecture examines, file by file, for <em>one</em> approval. They produce no letter, no comparison between sites, and nothing is published in a form anyone could check one site against another.</p><p>That is exactly the boundary. The state assesses <strong>case by case and behind closed doors</strong>; we measure the same dimensions <strong>from the outside, on one grid, across the whole corpus</strong> — and we publish them. We grade what the state already looks at: the best answer to anyone claiming these dimensions are our invention.</p>",
 
+  esgH2: "ESG frameworks, and where we sit",
+  esgIntro: `<p>Sustainable finance and sustainability reporting look at data centers too: investors' ESG criteria (environmental, social, governance), and the sustainability report the CSRD requires of large companies. Their readings almost always cover the <strong>operator</strong> — how efficient its facilities are, its electricity, its commitments. Risk, though, also lies in the <strong>place</strong>. Four of our five pillars overlap a topic of the European Sustainability Reporting Standards (ESRS, simplified in 2026): ${ESG.en.normes.E1}, ${ESG.en.normes.E3}, ${ESG.en.normes.E4}, ${ESG.en.normes.S3}. It is a topic mapping, not compliance: we publish site-level ESG data, and we do not grade companies.</p>`,
+  esgCadresIntro: "<p>The frameworks that matter, and what our place-based reading brings to them:</p>",
+  esgCadres: ESG.en.methCadres,
+  esgNote: "<p>The pillar-by-pillar mapping, and the territorial indicators of the French Guide du Data Center Durable et Acceptable, are detailed in <a href=\"/methodology/#esg\">the method</a>.</p>",
+
   closeP: "The industry writes the rule in its white papers. We publish the score — in public, site by site — and we cite its standards to be unassailable, not to be endorsed.",
 
   ctaMethod: "See our method →",
@@ -177,7 +195,7 @@ const NL: typeof FR = {
   // Slug localisé : reste /nl/ tant que les pages NL n'existent pas (remap harnais).
   methHref: "/nl/methodologie/",
   title: "De normen — waar wij staan — ScoreMyDataCenter",
-  metaDescription: "Wat de datacentersector al meet (PUE, ISO/IEC 30134, Green Grid, ETSI) — en de lege stoel die wij innemen: het eerste onafhankelijke cijfer voor maatschappelijke acceptatie, site per site.",
+  metaDescription: "Wat de datacentersector al meet (PUE, ISO/IEC 30134, Green Grid, ETSI), waar de ESG-kaders naar kijken — en de lege stoel die wij innemen: het eerste onafhankelijke cijfer voor maatschappelijke acceptatie, site per site.",
   tagline: "Onafhankelijk observatorium",
   h1: "De normen. Waar wij staan.",
   intro:
@@ -238,6 +256,12 @@ const NL: typeof FR = {
     { theirs: "<strong>PUE, WUE, ISO 14001 en ISO 50001</strong> — plus de <em>European Code of Conduct for Data Centres</em> — om de aangekondigde prestaties te onderbouwen", ours: "Energie · PUE · Water · WUE (zie de tabel hierboven)" },
   ],
   etatNote: "<p><strong>Wat dit voor ons verandert — en wat niet.</strong> Deze criteria zijn geen beoordelingsdrempels en geen nationaal recht: het zijn de punten die een regionale prefectuur, dossier per dossier, onderzoekt voor <em>één</em> goedkeuring. Ze leveren geen letter op, geen vergelijking tussen sites, en niets ervan wordt gepubliceerd in een vorm die zich laat toetsen.</p><p>Precies daar ligt de grens. De staat behandelt <strong>van geval tot geval en achter gesloten deuren</strong>; wij meten dezelfde dimensies <strong>van buitenaf, met dezelfde meetlat, over het hele corpus</strong> — en we publiceren ze. Wij beoordelen wat de staat al bekijkt: het beste argument tegen het idee dat deze dimensies onze uitvinding zouden zijn.</p>",
+
+  esgH2: "ESG-kaders, en waar wij staan",
+  esgIntro: `<p>Duurzame financiering en duurzaamheidsverslaggeving kijken ook naar datacenters: de ESG-criteria (milieu, sociaal, governance) van beleggers, en het duurzaamheidsverslag dat de CSRD grote ondernemingen oplegt. Hun analyses gaan bijna altijd over de <strong>exploitant</strong> — hoe efficiënt zijn installaties zijn, zijn elektriciteit, zijn toezeggingen. Het risico zit echter ook in de <strong>plek</strong>. Vier van onze vijf pijlers raken een thema van de Europese standaarden voor duurzaamheidsrapportage (ESRS, vereenvoudigd in 2026): ${ESG.nl.normes.E1}, ${ESG.nl.normes.E3}, ${ESG.nl.normes.E4}, ${ESG.nl.normes.S3}. Het is een thematische aansluiting, geen conformiteit: wij publiceren ESG-gegevens per site, en wij beoordelen geen ondernemingen.</p>`,
+  esgCadresIntro: "<p>De kaders die tellen, en wat onze benadering vanuit de plek eraan toevoegt:</p>",
+  esgCadres: ESG.nl.methCadres,
+  esgNote: "<p>De aansluiting per pijler, en de territoriale indicatoren van de Franse Guide du Data Center Durable et Acceptable, staan uitgewerkt in <a href=\"/nl/methodologie/#esg\">de methode</a>.</p>",
 
   closeP: "De sector schrijft de regel in zijn witboeken. Wij publiceren het cijfer — openbaar, site per site — en we citeren zijn normen om onaantastbaar te zijn, niet om een ridderslag te krijgen.",
 

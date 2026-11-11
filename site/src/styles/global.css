@@ -1085,6 +1085,8 @@ sup a { color: var(--accent); font-weight: 750; }
 .gl-fam-filiere { background: #d3e6fb; color: #0a4a92; border-color: #6faae6; }
 .gl-fam-territoire { background: #cdecda; color: #096139; border-color: #63c592; }
 .gl-fam-secteur { background: #e6dcf3; color: #513a7e; border-color: #b39ad6; }
+/* Finance durable (ESG, CSRD, SFDR…) — 4e famille, ajoutée le 2026-11-11. */
+.gl-fam-durable { background: #fbe9c8; color: #7a4a00; border-color: #e3b25c; }
 /* Direction of merit for measurable KPIs — « ↓ plus bas = mieux » / « ↑ plus haut = mieux ». */
 .gl-dir { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; line-height: 1.6; white-space: nowrap; border: 1px solid var(--line); }
 .gl-dir-lower { background: #eaf5ee; color: #0b7a4b; border-color: #9dd4b4; }

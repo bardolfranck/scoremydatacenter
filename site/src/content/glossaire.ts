@@ -15,6 +15,8 @@
 // AVANT le build. Ne pas confondre les deux.
 
 import type { Langue, LangueDeclaree } from "./langues";
+// Thèmes ESRS : une seule source, esg.ts (lue aussi par la méthode, la fiche et les normes).
+import { ESG } from "./esg";
 
 const FR = {
   title: "Glossaire des data centers — ScoreMyDataCenter",
@@ -24,7 +26,7 @@ const FR = {
   intro:
     "<p>Les mots qu'il faut pour lire un data center. Ceux de la <strong>filière</strong> (ce qu'elle mesure déjà) et ceux de notre <strong>lentille territoriale</strong> (ce que nous sommes seuls à agréger). Chaque définition est courte ; les termes techniques renvoient vers la page qui les détaille.</p>",
   legendAria: "Familles de termes",
-  fam: { filiere: "🏭 Filière", territoire: "🌍 Territoire", secteur: "📖 Secteur" },
+  fam: { filiere: "🏭 Filière", territoire: "🌍 Territoire", secteur: "📖 Secteur", durable: "📊 Finance durable" },
   dir: { lower: "↓ plus bas = mieux", higher: "↑ plus haut = mieux" },
   backHref: "/fr/",
   backLabel: "← Retour à l'accueil",
@@ -87,6 +89,34 @@ const FR = {
       more: { href: "/fr/normes/", label: "Les normes" } },
     { term: "ZRE", slug: "zre", fam: "territoire",
       def: "<p>Zone de Répartition des Eaux : un secteur où la ressource en eau est déjà en déficit chronique et fait l'objet de règles de partage renforcées. Un projet qui s'y implante part avec un handicap sur le pilier eau.</p>" },
+    // ── Famille « finance durable » (2026-11-11) : le vocabulaire ESG que lisent investisseurs
+    // et conseils en reporting. Définition courte, puis ce que NOUS en faisons. 🔴 Jamais
+    // « notation ESG » / « score ESG » (règlement (UE) 2024/3005, 16-ESG/04).
+    { term: "CSRD", slug: "csrd", fam: "durable",
+      def: "<p>Directive européenne qui impose aux grandes entreprises un rapport de durabilité annuel et audité, au même titre que leurs comptes ; son contenu est fixé par les normes ESRS. Une entreprise qui héberge ses données dans un data center peut avoir à qualifier ce site : nos fiches en donnent la matière, sourcée.</p>",
+      more: { href: "/fr/normes/#esg", label: "Les cadres ESG" } },
+    { term: "Double matérialité", slug: "double-materialite", fam: "durable",
+      def: "<p>Le principe de la CSRD : une entreprise rend compte à la fois des risques qu'elle subit et des impacts qu'elle cause. Pour un data center, les deux sens se lisent sur le site : ce que le lieu fait peser sur le projet (eau rare, réseau saturé) et ce que le projet fait peser sur le lieu (sol consommé, charge pour la commune).</p>" },
+    { term: "ESG", slug: "esg", fam: "durable",
+      def: "<p>Environnement, social, gouvernance : les trois familles de critères par lesquelles investisseurs et entreprises évaluent leurs risques et leurs impacts au-delà des comptes. Appliqués à un data center, ils portent le plus souvent sur l'opérateur (efficacité, électricité). Nous publions l'autre moitié : des données ESG au niveau du site — l'eau du bassin, le sol, le réseau, l'accueil local.</p>",
+      more: { href: "/fr/normes/#esg", label: "Les cadres ESG" } },
+    { term: "ESRS", slug: "esrs", fam: "durable",
+      def: `<p>European Sustainability Reporting Standards : les normes qui fixent le contenu du rapport CSRD, simplifiées en 2026. Quatre de nos cinq piliers recoupent l'un de leurs thèmes — ${ESG.fr.normes.E1}, ${ESG.fr.normes.E3}, ${ESG.fr.normes.E4}, ${ESG.fr.normes.S3}. C'est une correspondance thématique, pas une conformité.</p>`,
+      more: { href: "/fr/methodologie/#esg", label: "La correspondance" } },
+    { term: "RSE", slug: "rse", fam: "durable",
+      def: "<p>Responsabilité sociétale des entreprises : la façon dont une entreprise intègre ses effets sociaux et environnementaux à sa stratégie. Le volet RSE d'un hébergeur décrit ses engagements ; la fiche d'un site décrit ce que le lieu impose, quel que soit l'exploitant.</p>" },
+    { term: "Scope 3", slug: "scope-3", fam: "durable",
+      def: "<p>Dans le bilan carbone d'une entreprise (GHG Protocol), les émissions indirectes de sa chaîne de valeur. Les émissions d'un data center loué entrent dans le scope 3 de ses clients : le lieu où sont hébergées leurs données fait partie de leur bilan.</p>" },
+    { term: "SFDR", slug: "sfdr", fam: "durable",
+      def: "<p>Règlement européen sur la publication d'informations en matière de durabilité dans les services financiers : gérants et investisseurs publient les principales incidences négatives de leurs placements. Pour un fonds qui détient ou finance des data centers, ces incidences se qualifient actif par actif — donc site par site.</p>",
+      more: { href: "/fr/normes/#esg", label: "Les cadres ESG" } },
+    { term: "Taxonomie européenne (DNSH)", slug: "taxonomie", fam: "durable",
+      def: "<p>Le règlement européen qui définit les activités économiques « durables ». L'une de ses conditions, « ne pas causer de préjudice important » (DNSH), touche notamment l'eau et la biodiversité. Nos données de site peuvent éclairer cette analyse ; elles ne disent pas si un actif est aligné.</p>" },
+    { term: "TNFD", slug: "tnfd", fam: "durable",
+      def: "<p>Taskforce on Nature-related Financial Disclosures : le cadre de reporting des risques liés à la nature. Son approche commence par localiser les actifs (« Locate »). C'est le cadre le plus proche de notre lecture par le lieu.</p>",
+      more: { href: "/fr/normes/#esg", label: "Les cadres ESG" } },
+    { term: "Vérification préalable (due diligence)", slug: "due-diligence", fam: "durable",
+      def: "<p>L'examen d'un actif avant de l'acheter ou de le financer. Pour un data center, sa part territoriale — eau, sols, réseau, procédures, contestation — se mène sur dossier, à partir de sources publiques, sans visite ; la visite et l'audit technique du bâtiment restent un autre métier.</p>" },
   ],
 };
 
@@ -98,7 +128,7 @@ const EN: typeof FR = {
   intro:
     "<p>The words you need to read a data center. The <strong>industry's</strong> (what it already measures) and those of our <strong>territorial lens</strong> (what we alone aggregate). Each definition is short; technical terms link to the page that details them.</p>",
   legendAria: "Term families",
-  fam: { filiere: "🏭 Industry", territoire: "🌍 Territory", secteur: "📖 Sector" },
+  fam: { filiere: "🏭 Industry", territoire: "🌍 Territory", secteur: "📖 Sector", durable: "📊 Sustainable finance" },
   dir: { lower: "↓ lower = better", higher: "↑ higher = better" },
   backHref: "/",
   backLabel: "← Back to the home page",
@@ -161,6 +191,32 @@ const EN: typeof FR = {
       more: { href: "/standards/", label: "The standards" } },
     { term: "ZRE (water allocation zone)", slug: "zre", fam: "territoire",
       def: "<p>An area where the water resource is already in chronic deficit and subject to reinforced sharing rules. A project sited there starts with a handicap on the water pillar.</p>" },
+    // ── "Sustainable finance" family (2026-11-11) — see the FR block.
+    { term: "CSRD", slug: "csrd", fam: "durable",
+      def: "<p>EU directive requiring large companies to publish an annual, audited sustainability report alongside their accounts; its content is set by the ESRS. A company whose data is hosted in a data center may have to assess that site: our fiches provide the sourced material.</p>",
+      more: { href: "/standards/#esg", label: "ESG frameworks" } },
+    { term: "CSR (corporate social responsibility)", slug: "csr", fam: "durable",
+      def: "<p>The way a company builds its social and environmental effects into its strategy. A hosting provider's CSR section describes its commitments; a site's fiche describes what the place imposes, whoever runs it.</p>" },
+    { term: "Double materiality", slug: "double-materiality", fam: "durable",
+      def: "<p>The CSRD principle: a company reports both the risks it faces and the impacts it causes. For a data center, both directions can be read on the site: what the place puts on the project (scarce water, saturated grid) and what the project puts on the place (land taken, load on the municipality).</p>" },
+    { term: "Due diligence", slug: "due-diligence", fam: "durable",
+      def: "<p>The review of an asset before buying or financing it. For a data center, its territorial part — water, land, grid, procedures, opposition — can be done on file, from public sources, without a visit; visiting and technically auditing the building remain a different job.</p>" },
+    { term: "ESG", slug: "esg", fam: "durable",
+      def: "<p>Environmental, social, governance: the three families of criteria investors and companies use to assess risks and impacts beyond the accounts. Applied to a data center, they usually cover the operator (efficiency, electricity). We publish the other half: site-level ESG data — the water basin, the land, the grid, local acceptance.</p>",
+      more: { href: "/standards/#esg", label: "ESG frameworks" } },
+    { term: "ESRS", slug: "esrs", fam: "durable",
+      def: `<p>European Sustainability Reporting Standards: the standards that set the content of the CSRD report, simplified in 2026. Four of our five pillars overlap one of their topics — ${ESG.en.normes.E1}, ${ESG.en.normes.E3}, ${ESG.en.normes.E4}, ${ESG.en.normes.S3}. It is a topic mapping, not compliance.</p>`,
+      more: { href: "/methodology/#esg", label: "The mapping" } },
+    { term: "EU Taxonomy (DNSH)", slug: "taxonomy", fam: "durable",
+      def: "<p>The EU regulation that defines “sustainable” economic activities. One of its conditions, “do no significant harm” (DNSH), covers water and biodiversity among others. Our site data can inform that analysis; it does not say whether an asset is aligned.</p>" },
+    { term: "Scope 3", slug: "scope-3", fam: "durable",
+      def: "<p>In a company's carbon footprint (GHG Protocol), the indirect emissions of its value chain. The emissions of a leased data center fall within its customers' Scope 3: where their data is hosted is part of their footprint.</p>" },
+    { term: "SFDR", slug: "sfdr", fam: "durable",
+      def: "<p>EU regulation on sustainability-related disclosures in financial services: asset managers and investors disclose the principal adverse impacts of their investments. For a fund that owns or finances data centers, those impacts are assessed asset by asset — that is, site by site.</p>",
+      more: { href: "/standards/#esg", label: "ESG frameworks" } },
+    { term: "TNFD", slug: "tnfd", fam: "durable",
+      def: "<p>Taskforce on Nature-related Financial Disclosures: the reporting framework for nature-related risks. Its approach starts by locating assets (“Locate”). It is the framework closest to our place-based reading.</p>",
+      more: { href: "/standards/#esg", label: "ESG frameworks" } },
   ],
 };
 
@@ -179,7 +235,7 @@ const NL: typeof FR = {
   intro:
     "<p>De woorden die u nodig hebt om een datacenter te lezen. Die van de <strong>sector</strong> (wat zij al meet) en die van onze <strong>territoriale lens</strong> (wat alleen wij aggregeren). Elke definitie is kort; technische termen verwijzen naar de pagina die ze uitwerkt.</p>",
   legendAria: "Families van termen",
-  fam: { filiere: "🏭 Sector", territoire: "🌍 Gebied", secteur: "📖 Markt" },
+  fam: { filiere: "🏭 Sector", territoire: "🌍 Gebied", secteur: "📖 Markt", durable: "📊 Duurzame financiering" },
   dir: { lower: "↓ lager = beter", higher: "↑ hoger = beter" },
   backHref: "/nl/",
   backLabel: "← Terug naar de startpagina",
@@ -242,6 +298,32 @@ const NL: typeof FR = {
       more: { href: "/nl/normen/", label: "De normen" } },
     { term: "ZRE", slug: "zre", fam: "territoire",
       def: "<p>Zone de Répartition des Eaux — een Franse zone waar de watervoorraad al chronisch tekortschiet en verscherpte verdeelregels gelden. Een project dat zich er vestigt, begint met een achterstand op de pijler water.</p>" },
+    // ── Familie „duurzame financiering" (2026-11-11) — zie het FR-blok. 🔴 Nooit « score ».
+    { term: "CSRD", slug: "csrd", fam: "durable",
+      def: "<p>Europese richtlijn die grote ondernemingen een jaarlijks, gecontroleerd duurzaamheidsverslag oplegt, naast hun jaarrekening; de inhoud wordt bepaald door de ESRS. Een onderneming die haar gegevens in een datacenter host, moet die site soms beoordelen: onze fiches leveren daarvoor het materiaal, met bronnen.</p>",
+      more: { href: "/nl/normen/#esg", label: "ESG-kaders" } },
+    { term: "Dubbele materialiteit", slug: "double-materialite", fam: "durable",
+      def: "<p>Het beginsel van de CSRD: een onderneming rapporteert zowel over de risico's die ze ondergaat als over de effecten die ze veroorzaakt. Voor een datacenter zijn beide richtingen op de site af te lezen: wat de plek op het project legt (schaars water, vol net) en wat het project op de plek legt (ingenomen grond, belasting voor de gemeente).</p>" },
+    { term: "Due diligence (vooronderzoek)", slug: "due-diligence", fam: "durable",
+      def: "<p>Het onderzoek van een activum vóór aankoop of financiering. Voor een datacenter kan het territoriale deel — water, grond, net, procedures, verzet — op dossier gebeuren, op basis van openbare bronnen, zonder bezoek; het bezoek en de technische audit van het gebouw blijven een ander vak.</p>" },
+    { term: "ESG", slug: "esg", fam: "durable",
+      def: "<p>Milieu, sociaal, governance: de drie families van criteria waarmee beleggers en ondernemingen risico's en effecten buiten de jaarrekening beoordelen. Bij een datacenter gaan ze meestal over de exploitant (efficiëntie, elektriciteit). Wij publiceren de andere helft: ESG-gegevens per site — het stroomgebied, de grond, het net, het lokale draagvlak.</p>",
+      more: { href: "/nl/normen/#esg", label: "ESG-kaders" } },
+    { term: "ESRS", slug: "esrs", fam: "durable",
+      def: `<p>European Sustainability Reporting Standards: de standaarden die de inhoud van het CSRD-verslag bepalen, vereenvoudigd in 2026. Vier van onze vijf pijlers raken een van hun thema's — ${ESG.nl.normes.E1}, ${ESG.nl.normes.E3}, ${ESG.nl.normes.E4}, ${ESG.nl.normes.S3}. Het is een thematische aansluiting, geen conformiteit.</p>`,
+      more: { href: "/nl/methodologie/#esg", label: "De aansluiting" } },
+    { term: "EU-taxonomie (DNSH)", slug: "taxonomie", fam: "durable",
+      def: "<p>De Europese verordening die bepaalt welke economische activiteiten „duurzaam” zijn. Een van de voorwaarden, „geen ernstige schade toebrengen” (DNSH), betreft onder meer water en biodiversiteit. Onze gegevens per site kunnen die analyse onderbouwen; ze zeggen niet of een activum is afgestemd.</p>" },
+    { term: "MVO (maatschappelijk verantwoord ondernemen)", slug: "rse", fam: "durable",
+      def: "<p>De manier waarop een onderneming haar sociale en milieueffecten in haar strategie opneemt. Het MVO-deel van een hostingbedrijf beschrijft zijn toezeggingen; de fiche van een site beschrijft wat de plek oplegt, wie haar ook exploiteert.</p>" },
+    { term: "Scope 3", slug: "scope-3", fam: "durable",
+      def: "<p>In de CO₂-voetafdruk van een onderneming (GHG Protocol): de indirecte uitstoot van haar waardeketen. De uitstoot van een gehuurd datacenter valt onder scope 3 van zijn klanten: waar hun gegevens worden gehost, hoort bij hun voetafdruk.</p>" },
+    { term: "SFDR", slug: "sfdr", fam: "durable",
+      def: "<p>Europese verordening over duurzaamheidsinformatie in de financiële sector: vermogensbeheerders en beleggers publiceren de belangrijkste ongunstige effecten van hun beleggingen. Voor een fonds dat datacenters bezit of financiert, worden die effecten per activum beoordeeld — dus per site.</p>",
+      more: { href: "/nl/normen/#esg", label: "ESG-kaders" } },
+    { term: "TNFD", slug: "tnfd", fam: "durable",
+      def: "<p>Taskforce on Nature-related Financial Disclosures: het rapportagekader voor natuurgerelateerde risico's. De aanpak begint met het lokaliseren van activa („Locate”). Het is het kader dat het dichtst bij onze benadering vanuit de plek ligt.</p>",
+      more: { href: "/nl/normen/#esg", label: "ESG-kaders" } },
   ],
 };
 

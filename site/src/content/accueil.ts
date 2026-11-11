@@ -286,6 +286,17 @@ const FR = {
       a: "Non, jamais. Les entités notées ne paient pas leur note. La note d'un projet et sa justification sont publiques et gratuites, pour toujours.",
     },
     {
+      // ESG (2026-11-11) : la question que pose la finance durable, et la frontière qui nous
+      // tient hors du règlement (UE) 2024/3005 — un SITE n'est pas une entreprise notée.
+      // 🔴 Jamais « notation ESG » / « score ESG », même pour le nier (garde de deploy).
+      q: "Vos données peuvent-elles servir à un reporting ESG ou CSRD ?",
+      a: "Oui, comme matière, pas comme conformité. Le reporting de durabilité (CSRD) et la finance durable (SFDR, taxonomie européenne) demandent de plus en plus de qualifier les actifs un par un : l'eau, les sols, la biodiversité, les communautés touchées. Pour un data center, nos fiches rassemblent ces données au niveau du site, avec leurs sources publiques et un niveau de confiance. Elles éclairent un rapport, elles ne le remplacent pas. Voir <a href='/fr/normes/#esg'>les cadres ESG, et où nous nous situons</a>.",
+    },
+    {
+      q: "Notez-vous les entreprises ?",
+      a: "Non. Nous notons des sites, et les projets qui s'y implantent, un par un — jamais une entreprise ou un groupe en tant que tel, et nous ne publions aucun classement d'entreprises. La note dite « opérateur » juge les choix faits pour ce projet-là, pas l'entreprise qui le porte. La note de chaque site et sa justification sont publiques et gratuites.",
+    },
+    {
       q: "Pourquoi aucun data center n'a-t-il (encore) la note <i class='gl gl-a'>A</i> ?",
       a: "Parce qu'un <i class='gl gl-a'>A</i> se prouve, il ne se promet pas : il est réservé aux valeurs vérifiées en exploitation. Un dossier entièrement déclaratif, même excellent, plafonne en <i class='gl gl-b'>B</i> — « annoncé ≠ mesuré ». Un opérateur obtient son <i class='gl gl-a'>A</i> en apportant une preuve tierce (déclaration EED au régulateur, audit ISO/IEC 30134 par un organisme accrédité — jamais une page marketing) via le canal public de correction : la donnée passe alors d'« annoncée » à « mesurée », le plafond saute, et le re-score est tracé au journal d'audit. Le <i class='gl gl-a'>A</i> ne s'achète pas et ne se déclare pas : il se démontre. Et la preuve fait monter la note projet & processus — jamais celle du site : le territoire est subi, il ne se prouve pas.",
     },
@@ -579,6 +590,14 @@ const EN: typeof FR = {
     {
       q: "Can an operator pay to improve its grade?",
       a: "No, never. Scored entities do not pay for their grade. A project's grade and its justification are public and free, forever.",
+    },
+    {
+      q: "Can your data be used for ESG or CSRD reporting?",
+      a: "Yes, as material, not as compliance. Sustainability reporting (CSRD) and sustainable finance (SFDR, the EU Taxonomy) increasingly require assets to be assessed one by one: water, land, biodiversity, affected communities. For a data center, our fiches bring this data together at site level, with its public sources and a confidence level. They inform a report; they do not replace it. See <a href='/standards/#esg'>ESG frameworks, and where we sit</a>.",
+    },
+    {
+      q: "Do you grade companies?",
+      a: "No. We grade sites, and the projects built on them, one by one — never a company or a group as such, and we publish no ranking of companies. The so-called “operator” grade judges the choices made for that particular project, not the company behind it. Each site's grade and its justification are public and free.",
     },
     {
       q: "Why does no data center have an <i class='gl gl-a'>A</i> (yet)?",
@@ -881,6 +900,14 @@ const NL: typeof FR = {
     {
       q: "Kan een exploitant betalen om zijn cijfer te verbeteren?",
       a: "Nee, nooit. Beoordeelde partijen betalen niet voor hun cijfer. Het cijfer van een project en zijn motivering zijn openbaar en gratis, voor altijd.",
+    },
+    {
+      q: "Kunnen jullie gegevens dienen voor ESG- of CSRD-rapportage?",
+      a: "Ja, als materiaal, niet als conformiteit. Duurzaamheidsverslaggeving (CSRD) en duurzame financiering (SFDR, de EU-taxonomie) vragen steeds vaker om activa één voor één te beoordelen: water, grond, biodiversiteit, getroffen gemeenschappen. Voor een datacenter brengen onze fiches die gegevens per site samen, met hun openbare bronnen en een betrouwbaarheidsniveau. Ze onderbouwen een verslag, ze vervangen het niet. Zie <a href='/nl/normen/#esg'>ESG-kaders, en waar wij staan</a>.",
+    },
+    {
+      q: "Beoordelen jullie ondernemingen?",
+      a: "Nee. Wij beoordelen sites, en de projecten die zich er vestigen, één voor één — nooit een onderneming of een groep als zodanig, en we publiceren geen ranglijst van ondernemingen. Het zogeheten cijfer ‘exploitant’ beoordeelt de keuzes die voor dát project zijn gemaakt, niet de onderneming erachter. Het cijfer van elke site en de motivering zijn openbaar en gratis.",
     },
     {
       q: "Waarom heeft nog geen enkel datacenter het cijfer <i class='gl gl-a'>A</i>?",
