@@ -70,6 +70,20 @@ def _fiches() -> list[Path]:
     return datacenter_paths(CAL)
 
 
+def retraits_gate(cal: Path, paths: list[Path]) -> list[str]:
+    reg = cal / "retraits.json"
+    if not reg.is_file():
+        return []
+    try:
+        retires = {r["id"]: r for r in json.loads(reg.read_text())}
+    except (ValueError, KeyError, TypeError) as exc:
+        return [f"GATE RETRAITS: registre illisible {reg} ({exc}) — corriger avant tout déploiement"]
+    servis = {p.stem for p in paths}
+    return [f"GATE RETRAITS: {i} est servi alors qu'il est RETIRÉ ({retires[i].get('type')} — "
+            f"{retires[i].get('motif')}, {retires[i].get('date')}) : un producteur l'a recréé ; "
+            f"le retirer du corpus, et corriger le producteur" for i in sorted(servis & set(retires))]
+
+
 def main() -> int:
     # --- garde 1 : corpus présent
     if not CAL.is_dir():
@@ -187,6 +201,12 @@ def main() -> int:
     # et il empêche la suivante. Trois fois le même défaut avant qu'il existe, trouvé à la
     # main chaque fois — dont 8 fiches irlandaises de licence EPA le 2026-10-29.
     problems += statut_gate(CAL)
+    # GATE RETRAITS — une fiche RETIRÉE (fusion de doublon, ou parquée hors corpus parce que ce
+    # n'est pas un data center : ligne, centrale, loi, moratoire) ne revient JAMAIS au servi.
+    # Le registre `calibration/retraits.json` est la décision (Franck 2026-11-11) ; ce gate est le
+    # verrou PRODUCTEUR : un tracker ou une vague qui recrée l'id échoue ici, bruyamment, au lieu
+    # de republier en silence ce qu'on a retiré.
+    problems += retraits_gate(CAL, paths)
     # GATE FILIGRANE — un résumé servi ne dit pas qu'il est un brouillon. 3 113 fiches sur
     # 3 275 l'ont dit pendant des mois ; le corpus est à zéro depuis le 2026-11-02, et ce
     # gate est ce qui l'y maintient. Le point d'écriture est un gabarit de pipeline : une
