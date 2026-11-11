@@ -173,6 +173,17 @@ const t = fr ? {
   ],
   useTitle: "Cas d'usage",
   useCases: ["Reporting ESG", "Choix de site", "Recherche académique", "Intelligence de marché", "Journalisme"],
+  // Cas d'usage « reporting ESG » (chantier 2026-11-11). Vocabulaire : des DONNÉES de site,
+  // jamais une « notation ESG » (règlement UE 2024/3005 — garde check_vocabulaire_esg).
+  esgTitle: "Reporting ESG : les données du site",
+  esgBody: "<p>Les lectures ESG d'un data center s'arrêtent souvent aux murs du bâtiment : efficacité, énergie renouvelable, rapports de l'opérateur. Le risque tient aussi au <strong>lieu</strong>. L'API donne, site par site, les faits sourcés que ces analyses demandent, avec leur source et leur date.</p>",
+  esgItems: [
+    "<strong>CSRD / ESRS</strong> — documenter, pour un site détenu ou loué, les thèmes climat et énergie (E1), eau (E3), biodiversité et sols (E4) et communautés touchées (S3). Voir <a href=\"/fr/methodologie/#esg\">la correspondance avec nos piliers</a>.",
+    "<strong>SFDR</strong> — nourrir l'analyse des principales incidences négatives d'un portefeuille qui détient des data centers.",
+    "<strong>Vérification préalable</strong> — avant l'achat ou le financement d'un site : tension sur l'eau, état du sol, saturation du réseau, contestation connue.",
+    "<strong>Étude sur dossier, sans visite</strong> — un premier regard sur un site à partir de sources publiques citées.",
+  ],
+  esgNote: "Ces données éclairent une analyse. Elles ne disent pas si un actif est conforme ou aligné.",
   keyTitle: "Récupérer votre clé",
   keyBody: "Après paiement, revenez ici et récupérez votre clé en un clic — aucun email à attendre.",
   keyLink: "J'ai payé, révéler ma clé →",
@@ -222,6 +233,15 @@ const t = fr ? {
   ],
   useTitle: "Used for",
   useCases: ["ESG reporting", "Site selection", "Academic research", "Market intelligence", "Journalism"],
+  esgTitle: "ESG reporting: site-level data",
+  esgBody: "<p>ESG readings of a data center often stop at the building's walls: efficiency, renewable energy, the operator's reports. Risk also lies in the <strong>place</strong>. The API delivers, site by site, the sourced facts these analyses need, with their source and date.</p>",
+  esgItems: [
+    "<strong>CSRD / ESRS</strong> — document, for an owned or leased site, the topics of climate and energy (E1), water (E3), biodiversity and land (E4) and affected communities (S3). See <a href=\"/methodology/#esg\">how they map to our pillars</a>.",
+    "<strong>SFDR</strong> — inform the principal-adverse-impacts analysis of a portfolio holding data centers.",
+    "<strong>Due diligence</strong> — before buying or financing a site: water stress, land status, grid saturation, known local opposition.",
+    "<strong>Desk review, no site visit</strong> — a first look at a site from cited public sources.",
+  ],
+  esgNote: "This data informs an analysis. It does not say whether an asset is compliant or aligned.",
   keyTitle: "Get your key",
   keyBody: "After payment, come back here and grab your key in one click — no email to wait for.",
   keyLink: "I've paid, reveal my key →",
@@ -352,6 +372,14 @@ const t = fr ? {
     <div class="dev-usecases">
       <span class="dev-uc-label">{t.useTitle}</span>
       {t.useCases.map((u: string) => <span class="dev-uc-chip">{u}</span>)}
+    </div>
+    <div class="dev-esg" id="esg">
+      <h2 class="dev-h2">{t.esgTitle}</h2>
+      <Fragment set:html={t.esgBody} />
+      <ul class="dev-esg-list">
+        {t.esgItems.map((it: string) => <li set:html={it}></li>)}
+      </ul>
+      <p class="dev-esg-note">{t.esgNote}</p>
     </div>
   </div>
 </section>

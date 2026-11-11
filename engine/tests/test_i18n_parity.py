@@ -44,6 +44,9 @@ TABLES_MODULES: dict[str, str] = {
     "glossaire.ts": "le glossaire",
     "portrait-explainer.ts": "la page qui EXPLIQUE le portrait (le portrait est dans portrait.ts)",
     "dossier.ts": "le bloc « dossier environnemental » de la fiche",
+    # La LECTURE ESG (2026-11-11) : la correspondance pilier → norme ESRS, lue par la
+    # méthodologie ET par la fiche — une seule table, trois langues.
+    "esg.ts": "la lecture ESG (méthodologie + bloc de la fiche)",
     # L'ACCUEIL, entré dans le périmètre le 2026-10-29 : « bien entendu la Home Page en NL
     # aussi, c'est évident — un hollandais arrive sur la home et veut la voir traduite »
     # (Franck). Il porte aussi les mots des quatre bandeaux, qui ne recevaient que `lang`.

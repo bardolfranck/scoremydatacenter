@@ -19,7 +19,7 @@ const { lang, t, nav, altHref, altLabel } = Astro.props as {
 // Alphabetical order, accent-insensitive, computed at build (locale-aware collation).
 const entries = [...t.entries].sort((a: any, b: any) =>
   a.term.localeCompare(b.term, lang, { sensitivity: "base" }));
-const famClass: Record<string, string> = { filiere: "gl-fam-filiere", territoire: "gl-fam-territoire", secteur: "gl-fam-secteur" };
+const famClass: Record<string, string> = { filiere: "gl-fam-filiere", territoire: "gl-fam-territoire", secteur: "gl-fam-secteur", durable: "gl-fam-durable" };
 ---
 
 <Base
@@ -40,6 +40,7 @@ const famClass: Record<string, string> = { filiere: "gl-fam-filiere", territoire
         <li><span class="gl-fam gl-fam-filiere">{t.fam.filiere}</span></li>
         <li><span class="gl-fam gl-fam-territoire">{t.fam.territoire}</span></li>
         <li><span class="gl-fam gl-fam-secteur">{t.fam.secteur}</span></li>
+        <li><span class="gl-fam gl-fam-durable">{t.fam.durable}</span></li>
       </ul>
 
       <dl class="gloss">

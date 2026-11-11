@@ -25,6 +25,7 @@ import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
+import { ESG, ESRS_PAR_PILIER } from "../content/esg";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
 import { operateurIdentifie } from "../config/operator";
@@ -340,6 +341,28 @@ const shareLinks = {
 };
 
 const pillars = methodology.pillars as any[];
+
+// ── Lecture ESG (2026-11-11) : relie chaque pilier NOTÉ (lettre, ou sous-note probable) à
+// son thème ESRS. Aucune donnée nouvelle, la note n'en dépend pas ; la correspondance vit
+// dans content/esg.ts, une seule table pour la fiche et la méthode.
+const esgT = ESG[lang as LangueDeclaree];
+const esgPiliers = pillars
+  .filter((p: any) => ESRS_PAR_PILIER[p.id])
+  .filter((p: any) => {
+    const g = dc.pillars?.[p.id]?.grade;
+    return (g && g !== "insufficient_data") || (dc as any).pillar_bands?.[p.id];
+  })
+  .map((p: any) => ({ pillar: p, code: ESRS_PAR_PILIER[p.id] }));
+// IEF : présent seulement quand engine/esg.py l'a calculé sur trois faits. Jamais approché.
+const ief = (dc as any).esg?.ief ?? null;
+const iefValeur = ief ? fmtDec(ief.value, lang as any, ief.value < 10 ? 2 : 1) : "";
+const iefEntrees = ief
+  ? esgT.iefEntrees
+      .replace("{mw}", fmtDec(ief.inputs.power_mw, lang as any, ief.inputs.power_mw % 1 ? 1 : 0))
+      .replace("{statut}", esgT.iefStatut[ief.inputs.power_mw_status] ?? "")
+      .replace("{ha}", fmtDec(ief.inputs.footprint_ha, lang as any, ief.inputs.footprint_ha % 1 ? 1 : 0))
+      .replace("{sol}", esgT.iefSol[ief.inputs.soil] ?? "")
+  : "";
 
 // LA CARTE DE CONTEXTE SUIT LA LANGUE DE LA PAGE, PAS LE PAYS DE LA FICHE (Franck,
 // 2026-10-05). Un lecteur francophone sur une fiche néerlandaise doit voir l'image en
@@ -929,6 +952,41 @@ const seoDesc = seoLead
       {dc.environmental_dossier && (
         <DossierEnvironnemental dossier={dc.environmental_dossier} lang={lang} />
       )}
+
+      {/* Lecture ESG — une correspondance THÉMATIQUE, hors note, après le dossier et avant
+          le tableau des indicateurs (même place que tout ce qui se lit À CÔTÉ de la note). */}
+      <section class="fiche-esg" aria-labelledby="esg-title">
+        <h2 id="esg-title" class="fiche-esg-kicker">{esgT.ficheKicker}</h2>
+        {esgPiliers.length > 0 ? (
+          <>
+            <p class="fiche-esg-intro">{esgT.ficheIntro}</p>
+            <ul class="fiche-esg-list">
+              {esgPiliers.map((r: any) => (
+                <li>
+                  <span class="fiche-esg-pilier"><PillarIcon name={pillarIconName[r.pillar.id]} size={14} />{L(r.pillar.label)}</span>
+                  <span class="fiche-esg-norme"><strong>ESRS {r.code}</strong> · {(esgT.normes as any)[r.code]}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p class="fiche-esg-intro">{esgT.ficheAucun}</p>
+        )}
+        {ief && (
+          <div class="fiche-esg-ief">
+            <p class="fiche-esg-ief-head">
+              <span>{esgT.iefTitre}</span>
+              <span class="fiche-esg-tip" tabindex="0" role="note" aria-label={esgT.iefTip} title={esgT.iefTip} set:html={icon("info", 13)}></span>
+            </p>
+            <p class="fiche-esg-ief-val"><strong>{iefValeur}</strong> {esgT.iefUnite}</p>
+            <p class="fiche-esg-ief-in">{iefEntrees}{ief.inputs.footprint_source?.url && (
+              <> · <a href={ief.inputs.footprint_source.url} target="_blank" rel="noopener">{esgT.iefSource}</a></>
+            )}</p>
+            <p class="fiche-esg-ief-info">{esgT.iefInfo}</p>
+          </div>
+        )}
+        <p class="fiche-esg-reserve">{esgT.ficheReserve} <a href={esgT.lienEsg}>{esgT.ficheLien}</a></p>
+      </section>
 
       <section class="fiche-section" aria-label={t.indicatorsTitle}>
         <h2>{t.indicatorsTitle}</h2>

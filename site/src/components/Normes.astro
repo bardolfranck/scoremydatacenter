@@ -99,6 +99,21 @@ const methHref = t.methHref;
         </Fragment>
       )}
 
+      {/* Les cadres ESG — la case que la finance durable regarde aussi. La liste des cadres
+          vient d'esg.ts (lue aussi par la méthode) : ici on se SITUE, on ne recopie pas.
+          Ancre #esg : le glossaire, la FAQ et la page acceptabilité y renvoient. */}
+      {t.esgH2 && (
+        <Fragment>
+          <h2 id="esg">{t.esgH2}</h2>
+          <Fragment set:html={t.esgIntro} />
+          <Fragment set:html={t.esgCadresIntro} />
+          <ul class="normes-esg-cadres">
+            {t.esgCadres.map((c: string) => <li set:html={c} />)}
+          </ul>
+          <Fragment set:html={t.esgNote} />
+        </Fragment>
+      )}
+
       <p class="meth-rule" set:html={t.closeP}></p>
 
       <div class="meth-actions">

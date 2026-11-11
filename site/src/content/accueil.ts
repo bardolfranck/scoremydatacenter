@@ -266,8 +266,8 @@ const FR = {
       a: "Pour que la note ne soit pas truquable. Nous publions la grille, les poids des 5 piliers, les sources de chaque indicateur et, sur chaque fiche, le facteur qui pèse le plus sur la note — donc ce qui compte et dans quel sens. Nous ne publions pas la position exacte des seuils : avec elle, un porteur de projet pourrait viser la lettre au lieu de viser le terrain. La méthode est vérifiable, la recette n'est pas optimisable.",
     },
     {
-      q: "Que veulent dire les deux notes, « site » et « opérateur » ?",
-      a: "La note site évalue ce que le projet subit — territoire, eau, réseau, foncier — quel que soit celui qui le porte. La note opérateur évalue ce qu'il choisit — efficacité, concertation, transparence, engagements. On sépare le terrain des décisions.",
+      q: "Que veulent dire les deux notes, « site » et « projet » ?",
+      a: "La note site évalue ce que le projet subit — territoire, eau, réseau, foncier — quel que soit celui qui le porte. La note projet évalue ce que le projet choisit — efficacité, concertation, transparence, engagements. On sépare le terrain des décisions.",
     },
     {
       q: "Puis-je faire noter le projet près de chez moi ?",
@@ -284,6 +284,17 @@ const FR = {
     {
       q: "Un opérateur peut-il payer pour améliorer sa note ?",
       a: "Non, jamais. Les entités notées ne paient pas leur note. La note d'un projet et sa justification sont publiques et gratuites, pour toujours.",
+    },
+    {
+      // ESG (2026-11-11) : la question que pose la finance durable, et la frontière qui nous
+      // tient hors du règlement (UE) 2024/3005 — un SITE n'est pas une entreprise notée.
+      // 🔴 Jamais « notation ESG » / « score ESG », même pour le nier (garde de deploy).
+      q: "Vos données peuvent-elles servir à un reporting ESG ou CSRD ?",
+      a: "Oui, comme matière, pas comme conformité. Le reporting de durabilité (CSRD) et la finance durable (SFDR, taxonomie européenne) demandent de plus en plus de qualifier les actifs un par un : l'eau, les sols, la biodiversité, les communautés touchées. Pour un data center, nos fiches rassemblent ces données au niveau du site, avec leurs sources publiques et un niveau de confiance. Elles éclairent un rapport, elles ne le remplacent pas. Voir <a href='/fr/normes/#esg'>les cadres ESG, et où nous nous situons</a>.",
+    },
+    {
+      q: "Notez-vous les entreprises ?",
+      a: "Non. Nous notons des sites, et les projets qui s'y implantent, un par un — jamais une entreprise ou un groupe en tant que tel, et nous ne publions aucun classement d'entreprises. La note projet juge les choix faits pour ce projet-là, pas l'entreprise qui le porte. La note de chaque site et sa justification sont publiques et gratuites.",
     },
     {
       q: "Pourquoi aucun data center n'a-t-il (encore) la note <i class='gl gl-a'>A</i> ?",
@@ -561,8 +572,8 @@ const EN: typeof FR = {
       a: "So the grade cannot be gamed. We publish the grid, the weights of the 5 pillars, the sources behind every indicator and, on each fiche, the factor that weighs most on the grade — so what counts, and in which direction. We do not publish where the thresholds sit: with that, a developer could aim at the letter instead of aiming at the ground. The method is verifiable; the recipe is not optimisable.",
     },
     {
-      q: "What do the two grades, “site” and “operator”, mean?",
-      a: "The site grade assesses what the project endures — territory, water, grid, land — whoever carries it. The operator grade assesses what the operator chooses — efficiency, consultation, transparency, commitments. We separate the terrain from the decisions.",
+      q: "What do the two grades, “site” and “project”, mean?",
+      a: "The site grade assesses what the project endures — territory, water, grid, land — whoever carries it. The project grade assesses what the project chooses — efficiency, consultation, transparency, commitments. We separate the terrain from the decisions.",
     },
     {
       q: "Can I get the project near me graded?",
@@ -579,6 +590,14 @@ const EN: typeof FR = {
     {
       q: "Can an operator pay to improve its grade?",
       a: "No, never. Scored entities do not pay for their grade. A project's grade and its justification are public and free, forever.",
+    },
+    {
+      q: "Can your data be used for ESG or CSRD reporting?",
+      a: "Yes, as material, not as compliance. Sustainability reporting (CSRD) and sustainable finance (SFDR, the EU Taxonomy) increasingly require assets to be assessed one by one: water, land, biodiversity, affected communities. For a data center, our fiches bring this data together at site level, with its public sources and a confidence level. They inform a report; they do not replace it. See <a href='/standards/#esg'>ESG frameworks, and where we sit</a>.",
+    },
+    {
+      q: "Do you grade companies?",
+      a: "No. We grade sites, and the projects built on them, one by one — never a company or a group as such, and we publish no ranking of companies. The project grade judges the choices made for that particular project, not the company behind it. Each site's grade and its justification are public and free.",
     },
     {
       q: "Why does no data center have an <i class='gl gl-a'>A</i> (yet)?",
@@ -863,8 +882,8 @@ const NL: typeof FR = {
       a: "Opdat het cijfer niet te manipuleren valt. We publiceren de meetlat, de gewichten van de 5 pijlers, de bronnen van elke indicator en, op elke fiche, de factor die het zwaarst weegt — dus wat telt en in welke richting. We publiceren de exacte positie van de drempels niet: daarmee zou een initiatiefnemer op de letter kunnen mikken in plaats van op het terrein. De methode is verifieerbaar, het recept is niet te optimaliseren.",
     },
     {
-      q: "Wat betekenen de twee cijfers, ‘site’ en ‘exploitant’?",
-      a: "Het sitecijfer beoordeelt wat het project ondergaat — gebied, water, net, grond — wie er ook achter zit. Het exploitantcijfer beoordeelt wat hij kiest — efficiëntie, overleg, transparantie, toezeggingen. We scheiden het terrein van de beslissingen.",
+      q: "Wat betekenen de twee cijfers, ‘site’ en ‘project’?",
+      a: "Het sitecijfer beoordeelt wat het project ondergaat — gebied, water, net, grond — wie er ook achter zit. Het projectcijfer beoordeelt wat het project kiest — efficiëntie, overleg, transparantie, toezeggingen. We scheiden het terrein van de beslissingen.",
     },
     {
       q: "Kan ik het project bij mij in de buurt laten beoordelen?",
@@ -881,6 +900,14 @@ const NL: typeof FR = {
     {
       q: "Kan een exploitant betalen om zijn cijfer te verbeteren?",
       a: "Nee, nooit. Beoordeelde partijen betalen niet voor hun cijfer. Het cijfer van een project en zijn motivering zijn openbaar en gratis, voor altijd.",
+    },
+    {
+      q: "Kunnen jullie gegevens dienen voor ESG- of CSRD-rapportage?",
+      a: "Ja, als materiaal, niet als conformiteit. Duurzaamheidsverslaggeving (CSRD) en duurzame financiering (SFDR, de EU-taxonomie) vragen steeds vaker om activa één voor één te beoordelen: water, grond, biodiversiteit, getroffen gemeenschappen. Voor een datacenter brengen onze fiches die gegevens per site samen, met hun openbare bronnen en een betrouwbaarheidsniveau. Ze onderbouwen een verslag, ze vervangen het niet. Zie <a href='/nl/normen/#esg'>ESG-kaders, en waar wij staan</a>.",
+    },
+    {
+      q: "Beoordelen jullie ondernemingen?",
+      a: "Nee. Wij beoordelen sites, en de projecten die zich er vestigen, één voor één — nooit een onderneming of een groep als zodanig, en we publiceren geen ranglijst van ondernemingen. Het projectcijfer beoordeelt de keuzes die voor dát project zijn gemaakt, niet de onderneming erachter. Het cijfer van elke site en de motivering zijn openbaar en gratis.",
     },
     {
       q: "Waarom heeft nog geen enkel datacenter het cijfer <i class='gl gl-a'>A</i>?",
