@@ -55,6 +55,11 @@ def _visible() -> int:
 # long est une décision (on la raccourcit aussi ? on révise la largeur ?), pas un effet de
 # bord. Même discipline que la dette nom/statut : l'ensemble reste déclaré pour refuser le
 # premier cas nouveau [[cliquet-nest-pas-verrou]].
+# 2026-11-11 : 14 → 12. Deux membres RETIRÉS du corpus servi, pas renommés — parqués comme
+# « pas un data center » (calibration/retraits.json, type parque_non_data_center, GO Franck) :
+# us-crane-clean-energy-center-three-mile-island-unit-1-restart (relance d'une centrale) et
+# us-ozaukee-county-distribution-interconnection-project-lighthouse (raccordement électrique).
+# La cohorte ne s'élargit pas : elle perd deux ids qui n'ont plus de page.
 COHORTE_NOM_RACCOURCI = {
     "fr-bnp-paribas-centre-de-traitement-informatique-cti-marne-nord",
     "fr-maconnais-beaujolais-agglomeration-mba-et-datavest-capital",
@@ -64,10 +69,8 @@ COHORTE_NOM_RACCOURCI = {
     "us-amazon-data-services-inc-iad-12-iad-15-iad-16-iad-76-iad-230",
     "us-amazon-data-services-inc-iad-50-iad-60-iad-71-iad-78-iad-79-iad-80",
     "us-amazon-data-services-inc-iad-73-iad-74-iad-602-iad-193-iad-194",
-    "us-crane-clean-energy-center-three-mile-island-unit-1-restart",
     "us-east-charlotte-data-center-near-reedy-creek-nature-preserve",
     "us-iskander-lc-1a-jamshid-lc-1b-kaveh-lc2-lohrasp-ventures-lc3",
-    "us-ozaukee-county-distribution-interconnection-project-lighthouse",
     "us-project-matador-trump-advanced-energy-and-intelligence-cam",
     "us-university-of-north-carolina-hospitals-mead-inactive",
 }
