@@ -49,3 +49,10 @@
 # l'a dit six jours plus tard.
 /fr/dc/fr-campus-ia-coentreprise-mgx-mistral-ai-nvidia-et-bpifrance/* /fr/dc/fr-campus-ia-fouju/:splat 301
 /dc/fr-campus-ia-coentreprise-mgx-mistral-ai-nvidia-et-bpifrance/* /dc/fr-campus-ia-fouju/:splat 301
+
+# Fusion Rantigny (GO Franck 2026-11-10). La fiche « Communauté de communes de la Vallée
+# Dorée (CCVD) » venait d'un lead DCMag nommé d'après la collectivité HÔTE, jamais
+# exploitante : c'est le même projet que le Campus numérique de Rantigny, conservé (seul à
+# porter puissance, statut et géo vérifiée). Forme `*` : couvre la fiche et un éventuel portrait.
+/fr/dc/fr-communaute-de-communes-de-la-vallee-doree-ccvd/* /fr/dc/fr-data-center-rantigny/:splat 301
+/dc/fr-communaute-de-communes-de-la-vallee-doree-ccvd/* /dc/fr-data-center-rantigny/:splat 301
