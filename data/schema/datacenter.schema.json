@@ -126,6 +126,10 @@
               "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
               "description": "Date (AAAA-MM-JJ) du REFUS ou du RETRAIT du projet, exigée dès que `project_status` vaut « withdrawn ». Sans elle, la note d'archive d'un projet abandonné se lit comme celle d'un projet en cours."
             },
+            "status_before_withdrawal": {
+              "enum": ["announced", "permitting", "under_construction"],
+              "description": "Dernier stade DOCUMENTÉ avant le refus ou le retrait, exigé dès que `project_status` vaut « withdrawn ». La note se calcule comme celle d'un projet à ce stade (protocole cas-témoins, amendement 22) : seul l'affichage change."
+            },
             "withdrawn_source": {
               "$ref": "#/$defs/source",
               "description": "La DÉCISION qui prouve le refus ou le retrait (délibération, arrêté, retrait du dossier, presse qui le rapporte) — objet source complet ; son `url` est servie en haut de la fiche et du portrait. Facultatif, comme `decommissioned_source` : souhaité, jamais inventé."

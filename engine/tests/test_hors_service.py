@@ -316,10 +316,10 @@ def test_la_dette_nommee_est_reelle_et_dans_cet_etat():
 # Même doctrine que `decommissioned` — la note est une archive datée, la fiche l'annonce, la
 # médiane l'ignore — mais un jour et non une année : un refus ou un retrait a une date.
 
-def _retire(dc_id, jour=None, lat=48.0):
+def _retire(dc_id, jour=None, lat=48.0, avant="permitting"):
     dc = _dc(dc_id, status="withdrawn", lat=lat)
     if jour is not None:
-        dc["identity"]["vintage"] = {"withdrawn_date": jour}
+        dc["identity"]["vintage"] = {"withdrawn_date": jour, "status_before_withdrawal": avant}
     return dc
 
 
@@ -369,3 +369,36 @@ def test_les_trois_langues_disent_le_retrait():
             assert source.count(f"  {clef}:") == 3, f"{fichier.name} : {clef} pas dans les 3 langues"
     bandeau = BANDEAU.read_text(encoding="utf-8")
     assert "projetRetire(statut)" in bandeau and "withdrawn_source" in bandeau
+
+
+def test_le_gate_refuse_un_projet_retire_sans_stade_anterieur(tmp_path):
+    racine = _ecris(tmp_path, [_retire("us-a", jour="2026-07-16", avant=None),
+                               _retire("us-b", jour="2026-07-16", avant="operational")])
+    problemes = hors_service_gate(racine)
+    assert problemes and "status_before_withdrawal" in problemes[0]
+    assert "us-a" in problemes[0] and "us-b" in problemes[0]
+
+
+# ─── amendement 22 : withdrawn ne change PAS le calcul ───────────────────────────────────────
+
+def test_un_projet_retire_se_note_comme_le_projet_a_son_dernier_stade():
+    """Même fiche, `withdrawn` (avant = permitting) et `permitting` : bande et sous-bandes
+    IDENTIQUES. Sinon les cas terminaux seraient mesurés autrement que les vivants."""
+    from engine.core import load_methodology
+    from engine.plage_bands import pillar_bands, servable_band, statut_de_calcul
+    metho = load_methodology()
+    present = {"E1": 30.0, "E2": 70.0, "E3": 65.0, "E6": 50.0, "W1": 60.0, "W2": 80.0,
+               "W3": 65.0, "F1": 70.0, "F2": 100.0, "L1": 60.0, "L3": 100.0}
+    retire = _retire("us-r", jour="2026-07-02")["identity"]
+    vivant = _dc("us-v", status="permitting")["identity"]
+    assert statut_de_calcul(retire) == "permitting"
+    for f in (servable_band, pillar_bands):
+        a = f(statut_de_calcul(retire), present, "FR", metho, None)
+        b = f(statut_de_calcul(vivant), present, "FR", metho, None)
+        assert a == b and a is not None, f"{f.__name__} : withdrawn change le calcul"
+
+
+def test_le_constructeur_d_artefacts_passe_par_le_statut_de_calcul():
+    source = (REPO_ROOT / "engine" / "artifacts.py").read_text(encoding="utf-8")
+    assert source.count("statut_de_calcul(dc[\"identity\"])") == 2
+    assert 'dc["identity"]["project_status"], _present' not in source

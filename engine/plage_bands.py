@@ -306,6 +306,29 @@ def _coverage_confidence(n_present: int, methodology: dict) -> str:
     return "high" if ratio >= 0.75 else "medium" if ratio >= 0.5 else "low"
 
 
+STADES_AVANT_RETRAIT = ("announced", "permitting", "under_construction")
+
+
+def statut_de_calcul(identity: dict) -> str | None:
+    """Le statut qui NOTE la fiche — distinct du statut AFFICHÉ pour `withdrawn` seulement.
+
+    🔴 Protocole cas-témoins, amendement 22 (R&D, 2026-11-11). Une fiche refusée ou retirée se
+    note comme le PROJET qu'elle était à son dernier stade documenté
+    (`vintage.status_before_withdrawal`) : même bande, même plancher, même règle de lettre
+    ferme ou provisoire que les fiches vivantes. Si `withdrawn` changeait le calcul, les seuls
+    cas terminaux seraient mesurés autrement que les autres — un biais lié au résultat dans
+    l'étude qui compare les deux. Seul l'AFFICHAGE change (bandeau, vitrine, médiane,
+    classement). Sans stade antérieur valide, on rend `withdrawn` tel quel : le garde de
+    validation refuse ce cas avant qu'il soit servi.
+    """
+    statut = identity.get("project_status")
+    if statut == "withdrawn":
+        avant = (identity.get("vintage") or {}).get("status_before_withdrawal")
+        if avant in STADES_AVANT_RETRAIT:
+            return avant
+    return statut
+
+
 def servable_band(status: str, present: dict, country: str, methodology: dict,
                   pool: dict | None = None, confidence: str | None = None) -> dict | None:
     """What a SERVED fiche may display as a provisional band — or None if it may not.

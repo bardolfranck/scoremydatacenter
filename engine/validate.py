@@ -769,16 +769,21 @@ def hors_service_gate(data_dir: Path = DATA_DIR) -> list[str]:
         ident = (load_json(path).get("identity") or {})
         if ident.get("project_status") != "withdrawn":
             continue
-        jour = (ident.get("vintage") or {}).get("withdrawn_date")
-        if not (isinstance(jour, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", jour)):
+        vintage = ident.get("vintage") or {}
+        jour = vintage.get("withdrawn_date")
+        avant = vintage.get("status_before_withdrawal")
+        if not (isinstance(jour, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", jour)) \
+                or avant not in ("announced", "permitting", "under_construction"):
             sans_date.append(path.stem)
     out: list[str] = []
     if sans_date:
         out.append(
             "GATE HORS SERVICE: "
             f"{len(sans_date)} fiche(s) déclarent « withdrawn » sans "
-            "`identity.vintage.withdrawn_date` (AAAA-MM-JJ). La note d'un projet refusé ou "
-            "retiré est une ARCHIVE : sans date, elle se lit comme celle d'un projet en cours : "
+            "`identity.vintage.withdrawn_date` (AAAA-MM-JJ) ou sans "
+            "`identity.vintage.status_before_withdrawal` (le stade qui NOTE la fiche, "
+            "amendement 22). La note d'un projet refusé ou retiré est une ARCHIVE datée, "
+            "calculée comme celle du projet à son dernier stade : "
             + ", ".join(sorted(sans_date)[:8]))
     if manquantes:
         return out + [
