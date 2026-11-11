@@ -1547,7 +1547,6 @@ sup a { color: var(--accent); font-weight: 750; }
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.lib-section-kicker-inverse { color: var(--sidebar-muted); }
 
 /* --- Featured flagship --- */
 .lib-featured { padding: clamp(32px, 4vw, 56px) var(--lib-pad-x); background: var(--lib-band); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -1581,7 +1580,6 @@ sup a { color: var(--accent); font-weight: 750; }
 .lib-pillars li { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-soft); font-size: 0.88rem; font-weight: 700; }
 .lib-cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 22px; }
 .lib-price { color: var(--ink-soft); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; }
-.lib-price-inverse { color: var(--sidebar-muted); }
 
 /* Language flags — the §5 rule made visible: country brief = native + EN,
    flagship = EN + FR, theme brief = EN. Computed, never hand-typed per card.
@@ -1631,11 +1629,6 @@ sup a { color: var(--accent); font-weight: 750; }
 .lib-index-link a:hover { border-color: var(--accent); color: var(--accent); }
 
 /* --- Bespoke band — confidential register, no price --- */
-.lib-bespoke { padding: clamp(36px, 4vw, 60px) var(--lib-pad-x); background: var(--sidebar); color: #fff; }
-.lib-bespoke h2 { max-width: 26ch; font-size: clamp(1.5rem, 2.4vw, 2.1rem); line-height: 1.12; }
-.lib-bespoke-body { max-width: 62ch; margin-top: 12px; color: var(--sidebar-muted); }
-.lib-button-inverse { color: var(--ink); background: #fff; }
-.lib-button-inverse:hover { background: var(--wash); }
 
 /* --- Digest capture — the free tier, framed as an exchange, never a wall --- */
 .lib-digest { padding: clamp(36px, 4vw, 60px) var(--lib-pad-x); text-align: center; background: var(--lib-band); border-bottom: 1px solid var(--line); }
@@ -1709,8 +1702,6 @@ sup a { color: var(--accent); font-weight: 750; }
 .lib-entry-hook { margin-top: 3px; color: var(--ink-soft); font-size: 0.86rem; }
 .lib-entry-meta { display: grid; justify-items: end; gap: 6px; }
 .lib-entries-empty { margin-top: 16px; color: var(--muted); font-size: 0.9rem; }
-.lib-entry-bespoke { margin-top: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--wash); }
-.lib-entry-bespoke:hover { background: var(--wash); }
 
 @media (max-width: 960px) {
   .lib-featured-grid { grid-template-columns: 1fr; }

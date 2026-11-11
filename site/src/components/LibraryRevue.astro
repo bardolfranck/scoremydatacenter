@@ -210,16 +210,10 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
     <p class="lib-index-link lib-index-soon" aria-disabled="true">{t.indexLink}</p>
   </section>
 
-  <!-- Benchmark opérateur — bespoke, on request, confidential register -->
-  <section class="lib-bespoke" aria-label={t.bespokeKicker}>
-    <p class="lib-section-kicker lib-section-kicker-inverse">{t.bespokeKicker}</p>
-    <h2>{t.bespokeTitle}</h2>
-    <p class="lib-bespoke-body">{t.bespokeBody}</p>
-    <div class="lib-cta-row">
-      <a class="button lib-button-inverse" href={contactPath}>{t.bespokeCta}</a>
-      <span class="lib-price lib-price-inverse">{t.onRequest}</span>
-    </div>
-  </section>
+  {/* Bloc « Benchmark opérateur · sur demande — Votre portefeuille, lu par notre grille »
+      RETIRÉ (Franck, 2026-11-11), pour la même raison que l'« Étude opérateur » plus haut :
+      une lecture par entreprise, vendue sur demande = règlement (UE) 2024/3005. Ne pas le
+      remettre sans l'avis d'un avocat — voir 16-ESG/04. */}
 
   <!-- Digest — the free tier, not a wall -->
   <section class="lib-digest" id="digest" aria-label={t.newsletterTitle}>

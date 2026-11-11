@@ -100,19 +100,9 @@ const fmtDate = (iso: string) =>
       </ol>
       <p class="lib-entries-empty" hidden>{t.emptyLabel}</p>
 
-      <!-- Bespoke: outside the filterable list — no price, on request only -->
-      <aside class="lib-entry lib-entry-bespoke">
-        <span class="lib-entry-chip" style="background:#102a43">Op.</span>
-        <div class="lib-entry-main">
-          <p class="lib-entry-kicker">{t.bespokeKicker}</p>
-          <h2 class="lib-entry-title">{t.bespokeTitle}</h2>
-          <p class="lib-entry-hook">{t.bespokeBody}</p>
-        </div>
-        <div class="lib-entry-meta">
-          <span class="lib-price">{t.onRequest}</span>
-          <a class="button button-secondary" href={contactPath}>{t.bespokeCta}</a>
-        </div>
-      </aside>
+      {/* Bloc « Benchmark opérateur · sur demande » RETIRÉ (Franck, 2026-11-11) : une lecture
+          par entreprise, vendue sur demande = règlement (UE) 2024/3005. Voir LibraryRevue.astro
+          et 16-ESG/04. Ne pas le remettre sans l'avis d'un avocat. */}
     </section>
   </div>
 
