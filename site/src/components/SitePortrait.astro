@@ -172,7 +172,10 @@ const ficheUrl = `https://scoremydatacenter.org${ficheHref}`;
 // canonique désignait une page qui n'existe pas. Dérivée de la table de routes.
 const url = `https://scoremydatacenter.org${cheminDePortrait(lang as LangueDeclaree, dc.id)}`;
 const titre = `${dc.name} — ${t.kicker}`;
-const lieu = [dc.municipality, regionLisible(dc.admin_area)].filter(Boolean).join(", ");
+// Ville de référence (US hors limites de ville) : même règle que la fiche (DcFiche.astro).
+const refPlace = dc.reference_place && dc.municipality ? String(dc.reference_place) : "";
+const lieu = [refPlace ? `${cm.near} ${refPlace}` : "", dc.municipality, regionLisible(dc.admin_area)]
+  .filter(Boolean).join(", ");
 
 // 🔴 LE TITRE NE PORTAIT NI LA CATÉGORIE NI LE LIEU (audit de demande, 2026-10-26).
 // « Campus IA Fouju — Portrait du site | ScoreMyDataCenter » : « portrait du site » est notre
@@ -189,11 +192,13 @@ const lieu = [dc.municipality, regionLisible(dc.admin_area)].filter(Boolean).joi
 //
 // Le lieu ne disparaît jamais : 65 caractères est une limite d'affichage, pas d'indexation.
 // On dégrade dans l'ordre du moins coûteux — la région, puis l'angle.
-const ptLieuCourt = dc.municipality
-  ? cm.place.replace("{municipality}", dc.municipality)
-  : cm.placeFallback;
+const ptLieuCourt = refPlace
+  ? cm.placeNear.replace("{reference_place}", refPlace).replace("{municipality}", dc.municipality)
+  : dc.municipality
+    ? cm.place.replace("{municipality}", dc.municipality)
+    : cm.placeFallback;
 const ptLieu = ptLieuCourt
-  + (dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
+  + (!refPlace && dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
 const ptSep = cm.colon;
 // 🔴 MÊME MARCHE MANQUANTE QUE SUR LA FICHE, MÊME COHORTE DE 14 (Franck 2026-11-07) : les
 // trois étapes ci-dessus dégradent la région puis l'angle, jamais le nom — et quand le nom

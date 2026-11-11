@@ -261,7 +261,12 @@ const hasOperator = operateurIdentifie(dc.operator);
 // « environ », car la mesure vise le centre de l'objet OSM ; une zone résidentielle (bâti non tagué,
 // fréquent en rural) est dite comme telle, jamais présentée comme une maison.
 const dwell = dc.nearest_dwelling;
-const place = communeEtRegion(dc.municipality, dc.admin_area)
+// `reference_place` : la ville que citent les sources quand le site est HORS des limites d'une
+// ville (US, terrain non incorporé). `municipality` reste la juridiction réelle (le comté) ; la
+// ville vient devant, parce que c'est elle qu'on cherche (« Yorkville data center »).
+const refPlace = dc.reference_place && dc.municipality ? String(dc.reference_place) : "";
+const place = (refPlace ? `${cm.near} ${refPlace} · ` : "")
+  + communeEtRegion(dc.municipality, dc.admin_area)
   + (dc.country ? ` · ${dc.country}` : "");
 
 // L'ÉNUMÉRATION DOIT BOUCLER. Elle listait mesurés + annoncés + manquants et s'arrêtait là :
@@ -554,7 +559,7 @@ const seoGrade = seoBand.kind === "en_attente" && typeof seoBand.central === "st
       : /^[A-E]$/.test(dc.grades.site.grade ?? "")
         ? t.seo.grade.replace("{grade}", dc.grades.site.grade)
         : t.seo.pending;
-const seoPlaceRaw = dc.municipality ?? (regionLisible(dc.admin_area) || dc.country || "");
+const seoPlaceRaw = refPlace || dc.municipality || regionLisible(dc.admin_area) || dc.country || "";
 // « Campus IA Fouju (Fouju) » : quand le nom du site porte déjà sa commune, la parenthèse
 // est du bruit qui mange la largeur utile du titre en SERP.
 const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceRaw).toLowerCase())
@@ -566,11 +571,14 @@ const seoPlace = seoPlaceRaw && !dc.name.toLowerCase().includes(String(seoPlaceR
 // une note qui n'affirme jamais plus que ce qu'on publie (plage, « en attente »).
 // ⚠️ La commune est répétée même quand le nom la contient (« Campus IA Fouju, data center à
 // Fouju ») : la redondance coûte quelques caractères, l'absence coûtait la requête.
-const seoLieuSansRegion = dc.municipality
-  ? cm.place.replace("{municipality}", dc.municipality)
-  : cm.placeFallback;
+const seoLieuSansRegion = refPlace
+  ? cm.placeNear.replace("{reference_place}", refPlace).replace("{municipality}", dc.municipality)
+  : dc.municipality
+    ? cm.place.replace("{municipality}", dc.municipality)
+    : cm.placeFallback;
+// Avec une ville de référence, le comté est déjà entre parenthèses : pas de région en plus.
 const seoLieu = seoLieuSansRegion
-  + (dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
+  + (!refPlace && dc.municipality && regionLisible(dc.admin_area) ? ` (${regionLisible(dc.admin_area)})` : "");
 // 🔴 LE TITRE ÉTAIT COUPÉ AVANT LA NOTE — SUR 100 % DES FICHES (Search Console, 2026-10-23).
 // Mesuré : médiane 92 caractères, p90 109, max 142, quand Google en affiche ~60. Le lecteur
 // voyait « Digital Realty Frankfurt FRA28 (Closed), data center in Frankf… » et JAMAIS
@@ -627,7 +635,8 @@ const seoLead = Lead(dc.synthesis?.site);
 const seoDesc = seoLead
   ? `${seoLead} — ${dc.name}, ${seoLieu}. ${seoGrade.charAt(0).toUpperCase()}${seoGrade.slice(1)}, `
     + t.seo.tail
-  : t.metaDescription.replace("{name}", dc.name).replace("{municipality}", dc.municipality);
+  : t.metaDescription.replace("{name}", dc.name)
+      .replace("{municipality}", refPlace ? `${refPlace}, ${dc.municipality}` : dc.municipality);
 ---
 
 <Base
