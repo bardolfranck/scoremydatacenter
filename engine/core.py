@@ -75,9 +75,29 @@ def watchlist_paths(data_dir: Path = DATA_DIR) -> list[Path]:
     return sorted((data_dir / "watchlist").glob("*.json"))
 
 
-def load_watchlist(data_dir: Path = DATA_DIR) -> list[dict]:
-    """Flatten every watchlist file (each file is an array of 'En veille' entries, A-19)."""
+def ids_absorbes(data_dir: Path = DATA_DIR) -> set[str]:
+    """Ids FUSIONNÉS dans une autre fiche servie (calibration/retraits.json, type « fusion »).
+    Absent ou illisible → aucun (rien n'est masqué par défaut)."""
+    p = data_dir / "retraits.json"
+    try:
+        return {r["id"] for r in load_json(p) if r.get("type") == "fusion"} if p.is_file() else set()
+    except (ValueError, KeyError, TypeError):
+        return set()
+
+
+def load_watchlist(data_dir: Path = DATA_DIR, *, dedoublonner: bool = True) -> list[dict]:
+    """Flatten every watchlist file (each file is an array of 'En veille' entries, A-19).
+
+    `dedoublonner` (défaut) : une entrée « En veille » dont l'id est une fiche SERVIE, ou une fiche
+    fusionnée dans une servie, n'est PAS rendue — la fiche décrit déjà le projet. Sans ça, chaque
+    fiche née d'une entrée de veille (vague US, tracker fights) avait un jumeau « en veille » au point
+    du tracker, faux de plusieurs km après repositionnement (constat 2026-11-11, décision Franck
+    « corrige en veille aussi »). Le schéma, lui, valide toutes les entrées (validate_corpus lit
+    les fichiers directement)."""
     entries: list[dict] = []
     for p in watchlist_paths(data_dir):
         entries.extend(load_json(p))
+    if dedoublonner:
+        couverts = {p.stem for p in datacenter_paths(data_dir)} | ids_absorbes(data_dir)
+        entries = [e for e in entries if e.get("id") not in couverts]
     return entries

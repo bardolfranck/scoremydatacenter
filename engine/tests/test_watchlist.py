@@ -86,3 +86,20 @@ def test_unlocated_entry_is_served_off_the_map(tmp_path):
     [served] = [p for p in geo["unlocated"] if p["id"] == entry["id"]]
     assert served["source"]["url"] == entry["source"]["url"]
     assert _grade_leak(served) is None
+
+
+def test_veille_ne_double_pas_une_fiche_servie_ni_une_fiche_fusionnee(tmp_path):
+    """2026-11-11 : chaque fiche US née d'une entrée de veille avait un jumeau « en veille » au point
+    du tracker (faux de plusieurs km après repositionnement). Une fiche servie ou fusionnée couvre
+    le projet : son entrée de veille n'est pas rendue. Une entrée sans fiche reste."""
+    import json
+    from engine.core import load_watchlist
+    (tmp_path / "datacenters-us").mkdir()
+    (tmp_path / "datacenters-us" / "us-a.json").write_text("{}")
+    (tmp_path / "watchlist").mkdir()
+    (tmp_path / "watchlist" / "w.json").write_text(json.dumps(
+        [{"id": "us-a"}, {"id": "us-b"}, {"id": "us-c"}]))
+    (tmp_path / "retraits.json").write_text(json.dumps(
+        [{"id": "us-b", "type": "fusion"}, {"id": "us-c", "type": "parque_non_data_center"}]))
+    assert [e["id"] for e in load_watchlist(tmp_path)] == ["us-c"]
+    assert len(load_watchlist(tmp_path, dedoublonner=False)) == 3
