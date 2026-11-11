@@ -539,7 +539,7 @@ def geo_gate(data_dir: Path) -> list[str]:
 #   · le sidecar hebdomadaire de preuve de statut dit `verified` — des réseaux sont
 #     interconnectés DANS ce bâtiment (PeeringDB) ; c'est une preuve intrinsèque d'exploitation ;
 #   · la fiche porte un `project_status_provenance` qui justifie `operational` avec sa source.
-STATUT_NON_SOURCE = 1189
+STATUT_NON_SOURCE = 1186
 
 
 def statut_gate(data_dir: Path) -> list[str]:
