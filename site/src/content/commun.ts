@@ -21,6 +21,10 @@ const FR = {
   // Le titre SERP nomme la CATÉGORIE et la COMMUNE : « data center Fouju » est la requête
   // d'un riverain ou d'un élu, c'est-à-dire exactement notre lecteur (audit SEO, 10-16).
   place: "data center à {municipality}",
+  // Site hors des limites d'une ville (US : terrain non incorporé) : la juridiction réelle
+  // est le comté, mais la recherche passe par la ville que citent la presse et le dossier.
+  placeNear: "data center près de {reference_place} ({municipality})",
+  near: "près de",
   // Le repli quand la commune manque. C'était un littéral hors de toute branche, donc le
   // même mot dans les deux langues — ce qui ne veut pas dire qu'il le restera : le
   // néerlandais écrit « datacenter » en un mot.
@@ -38,6 +42,8 @@ const FR = {
 
 const EN: typeof FR = {
   place: "data center in {municipality}",
+  placeNear: "data center near {reference_place} ({municipality})",
+  near: "near",
   placeFallback: "data center",
   colon: ": ",
   interrogation: "?",
@@ -54,6 +60,8 @@ const NL: typeof FR = {
   // Le titre SERP nomme la CATÉGORIE et la COMMUNE — en néerlandais la requête du
   // riverain est « datacenter Almere » : datacenter EN UN MOT (lexique du rapport figé).
   place: "datacenter in {municipality}",
+  placeNear: "datacenter bij {reference_place} ({municipality})",
+  near: "bij",
   placeFallback: "datacenter",
   // Pas d'espace avant le deux-points ni avant le point d'interrogation en néerlandais
   // (convention typographique NL, la même que l'anglais).

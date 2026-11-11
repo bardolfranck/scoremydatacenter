@@ -51,6 +51,11 @@
           "type": "string",
           "minLength": 1
         },
+        "reference_place": {
+          "type": "string",
+          "minLength": 1,
+          "description": "OPTIONAL. The town cited by the source that places the site, when the point lies OUTSIDE any town's limits (US unincorporated land). `municipality` stays the true jurisdiction (the county). Absent when the point is inside a census place or no source names a town — never invented. Provenance in the sidecar: `reference_place_provenance`."
+        },
         "admin_area": {
           "type": "string",
           "description": "Local administrative code: département (FR), county (IE), Kreis (DE)…"

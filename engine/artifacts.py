@@ -66,6 +66,9 @@ def _summary(dc: dict, result: dict) -> dict:
         "name": identity["name"],
         "operator": identity["operator"],
         "municipality": identity["municipality"],
+        # Ville de référence (US hors limites de ville) : absente sinon, pour ne rien changer au
+        # contrat des autres fiches.
+        **({"reference_place": identity["reference_place"]} if identity.get("reference_place") else {}),
         "country": identity["country"],
         "project_status": identity["project_status"],
         # First-recorded date (git first-commit of the newsroom fiche; null until backfilled).
