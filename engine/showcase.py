@@ -93,7 +93,7 @@ def build_showcase(datacenters: dict[str, dict], results: dict[str, dict],
     # existait déjà (`_is_neutral` exige `operational`) ; celle de l'ÉTALON manquait, et
     # c'est un test qui l'a révélée, pas une relecture.
     vivants = [t for t in scored
-               if t[1]["identity"].get("project_status") != "decommissioned"]
+               if t[1]["identity"].get("project_status") not in ("decommissioned", "withdrawn")]
     median = round(_median([r["grades"]["site"]["score"] for _, _, r in vivants]), 1) if vivants else None
 
     # --- demo: the most ordinary site, exclusions first -------------------

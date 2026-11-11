@@ -36,7 +36,10 @@ export const PIPELINE = ["announced", "permitting", "under_construction"] as con
 // classement) exigent déjà `operational` : ils l'excluent par construction, pas par une liste.
 
 /** Tout le vocabulaire servi, `unknown` et `decommissioned` compris. */
-export const STATUTS = [...PIPELINE, "operational", "decommissioned", "unknown"] as const;
+// 🔴 LE SEPTIÈME, 2026-11-11 : `withdrawn` = projet REFUSÉ ou RETIRÉ. Jamais construit, donc
+// ni `decommissioned` (fermeture d'un site qui a existé) ni un stade du pipeline (il ne mène
+// plus à rien). Même traitement : la note est une archive datée, la fiche l'annonce.
+export const STATUTS = [...PIPELINE, "operational", "decommissioned", "withdrawn", "unknown"] as const;
 
 export type Statut = (typeof STATUTS)[number];
 
@@ -48,4 +51,9 @@ export function enProjet(statut: string | null | undefined): boolean {
 /** Vrai pour un site MIS HORS SERVICE : sa note est une archive, pas un état présent. */
 export function horsService(statut: string | null | undefined): boolean {
   return statut === "decommissioned";
+}
+
+/** Vrai pour un PROJET REFUSÉ OU RETIRÉ : jamais construit, sa note est une archive. */
+export function projetRetire(statut: string | null | undefined): boolean {
+  return statut === "withdrawn";
 }

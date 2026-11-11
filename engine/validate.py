@@ -762,8 +762,31 @@ def hors_service_gate(data_dir: Path = DATA_DIR) -> list[str]:
         annee = (ident.get("vintage") or {}).get("decommissioned_year")
         if not isinstance(annee, int):
             manquantes.append(path.stem)
+    # 2026-11-11 : `withdrawn` (projet refusé ou retiré) obéit à la même règle — une note
+    # d'archive sans date se lit comme le présent. La date est un JOUR (AAAA-MM-JJ).
+    sans_date: list[str] = []
+    for path in datacenter_paths(data_dir):
+        ident = (load_json(path).get("identity") or {})
+        if ident.get("project_status") != "withdrawn":
+            continue
+        vintage = ident.get("vintage") or {}
+        jour = vintage.get("withdrawn_date")
+        avant = vintage.get("status_before_withdrawal")
+        if not (isinstance(jour, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", jour)) \
+                or avant not in ("announced", "permitting", "under_construction"):
+            sans_date.append(path.stem)
+    out: list[str] = []
+    if sans_date:
+        out.append(
+            "GATE HORS SERVICE: "
+            f"{len(sans_date)} fiche(s) déclarent « withdrawn » sans "
+            "`identity.vintage.withdrawn_date` (AAAA-MM-JJ) ou sans "
+            "`identity.vintage.status_before_withdrawal` (le stade qui NOTE la fiche, "
+            "amendement 22). La note d'un projet refusé ou retiré est une ARCHIVE datée, "
+            "calculée comme celle du projet à son dernier stade : "
+            + ", ".join(sorted(sans_date)[:8]))
     if manquantes:
-        return [
+        return out + [
             "GATE HORS SERVICE: "
             f"{len(manquantes)} fiche(s) sur {vus} déclarent « decommissioned » sans "
             "`identity.vintage.decommissioned_year`. La note est conservée comme ARCHIVE : "
@@ -771,7 +794,7 @@ def hors_service_gate(data_dir: Path = DATA_DIR) -> list[str]:
             "plus. Poser l'année de mise hors service et sa provenance dans `vintage.source` : "
             + ", ".join(sorted(manquantes)[:8])
         ]
-    return []
+    return out
 
 
 def filigrane_gate(paths: list[Path]) -> list[str]:

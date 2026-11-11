@@ -26,44 +26,62 @@
 //                                  `hors_service_gate`, donc ce dernier cas ne vient que d'une
 //                                  donnée en cours de reprise — il ne doit pas faire DISPARAÎTRE
 //                                  la fermeture, qui est l'information la plus importante ici.
-import { horsService } from "../content/statuts";
+import { horsService, projetRetire } from "../content/statuts";
 
 interface Props {
   statut: string | null | undefined;
   vintage?: { decommissioned_year?: number | null;
               decommissioned_source?: { title?: string; url?: string | null;
-                                        archived_url?: string } | null } | null;
+                                        archived_url?: string } | null;
+              withdrawn_date?: string | null;
+              withdrawn_source?: { title?: string; url?: string | null;
+                                   archived_url?: string } | null } | null;
   t: { horsServiceTitre: string; horsServiceAnnee: string; horsServiceSansAnnee: string;
-       horsServiceNote: string; horsServiceDossier: string };
+       horsServiceNote: string; horsServiceDossier: string;
+       retireTitre: string; retireDate: string; retireSansDate: string;
+       retireNote: string; retireDossier: string };
+  lang?: string;
 }
 
-const { statut, vintage, t } = Astro.props;
+const { statut, vintage, t, lang = "en" } = Astro.props;
+
+// 2026-11-11 : un projet REFUSÉ OU RETIRÉ (`withdrawn`) est annoncé par le MÊME bandeau —
+// un seul composant, deux fins établies [[liste-a-deux-endroits-ment]]. Sa date est un jour
+// (AAAA-MM-JJ), dite dans la langue de la page ; une date illisible retombe sur la phrase sans date.
+const retire = projetRetire(statut);
+const jour = vintage?.withdrawn_date ?? null;
+const jourLisible = (() => {
+  if (!jour || !/^\d{4}-\d{2}-\d{2}$/.test(jour)) return null;
+  const d = new Date(`${jour}T12:00:00Z`);
+  return Number.isNaN(d.getTime()) ? null
+    : new Intl.DateTimeFormat(lang, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(d);
+})();
 
 const annee = vintage?.decommissioned_year ?? null;
 // ⚠️ La phrase est assemblée ICI, pas dans le gabarit : deux expressions voisines dans du JSX
 // sont rendues collées (vu à l'écran le 2026-11-07 — « …en 2024.Sa note est conservée… »).
-const fait = [
-  annee ? t.horsServiceAnnee.replace("{annee}", String(annee)) : t.horsServiceSansAnnee,
-  t.horsServiceNote,
-].join(" ");
+const fait = retire
+  ? [jourLisible ? t.retireDate.replace("{date}", jourLisible) : t.retireSansDate, t.retireNote].join(" ")
+  : [annee ? t.horsServiceAnnee.replace("{annee}", String(annee)) : t.horsServiceSansAnnee,
+     t.horsServiceNote].join(" ");
 
 // `url` peut valoir `null` quand la preuve existe sans page publique (doctrine du schéma) :
 // on ne sert un lien que s'il y a une adresse. `archived_url` passe devant en cas de lien
 // mort annoncé, mais le document d'origine reste le lien principal quand il existe.
-const dossier = vintage?.decommissioned_source ?? null;
+const dossier = (retire ? vintage?.withdrawn_source : vintage?.decommissioned_source) ?? null;
 const lien = dossier?.url || dossier?.archived_url || null;
 ---
 
-{horsService(statut) && (
+{(horsService(statut) || retire) && (
   <aside class="hs-bandeau" role="note">
-    <p class="hs-titre">{t.horsServiceTitre}</p>
+    <p class="hs-titre">{retire ? t.retireTitre : t.horsServiceTitre}</p>
     <p class="hs-texte">
       {fait}
       {lien && (
         <>
           {" "}
           <a class="hs-dossier" href={lien} target="_blank" rel="noopener"
-             title={dossier?.title ?? undefined}>{t.horsServiceDossier}</a>
+             title={dossier?.title ?? undefined}>{retire ? t.retireDossier : t.horsServiceDossier}</a>
         </>
       )}
     </p>

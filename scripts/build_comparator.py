@@ -192,6 +192,8 @@ STATUTS: dict[str, dict[str, str]] = {
     # l'aide du classement et le bandeau de la fiche, pas une étiquette de colonne.
     "decommissioned": {"fr": "Hors service", "en": "Decommissioned",
                        "nl": "Buiten dienst"},
+    "withdrawn": {"fr": "Refusé ou retiré", "en": "Refused or withdrawn",
+                  "nl": "Geweigerd of ingetrokken"},
     # Forme COURTE : ce libellé tient dans une colonne de tableau et dans un menu
     # déroulant. Le texte long (« aucune source publique ne mentionne… ») est l'aide du
     # classement, pas une étiquette.

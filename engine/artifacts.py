@@ -25,7 +25,8 @@ from .showcase import build_showcase
 # -> band « en veille, provisoire » ; operational -> definitive letter, no band). servable_band is
 # the ONE gate (firewall test_plage_bands_firewall): operational -> None, so a band can never touch
 # an operational fiche's definitive grade. Written to a SEPARATE `provisional_band` field, never grades.
-from .plage_bands import build_reference_pool, servable_band, base_definitions, pillar_bands
+from .plage_bands import (build_reference_pool, servable_band, base_definitions, pillar_bands,
+                          statut_de_calcul)
 
 # Gate 7 extended to generated prose (2026-07-10): a grade must never be rendered
 # outside <ScoreBadge> — including inside the LLM-written synthesis. Prose citing a
@@ -297,7 +298,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
 
     def _provisional_band(dc_id: str, dc: dict):
         return servable_band(
-            dc["identity"]["project_status"], _present(dc_id), dc["identity"]["country"],
+            statut_de_calcul(dc["identity"]), _present(dc_id), dc["identity"]["country"],
             methodology, band_pool, confidence=results[dc_id]["confidence"]["level"],
         )
 
@@ -306,7 +307,7 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
     # service. Elles vivent dans leur propre champ `pillar_bands`, jamais dans `pillars.*.grade`.
     def _pillar_bands(dc_id: str, dc: dict):
         return pillar_bands(
-            dc["identity"]["project_status"], _present(dc_id), dc["identity"]["country"],
+            statut_de_calcul(dc["identity"]), _present(dc_id), dc["identity"]["country"],
             methodology, band_pool, confidence=results[dc_id]["confidence"]["level"],
         )
 
