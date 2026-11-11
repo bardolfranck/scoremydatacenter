@@ -75,3 +75,13 @@
 /dc/us-franklin-simpson-data-storage-and-service-center/* /dc/us-franklin-data-center-tenkey/:splat 301
 /fr/dc/us-lacy-lakeview-waco-area/* /fr/dc/us-ai-data-center-campus/:splat 301
 /dc/us-lacy-lakeview-waco-area/* /dc/us-ai-data-center-campus/:splat 301
+
+# Fusion Evok (décision Franck 2026-11-11, agent-data-pipeline-EU, newsroom 99e70407). Les trois
+# fiches Evok doublonnaient des sites déjà servis sous leur exploitant actuel : senseLAN ×2 et
+# BrainServe. Forme `*` : couvre la fiche et un éventuel portrait.
+/fr/dc/ch-evok-dc01/* /fr/dc/ch-senselan-bonnstrasse/:splat 301
+/dc/ch-evok-dc01/* /dc/ch-senselan-bonnstrasse/:splat 301
+/fr/dc/ch-evok-dc02/* /fr/dc/ch-senselan-duenstrasse/:splat 301
+/dc/ch-evok-dc02/* /dc/ch-senselan-duenstrasse/:splat 301
+/fr/dc/ch-evok-dc03/* /fr/dc/ch-brainserve/:splat 301
+/dc/ch-evok-dc03/* /dc/ch-brainserve/:splat 301
