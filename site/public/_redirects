@@ -56,3 +56,22 @@
 # porter puissance, statut et géo vérifiée). Forme `*` : couvre la fiche et un éventuel portrait.
 /fr/dc/fr-communaute-de-communes-de-la-vallee-doree-ccvd/* /fr/dc/fr-data-center-rantigny/:splat 301
 /dc/fr-communaute-de-communes-de-la-vallee-doree-ccvd/* /dc/fr-data-center-rantigny/:splat 301
+
+# Fusions US (GO Franck 2026-11-11), issues du repositionnement des fiches nées du tracker
+# fights.json : six paires désignaient le même projet (même adresse, ou extension de campus
+# absorbée). La survivante porte le bloc `fusion` dans son sidecar ; le registre des retraits
+# (calibration/retraits.json + GATE RETRAITS) empêche le producteur de recréer la retirée.
+# Les 32 fiches « pas un data center » parquées le même jour n'ont PAS de redirection : aucune
+# installation équivalente n'existe, un 301 mentirait — elles répondent 404.
+/fr/dc/us-resilient-technology-park-multiple-projects/* /fr/dc/us-resilient-technology-park-data-center/:splat 301
+/dc/us-resilient-technology-park-multiple-projects/* /dc/us-resilient-technology-park-data-center/:splat 301
+/fr/dc/us-orangeburg-data-center-expansion/* /fr/dc/us-databank-orangeburg-lga3/:splat 301
+/dc/us-orangeburg-data-center-expansion/* /dc/us-databank-orangeburg-lga3/:splat 301
+/fr/dc/us-t5-augusta/* /fr/dc/us-project-eisenhower/:splat 301
+/dc/us-t5-augusta/* /dc/us-project-eisenhower/:splat 301
+/fr/dc/us-sioux-falls/* /fr/dc/us-sioux-falls-hyperscale-data-center/:splat 301
+/dc/us-sioux-falls/* /dc/us-sioux-falls-hyperscale-data-center/:splat 301
+/fr/dc/us-franklin-simpson-data-storage-and-service-center/* /fr/dc/us-franklin-data-center-tenkey/:splat 301
+/dc/us-franklin-simpson-data-storage-and-service-center/* /dc/us-franklin-data-center-tenkey/:splat 301
+/fr/dc/us-lacy-lakeview-waco-area/* /fr/dc/us-ai-data-center-campus/:splat 301
+/dc/us-lacy-lakeview-waco-area/* /dc/us-ai-data-center-campus/:splat 301
