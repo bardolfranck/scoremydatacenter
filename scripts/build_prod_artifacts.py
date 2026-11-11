@@ -64,12 +64,19 @@ def patch_satellite_images() -> int:
         return 0
     from engine.core import write_json
     from pipelines.media.satellite import media_key
+    # Fiche RECALÉE → clé dépendante du nouveau point (le cache R2 immutable interdit d'écraser :
+    # sans ça on servait la vue de l'ANCIEN point, lot 1 US 2026-11-11). Une seule fonction, celle
+    # du générateur ; absente (newsroom non importable) → clé historique.
+    try:
+        from pipelines.media.revision import media_rev
+    except ImportError:
+        media_rev = lambda _id: None  # noqa: E731
     patched = 0
     for f in sorted((ARTIFACTS_DIR / "dc").glob("*.json")):
         d = json.loads(f.read_text())
         if d["id"].startswith("zz-"):
             continue
-        key = media_key(d["id"], secret)
+        key = media_key(d["id"], secret, media_rev(d["id"]))
         d["satellite_image"] = {
             "url": f"{base}/{key}",
             "thumb": f"{base}/{key.replace('.webp', '-thumb.webp')}",
@@ -157,6 +164,11 @@ def patch_context_maps() -> int:
         return 0
     from engine.core import write_json
     from pipelines.media.satellite import media_key
+    try:
+        from pipelines.media.context_map_batch import ctx_key
+        from pipelines.media.revision import media_rev
+    except ImportError:
+        media_rev = lambda _id: None  # noqa: E731
     confirmed = set(manifest.read_text().split())
     # PAS DE CARTE PLUTÔT QU'UNE CARTE DU MAUVAIS ENDROIT (doctrine Franck, 2026-10-05).
     # Une fiche dont la coordonnée vient d'être recalée garde une image dessinée depuis
@@ -276,16 +288,24 @@ def patch_context_maps() -> int:
             continue
         key = media_key(d["id"], secret).replace("sat/", "ctx/")
         urls = {lg: f"{base}/{k}" for lg, k in sorted(par_langue.get(d["id"], {}).items())}
+        rev = media_rev(d["id"])
+        if rev is not None:
+            # Fiche RECALÉE : SEULES les clés de révision (nouveau point) sont servables. Le manifeste
+            # contient encore les clés de l'ANCIEN point pour cet id — les servir montrerait le
+            # mauvais endroit. Pas encore téléversées → pas de carte (doctrine 2026-10-05).
+            urls = {lg: f"{base}/{k}" for lg in sorted(par_langue.get(d["id"], {}))
+                    if (k := ctx_key(d["id"], lg, secret, rev)) in confirmed}
+            key = None
+        if not urls and (key is None or key not in confirmed):
+            continue
         # Transition : tant qu'une fiche n'a pas ses deux variantes, l'ancienne clé unique
         # reste servie. Sans ce repli il faudrait livrer les 1366 d'un coup ou laisser des
         # fiches sans image.
-        if not urls and key not in confirmed:
-            continue
-        thumb = key.replace(".webp", "-thumb.webp")
+        thumb = key.replace(".webp", "-thumb.webp") if key else None
         d["context_map"] = {
             **({"urls": urls} if urls else {}),
-            **({"url": f"{base}/{key}"} if key in confirmed else {}),
-            **({"thumb": f"{base}/{thumb}"} if thumb in confirmed else {}),
+            **({"url": f"{base}/{key}"} if key and key in confirmed else {}),
+            **({"thumb": f"{base}/{thumb}"} if thumb and thumb in confirmed else {}),
             "credit": "Esri, Maxar, Earthstar Geographics · OpenStreetMap (ODbL)",
             # 🔴 UNE COLONNE PAR LANGUE DÉCLARÉE. Écrite en `fr`/`en` seulement, cette
             # légende titrait en ANGLAIS au bas de chaque portrait néerlandais, sans erreur
