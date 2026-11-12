@@ -30,8 +30,12 @@ interface Props {
   altLabel?: string;
   nav: NavNode[];
   ogImage?: string; // absolute URL of the social card
+  // Page de partage d'une vidéo (VideoPartage) : og:type video.other + og:video, pour qu'un
+  // lien collé sur un réseau s'affiche avec son affiche et se lise sur place.
+  ogType?: string;
+  ogVideo?: { url: string; width: number; height: number };
 }
-const { lang, title, description, tagline, altHref, altLabel, nav, ogImage } = Astro.props;
+const { lang, title, description, tagline, altHref, altLabel, nav, ogImage, ogType, ogVideo } = Astro.props;
 // Le chrome est sur TOUTES les pages — donc sur chaque page d'une langue nouvelle. Ses mots
 // vivent dans `content/chrome.ts`, une fois par langue, et non en ternaires dispersés : un
 // lecteur néerlandais verrait sinon « Refuser » et « Accepter » sous une fiche néerlandaise.
@@ -154,12 +158,21 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
     <link rel="canonical" href={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType ?? "website"} />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content="ScoreMyDataCenter" />
     <meta property="og:locale" content={c.ogLocale} />
     <meta property="og:image" content={ogImageResolved} />
     <meta property="og:image:alt" content={title} />
+    {ogVideo && (
+      <>
+        <meta property="og:video" content={ogVideo.url} />
+        <meta property="og:video:secure_url" content={ogVideo.url} />
+        <meta property="og:video:type" content="video/mp4" />
+        <meta property="og:video:width" content={String(ogVideo.width)} />
+        <meta property="og:video:height" content={String(ogVideo.height)} />
+      </>
+    )}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImageResolved} />
     <link rel="icon" type="image/svg+xml" href="/assets/smdc-icon.svg" />

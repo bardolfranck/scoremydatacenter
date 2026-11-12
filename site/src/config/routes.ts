@@ -110,6 +110,8 @@ export const FAMILLES: FamilleDeRoutes[] = [
   { id: "qui-sommes-nous", chemins: {
     en: "/who-we-are/", fr: "/fr/qui-sommes-nous/", nl: "/nl/over-ons/" } },
   { id: "presse", chemins: { en: "/press/", fr: "/fr/presse/" } },
+  // La page de partage de la visite vidéo (v5, 2026-11-12) : trois langues bâties le même jour.
+  { id: "video", chemins: { en: "/video/", fr: "/fr/video/", nl: "/nl/video/" } },
   { id: "contact", chemins: { en: "/contact/", fr: "/fr/contact/", nl: "/nl/contact/" } },
   { id: "mentions", chemins: { en: "/legal/", fr: "/fr/mentions-legales/", nl: "/nl/juridisch/" } },
 
