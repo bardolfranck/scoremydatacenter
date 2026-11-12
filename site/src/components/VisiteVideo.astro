@@ -19,6 +19,7 @@
 // Zéro tiers : fichiers servis par notre R2, lecteur natif du navigateur, aucun cookie.
 import type { LangueDeclaree } from "../content/langues";
 import { VISITE, VISITE_MEDIA } from "../content/visite";
+import VisitePartage from "./VisitePartage.astro";
 
 interface Props {
   lang: LangueDeclaree;
@@ -73,6 +74,7 @@ const ldAgent = {
         <span>{t.sub}</span>
       </span>
     </button>
+    <VisitePartage lang={lang} />
     <script type="application/ld+json" set:html={JSON.stringify(ldTour)} />
   </>
 )}

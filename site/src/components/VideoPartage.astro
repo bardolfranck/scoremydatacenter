@@ -1,0 +1,55 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// LA PAGE DE PARTAGE DE LA VISITE VIDÉO — un gabarit, trois langues (pages/video.astro,
+// fr/video.astro, nl/video.astro). Elle existe pour l'APERÇU : un lien collé sur LinkedIn, X
+// ou WhatsApp s'affiche avec l'affiche (og:image) et la vidéo (og:video), au lieu d'un lien
+// nu vers un fichier .mp4. La vidéo se lit sur place, lecteur natif, servie par notre R2.
+import Base from "../layouts/Base.astro";
+import VisitePartage from "./VisitePartage.astro";
+import type { NavNode } from "../config/nav";
+import { RACINE, type LangueDeclaree } from "../content/langues";
+import { VISITE, VISITE_MEDIA, VISITE_PARTAGE } from "../content/visite";
+
+interface Props { lang: LangueDeclaree; nav: NavNode[]; tagline: string }
+const { lang, nav, tagline } = Astro.props;
+const p = VISITE_PARTAGE[lang];
+const t = VISITE[lang];
+const M = VISITE_MEDIA;
+const ld = {
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  name: t.ldName,
+  description: t.ldDescription,
+  thumbnailUrl: [M.tourPoster],
+  uploadDate: M.uploadDate,
+  duration: M.tourDuration,
+  contentUrl: M.tour,
+  inLanguage: "en",
+  publisher: { "@id": "https://scoremydatacenter.org/#org" },
+};
+---
+
+<Base lang={lang} title={p.title} description={p.description} tagline={tagline} nav={nav}
+  ogImage={M.tourPoster} ogType="video.other" ogVideo={{ url: M.tour, width: 1280, height: 720 }}>
+  <section class="video-partage">
+    <h1>{p.h1}</h1>
+    <p class="video-partage-lead">{p.lead}</p>
+    <figure class="video-partage-player">
+      <video src={M.tour} poster={M.tourPoster} controls playsinline preload="metadata" width="1280" height="720"></video>
+    </figure>
+    <VisitePartage lang={lang} />
+    <p class="video-partage-home"><a href={RACINE[lang]}>{p.home} →</a></p>
+  </section>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+</Base>
+
+<style>
+  .video-partage { max-width: 960px; margin: 0 auto; padding: 32px 16px 48px; }
+  .video-partage-lead { max-width: 720px; }
+  .video-partage-player { margin: 20px 0 0; }
+  .video-partage-player video { display: block; width: 100%; height: auto; border-radius: 12px; background: #000; }
+  .video-partage-home { margin-top: 24px; font-weight: 600; }
+</style>

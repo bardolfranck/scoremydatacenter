@@ -1,0 +1,77 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// LES BOUTONS DE PARTAGE DE LA VISITE — sous la vidéo de l'accueil et sur sa page de partage.
+// Ils pointent vers la PAGE de partage de la langue (`VISITE_PARTAGE[lang].path`), jamais vers
+// le .mp4 : c'est la page qui porte l'aperçu (affiche, og:video). Liens d'intention simples,
+// aucun script tiers, aucun cookie ; « copier » = presse-papiers du navigateur, avec repli.
+import type { LangueDeclaree } from "../content/langues";
+import { VISITE_PARTAGE } from "../content/visite";
+import xLogo from "@phosphor-icons/core/assets/regular/x-logo.svg?raw";
+import linkedinLogo from "@phosphor-icons/core/assets/regular/linkedin-logo.svg?raw";
+import linkSimple from "@phosphor-icons/core/assets/regular/link-simple.svg?raw";
+
+interface Props { lang: LangueDeclaree }
+const { lang } = Astro.props;
+const p = VISITE_PARTAGE[lang];
+const url = new URL(p.path, Astro.site ?? "https://scoremydatacenter.org").href;
+const linkedin = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+const x = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(p.shareText)}`;
+const icon = (svg: string) => svg.replace("<svg", `<svg width="16" height="16" fill="currentColor" aria-hidden="true"`);
+---
+
+<div class="visite-share" role="group" aria-label={p.shareLabel}>
+  <button type="button" class="visite-share-btn" data-visite-copy={url} data-copied={p.copied}>
+    <Fragment set:html={icon(linkSimple)} /><span>{p.copy}</span>
+  </button>
+  <a class="visite-share-btn" href={linkedin} target="_blank" rel="noopener noreferrer">
+    <Fragment set:html={icon(linkedinLogo)} /><span>LinkedIn</span>
+  </a>
+  <a class="visite-share-btn" href={x} target="_blank" rel="noopener noreferrer">
+    <Fragment set:html={icon(xLogo)} /><span>X</span>
+  </a>
+</div>
+
+<script>
+  async function copier(texte: string): Promise<boolean> {
+    try {
+      await navigator.clipboard.writeText(texte);
+      return true;
+    } catch {
+      // Repli : contexte non sécurisé ou presse-papiers refusé.
+      const ta = document.createElement("textarea");
+      ta.value = texte;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.append(ta);
+      ta.select();
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch { ok = false; }
+      ta.remove();
+      return ok;
+    }
+  }
+  document.querySelectorAll<HTMLButtonElement>("[data-visite-copy]").forEach((b) => {
+    const span = b.querySelector("span");
+    const libelle = span?.textContent ?? "";
+    b.addEventListener("click", async () => {
+      const ok = await copier(b.dataset.visiteCopy!);
+      if (!ok) { window.prompt("", b.dataset.visiteCopy!); return; }
+      if (span) span.textContent = b.dataset.copied || libelle;
+      setTimeout(() => { if (span) span.textContent = libelle; }, 2000);
+    });
+  });
+</script>
+
+<style is:global>
+  .visite-share { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; max-width: 520px; }
+  .visite-share-btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; font: inherit;
+    font-size: 0.875rem; color: inherit; text-decoration: none; cursor: pointer;
+    background: var(--surface, #fff); border: 1px solid var(--line, #dde3e9); border-radius: 999px;
+  }
+  .visite-share-btn:hover { border-color: currentColor; }
+</style>
