@@ -70,11 +70,11 @@ const FR = {
 };
 
 const EN: typeof FR = {
-  title: "Data center acceptability — definition, issues, how it is measured | ScoreMyDataCenter",
-  metaDescription: "What is data center acceptability? Definition, the five dimensions (energy, water, land, local impact, transparency) and how it is measured, project by project.",
+  title: "Social acceptance of data centers — what drives it, how it is measured | ScoreMyDataCenter",
+  metaDescription: "What decides the social acceptance of a data center? The five dimensions (energy, water, land, local impact, transparency) and how community acceptance is measured, site by site, from public sources.",
   tagline: "Independent observatory",
-  h1: "The acceptability of data centers",
-  lead: "A data center's acceptability is the extent to which a project can be built on a territory without its effects — on energy, water, land and neighbours — exceeding what the community is willing to accept. It is not declared; it is <strong>measured</strong>, project by project.",
+  h1: "Social acceptance of data centers",
+  lead: "The social acceptance of a data center — its <em>acceptability</em>, or community acceptance — is the extent to which a project can be built on a territory without its effects — on energy, water, land and neighbours — exceeding what the community is willing to accept. It is not declared; it is <strong>measured</strong>, project by project.",
 
   sections: [
     { h2: "Why the question is being asked now",
