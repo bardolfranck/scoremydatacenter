@@ -677,7 +677,7 @@ const seoDesc = seoLead
             {/* Developer-when-known (Franck 2026-09-25): a SOURCED register fact, never our verdict —
                 the declared NAF activity + register link. Only present when R&D signed the case. */}
             {dc.developer_source && (
-              <span class="fiche-dev"> — {t.developerDeclared} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{/* i18n:donnee */ lang === "fr" ? dc.developer_source.activity_fr : dc.developer_source.activity_en}</a> <span class="dev-reg">({t.developerRegister})</span></span>
+              <span class="fiche-dev"> — {t.developerDeclared} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{/* i18n:donnee */ dc.developer_source[`activity_${lang}`] ?? dc.developer_source.activity_en}</a> <span class="dev-reg">({t.developerRegister})</span></span>
             )}
           </p>
         )}
