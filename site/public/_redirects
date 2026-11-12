@@ -85,3 +85,10 @@
 /dc/ch-evok-dc02/* /dc/ch-senselan-duenstrasse/:splat 301
 /fr/dc/ch-evok-dc03/* /fr/dc/ch-brainserve/:splat 301
 /dc/ch-evok-dc03/* /dc/ch-brainserve/:splat 301
+# Fusions de doublons US (WORLD, go Franck 2026-11-12) : la page absorbée renvoie vers la survivante.
+/fr/dc/us-project-lincoln-incoln/* /fr/dc/us-project-lincoln-oc-data-center/:splat 301
+/dc/us-project-lincoln-incoln/* /dc/us-project-lincoln-oc-data-center/:splat 301
+/fr/dc/us-project-lincoln/* /fr/dc/us-project-lincoln-oc-data-center/:splat 301
+/dc/us-project-lincoln/* /dc/us-project-lincoln-oc-data-center/:splat 301
+/fr/dc/us-lighthouse-stargate-wisconsin/* /fr/dc/us-lighthouse-stargate/:splat 301
+/dc/us-lighthouse-stargate-wisconsin/* /dc/us-lighthouse-stargate/:splat 301
