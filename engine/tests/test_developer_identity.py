@@ -70,3 +70,15 @@ def test_known_operator_is_not_marked(tmp_path, monkeypatch):
     src = B.apply_developer_identity(dcs)["fr-x"]
     assert "fills_operator" not in src
     assert dcs["fr-x"]["identity"]["operator"] == "Equinix"
+
+
+def test_sourced_applicant_beats_register_operator_match(tmp_path, monkeypatch):
+    # fr-sesterce (2026-11-12) : le registre résolvait « SESTERCE GROUP » (tier confident) et
+    # remplissait l'opérateur vide AVANT le porteur → la fiche disait « Opérateur ».
+    _sidecar(tmp_path, monkeypatch, {"fr-x": _entry("confident", "63.12Z", denom="SESTERCE GROUP")})
+    dcs = {"fr-x": {"identity": {"operator": None, "name": "fr-x", "developer": {
+        "name": "Sesterce", "source": {"title": "Annonce", "url": "https://example.org/a"}}}}}
+    assert B.apply_operator_identity(dcs) == {}
+    src = B.apply_developer_identity(dcs)["fr-x"]
+    assert src["fills_operator"] is True
+    assert dcs["fr-x"]["identity"]["operator"] == "Sesterce"
