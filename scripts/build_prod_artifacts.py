@@ -396,6 +396,12 @@ def apply_operator_identity(dcs: dict) -> dict:
             continue
         if str(dc["identity"].get("operator") or "").strip().lower() not in ("", "unknown", "none"):
             continue
+        # Un porteur SOURCÉ dans la fiche (acte, permis, annonce) prime sur un nom apparié au
+        # registre : sinon l'opérateur vide est rempli par le registre AVANT que le porteur
+        # s'applique, et la fiche dit « Opérateur » là où la source dit « porteur »
+        # (fr-sesterce : SESTERCE GROUP, 2026-11-12).
+        if (dc["identity"].get("developer") or {}).get("name"):
+            continue
         siren_id = e["resolved"]["siren"]
         dc["identity"]["operator"] = registry_display_name(e["resolved"]["denomination"])
         sources[dc_id] = {"source": "SIRENE", "siren": siren_id,
