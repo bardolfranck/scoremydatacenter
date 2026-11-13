@@ -4,8 +4,8 @@
 // https://scoremydatacenter.org · independent data center acceptability-risk score
 // Country SITE-index map — the SAME OSM basemap as the site map (MapLibre +
 // OpenFreeMap positron, whitened), one marker per country in the site's own
-// typography: grade chip + score + documentation dots welded together
-// (règle n°1); n<5 renders a grey « veille » chip, never a letter.
+// typography: grade chip + ISO code only — score and documentation live in
+// the table below (Franck 2026-11-13); n<5 renders a grey « veille » chip, never a letter.
 // THE READING INSERT IS PART OF THIS COMPONENT and cannot be detached from
 // the map (amendement 2026-07-19 + §4 presence gate): any surface that
 // renders the map renders the insert.
@@ -33,7 +33,6 @@ const T = copie({
       a: "A ≥ 80 — réservé : ne s'affiche qu'adossé à des exploitations vérifiées (A-25)",
       b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
       veille: "en veille — n < 5 : moyenne non calculée",
-      dots: "●●● doc solide · ●●○ moyenne · ●○○ faible — la documentation accompagne toujours la note (règle n°1)",
     },
   },
   en: {
@@ -45,7 +44,6 @@ const T = copie({
       a: "A ≥ 80 — reserved: only shown backed by verified operations (A-25)",
       b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
       veille: "on watch — n < 5: no mean computed",
-      dots: "●●● solid doc · ●●○ medium · ●○○ weak — documentation always ships with the grade (rule #1)",
     },
   },
   nl: {
@@ -57,7 +55,6 @@ const T = copie({
       a: "A ≥ 80 — voorbehouden: wordt alleen getoond mits gestaafd door geverifieerde exploitatie (A-25)",
       b: "B ≥ 65", c: "C ≥ 50", d: "D ≥ 35", e: "E < 35",
       veille: "gevolgd — n < 5: geen gemiddelde berekend",
-      dots: "●●● degelijke documentatie · ●●○ gemiddeld · ●○○ zwak — documentatie hoort altijd bij het cijfer (regel nr. 1)",
     },
   },
 }, lang);
@@ -88,12 +85,11 @@ const ANCHORS: Record<string, [number, number]> = {
 // Atlantic) so PT/ES, IE/GB, FR/CH and BE/LU never overlap at Europe zoom.
 const HANG_LEFT = new Set(["IE", "PT", "FR", "BE"]);
 
-const DOTS: Record<string, string> = { solide: "●●●", moyenne: "●●○", faible: "●○○" };
 // La virgule décimale est déclarée par langue : le néerlandais la met aussi, et le ternaire
 // `lang === "fr"` l'envoyait au point anglais sans qu'une erreur ne soit levée.
 const fmtScore = (s: number) => nombreDecimal(lang as LangueDeclaree, s);
 
-// Markers are server-computed (grade, score, dots) — the client script only
+// Markers are server-computed (grade) — the client script only
 // places them; no grade logic ever runs front-side.
 // ⚠️ PLUS DE DISPARITION SILENCIEUSE. Un pays présent dans l'indice mais absent d'ANCHORS
 // sortait de la carte sans un mot : c'est exactement la famille de défauts où la donnée
@@ -119,9 +115,6 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
     // Un pays dont la lettre est retenue porte la puce neutre, comme partout ailleurs.
     eligible: !!e.eligible && /^[A-E]$/.test(e.grade ?? ""),
     grade: /^[A-E]$/.test(e.grade ?? "") ? e.grade : null,
-    reserved: e.eligible && e.reserved_from === "A",
-    score: typeof e.score === "number" ? fmtScore(e.score) : null,
-    dots: e.documentation?.band ? DOTS[e.documentation.band] : null,
     title: /^[A-E]$/.test(e.grade ?? "")
       ? `${iso} — ${e.grade}${e.reserved_from === "A" ? ` · ${T.reserved}` : ""} · ${fmtScore(e.score)} · n=${e.n} · doc ${e.documentation.band}`
       : `${iso} — ${T.veille} (n=${e.n})`,
@@ -131,7 +124,7 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
 <div class="idx-map" data-indices-map>
   <p class="idx-insert">ⓘ {T.insert}</p>
   <div class={`idx-map-canvas ${compact ? "idx-map-compact" : ""}`} role="img" aria-label={T.aria}
-    data-markers={JSON.stringify(markers)}></div>
+    data-lang={lang} data-markers={JSON.stringify(markers)}></div>
   {!compact && (
     <div class="idx-legend">
       <span><i class="idx-sw idx-gA"></i>{T.legend.a}</span>
@@ -140,7 +133,6 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
       <span><i class="idx-sw idx-gD"></i>{T.legend.d}</span>
       <span><i class="idx-sw idx-gE"></i>{T.legend.e}</span>
       <span><i class="idx-sw idx-swv"></i>{T.legend.veille}</span>
-      <span>{T.legend.dots}</span>
     </div>
   )}
 </div>
@@ -187,6 +179,13 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
   document.querySelectorAll<HTMLElement>(".idx-map-canvas").forEach((canvas) => {
     const markers = JSON.parse(canvas.dataset.markers || "[]");
     const compact = canvas.classList.contains("idx-map-compact");
+    // Libellés des contrôles dans la langue de la page (MapLibre parle anglais par défaut).
+    const LOCALES: Record<string, Record<string, string>> = {
+      fr: { "FullscreenControl.Enter": "Plein écran", "FullscreenControl.Exit": "Quitter le plein écran",
+            "NavigationControl.ZoomIn": "Zoom avant", "NavigationControl.ZoomOut": "Zoom arrière" },
+      nl: { "FullscreenControl.Enter": "Volledig scherm", "FullscreenControl.Exit": "Volledig scherm sluiten",
+            "NavigationControl.ZoomIn": "Inzoomen", "NavigationControl.ZoomOut": "Uitzoomen" },
+    };
 
     const map = new maplibregl.Map({
       container: canvas,
@@ -196,10 +195,51 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
       attributionControl: { compact: true },
       scrollZoom: false,
       cooperativeGestures: true,
+      locale: LOCALES[canvas.dataset.lang || ""] ?? {},
     });
     whitenBasemap(map);
     declutter(map);
-    if (!compact) map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    if (!compact) {
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+      // Plein écran par CSS plutôt que maplibregl.FullscreenControl : le Fullscreen API
+      // natif est refusé dans des navigateurs intégrés / iframes, et le bouton ne faisait
+      // alors rien (Franck 2026-11-13).
+      const L = LOCALES[canvas.dataset.lang || ""] ?? {};
+      const enter = L["FullscreenControl.Enter"] ?? "Enter fullscreen";
+      const exit = L["FullscreenControl.Exit"] ?? "Exit fullscreen";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "maplibregl-ctrl-fullscreen";
+      btn.title = enter;
+      btn.setAttribute("aria-label", enter);
+      btn.innerHTML = '<span class="maplibregl-ctrl-icon" aria-hidden="true"></span>';
+      const setFull = (on: boolean) => {
+        canvas.classList.toggle("idx-map-full", on);
+        document.body.classList.toggle("idx-noscroll", on);
+        btn.className = on ? "maplibregl-ctrl-shrink" : "maplibregl-ctrl-fullscreen";
+        btn.title = on ? exit : enter;
+        btn.setAttribute("aria-label", btn.title);
+        map.resize();
+      };
+      btn.addEventListener("click", () => setFull(!canvas.classList.contains("idx-map-full")));
+      // Un clic sur un pays mène à sa ligne du tableau, sous la carte : on sort du plein
+      // écran d'abord, sinon le défilement se fait derrière la carte.
+      canvas.addEventListener("click", (e) => {
+        if (canvas.classList.contains("idx-map-full") && (e.target as HTMLElement).closest?.("[data-cc]")) setFull(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && canvas.classList.contains("idx-map-full")) setFull(false);
+      });
+      map.addControl({
+        onAdd() {
+          const box = document.createElement("div");
+          box.className = "maplibregl-ctrl maplibregl-ctrl-group";
+          box.appendChild(btn);
+          return box;
+        },
+        onRemove() { /* jamais retiré */ },
+      } as any, "top-right");
+    }
 
     const bounds = new maplibregl.LngLatBounds();
     for (const m of markers) {
@@ -208,10 +248,11 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
       el.className = "idx-mk";
       el.dataset.cc = m.iso;
       el.title = m.title;
+      // Vignette = code ISO + lettre, point final (Franck 2026-11-13). Score, documentation
+      // et « A réservé » vivent dans le tableau sous la carte : sur une carte de pays, ils
+      // ne faisaient que charger la lecture.
       el.innerHTML = m.eligible
-        ? `<span class="idx-chip idx-g${m.grade}">${m.grade}</span>` +
-          `<span class="idx-mk-body"><b>${m.iso}${m.reserved ? " · A rés." : ""}</b>` +
-          `<span class="idx-mk-score">${m.score} <span class="idx-mk-dots">${m.dots}</span></span></span>`
+        ? `<span class="idx-chip idx-g${m.grade}">${m.grade}</span><span class="idx-mk-body"><b>${m.iso}</b></span>`
         : `<span class="idx-chip idx-chip-veille">–</span><span class="idx-mk-body"><b>${m.iso}</b></span>`;
       new maplibregl.Marker({ element: el, anchor: m.side, offset: [m.side === "right" ? -4 : 4, 0] })
         .setLngLat([m.lon, m.lat]).addTo(map);

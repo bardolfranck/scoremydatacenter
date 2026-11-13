@@ -2155,9 +2155,15 @@ sup a { color: var(--accent); font-weight: 750; }
 .idx-mk:hover { box-shadow: 0 4px 14px rgba(7, 24, 47, 0.26); transform: translateY(-1px); }
 .idx-mk-body { display: flex; flex-direction: column; line-height: 1.15; }
 .idx-mk-body b { font-family: "Bricolage Grotesque", var(--font-sans); font-weight: 700; font-size: 0.78rem; color: var(--ink); white-space: nowrap; }
-.idx-mk-score { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 0.72rem; color: var(--ink-soft); white-space: nowrap; }
-.idx-mk-dots { font-size: 0.55rem; color: var(--ink); letter-spacing: 1px; }
 .idx-chip-veille { background: #c8d2dd; color: #5c6b7c; }
+/* Vignette de carte compacte (Franck 2026-11-13) : elle masquait les petits pays (CH, AT…). */
+.idx-mk { gap: 3px; padding: 2px 5px 2px 2px; border-radius: 7px; }
+.idx-mk .idx-chip { min-width: 18px; height: 18px; border-radius: 5px; font-size: 0.72rem; }
+.idx-mk-body b { font-size: 0.66rem; }
+/* Plein écran CSS : marche partout (le Fullscreen API natif est refusé dans certains
+   navigateurs intégrés et iframes) ; Échap ou le bouton en sortent. */
+.idx-map-canvas.idx-map-full { position: fixed; inset: 0; z-index: 1000; height: auto; border-radius: 0; border: 0; }
+body.idx-noscroll { overflow: hidden; }
 .idx-mk.idx-focus { outline: 2.5px solid var(--ink); outline-offset: 1px; z-index: 5; }
 .idx-mk.idx-dim { opacity: 0.42 !important; } /* beats MapLibre's inline marker opacity */
 .idx-gA { background: var(--grade-a); }
