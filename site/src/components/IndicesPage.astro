@@ -354,17 +354,42 @@ const denomTotal = countries.reduce((acc, [, e]) => [acc[0] + (e.n_operational ?
           if (scroll) row.scrollIntoView({ block: "center", behavior: "smooth" });
         }
       }
+      // Sortir de la sélection (Franck 2026-11-13 : « on n'en sort pas ») : clic dans la
+      // carte hors vignette, re-clic sur le pays déjà sélectionné, ou Échap.
+      function clear() {
+        document.querySelectorAll("[data-indices-map] [data-cc]").forEach(function (p) {
+          p.classList.remove("idx-focus", "idx-dim");
+        });
+        document.querySelectorAll(".idx-row-focus").forEach(function (r) { r.classList.remove("idx-row-focus"); });
+        history.replaceState(null, "", window.location.pathname + window.location.hash);
+      }
+      function selected() {
+        return new URLSearchParams(window.location.search).get("pays");
+      }
       function fromUrl(scroll) {
         apply(new URLSearchParams(window.location.search).get("pays"), scroll);
       }
       fromUrl(true);
       document.addEventListener("smdc:idx-markers", function () { fromUrl(false); });
+      // Un glisser pour déplacer la carte se termine aussi par un « click » : on ne
+      // désélectionne que si le pointeur n'a quasiment pas bougé.
+      var down = null;
+      document.addEventListener("pointerdown", function (e) { down = [e.clientX, e.clientY]; });
       document.addEventListener("click", function (e) {
-        var mk = e.target.closest && e.target.closest("[data-indices-map] [data-cc]");
-        if (!mk) return;
-        var cc = mk.getAttribute("data-cc");
-        history.replaceState(null, "", "?pays=" + cc);
-        apply(cc, true);
+        if (!e.target.closest) return;
+        var mk = e.target.closest("[data-indices-map] [data-cc]");
+        if (mk) {
+          var cc = mk.getAttribute("data-cc");
+          if ((selected() || "").toUpperCase() === cc) { clear(); return; }
+          history.replaceState(null, "", "?pays=" + cc);
+          apply(cc, true);
+          return;
+        }
+        var moved = down && (Math.abs(e.clientX - down[0]) > 5 || Math.abs(e.clientY - down[1]) > 5);
+        if (!moved && selected() && e.target.closest("[data-indices-map] .maplibregl-canvas")) clear();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && selected()) clear();
       });
     })();
   </script>
