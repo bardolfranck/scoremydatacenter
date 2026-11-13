@@ -92,3 +92,16 @@
 /dc/us-project-lincoln/* /dc/us-project-lincoln-oc-data-center/:splat 301
 /fr/dc/us-lighthouse-stargate-wisconsin/* /fr/dc/us-lighthouse-stargate/:splat 301
 /dc/us-lighthouse-stargate-wisconsin/* /dc/us-lighthouse-stargate/:splat 301
+# Fusions doublons US témoins ↔ fiches registre (WORLD, go Franck 2026-11-13).
+/fr/dc/us-valara-holdings-high-performance-compute-center/* /fr/dc/us-northmark-moc1-spartanburg/:splat 301
+/dc/us-valara-holdings-high-performance-compute-center/* /dc/us-northmark-moc1-spartanburg/:splat 301
+/fr/dc/us-eln02/* /fr/dc/us-applied-digital-polaris-forge-1-ellendale/:splat 301
+/dc/us-eln02/* /dc/us-applied-digital-polaris-forge-1-ellendale/:splat 301
+/fr/dc/us-microsoft-hoffman-estates-chi05-data-center/* /fr/dc/us-microsoft-hoffman-estates-campus/:splat 301
+/dc/us-microsoft-hoffman-estates-chi05-data-center/* /dc/us-microsoft-hoffman-estates-campus/:splat 301
+/fr/dc/us-qts-new-albany/* /fr/dc/us-qts-new-albany-i-llc/:splat 301
+/dc/us-qts-new-albany/* /dc/us-qts-new-albany-i-llc/:splat 301
+/fr/dc/us-montauk-innovations-llc/* /fr/dc/us-google-new-albany-data-center/:splat 301
+/dc/us-montauk-innovations-llc/* /dc/us-google-new-albany-data-center/:splat 301
+/fr/dc/us-jimnist-llc/* /fr/dc/us-meta-rosemount-data-center/:splat 301
+/dc/us-jimnist-llc/* /dc/us-meta-rosemount-data-center/:splat 301
