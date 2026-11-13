@@ -5,3 +5,15 @@
 # cache — they are the free Seau-A floor and benefit from edge caching.
 /data/*.json
   Cache-Control: no-store, max-age=0
+
+# CE QUE CLOUDFLARE PAGES AJOUTAIT TOUT SEUL (2026-11-13). Pages pose ces trois en-têtes
+# sur chaque réponse statique sans qu'on le lui demande ; un Worker avec fichiers statiques
+# ne pose rien. Mesuré en comparant les deux hébergements sur le même dist
+# (scripts/compare_pages_worker.py) : sans cette règle, la bascule retirait `nosniff` et
+# l'accès inter-origines aux fichiers publics (le geojson de la carte, les polices, les
+# images de partage) de 18 000 réponses, en silence. On les écrit donc : sous Pages la
+# règle redit ce qu'il fait déjà, sous le Worker elle le maintient.
+/*
+  Access-Control-Allow-Origin: *
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Content-Type-Options: nosniff
