@@ -48,7 +48,10 @@ const ld = {
 
 <style>
   .video-partage { max-width: 960px; margin: 0 auto; padding: 32px 16px 48px; }
-  .video-partage-lead { max-width: 720px; }
+  /* Le h1 global (2,6 rem minimum, 16ch) faisait déborder « ScoreMyDataCenter », mot insécable,
+     sur mobile (Franck 2026-11-13) : titre de page de partage, pas d'accroche d'accueil. */
+  .video-partage h1 { max-width: none; font-size: clamp(1.6rem, 3.4vw, 2.6rem); line-height: 1.1; }
+  .video-partage-lead { max-width: 720px; margin-top: 12px; }
   .video-partage-player { margin: 20px 0 0; }
   .video-partage-player video { display: block; width: 100%; height: auto; border-radius: 12px; background: #000; }
   .video-partage-home { margin-top: 24px; font-weight: 600; }
