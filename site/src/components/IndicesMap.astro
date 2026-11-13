@@ -201,7 +201,44 @@ const markers = Object.entries(INDICES.countries as Record<string, any>)
     declutter(map);
     if (!compact) {
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-      map.addControl(new maplibregl.FullscreenControl(), "top-right");
+      // Plein écran par CSS plutôt que maplibregl.FullscreenControl : le Fullscreen API
+      // natif est refusé dans des navigateurs intégrés / iframes, et le bouton ne faisait
+      // alors rien (Franck 2026-11-13).
+      const L = LOCALES[canvas.dataset.lang || ""] ?? {};
+      const enter = L["FullscreenControl.Enter"] ?? "Enter fullscreen";
+      const exit = L["FullscreenControl.Exit"] ?? "Exit fullscreen";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "maplibregl-ctrl-fullscreen";
+      btn.title = enter;
+      btn.setAttribute("aria-label", enter);
+      btn.innerHTML = '<span class="maplibregl-ctrl-icon" aria-hidden="true"></span>';
+      const setFull = (on: boolean) => {
+        canvas.classList.toggle("idx-map-full", on);
+        document.body.classList.toggle("idx-noscroll", on);
+        btn.className = on ? "maplibregl-ctrl-shrink" : "maplibregl-ctrl-fullscreen";
+        btn.title = on ? exit : enter;
+        btn.setAttribute("aria-label", btn.title);
+        map.resize();
+      };
+      btn.addEventListener("click", () => setFull(!canvas.classList.contains("idx-map-full")));
+      // Un clic sur un pays mène à sa ligne du tableau, sous la carte : on sort du plein
+      // écran d'abord, sinon le défilement se fait derrière la carte.
+      canvas.addEventListener("click", (e) => {
+        if (canvas.classList.contains("idx-map-full") && (e.target as HTMLElement).closest?.("[data-cc]")) setFull(false);
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && canvas.classList.contains("idx-map-full")) setFull(false);
+      });
+      map.addControl({
+        onAdd() {
+          const box = document.createElement("div");
+          box.className = "maplibregl-ctrl maplibregl-ctrl-group";
+          box.appendChild(btn);
+          return box;
+        },
+        onRemove() { /* jamais retiré */ },
+      } as any, "top-right");
     }
 
     const bounds = new maplibregl.LngLatBounds();
