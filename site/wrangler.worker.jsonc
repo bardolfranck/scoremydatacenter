@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Config Worker + fichiers statiques — pendant de wrangler.toml (Pages). Les deux fichiers
+// coexistent jusqu'à la bascule ; wrangler.toml n'est pas modifié.
+{
+  "name": "scoremydatacenter",
+  "main": "worker/index.ts",
+  // Même date que Pages : le comportement du runtime ne change pas à la bascule.
+  "compatibility_date": "2024-11-01",
+  "assets": {
+    "directory": "./dist",
+    // ASSETS : le routeur y renvoie ce que Pages envoyait à next() (404.html, 405 des méthodes
+    // sans handler).
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    // 404-page : sert dist/404.html avec statut 404, comme Pages.
+    "not_found_handling": "404-page",
+    // CE QUI PASSE PAR LE WORKER : les adresses SANS barre finale et SANS extension, rien
+    // d'autre. Ce sont (1) les routes /api/…, (2) les pages demandées sans leur barre
+    // (/fr/dc/x au lieu de /fr/dc/x/). Pour (2) la couche de fichiers répond par une
+    // redirection 307 (temporaire) là où Pages répondait 308 (permanente), et aucune option
+    // ne le règle : le Worker la relaie en 308, pour que 13 000 URL indexées ne changent pas
+    // de signal auprès des moteurs le jour de la bascule.
+    // Tout le reste — les pages avec leur barre (« !/*/ », « !/ »), les fichiers
+    // (« !/*.* ») — est servi directement par la couche de fichiers : gratuit, et hors
+    // d'atteinte d'une erreur dans le Worker. Les exclusions l'emportent sur « /* ».
+    "run_worker_first": ["/*", "!/", "!/*/", "!/*.*"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "smdc-leads",
+      "database_id": "de530c8a-bb62-4094-bc78-3d582a2839bc"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "REPORTS_BUCKET",
+      "bucket_name": "smdc-reports"
+    }
+  ]
+  // RESEND_API_KEY reste un secret (jamais dans ce fichier) ; en local : site/.dev.vars.
+}
