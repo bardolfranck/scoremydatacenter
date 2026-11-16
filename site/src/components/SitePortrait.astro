@@ -27,7 +27,7 @@ import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import BandeauHorsService from "./BandeauHorsService.astro";
 import methodologyData from "../../public/data/methodology.json";
-import { libelleValeur, libelleUnite } from "../config/indicatorValues";
+import { libelleValeur, uniteAffichee } from "../config/indicatorValues";
 import { questionsPour } from "../content/questions-derivees";
 import { resolveProcedure, windowFor, deadlinesFor, documentsFor } from "../content/procedure";
 import { procedureAbsente } from "../content/procedure/absente";
@@ -103,8 +103,9 @@ const mvpParPilier = (p: string) => defs.filter((d: any) => d.mvp && d.pillar ==
 
 const valeur = (i: any) => {
   const d = defById[i.id];
-  const u = d?.unit ? " " + libelleUnite(d.unit, lang) : "";
-  return typeof i.value === "number" ? `${i.value}${u}` : libelleValeur(i.id, i.value, lang);
+  const u = d?.unit ? " " + uniteAffichee(i.id, d.unit, lang) : "";
+  // Le nombre passe par libelleValeur : séparateur décimal de la langue + échelle d'affichage.
+  return typeof i.value === "number" ? `${libelleValeur(i.id, i.value, lang)}${u}` : libelleValeur(i.id, i.value, lang);
 };
 
 // ── LES TROIS POINTS QUI DÉCIDERONT. Choisis, pas rédigés : le pilier que le moteur
