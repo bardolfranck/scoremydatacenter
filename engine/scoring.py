@@ -28,6 +28,7 @@ from .normalize import PENALTY_ONLY, normalized_score, is_inert
 # Right-of-reply window length (doctrine A-24/A-26). Single source; validate re-exports it.
 
 BLOCK_BASE = "base"
+NOT_APPLICABLE = "not_applicable"
 BLOCK_PROJECT = "project"
 BLOCKS_PROJECT_PROCESS = ("project", "process")
 INSUFFICIENT_DATA = "insufficient_data"
@@ -291,9 +292,16 @@ def _citable_quote(site: dict, project_process: dict, pillar_details: dict, meth
 def score_datacenter(dc: dict, methodology: dict) -> dict:
     """Compute the full scoring result for one data center (pure function, no I/O)."""
     params = methodology["parameters"]
-    definitions = _mvp(methodology)
     pillar_weights = _pillar_weights(methodology)
     entries = {e["id"]: e for e in dc["indicators"]}
+    # SANS OBJET (v0.5.0, 2026-11-16). Un instrument qui ne s'applique pas à CE site (F5 pour
+    # un DC sous le seuil de l'étude d'impact) sort de TOUT pour cette fiche : agrégat,
+    # couverture, « a-t-on regardé le projet », confiance, sous-notes par pilier. Le retirer
+    # des définitions une fois, ici, plutôt que de l'exempter à chaque calcul : une exemption
+    # oubliée dans un seul des cinq calculs referait de « sans objet » une lacune (couverture)
+    # ou un zéro. Ni 0 ni trou — l'indicateur n'existe pas pour ce site.
+    definitions = [d for d in _mvp(methodology)
+                   if entries[d["id"]]["status"] != NOT_APPLICABLE]
 
     per_indicator = {d["id"]: normalized_score(d, entries[d["id"]], params) for d in definitions}
 
@@ -318,6 +326,11 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
             if is_inert(d, s):
                 return None
             return s
+        # Un INFORMATIONNEL `missing` ne vaut pas 0 : il ne note rien, pas même l'opacité.
+        # Mesuré au passage en v0.5.0 (L4/L5 deviennent informationnels, 3 L4 `missing` au
+        # corpus) : le 0 entrait avec un poids nul et faisait diviser l'agrégat par zéro.
+        if d.get("informational"):
+            return None
         if d["block"] in BLOCKS_PROJECT_PROCESS and entries[d["id"]]["status"] == "missing":
             return 0.0
         return None
@@ -441,9 +454,11 @@ def score_datacenter(dc: dict, methodology: dict) -> dict:
                                 if d["pillar"] == pilier and scored[d["id"]] is not None)
                     for pilier in pillar_weights},
         ),
+        # Tous les indicateurs mvp, y compris un `not_applicable` (sous-score None) : l'artefact
+        # publie chaque ligne, et un sans objet doit se LIRE sur la fiche, pas disparaître.
         "indicators": {
-            d["id"]: None if per_indicator[d["id"]] is None else round(per_indicator[d["id"]], 1)
-            for d in definitions
+            d["id"]: None if per_indicator.get(d["id"]) is None else round(per_indicator[d["id"]], 1)
+            for d in _mvp(methodology)
         },
     }
 

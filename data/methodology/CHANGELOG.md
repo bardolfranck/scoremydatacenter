@@ -2,6 +2,48 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.5.0 — 2026-11-16 — L4/L5 sortent de la note ; F5 peut être SANS OBJET
+
+- **Décision (Franck Bardol, 2026-11-16, « oui, code les deux et mets en prod », en session
+  agent-codeur-site ; avis R&D : le blocage était de décision, pas de R&D ; demande portée par
+  data-pipeline-EU).**
+- **L4 (emplois annoncés) et L5 (retombées fiscales) deviennent INFORMATIONNELS** — publiés
+  quand ils existent, jamais notés, jamais exigés par GATE 8 (dans ses DEUX implémentations,
+  `engine/validate.py` et `scripts/validate_corpus.py`, par l'exemption informationnelle déjà
+  en place). Pourquoi : l'indicateur est presque toujours vide (L4 renseigné sur 1 fiche, L5 sur
+  2, sur 3 383 ; 3 L4 `missing`), et un L4 `missing` comptait **0** sur l'axe projet — une absence
+  d'annonce d'emplois punissait le projet comme une opacité, alors qu'elle ne dit rien de lui.
+  Un informationnel `missing` ne vaut plus 0 (`scoring._substantive`).
+- **Poids RETIRÉ, NON REDISTRIBUÉ.** L4 (0,15) et L5 (0,10) passent à `weight_in_pillar: 0` et
+  déclarent `retired_weight_in_pillar` ; GATE 3 somme les deux. Les poids de base du pilier impact
+  local NE BOUGENT PAS. Une redistribution proportionnelle a été essayée puis écartée sur mesure :
+  la note ne changeait pas (la moyenne d'un pilier se renormalise), mais la **documentation de site
+  baissait sur 1 382 fiches** (L6/L7, presque toujours vides, auraient pesé plus lourd) et 23
+  confiances passaient de moyenne à basse — un effet que personne n'avait décidé.
+- **Nouveau statut d'entrée `not_applicable` (« sans objet »)** : l'instrument ne s'applique pas à
+  CE site. Cas déclencheur : F5 (mesures ERC) pour `ch-infomaniak-d4`, 1,25 MW en sous-sol, sous le
+  seuil de l'étude d'impact. Sémantique : l'indicateur est retiré des définitions de la fiche —
+  agrégat, couverture, « a-t-on regardé le projet », confiance, sous-notes ; ni 0 (`missing`) ni
+  lacune (`not_collected`). Gardes : permis SEULEMENT sur un indicateur qui déclare
+  `not_applicable_allowed` (F5 seul aujourd'hui ; GATE 8 refuse ailleurs, dans les deux
+  implémentations), et le schéma exige une `source` qui dit POURQUOI (le seuil, la lecture). Sans
+  ces deux gardes, « sans objet » serait une sortie gratuite de la note. La primitive
+  `plage_bands._not_applicable` (applicabilité par PAYS, bloc base) est distincte et inchangée.
+- **Effet mesuré sur le corpus servi (3 383 fiches, moteur v0.5.0 contre v0.4.0, données
+  constantes)** : **0 note de site** changée ; **0 confiance** et **0 documentation** changées ;
+  axe projet : `fr-equinix-pa15x-hyperscale-2-meudon` C 53,2 → **C 61,5** (son L4 `missing` = 0 ne
+  pénalise plus), `fr-campus-ia-fouju` C 54,8 → **C 54,5** (son L4 annoncé ne le portait plus),
+  `ch-infomaniak-d4` insufficient_data → note calculable (couverture 0,367 → 0,429) — **retenue par
+  GATE 8** tant que F5/T1/T2 ne sont pas collectés : data-pipeline-EU les écrit (F5 sans objet,
+  T1, T2) en un lot vert ; 51 autres fiches voient seulement la couverture de leur axe projet
+  bouger sous le seuil (toujours insufficient_data). Sous-note d'impact local : 3 fiches bougent
+  (celles qui renseignaient L4/L5). Fixtures : `zz-test-alpha` projet C 50,6 → D 49,2 (son L4 de
+  37,5 emplois/100 MW sortait de la note ; cas rétrospectif re-pincé à D), re-noté
+  `methodology_change`.
+- Copie : « 26 indicateurs » → **24** (le nombre annoncé est celui de la note, pas du catalogue).
+- Signataire : **décision Franck Bardol (2026-11-16)** ; moteur, schéma et gardes
+  `agent-codeur-site` ; données `data-pipeline-EU`.
+
 ## 0.4.0 — 2026-11-08 — L2 : le dénominateur devient le BASSIN (50 km), et la note devient une COURBE
 
 - **Décision (Franck Bardol, 2026-11-08, « bassin + courbe aujourd'hui », en session agent-codeur-site)** :

@@ -364,6 +364,23 @@
             ]
           },
           "$comment": "L'ÉNUMÉRATION RESTE FERMÉE POUR CE QUI EST NOTÉ. « not_calibrated » dit l'absence de seuil à étalonner, ce qui n'a de sens que pour un fait publié non noté ; l'ouvrir à un indicateur noté rendrait l'étalonnage facultatif sur la note elle-même."
+        },
+        {
+          "if": {
+            "required": [
+              "retired_weight_in_pillar"
+            ]
+          },
+          "then": {
+            "properties": {
+              "informational": {
+                "const": true
+              }
+            },
+            "required": [
+              "informational"
+            ]
+          }
         }
       ],
       "properties": {
@@ -682,6 +699,16 @@
             "penalty_only"
           ],
           "description": "Fait de conception : cet axe mesure un RISQUE A LA BAISSE, pas un avantage a la hausse. Le moteur en derive que le plafond de l'echelle (l'etat « aucune penalite ») est INERTE — il n'entre pas dans l'agregat et n'active pas le poids du pilier, mais la valeur reste PUBLIEE sur la fiche. Pose en 10-2026 apres mesure : ajouter une colonne a un pilier mince deplacait 121 lettres dont 102 AVEC LA COLONNE VIDE DE SENS. Opt-in par indicateur, jamais global : un neutre inerte partout re-noterait le corpus entier en silence."
+        },
+        "not_applicable_allowed": {
+          "type": "boolean",
+          "description": "L'INSTRUMENT PEUT NE PAS S'APPLIQUER (v0.5.0, 2026-11-16). Autorise le statut `not_applicable` sur cet indicateur — et sur lui seul : un DC sous le seuil de l'étude d'impact n'a pas de mesures ERC à produire (cas Infomaniak D4, 1,25 MW en sous-sol). Sans objet = exclu de la note ET de la couverture, ni 0 ni lacune. Opt-in par indicateur : ouvert partout, ce statut deviendrait une sortie gratuite de la note."
+        },
+        "retired_weight_in_pillar": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "description": "POIDS RETIRÉ, NON REDISTRIBUÉ (v0.5.0, 2026-11-16). Le poids qu'avait cet indicateur avant de devenir informationnel. Il est déclaré ici pour que GATE 3 (« les poids d'un pilier somment à 1 ») reste vrai SANS redistribuer ce poids sur les autres indicateurs : la moyenne d'un pilier se renormalise d'elle-même, donc la note ne change pas, alors qu'une redistribution déplaçait la confiance documentaire de 1 382 fiches (mesuré : les contestations L6/L7, presque toujours vides, auraient pesé plus lourd). Permis seulement sur un indicateur informationnel."
         }
       }
     }

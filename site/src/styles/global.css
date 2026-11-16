@@ -1392,6 +1392,7 @@ sup a { color: var(--accent); font-weight: 750; }
    retirée du calcul. L'une pèse sur la note, l'autre non. */
 .status-missing { color: #8a5a2b; }
 .status-not_collected { color: var(--muted); font-weight: 600; }
+.status-not_applicable { color: var(--muted); font-weight: 600; }
 .status-estimated { color: #8a6708; }
 /* Status proof on the fiche meta line: confirmed = measured green (links to its source);
    not verified = muted, never alarming — it says « not yet proven », not « wrong ». */

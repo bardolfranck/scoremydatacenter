@@ -23,7 +23,10 @@ def test_thresholds_boundaries_inclusive(methodology, parameters):
 
 
 def test_bounded_linear_higher_is_better_with_clamp(methodology, parameters):
-    l4 = _definition(methodology, "L4")  # 0..50 jobs per 100 MW
+    # L4 est INFORMATIONNEL depuis la v0.5.0 (publié, non noté → sous-score None). Ce test
+    # éprouve la normalisation `bounded_linear` elle-même : on la lit sur la définition de L4
+    # sans son drapeau informationnel — la grille 0..50 reste celle de la méthodologie.
+    l4 = {k: v for k, v in _definition(methodology, "L4").items() if k != "informational"}  # 0..50 jobs per 100 MW
     entry = _entry("L4", 25, status="announced")
     capped = normalized_score(l4, entry, parameters)
     assert capped == 50  # 50/100 linear, below the declarative cap

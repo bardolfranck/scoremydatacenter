@@ -989,7 +989,10 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     if abs(sum(p["weight"] for p in methodology["pillars"]) - 1.0) > 1e-9:
         problems.append("GATE 3: pillar weights do not sum to 1")
     for pillar in methodology["pillars"]:
-        s = sum(i["weight_in_pillar"] for i in indicators if i["pillar"] == pillar["id"])
+        # Un poids RETIRÉ (indicateur devenu informationnel, v0.5.0) compte dans la somme sans
+        # être redistribué : la grille déclare où est passé chaque point de poids.
+        s = sum(i["weight_in_pillar"] + i.get("retired_weight_in_pillar", 0)
+                for i in indicators if i["pillar"] == pillar["id"])
         if abs(s - 1.0) > 1e-9:
             problems.append(f"GATE 3: indicator weights in pillar {pillar['id']} sum to {s}, not 1")
     pillar_ids = {p["id"] for p in methodology["pillars"]}
@@ -1034,6 +1037,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     # gate qui dépasse son mandat (constaté le 2026-10-06 en passant en v0.3.0).
     scored_pp_ids = {i["id"] for i in indicators
                      if i["block"] in ("project", "process") and i["mvp"] and not i.get("informational")}
+    not_applicable_ids = {i["id"] for i in indicators if i.get("not_applicable_allowed")}
 
     def _axe_projet_note(dc: dict, methodology: dict) -> bool:
         """L'axe projet gagne-t-il une lettre ? DÉRIVÉ, jamais lu dans un champ.
@@ -1116,6 +1120,15 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
             #     Ce qu'elle interdit désormais : une LETTRE sur l'axe projet alors qu'un de ses
             #     indicateurs notés n'a jamais été collecté. Une fiche sans axe projet reste
             #     parfaitement valide — elle affiche « données insuffisantes », ce qui est vrai.
+            # SANS OBJET n'est permis que là où la méthodologie l'ouvre (`not_applicable_allowed`,
+            # v0.5.0). Ailleurs, ce serait une sortie gratuite de la note : un indicateur qui gêne
+            # deviendrait « sans objet » et cesserait de compter, sans que personne l'ait décidé.
+            if e["status"] == "not_applicable" and e["id"] not in not_applicable_ids:
+                problems.append(
+                    f"GATE 8: {label}: {e['id']} is 'not_applicable' but the methodology does not "
+                    "allow it on this indicator (not_applicable_allowed) — only an instrument that "
+                    "can lawfully not apply may be marked so."
+                )
             if e["id"] in scored_pp_ids and e["status"] == "not_collected" and _axe_projet_note(dc, methodology):
                 problems.append(
                     f"GATE 8: {label}: {e['id']} is 'not_collected' while the project axis EARNS a "

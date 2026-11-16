@@ -1,7 +1,7 @@
 {
-  "version": "0.4.0",
+  "version": "0.5.0",
   "status": "draft",
-  "published_at": "2026-11-08",
+  "published_at": "2026-11-16",
   "pillars": [
     {
       "id": "energy",
@@ -760,7 +760,8 @@
         "type": "reference",
         "reference": "Séquence Éviter-Réduire-Compenser (code de l'environnement, art. L110-1)"
       },
-      "calibration_status": "calibrated"
+      "calibration_status": "calibrated",
+      "not_applicable_allowed": true
     },
     {
       "id": "F6",
@@ -953,12 +954,12 @@
         "nl": "Aangekondigde banen"
       },
       "description": {
-        "fr": "Le nombre d'emplois permanents annoncés, rapporté à la taille du projet. Plus il y en a, mieux c'est.",
-        "en": "The number of permanent jobs announced, relative to project size. More is better.",
-        "nl": "Het aantal aangekondigde vaste banen, afgezet tegen de omvang van het project. Hoe meer, hoe beter."
+        "fr": "Le nombre d'emplois permanents annoncés, rapporté à la taille du projet. Plus il y en a, mieux c'est. Depuis la v0.5.0 (2026-11-16) : fait PUBLIÉ quand il existe, NON NOTÉ — l'indicateur est presque toujours vide (1 à 2 fiches sur 3 383) et son absence ne dit rien du projet.",
+        "en": "The number of permanent jobs announced, relative to project size. More is better. Since v0.5.0 (2026-11-16): a fact PUBLISHED when it exists, NOT GRADED — the indicator is almost always empty (1 to 2 sites out of 3,383) and its absence says nothing about the project.",
+        "nl": "Het aantal aangekondigde vaste banen, afgezet tegen de omvang van het project. Hoe meer, hoe beter. Sinds v0.5.0 (2026-11-16): een feit dat GEPUBLICEERD wordt als het bestaat, NIET BEOORDEELD — de indicator is bijna altijd leeg (1 à 2 sites op 3.383) en de afwezigheid ervan zegt niets over het project."
       },
       "pillar": "local_impact",
-      "weight_in_pillar": 0.15,
+      "weight_in_pillar": 0,
       "block": "project",
       "tier": 2,
       "nature": "declarative",
@@ -978,7 +979,9 @@
         "type": "editorial_choice",
         "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "calibrated"
+      "calibration_status": "calibrated",
+      "informational": true,
+      "retired_weight_in_pillar": 0.15
     },
     {
       "id": "L5",
@@ -988,12 +991,12 @@
         "nl": "Aangekondigde belastingopbrengsten"
       },
       "description": {
-        "fr": "Les recettes fiscales que le projet apporterait à la commune, telles qu'annoncées.",
-        "en": "The tax revenue the project would bring to the town, as announced.",
-        "nl": "De belastinginkomsten die het project de gemeente zou opleveren, zoals aangekondigd."
+        "fr": "Les recettes fiscales que le projet apporterait à la commune, telles qu'annoncées. Depuis la v0.5.0 (2026-11-16) : fait PUBLIÉ quand il existe, NON NOTÉ — l'indicateur est presque toujours vide (1 à 2 fiches sur 3 383) et son absence ne dit rien du projet.",
+        "en": "The tax revenue the project would bring to the town, as announced. Since v0.5.0 (2026-11-16): a fact PUBLISHED when it exists, NOT GRADED — the indicator is almost always empty (1 to 2 sites out of 3,383) and its absence says nothing about the project.",
+        "nl": "De belastinginkomsten die het project de gemeente zou opleveren, zoals aangekondigd. Sinds v0.5.0 (2026-11-16): een feit dat GEPUBLICEERD wordt als het bestaat, NIET BEOORDEELD — de indicator is bijna altijd leeg (1 à 2 sites op 3.383) en de afwezigheid ervan zegt niets over het project."
       },
       "pillar": "local_impact",
-      "weight_in_pillar": 0.1,
+      "weight_in_pillar": 0,
       "block": "project",
       "tier": 2,
       "nature": "declarative",
@@ -1016,7 +1019,9 @@
         "type": "editorial_choice",
         "rationale": "Calibrated at the v0.1.0 freeze (2026-07-14) — retro-validated against the 311-DC corpus; CI anchors green."
       },
-      "calibration_status": "calibrated"
+      "calibration_status": "calibrated",
+      "informational": true,
+      "retired_weight_in_pillar": 0.1
     },
     {
       "id": "L6",

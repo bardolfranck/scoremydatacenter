@@ -25,7 +25,10 @@ def test_alpha_dual_grades(methodology, alpha):
     # v0.2.0: heat recovery split out of F5 → E7 (project) entered MVP; alpha discloses no
     # E7 commitment (missing) → project coverage 0.871 and the project/process score 50.6
     # under the reweighted Energy grid.
-    assert (pp["grade"], pp["score"], pp["coverage"]) == ("C", 50.6, 0.871)
+    # v0.5.0 (2026-11-16) : L4 (emplois) et L5 (retombées fiscales) deviennent INFORMATIONNELS.
+    # alpha déclarait 37,5 emplois/100 MW (L4, bon sous-score) : il ne compte plus, le projet
+    # tombe de 50,6 à 49,2 et passe sous la frontière C/D. Couverture 0,871 → 0,849.
+    assert (pp["grade"], pp["score"], pp["coverage"]) == ("D", 49.2, 0.849)
 
 
 def test_alpha_confidence_two_causes(methodology, alpha):
@@ -33,8 +36,10 @@ def test_alpha_confidence_two_causes(methodology, alpha):
     assert c["level"] == "high"
     # v0.2.0: E7 (heat-recovery commitment) undisclosed by alpha → a sliver of missing_data;
     # the unverifiable_declarative share renormalizes over the reweighted importance pool.
+    # v0.5.0 : L4/L5 (déclaratifs « announced » chez alpha) sortent de l'importance — la part
+    # invérifiable descend de 0,096 à 0,059 ; le manque reste à 0,018.
     assert c["causes"]["missing_data"] == 0.018
-    assert c["causes"]["unverifiable_declarative"] == 0.096
+    assert c["causes"]["unverifiable_declarative"] == 0.059
 
 
 def test_beta_site_grade_on_rounded_score(methodology, beta):
@@ -58,7 +63,8 @@ def test_beta_confidence_missing_cause(methodology, beta):
     assert c["level"] == "medium"
     # v0.2.0: E6/E7 entered MVP; beta discloses no project data and its heat-network E6 is
     # not collected, nudging missing_data up to 0.336.
-    assert c["causes"]["missing_data"] == 0.336
+    # v0.5.0 : L4/L5 `missing` chez beta ne pèsent plus (informationnels) → 0,336 → 0,309.
+    assert c["causes"]["missing_data"] == 0.309
     assert c["causes"]["unverifiable_declarative"] == 0.0
 
 
@@ -74,7 +80,8 @@ def test_une_sous_note_calculee_est_affichee_quelle_que_soit_sa_couverture(metho
     pillars = score_datacenter(beta, methodology)["pillars"]
     assert pillars["energy"]["coverage"] == 0.602 and pillars["energy"]["grade"] == "E"
     # 0,4 était exactement le seuil ; il n'y a plus de seuil du tout.
-    assert pillars["local_impact"]["coverage"] == 0.4 and pillars["local_impact"]["grade"] == "E"
+    # v0.5.0 : L4/L5 (poids 0) ne comptent plus dans la couverture du pilier → 0,4 → 0,533.
+    assert pillars["local_impact"]["coverage"] == 0.533 and pillars["local_impact"]["grade"] == "E"
     # couverture NULLE et pourtant une lettre — et c'est juste : T1 et T2 sont `missing`,
     # c'est-à-dire LUS ET ABSENTS du dossier. Une opacité vérifiée est l'information même que
     # le pilier transparence mesure, pas un trou de collecte. La couverture, elle, ne compte
@@ -241,7 +248,10 @@ def test_le_barème_0_4_0_fait_tomber_limpact_local_dalpha(methodology, alpha):
     """
     r = score_datacenter(alpha, methodology)
     assert r["indicators"]["L2"] == pytest.approx(14.2, abs=0.05)
-    assert r["pillars"]["local_impact"]["grade"] == "C"
+    # v0.5.0 : le pilier d'impact local ne porte plus L4/L5 (son L4 de 37,5 emplois le tirait
+    # dans la sous-note affichée) — il remonte à B. La note de SITE ne bouge pas : L4/L5 sont
+    # du bloc projet, et les poids de base du pilier sont rééchelonnés en proportion.
+    assert r["pillars"]["local_impact"]["grade"] == "B"
     assert r["grades"]["site"]["grade"] == "B"
     assert r["grades"]["site"]["score"] == pytest.approx(78.9, abs=0.05)
 
