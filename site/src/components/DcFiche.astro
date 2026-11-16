@@ -30,7 +30,7 @@ import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
 import { operateurIdentifie } from "../config/operator";
 import { COUNTRY_NAME } from "../config/flags";
-import { libelleValeur, libelleUnite, phraseFacteurDominant } from "../config/indicatorValues";
+import { libelleValeur, uniteAffichee, phraseFacteurDominant } from "../config/indicatorValues";
 // La phrase de lieu est servie par la fiche ET par le portrait : elle vit donc une fois,
 // dans content/commun.ts, et non dans les deux tables.
 import { COMMUN } from "../content/commun";
@@ -315,8 +315,7 @@ for (const i of methodology.indicators) indMeta[i.id] = i;
 // Une unité qui est une PHRASE se traduit (« emplois permanents pour 100 MW ») ;
 // une notation standard reste telle quelle (gCO2e/kWh, PUE, L/kWh).
 const indUnit = (id: string) => {
-  const u = indMeta[id]?.unit ?? "";
-  return u ? libelleUnite(u, lang) : "";
+  return uniteAffichee(id, indMeta[id]?.unit ?? "", lang);
 };
 const indTooltip = (id: string) => {
   const m = indMeta[id];

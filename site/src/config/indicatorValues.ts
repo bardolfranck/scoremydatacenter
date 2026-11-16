@@ -212,10 +212,35 @@ const UNITES: Record<string, Partial<Record<LangueDeclaree, string>>> = {
   "MW per 1000 inhabitants": {
     fr: "MW pour 1000 habitants", nl: "MW per 1000 inwoners",
   },
+  "kW per 1000 inhabitants": {
+    fr: "kW pour 1 000 habitants", en: "kW per 1,000 inhabitants", nl: "kW per 1.000 inwoners",
+  },
   "permanent jobs per 100 MW": {
     fr: "emplois permanents pour 100 MW", nl: "vaste banen per 100 MW",
   },
 };
+
+// ÉCHELLE D'AFFICHAGE (Franck 2026-11-16). L2 se calcule en MW pour 1 000 habitants ; près
+// d'une grande ville, 40 MW sur 3,3 M d'habitants font 0,012, que l'arrondi à une décimale
+// affichait « 0.0 MW » — une puissance nulle aux yeux du lecteur. On AFFICHE en kW (×1000) :
+// valeur ET unité changent ensemble, la donnée et le calcul restent en MW.
+const ECHELLE_AFFICHAGE: Record<string, { facteur: number; unite: string }> = {
+  L2: { facteur: 1000, unite: "kW per 1000 inhabitants" },
+};
+
+/** La valeur numérique telle qu'on l'affiche (échelle d'affichage appliquée, arrondie). */
+export function valeurAffichee(indicateur: string, valeur: number): number {
+  const e = ECHELLE_AFFICHAGE[indicateur];
+  if (!e) return valeur;
+  const v = valeur * e.facteur;
+  return v >= 10 ? Math.round(v) : Math.round(v * 10) / 10;
+}
+
+/** L'unité telle qu'on l'affiche pour cet indicateur, dans la langue de la page. */
+export function uniteAffichee(indicateur: string, unite: string, lang: string): string {
+  const u = ECHELLE_AFFICHAGE[indicateur]?.unite ?? unite;
+  return u ? libelleUnite(u, lang) : "";
+}
 
 /** Le libellé d'une valeur, ou la valeur brute si elle n'en a pas encore. */
 export function libelleValeur(indicateur: string, valeur: unknown, lang: string): string {
@@ -224,6 +249,7 @@ export function libelleValeur(indicateur: string, valeur: unknown, lang: string)
   // séparateur — relevé par la relecture native. Le français et le néerlandais écrivent
   // « 59,9 », et les milliers prennent une espace fine en français, un point en néerlandais.
   if (typeof valeur === "number") {
+    valeur = valeurAffichee(indicateur, valeur);
     return Number.isInteger(valeur)
       ? fmtInt(valeur, lang as Lang)
       : fmtDec(valeur, lang as Lang);
