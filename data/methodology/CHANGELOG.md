@@ -2,6 +2,18 @@
 
 Every methodology change is a version bump with a rationale and a signatory. No silent weight edits, ever. From iter-1 onward, major/minor versions require sign-off by the independent methodology council.
 
+## 0.5.0 (errata) — 2026-11-16 — F3 : « TVB » sort du libellé
+
+- **Décision (Franck Bardol, 2026-11-16, « oui prépare la PR et mets tout en prod » ; relevé par
+  data-pipeline-EU au premier lot F3 suisse)** : le libellé servi de F3 était « Continuités
+  écologiques (TVB) » sur TOUTES les fiches. La TVB (trame verte et bleue) est un instrument
+  FRANÇAIS : sur une fiche suisse, l'étiquette affirmait une source qui n'est pas la sienne. Libellé
+  ramené à « Continuités écologiques » (fr/en/nl) ; la description nomme le réseau du pays en
+  exemple (TVB en France, corridors OFEV en Suisse). Le nom de la source nationale reste dans le
+  titre de la source de chaque fiche. **Aucun poids, aucun seuil, aucune valeur ne change : pas une
+  note du corpus ne bouge.**
+- Signataire : décision Franck Bardol ; libellé `agent-codeur-site`.
+
 ## 0.5.0 — 2026-11-16 — L4/L5 sortent de la note ; F5 peut être SANS OBJET
 
 - **Décision (Franck Bardol, 2026-11-16, « oui, code les deux et mets en prod », en session

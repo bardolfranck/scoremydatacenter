@@ -496,9 +496,9 @@
     {
       "id": "F3",
       "label": {
-        "fr": "Continuités écologiques (TVB)",
-        "en": "Ecological corridors (TVB)",
-        "nl": "Ecologische verbindingen (TVB)"
+        "fr": "Continuités écologiques",
+        "en": "Ecological corridors",
+        "nl": "Ecologische verbindingen"
       },
       "pillar": "land_biodiversity",
       "block": "base",
