@@ -143,7 +143,7 @@ def test_history_entry_fields_shape(methodology):
     fields = history_entry_fields(score_datacenter(alpha, methodology), methodology)
     assert fields == {
         "methodology_version": methodology["version"],
-        "grades": {"site": "B", "project_process": "C"},
+        "grades": {"site": "B", "project_process": "D"},  # D depuis la v0.5.0 (L4/L5 informationnels)
         "confidence": "high",
     }
 

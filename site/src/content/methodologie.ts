@@ -18,7 +18,7 @@ import type { Langue, LangueDeclaree } from "./langues";
 
 const FR = {
   title: "Méthodologie — ScoreMyDataCenter",
-  metaDescription: "La méthode de notation : une note A–E du site, une seconde du projet quand son dossier est public, confiance documentaire, 26 indicateurs en 5 piliers, seuils ancrés sur des référentiels publics. Méthode ouverte, versionnée, datée.",
+  metaDescription: "La méthode de notation : une note A–E du site, une seconde du projet quand son dossier est public, confiance documentaire, 24 indicateurs en 5 piliers, seuils ancrés sur des référentiels publics. Méthode ouverte, versionnée, datée.",
   tagline: "Observatoire indépendant",
   h1: "Méthodologie",
   banner: "Version <strong>{version}</strong>. La méthode est <strong>publique, versionnée et datée</strong> (antériorité vérifiable) ; le code et la grille sont sur <a href=\"{repo}\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
@@ -86,7 +86,7 @@ const FR = {
     { label: "RTE eCO2mix / Caparéseau — carbone et capacité du réseau", url: "https://www.rte-france.com/eco2mix" },
     { label: "Cadre « Social Licence to Operate » — acceptabilité sociale des projets", url: "https://en.wikipedia.org/wiki/Social_license" },
   ],
-  detailsSummary: "Voir le détail des 26 indicateurs",
+  detailsSummary: "Voir le détail des 24 indicateurs",
   detailsIntro: "<p>Chaque indicateur porte son <strong>coefficient</strong> (poids dans le pilier), son <strong>sens de notation</strong>, la <strong>base de son seuil</strong> (référentiel externe ou choix éditorial déclaré) et sa <strong>source de donnée</strong> — c'est une contrainte de schéma, pas une bonne pratique.</p>",
   th: { indicator: "Indicateur", block: "Bloc", coef: "Coef.", direction: "Sens", thresholdRef: "Référentiel de seuil", source: "Source" },
   blockLabel: { base: "Site (subi)", project: "Projet (choisi)", process: "Processus" },
@@ -97,7 +97,7 @@ const FR = {
 
 const EN: typeof FR = {
   title: "Methodology — ScoreMyDataCenter",
-  metaDescription: "The scoring method: an A–E grade for the site, a second for the project when its dossier is public, documentation confidence, 26 indicators across 5 pillars, thresholds anchored on public referentials. Open, versioned, dated method.",
+  metaDescription: "The scoring method: an A–E grade for the site, a second for the project when its dossier is public, documentation confidence, 24 indicators across 5 pillars, thresholds anchored on public referentials. Open, versioned, dated method.",
   tagline: "Independent observatory",
   h1: "Methodology",
   banner: "Version <strong>{version}</strong>. The method is <strong>public, versioned and dated</strong> (verifiable anteriority); the code and the grid are on <a href=\"{repo}\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
@@ -165,7 +165,7 @@ const EN: typeof FR = {
     { label: "RTE eCO2mix / Caparéseau — grid carbon and capacity", url: "https://www.rte-france.com/eco2mix" },
     { label: "“Social Licence to Operate” framework — social acceptability of projects", url: "https://en.wikipedia.org/wiki/Social_license" },
   ],
-  detailsSummary: "See the 26 indicators in detail",
+  detailsSummary: "See the 24 indicators in detail",
   detailsIntro: "<p>Each indicator carries its <strong>coefficient</strong> (weight within the pillar), its <strong>scoring direction</strong>, the <strong>basis of its threshold</strong> (external referential or declared editorial choice) and its <strong>data source</strong> — a schema constraint, not a best practice.</p>",
   th: { indicator: "Indicator", block: "Block", coef: "Coef.", direction: "Direction", thresholdRef: "Threshold referential", source: "Source" },
   blockLabel: { base: "Site (endured)", project: "Project (chosen)", process: "Process" },
@@ -183,7 +183,7 @@ const EN: typeof FR = {
 // ses valeurs sont celles du français.
 const NL: typeof FR = {
   title: "Methodologie — ScoreMyDataCenter",
-  metaDescription: "De beoordelingsmethode: een cijfer A–E voor de site, een tweede voor het project wanneer het dossier openbaar is, documentair vertrouwen, 26 indicatoren in 5 pijlers, drempels verankerd in publieke referentiekaders. Open, geversioneerde, gedateerde methode.",
+  metaDescription: "De beoordelingsmethode: een cijfer A–E voor de site, een tweede voor het project wanneer het dossier openbaar is, documentair vertrouwen, 24 indicatoren in 5 pijlers, drempels verankerd in publieke referentiekaders. Open, geversioneerde, gedateerde methode.",
   tagline: "Onafhankelijk observatorium",
   h1: "Methodologie",
   banner: "Versie <strong>{version}</strong>. De methode is <strong>openbaar, geversioneerd en gedateerd</strong> (zo is controleerbaar wat er het eerst was); de code en de meetlat staan op <a href=\"{repo}\" target=\"_blank\" rel=\"noopener\">GitHub</a>.",
@@ -251,7 +251,7 @@ const NL: typeof FR = {
     { label: "RTE eCO2mix / Caparéseau — koolstof en capaciteit van het net", url: "https://www.rte-france.com/eco2mix" },
     { label: "Kader ‘Social Licence to Operate’ — maatschappelijke acceptatie van projecten", url: "https://en.wikipedia.org/wiki/Social_license" },
   ],
-  detailsSummary: "Bekijk het detail van de 26 indicatoren",
+  detailsSummary: "Bekijk het detail van de 24 indicatoren",
   detailsIntro: "<p>Elke indicator draagt zijn <strong>coëfficiënt</strong> (gewicht binnen de pijler), zijn <strong>beoordelingsrichting</strong>, de <strong>basis van zijn drempel</strong> (extern referentiekader of verklaarde redactionele keuze) en zijn <strong>databron</strong> — een schemaverplichting, geen vrijblijvende goede praktijk.</p>",
   th: { indicator: "Indicator", block: "Blok", coef: "Coëf.", direction: "Richting", thresholdRef: "Drempelreferentie", source: "Bron" },
   blockLabel: { base: "Site (ondergaan)", project: "Project (gekozen)", process: "Proces" },

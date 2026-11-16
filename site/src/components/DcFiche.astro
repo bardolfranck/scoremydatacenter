@@ -293,6 +293,7 @@ const lastScored = dc.score_history.length ? dc.score_history[dc.score_history.l
 
 const indicatorValue = (ind: any) => {
   if (ind.status === "missing") return t.notDisclosed;
+  if (ind.status === "not_applicable") return t.indStatus.not_applicable;
   // Une clé technique n'est pas une phrase : `none_within_5km` se lit « aucun site
   // recensé … à notre connaissance ». La réserve est obligatoire sur une absence.
   if (ind.value !== null && ind.value !== undefined) return libelleValeur(ind.id, ind.value, lang);

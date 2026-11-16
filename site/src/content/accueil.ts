@@ -211,7 +211,7 @@ const FR = {
   repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
   methodTitle: "Une méthode, deux notes, toujours avec la confiance.",
   methodLede:
-    "26 indicateurs en 5 piliers, séparés entre ce que le projet <span class='term'>subit</span> et ce que l'opérateur <span class='term'>choisit</span>. La grille, ses poids et ses seuils sont <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>publics et téléchargeables</a>.",
+    "24 indicateurs en 5 piliers, séparés entre ce que le projet <span class='term'>subit</span> et ce que l'opérateur <span class='term'>choisit</span>. La grille, ses poids et ses seuils sont <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>publics et téléchargeables</a>.",
   methodPedago: "Comprendre la note, pas à pas",
   siteScoreExplain: "Le contexte que le projet <span class='term'>subit</span> : intensité carbone du réseau électrique, stress hydrique, foncier, tissu local et économie de la commune.",
   operatorScoreExplain: "Les leviers que l'opérateur <span class='term'>choisit</span> : efficacité énergétique, refroidissement, emplois, concertation, transparence.",
@@ -255,7 +255,7 @@ const FR = {
     },
     {
       q: "Le nutri-score des DC. Comment un data center est-il noté ?",
-      a: "Chaque projet reçoit deux notes <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> — une pour le site, une pour l'opérateur — à partir de 26 indicateurs répartis en 5 piliers (énergie, eau, foncier, impact local, transparence). Un score chiffré est calculé puis traduit en lettre, exactement comme pour le nutri-score alimentaire que tout le monde connaît ; à côté, un niveau de confiance indique si la note repose sur des données solides ou fragiles.",
+      a: "Chaque projet reçoit deux notes <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> — une pour le site, une pour l'opérateur — à partir de 24 indicateurs répartis en 5 piliers (énergie, eau, foncier, impact local, transparence). Un score chiffré est calculé puis traduit en lettre, exactement comme pour le nutri-score alimentaire que tout le monde connaît ; à côté, un niveau de confiance indique si la note repose sur des données solides ou fragiles.",
     },
     {
       q: "Qu'est-ce qui sépare un data center noté A d'un data center noté B ?",
@@ -521,7 +521,7 @@ const EN: typeof FR = {
   repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
   methodTitle: "One method, two grades, always with confidence.",
   methodLede:
-    "26 indicators across 5 pillars, split between what a project <span class='term'>endures</span> and what its operator <span class='term'>chooses</span>. The grid, its weights and its thresholds are <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>public and downloadable</a>.",
+    "24 indicators across 5 pillars, split between what a project <span class='term'>endures</span> and what its operator <span class='term'>chooses</span>. The grid, its weights and its thresholds are <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>public and downloadable</a>.",
   methodPedago: "Understand the grade, step by step",
   siteScoreExplain: "The context the project <span class='term'>endures</span>: the electricity grid's carbon intensity, water stress, land, local fabric and the town's economy.",
   operatorScoreExplain: "The levers the operator <span class='term'>chooses</span>: energy efficiency, cooling, jobs, consultation, transparency.",
@@ -561,7 +561,7 @@ const EN: typeof FR = {
     },
     {
       q: "The Nutri-Score of data centers. How is a data center graded?",
-      a: "Each project receives two <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> grades — one for the site, one for the operator — from 26 indicators across 5 pillars (energy, water, land, local impact, transparency). A numeric score is computed, then translated into a letter, exactly like the food Nutri-Score everyone knows; next to it, a confidence level says whether the grade rests on solid or fragile data.",
+      a: "Each project receives two <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> grades — one for the site, one for the operator — from 24 indicators across 5 pillars (energy, water, land, local impact, transparency). A numeric score is computed, then translated into a letter, exactly like the food Nutri-Score everyone knows; next to it, a confidence level says whether the grade rests on solid or fragile data.",
     },
     {
       q: "What separates a data center graded A from one graded B?",
@@ -831,7 +831,7 @@ const NL: typeof FR = {
   repoUrl: "https://github.com/bardolfranck/scoremydatacenter",
   methodTitle: "Eén methode, twee cijfers, altijd met het vertrouwen erbij.",
   methodLede:
-    "26 indicatoren in 5 pijlers, verdeeld naar wat het project <span class='term'>ondergaat</span> en wat de exploitant <span class='term'>kiest</span>. De meetlat, haar gewichten en drempels zijn <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>openbaar en downloadbaar</a>.",
+    "24 indicatoren in 5 pijlers, verdeeld naar wat het project <span class='term'>ondergaat</span> en wat de exploitant <span class='term'>kiest</span>. De meetlat, haar gewichten en drempels zijn <a href='https://github.com/bardolfranck/scoremydatacenter/tree/main/data/methodology'>openbaar en downloadbaar</a>.",
   methodPedago: "Begrijp het cijfer, stap voor stap",
   siteScoreExplain: "De context die het project <span class='term'>ondergaat</span>: koolstofintensiteit van het elektriciteitsnet, waterstress, bodem, lokaal weefsel en economie van de gemeente.",
   operatorScoreExplain: "De hefbomen die de exploitant <span class='term'>kiest</span>: energie-efficiëntie, koeling, banen, overleg, transparantie.",
@@ -871,7 +871,7 @@ const NL: typeof FR = {
     },
     {
       q: "De nutri-score van datacenters. Hoe wordt een datacenter beoordeeld?",
-      a: "Elk project krijgt twee cijfers <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> — één voor de site, één voor de exploitant — op basis van 26 indicatoren in 5 pijlers (energie, water, bodem, lokale impact, transparantie). Een getalscore wordt berekend en vertaald naar een letter, precies zoals bij de Nutri-Score op voedsel die iedereen kent; daarnaast zegt een vertrouwensniveau of het cijfer op stevige of op fragiele gegevens steunt.",
+      a: "Elk project krijgt twee cijfers <i class='gl gl-a'>A</i>–<i class='gl gl-e'>E</i> — één voor de site, één voor de exploitant — op basis van 24 indicatoren in 5 pijlers (energie, water, bodem, lokale impact, transparantie). Een getalscore wordt berekend en vertaald naar een letter, precies zoals bij de Nutri-Score op voedsel die iedereen kent; daarnaast zegt een vertrouwensniveau of het cijfer op stevige of op fragiele gegevens steunt.",
     },
     {
       q: "Wat scheidt een datacenter met een A van een datacenter met een B?",

@@ -127,7 +127,11 @@
               "description": "Date (AAAA-MM-JJ) du REFUS ou du RETRAIT du projet, exigée dès que `project_status` vaut « withdrawn ». Sans elle, la note d'archive d'un projet abandonné se lit comme celle d'un projet en cours."
             },
             "status_before_withdrawal": {
-              "enum": ["announced", "permitting", "under_construction"],
+              "enum": [
+                "announced",
+                "permitting",
+                "under_construction"
+              ],
               "description": "Dernier stade DOCUMENTÉ avant le refus ou le retrait, exigé dès que `project_status` vaut « withdrawn ». La note se calcule comme celle d'un projet à ce stade (protocole cas-témoins, amendement 22) : seul l'affichage change."
             },
             "withdrawn_source": {
@@ -515,9 +519,10 @@
             "announced",
             "estimated",
             "missing",
-            "not_collected"
+            "not_collected",
+            "not_applicable"
           ],
-          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); estimated = OUR model-derived estimate (kNN or future ML) — value-bearing, sourced to the internal model, scored AT MOST as prudently as announced (same declarative cap) and penalized at least as much in confidence (cause: model_estimated); it re-scores the day a real value lands (a measured/announced fill replaces it — never the reverse); missing = we READ the public dossier and the datum is absent (verified opacity — on project/process it scores 0, may carry a read-trace source); not_collected = nobody has looked yet (transitory; excluded from the substantive score, lowers coverage; the pipelines emit this by default for uncovered project/process indicators). A 0 for something never read would be as false as an A of complacency (2026-07-09)."
+          "description": "measured = fact on record; announced = operator claim (scored prudently, tagged); estimated = OUR model-derived estimate (kNN or future ML) — value-bearing, sourced to the internal model, scored AT MOST as prudently as announced (same declarative cap) and penalized at least as much in confidence (cause: model_estimated); it re-scores the day a real value lands (a measured/announced fill replaces it — never the reverse); missing = we READ the public dossier and the datum is absent (verified opacity — on project/process it scores 0, may carry a read-trace source); not_collected = nobody has looked yet (transitory; excluded from the substantive score, lowers coverage; the pipelines emit this by default for uncovered project/process indicators). A 0 for something never read would be as false as an A of complacency (2026-07-09). not_applicable = the instrument does NOT APPLY to this site (e.g. F5 ERC measures for a data center below the environmental-impact-assessment threshold) — excluded from the score AND from coverage, never a 0 and never a gap; allowed only on indicators whose methodology entry declares `not_applicable_allowed`, and it must carry a `source` stating WHY (the threshold and the reading) (v0.5.0, 2026-11-16)."
         },
         "value": {
           "type": [
@@ -781,6 +786,31 @@
               "verification_source"
             ],
             "$comment": "Declarative indicators (kept in sync with nature=declarative in the methodology) can only be 'measured' with explicit verification evidence."
+          }
+        },
+        {
+          "$comment": "SANS OBJET (v0.5.0, 2026-11-16) : dire qu'un instrument ne s'applique pas est une AFFIRMATION, pas une absence — elle se source comme une valeur (le seuil, la lecture). Sans source, « sans objet » serait un moyen gratuit de sortir un indicateur de la note.",
+          "if": {
+            "properties": {
+              "status": {
+                "const": "not_applicable"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "source"
+            ],
+            "properties": {
+              "source": {
+                "required": [
+                  "title"
+                ]
+              }
+            }
           }
         }
       ]
