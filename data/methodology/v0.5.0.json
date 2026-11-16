@@ -637,14 +637,14 @@
     {
       "id": "F3",
       "label": {
-        "fr": "Continuités écologiques (TVB)",
-        "en": "Ecological corridors (TVB)",
-        "nl": "Ecologische verbindingen (TVB)"
+        "fr": "Continuités écologiques",
+        "en": "Ecological corridors",
+        "nl": "Ecologische verbindingen"
       },
       "description": {
-        "fr": "Si le projet coupe un corridor que la faune emprunte pour se déplacer (trame verte et bleue).",
-        "en": "Whether the project severs a wildlife corridor (green-and-blue network).",
-        "nl": "Of het project een corridor doorsnijdt die dieren gebruiken om zich te verplaatsen (groenblauwe dooradering)."
+        "fr": "Si le projet coupe un corridor que la faune emprunte pour se déplacer, tel que l'inventorie le réseau écologique du pays (trame verte et bleue en France, corridors de l'OFEV en Suisse…).",
+        "en": "Whether the project severs a wildlife corridor, as mapped by the country's ecological network (green-and-blue network in France, FOEN corridors in Switzerland…).",
+        "nl": "Of het project een corridor doorsnijdt die dieren gebruiken om zich te verplaatsen, zoals het ecologische netwerk van het land die in kaart brengt (groenblauwe dooradering in Frankrijk, BAFU-corridors in Zwitserland…)."
       },
       "pillar": "land_biodiversity",
       "weight_in_pillar": 0.2,
