@@ -33,3 +33,8 @@ site/functions/_data/
 # private repo; the public site repo must never track it.
 /api/
 .lastmod.json
+
+# Variables locales de `wrangler dev` / `wrangler pages dev` (valeurs factices, jamais de secret).
+.dev.vars
+# Sortie de scripts/compare_pages_worker.py (60 000 réponses comparées, régénérable).
+site/.compare-pages-worker/

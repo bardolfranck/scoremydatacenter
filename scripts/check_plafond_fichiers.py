@@ -25,6 +25,7 @@ froid, et pas la nuit où ça déborde.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -34,6 +35,15 @@ DIST = RACINE / "site" / "dist"
 # La limite de Cloudflare Pages PAR DÉPLOIEMENT, sur le forfait courant. Ce n'est pas un
 # choix d'ingénierie : c'est le refus de l'hébergeur, et il est binaire.
 LIMITE = 20_000
+# 🔴 LE PLAFOND SUIT LA CIBLE (2026-11-13). Le même `dist` peut partir vers deux hébergements
+# tant que la bascule n'est pas faite : Cloudflare Pages (`make deploy`, 20 000 fichiers) ou
+# un Worker avec fichiers statiques (`make deploy-worker`, 100 000 sur le forfait Workers
+# Paid, pris le 2026-11-09). Mesurer le Worker avec le plafond de Pages refuserait une
+# publication qui rentre ; l'inverse laisserait partir vers Pages un dist qu'il refusera en
+# entier. La cible se déclare donc : `CIBLE=worker`. Sans rien, c'est Pages — le défaut est
+# le plafond le plus bas, celui qui ne laisse rien passer par oubli.
+LIMITES = {"pages": LIMITE, "worker": 100_000}
+NOMS = {"pages": "Cloudflare Pages", "worker": "Cloudflare Workers (fichiers statiques)"}
 # La marge où l'on veut être prévenu. 2 000 fichiers, c'est l'ordre de grandeur d'UNE
 # surface nouvelle (une langue de pays, un lot de vignettes) : de quoi voir venir le mur
 # avant de le prendre.
@@ -57,14 +67,26 @@ def par_repertoire(racine: Path) -> list[tuple[int, str]]:
     return sorted(poids, reverse=True)
 
 
-def refuse(total: int) -> bool:
+def cible() -> str:
+    """La cible déclarée par `CIBLE=…`. Une valeur inconnue est refusée, pas ramenée au
+    défaut : une faute de frappe ne doit pas choisir un plafond."""
+    demandee = os.environ.get("CIBLE", "").strip().lower() or "pages"
+    if demandee not in LIMITES:
+        raise SystemExit(
+            f"plafond de fichiers : cible « {demandee} » inconnue. Cibles connues : "
+            f"{', '.join(sorted(LIMITES))}."
+        )
+    return demandee
+
+
+def refuse(total: int, limite: int = LIMITE) -> bool:
     """Au-dessus du plafond, l'hébergeur refuse la publication ENTIÈRE."""
-    return total > LIMITE
+    return total > limite
 
 
-def alerte(total: int) -> bool:
+def alerte(total: int, limite: int = LIMITE) -> bool:
     """Dans la marge : ça passe encore, et il faut le savoir maintenant."""
-    return total > LIMITE - MARGE
+    return total > limite - MARGE
 
 
 def _tableau(racine: Path, lignes: int = 8) -> str:
@@ -77,6 +99,8 @@ def main() -> None:
             f"plafond de fichiers : {DIST} n'existe pas — rien à mesurer, et une barrière "
             f"qui ne mesure rien ne garde rien. Lancez le build d'abord."
         )
+    vers = cible()
+    limite, hebergeur = LIMITES[vers], NOMS[vers]
     total = compte(DIST)
     if total < PLANCHER_PLAUSIBILITE:
         raise SystemExit(
@@ -84,22 +108,22 @@ def main() -> None:
             f"être un site. Soit le build a échoué sans le dire, soit cette barrière ne "
             f"regarde pas au bon endroit — dans les deux cas elle refuse de conclure."
         )
-    if refuse(total):
+    if refuse(total, limite):
         raise SystemExit(
-            f"plafond de fichiers : {total} fichiers dans dist, la limite de Cloudflare "
-            f"Pages est de {LIMITE} PAR DÉPLOIEMENT. Au-dessus, la publication est refusée "
+            f"plafond de fichiers : {total} fichiers dans dist, la limite de {hebergeur} "
+            f"est de {limite} PAR DÉPLOIEMENT. Au-dessus, la publication est refusée "
             f"EN ENTIER — pas tronquée. Ce qui pèse :\n{_tableau(DIST)}\n"
             f"  Une édition de pays couvre son pays (`PAYS_DE_LA_LANGUE` dans "
             f"`site/src/content/langues.ts`) : c'est le levier le plus net, une langue de "
             f"plus sur le corpus entier coûte ~6 600 fichiers."
         )
-    if alerte(total):
+    if alerte(total, limite):
         print(
-            f"⚠ plafond de fichiers : {total} fichiers, plafond {LIMITE} — il reste "
-            f"{LIMITE - total}. Ce qui pèse :\n{_tableau(DIST)}"
+            f"⚠ plafond de fichiers : {total} fichiers, plafond {limite} ({hebergeur}) — il reste "
+            f"{limite - total}. Ce qui pèse :\n{_tableau(DIST)}"
         )
         return
-    print(f"✓ plafond de fichiers : {total} fichiers dans dist, limite {LIMITE}")
+    print(f"✓ plafond de fichiers : {total} fichiers dans dist, limite {limite} ({hebergeur})")
 
 
 if __name__ == "__main__":

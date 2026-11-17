@@ -1,4 +1,4 @@
-.PHONY: comparator-projection validate score rescore build test install headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus
+.PHONY: comparator-projection validate score rescore build test install deploy-worker headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus
 
 # LA COUCHE DE COLLECTE EST PRIVÉE (décision Franck, 2026-10-02). Le dépôt public porte la
 # méthode — moteur de notation, gates, méthodologie, site ; la machine qui va CHERCHER la
@@ -251,6 +251,48 @@ deploy:
 # barrières soient passés : la panne arrive au dernier geste, quand tout a déjà coûté.
 	uv run python scripts/check_plafond_fichiers.py
 	cd site && npx wrangler pages deploy dist --project-name=scoremydatacenter --commit-dirty=true
+	$(MAKE) purge-cache
+
+# 🔴 LA MÊME MISE EN LIGNE, VERS UN WORKER (2026-11-13). Cloudflare Pages refuse un
+# déploiement au-delà de 20 000 fichiers, en entier ; le site en compte ~18 400 et chaque
+# langue de pays en ajoute. Un Worker avec fichiers statiques en accepte 100 000 sur le
+# forfait Workers Paid (pris le 2026-11-09). `site/wrangler.worker.jsonc` décrit ce Worker :
+# le même `dist`, les mêmes fonctions /api/* derrière un petit routeur (`site/worker/`), les
+# mêmes liaisons D1 et R2.
+#
+# LES DEUX CIBLES COEXISTENT jusqu'à la bascule du domaine : `deploy` publie vers Pages,
+# `deploy-worker` vers le Worker, et c'est le domaine rattaché qui décide lequel est lu.
+# Tant que scoremydatacenter.org est rattaché à Pages, `deploy-worker` publie un Worker que
+# personne ne lit — et après la bascule, c'est `deploy` qui publie dans le vide. La cible
+# qui sert le public est donc UNE décision, à ne pas laisser aux deux commandes.
+#
+# MÊME SUITE DE BARRIÈRES, DANS LE MÊME ORDRE : branche, tests, build, les contrôles de ce
+# qui part, le plafond (celui du Worker : `CIBLE=worker`), l'envoi, la purge du cache.
+# `scripts/compare_pages_worker.py` a mesuré, avant la bascule, que le Worker rend ce que
+# rend Pages ; il se rejoue contre deux serveurs locaux si la configuration change.
+# Le secret RESEND_API_KEY se pose une fois sur le Worker (`wrangler secret put`, à la
+# main) : il ne suit pas celui du projet Pages.
+#
+# 🔴 PAS DE PRÉVIZ ICI. `PREVIZ=1 make deploy` range le résultat dans un environnement à
+# part, parce que Pages en a un par branche. Un Worker n'en a pas : `wrangler deploy`
+# remplace LE Worker, d'où qu'on parte. Laisser passer PREVIZ=1 publierait une branche en
+# production en croyant faire un essai — l'erreur du 2026-11-06, à l'envers.
+deploy-worker:
+	@if [ -n "$(PREVIZ)" ]; then echo "deploy-worker : PREVIZ n'existe pas pour un Worker — wrangler deploy remplace la production. Pour un essai : cd site && npx wrangler dev --config wrangler.worker.jsonc"; exit 1; fi
+	uv run python scripts/check_branche_de_publication.py
+	@if [ -z "$(SANS_TESTS)" ]; then $(MAKE) test; \
+	  else echo "⚠ deploy-worker: tests SAUTÉS (SANS_TESTS=1) — mise en ligne sans filet"; fi
+	$(MAKE) build
+	uv run python scripts/check_dist_pruned.py
+	uv run python scripts/check_no_legislation.py
+	uv run python scripts/check_titres_servis.py
+	uv run python scripts/check_liens_servis.py
+	uv run python scripts/check_langue_servie.py
+	uv run python scripts/check_rapport_retire.py
+	uv run python scripts/check_langue_donnee_servie.py
+	uv run python scripts/check_vocabulaire_esg.py
+	CIBLE=worker uv run python scripts/check_plafond_fichiers.py
+	cd site && npx wrangler deploy --config wrangler.worker.jsonc
 	$(MAKE) purge-cache
 
 # Post-deploy cache purge (Franck 2026-07-22, durci 2026-07-28): a Pages deploy

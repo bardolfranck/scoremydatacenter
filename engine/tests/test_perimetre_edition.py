@@ -136,6 +136,32 @@ def test_le_plafond_refuse_au_dessus_et_alerte_avant():
     assert plafond.MARGE > 0
 
 
+def test_le_plafond_suit_la_cible(monkeypatch):
+    """Pages plafonne à 20 000, le Worker à 100 000 : le même dist ne se mesure pas pareil.
+
+    Le défaut reste Pages — le plafond le plus bas — et une cible inconnue est refusée au
+    lieu d'être ramenée au défaut : une faute de frappe ne choisit pas un plafond.
+    """
+    plafond = importlib.import_module("scripts.check_plafond_fichiers")
+    assert plafond.LIMITES == {"pages": 20_000, "worker": 100_000}
+    monkeypatch.delenv("CIBLE", raising=False)
+    assert plafond.cible() == "pages"
+    monkeypatch.setenv("CIBLE", "worker")
+    assert plafond.cible() == "worker"
+    limite = plafond.LIMITES["worker"]
+    assert not plafond.refuse(24_047, limite), "24 047 fichiers rentrent dans un Worker"
+    assert plafond.refuse(limite + 1, limite)
+    assert plafond.alerte(limite - plafond.MARGE + 1, limite)
+    assert not plafond.alerte(24_047, limite)
+    monkeypatch.setenv("CIBLE", "wroker")
+    try:
+        plafond.cible()
+    except SystemExit as e:
+        assert "inconnue" in str(e)
+    else:
+        raise AssertionError("une cible inconnue a été acceptée")
+
+
 def test_le_plafond_refuse_de_conclure_sur_un_dist_maigre(tmp_path, monkeypatch):
     """Un `dist` vide compte zéro et passerait : l'absence ressemble à zéro.
 

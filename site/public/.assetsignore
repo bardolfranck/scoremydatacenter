@@ -1,0 +1,4 @@
+# Fichiers de dist que le Worker ne doit pas publier (lu par `wrangler deploy`).
+# Pages écartait déjà .DS_Store tout seul ; un Worker publie tout ce qui est dans dist.
+.DS_Store
+.assetsignore
