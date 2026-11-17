@@ -163,7 +163,9 @@ def normalized_score(definition: dict, entry: dict, parameters: dict) -> float |
     whereas a `not_collected` is dropped and instead lowers coverage (toward
     insufficient_data). A 0 for something we never looked at would be as false as an
     A of complacency (decision Franck Bardol, 2026-07-09)."""
-    if entry["status"] in ("missing", "not_collected"):
+    # `not_applicable` (v0.5.0) : l'instrument ne s'applique pas — aucune valeur à noter.
+    # Le scorer l'a déjà retiré des définitions de la fiche ; ce None est un filet.
+    if entry["status"] in ("missing", "not_collected", "not_applicable"):
         return None
     # UN INDICATEUR INFORMATIONNEL N'A PAS DE SOUS-SCORE, et c'est la doctrine elle-même :
     # « oui » n'y est ni bon ni mauvais. On publie le fait, on ne le note pas. Sortir ici

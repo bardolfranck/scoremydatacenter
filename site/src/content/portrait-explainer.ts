@@ -85,7 +85,7 @@ const FR = {
   examples: [
     { href: "/fr/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju", why: "projet en instruction en Seine-et-Marne : la fenêtre d'observation est ouverte, et la procédure française est lue en entier." },
     { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "projet annoncé aux États-Unis : audience obligatoire de l'agence de développement, examen SEQRA, recours à quatre mois." },
-    { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "un État dont nous n'avons pas encore lu la loi : le portrait dit ce qui reste vrai, et quoi demander à la place." },
+    { href: "/dc/us-microsoft-hoffman-estates-campus/portrait/", name: "Hoffman Estates (Illinois)", why: "un État dont nous n'avons pas encore lu la loi : le portrait dit ce qui reste vrai, et quoi demander à la place." },
   ],
 };
 
@@ -158,7 +158,7 @@ const EN: typeof FR = {
   examples: [
     { href: "/fr/dc/fr-campus-ia-fouju/portrait/", name: "Campus IA Fouju (France)", why: "a project under review: the comment window is open, and the French procedure is read in full." },
     { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "an announced US project: a mandatory development-agency hearing, SEQRA review, a four-month challenge window." },
-    { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "a state whose law we have not read yet: the portrait says what remains true, and what to ask for instead." },
+    { href: "/dc/us-microsoft-hoffman-estates-campus/portrait/", name: "Hoffman Estates (Illinois)", why: "a state whose law we have not read yet: the portrait says what remains true, and what to ask for instead." },
   ],
 };
 
@@ -243,7 +243,7 @@ const NL: typeof FR = {
   examples: [
     { href: "/nl/dc/nl-eurofiber-datacenter-nedzone/portret/", name: "Eurofiber Datacenter Nedzone (Nederland)", why: "een site in bedrijf, en het hoogste SITE-cijfer van het Nederlandse corpus: geen inspraakperiode meer — het portret zegt wat er dan nog te vragen valt." },
     { href: "/dc/us-stamp-data-center/portrait/", name: "STAMP Data Center (New York)", why: "een aangekondigd project in de Verenigde Staten: verplichte hoorzitting van het ontwikkelingsagentschap, SEQRA-toetsing, beroep binnen vier maanden." },
-    { href: "/dc/us-microsoft-hoffman-estates-chi05-data-center/portrait/", name: "Hoffman Estates (Illinois)", why: "een staat waarvan we de wet nog niet hebben gelezen: het portret zegt wat waar blijft, en wat u in de plaats kunt vragen." },
+    { href: "/dc/us-microsoft-hoffman-estates-campus/portrait/", name: "Hoffman Estates (Illinois)", why: "een staat waarvan we de wet nog niet hebben gelezen: het portret zegt wat waar blijft, en wat u in de plaats kunt vragen." },
   ],
 };
 

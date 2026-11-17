@@ -127,11 +127,12 @@ const FR = {
   // nommait pas le second du tout : 48 135 lignes du corpus affichaient une case d'état VIDE.
   indStatus: {
     measured: "Mesuré", announced: "Annoncé", estimated: "Estimé",
-    missing: "Absent du dossier", not_collected: "Pas encore cherché",
+    missing: "Absent du dossier", not_collected: "Pas encore cherché", not_applicable: "Sans objet",
   },
   indStatusHint: {
     missing: "L'information a été cherchée dans le dossier public et ne s'y trouve pas. Elle compte comme un zéro dans la note.",
     not_collected: "Nous n'avons pas encore cherché cette information. Elle est retirée du calcul, elle ne pénalise pas le site.",
+    not_applicable: "Cet instrument ne s'applique pas à ce site (par exemple : sous le seuil de l'étude d'impact). Il est retiré du calcul, ce n'est ni un zéro ni une lacune.",
   },
   accessed: "consulté le",
   archived: "archivé",
@@ -335,11 +336,12 @@ const EN: typeof FR = {
   notApplicable: "not applicable",
   indStatus: {
     measured: "Measured", announced: "Announced", estimated: "Estimated",
-    missing: "Absent from the file", not_collected: "Not looked for yet",
+    missing: "Absent from the file", not_collected: "Not looked for yet", not_applicable: "Not applicable",
   },
   indStatusHint: {
     missing: "We read the public file and the information is not in it. It counts as a zero in the grade.",
     not_collected: "We have not looked for this yet. It is dropped from the calculation and does not penalise the site.",
+    not_applicable: "This instrument does not apply to this site (for instance: below the environmental-impact-assessment threshold). It is dropped from the calculation — neither a zero nor a gap.",
   },
   accessed: "accessed",
   archived: "archived",
@@ -538,11 +540,12 @@ const NL: typeof FR = {
   notApplicable: "niet van toepassing",
   indStatus: {
     measured: "Gemeten", announced: "Aangekondigd", estimated: "Geschat",
-    missing: "Afwezig in het dossier", not_collected: "Nog niet gezocht",
+    missing: "Afwezig in het dossier", not_collected: "Nog niet gezocht", not_applicable: "Niet van toepassing",
   },
   indStatusHint: {
     missing: "De informatie is in het publieke dossier gezocht en staat er niet in. Ze telt als een nul in het cijfer.",
     not_collected: "We hebben deze informatie nog niet gezocht. Ze is uit de berekening gehaald en benadeelt de site niet.",
+    not_applicable: "Dit instrument is niet van toepassing op deze site (bijvoorbeeld: onder de drempel voor een milieueffectbeoordeling). Het is uit de berekening gehaald — geen nul en geen leemte.",
   },
   accessed: "geraadpleegd op",
   archived: "gearchiveerd",

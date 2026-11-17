@@ -128,6 +128,7 @@ def main() -> int:
                             / "data" / "schema" / "datacenter.schema.json").read_text())
 
     meth_ids, scored_pp = _methodology_sets(methodology)
+    na_allowed = {i["id"] for i in methodology["indicators"] if i.get("not_applicable_allowed")}
     problems: list[str] = []
     scored = 0
 
@@ -165,6 +166,14 @@ def main() -> int:
         # sont des décisions, portées ailleurs (présence du fichier, data/veille.json,
         # provisional_band). La complétude se CALCULE : on demande à score_datacenter, déjà
         # appelé ci-dessus, si l'axe projet gagne vraiment une lettre.
+        # SANS OBJET : seulement là où la méthodologie l'ouvre (`not_applicable_allowed`, v0.5.0).
+        # Même règle que dans engine/validate.py — les deux implémentations disent la même chose.
+        for iid, e in inds.items():
+            if e.get("status") == "not_applicable" and iid not in na_allowed:
+                problems.append(
+                    f"GATE 8 {label}: {iid} not_applicable alors que la méthodologie ne l'autorise pas "
+                    "sur cet indicateur (not_applicable_allowed) — sortie gratuite de la note"
+                )
         if note_axe_projet in ("A", "B", "C", "D", "E"):
             for iid in scored_pp:
                 if inds.get(iid, {}).get("status") == "not_collected":

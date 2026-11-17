@@ -27,27 +27,27 @@
       }
     },
     "project_process": {
-      "grade": "C",
-      "score": 50.6,
-      "coverage": 0.871,
+      "grade": "D",
+      "score": 49.2,
+      "coverage": 0.849,
       "documentation": {
-        "level": "medium",
-        "score": 0.742,
+        "level": "high",
+        "score": 0.786,
         "dots": 3,
         "label": {
-          "fr": "documentation moyenne",
-          "en": "moderately documented",
-          "nl": "gedeeltelijk gedocumenteerd"
+          "fr": "documentation solide",
+          "en": "well documented",
+          "nl": "ruim gedocumenteerd"
         }
       }
     }
   },
   "confidence": {
     "level": "high",
-    "score": 0.935,
+    "score": 0.952,
     "causes": {
       "missing_data": 0.018,
-      "unverifiable_declarative": 0.096,
+      "unverifiable_declarative": 0.059,
       "model_estimated": 0.0
     }
   },
@@ -98,12 +98,12 @@
       }
     },
     "local_impact": {
-      "grade": "C",
-      "score": 63.1,
+      "grade": "B",
+      "score": 66.0,
       "coverage": 1.0,
       "documentation": {
         "level": "high",
-        "score": 0.901,
+        "score": 1.0,
         "dots": 4,
         "label": {
           "fr": "documentation solide",
@@ -129,9 +129,9 @@
     }
   },
   "citable_quote": {
-    "fr": "Noté B sur le site, mais C sur « Impact local ».",
-    "en": "Rated B on site, but C on “Local impact”.",
-    "nl": "Beoordeeld met B op de site, maar C op ‘Lokale impact’."
+    "fr": "Noté B sur le site, D en projet & processus.",
+    "en": "Rated B on site, D on project & process.",
+    "nl": "Beoordeeld met B op de site, D op project & proces."
   },
   "publication_status": "published",
   "provisional_band": {
@@ -496,9 +496,9 @@
     {
       "id": "F3",
       "label": {
-        "fr": "Continuités écologiques (TVB)",
-        "en": "Ecological corridors (TVB)",
-        "nl": "Ecologische verbindingen (TVB)"
+        "fr": "Continuités écologiques",
+        "en": "Ecological corridors",
+        "nl": "Ecologische verbindingen"
       },
       "pillar": "land_biodiversity",
       "block": "base",
@@ -669,7 +669,7 @@
       "status": "announced",
       "value": 37.5,
       "proxies": null,
-      "score": 60.0,
+      "score": null,
       "source": {
         "title": "Fictional operator press release, 45 permanent jobs (test)",
         "url": "https://example.org/zz/l4",
@@ -689,7 +689,7 @@
       "status": "announced",
       "value": "announced_unquantified",
       "proxies": null,
-      "score": 50.0,
+      "score": null,
       "source": {
         "title": "Fictional council deliberation minutes (test)",
         "url": "https://example.org/zz/l5",
@@ -836,6 +836,17 @@
       "confidence": "high",
       "event": "methodology_change",
       "rationale": "Méthodologie 0.4.0 : L2 se note par décade sur le bassin de population de 50 km (log_linear, ancres 1e-4 / 1e2) au lieu de paliers calés sur la commune. Décision Franck du 2026-11-08."
+    },
+    {
+      "date": "2026-11-16",
+      "methodology_version": "0.5.0",
+      "grades": {
+        "site": "B",
+        "project_process": "D"
+      },
+      "confidence": "high",
+      "event": "methodology_change",
+      "rationale": "v0.5.0 : L4/L5 informationnels (publiés, non notés) ; F5 peut être sans objet (not_applicable) — décision Franck 2026-11-16"
     }
   ],
   "contestation": [
