@@ -61,7 +61,7 @@ def main() -> None:
             f"sortirait en 0 — dans un environnement PREVIEW. scoremydatacenter.org ne "
             f"changerait pas, et RIEN dans la sortie ne le dirait.\n"
             f"  · pour publier : fusionnez, passez sur {BRANCHE_DE_PRODUCTION}, relancez ;\n"
-            f"  · pour une préviz assumée : PREVIZ=1 make deploy."
+            f"  · pour une préviz assumée : PREVIZ=1 make deploy-pages."
         )
     print(f"✓ branche de publication : « {branche} » — environnement de production")
 

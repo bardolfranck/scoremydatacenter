@@ -2547,8 +2547,24 @@ def _cibles() -> dict[str, tuple[list[str], str]]:
 
 
 def _cible_deploy() -> str:
-    """La recette de `deploy`, SEULE — ce qui est lancé après le build est ici."""
-    return _cibles()["deploy"][1]
+    """La recette qui PUBLIE, celle où l'ordre build → barrières → envoi se joue.
+
+    Depuis la bascule vers le Worker (2026-11-17), `deploy` ne fait que déléguer à
+    `deploy-worker`. On suit donc la délégation tant que la recette n'appelle pas elle-même
+    `$(MAKE) build` : lire le corps nu de `deploy` jugerait une ligne de renvoi, pas la
+    mise en ligne.
+    """
+    cibles, nom, vues = _cibles(), "deploy", set()
+    while nom not in vues:
+        vues.add(nom)
+        recette = cibles[nom][1]
+        if "$(MAKE) build" in recette:
+            return recette
+        suite = re.findall(r"\$\(MAKE\)\s+(deploy[\w.-]*)", recette)
+        if not suite:
+            return recette
+        nom = suite[0]
+    return cibles[nom][1]
 
 
 def _recettes_atteintes_par_deploy() -> str:

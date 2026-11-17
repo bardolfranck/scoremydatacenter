@@ -6,6 +6,12 @@
   "main": "worker/index.ts",
   // Même date que Pages : le comportement du runtime ne change pas à la bascule.
   "compatibility_date": "2024-11-01",
+  // 🔴 PAS DE COPIE PUBLIQUE (2026-11-17, décision Franck). Après la bascule, *.workers.dev et
+  // les URL de préviz serviraient le site entier hors de la zone : contenu dupliqué pour les
+  // moteurs, et sans les protections anti-robots / limitation de débit de la zone. Coupé ICI,
+  // pas au tableau de bord : un `wrangler deploy` rallumerait l'interrupteur.
+  "workers_dev": false,
+  "preview_urls": false,
   "assets": {
     "directory": "./dist",
     // ASSETS : le routeur y renvoie ce que Pages envoyait à next() (404.html, 405 des méthodes

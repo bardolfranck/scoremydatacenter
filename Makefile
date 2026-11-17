@@ -1,4 +1,4 @@
-.PHONY: comparator-projection validate score rescore build test install deploy-worker headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus
+.PHONY: comparator-projection validate score rescore build test install deploy-worker deploy-pages headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus
 
 # LA COUCHE DE COLLECTE EST PRIVÉE (décision Franck, 2026-10-02). Le dépôt public porte la
 # méthode — moteur de notation, gates, méthodologie, site ; la machine qui va CHERCHER la
@@ -224,7 +224,17 @@ media-sat:
 #
 # Pour passer outre en connaissance de cause : `make deploy SANS_TESTS=1`. C'est écrit ici
 # pour que ce soit un geste délibéré et visible, pas un réflexe.
+# 🔴 BASCULE FAITE LE 2026-11-17 : scoremydatacenter.org et www sont rattachés au WORKER.
+# `make deploy` publie donc vers le Worker (`deploy-worker`, plafond 100 000 fichiers).
+# L'ancienne publication vers Pages reste sous `deploy-pages` : (1) RETOUR ARRIÈRE — rattacher
+# le domaine au projet Pages dans le tableau de bord, `make deploy-pages`, `make purge-cache` ;
+# (2) préviz `PREVIZ=1 make deploy-pages` (Pages a un environnement par branche, pas le Worker).
+# Pages est gardé intact quelques semaines comme roue de secours, puis supprimé (décision Franck).
 deploy:
+	@if [ -n "$(PREVIZ)" ]; then echo "deploy : PREVIZ passe par Pages — PREVIZ=1 make deploy-pages"; exit 1; fi
+	$(MAKE) deploy-worker
+
+deploy-pages:
 # 🔴 D'ABORD : OÙ VA CE DÉPLOIEMENT. Le 2026-11-06, `make deploy` lancé depuis une
 # branche a téléversé 17 764 fichiers, annoncé « Deployment complete », purgé le cache
 # et rendu 0 — dans un environnement PREVIEW. Le site public n'avait pas bougé, et rien
