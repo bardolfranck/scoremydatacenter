@@ -304,6 +304,7 @@ deploy-worker:
 	CIBLE=worker uv run python scripts/check_plafond_fichiers.py
 	cd site && npx wrangler deploy --config wrangler.worker.jsonc
 	$(MAKE) purge-cache
+	uv run python scripts/indexnow_ping.py
 
 # Post-deploy cache purge (Franck 2026-07-22, durci 2026-07-28): a Pages deploy
 # does NOT evict the zone edge cache. Enumerating URLs (the old approach) was

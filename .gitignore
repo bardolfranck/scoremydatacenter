@@ -38,3 +38,6 @@ site/functions/_data/
 .dev.vars
 # Sortie de scripts/compare_pages_worker.py (60 000 réponses comparées, régénérable).
 site/.compare-pages-worker/
+
+# IndexNow : empreintes des pages déjà signalées (état local du poste qui déploie)
+site/.indexnow/
