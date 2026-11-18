@@ -366,6 +366,42 @@ const groupActive = (n: NavNode) => isGroup(n) && n.children.some((c) => isActiv
           }
           window.smdcTrack(el.getAttribute("data-ga-event"), params);
         });
+        // Vidéos (2026-11-18) : nos <video> sont natives (R2), donc la mesure
+        // améliorée de GA4 ne les voit pas — elle ne suit que YouTube. On émet
+        // les noms standard GA4 (video_start / video_progress / video_complete)
+        // pour que les rapports « vidéo » se remplissent. play/timeupdate/ended
+        // ne remontent pas : écoute en phase de capture sur document, ce qui
+        // couvre aussi le lecteur créé à la volée dans la boîte de dialogue.
+        // La boucle muette de l'accueil (muted + loop) n'est pas une lecture.
+        var vus = new WeakMap();
+        function etat(v) {
+          var s = vus.get(v);
+          if (!s || s.src !== v.currentSrc) { s = { src: v.currentSrc, start: false, p50: false, end: false }; vus.set(v, s); }
+          return s;
+        }
+        function params(v, extra) {
+          var url = v.currentSrc || v.getAttribute("src") || "";
+          var p = { video_url: url, video_title: url.split("/").pop() || url, video_provider: "smdc" };
+          if (isFinite(v.duration)) p.video_duration = Math.round(v.duration);
+          for (var k in extra) p[k] = extra[k];
+          return p;
+        }
+        function vrai(v) { return v && v.tagName === "VIDEO" && !(v.muted && v.loop); }
+        document.addEventListener("play", function (ev) {
+          var v = ev.target; if (!vrai(v)) return;
+          var s = etat(v); if (s.start) return; s.start = true;
+          window.smdcTrack("video_start", params(v, { video_percent: 0 }));
+        }, true);
+        document.addEventListener("timeupdate", function (ev) {
+          var v = ev.target; if (!vrai(v) || !isFinite(v.duration) || v.duration <= 0) return;
+          var s = etat(v); if (s.p50 || v.currentTime / v.duration < 0.5) return; s.p50 = true;
+          window.smdcTrack("video_progress", params(v, { video_percent: 50 }));
+        }, true);
+        document.addEventListener("ended", function (ev) {
+          var v = ev.target; if (!vrai(v)) return;
+          var s = etat(v); if (s.end) return; s.end = true;
+          window.smdcTrack("video_complete", params(v, { video_percent: 100 }));
+        }, true);
       })();
     </script>
   </body>
