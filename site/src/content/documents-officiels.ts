@@ -18,7 +18,7 @@ import type { LangueDeclaree } from "./langues";
 
 const FR = {
   titre: "Documents officiels",
-  intro: "Les actes publiés par les autorités sur ce site, chacun daté et relié à l'autorité qui l'a publié. Ils documentent des faits ; ils n'entrent pas dans la note.",
+  intro: "Les actes publiés par les autorités sur ce site, chacun daté et relié à l'autorité qui l'a publié. Ils documentent des faits.",
   reference: "réf.",
   atteste: "atteste :",
   verifie: "lien vérifié le {date}",
@@ -51,7 +51,7 @@ const FR = {
 
 const EN: typeof FR = {
   titre: "Official documents",
-  intro: "Acts published by public authorities about this site, each dated and linked to the authority that published it. They document facts; they are not part of the score.",
+  intro: "Acts published by public authorities about this site, each dated and linked to the authority that published it. They document facts.",
   reference: "ref.",
   atteste: "attests:",
   verifie: "link checked on {date}",
@@ -84,7 +84,7 @@ const EN: typeof FR = {
 
 const NL: typeof FR = {
   titre: "Officiële documenten",
-  intro: "Door overheden gepubliceerde stukken over deze site, elk gedateerd en gekoppeld aan de instantie die het publiceerde. Ze documenteren feiten; ze tellen niet mee in het cijfer.",
+  intro: "Door overheden gepubliceerde stukken over deze site, elk gedateerd en gekoppeld aan de instantie die het publiceerde. Ze documenteren feiten.",
   reference: "kenmerk",
   atteste: "staaft:",
   verifie: "link gecontroleerd op {date}",
