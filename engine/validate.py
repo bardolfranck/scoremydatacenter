@@ -608,7 +608,7 @@ def geo_gate(data_dir: Path) -> list[str]:
 #   · le sidecar hebdomadaire de preuve de statut dit `verified` — des réseaux sont
 #     interconnectés DANS ce bâtiment (PeeringDB) ; c'est une preuve intrinsèque d'exploitation ;
 #   · la fiche porte un `project_status_provenance` qui justifie `operational` avec sa source.
-STATUT_NON_SOURCE = 1163  # 2026-11-20 : US vague 2 — 4 fiches sorties du « sans source » par la preuve de statut
+STATUT_NON_SOURCE = 1154  # 2026-11-20 : 17 fusions US — 9 fiches retirées étaient sans source de statut
 
 
 def statut_gate(data_dir: Path) -> list[str]:
