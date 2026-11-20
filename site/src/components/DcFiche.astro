@@ -25,6 +25,7 @@ import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
+import DocumentsOfficiels from "./DocumentsOfficiels.astro";
 import { ESG, ESRS_PAR_PILIER } from "../content/esg";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
@@ -964,6 +965,12 @@ const seoDesc = seoLead
           Présent sur les seules fiches dont le rattachement avis→site est sûr. */}
       {dc.environmental_dossier && (
         <DossierEnvironnemental dossier={dc.environmental_dossier} lang={lang} />
+      )}
+
+      {/* Documents officiels (2026-11-20) : le lien daté vers l'autorité, pour chaque fait
+          attesté — même place que le dossier, À CÔTÉ de la note et avant le tableau. */}
+      {dc.official_documents && (
+        <DocumentsOfficiels documents={dc.official_documents} lang={lang} />
       )}
 
       {/* Lecture ESG — une correspondance THÉMATIQUE, hors note, après le dossier et avant

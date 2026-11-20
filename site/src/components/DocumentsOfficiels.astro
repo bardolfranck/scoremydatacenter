@@ -1,0 +1,43 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// « Documents officiels » (2026-11-20) : pour chaque fait attesté, le lien vers l'autorité qui
+// l'a publié et sa date — rien d'autre. « On ouvre la vérité, on vend le temps » (Franck) :
+// pas de copie archivée, pas d'extraction, pas de chronologie. Hors note, comme tout ce qui se
+// lit À CÔTÉ de la lettre. `authority` et `reference` sont des DONNÉES, servies telles que
+// l'autorité les écrit (jamais traduites). L'ordre (plus récent d'abord) vient de l'artefact.
+import { DOCUMENTS_OFFICIELS } from "../content/documents-officiels";
+import type { LangueDeclaree } from "../content/langues";
+
+const { documents = [], lang = "fr" } = Astro.props;
+const t = DOCUMENTS_OFFICIELS[lang as LangueDeclaree];
+const fmt = (iso: string) => {
+  const [a, m, j] = String(iso).split("-");
+  return t.datePattern.replace("{a}", a).replace("{m}", m).replace("{j}", j);
+};
+const types: Record<string, string> = t.types;
+const faits: Record<string, string> = t.supports;
+const libelleType = (k: string) => types[k] ?? k;
+const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
+---
+{documents.length > 0 && (
+  <section class="fiche-docs" aria-labelledby="docs-title">
+    <h2 id="docs-title" class="fiche-docs-kicker">{t.titre}</h2>
+    <p class="fiche-docs-intro">{t.intro}</p>
+    <ul class="fiche-docs-list">
+      {documents.map((d: any) => (
+        <li>
+          <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
+            {libelleType(d.type)}</a>
+          <span class="fiche-docs-date">{fmt(d.date)}</span>
+          <span class="fiche-docs-auth">{/* i18n:donnee */ d.authority}{d.reference ? /* i18n:donnee */ ` · ${t.reference} ${d.reference}` : ""}</span>
+          {d.supports?.length > 0 && (
+            <span class="fiche-docs-sup">{`${t.atteste} ${libelleFaits(d.supports)}`}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

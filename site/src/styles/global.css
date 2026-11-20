@@ -1329,6 +1329,18 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-esg-reserve a { color: var(--accent, #0f5fb8); }
 @media (max-width: 640px) { .fiche-esg { margin: 0 16px 6px; } .fiche-esg-pilier { min-width: 0; } }
 @media (prefers-color-scheme: dark) { .fiche-esg { background: #141a24; } .fiche-esg-ief { background: #0f141c; } }
+/* Documents officiels (2026-11-20) : liens datés vers l'autorité, hors note — même cadre que la lecture ESG. */
+.fiche-docs { margin: 0 32px 6px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--wash, #f6f5f0); }
+.fiche-docs-kicker { margin: 0 0 6px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.fiche-docs-intro { margin: 0 0 8px; font-size: 0.88rem; color: var(--ink-soft); }
+.fiche-docs-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.fiche-docs-list li { font-size: 0.88rem; line-height: 1.45; display: flex; flex-wrap: wrap; column-gap: 8px; align-items: baseline; }
+.fiche-docs-list a { font-weight: 600; }
+.fiche-docs-date { font-family: var(--font-mono); font-size: 0.8rem; color: var(--ink-soft); }
+.fiche-docs-auth { color: var(--ink-soft); overflow-wrap: anywhere; }
+.fiche-docs-sup { flex-basis: 100%; font-size: 0.8rem; color: var(--muted); }
+@media (max-width: 640px) { .fiche-docs { margin: 0 16px 6px; } }
+@media (prefers-color-scheme: dark) { .fiche-docs { background: #141a24; } }
 
 /* Indicators table */
 .fiche-section { padding: 22px 32px; }

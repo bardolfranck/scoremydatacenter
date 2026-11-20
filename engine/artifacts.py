@@ -409,6 +409,13 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             # Dérivée à chaque build sur tout le corpus (voir pillar_scope_fields) — jamais
             # une liste d'indicateurs « nationaux » tenue à la main.
             **({"pillar_scope": portees[dc_id]} if dc_id in portees else {}),
+            # Documents officiels (2026-11-20) : un FAIT posé à côté de la note, jamais lu par le
+            # scoring. Seul le lien vers l'autorité et sa date voyagent — « on ouvre la vérité,
+            # on vend le temps » : copie archivée, extraction et chronologie restent privées.
+            # Le plus récent d'abord. Absent quand la fiche n'en porte pas (contrat inchangé).
+            **({"official_documents": sorted(dc["identity"]["official_documents"],
+                                             key=lambda d: d["date"], reverse=True)}
+               if dc["identity"].get("official_documents") else {}),
             "publication": dc["publication"],
             "score_history": dc["score_history"],
             # Contestation signal (A-21): sourced facts published next to the note,
