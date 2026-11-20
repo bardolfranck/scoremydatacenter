@@ -1,0 +1,19 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// Une phrase qui CONTIENT des notes (« Noté D sur le site, mais E sur « Énergie » ») :
+// chaque lettre de note isolée (A–E, ni précédée ni suivie d'une lettre ou d'un chiffre)
+// s'affiche en pastille colorée, comme partout ailleurs sur le site (Franck 2026-11-20).
+// La DONNÉE reste la phrase brute (`citable_quote`, faite pour être citée telle quelle) :
+// seul l'affichage change. Les gabarits du moteur (engine/scoring.py, CITABLE) ne portent
+// pas d'autre lettre isolée que les notes, et les noms de piliers n'en ont aucune.
+const { texte = "" } = Astro.props;
+const morceaux = String(texte).split(/(?<![\p{L}\p{N}])([A-E])(?![\p{L}\p{N}])/u);
+---
+{morceaux.map((m: string, i: number) =>
+  i % 2 === 1
+    ? <span class={`gradechip xs grade-${m.toLowerCase()}`}>{m}</span>
+    : m
+)}

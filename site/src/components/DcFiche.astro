@@ -26,6 +26,7 @@ import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import DocumentsOfficiels from "./DocumentsOfficiels.astro";
+import LettresEnPastille from "./LettresEnPastille.astro";
 import { ESG, ESRS_PAR_PILIER } from "../content/esg";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
@@ -954,7 +955,7 @@ const seoDesc = seoLead
         </div>
       </div>
 
-      <blockquote class="fiche-quote"><p>{t.quoteOpen}{L(dc.citable_quote)}{t.quoteClose}</p></blockquote>
+      <blockquote class="fiche-quote"><p>{t.quoteOpen}<LettresEnPastille texte={L(dc.citable_quote)} />{t.quoteClose}</p></blockquote>
 
       {fleetLine && (
         <p class="fiche-fleetline">{fleetLine.text} <a href={fleetLine.href}>{(t as any).fleet.cta}</a></p>

@@ -16,6 +16,7 @@
 // stade) ; la procédure sort du dossier procedure/, et son ABSENCE a son propre texte, qui
 // dit ce qui reste vrai au lieu d'avouer notre retard. Une phrase écrite à la main ici
 // serait une affirmation que personne ne pourrait vérifier.
+import LettresEnPastille from "./LettresEnPastille.astro";
 import Base from "../layouts/Base.astro";
 import type { LangueDeclaree } from "../content/langues";
 import { RACINE, donnee } from "../content/langues";
@@ -263,7 +264,7 @@ const seoTitle = [
       </div>
 
       <div class="pt-lead">
-        {dc.citable_quote && <p class="pt-quote">{L(dc.citable_quote)}</p>}
+        {dc.citable_quote && <p class="pt-quote"><LettresEnPastille texte={L(dc.citable_quote)} /></p>}
         <p>{t.leadHelp}</p>
       </div>
 
