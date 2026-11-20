@@ -68,8 +68,6 @@ POSITION_WAIVERS: dict[tuple[str, str], str] = {
      'fr-eolas-mangin-2'): '2026-10-02 — même opérateur, jamais tranchée',
     ('fr-equinix-ibx-pa4',
      'fr-ibx-pa8x'): '2026-10-02 — même opérateur, jamais tranchée',
-    ('fr-etix-everywhere-nantes-2',
-     'fr-sigma-carquefou'): '2026-10-02 — même opérateur, jamais tranchée',
     ('fr-global-switch-paris-est',
      'fr-global-switch-paris-ouest'): '2026-10-02 — même opérateur, jamais tranchée',
     ('fr-goodman-1-projet',
