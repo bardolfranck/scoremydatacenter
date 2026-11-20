@@ -166,6 +166,17 @@ GEO_WAIVERS = {
                                   "(dernier numéro cartographié de cette rue) et à 120 m du centre GeoNames ; "
                                   "le n° 10 est absent d'OSM, donc NON vérifiable au bâtiment ; indicateurs "
                                   "de point en not_collected ; déblocage = n° 10 cartographié ou cadastre",
+    # FAUX POSITIF MESURÉ (lane EU, vérifié par codeur-site le 2026-11-20) : greenfield, donc
+    # aucun bâtiment à toucher, et le townland du site (Bogland) a son centre GeoNames à 42 m.
+    # Le point n'est pas un géocode : c'est le point ArcGIS du dossier Wicklow 2488, et il tombe
+    # DANS les polygones « Planning Application Sites » (couche 1) des dossiers 201088, 2362 et
+    # 2488 (24,2 ha). Levée = point recalé sur le premier bâtiment construit.
+    "ie-data-centre-kish-business-park-arklow": "2026-11-20 — greenfield Kish Business Park, Arklow "
+                                                "(Crag Wicklow, dossiers Wicklow 201088/2488) : point "
+                                                "ArcGIS du dossier DANS le périmètre de 24 ha (couche 1), "
+                                                "à 42 m du centroïde GeoNames du townland Bogland, qui est "
+                                                "le townland du site ; pas de bâtiment à ce jour. Levée = "
+                                                "point sur le premier bâtiment construit",
 }
 
 
