@@ -328,6 +328,64 @@ def operator_gate(paths: list[Path]) -> list[str]:
     return problems
 
 
+# Hôtes qui ne sont JAMAIS l'autorité : nos propres domaines (une copie archivée servie par nous
+# est exactement ce que la règle « on ouvre la vérité, on vend le temps » garde privé) et les
+# hôtes de copie. Comparaison par suffixe de nom d'hôte : « pub-x.r2.dev » tombe sous « r2.dev ».
+_HOTES_NON_OFFICIELS = (
+    "scoremydatacenter.org", "r2.dev", "r2.cloudflarestorage.com", "workers.dev", "pages.dev",
+    "archive.org", "archive.ph", "archive.today", "archive.is", "archive.li",
+    "drive.google.com", "docs.google.com", "dropbox.com", "dropboxusercontent.com",
+    "github.com", "githubusercontent.com", "scribd.com", "documentcloud.org",
+)
+
+
+def official_documents_gate(paths: list[Path], today: date | None = None) -> list[str]:
+    """GATE DOCUMENTS OFFICIELS — un lien servi pointe vers l'AUTORITÉ, et il est daté.
+
+    Le schéma tient la forme (type, date ISO, `supports`). Ce gate tient ce qu'un schéma ne
+    voit pas : l'hôte (une copie sur notre R2 ou une archive web n'est pas le document de
+    l'autorité, et la servir livrerait l'annexe qu'on garde privée), une date qui existe au
+    calendrier et n'est pas dans le futur, et un document consulté APRÈS sa date."""
+    from urllib.parse import urlparse
+
+    today = today or date.today()
+    problems = []
+    for p in paths:
+        try:
+            docs = (load_json(p).get("identity") or {}).get("official_documents") or []
+        except Exception:  # noqa: BLE001 — l'illisibilité est signalée ailleurs
+            continue
+        vus = set()
+        for i, doc in enumerate(docs):
+            if not isinstance(doc, dict):
+                continue  # le schéma le signale
+            ou = f"GATE DOCUMENTS OFFICIELS: {p.name}: official_documents[{i}]"
+            url = str(doc.get("url") or "")
+            hote = (urlparse(url).hostname or "").lower()
+            if not hote:
+                problems.append(f"{ou}: url sans hôte ({url!r})")
+            elif any(hote == h or hote.endswith("." + h) for h in _HOTES_NON_OFFICIELS):
+                problems.append(
+                    f"{ou}: {hote} n'est pas l'autorité — le lien servi pointe vers le site qui a "
+                    f"publié le document, jamais vers une copie (la copie reste en annexe privée)"
+                )
+            if url in vus:
+                problems.append(f"{ou}: même url deux fois sur la fiche ({url})")
+            vus.add(url)
+            try:
+                d = date.fromisoformat(str(doc.get("date")))
+                vu = date.fromisoformat(str(doc.get("accessed")))
+            except ValueError:
+                problems.append(f"{ou}: date ou accessed n'existe pas au calendrier "
+                                f"({doc.get('date')!r}, {doc.get('accessed')!r})")
+                continue
+            if d > today or vu > today:
+                problems.append(f"{ou}: date dans le futur ({d}, consulté {vu})")
+            if vu < d:
+                problems.append(f"{ou}: consulté le {vu}, avant la date du document ({d})")
+    return problems
+
+
 def position_gate(paths: list[Path]) -> list[str]:
     """GATE POSITION — deux fiches au même point doivent avoir été TRANCHÉES.
 
@@ -1240,6 +1298,7 @@ def run_gates(data_dir: Path = DATA_DIR, today: date | None = None) -> list[str]
     problems += hors_service_gate(data_dir)
     problems += nom_et_statut_gate(data_dir)
     problems += filigrane_gate(datacenter_paths(data_dir))
+    problems += official_documents_gate(datacenter_paths(data_dir), today)
     problems += grandeurs_gate(data_dir)
 
     return problems

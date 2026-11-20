@@ -227,6 +227,89 @@
         "developer_source": {
           "$ref": "#/$defs/source"
         },
+        "official_documents": {
+          "type": "array",
+          "minItems": 1,
+          "description": "OPTIONAL, INFORMATIONAL — never read by the scoring. The official documents that attest a fact about THIS site (its existence, its project status, its developer), each as a DATED LINK to the authority that published it. Rule « on ouvre la vérité, on vend le temps » (Franck 2026-11-20): the fiche serves the official link and its date, never an archived copy, an extraction or a chronology. `url` must point to the publishing authority itself — `engine/validate.py` (official_documents_gate) refuses our own hosts and copy hosts. Labels per `type` live in site/src/content/fiche.ts, checked against this enum by engine/tests/test_official_documents.py.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "authority",
+              "reference",
+              "date",
+              "url",
+              "accessed",
+              "supports"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "planning_decision",
+                  "appeal_decision",
+                  "licence",
+                  "annual_environmental_report",
+                  "gazette_notice",
+                  "air_permit",
+                  "construction_registration",
+                  "environmental_notice",
+                  "environmental_record",
+                  "facility_registry",
+                  "regulatory_filing",
+                  "county_record",
+                  "municipal_record",
+                  "state_record",
+                  "parcel_record",
+                  "public_report",
+                  "public_statement"
+                ],
+                "description": "Nature of the act. One enum, one label per language on the fiche."
+              },
+              "authority": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The body that issued or published the document (council, agency, registry), as it names itself."
+              },
+              "reference": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "description": "The authority's own reference for the document (file number, permit id, notice id); null when the act carries none (a governor's statement, a press release on the authority's site) — the key stays mandatory so an absence is declared, never implicit."
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date of the document itself (decision, notice, filing) — ISO, mandatory: an undated official link is not served."
+              },
+              "url": {
+                "type": "string",
+                "pattern": "^https?://",
+                "description": "Link on the authority's own site. Never a copy (R2, scoremydatacenter.org, web archives)."
+              },
+              "accessed": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date the link was last opened and checked."
+              },
+              "supports": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "project_status",
+                    "developer",
+                    "existence"
+                  ]
+                },
+                "description": "Which fact of the fiche this document attests."
+              }
+            }
+          }
+        },
         "operator_type": {
           "type": [
             "string",

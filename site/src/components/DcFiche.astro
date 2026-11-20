@@ -25,6 +25,8 @@ import PillarIcon from "./PillarIcon.astro";
 import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
+import DocumentsOfficiels from "./DocumentsOfficiels.astro";
+import LettresEnPastille from "./LettresEnPastille.astro";
 import { ESG, ESRS_PAR_PILIER } from "../content/esg";
 import methodologyData from "../../public/data/methodology.json";
 import { STATS, fmtPct, fmtDec, fmtInt } from "../config/stats";
@@ -95,7 +97,7 @@ import { RACINE, donnee } from "../content/langues";
 import { enProjet } from "../content/statuts";
 import BandeauHorsService from "./BandeauHorsService.astro";
 const _idxEntry = (indicesData as any).countries?.[dc.country];
-let idxLine: { text: string; href: string } | null = null;
+let idxLine: { avant: string; apres: string; grade: string; href: string } | null = null;
 if (_idxEntry?.eligible) {
   const cname = nomDePaysEnPhrase(dc.country, lang);
   // La virgule décimale est un FORMAT, pas un mot : elle suit la locale et n'a rien à faire
@@ -115,11 +117,16 @@ if (_idxEntry?.eligible) {
   // ou un « (undefined) » dans une phrase lue comme un verdict.
   if (score !== null && /^[A-E]$/.test(_idxEntry.grade ?? "")) {
     idxLine = {
-      text: t.idx.line
-        .replace("{country}", cname)
-        .replace("{grade}", _idxEntry.grade)
-        .replace("{reserved}", res)
-        .replace("{score}", score),
+      // La lettre se lit comme une NOTE (pastille colorée), pas comme une lettre de la phrase :
+      // la phrase est coupée autour de {grade}, la pastille s'insère entre les deux moitiés.
+      ...(() => {
+        const [avant, apres] = t.idx.line
+          .replace("{country}", cname)
+          .replace("{reserved}", res)
+          .replace("{score}", score)
+          .split("{grade}");
+        return { avant, apres: apres ?? "", grade: _idxEntry.grade };
+      })(),
       href: `${/* i18n:route */ RACINE[lang]}indices/?pays=${dc.country}`,
     };
   }
@@ -948,14 +955,14 @@ const seoDesc = seoLead
         </div>
       </div>
 
-      <blockquote class="fiche-quote"><p>{t.quoteOpen}{L(dc.citable_quote)}{t.quoteClose}</p></blockquote>
+      <blockquote class="fiche-quote"><p>{t.quoteOpen}<LettresEnPastille texte={L(dc.citable_quote)} />{t.quoteClose}</p></blockquote>
 
       {fleetLine && (
         <p class="fiche-fleetline">{fleetLine.text} <a href={fleetLine.href}>{(t as any).fleet.cta}</a></p>
       )}
 
       {idxLine && (
-        <p class="fiche-idxline">{idxLine.text} <a href={idxLine.href}>{t.idx.cta} →</a></p>
+        <p class="fiche-idxline">{idxLine.avant}<span class={`gradechip xs grade-${idxLine.grade.toLowerCase()}`}>{idxLine.grade}</span>{`${idxLine.apres} `}<a href={idxLine.href}>{t.idx.cta} →</a></p>
       )}
 
       {/* L'avis d'autorité environnementale, À CÔTÉ de la note et jamais dedans : il arrive
@@ -964,6 +971,12 @@ const seoDesc = seoLead
           Présent sur les seules fiches dont le rattachement avis→site est sûr. */}
       {dc.environmental_dossier && (
         <DossierEnvironnemental dossier={dc.environmental_dossier} lang={lang} />
+      )}
+
+      {/* Documents officiels (2026-11-20) : le lien daté vers l'autorité, pour chaque fait
+          attesté — même place que le dossier, À CÔTÉ de la note et avant le tableau. */}
+      {dc.official_documents && (
+        <DocumentsOfficiels documents={dc.official_documents} lang={lang} />
       )}
 
       {/* Lecture ESG — une correspondance THÉMATIQUE, hors note, après le dossier et avant
