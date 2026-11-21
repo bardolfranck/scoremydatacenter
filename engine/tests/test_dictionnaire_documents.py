@@ -265,3 +265,25 @@ def test_un_lien_mort_garde_l_acte_et_se_date(tmp_path):
     assert _gate_docs(tmp_path, official_documents=[{**DOC, "link_unavailable_since": "2027-01-01"}])
     m = _controle()
     assert m.liens({"identity": {"official_documents": [mort, {**DOC, "url": "https://x.gov/2"}]}}) == {"https://x.gov/2"}
+
+
+def test_un_lien_geobloque_se_sert_avec_son_pays():
+    """Décision Franck 2026-11-21 : un portail qui ne répond que depuis son pays (conseils
+    irlandais) est servi, avec « accessible depuis <pays> » — jamais compté comme cassé."""
+    geo = {**DOC, "accessible_from": "IE"}
+    assert _schema_errors(_fiche(official_documents=[geo]), _schema(), "t") == []
+    assert _schema_errors(_fiche(project_party_documents=[{**ACTEUR, "accessible_from": "IE"}]), _schema(), "t") == []
+    assert _schema_errors(_fiche(official_documents=[{**DOC, "accessible_from": "Ireland"}]), _schema(), "t")
+
+
+def test_chaque_pays_du_corpus_a_sa_forme_accessible_depuis_dans_chaque_langue():
+    """« accessible depuis l'Irlande / les Pays-Bas / Singapour » : l'article dépend du pays,
+    il ne se devine pas. Une seule table (documents-officiels.ts), mêmes pays dans les 3 langues."""
+    texte = (REPO / "site" / "src" / "content" / "documents-officiels.ts").read_text(encoding="utf-8")
+    blocs = re.findall(r"^  paysAcces: \{(.*?)^  \}", texte, re.S | re.M)
+    assert len(blocs) == 3
+    jeux = [set(re.findall(r"^    ([A-Z]{2}):", b, re.M)) for b in blocs]
+    assert jeux[0] == jeux[1] == jeux[2]
+    corpus = {"AT", "BE", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "IL", "IT", "LU", "NL",
+              "NO", "PL", "PT", "SE", "SG", "US"}
+    assert corpus <= jeux[0], f"manque : {corpus - jeux[0]}"

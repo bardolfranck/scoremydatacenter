@@ -315,6 +315,11 @@
                 ],
                 "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
                 "description": "Set when the link stopped answering (removed, expired — Swiss building notices lapse after 1 to 3 years) and no replacement was found: the fiche keeps the act, its date, authority and reference, WITHOUT the link, with « lien indisponible depuis <date> » (Franck 2026-11-21). Never earlier than `accessed`."
+              },
+              "accessible_from": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$",
+                "description": "ISO 3166-1 code of the only country from which the authority's site answers (geo-blocking: Irish council planning portals answer 403 outside Ireland, to robots and humans alike). Decision Franck 2026-11-21: such a link IS served, with « accessible depuis <pays> » — never counted as broken. The witness is re-read from that country."
               }
             },
             "allOf": [
@@ -429,6 +434,11 @@
                 ],
                 "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
                 "description": "Set when the link stopped answering (removed, expired — Swiss building notices lapse after 1 to 3 years) and no replacement was found: the fiche keeps the act, its date, authority and reference, WITHOUT the link, with « lien indisponible depuis <date> » (Franck 2026-11-21). Never earlier than `accessed`."
+              },
+              "accessible_from": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$",
+                "description": "ISO 3166-1 code of the only country from which the authority's site answers (geo-blocking: Irish council planning portals answer 403 outside Ireland, to robots and humans alike). Decision Franck 2026-11-21: such a link IS served, with « accessible depuis <pays> » — never counted as broken. The witness is re-read from that country."
               }
             }
           }

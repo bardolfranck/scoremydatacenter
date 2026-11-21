@@ -1346,6 +1346,8 @@ sup a { color: var(--accent); font-weight: 750; }
 .fiche-docs-acteurs { border-style: dashed; background: transparent; }
 /* Lien mort sans remplaçant : l'acte reste (type, date, autorité, référence), sans lien. */
 .fiche-docs-mort { font-weight: 600; color: var(--ink-soft); }
+/* Lien géobloqué hors d'un pays (portails des conseils irlandais) : servi, avec sa mention. */
+.fiche-docs-geo { font-size: 0.8rem; color: var(--muted); }
 .fiche-docs-indispo { flex-basis: 100%; font-size: 0.8rem; color: var(--muted); font-style: italic; }
 .fiche-docs-titre { flex-basis: 100%; font-size: 0.85rem; color: var(--ink-soft); font-style: italic; overflow-wrap: anywhere; }
 @media (max-width: 640px) { .fiche-docs { margin: 0 16px 6px; } }
