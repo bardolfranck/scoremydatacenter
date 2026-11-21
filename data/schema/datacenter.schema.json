@@ -286,8 +286,8 @@
               },
               "url": {
                 "type": "string",
-                "pattern": "^https?://",
-                "description": "Link on the authority's own site. Never a copy (R2, scoremydatacenter.org, web archives)."
+                "pattern": "^https?://\\S+$",
+                "description": "Link on the authority's own site. Never a copy (R2, scoremydatacenter.org, web archives). The WHOLE field is the URL: no whitespace, no comment appended (2026-11-21: a served url carried « (live URL now 404; read via web.archive.org…) »)."
               },
               "accessed": {
                 "type": "string",
@@ -306,6 +306,112 @@
                   ]
                 },
                 "description": "Which fact of the fiche this document attests."
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "parcel_record"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "reference": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "description": "A parcel_record is a RECORDED act (deed, notice) with its instrument number. An assessor's page read as-is carries no act date (2026-11-21: 4 served parcel_record dated by consultation) — not served."
+              }
+            ]
+          }
+        },
+        "project_party_documents": {
+          "type": "array",
+          "minItems": 1,
+          "description": "OPTIONAL, INFORMATIONAL — never read by the scoring. « Documents des acteurs du projet » (Franck 2026-11-21): documents published by the PARTIES to the project — operator, developer, architect, engineering firm, contractor. They are DECLARATIONS of their authors, shown as such, separate from official_documents (acts of a public authority). Same rule: only the link and its date are served. Hosts and roles are gated against the source dictionary (analysis/sources/dictionnaire, newsroom) by engine/validate.py (documents_dictionary_gate). Labels live in site/src/content/documents-acteurs.ts, checked against these enums by engine/tests/test_dictionnaire_documents.py.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "role",
+              "actor",
+              "type",
+              "title",
+              "date",
+              "url",
+              "accessed",
+              "supports"
+            ],
+            "properties": {
+              "role": {
+                "enum": [
+                  "operator",
+                  "developer",
+                  "architect",
+                  "engineering_firm",
+                  "contractor"
+                ],
+                "description": "Which party to the project published it."
+              },
+              "actor": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The party's name as it names itself."
+              },
+              "type": {
+                "enum": [
+                  "project_page",
+                  "press_release",
+                  "report",
+                  "presentation",
+                  "case_study"
+                ],
+                "description": "Nature of the document."
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The document's own title, verbatim."
+              },
+              "date": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date of the document; null when the party's page carries none — declared, never guessed."
+              },
+              "url": {
+                "type": "string",
+                "pattern": "^https?://\\S+$",
+                "description": "Link on the party's own site. Never a copy, an aggregator or an archive."
+              },
+              "accessed": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date the link was last opened and checked."
+              },
+              "supports": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "project_status",
+                    "developer",
+                    "existence",
+                    "operator"
+                  ]
+                },
+                "description": "Which fact of the fiche this document documents."
               }
             }
           }

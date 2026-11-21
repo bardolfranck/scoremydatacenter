@@ -45,6 +45,7 @@ TABLES_MODULES: dict[str, str] = {
     "portrait-explainer.ts": "la page qui EXPLIQUE le portrait (le portrait est dans portrait.ts)",
     "dossier.ts": "le bloc « dossier environnemental » de la fiche",
     "documents-officiels.ts": "le bloc « Documents officiels » de la fiche (liens datés vers l'autorité)",
+    "documents-acteurs.ts": "le bloc « Documents des acteurs du projet » de la fiche (leurs déclarations, liées)",
     # La LECTURE ESG (2026-11-11) : la correspondance pilier → norme ESRS, lue par la
     # méthodologie ET par la fiche — une seule table, trois langues.
     "esg.ts": "la lecture ESG (méthodologie + bloc de la fiche)",

@@ -416,6 +416,14 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             **({"official_documents": sorted(dc["identity"]["official_documents"],
                                              key=lambda d: d["date"], reverse=True)}
                if dc["identity"].get("official_documents") else {}),
+            # Documents des acteurs du projet (2026-11-21) : déclarations de l'exploitant, du
+            # porteur, de l'architecte, du bureau d'études — servies À PART des actes officiels,
+            # jamais lues par le scoring. Même règle : le lien et la date. Datés d'abord (plus
+            # récent en tête), les non datés ensuite.
+            **({"project_party_documents": sorted(dc["identity"]["project_party_documents"],
+                                                  key=lambda d: (d["date"] is not None, d["date"] or ""),
+                                                  reverse=True)}
+               if dc["identity"].get("project_party_documents") else {}),
             "publication": dc["publication"],
             "score_history": dc["score_history"],
             # Contestation signal (A-21): sourced facts published next to the note,

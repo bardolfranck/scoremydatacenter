@@ -26,6 +26,7 @@ import type { PillarIconName } from "./PillarIcon.astro";
 import SourceLink from "./SourceLink.astro";
 import DossierEnvironnemental from "./DossierEnvironnemental.astro";
 import DocumentsOfficiels from "./DocumentsOfficiels.astro";
+import DocumentsActeurs from "./DocumentsActeurs.astro";
 import LettresEnPastille from "./LettresEnPastille.astro";
 import { ESG, ESRS_PAR_PILIER } from "../content/esg";
 import methodologyData from "../../public/data/methodology.json";
@@ -977,6 +978,12 @@ const seoDesc = seoLead
           attesté — même place que le dossier, À CÔTÉ de la note et avant le tableau. */}
       {dc.official_documents && (
         <DocumentsOfficiels documents={dc.official_documents} lang={lang} />
+      )}
+
+      {/* Documents des acteurs du projet (2026-11-21) : leurs déclarations, APRÈS les actes
+          officiels et séparées d'eux — jamais mélangées, jamais dans la note. */}
+      {dc.project_party_documents && (
+        <DocumentsActeurs documents={dc.project_party_documents} lang={lang} />
       )}
 
       {/* Lecture ESG — une correspondance THÉMATIQUE, hors note, après le dossier et avant
