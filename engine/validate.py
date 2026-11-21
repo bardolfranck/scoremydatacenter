@@ -390,6 +390,16 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
             if url in vus:
                 problems.append(f"{ou}: même url deux fois sur la fiche ({url})")
             vus.add(url)
+            # Lien mort sans remplaçant (2026-11-21) : l'acte reste servi SANS lien, avec
+            # « lien indisponible depuis ». La date est celle où on l'a trouvé mort : jamais
+            # avant la dernière ouverture réussie, jamais dans le futur.
+            if doc.get("link_unavailable_since") is not None:
+                try:
+                    mort = date.fromisoformat(str(doc["link_unavailable_since"]))
+                    if mort > today or mort < date.fromisoformat(str(doc.get("accessed"))):
+                        problems.append(f"{ou}: link_unavailable_since {mort} hors de [accessed, aujourd'hui]")
+                except ValueError:
+                    problems.append(f"{ou}: link_unavailable_since n'existe pas au calendrier")
             if champ == "project_party_documents" and doc.get("date") is None:
                 continue
             try:

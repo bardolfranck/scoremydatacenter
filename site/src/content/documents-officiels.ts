@@ -22,6 +22,7 @@ const FR = {
   reference: "réf.",
   atteste: "atteste :",
   verifie: "lien vérifié le {date}",
+  indisponible: "lien indisponible depuis le {date}",
   supports: {
     project_status: "le statut du projet",
     developer: "le porteur du projet",
@@ -45,6 +46,7 @@ const FR = {
     parcel_record: "Fiche cadastrale",
     public_report: "Rapport public",
     public_statement: "Communiqué officiel",
+    enforcement_action: "Mesure de police administrative",
   },
   datePattern: "{j}/{m}/{a}",
 };
@@ -55,6 +57,7 @@ const EN: typeof FR = {
   reference: "ref.",
   atteste: "attests:",
   verifie: "link checked on {date}",
+  indisponible: "link unavailable since {date}",
   supports: {
     project_status: "the project status",
     developer: "the project applicant",
@@ -78,6 +81,7 @@ const EN: typeof FR = {
     parcel_record: "Parcel record",
     public_report: "Public report",
     public_statement: "Official statement",
+    enforcement_action: "Enforcement action",
   },
   datePattern: "{a}-{m}-{j}",
 };
@@ -88,6 +92,7 @@ const NL: typeof FR = {
   reference: "kenmerk",
   atteste: "staaft:",
   verifie: "link gecontroleerd op {date}",
+  indisponible: "link niet beschikbaar sinds {date}",
   supports: {
     project_status: "de projectstatus",
     developer: "de initiatiefnemer",
@@ -111,6 +116,7 @@ const NL: typeof FR = {
     parcel_record: "Kadastrale gegevens",
     public_report: "Openbaar rapport",
     public_statement: "Officiële verklaring",
+    enforcement_action: "Handhavingsbesluit",
   },
   datePattern: "{j}-{m}-{a}",
 };

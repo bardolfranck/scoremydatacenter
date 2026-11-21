@@ -19,6 +19,7 @@ const FR = {
   sansDate: "non daté",
   documente: "documente :",
   verifie: "lien vérifié le {date}",
+  indisponible: "lien indisponible depuis le {date}",
   roles: {
     operator: "exploitant",
     developer: "porteur du projet",
@@ -48,6 +49,7 @@ const EN: typeof FR = {
   sansDate: "undated",
   documente: "documents:",
   verifie: "link checked on {date}",
+  indisponible: "link unavailable since {date}",
   roles: {
     operator: "operator",
     developer: "project applicant",
@@ -77,6 +79,7 @@ const NL: typeof FR = {
   sansDate: "ongedateerd",
   documente: "documenteert:",
   verifie: "link gecontroleerd op {date}",
+  indisponible: "link niet beschikbaar sinds {date}",
   roles: {
     operator: "exploitant",
     developer: "initiatiefnemer",
