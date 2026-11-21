@@ -339,6 +339,18 @@ _HOTES_NON_OFFICIELS = (
 )
 
 
+# Agrégateurs : ils servent au REPÉRAGE (trouver un n° de dossier), jamais de source servie
+# (spec du dictionnaire §2, Franck 2026-11-21). Vaut pour les deux catégories de documents.
+_HOTES_AGREGATEURS = (
+    "baxtel.com", "datacentermap.com", "datacenters.com", "cloudscene.com", "peeringdb.com",
+    "google.com", "goo.gl", "bing.com",
+)
+
+
+def _hote_dans(hote: str, hotes) -> bool:
+    return any(hote == h or hote.endswith("." + h) for h in hotes)
+
+
 def official_documents_gate(paths: list[Path], today: date | None = None) -> list[str]:
     """GATE DOCUMENTS OFFICIELS — un lien servi pointe vers l'AUTORITÉ, et il est daté.
 
@@ -352,26 +364,34 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
     problems = []
     for p in paths:
         try:
-            docs = (load_json(p).get("identity") or {}).get("official_documents") or []
+            ident = load_json(p).get("identity") or {}
         except Exception:  # noqa: BLE001 — l'illisibilité est signalée ailleurs
             continue
         vus = set()
-        for i, doc in enumerate(docs):
+        # Les « Documents des acteurs du projet » (2026-11-21) suivent la même règle : le lien
+        # vers l'auteur et sa date, jamais une copie ni un agrégateur. Leur date peut être
+        # `null` (une page projet n'en porte pas toujours) : déclarée, jamais devinée.
+        for champ in ("official_documents", "project_party_documents"):
+          for i, doc in enumerate(ident.get(champ) or []):
             if not isinstance(doc, dict):
                 continue  # le schéma le signale
-            ou = f"GATE DOCUMENTS OFFICIELS: {p.name}: official_documents[{i}]"
+            ou = f"GATE DOCUMENTS OFFICIELS: {p.name}: {champ}[{i}]"
             url = str(doc.get("url") or "")
             hote = (urlparse(url).hostname or "").lower()
             if not hote:
                 problems.append(f"{ou}: url sans hôte ({url!r})")
-            elif any(hote == h or hote.endswith("." + h) for h in _HOTES_NON_OFFICIELS):
+            elif _hote_dans(hote, _HOTES_NON_OFFICIELS):
                 problems.append(
-                    f"{ou}: {hote} n'est pas l'autorité — le lien servi pointe vers le site qui a "
+                    f"{ou}: {hote} n'est pas l'auteur — le lien servi pointe vers le site qui a "
                     f"publié le document, jamais vers une copie (la copie reste en annexe privée)"
                 )
+            elif _hote_dans(hote, _HOTES_AGREGATEURS):
+                problems.append(f"{ou}: {hote} est un agrégateur — repérage seulement, jamais servi")
             if url in vus:
                 problems.append(f"{ou}: même url deux fois sur la fiche ({url})")
             vus.add(url)
+            if champ == "project_party_documents" and doc.get("date") is None:
+                continue
             try:
                 d = date.fromisoformat(str(doc.get("date")))
                 vu = date.fromisoformat(str(doc.get("accessed")))
@@ -383,6 +403,114 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
                 problems.append(f"{ou}: date dans le futur ({d}, consulté {vu})")
             if vu < d:
                 problems.append(f"{ou}: consulté le {vu}, avant la date du document ({d})")
+    return problems
+
+
+# Documents servis AVANT le dictionnaire (vague du 2026-11-20) : inventoriés dans
+# `analysis/sources/dictionnaire/_heritage.json` (newsroom). Une dette datée qui doit
+# décroître (chaque entrée validée par Franck les couvre), jamais une permission : la liste
+# ne peut pas grandir, et elle ne peut rien couvrir d'autre que ce qu'elle nomme.
+HERITAGE_DICTIONNAIRE_MAX = 203
+_STATUTS_OUVERTS = {"validee", "active"}
+
+
+def charger_dictionnaire(dico_dir: Path, catalogue: Path) -> dict:
+    """Le dictionnaire des sources de documents, réduit à ce que le gate décide.
+
+    Rend {"officiel": {pays: {hôtes}}, "acteurs": {pays: {rôles}}, "heritage": {(fiche, url)},
+    "problemes": [...]}. Seules les entrées `validee`/`active` (GO Franck) ouvrent un hôte :
+    une `candidate` ou un `temoin_ok` ne sert rien. Les hôtes d'une source = l'hôte de son
+    `access.url` au catalogue + ses `hotes_documents` — une source n'est décrite qu'une fois."""
+    from urllib.parse import urlparse
+
+    out = {"officiel": {}, "acteurs": {}, "heritage": set(), "problemes": []}
+    try:
+        cat = {s["source_id"]: s for s in load_json(catalogue)["sources"]}
+    except Exception as exc:  # noqa: BLE001
+        out["problemes"].append(f"GATE DICTIONNAIRE: catalogue illisible {catalogue} ({exc})")
+        return out
+    for f in sorted(dico_dir.glob("*.json")):
+        if f.name.startswith("_"):
+            continue
+        try:
+            entrees = load_json(f)["entrees"]
+        except Exception as exc:  # noqa: BLE001
+            out["problemes"].append(f"GATE DICTIONNAIRE: {f.name} illisible ({exc})")
+            continue
+        for e in entrees:
+            eid = e.get("entry_id", "?")
+            for s in e.get("sources") or []:
+                if s.get("source_id") not in cat:
+                    out["problemes"].append(
+                        f"GATE DICTIONNAIRE: {f.name}: {eid}: source_id {s.get('source_id')!r} absent "
+                        f"du catalogue — une source se décrit une fois, au catalogue")
+            if e.get("statut") not in _STATUTS_OUVERTS:
+                continue
+            if not e.get("go_franck") or not (e.get("temoin") or {}).get("fiche_id"):
+                out["problemes"].append(
+                    f"GATE DICTIONNAIRE: {f.name}: {eid} est {e.get('statut')} sans go_franck ou sans témoin")
+                continue
+            pays = str(e.get("pays", "")).upper()
+            if e.get("categorie") == "acteurs_du_projet":
+                out["acteurs"].setdefault(pays, set()).add(e.get("role"))
+                continue
+            hotes = out["officiel"].setdefault(pays, set())
+            for s in e.get("sources") or []:
+                src = cat.get(s.get("source_id")) or {}
+                h = (urlparse(str((src.get("access") or {}).get("url") or "")).hostname or "").lower()
+                hotes |= {h} if h else set()
+                hotes |= {str(x).lower() for x in s.get("hotes_documents") or []}
+    her = dico_dir / "_heritage.json"
+    if her.is_file():
+        try:
+            out["heritage"] = {(r["fiche_id"], r["url"]) for r in load_json(her)["documents"]}
+        except Exception as exc:  # noqa: BLE001
+            out["problemes"].append(f"GATE DICTIONNAIRE: _heritage.json illisible ({exc})")
+    if len(out["heritage"]) > HERITAGE_DICTIONNAIRE_MAX:
+        out["problemes"].append(
+            f"GATE DICTIONNAIRE: l'héritage compte {len(out['heritage'])} documents pour un plafond "
+            f"de {HERITAGE_DICTIONNAIRE_MAX} — il ne peut que décroître ; un document nouveau passe "
+            f"par une entrée validée du dictionnaire")
+    return out
+
+
+def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path) -> list[str]:
+    """GATE DICTIONNAIRE — un document servi vient d'une source CONNUE d'avance.
+
+    Décision Franck 2026-11-21 : pas de moisson freestyle. Les documents d'un site se cherchent
+    là où le dictionnaire du pays dit de chercher (analysis/sources/dictionnaire/<cc>.json,
+    newsroom, spec SPEC-DICTIONNAIRE-DOCUMENTS.md). Un lien officiel dont l'hôte n'appartient à
+    aucune entrée validée du pays de la fiche est refusé ; un document d'acteur l'est si le
+    rôle de son auteur n'a pas d'entrée validée dans ce pays. Seule exception : l'héritage,
+    nommé document par document. Déterministe, aucun réseau (le contrôle des liens est à part :
+    scripts/controle_liens.py)."""
+    from urllib.parse import urlparse
+
+    if not dico_dir.is_dir():
+        return [f"GATE DICTIONNAIRE: {dico_dir} introuvable — aucun document ne se verse sans dictionnaire"]
+    dico = charger_dictionnaire(dico_dir, catalogue)
+    problems = list(dico["problemes"])
+    for p in paths:
+        try:
+            ident = load_json(p).get("identity") or {}
+        except Exception:  # noqa: BLE001
+            continue
+        pays = str(ident.get("country") or "").upper()
+        for i, doc in enumerate(ident.get("official_documents") or []):
+            url = str(doc.get("url") or "")
+            hote = (urlparse(url).hostname or "").lower()
+            if _hote_dans(hote, dico["officiel"].get(pays, ())) or (p.stem, url) in dico["heritage"]:
+                continue
+            problems.append(
+                f"GATE DICTIONNAIRE: {p.name}: official_documents[{i}]: {hote or url!r} n'est la source "
+                f"d'aucune entrée validée du dictionnaire {pays or '?'} — ajouter l'entrée (témoin + GO "
+                f"Franck) avant de verser")
+        for i, doc in enumerate(ident.get("project_party_documents") or []):
+            if doc.get("role") in dico["acteurs"].get(pays, ()):
+                continue
+            problems.append(
+                f"GATE DICTIONNAIRE: {p.name}: project_party_documents[{i}]: aucune entrée validée "
+                f"« acteurs_du_projet » pour le rôle {doc.get('role')!r} en {pays or '?'}")
     return problems
 
 

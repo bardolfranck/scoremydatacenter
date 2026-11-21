@@ -1,0 +1,46 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// « Documents des acteurs du projet » (Franck 2026-11-21) : les déclarations de l'exploitant,
+// du porteur, de l'architecte, du bureau d'études — À PART des actes officiels, présentées
+// comme des déclarations, hors note. Le lien vers leur auteur et la date, rien d'autre.
+// `actor` et `title` sont des DONNÉES, servies telles que l'auteur les écrit.
+import { DOCUMENTS_ACTEURS } from "../content/documents-acteurs";
+import type { LangueDeclaree } from "../content/langues";
+
+const { documents = [], lang = "fr" } = Astro.props;
+const t = DOCUMENTS_ACTEURS[lang as LangueDeclaree];
+const fmt = (iso: string | null) => {
+  if (!iso) return t.sansDate;
+  const [a, m, j] = String(iso).split("-");
+  return t.datePattern.replace("{a}", a).replace("{m}", m).replace("{j}", j);
+};
+const types: Record<string, string> = t.types;
+const roles: Record<string, string> = t.roles;
+const faits: Record<string, string> = t.supports;
+const libelleType = (k: string) => types[k] ?? k;
+const libelleRole = (k: string) => roles[k] ?? k;
+const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
+---
+{documents.length > 0 && (
+  <section class="fiche-docs fiche-docs-acteurs" aria-labelledby="docs-acteurs-title">
+    <h2 id="docs-acteurs-title" class="fiche-docs-kicker">{t.titre}</h2>
+    <p class="fiche-docs-intro">{t.intro}</p>
+    <ul class="fiche-docs-list">
+      {documents.map((d: any) => (
+        <li>
+          <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
+            {libelleType(d.type)}</a>
+          <span class="fiche-docs-date">{fmt(d.date)}</span>
+          <span class="fiche-docs-auth">{/* i18n:donnee */ d.actor}{` · ${libelleRole(d.role)}`}</span>
+          <span class="fiche-docs-titre">{/* i18n:donnee */ d.title}</span>
+          {d.supports?.length > 0 && (
+            <span class="fiche-docs-sup">{`${t.documente} ${libelleFaits(d.supports)}`}</span>
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+)}

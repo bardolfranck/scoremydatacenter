@@ -37,7 +37,7 @@ from engine.scoring import score_datacenter                  # noqa: E402
 from engine.validate import (_schema_errors, geo_gate, operator_gate, position_gate,  # noqa: E402
                              prose_gate, statut_gate, filigrane_gate, grandeurs_gate,
                              hors_service_gate, nom_et_statut_gate,
-                             official_documents_gate)
+                             official_documents_gate, documents_dictionary_gate)
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
@@ -227,6 +227,11 @@ def main() -> int:
     # Documents officiels (2026-11-20) : le lien servi pointe vers l'AUTORITÉ, daté — jamais
     # une copie (R2, archive web). Sur le corpus SERVI, pas seulement sur les fixtures.
     problems += official_documents_gate(paths)
+    # Dictionnaire des sources (Franck 2026-11-21) : un document servi vient d'une source
+    # CONNUE d'avance — entrée validée du pays, ou héritage nommé. Pas de moisson freestyle.
+    sources = CAL.parent / "analysis" / "sources"
+    problems += documents_dictionary_gate(paths, sources / "dictionnaire",
+                                          sources / "catalogue-sources.json")
     problems += grandeurs_gate(CAL)
     # GATE WATCHLIST — la couche « En veille » est SERVIE (build_prod_artifacts lit
     # load_watchlist(CAL)), mais son schéma n'était vérifié que par `make validate`, qui ne

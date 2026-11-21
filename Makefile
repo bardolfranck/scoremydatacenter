@@ -1,4 +1,4 @@
-.PHONY: comparator-projection validate score rescore build test install deploy-worker deploy-pages headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus
+.PHONY: comparator-projection validate score rescore build test install deploy-worker deploy-pages headers headers-check onepager collect-drafts collect-governance collect-signal onboard-dc refresh-signal promote sync-api-r2 veille-fr veille-actu actu-latest collect-projects status-proof suivi suivi-qualifie habitations validate-corpus controle-liens controle-liens-ecriture
 
 # LA COUCHE DE COLLECTE EST PRIVÉE (décision Franck, 2026-10-02). Le dépôt public porte la
 # méthode — moteur de notation, gates, méthodologie, site ; la machine qui va CHERCHER la
@@ -472,3 +472,13 @@ habitations:
 # vers R2 sans que le corpus réel soit validé (constaté le 2026-09-30).
 validate-corpus:
 	uv run python scripts/validate_corpus.py
+
+# Contrôle des liens de documents (spec du dictionnaire §6, Franck 2026-11-21).
+# À l'écriture : seuls les liens nouveaux ou modifiés depuis HEAD de la newsroom (réseau).
+# Routine : échantillon par hôte, balayage d'un hôte seulement s'il casse ; rapport daté dans
+# $(NEWSROOM)/analysis/sources/controle-liens/. Code de sortie 1 = quelque chose à faire.
+controle-liens-ecriture:
+	uv run python scripts/controle_liens.py ecriture
+
+controle-liens:
+	uv run python scripts/controle_liens.py routine
