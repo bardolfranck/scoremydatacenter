@@ -246,3 +246,22 @@ def test_seuls_les_liens_nouveaux_sont_ouverts_a_l_ecriture():
     assert m.liens_nouveaux(avant, apres) == {"https://x.gov/2", ACTEUR["url"]}
     assert m.liens_nouveaux(None, avant) == {DOC["url"]}
     assert m.liens_nouveaux(avant, avant) == set()
+
+
+# ------------------------------------------------------------------ suite Franck 2026-11-21
+
+def test_une_mise_en_demeure_est_une_mesure_de_police_pas_une_licence():
+    """Une mise en demeure servie en `licence` disait le contraire de l'acte."""
+    md = {**DOC, "type": "enforcement_action", "reference": "AIOT 0007404508"}
+    assert _schema_errors(_fiche(official_documents=[md]), _schema(), "t") == []
+
+
+def test_un_lien_mort_garde_l_acte_et_se_date(tmp_path):
+    mort = {**DOC, "link_unavailable_since": "2026-11-21"}
+    assert _schema_errors(_fiche(official_documents=[mort]), _schema(), "t") == []
+    assert _gate_docs(tmp_path, official_documents=[mort]) == []
+    assert _gate_docs(tmp_path, official_documents=[{**DOC, "link_unavailable_since": "2026-01-01"}]), \
+        "mort AVANT la dernière ouverture réussie"
+    assert _gate_docs(tmp_path, official_documents=[{**DOC, "link_unavailable_since": "2027-01-01"}])
+    m = _controle()
+    assert m.liens({"identity": {"official_documents": [mort, {**DOC, "url": "https://x.gov/2"}]}}) == {"https://x.gov/2"}

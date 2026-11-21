@@ -262,9 +262,10 @@
                   "state_record",
                   "parcel_record",
                   "public_report",
-                  "public_statement"
+                  "public_statement",
+                  "enforcement_action"
                 ],
-                "description": "Nature of the act. One enum, one label per language on the fiche."
+                "description": "Nature of the act. One enum, one label per language on the fiche. `enforcement_action` (Franck 2026-11-21): a formal notice, sanction, penalty or deposit order by the authority — an official act, never filed as a licence."
               },
               "authority": {
                 "type": "string",
@@ -306,6 +307,14 @@
                   ]
                 },
                 "description": "Which fact of the fiche this document attests."
+              },
+              "link_unavailable_since": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Set when the link stopped answering (removed, expired — Swiss building notices lapse after 1 to 3 years) and no replacement was found: the fiche keeps the act, its date, authority and reference, WITHOUT the link, with « lien indisponible depuis <date> » (Franck 2026-11-21). Never earlier than `accessed`."
               }
             },
             "allOf": [
@@ -412,6 +421,14 @@
                   ]
                 },
                 "description": "Which fact of the fiche this document documents."
+              },
+              "link_unavailable_since": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Set when the link stopped answering (removed, expired — Swiss building notices lapse after 1 to 3 years) and no replacement was found: the fiche keeps the act, its date, authority and reference, WITHOUT the link, with « lien indisponible depuis <date> » (Franck 2026-11-21). Never earlier than `accessed`."
               }
             }
           }

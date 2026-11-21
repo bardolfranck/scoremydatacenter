@@ -125,8 +125,11 @@ def ouvrir(url: str, timeout: float = 20.0) -> dict:
 # ---------------------------------------------------------------- quels liens
 
 def liens(fiche: dict) -> set[str]:
+    """Les liens SERVIS. Un document marqué `link_unavailable_since` n'a plus de lien servi :
+    on ne le rouvre pas à chaque passage (il est déjà connu mort)."""
     ident = (fiche or {}).get("identity") or {}
-    return {str(d.get("url")) for c in CHAMPS for d in ident.get(c) or [] if isinstance(d, dict)}
+    return {str(d.get("url")) for c in CHAMPS for d in ident.get(c) or []
+            if isinstance(d, dict) and not d.get("link_unavailable_since")}
 
 
 def liens_nouveaux(avant: dict | None, apres: dict) -> set[str]:

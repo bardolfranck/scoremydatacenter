@@ -31,11 +31,18 @@ const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
     <ul class="fiche-docs-list">
       {documents.map((d: any) => (
         <li>
-          <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
-            {libelleType(d.type)}</a>
+          {d.link_unavailable_since ? (
+            <span class="fiche-docs-mort">{libelleType(d.type)}</span>
+          ) : (
+            <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
+              {libelleType(d.type)}</a>
+          )}
           <span class="fiche-docs-date">{fmt(d.date)}</span>
           <span class="fiche-docs-auth">{/* i18n:donnee */ d.actor}{` · ${libelleRole(d.role)}`}</span>
           <span class="fiche-docs-titre">{/* i18n:donnee */ d.title}</span>
+          {d.link_unavailable_since && (
+            <span class="fiche-docs-indispo">{t.indisponible.replace("{date}", fmt(d.link_unavailable_since))}</span>
+          )}
           {d.supports?.length > 0 && (
             <span class="fiche-docs-sup">{`${t.documente} ${libelleFaits(d.supports)}`}</span>
           )}

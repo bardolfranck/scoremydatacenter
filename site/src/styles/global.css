@@ -1344,6 +1344,9 @@ sup a { color: var(--accent); font-weight: 750; }
 /* Documents des acteurs du projet : DÉCLARATIONS — même gabarit, bordure en pointillé pour
    ne jamais se lire comme un acte officiel ; le titre de l'auteur sur sa propre ligne. */
 .fiche-docs-acteurs { border-style: dashed; background: transparent; }
+/* Lien mort sans remplaçant : l'acte reste (type, date, autorité, référence), sans lien. */
+.fiche-docs-mort { font-weight: 600; color: var(--ink-soft); }
+.fiche-docs-indispo { flex-basis: 100%; font-size: 0.8rem; color: var(--muted); font-style: italic; }
 .fiche-docs-titre { flex-basis: 100%; font-size: 0.85rem; color: var(--ink-soft); font-style: italic; overflow-wrap: anywhere; }
 @media (max-width: 640px) { .fiche-docs { margin: 0 16px 6px; } }
 @media (prefers-color-scheme: dark) { .fiche-docs { background: #141a24; } }
