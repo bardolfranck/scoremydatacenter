@@ -410,7 +410,7 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
 # `analysis/sources/dictionnaire/_heritage.json` (newsroom). Une dette datée qui doit
 # décroître (chaque entrée validée par Franck les couvre), jamais une permission : la liste
 # ne peut pas grandir, et elle ne peut rien couvrir d'autre que ce qu'elle nomme.
-HERITAGE_DICTIONNAIRE_MAX = 206
+HERITAGE_DICTIONNAIRE_MAX = 203
 _STATUTS_OUVERTS = {"validee", "active"}
 
 
