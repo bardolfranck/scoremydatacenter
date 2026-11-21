@@ -37,6 +37,9 @@ const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
           )}
           <span class="fiche-docs-date">{fmt(d.date)}</span>
           <span class="fiche-docs-auth">{/* i18n:donnee */ d.authority}{d.reference ? /* i18n:donnee */ ` · ${t.reference} ${d.reference}` : ""}</span>
+          {d.accessible_from && !d.link_unavailable_since && (
+            <span class="fiche-docs-geo">{t.accessibleDepuis.replace("{pays}", t.paysAcces[d.accessible_from] ?? d.accessible_from)}</span>
+          )}
           {d.link_unavailable_since && (
             <span class="fiche-docs-indispo">{t.indisponible.replace("{date}", fmt(d.link_unavailable_since))}</span>
           )}

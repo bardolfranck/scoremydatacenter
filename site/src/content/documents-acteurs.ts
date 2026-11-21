@@ -20,6 +20,7 @@ const FR = {
   documente: "documente :",
   verifie: "lien vérifié le {date}",
   indisponible: "lien indisponible depuis le {date}",
+  accessibleDepuis: "accessible depuis {pays}",
   roles: {
     operator: "exploitant",
     developer: "porteur du projet",
@@ -50,6 +51,7 @@ const EN: typeof FR = {
   documente: "documents:",
   verifie: "link checked on {date}",
   indisponible: "link unavailable since {date}",
+  accessibleDepuis: "accessible from {pays}",
   roles: {
     operator: "operator",
     developer: "project applicant",
@@ -80,6 +82,7 @@ const NL: typeof FR = {
   documente: "documenteert:",
   verifie: "link gecontroleerd op {date}",
   indisponible: "link niet beschikbaar sinds {date}",
+  accessibleDepuis: "alleen toegankelijk vanuit {pays}",
   roles: {
     operator: "exploitant",
     developer: "initiatiefnemer",

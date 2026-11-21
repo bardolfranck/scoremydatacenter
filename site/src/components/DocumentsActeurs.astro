@@ -8,6 +8,7 @@
 // comme des déclarations, hors note. Le lien vers leur auteur et la date, rien d'autre.
 // `actor` et `title` sont des DONNÉES, servies telles que l'auteur les écrit.
 import { DOCUMENTS_ACTEURS } from "../content/documents-acteurs";
+import { DOCUMENTS_OFFICIELS } from "../content/documents-officiels";
 import type { LangueDeclaree } from "../content/langues";
 
 const { documents = [], lang = "fr" } = Astro.props;
@@ -40,6 +41,9 @@ const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
           <span class="fiche-docs-date">{fmt(d.date)}</span>
           <span class="fiche-docs-auth">{/* i18n:donnee */ d.actor}{` · ${libelleRole(d.role)}`}</span>
           <span class="fiche-docs-titre">{/* i18n:donnee */ d.title}</span>
+          {d.accessible_from && !d.link_unavailable_since && (
+            <span class="fiche-docs-geo">{t.accessibleDepuis.replace("{pays}", DOCUMENTS_OFFICIELS[lang as LangueDeclaree].paysAcces[d.accessible_from] ?? d.accessible_from)}</span>
+          )}
           {d.link_unavailable_since && (
             <span class="fiche-docs-indispo">{t.indisponible.replace("{date}", fmt(d.link_unavailable_since))}</span>
           )}
