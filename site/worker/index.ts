@@ -30,13 +30,38 @@ import * as reportConfirm from "../functions/api/report/confirm";
 import * as reportDownload from "../functions/api/report/download";
 import * as reportSubscribe from "../functions/api/report/subscribe";
 import * as reportUnsubscribe from "../functions/api/report/unsubscribe";
+import { budgetDe, moteurVerifie, pageLimite } from "./garde";
+export { GardeIp } from "./garde-do";
 
 type Env = {
   ASSETS: Fetcher;
   DB: D1Database;
   REPORTS_BUCKET: R2Bucket;
   RESEND_API_KEY: string;
+  GARDE_IP: DurableObjectNamespace<import("./garde-do").GardeIp>;
+  // IP exemptées du garde (nos postes), séparées par des virgules ; variable, pas un secret.
+  GARDE_IPS_LIBRES?: string;
 };
+
+// GARDE ANTI-ASPIRATION (2026-11-22, voir garde.ts) : les fiches et le détail carte sont
+// comptés par IP. Moteurs VÉRIFIÉS et nos IP exemptés. Une panne du compteur laisse PASSER
+// (on ne casse jamais le site pour une erreur de comptage).
+async function garde(request: Request, env: Env, pathname: string): Promise<Response | null> {
+  const budget = budgetDe(request.method, pathname);
+  if (!budget) return null;
+  const ip = request.headers.get("cf-connecting-ip") || "";
+  if (!ip) return null;
+  const libres = (env.GARDE_IPS_LIBRES || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (libres.includes(ip)) return null;
+  const cf = (request as unknown as { cf?: { verifiedBotCategory?: string; asn?: number } }).cf;
+  if (moteurVerifie(request.headers.get("user-agent") || "", cf)) return null;
+  try {
+    const v = await env.GARDE_IP.get(env.GARDE_IP.idFromName(ip)).verifier(budget, Date.now());
+    return v.ok ? null : pageLimite(pathname, v.reessayerDans);
+  } catch {
+    return null;
+  }
+}
 
 // Contexte identique à celui de Pages (EventContext), pour que les handlers n'y voient rien.
 type Ctx = {
@@ -76,6 +101,8 @@ async function fichiers(env: Env, request: Request): Promise<Response> {
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const { pathname } = new URL(request.url);
+    const mur = await garde(request, env, pathname);
+    if (mur) return mur;
     // Pages : casse ignorée, une barre finale tolérée, pas plus.
     const cle = pathname.toLowerCase().replace(/(?<=.)\/$/, "");
     const handler = ROUTES[cle]?.[METHODES[request.method]] as Handler | undefined;
