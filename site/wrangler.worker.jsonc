@@ -29,8 +29,18 @@
     // Tout le reste — les pages avec leur barre (« !/*/ », « !/ »), les fichiers
     // (« !/*.* ») — est servi directement par la couche de fichiers : gratuit, et hors
     // d'atteinte d'une erreur dans le Worker. Les exclusions l'emportent sur « /* ».
-    "run_worker_first": ["/*", "!/", "!/*/", "!/*.*"]
+    // 🔴 2026-11-22 (garde anti-aspiration) : les pages AVEC barre passent désormais aussi par
+    // le Worker (« !/*/ » retiré) — c'est là que sont les fiches, et une exclusion l'emporte
+    // sur une inclusion : impossible de n'y faire entrer que /dc/. Le Worker rend tout ce qui
+    // n'est pas compté à la couche de fichiers, tel quel. Les fichiers (« !/*.* ») et la
+    // racine restent servis sans lui.
+    "run_worker_first": ["/*", "!/", "!/*.*"]
   },
+  // Un compteur par IP (garde-do.ts). SQLite : seul stockage de Durable Object du plan gratuit.
+  "durable_objects": {
+    "bindings": [{ "name": "GARDE_IP", "class_name": "GardeIp" }]
+  },
+  "migrations": [{ "tag": "garde-v1", "new_sqlite_classes": ["GardeIp"] }],
   "d1_databases": [
     {
       "binding": "DB",
