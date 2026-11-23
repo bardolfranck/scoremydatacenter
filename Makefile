@@ -100,6 +100,7 @@ build:
 	@if [ -d ../smdc-newsroom/calibration ]; then $(MAKE) prod-artifacts; else $(MAKE) score; fi
 	$(MAKE) actu-latest   # site's Actu page build-imports public/data/actu/latest.json → always emit it (empty if no newsroom), else the astro build can't resolve the import
 	npm run build --prefix site
+	uv run python scripts/build_redirects_fusions.py
 	$(MAKE) prune-public-json
 
 # Anti-pillage (Franck 2026-07-22, corrigé 2026-07-23): the deployed site serves
