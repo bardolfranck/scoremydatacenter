@@ -127,7 +127,9 @@ def ouvrir(url: str, timeout: float = 20.0) -> dict:
 def liens(fiche: dict) -> set[str]:
     """Les liens SERVIS. Un document marqué `link_unavailable_since` n'a plus de lien servi :
     on ne le rouvre pas à chaque passage (il est déjà connu mort)."""
-    ident = (fiche or {}).get("identity") or {}
+    if not isinstance(fiche, dict):  # retraits.json, registres : pas une fiche (2026-11-23)
+        return set()
+    ident = fiche.get("identity") or {}
     return {str(d.get("url")) for c in CHAMPS for d in ident.get(c) or []
             if isinstance(d, dict) and not d.get("link_unavailable_since")}
 
@@ -150,7 +152,10 @@ def a_controler_ecriture(cal: Path, base: str, index: bool) -> list[tuple[str, s
                 + _git(repo, "ls-files", "--others", "--exclude-standard", "--", str(rel)).split())
     out = []
     for n in sorted(set(noms)):
-        if not n.endswith(".json") or n.endswith(".provenance.json"):
+        # Seules les FICHES portent des liens servis : calibration/datacenters*/<id>.json. Les
+        # registres (retraits.json, coordinate-provenance…) ne sont pas des fiches.
+        if (not n.endswith(".json") or "." in Path(n).stem
+                or not Path(n).parent.name.startswith("datacenters")):
             continue
         try:
             apres = json.loads(_git(repo, "show", f":{n}") if index else (repo / n).read_text("utf-8"))

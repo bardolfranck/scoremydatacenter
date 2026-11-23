@@ -203,29 +203,21 @@
           "description": "Provenance de l'identité elle-même (ex. tag OSM de cycle de vie)."
         },
         "developer": {
-          "oneOf": [
-            {
+          "type": "object",
+          "additionalProperties": true,
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
               "type": "string",
               "minLength": 1
             },
-            {
-              "type": "object",
-              "additionalProperties": true,
-              "required": [
-                "name"
-              ],
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              }
+            "source": {
+              "$ref": "#/$defs/source"
             }
-          ],
-          "description": "Le porteur du dossier, distinct de l'exploitant — le pétitionnaire ICPE n'est pas forcément celui qui exploitera. ⚠️ DEUX FORMES coexistent dans la donnée (chaîne simple, ou objet {name, activity_fr, activity_en}) : les deux sont acceptées ici pour ne pas bloquer, mais c'est une divergence à normaliser — un champ à deux formes finit par être lu de travers."
-        },
-        "developer_source": {
-          "$ref": "#/$defs/source"
+          },
+          "description": "Le porteur du dossier, distinct de l'exploitant — le pétitionnaire ICPE n'est pas forcément celui qui exploitera. UNE seule forme : {name, activity_fr?, activity_en?, source?}. La forme chaîne (+ developer_source à côté) a été acceptée jusqu'au 2026-11-23, puis a cassé build_prod_artifacts sur 6 fiches : retirée, le gate la refuse."
         },
         "official_documents": {
           "type": "array",
