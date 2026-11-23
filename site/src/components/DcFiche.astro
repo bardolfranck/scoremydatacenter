@@ -684,8 +684,18 @@ const seoDesc = seoLead
               : dc.operator}
             {/* Developer-when-known (Franck 2026-09-25): a SOURCED register fact, never our verdict —
                 the declared NAF activity + register link. Only present when R&D signed the case. */}
-            {dc.developer_source && (
+            {/* Deux chemins (build_prod_artifacts) : le registre des entreprises (SIRENE, signé R&D),
+                ou un ACTE qui nomme le porteur (CNDP, permis, ICPE). Un acte n'est pas le registre :
+                il se dit porteur du projet, avec son nom, lié à l'acte (2026-11-23 : la décision
+                CNDP du Bosquel s'affichait « registre des entreprises », sans le nom). */}
+            {dc.developer_source && dc.developer_source.kind !== "acte" && (
               <span class="fiche-dev"> — {t.developerDeclared} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{/* i18n:donnee */ dc.developer_source[`activity_${lang}`] ?? dc.developer_source.activity_en}</a> <span class="dev-reg">({t.developerRegister})</span></span>
+            )}
+            {dc.developer_source?.kind === "acte" && !isApplicant && (
+              <span class="fiche-dev"> — {t.developerFromAct} <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{dc.developer_source.name}</a> ({/* i18n:donnee */ dc.developer_source[`activity_${lang}`] ?? dc.developer_source.activity_en})</span>
+            )}
+            {dc.developer_source?.kind === "acte" && isApplicant && (
+              <span class="fiche-dev"> — <a class="dev-src" href={dc.developer_source.url} target="_blank" rel="noopener">{/* i18n:donnee */ dc.developer_source[`activity_${lang}`] ?? dc.developer_source.activity_en}</a></span>
             )}
           </p>
         )}
