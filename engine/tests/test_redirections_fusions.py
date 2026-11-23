@@ -1,4 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
+# Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+# https://scoremydatacenter.org · independent data center acceptability-risk score
 """Une fiche fusionnée redirige vers la conservée, dans les 3 langues (2026-11-23 : 24 fusions
 sur 42 tombaient sur un 404, et aucune en néerlandais)."""
 import importlib.util
