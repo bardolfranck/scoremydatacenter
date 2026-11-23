@@ -70,6 +70,7 @@ const FR = {
     public_report: "Rapport public",
     public_statement: "Communiqué officiel",
     enforcement_action: "Mesure de police administrative",
+    financing_decision: "Décision de financement ou d'aide publique",
   },
   datePattern: "{j}/{m}/{a}",
 };
@@ -128,6 +129,7 @@ const EN: typeof FR = {
     public_report: "Public report",
     public_statement: "Official statement",
     enforcement_action: "Enforcement action",
+    financing_decision: "Financing or public-aid decision",
   },
   datePattern: "{a}-{m}-{j}",
 };
@@ -186,6 +188,7 @@ const NL: typeof FR = {
     public_report: "Openbaar rapport",
     public_statement: "Officiële verklaring",
     enforcement_action: "Handhavingsbesluit",
+    financing_decision: "Financierings- of steunbesluit",
   },
   datePattern: "{j}-{m}-{a}",
 };

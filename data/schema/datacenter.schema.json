@@ -263,9 +263,10 @@
                   "parcel_record",
                   "public_report",
                   "public_statement",
-                  "enforcement_action"
+                  "enforcement_action",
+                  "financing_decision"
                 ],
-                "description": "Nature of the act. One enum, one label per language on the fiche. `enforcement_action` (Franck 2026-11-21): a formal notice, sanction, penalty or deposit order by the authority — an official act, never filed as a licence."
+                "description": "Nature of the act. One enum, one label per language on the fiche. `enforcement_action` (Franck 2026-11-21): a formal notice, sanction, penalty or deposit order by the authority — an official act, never filed as a licence. `financing_decision` (Franck 2026-11-23): a project disclosure or financing/grant/state-aid decision by a supranational body (European Commission, EIB, EBRD, World Bank group, regional development banks, UN) that names the project."
               },
               "authority": {
                 "type": "string",
