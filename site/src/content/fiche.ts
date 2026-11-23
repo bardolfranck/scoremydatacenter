@@ -123,16 +123,16 @@ const FR = {
   notApplicable: "non applicable",
   // DEUX ABSENCES OPPOSÉES PORTAIENT LE MÊME SILENCE. `missing` veut dire « nous avons lu le
   // dossier, la donnée n'y est pas » — c'est un fait, et il compte comme un ZÉRO dans la note.
-  // `not_collected` veut dire « nous n'avons pas cherché » — c'est notre lacune, retirée du
+  // `not_collected` veut dire « pas encore collecté » (libellé Franck 2026-11-23 : « pas encore cherché » sonnait négligé) — c'est notre lacune, retirée du
   // calcul. La fiche nommait le premier « Manquant » (ambigu : manquant pour qui ?) et ne
   // nommait pas le second du tout : 48 135 lignes du corpus affichaient une case d'état VIDE.
   indStatus: {
     measured: "Mesuré", announced: "Annoncé", estimated: "Estimé",
-    missing: "Absent du dossier", not_collected: "Pas encore cherché", not_applicable: "Sans objet",
+    missing: "Absent du dossier", not_collected: "Pas encore collecté", not_applicable: "Sans objet",
   },
   indStatusHint: {
     missing: "L'information a été cherchée dans le dossier public et ne s'y trouve pas. Elle compte comme un zéro dans la note.",
-    not_collected: "Nous n'avons pas encore cherché cette information. Elle est retirée du calcul, elle ne pénalise pas le site.",
+    not_collected: "Cette information n'est pas encore collectée. Elle est retirée du calcul, elle ne pénalise pas le site.",
     not_applicable: "Cet instrument ne s'applique pas à ce site (par exemple : sous le seuil de l'étude d'impact). Il est retiré du calcul, ce n'est ni un zéro ni une lacune.",
   },
   accessed: "consulté le",
@@ -163,7 +163,7 @@ const FR = {
   opNone: "L'opérateur peut nous transmettre une réponse concernant cette fiche. Lorsqu'une réponse est reçue et publiable, elle apparaît ici, clairement attribuée et datée.",
   opNote: "Une erreur factuelle ? Utilisez « Signaler une erreur » en joignant une source ou un justificatif.",
   dataStateTitle: "État de la donnée disponible",
-  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} absents du dossier · {notCollected} pas encore cherchés.",
+  dataState: "{n} indicateurs suivis · {measured} mesurés · {announced} annoncés (non vérifiés) · {missing} absents du dossier · {notCollected} pas encore collectés.",
   contestationTitle: "Contestation & signal",
   contestationSub: "Faits sourcés — n'entrent pas dans la note.",
   press: "Presse : ",
@@ -338,11 +338,11 @@ const EN: typeof FR = {
   notApplicable: "not applicable",
   indStatus: {
     measured: "Measured", announced: "Announced", estimated: "Estimated",
-    missing: "Absent from the file", not_collected: "Not looked for yet", not_applicable: "Not applicable",
+    missing: "Absent from the file", not_collected: "Not yet collected", not_applicable: "Not applicable",
   },
   indStatusHint: {
     missing: "We read the public file and the information is not in it. It counts as a zero in the grade.",
-    not_collected: "We have not looked for this yet. It is dropped from the calculation and does not penalise the site.",
+    not_collected: "This information is not collected yet. It is dropped from the calculation and does not penalise the site.",
     not_applicable: "This instrument does not apply to this site (for instance: below the environmental-impact-assessment threshold). It is dropped from the calculation — neither a zero nor a gap.",
   },
   accessed: "accessed",
@@ -373,7 +373,7 @@ const EN: typeof FR = {
   opNone: "The operator can send us a response about this datasheet. When a response is received and publishable, it appears here, clearly attributed and dated.",
   opNote: "A factual error? Use “Report an error”, attaching a source or supporting document.",
   dataStateTitle: "State of the available data",
-  dataState: "{n} indicators tracked · {measured} measured · {announced} announced (unverified) · {missing} absent from the file · {notCollected} not looked for yet.",
+  dataState: "{n} indicators tracked · {measured} measured · {announced} announced (unverified) · {missing} absent from the file · {notCollected} not yet collected.",
   contestationTitle: "Contestation & signal",
   contestationSub: "Sourced facts — never an input to the grade.",
   press: "Press: ",
@@ -543,11 +543,11 @@ const NL: typeof FR = {
   notApplicable: "niet van toepassing",
   indStatus: {
     measured: "Gemeten", announced: "Aangekondigd", estimated: "Geschat",
-    missing: "Afwezig in het dossier", not_collected: "Nog niet gezocht", not_applicable: "Niet van toepassing",
+    missing: "Afwezig in het dossier", not_collected: "Nog niet verzameld", not_applicable: "Niet van toepassing",
   },
   indStatusHint: {
     missing: "De informatie is in het publieke dossier gezocht en staat er niet in. Ze telt als een nul in het cijfer.",
-    not_collected: "We hebben deze informatie nog niet gezocht. Ze is uit de berekening gehaald en benadeelt de site niet.",
+    not_collected: "Deze informatie is nog niet verzameld. Ze is uit de berekening gehaald en benadeelt de site niet.",
     not_applicable: "Dit instrument is niet van toepassing op deze site (bijvoorbeeld: onder de drempel voor een milieueffectbeoordeling). Het is uit de berekening gehaald — geen nul en geen leemte.",
   },
   accessed: "geraadpleegd op",
@@ -578,7 +578,7 @@ const NL: typeof FR = {
   opNone: "De exploitant kan ons een weerwoord over deze fiche bezorgen. Zodra een weerwoord is ontvangen en publiceerbaar is, verschijnt het hier, met duidelijke naamsvermelding en datum.",
   opNote: "Een feitelijke fout? Gebruik ‘Een fout melden’ en voeg een bron of bewijsstuk toe.",
   dataStateTitle: "Status van de beschikbare gegevens",
-  dataState: "{n} indicatoren gevolgd · {measured} gemeten · {announced} aangekondigd (niet geverifieerd) · {missing} afwezig in het dossier · {notCollected} nog niet gezocht.",
+  dataState: "{n} indicatoren gevolgd · {measured} gemeten · {announced} aangekondigd (niet geverifieerd) · {missing} afwezig in het dossier · {notCollected} nog niet verzameld.",
   contestationTitle: "Verzet & signalen",
   contestationSub: "Gedocumenteerde feiten — tellen niet mee in het cijfer.",
   press: "Pers: ",
