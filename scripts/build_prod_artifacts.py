@@ -493,6 +493,7 @@ def apply_developer_identity(dcs: dict) -> dict:
         if not dev.get("name") or not (dev.get("source") or {}).get("url"):
             continue
         sources[dc_id] = {"source": dev["source"].get("title") or "acte administratif",
+                          "kind": "acte", "name": dev["name"],
                           **{f"activity_{lg}": dev.get(f"activity_{lg}")
                              or ACTIVITE_PAR_DEFAUT[lg] for lg in langues_declarees()},
                           "url": dev["source"]["url"],
