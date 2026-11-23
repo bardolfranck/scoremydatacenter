@@ -328,3 +328,13 @@ def test_une_source_supra_s_ouvre_a_toutes_les_fiches(tmp_path):
 def test_une_decision_de_financement_est_un_type_d_acte():
     fin = {**DOC, "type": "financing_decision", "reference": "EIB 2023-0001"}
     assert _schema_errors(_fiche(official_documents=[fin]), _schema(), "t") == []
+
+
+def test_un_registre_n_est_pas_une_fiche():
+    """2026-11-23 : le hook d'écriture plantait sur calibration/retraits.json (une liste)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("cl", Path(__file__).resolve().parents[2] / "scripts" / "controle_liens.py")
+    cl = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cl)
+    assert cl.liens([{"id": "fr-x", "type": "fusion"}]) == set()
+    assert cl.liens_nouveaux(None, [{"id": "fr-x"}]) == set()
