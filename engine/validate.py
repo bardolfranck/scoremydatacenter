@@ -424,11 +424,23 @@ HERITAGE_DICTIONNAIRE_MAX = 203
 _STATUTS_OUVERTS = {"validee", "active"}
 
 
+def _validation_croisee(v) -> bool:
+    """Décision Franck 2026-11-23 : il délègue le jugement des sources à codeur-site, qui
+    valide après la revue croisée d'un SECOND agent (pas celui qui propose). Une validation
+    sans revue, ou avec une revue `reserve`/`refus`, n'ouvre rien."""
+    if not isinstance(v, dict) or v.get("par") != "codeur-site" or not v.get("date"):
+        return False
+    r = v.get("revue_croisee") or {}
+    return bool(r.get("agent")) and bool(r.get("date")) and r.get("verdict") == "ok"
+
+
 def charger_dictionnaire(dico_dir: Path, catalogue: Path) -> dict:
     """Le dictionnaire des sources de documents, réduit à ce que le gate décide.
 
     Rend {"officiel": {pays: {hôtes}}, "acteurs": {pays: {rôles}}, "heritage": {(fiche, url)},
-    "problemes": [...]}. Seules les entrées `validee`/`active` (GO Franck) ouvrent un hôte :
+    "problemes": [...]}. Seules les entrées `validee`/`active` (GO Franck, ou validation
+    codeur-site après revue croisée) ouvrent un hôte. Le pays `*` (supra.json : Commission,
+    BEI, BERD, Banque mondiale, ONU…) ouvre ses hôtes à toutes les fiches :
     une `candidate` ou un `temoin_ok` ne sert rien. Les hôtes d'une source = l'hôte de son
     `access.url` au catalogue + ses `hotes_documents` — une source n'est décrite qu'une fois."""
     from urllib.parse import urlparse
@@ -456,9 +468,14 @@ def charger_dictionnaire(dico_dir: Path, catalogue: Path) -> dict:
                         f"du catalogue — une source se décrit une fois, au catalogue")
             if e.get("statut") not in _STATUTS_OUVERTS:
                 continue
-            if not e.get("go_franck") or not (e.get("temoin") or {}).get("fiche_id"):
+            if not (e.get("temoin") or {}).get("fiche_id"):
                 out["problemes"].append(
-                    f"GATE DICTIONNAIRE: {f.name}: {eid} est {e.get('statut')} sans go_franck ou sans témoin")
+                    f"GATE DICTIONNAIRE: {f.name}: {eid} est {e.get('statut')} sans témoin")
+                continue
+            if not (e.get("go_franck") or _validation_croisee(e.get("validation"))):
+                out["problemes"].append(
+                    f"GATE DICTIONNAIRE: {f.name}: {eid} est {e.get('statut')} sans validation — "
+                    f"go_franck, ou validation codeur-site après une revue croisée `ok` d'un 2e agent")
                 continue
             pays = str(e.get("pays", "")).upper()
             if e.get("categorie") == "acteurs_du_projet":
@@ -509,14 +526,15 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
         for i, doc in enumerate(ident.get("official_documents") or []):
             url = str(doc.get("url") or "")
             hote = (urlparse(url).hostname or "").lower()
-            if _hote_dans(hote, dico["officiel"].get(pays, ())) or (p.stem, url) in dico["heritage"]:
+            ouverts = set(dico["officiel"].get(pays, ())) | set(dico["officiel"].get("*", ()))
+            if _hote_dans(hote, ouverts) or (p.stem, url) in dico["heritage"]:
                 continue
             problems.append(
                 f"GATE DICTIONNAIRE: {p.name}: official_documents[{i}]: {hote or url!r} n'est la source "
-                f"d'aucune entrée validée du dictionnaire {pays or '?'} — ajouter l'entrée (témoin + GO "
-                f"Franck) avant de verser")
+                f"d'aucune entrée validée du dictionnaire {pays or '?'} ni supra — ajouter l'entrée "
+                f"(témoin + revue croisée + validation) avant de verser")
         for i, doc in enumerate(ident.get("project_party_documents") or []):
-            if doc.get("role") in dico["acteurs"].get(pays, ()):
+            if doc.get("role") in set(dico["acteurs"].get(pays, ())) | set(dico["acteurs"].get("*", ())):
                 continue
             problems.append(
                 f"GATE DICTIONNAIRE: {p.name}: project_party_documents[{i}]: aucune entrée validée "

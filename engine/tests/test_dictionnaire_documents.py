@@ -161,7 +161,7 @@ def test_l_heritage_ne_peut_pas_grandir(tmp_path):
 
 def test_une_entree_validee_porte_le_go_et_le_temoin(tmp_path):
     d, cat = _dico(tmp_path, [_entree(go_franck=None)])
-    assert any("go_franck" in p for p in documents_dictionary_gate([], d, cat))
+    assert any("sans validation" in p for p in documents_dictionary_gate([], d, cat))
     d, cat = _dico(tmp_path, [_entree(temoin={})])
     assert any("témoin" in p for p in documents_dictionary_gate([], d, cat))
 
@@ -287,3 +287,44 @@ def test_chaque_pays_du_corpus_a_sa_forme_accessible_depuis_dans_chaque_langue()
     corpus = {"AT", "BE", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "IL", "IT", "LU", "NL",
               "NO", "PL", "PT", "SE", "SG", "US"}
     assert corpus <= jeux[0], f"manque : {corpus - jeux[0]}"
+
+
+# ------------------------------------------------------------------ suite Franck 2026-11-23
+
+_REVUE = {"agent": "agent-data-pipeline-FR", "date": "2026-11-23", "verdict": "ok"}
+
+
+def test_codeur_site_valide_apres_une_revue_croisee(tmp_path):
+    """Franck délègue le jugement des sources : codeur-site valide, un 2e agent a contre-examiné."""
+    v = {"par": "codeur-site", "date": "2026-11-23", "revue_croisee": _REVUE}
+    d, cat = _dico(tmp_path, [_entree(go_franck=None, validation=v)])
+    assert documents_dictionary_gate(_fiches(tmp_path, official_documents=[DOC]), d, cat) == []
+
+
+def test_une_validation_sans_revue_ok_n_ouvre_rien(tmp_path):
+    for revue in (None, {}, {**_REVUE, "verdict": "reserve"}, {**_REVUE, "verdict": "refus"},
+                  {**_REVUE, "agent": ""}):
+        v = {"par": "codeur-site", "date": "2026-11-23", "revue_croisee": revue}
+        d, cat = _dico(tmp_path, [_entree(go_franck=None, validation=v)])
+        assert documents_dictionary_gate(_fiches(tmp_path, official_documents=[DOC]), d, cat), revue
+    v = {"par": "agent-eu", "date": "2026-11-23", "revue_croisee": _REVUE}  # l'agent ne s'auto-valide pas
+    d, cat = _dico(tmp_path, [_entree(go_franck=None, validation=v)])
+    assert documents_dictionary_gate(_fiches(tmp_path, official_documents=[DOC]), d, cat)
+
+
+def test_une_source_supra_s_ouvre_a_toutes_les_fiches(tmp_path):
+    """BEI, Commission, Banque mondiale… : un acte qui nomme le projet, quel que soit le pays."""
+    d, cat = _dico(tmp_path, [])
+    (d / "supra.json").write_text(json.dumps({"pays": "*", "entrees": [_entree(
+        entry_id="supra-bei-projet", pays="*", type="financing_decision",
+        sources=[{"rang": 1, "source_id": "us-va-deq", "hotes_documents": ["www.eib.org"]}])]}))
+    bei = {**DOC, "type": "financing_decision", "url": "https://www.eib.org/en/projects/all/20230001"}
+    assert documents_dictionary_gate(_fiches(tmp_path, official_documents=[bei]), d, cat) == []
+    f = tmp_path / "ie-x.json"
+    f.write_text(json.dumps({"identity": {"country": "IE", "official_documents": [bei]}}))
+    assert documents_dictionary_gate([f], d, cat) == []
+
+
+def test_une_decision_de_financement_est_un_type_d_acte():
+    fin = {**DOC, "type": "financing_decision", "reference": "EIB 2023-0001"}
+    assert _schema_errors(_fiche(official_documents=[fin]), _schema(), "t") == []
