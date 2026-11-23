@@ -43,3 +43,17 @@ def test_une_edition_de_langue_absente_est_sautee(tmp_path):
     d = tmp_path / "dc" / "b"; d.mkdir(parents=True); (d / "index.html").write_text("x")
     out, fautes = rf.lignes([{"id": "a", "type": "fusion", "survivante": "b"}], "", tmp_path)
     assert fautes == [] and out == ["/dc/a/ /dc/b/ 301"]
+
+
+def test_le_bloc_genere_passe_avant_toute_regle_a_motif(tmp_path, monkeypatch):
+    """Cloudflare compte comme dynamique toute règle placée après une règle à motif (plafond 100)."""
+    import json
+    dist = _dist(tmp_path / "dist", "b")
+    (dist / "_redirects").write_text("/dc/x/* /dc/y/:splat 301\n")
+    cal = tmp_path / "cal"; cal.mkdir()
+    (cal / "retraits.json").write_text(json.dumps([{"id": "a", "type": "fusion", "survivante": "b"}]))
+    monkeypatch.setattr(rf, "DIST", dist); monkeypatch.setattr(rf, "CAL", cal)
+    assert rf.main() == 0 and rf.main() == 0  # deux passages : le bloc est régénéré, pas empilé
+    regles = [l for l in (dist / "_redirects").read_text().splitlines() if l and not l.startswith("#")]
+    assert regles[0] == "/dc/a/ /dc/b/ 301" and regles[-1].startswith("/dc/x/*")
+    assert len(regles) == 4

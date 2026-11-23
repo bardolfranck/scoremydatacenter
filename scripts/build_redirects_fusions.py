@@ -8,7 +8,7 @@ deux endroits. Mesuré le 2026-11-23 : 24 fusions sur 42 n'avaient AUCUN 301 (le
 US du 11-20, Sigma Carquefou, les 5 fusions FR du jour) et aucune fiche n'était redirigée en
 néerlandais. Le lien indexé ou partagé tombait sur un 404. La source de la fusion est
 `calibration/retraits.json` (newsroom) ; ce script en dérive les redirections, après le build
-Astro, dans dist/_redirects.
+Astro, EN TÊTE de dist/_redirects.
 
 Règles :
   - une fusion = 6 lignes STATIQUES : 3 langues (/, /fr/, /nl/) × (page, portrait) ;
@@ -32,6 +32,7 @@ CAL = Path(os.environ.get("NEWSROOM_CAL", ROOT.parent / "smdc-newsroom" / "calib
 LANGUES = ("", "fr/", "nl/")
 SOUS_PAGES = ("", "portrait/")
 ENTETE = "# --- GÉNÉRÉ par scripts/build_redirects_fusions.py depuis calibration/retraits.json — ne pas éditer ---"
+FIN = "# --- fin du bloc généré ---"
 
 
 def cible_finale(fid: str, fusions: dict[str, str]) -> str:
@@ -76,12 +77,18 @@ def main() -> int:
     if not rt.is_file():
         print(f"redirections: {rt} absent — aucune fusion à rediriger")
         return 0
-    texte = red.read_text("utf-8").split(ENTETE)[0].rstrip() + "\n"
+    texte = red.read_text("utf-8")
+    if FIN in texte:  # bloc d'un passage précédent : on le régénère
+        texte = texte.split(FIN, 1)[1].lstrip("\n")
     out, fautes = lignes(json.loads(rt.read_text("utf-8")), texte, DIST)
     if fautes:
         print("redirections: ERREUR —\n  " + "\n  ".join(fautes), file=sys.stderr)
         return 1
-    red.write_text(texte + "\n" + ENTETE + "\n" + "\n".join(out) + "\n", "utf-8")
+    # EN TÊTE du fichier, jamais à la fin : Cloudflare compte comme DYNAMIQUE toute règle placée
+    # après la première règle à motif (:splat, *), et les dynamiques sont plafonnées à 100.
+    # Mis en queue, ces 132 lignes statiques ont fait refuser le deploy du 2026-11-23
+    # (« Maximum number of dynamic _redirects rules limit of 100 exceeded », ligne 170).
+    red.write_text(ENTETE + "\n" + "\n".join(out) + "\n" + FIN + "\n\n" + texte, "utf-8")
     print(f"redirections: {len(out)} lignes 301 générées depuis retraits.json")
     return 0
 
