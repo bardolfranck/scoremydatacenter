@@ -93,6 +93,7 @@ const FR = {
     enforcement: "mesure administrative",
   },
   datePattern: "{j}/{m}/{a}",
+  locale: "fr-FR",
 };
 
 const EN: typeof FR = {
@@ -168,6 +169,7 @@ const EN: typeof FR = {
     enforcement: "enforcement measure",
   },
   datePattern: "{a}-{m}-{j}",
+  locale: "en-GB",
 };
 
 const NL: typeof FR = {
@@ -243,6 +245,7 @@ const NL: typeof FR = {
     enforcement: "handhavingsmaatregel",
   },
   datePattern: "{j}-{m}-{a}",
+  locale: "nl-NL",
 };
 
 /** La copie du bloc « Documents officiels » : `DOCUMENTS_OFFICIELS[lang]`. */
