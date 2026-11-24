@@ -294,3 +294,18 @@ def test_project_named_rattache_par_le_nom_distinctif_du_projet(tmp_path):
     generique = {**acte, "match": {**acte["match"], "project_name": "Campus"}}
     f = fiche("ch-infomaniak-d4", "Infomaniak D4 Campus", [generique])
     assert documents_dictionary_gate([f, *autres], d, cat), "« Campus » désigne deux fiches"
+
+
+def test_project_named_voit_un_nom_a_tiret_bas(tmp_path):
+    """102 noms de fiches viennent de PeeringDB avec des tirets bas (« EQUINIX_-_ZH5 ») : le
+    tiret bas sépare les mots, sinon « ZH5 » n'y serait jamais un mot entier."""
+    d, cat = _dico_ch(tmp_path)
+    acte = {**ZRH13, "match": {"operator": "Equinix", "address": "Oberengstringen",
+                               "proof": "project_named", "project_name": "ZH5"}}
+    f = tmp_path / "ch-equinix-zh5.json"
+    f.write_text(json.dumps({"identity": {"country": "CH", "name": "EQUINIX_-_ZH5", "operator": "Equinix",
+                                          "municipality": "Oberengstringen", "official_documents": [acte]}}))
+    g = tmp_path / "ch-equinix-zh55.json"
+    g.write_text(json.dumps({"identity": {"country": "CH", "name": "EQUINIX_-_ZH55", "operator": "Equinix",
+                                          "municipality": "Zürich"}}))
+    assert documents_dictionary_gate([f, g], d, cat) == [], "« ZH5 » ≠ « ZH55 », et le _ sépare"
