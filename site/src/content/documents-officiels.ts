@@ -74,11 +74,12 @@ const FR = {
     labour_permit: "Autorisation de durée du travail",
   },
   // « Même adresse, autre activité » (Franck 2026-11-24) : sous-rubrique des documents
-  // officiels. Des actes sur une AUTRE activité de l'exploitant à la même adresse, qui datent
-  // une étape du site. Jamais une preuve du data center.
+  // officiels. Des actes à la même adresse qui datent une étape du site sans porter sur le DC :
+  // une AUTRE activité de l'exploitant, ou l'immeuble qui l'abrite (amendé 2026-11-24, Infomaniak
+  // D4). Jamais une preuve du data center.
   memeAdresse: {
     titre: "Même adresse, autre activité",
-    intro: "Actes visant une autre activité de l'exploitant, à la même adresse. Ils ne portent pas sur le data center.",
+    intro: "Actes à la même adresse qui ne portent pas sur le data center lui-même : une autre activité de l'exploitant, ou l'immeuble qui l'abrite.",
   },
   vise: "vise :",
   etape: "étape :",
@@ -153,7 +154,7 @@ const EN: typeof FR = {
   },
   memeAdresse: {
     titre: "Same address, other activity",
-    intro: "Acts on another activity of the operator, at the same address. They are not about the data center.",
+    intro: "Acts at the same address that are not about the data center itself: another activity of the operator, or the building that houses it.",
   },
   vise: "concerns:",
   etape: "milestone:",
@@ -228,7 +229,7 @@ const NL: typeof FR = {
   },
   memeAdresse: {
     titre: "Zelfde adres, andere activiteit",
-    intro: "Stukken over een andere activiteit van de exploitant, op hetzelfde adres. Ze gaan niet over het datacenter.",
+    intro: "Stukken op hetzelfde adres die niet over het datacenter zelf gaan: een andere activiteit van de exploitant, of het gebouw waarin het is ondergebracht.",
   },
   vise: "betreft:",
   etape: "mijlpaal:",

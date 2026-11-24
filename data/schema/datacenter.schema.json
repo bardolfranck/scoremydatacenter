@@ -412,7 +412,7 @@
         "same_address_documents": {
           "type": "array",
           "minItems": 1,
-          "description": "OPTIONAL, INFORMATIONAL — never read by the scoring, and NEVER a proof of the data center (not for existence, status, developer, nor counted in official-document coverage). « Même adresse, autre activité » (Franck 2026-11-24): official acts on ANOTHER activity of the same operator at the same address (a network operations centre, offices…) that date a moment of the site's history. Served as a sub-section of « Documents officiels », each with its contextual label (`activity`). Same host rules as official_documents (official_documents_gate, documents_dictionary_gate).",
+          "description": "OPTIONAL, INFORMATIONAL — never read by the scoring, and NEVER a proof of the data center (not for existence, status, developer, nor counted in official-document coverage). « Même adresse, autre activité » (Franck 2026-11-24): official acts at the same address that are not about the data center itself and date a moment of the site's history: ANOTHER activity of the same operator (a network operations centre, offices…) or, amended by Franck 2026-11-24, the BUILDING THAT HOUSES the data center, held by its owner or developer (Infomaniak D4: the permit of the housing building whose basement hosts it). The place is always proven (same_address or official_perimeter). Served as a sub-section of « Documents officiels », each with its contextual label (`activity`). Same host rules as official_documents (official_documents_gate, documents_dictionary_gate).",
           "items": {
             "type": "object",
             "additionalProperties": false,
@@ -541,7 +541,7 @@
                   "operator": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "The addressee as the act names it; must be the fiche's operator (same legal entity or group), checked when versing."
+                    "description": "The addressee as the act names it (a legal entity, never a natural person): the fiche's operator (same legal entity or group) or, for the building that houses the data center, its owner or developer — `activity` then says so."
                   },
                   "address": {
                     "type": "string",
