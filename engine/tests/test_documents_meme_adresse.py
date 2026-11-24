@@ -10,7 +10,8 @@ une preuve du data center.
 Ces tests tiennent les quatre conditions :
   - chaque acte dit ce qu'il vise (libellé de contexte, FR et EN exigés, NL avec repli) ;
   - il date une étape de l'histoire du site (« pour ne pas TOUT collecter ») ;
-  - l'exploitant et l'adresse sont vérifiés (≤ 300 m), jamais supposés ;
+  - l'exploitant et le lieu sont PROUVÉS — même adresse, ou périmètre officiel cité —, jamais
+    estimés par une distance (Franck 2026-11-24, principe de parcimonie) ;
   - il ne prouve RIEN du data center : pas de `supports`, et un champ à part, que les
     lecteurs de preuves (statut, existence, couverture) ne lisent pas."""
 
@@ -39,7 +40,7 @@ BINZ = {
                  "nl": "netwerkbewakingscentrum van Swisscom"},
     "site_event": "permit",
     "match": {"operator": "Swisscom (Schweiz) AG", "address": "Binzring 17, 8045 Zürich",
-              "distance_m": 28},
+              "proof": "same_address"},
 }
 
 
@@ -70,7 +71,8 @@ def test_le_schema_refuse_un_acte_sans_contexte_sans_etape_ou_trop_loin():
         lambda d: d.pop("site_event"),                    # ne raconte rien du site : pas collecté
         lambda d: d.update(site_event="other"),
         lambda d: d.pop("match"),
-        lambda d: d["match"].update(distance_m=301),      # au-delà, c'est un autre site
+        lambda d: d["match"].update(proof="distance"),    # une preuve, jamais une distance
+        lambda d: d["match"].update(proof="official_perimeter"),  # sans le périmètre cité
         lambda d: d["match"].pop("operator"),
         lambda d: d.update(supports=["existence"]),       # jamais une preuve du data center
         lambda d: d.pop("date"),
@@ -120,6 +122,7 @@ def test_le_dictionnaire_ouvre_ou_ferme_l_hote(tmp_path):
         "statut": "validee", "go_franck": "2026-11-21", "temoin": {"fiche_id": "ch-x"},
         "sources": [{"rang": 1, "source_id": "ch-amtsblattportal"}]}]}))
     (d / "_heritage.json").write_text(json.dumps({"documents": []}))
+    (d / "_heritage_rattachement.json").write_text(json.dumps({"documents": []}))
     cat = tmp_path / "catalogue.json"
     cat.write_text(json.dumps({"sources": [
         {"source_id": "ch-amtsblattportal", "access": {"url": "https://amtsblattportal.ch/api"}}]}))
@@ -151,3 +154,44 @@ def test_l_artefact_sert_la_sous_rubrique_a_part_et_jamais_comme_preuve(tmp_path
     servi = json.loads((tmp_path / "dc" / f"{dc['id']}.json").read_text())
     assert [d["date"] for d in servi["same_address_documents"]] == ["2024-09-30", "2019-03-01"]
     assert "official_documents" not in servi, "un acte de la même adresse ne devient pas une preuve"
+
+
+def test_un_campus_se_rattache_par_son_perimetre_officiel():
+    """Fouju (≈ 70 ha) : un acte au bout du campus n'est pas « à 300 m du point » — il se
+    rattache parce que sa parcelle figure au périmètre d'un acte officiel, cité."""
+    campus = copy.deepcopy(BINZ)
+    campus["match"] = {"operator": "Campus AI SPV1", "address": "Fouju, lieu-dit Les Bordes, ZB 12",
+                       "proof": "official_perimeter",
+                       "perimeter_source": {"title": "Permis de construire PC 077 196 25 00001",
+                                            "url": "https://www.seine-et-marne.gouv.fr/x.pdf"}}
+    assert _schema_errors(_fiche(same_address_documents=[campus]), _schema(), "t") == []
+
+
+def test_un_acte_officiel_nouveau_porte_son_rattachement(tmp_path):
+    """Les deux rubriques, pour tous les sites : un acte officiel sans `match` n'est accepté
+    que s'il est nommé dans l'héritage (servi avant le 2026-11-24)."""
+    d = tmp_path / "dictionnaire"
+    d.mkdir()
+    (d / "ch.json").write_text(json.dumps({"pays": "CH", "entrees": [{
+        "entry_id": "ch-licence-seco-arbeitszeit", "categorie": "officiel", "pays": "CH",
+        "statut": "validee", "go_franck": "2026-11-21", "temoin": {"fiche_id": "ch-x"},
+        "sources": [{"rang": 1, "source_id": "ch-amtsblattportal"}]}]}))
+    (d / "_heritage.json").write_text(json.dumps({"documents": []}))
+    cat = tmp_path / "catalogue.json"
+    cat.write_text(json.dumps({"sources": [
+        {"source_id": "ch-amtsblattportal", "access": {"url": "https://amtsblattportal.ch/api"}}]}))
+    acte = {k: v for k, v in BINZ.items() if k not in ("activity", "site_event", "match")}
+    acte["supports"] = ["existence"]
+    f = tmp_path / "ch-x.json"
+    f.write_text(json.dumps({"identity": {"country": "CH", "official_documents": [acte]}}))
+    (d / "_heritage_rattachement.json").write_text(json.dumps({"documents": []}))
+    assert documents_dictionary_gate([f], d, cat), "sans match ni héritage : refusé"
+    (d / "_heritage_rattachement.json").write_text(json.dumps({"documents": [
+        {"fiche_id": "ch-x", "url": acte["url"]}]}))
+    assert documents_dictionary_gate([f], d, cat) == [], "servi avant : couvert par l'héritage"
+    (d / "_heritage_rattachement.json").write_text(json.dumps({"documents": []}))
+    f.write_text(json.dumps({"identity": {"country": "CH", "official_documents": [
+        {**acte, "match": BINZ["match"]}]}}))
+    assert documents_dictionary_gate([f], d, cat) == [], "avec son match : accepté"
+    (d / "_heritage_rattachement.json").unlink()
+    assert documents_dictionary_gate([f], d, cat), "l'héritage absent se signale"

@@ -314,6 +314,73 @@
                 "type": "string",
                 "pattern": "^[A-Z]{2}$",
                 "description": "ISO 3166-1 code of the only country from which the authority's site answers (geo-blocking: Irish council planning portals answer 403 outside Ireland, to robots and humans alike). Decision Franck 2026-11-21: such a link IS served, with « accessible depuis <pays> » — never counted as broken. The witness is re-read from that country."
+              },
+              "match": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operator",
+                  "address",
+                  "proof"
+                ],
+                "properties": {
+                  "operator": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The addressee as the act names it; must be the fiche's operator (same legal entity or group), checked when versing."
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The address (or cadastral parcel) as the act gives it."
+                  },
+                  "proof": {
+                    "enum": [
+                      "same_address",
+                      "official_perimeter"
+                    ],
+                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached."
+                  },
+                  "perimeter_source": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "title",
+                      "url"
+                    ],
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "url": {
+                        "type": "string",
+                        "pattern": "^https?://\\S+$"
+                      }
+                    },
+                    "description": "The official act that gives the site's perimeter (mandatory when proof = official_perimeter)."
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "proof": {
+                          "const": "official_perimeter"
+                        }
+                      },
+                      "required": [
+                        "proof"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "perimeter_source"
+                      ]
+                    }
+                  }
+                ],
+                "description": "Attachment of the act to the site: same operator AND a proof of place. Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
               }
             },
             "allOf": [
@@ -467,27 +534,66 @@
                 "required": [
                   "operator",
                   "address",
-                  "distance_m"
+                  "proof"
                 ],
                 "properties": {
                   "operator": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "The addressee as the act names it; must be the fiche's operator (same legal entity or group, checked when versing)."
+                    "description": "The addressee as the act names it; must be the fiche's operator (same legal entity or group), checked when versing."
                   },
                   "address": {
                     "type": "string",
                     "minLength": 1,
-                    "description": "The address as the act gives it."
+                    "description": "The address (or cadastral parcel) as the act gives it."
                   },
-                  "distance_m": {
-                    "type": "number",
-                    "minimum": 0,
-                    "maximum": 300,
-                    "description": "Distance from that address to the fiche's point, metres. Beyond 300 m it is another site, not the same address."
+                  "proof": {
+                    "enum": [
+                      "same_address",
+                      "official_perimeter"
+                    ],
+                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached."
+                  },
+                  "perimeter_source": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "title",
+                      "url"
+                    ],
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "url": {
+                        "type": "string",
+                        "pattern": "^https?://\\S+$"
+                      }
+                    },
+                    "description": "The official act that gives the site's perimeter (mandatory when proof = official_perimeter)."
                   }
                 },
-                "description": "Why this act belongs to THIS site although it does not target the data center: same operator, same address. Both are verified, never assumed."
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "proof": {
+                          "const": "official_perimeter"
+                        }
+                      },
+                      "required": [
+                        "proof"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "perimeter_source"
+                      ]
+                    }
+                  }
+                ],
+                "description": "Attachment of the act to the site: same operator AND a proof of place. Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
               }
             },
             "allOf": [
