@@ -90,6 +90,12 @@ def test_les_champs_communs_sont_ceux_des_documents_officiels():
         if cle == "supports":
             assert cle not in meme["properties"]
             continue
+        if cle == "match":
+            # même forme, sauf `dc_named` : un acte sur une autre activité ne nomme pas le DC
+            mm = copy.deepcopy(defn)
+            mm["properties"]["proof"]["enum"].remove("dc_named")
+            assert meme["properties"]["match"]["properties"]["proof"]["enum"] == mm["properties"]["proof"]["enum"]
+            continue
         assert meme["properties"][cle] == defn, cle
     assert set(off["required"]) - {"supports"} <= set(meme["required"])
     assert meme["allOf"] == off["allOf"]
@@ -195,3 +201,56 @@ def test_un_acte_officiel_nouveau_porte_son_rattachement(tmp_path):
     assert documents_dictionary_gate([f], d, cat) == [], "avec son match : accepté"
     (d / "_heritage_rattachement.json").unlink()
     assert documents_dictionary_gate([f], d, cat), "l'héritage absent se signale"
+
+
+def _dico_ch(tmp_path):
+    d = tmp_path / "dictionnaire"
+    d.mkdir(exist_ok=True)
+    (d / "ch.json").write_text(json.dumps({"pays": "CH", "entrees": [{
+        "entry_id": "ch-eshab", "categorie": "officiel", "pays": "CH",
+        "statut": "validee", "go_franck": "2026-11-21", "temoin": {"fiche_id": "ch-x"},
+        "sources": [{"rang": 1, "source_id": "ch-amtsblattportal"}]}]}))
+    (d / "_heritage.json").write_text(json.dumps({"documents": []}))
+    (d / "_heritage_rattachement.json").write_text(json.dumps({"documents": []}))
+    cat = tmp_path / "catalogue.json"
+    cat.write_text(json.dumps({"sources": [
+        {"source_id": "ch-amtsblattportal", "access": {"url": "https://amtsblattportal.ch/api"}}]}))
+    return d, cat
+
+
+ZRH13 = {"type": "gazette_notice", "authority": "Stadt Winterthur", "reference": "BP-ZH01-0000060751",
+         "date": "2026-05-29", "url": "https://amtsblattportal.ch/api/v1/publications/z/pdf",
+         "accessed": "2026-11-21", "supports": ["project_status"],
+         "match": {"operator": "Vantage Data Centers ZRH11 GmbH", "address": "Fabrikstrasse 8, Winterthur",
+                   "proof": "dc_named"}}
+
+
+def _fiche_ch(tmp_path, nom, operateur, commune, docs=()):
+    f = tmp_path / f"{nom}.json"
+    f.write_text(json.dumps({"identity": {"country": "CH", "operator": operateur, "municipality": commune,
+                                          **({"official_documents": list(docs)} if docs else {})}}))
+    return f
+
+
+def test_dc_named_rattache_un_permis_de_campus_sans_adresse_de_fiche(tmp_path):
+    """ZRH13 (Vantage, Fabrikstrasse 8) : vrai permis de data center, rejeté par la preuve
+    d'adresse (fiche au n° 12). Il nomme l'exploitant et le DC dans la commune, et Vantage n'a
+    qu'une fiche à Winterthur : rattaché."""
+    assert _schema_errors(_fiche(official_documents=[ZRH13]), _schema(), "t") == []
+    d, cat = _dico_ch(tmp_path)
+    f = _fiche_ch(tmp_path, "ch-vantage", "Vantage Data Centers", "Winterthur", [ZRH13])
+    autre = _fiche_ch(tmp_path, "ch-autre", "Green", "Winterthur")
+    assert documents_dictionary_gate([f, autre], d, cat) == []
+
+
+def test_dc_named_refuse_quand_l_exploitant_a_plusieurs_fiches_dans_la_commune(tmp_path):
+    d, cat = _dico_ch(tmp_path)
+    f = _fiche_ch(tmp_path, "ch-vantage", "Vantage Data Centers", "Winterthur", [ZRH13])
+    soeur = _fiche_ch(tmp_path, "ch-vantage-2", "Vantage Data Centers Europe", "Winterthur")
+    assert documents_dictionary_gate([f, soeur], d, cat), "deux fiches Vantage à Winterthur : à adjuger"
+
+
+def test_dc_named_n_existe_pas_pour_une_autre_activite():
+    doc = copy.deepcopy(BINZ)
+    doc["match"]["proof"] = "dc_named"
+    assert _schema_errors(_fiche(same_address_documents=[doc]), _schema(), "t")
