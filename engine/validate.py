@@ -558,6 +558,15 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
     for ident in idents.values():
         k = _cle_site(ident)
         par_site[k] = par_site.get(k, 0) + 1
+    # `project_named` (Franck 2026-11-24) : le nom distinctif du projet (« D4 »), en mot entier,
+    # doit désigner UNE seule fiche du corpus — celle-ci. Un nom générique en désigne plusieurs
+    # et tombe tout seul, sans liste noire à tenir.
+    import re as _re
+    noms = {p: str(ident.get("name") or "") for p, ident in idents.items()}
+
+    def _fiches_nommees(projet: str) -> list:
+        motif = _re.compile(rf"(?<![\w]){_re.escape(projet.strip())}(?![\w])", _re.I)
+        return [p for p, nom in noms.items() if motif.search(nom)]
     for p, ident in idents.items():
         pays = str(ident.get("country") or "").upper()
         officiels = [("official_documents", i, d) for i, d in enumerate(ident.get("official_documents") or [])]
@@ -577,6 +586,14 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
                         f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: preuve dc_named, mais l'exploitant "
                         f"{k[0]!r} a {par_site.get(k, 0)} fiche(s) à {k[1]!r} — à adjuger, jamais rattaché "
                         f"par défaut")
+            if (doc.get("match") or {}).get("proof") == "project_named":
+                projet = str((doc.get("match") or {}).get("project_name") or "")
+                nommees = _fiches_nommees(projet) if projet.strip() else []
+                if nommees != [p]:
+                    problems.append(
+                        f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: preuve project_named, mais le nom "
+                        f"{projet!r} désigne {len(nommees)} fiche(s) ({', '.join(sorted(q.stem for q in nommees)[:5])}) "
+                        f"— il doit désigner cette fiche seule")
             hote = (urlparse(url).hostname or "").lower()
             ouverts = set(dico["officiel"].get(pays, ())) | set(dico["officiel"].get("*", ()))
             if _hote_dans(hote, ouverts) or (p.stem, url) in dico["heritage"]:

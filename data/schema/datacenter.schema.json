@@ -338,9 +338,10 @@
                     "enum": [
                       "same_address",
                       "official_perimeter",
-                      "dc_named"
+                      "dc_named",
+                      "project_named"
                     ],
-                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached. `dc_named` (Franck 2026-11-24, official_documents only — an act on another activity cannot name the data center): the act names the operator AND designates a data center (centre de données, Rechenzentrum, ICPE installation designated as such) in the fiche's municipality, and the operator has ONE fiche in that municipality — checked by engine/validate.py (documents_dictionary_gate); with several, the act is adjudicated, never attached by default. The reading of the act (is its object the data center?) is a closed judgment made by Jev in the collector and recorded in the fiche's provenance; the act's address then becomes the fiche's sourced address."
+                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached. `dc_named` (Franck 2026-11-24, official_documents only — an act on another activity cannot name the data center): the act names the operator AND designates a data center (centre de données, Rechenzentrum, ICPE installation designated as such) in the fiche's municipality, and the operator has ONE fiche in that municipality — checked by engine/validate.py (documents_dictionary_gate); with several, the act is adjudicated, never attached by default. The reading of the act (is its object the data center?) is a closed judgment made by Jev in the collector and recorded in the fiche's provenance; the act's address then becomes the fiche's sourced address. `project_named` (Franck 2026-11-24, official_documents only): the act names the operator AND the project's distinctive name (« D4 »), given verbatim in `project_name`; engine/validate.py checks that this name, as a whole word, designates exactly ONE fiche in the whole corpus — this one. A generic name (« Campus », « DC1 ») matches several fiches and is refused by the same check. For authority reports and financing decisions that name a project without an address."
                   },
                   "perimeter_source": {
                     "type": "object",
@@ -360,6 +361,11 @@
                       }
                     },
                     "description": "The official act that gives the site's perimeter (mandatory when proof = official_perimeter)."
+                  },
+                  "project_name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "description": "The project's distinctive name exactly as the act gives it (mandatory when proof = project_named)."
                   }
                 },
                 "allOf": [
@@ -379,9 +385,26 @@
                         "perimeter_source"
                       ]
                     }
+                  },
+                  {
+                    "if": {
+                      "properties": {
+                        "proof": {
+                          "const": "project_named"
+                        }
+                      },
+                      "required": [
+                        "proof"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "project_name"
+                      ]
+                    }
                   }
                 ],
-                "description": "Attachment of the act to the site: same operator AND a proof of place (same_address, official_perimeter, or — official_documents only — dc_named). Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
+                "description": "Attachment of the act to the site: same operator AND a proof of place (same_address, official_perimeter, or — official_documents only — dc_named or project_named). Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
               },
               "date_precision": {
                 "enum": [

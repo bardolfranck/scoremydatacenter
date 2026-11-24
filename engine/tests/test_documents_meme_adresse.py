@@ -93,7 +93,8 @@ def test_les_champs_communs_sont_ceux_des_documents_officiels():
         if cle == "match":
             # même forme, sauf `dc_named` : un acte sur une autre activité ne nomme pas le DC
             mm = copy.deepcopy(defn)
-            mm["properties"]["proof"]["enum"].remove("dc_named")
+            for propre in ("dc_named", "project_named"):  # n'existent que pour un acte sur le DC
+                mm["properties"]["proof"]["enum"].remove(propre)
             assert meme["properties"]["match"]["properties"]["proof"]["enum"] == mm["properties"]["proof"]["enum"]
             continue
         assert meme["properties"][cle] == defn, cle
@@ -268,3 +269,28 @@ def test_une_date_au_mois_porte_le_01_et_sa_precision():
     assert _schema_errors(_fiche(official_documents=[{**rapport, "date": "2026-04-22"}]), _schema(), "t")
     assert _schema_errors(_fiche(official_documents=[{**rapport, "date_precision": "year"}]), _schema(), "t")
     assert _schema_errors(_fiche(official_documents=[{**rapport, "date_precision": "jour"}]), _schema(), "t")
+
+
+def test_project_named_rattache_par_le_nom_distinctif_du_projet(tmp_path):
+    """OFEN 12665 : « Nom du projet D4 / Exploitant Infomaniak », sans adresse ni commune. Le
+    nom « D4 » désigne une seule fiche du corpus : rattaché. « Campus » en désigne plusieurs :
+    refusé, sans liste noire."""
+    d, cat = _dico_ch(tmp_path)
+    acte = {**ZRH13, "match": {"operator": "Infomaniak", "address": "au sud de Genève",
+                               "proof": "project_named", "project_name": "D4"}}
+    assert _schema_errors(_fiche(official_documents=[acte]), _schema(), "t") == []
+    sans_nom = copy.deepcopy(acte); del sans_nom["match"]["project_name"]
+    assert _schema_errors(_fiche(official_documents=[sans_nom]), _schema(), "t")
+
+    def fiche(nom_fichier, nom, docs=()):
+        f = tmp_path / f"{nom_fichier}.json"
+        f.write_text(json.dumps({"identity": {"country": "CH", "name": nom, "operator": "Infomaniak",
+                                              "municipality": "Genève",
+                                              **({"official_documents": list(docs)} if docs else {})}}))
+        return f
+    d4 = fiche("ch-infomaniak-d4", "Infomaniak D4", [acte])
+    autres = [fiche("ch-infomaniak-dii", "Infomaniak DII"), fiche("ch-data4", "Data4 Campus")]
+    assert documents_dictionary_gate([d4, *autres], d, cat) == [], "« D4 » ≠ « Data4 » (mot entier)"
+    generique = {**acte, "match": {**acte["match"], "project_name": "Campus"}}
+    f = fiche("ch-infomaniak-d4", "Infomaniak D4 Campus", [generique])
+    assert documents_dictionary_gate([f, *autres], d, cat), "« Campus » désigne deux fiches"
