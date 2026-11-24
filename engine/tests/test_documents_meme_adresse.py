@@ -254,3 +254,17 @@ def test_dc_named_n_existe_pas_pour_une_autre_activite():
     doc = copy.deepcopy(BINZ)
     doc["match"]["proof"] = "dc_named"
     assert _schema_errors(_fiche(same_address_documents=[doc]), _schema(), "t")
+
+
+def test_une_date_au_mois_porte_le_01_et_sa_precision():
+    """OFEN 12665 : « Bonnes pratiques avril 2026 », aucun jour publié. On ne fabrique pas de
+    jour : `date_precision: month` et le 01 comme marqueur ; un autre jour est refusé."""
+    rapport = {"type": "public_report", "authority": "Office fédéral de l'énergie (OFEN)",
+               "reference": "12665", "date": "2026-04-01", "date_precision": "month",
+               "url": "https://pubdb.bfe.admin.ch/fr/publication/download/12665",
+               "accessed": "2026-11-24", "supports": ["existence"],
+               "match": {"operator": "Infomaniak", "address": "Plan-les-Ouates", "proof": "dc_named"}}
+    assert _schema_errors(_fiche(official_documents=[rapport]), _schema(), "t") == []
+    assert _schema_errors(_fiche(official_documents=[{**rapport, "date": "2026-04-22"}]), _schema(), "t")
+    assert _schema_errors(_fiche(official_documents=[{**rapport, "date_precision": "year"}]), _schema(), "t")
+    assert _schema_errors(_fiche(official_documents=[{**rapport, "date_precision": "jour"}]), _schema(), "t")

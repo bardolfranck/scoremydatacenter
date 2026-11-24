@@ -20,6 +20,13 @@ const fmt = (iso: string) => {
   const [a, m, j] = String(iso).split("-");
   return t.datePattern.replace("{a}", a).replace("{m}", m).replace("{j}", j);
 };
+// Date de l'ACTE au mois ou à l'année (2026-11-24, OFEN 12665) : « avril 2026 », jamais un jour
+// inventé. Le 01 de `date` n'est qu'un marqueur (schéma, date_precision).
+const fmtActe = (d: any) =>
+  d.date_precision === "year" ? String(d.date).slice(0, 4)
+  : d.date_precision === "month"
+    ? new Intl.DateTimeFormat(t.locale, { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${d.date}T00:00:00Z`))
+    : fmt(d.date);
 const types: Record<string, string> = t.types;
 const faits: Record<string, string> = t.supports;
 const libelleType = (k: string) => types[k] ?? k;
@@ -40,7 +47,7 @@ const etapes: Record<string, string> = t.siteEvents;
             <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
               {libelleType(d.type)}</a>
           )}
-          <span class="fiche-docs-date">{fmt(d.date)}</span>
+          <span class="fiche-docs-date">{fmtActe(d)}</span>
           <span class="fiche-docs-auth">{/* i18n:donnee */ d.authority}{d.reference ? /* i18n:donnee */ ` · ${t.reference} ${d.reference}` : ""}</span>
           {d.accessible_from && !d.link_unavailable_since && (
             <span class="fiche-docs-geo">{t.accessibleDepuis.replace("{pays}", t.paysAcces[d.accessible_from] ?? d.accessible_from)}</span>
@@ -68,7 +75,7 @@ const etapes: Record<string, string> = t.siteEvents;
                 <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
                   {libelleType(d.type)}</a>
               )}
-              <span class="fiche-docs-date">{fmt(d.date)}</span>
+              <span class="fiche-docs-date">{fmtActe(d)}</span>
               <span class="fiche-docs-auth">{/* i18n:donnee */ d.authority}{d.reference ? /* i18n:donnee */ ` · ${t.reference} ${d.reference}` : ""}</span>
               {d.accessible_from && !d.link_unavailable_since && (
                 <span class="fiche-docs-geo">{t.accessibleDepuis.replace("{pays}", t.paysAcces[d.accessible_from] ?? d.accessible_from)}</span>

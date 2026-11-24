@@ -382,6 +382,13 @@
                   }
                 ],
                 "description": "Attachment of the act to the site: same operator AND a proof of place (same_address, official_perimeter, or — official_documents only — dc_named). Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
+              },
+              "date_precision": {
+                "enum": [
+                  "month",
+                  "year"
+                ],
+                "description": "Set ONLY when the act itself is dated to the month or the year (a report « avril 2026 »): `date` then carries the 1st of that month (or 1 January), and the fiche shows « avril 2026 » / « 2026 », never a day. Absent = dated to the day. Decision codeur-site 2026-11-24 (OFEN publication 12665): never invent a day, never take a file's creation date for a publication date."
               }
             },
             "allOf": [
@@ -405,6 +412,46 @@
                   }
                 },
                 "description": "A parcel_record is a RECORDED act (deed, notice) with its instrument number. An assessor's page read as-is carries no act date (2026-11-21: 4 served parcel_record dated by consultation) — not served."
+              },
+              {
+                "if": {
+                  "properties": {
+                    "date_precision": {
+                      "const": "month"
+                    }
+                  },
+                  "required": [
+                    "date_precision"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "date": {
+                      "pattern": "^\\d{4}-\\d{2}-01$"
+                    }
+                  }
+                },
+                "description": "Month precision: the day is always 01, a marker, not a date."
+              },
+              {
+                "if": {
+                  "properties": {
+                    "date_precision": {
+                      "const": "year"
+                    }
+                  },
+                  "required": [
+                    "date_precision"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "date": {
+                      "pattern": "^\\d{4}-01-01$"
+                    }
+                  }
+                },
+                "description": "Year precision: always 1 January, a marker."
               }
             ]
           }
@@ -595,6 +642,13 @@
                   }
                 ],
                 "description": "Attachment of the act to the site: same operator AND a proof of place. Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
+              },
+              "date_precision": {
+                "enum": [
+                  "month",
+                  "year"
+                ],
+                "description": "Set ONLY when the act itself is dated to the month or the year (a report « avril 2026 »): `date` then carries the 1st of that month (or 1 January), and the fiche shows « avril 2026 » / « 2026 », never a day. Absent = dated to the day. Decision codeur-site 2026-11-24 (OFEN publication 12665): never invent a day, never take a file's creation date for a publication date."
               }
             },
             "allOf": [
@@ -618,6 +672,46 @@
                   }
                 },
                 "description": "A parcel_record is a RECORDED act (deed, notice) with its instrument number. An assessor's page read as-is carries no act date (2026-11-21: 4 served parcel_record dated by consultation) — not served."
+              },
+              {
+                "if": {
+                  "properties": {
+                    "date_precision": {
+                      "const": "month"
+                    }
+                  },
+                  "required": [
+                    "date_precision"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "date": {
+                      "pattern": "^\\d{4}-\\d{2}-01$"
+                    }
+                  }
+                },
+                "description": "Month precision: the day is always 01, a marker, not a date."
+              },
+              {
+                "if": {
+                  "properties": {
+                    "date_precision": {
+                      "const": "year"
+                    }
+                  },
+                  "required": [
+                    "date_precision"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "date": {
+                      "pattern": "^\\d{4}-01-01$"
+                    }
+                  }
+                },
+                "description": "Year precision: always 1 January, a marker."
               }
             ]
           }
