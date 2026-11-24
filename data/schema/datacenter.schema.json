@@ -337,9 +337,10 @@
                   "proof": {
                     "enum": [
                       "same_address",
-                      "official_perimeter"
+                      "official_perimeter",
+                      "dc_named"
                     ],
-                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached."
+                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached. `dc_named` (Franck 2026-11-24, official_documents only — an act on another activity cannot name the data center): the act names the operator AND designates a data center (centre de données, Rechenzentrum, ICPE installation designated as such) in the fiche's municipality, and the operator has ONE fiche in that municipality — checked by engine/validate.py (documents_dictionary_gate); with several, the act is adjudicated, never attached by default. The reading of the act (is its object the data center?) is a closed judgment made by Jev in the collector and recorded in the fiche's provenance; the act's address then becomes the fiche's sourced address."
                   },
                   "perimeter_source": {
                     "type": "object",
@@ -380,7 +381,7 @@
                     }
                   }
                 ],
-                "description": "Attachment of the act to the site: same operator AND a proof of place. Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
+                "description": "Attachment of the act to the site: same operator AND a proof of place (same_address, official_perimeter, or — official_documents only — dc_named). Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
               }
             },
             "allOf": [

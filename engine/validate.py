@@ -541,11 +541,24 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
         return [f"GATE DICTIONNAIRE: {dico_dir} introuvable — aucun document ne se verse sans dictionnaire"]
     dico = charger_dictionnaire(dico_dir, catalogue)
     problems = list(dico["problemes"])
+    # `dc_named` (Franck 2026-11-24) : l'acte nomme l'exploitant et un data center dans la commune
+    # de la fiche. Il ne rattache que si l'exploitant n'a qu'UNE fiche dans cette commune ; la clé
+    # est volontairement grossière (premier mot de l'exploitant) : « Equinix » et « Equinix
+    # France » comptent pour un, et un doute renvoie à l'adjudication plutôt qu'au versement.
+    def _cle_site(ident: dict) -> tuple[str, str]:
+        op = (str(ident.get("operator") or "").casefold().split() or [""])[0].strip(",.;")
+        return op, str(ident.get("municipality") or "").casefold().strip()
+    idents = {}
     for p in paths:
         try:
-            ident = load_json(p).get("identity") or {}
+            idents[p] = load_json(p).get("identity") or {}
         except Exception:  # noqa: BLE001
             continue
+    par_site: dict[tuple[str, str], int] = {}
+    for ident in idents.values():
+        k = _cle_site(ident)
+        par_site[k] = par_site.get(k, 0) + 1
+    for p, ident in idents.items():
         pays = str(ident.get("country") or "").upper()
         officiels = [("official_documents", i, d) for i, d in enumerate(ident.get("official_documents") or [])]
         officiels += [("same_address_documents", i, d)
@@ -557,6 +570,13 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
                     f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: aucun `match` — un acte versé depuis "
                     f"le 2026-11-24 prouve son rattachement au site (même exploitant + même adresse, "
                     f"ou adresse/parcelle dans un périmètre officiel cité)")
+            if (doc.get("match") or {}).get("proof") == "dc_named":
+                k = _cle_site(ident)
+                if not k[0] or not k[1] or par_site.get(k, 0) != 1:
+                    problems.append(
+                        f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: preuve dc_named, mais l'exploitant "
+                        f"{k[0]!r} a {par_site.get(k, 0)} fiche(s) à {k[1]!r} — à adjuger, jamais rattaché "
+                        f"par défaut")
             hote = (urlparse(url).hostname or "").lower()
             ouverts = set(dico["officiel"].get(pays, ())) | set(dico["officiel"].get("*", ()))
             if _hote_dans(hote, ouverts) or (p.stem, url) in dico["heritage"]:
