@@ -256,9 +256,10 @@
                   "public_report",
                   "public_statement",
                   "enforcement_action",
-                  "financing_decision"
+                  "financing_decision",
+                  "labour_permit"
                 ],
-                "description": "Nature of the act. One enum, one label per language on the fiche. `enforcement_action` (Franck 2026-11-21): a formal notice, sanction, penalty or deposit order by the authority — an official act, never filed as a licence. `financing_decision` (Franck 2026-11-23): a project disclosure or financing/grant/state-aid decision by a supranational body (European Commission, EIB, EBRD, World Bank group, regional development banks, UN) that names the project."
+                "description": "Nature of the act. One enum, one label per language on the fiche. `enforcement_action` (Franck 2026-11-21): a formal notice, sanction, penalty or deposit order by the authority — an official act, never filed as a licence. `financing_decision` (Franck 2026-11-23): a project disclosure or financing/grant/state-aid decision by a supranational body (European Commission, EIB, EBRD, World Bank group, regional development banks, UN) that names the project. `labour_permit` (2026-11-24): a working-hours permit (night or Sunday work) — e.g. the Swiss SECO Arbeitszeitbewilligung; an act on the operator's staff, never labelled an environmental licence."
               },
               "authority": {
                 "type": "string",
@@ -313,6 +314,286 @@
                 "type": "string",
                 "pattern": "^[A-Z]{2}$",
                 "description": "ISO 3166-1 code of the only country from which the authority's site answers (geo-blocking: Irish council planning portals answer 403 outside Ireland, to robots and humans alike). Decision Franck 2026-11-21: such a link IS served, with « accessible depuis <pays> » — never counted as broken. The witness is re-read from that country."
+              },
+              "match": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operator",
+                  "address",
+                  "proof"
+                ],
+                "properties": {
+                  "operator": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The addressee as the act names it; must be the fiche's operator (same legal entity or group), checked when versing."
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The address (or cadastral parcel) as the act gives it."
+                  },
+                  "proof": {
+                    "enum": [
+                      "same_address",
+                      "official_perimeter"
+                    ],
+                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached."
+                  },
+                  "perimeter_source": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "title",
+                      "url"
+                    ],
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "url": {
+                        "type": "string",
+                        "pattern": "^https?://\\S+$"
+                      }
+                    },
+                    "description": "The official act that gives the site's perimeter (mandatory when proof = official_perimeter)."
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "proof": {
+                          "const": "official_perimeter"
+                        }
+                      },
+                      "required": [
+                        "proof"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "perimeter_source"
+                      ]
+                    }
+                  }
+                ],
+                "description": "Attachment of the act to the site: same operator AND a proof of place. Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "type": {
+                      "const": "parcel_record"
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "reference": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "description": "A parcel_record is a RECORDED act (deed, notice) with its instrument number. An assessor's page read as-is carries no act date (2026-11-21: 4 served parcel_record dated by consultation) — not served."
+              }
+            ]
+          }
+        },
+        "same_address_documents": {
+          "type": "array",
+          "minItems": 1,
+          "description": "OPTIONAL, INFORMATIONAL — never read by the scoring, and NEVER a proof of the data center (not for existence, status, developer, nor counted in official-document coverage). « Même adresse, autre activité » (Franck 2026-11-24): official acts on ANOTHER activity of the same operator at the same address (a network operations centre, offices…) that date a moment of the site's history. Served as a sub-section of « Documents officiels », each with its contextual label (`activity`). Same host rules as official_documents (official_documents_gate, documents_dictionary_gate).",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "authority",
+              "reference",
+              "date",
+              "url",
+              "accessed",
+              "activity",
+              "site_event",
+              "match"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "planning_decision",
+                  "appeal_decision",
+                  "licence",
+                  "annual_environmental_report",
+                  "gazette_notice",
+                  "air_permit",
+                  "construction_registration",
+                  "environmental_notice",
+                  "environmental_record",
+                  "facility_registry",
+                  "regulatory_filing",
+                  "county_record",
+                  "municipal_record",
+                  "state_record",
+                  "parcel_record",
+                  "public_report",
+                  "public_statement",
+                  "enforcement_action",
+                  "financing_decision",
+                  "labour_permit"
+                ],
+                "description": "Nature of the act. One enum, one label per language on the fiche. `enforcement_action` (Franck 2026-11-21): a formal notice, sanction, penalty or deposit order by the authority — an official act, never filed as a licence. `financing_decision` (Franck 2026-11-23): a project disclosure or financing/grant/state-aid decision by a supranational body (European Commission, EIB, EBRD, World Bank group, regional development banks, UN) that names the project. `labour_permit` (2026-11-24): a working-hours permit (night or Sunday work) — e.g. the Swiss SECO Arbeitszeitbewilligung; an act on the operator's staff, never labelled an environmental licence."
+              },
+              "authority": {
+                "type": "string",
+                "minLength": 1,
+                "description": "The body that issued or published the document (council, agency, registry), as it names itself."
+              },
+              "reference": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "minLength": 1,
+                "description": "The authority's own reference for the document (file number, permit id, notice id); null when the act carries none (a governor's statement, a press release on the authority's site) — the key stays mandatory so an absence is declared, never implicit."
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date of the document itself (decision, notice, filing) — ISO, mandatory: an undated official link is not served."
+              },
+              "url": {
+                "type": "string",
+                "pattern": "^https?://\\S+$",
+                "description": "Link on the authority's own site. Never a copy (R2, scoremydatacenter.org, web archives). The WHOLE field is the URL: no whitespace, no comment appended (2026-11-21: a served url carried « (live URL now 404; read via web.archive.org…) »)."
+              },
+              "accessed": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Date the link was last opened and checked."
+              },
+              "link_unavailable_since": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                "description": "Set when the link stopped answering (removed, expired — Swiss building notices lapse after 1 to 3 years) and no replacement was found: the fiche keeps the act, its date, authority and reference, WITHOUT the link, with « lien indisponible depuis <date> » (Franck 2026-11-21). Never earlier than `accessed`."
+              },
+              "accessible_from": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$",
+                "description": "ISO 3166-1 code of the only country from which the authority's site answers (geo-blocking: Irish council planning portals answer 403 outside Ireland, to robots and humans alike). Decision Franck 2026-11-21: such a link IS served, with « accessible depuis <pays> » — never counted as broken. The witness is re-read from that country."
+              },
+              "activity": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "fr",
+                  "en"
+                ],
+                "properties": {
+                  "fr": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "en": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "nl": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "description": "What the act targets INSTEAD of the data center (« centre de supervision réseau de Swisscom »), per fiche language (fr and en required; a country language such as nl where the fiche is served in it — repli via `donnee`). Shown as the document's contextual label: the reader sees what the act is about before reading it as anything else."
+              },
+              "site_event": {
+                "enum": [
+                  "permit",
+                  "grid_connection",
+                  "commissioning",
+                  "works",
+                  "closure",
+                  "accident",
+                  "enforcement"
+                ],
+                "description": "Admission criterion (Franck 2026-11-24, « pour ne pas TOUT collecter »): the act dates a moment in the SITE's history — a permit, a grid connection, a commissioning, works, a closure, an accident, an enforcement measure. An act that tells nothing of the site's story is not collected."
+              },
+              "match": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "operator",
+                  "address",
+                  "proof"
+                ],
+                "properties": {
+                  "operator": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The addressee as the act names it; must be the fiche's operator (same legal entity or group), checked when versing."
+                  },
+                  "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The address (or cadastral parcel) as the act gives it."
+                  },
+                  "proof": {
+                    "enum": [
+                      "same_address",
+                      "official_perimeter"
+                    ],
+                    "description": "Why the act belongs to THIS site — a proof, never a distance (Franck 2026-11-24, « principe de parcimonie »: no footprint estimate, whose errors would silently drop documents). `same_address`: the act's address is identical to the fiche's sourced address. `official_perimeter`: the act's address or parcel appears in the site's perimeter as an official act gives it (building permit, ICPE file, public inquiry) — cited in `perimeter_source`. Neither: the act is not attached."
+                  },
+                  "perimeter_source": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "title",
+                      "url"
+                    ],
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "url": {
+                        "type": "string",
+                        "pattern": "^https?://\\S+$"
+                      }
+                    },
+                    "description": "The official act that gives the site's perimeter (mandatory when proof = official_perimeter)."
+                  }
+                },
+                "allOf": [
+                  {
+                    "if": {
+                      "properties": {
+                        "proof": {
+                          "const": "official_perimeter"
+                        }
+                      },
+                      "required": [
+                        "proof"
+                      ]
+                    },
+                    "then": {
+                      "required": [
+                        "perimeter_source"
+                      ]
+                    }
+                  }
+                ],
+                "description": "Attachment of the act to the site: same operator AND a proof of place. Mandatory for every document versed from 2026-11-24, in both sections; the 672 official documents served before carry none and are named in the newsroom's _heritage_rattachement.json (a list that cannot grow)."
               }
             },
             "allOf": [

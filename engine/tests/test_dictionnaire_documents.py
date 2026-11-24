@@ -25,7 +25,8 @@ TABLE = REPO / "site" / "src" / "content" / "documents-acteurs.ts"
 
 DOC = {"type": "air_permit", "authority": "Virginia DEQ", "reference": "74341-1",
        "date": "2026-07-02", "url": "https://www.deq.virginia.gov/home/showpublisheddocument/35458",
-       "accessed": "2026-11-21", "supports": ["existence"]}
+       "accessed": "2026-11-21", "supports": ["existence"],
+       "match": {"operator": "Clean Arc", "address": "Caroline County, VA", "proof": "same_address"}}
 ACTEUR = {"role": "operator", "actor": "Clean Arc", "type": "press_release",
           "title": "Clean Arc breaks ground on VA1", "date": "2025-11-20",
           "url": "https://www.cleanarc.com/news/va1", "accessed": "2026-11-21",
@@ -94,6 +95,7 @@ def _dico(tmp_path, entrees, heritage=()):
     (d / "us.json").write_text(json.dumps({"pays": "US", "entrees": entrees}))
     (d / "_heritage.json").write_text(json.dumps({"documents": [
         {"fiche_id": f, "url": u} for f, u in heritage]}))
+    (d / "_heritage_rattachement.json").write_text(json.dumps({"documents": []}))
     cat = tmp_path / "catalogue.json"
     cat.write_text(json.dumps({"sources": [
         {"source_id": "us-va-deq", "access": {"url": "https://www.deq.virginia.gov/permits"}},

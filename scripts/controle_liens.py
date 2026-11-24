@@ -44,7 +44,7 @@ from engine.core import datacenter_paths  # noqa: E402
 
 CAL = Path(os.environ.get("NEWSROOM_CAL",
                           Path(__file__).resolve().parent.parent.parent / "smdc-newsroom" / "calibration"))
-CHAMPS = ("official_documents", "project_party_documents")
+CHAMPS = ("official_documents", "same_address_documents", "project_party_documents")
 UA = "ScoreMyDataCenter-link-check/1.0 (+https://scoremydatacenter.org)"
 PAUSE_PAR_HOTE = 2.0
 ECHECS = {"casse", "migre", "suspect", "injoignable"}

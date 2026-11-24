@@ -371,7 +371,9 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
         # Les « Documents des acteurs du projet » (2026-11-21) suivent la même règle : le lien
         # vers l'auteur et sa date, jamais une copie ni un agrégateur. Leur date peut être
         # `null` (une page projet n'en porte pas toujours) : déclarée, jamais devinée.
-        for champ in ("official_documents", "project_party_documents"):
+        # « Même adresse, autre activité » (Franck 2026-11-24) : des actes officiels, mêmes
+        # règles d'hôte et de calendrier — seule leur portée diffère (jamais une preuve du DC).
+        for champ in ("official_documents", "same_address_documents", "project_party_documents"):
           for i, doc in enumerate(ident.get(champ) or []):
             if not isinstance(doc, dict):
                 continue  # le schéma le signale
@@ -421,6 +423,12 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
 # décroître (chaque entrée validée par Franck les couvre), jamais une permission : la liste
 # ne peut pas grandir, et elle ne peut rien couvrir d'autre que ce qu'elle nomme.
 HERITAGE_DICTIONNAIRE_MAX = 203
+# Rattachement d'un acte au site (Franck 2026-11-24) : une PREUVE de lieu (`match.proof` :
+# même adresse, ou périmètre officiel cité), jamais une distance. Les actes officiels servis
+# avant cette date n'en portent pas : ils sont nommés dans
+# `analysis/sources/dictionnaire/_heritage_rattachement.json` (newsroom), liste qui ne peut
+# pas grandir. Tout acte versé depuis porte son `match`.
+HERITAGE_RATTACHEMENT_MAX = 672
 _STATUTS_OUVERTS = {"validee", "active"}
 
 
@@ -445,7 +453,8 @@ def charger_dictionnaire(dico_dir: Path, catalogue: Path) -> dict:
     `access.url` au catalogue + ses `hotes_documents` — une source n'est décrite qu'une fois."""
     from urllib.parse import urlparse
 
-    out = {"officiel": {}, "acteurs": {}, "heritage": set(), "problemes": []}
+    out = {"officiel": {}, "acteurs": {}, "heritage": set(), "heritage_rattachement": set(),
+           "problemes": []}
     try:
         cat = {s["source_id"]: s for s in load_json(catalogue)["sources"]}
     except Exception as exc:  # noqa: BLE001
@@ -493,6 +502,21 @@ def charger_dictionnaire(dico_dir: Path, catalogue: Path) -> dict:
             out["heritage"] = {(r["fiche_id"], r["url"]) for r in load_json(her)["documents"]}
         except Exception as exc:  # noqa: BLE001
             out["problemes"].append(f"GATE DICTIONNAIRE: _heritage.json illisible ({exc})")
+    her = dico_dir / "_heritage_rattachement.json"
+    if her.is_file():
+        try:
+            out["heritage_rattachement"] = {(r["fiche_id"], r["url"]) for r in load_json(her)["documents"]}
+        except Exception as exc:  # noqa: BLE001
+            out["problemes"].append(f"GATE DICTIONNAIRE: _heritage_rattachement.json illisible ({exc})")
+    else:
+        out["problemes"].append(
+            "GATE DICTIONNAIRE: _heritage_rattachement.json absent — sans lui, aucun acte servi "
+            "avant le 2026-11-24 n'est couvert")
+    if len(out["heritage_rattachement"]) > HERITAGE_RATTACHEMENT_MAX:
+        out["problemes"].append(
+            f"GATE DICTIONNAIRE: l'héritage de rattachement compte {len(out['heritage_rattachement'])} "
+            f"actes pour un plafond de {HERITAGE_RATTACHEMENT_MAX} — il ne peut que décroître ; un acte "
+            f"nouveau porte son `match`")
     if len(out["heritage"]) > HERITAGE_DICTIONNAIRE_MAX:
         out["problemes"].append(
             f"GATE DICTIONNAIRE: l'héritage compte {len(out['heritage'])} documents pour un plafond "
@@ -523,14 +547,22 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
         except Exception:  # noqa: BLE001
             continue
         pays = str(ident.get("country") or "").upper()
-        for i, doc in enumerate(ident.get("official_documents") or []):
+        officiels = [("official_documents", i, d) for i, d in enumerate(ident.get("official_documents") or [])]
+        officiels += [("same_address_documents", i, d)
+                      for i, d in enumerate(ident.get("same_address_documents") or [])]
+        for champ, i, doc in officiels:
             url = str(doc.get("url") or "")
+            if not doc.get("match") and (p.stem, url) not in dico["heritage_rattachement"]:
+                problems.append(
+                    f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: aucun `match` — un acte versé depuis "
+                    f"le 2026-11-24 prouve son rattachement au site (même exploitant + même adresse, "
+                    f"ou adresse/parcelle dans un périmètre officiel cité)")
             hote = (urlparse(url).hostname or "").lower()
             ouverts = set(dico["officiel"].get(pays, ())) | set(dico["officiel"].get("*", ()))
             if _hote_dans(hote, ouverts) or (p.stem, url) in dico["heritage"]:
                 continue
             problems.append(
-                f"GATE DICTIONNAIRE: {p.name}: official_documents[{i}]: {hote or url!r} n'est la source "
+                f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: {hote or url!r} n'est la source "
                 f"d'aucune entrée validée du dictionnaire {pays or '?'} ni supra — ajouter l'entrée "
                 f"(témoin + revue croisée + validation) avant de verser")
         for i, doc in enumerate(ident.get("project_party_documents") or []):
