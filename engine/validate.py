@@ -559,13 +559,14 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
         k = _cle_site(ident)
         par_site[k] = par_site.get(k, 0) + 1
     # `project_named` (Franck 2026-11-24) : le nom distinctif du projet (« D4 »), en mot entier,
-    # doit désigner UNE seule fiche du corpus — celle-ci. Un nom générique en désigne plusieurs
+    # doit désigner UNE seule fiche du corpus — celle-ci. Le tiret bas sépare les mots (102 noms
+    # PeeringDB du type « EQUINIX_-_ZH5 », 2026-11-24). Un nom générique en désigne plusieurs
     # et tombe tout seul, sans liste noire à tenir.
     import re as _re
     noms = {p: str(ident.get("name") or "") for p, ident in idents.items()}
 
     def _fiches_nommees(projet: str) -> list:
-        motif = _re.compile(rf"(?<![\w]){_re.escape(projet.strip())}(?![\w])", _re.I)
+        motif = _re.compile(rf"(?<![^\W_]){_re.escape(projet.strip())}(?![^\W_])", _re.I)
         return [p for p, nom in noms.items() if motif.search(nom)]
     for p, ident in idents.items():
         pays = str(ident.get("country") or "").upper()
