@@ -986,8 +986,9 @@ const seoDesc = seoLead
 
       {/* Documents officiels (2026-11-20) : le lien daté vers l'autorité, pour chaque fait
           attesté — même place que le dossier, À CÔTÉ de la note et avant le tableau. */}
-      {dc.official_documents && (
-        <DocumentsOfficiels documents={dc.official_documents} lang={lang} />
+      {(dc.official_documents || dc.same_address_documents) && (
+        <DocumentsOfficiels documents={dc.official_documents ?? []}
+          memeAdresse={dc.same_address_documents ?? []} lang={lang} />
       )}
 
       {/* Documents des acteurs du projet (2026-11-21) : leurs déclarations, APRÈS les actes

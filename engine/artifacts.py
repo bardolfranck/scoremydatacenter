@@ -416,6 +416,12 @@ def build_artifacts(datacenters: dict[str, dict], methodology: dict,
             **({"official_documents": sorted(dc["identity"]["official_documents"],
                                              key=lambda d: d["date"], reverse=True)}
                if dc["identity"].get("official_documents") else {}),
+            # « Même adresse, autre activité » (Franck 2026-11-24) : actes officiels sur une
+            # AUTRE activité de l'exploitant à la même adresse, qui datent une étape du site.
+            # Sous-rubrique des documents officiels, jamais une preuve du data center.
+            **({"same_address_documents": sorted(dc["identity"]["same_address_documents"],
+                                                 key=lambda d: d["date"], reverse=True)}
+               if dc["identity"].get("same_address_documents") else {}),
             # Documents des acteurs du projet (2026-11-21) : déclarations de l'exploitant, du
             # porteur, de l'architecte, du bureau d'études — servies À PART des actes officiels,
             # jamais lues par le scoring. Même règle : le lien et la date. Datés d'abord (plus

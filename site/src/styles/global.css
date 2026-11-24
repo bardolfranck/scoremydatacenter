@@ -1344,6 +1344,8 @@ sup a { color: var(--accent); font-weight: 750; }
 /* Documents des acteurs du projet : DÉCLARATIONS — même gabarit, bordure en pointillé pour
    ne jamais se lire comme un acte officiel ; le titre de l'auteur sur sa propre ligne. */
 .fiche-docs-acteurs { border-style: dashed; background: transparent; }
+.fiche-docs-sous { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.fiche-docs-sous-titre { margin: 0 0 4px; font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); }
 /* Lien mort sans remplaçant : l'acte reste (type, date, autorité, référence), sans lien. */
 .fiche-docs-mort { font-weight: 600; color: var(--ink-soft); }
 /* Lien géobloqué hors d'un pays (portails des conseils irlandais) : servi, avec sa mention. */

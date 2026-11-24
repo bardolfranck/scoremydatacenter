@@ -371,7 +371,9 @@ def official_documents_gate(paths: list[Path], today: date | None = None) -> lis
         # Les « Documents des acteurs du projet » (2026-11-21) suivent la même règle : le lien
         # vers l'auteur et sa date, jamais une copie ni un agrégateur. Leur date peut être
         # `null` (une page projet n'en porte pas toujours) : déclarée, jamais devinée.
-        for champ in ("official_documents", "project_party_documents"):
+        # « Même adresse, autre activité » (Franck 2026-11-24) : des actes officiels, mêmes
+        # règles d'hôte et de calendrier — seule leur portée diffère (jamais une preuve du DC).
+        for champ in ("official_documents", "same_address_documents", "project_party_documents"):
           for i, doc in enumerate(ident.get(champ) or []):
             if not isinstance(doc, dict):
                 continue  # le schéma le signale
@@ -523,14 +525,17 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
         except Exception:  # noqa: BLE001
             continue
         pays = str(ident.get("country") or "").upper()
-        for i, doc in enumerate(ident.get("official_documents") or []):
+        officiels = [("official_documents", i, d) for i, d in enumerate(ident.get("official_documents") or [])]
+        officiels += [("same_address_documents", i, d)
+                      for i, d in enumerate(ident.get("same_address_documents") or [])]
+        for champ, i, doc in officiels:
             url = str(doc.get("url") or "")
             hote = (urlparse(url).hostname or "").lower()
             ouverts = set(dico["officiel"].get(pays, ())) | set(dico["officiel"].get("*", ()))
             if _hote_dans(hote, ouverts) or (p.stem, url) in dico["heritage"]:
                 continue
             problems.append(
-                f"GATE DICTIONNAIRE: {p.name}: official_documents[{i}]: {hote or url!r} n'est la source "
+                f"GATE DICTIONNAIRE: {p.name}: {champ}[{i}]: {hote or url!r} n'est la source "
                 f"d'aucune entrée validée du dictionnaire {pays or '?'} ni supra — ajouter l'entrée "
                 f"(témoin + revue croisée + validation) avant de verser")
         for i, doc in enumerate(ident.get("project_party_documents") or []):

@@ -71,6 +71,25 @@ const FR = {
     public_statement: "Communiqué officiel",
     enforcement_action: "Mesure de police administrative",
     financing_decision: "Décision de financement ou d'aide publique",
+    labour_permit: "Autorisation de durée du travail",
+  },
+  // « Même adresse, autre activité » (Franck 2026-11-24) : sous-rubrique des documents
+  // officiels. Des actes sur une AUTRE activité de l'exploitant à la même adresse, qui datent
+  // une étape du site. Jamais une preuve du data center.
+  memeAdresse: {
+    titre: "Même adresse, autre activité",
+    intro: "Actes visant une autre activité de l'exploitant, à la même adresse. Ils ne portent pas sur le data center.",
+  },
+  vise: "vise :",
+  etape: "étape :",
+  siteEvents: {
+    permit: "autorisation",
+    grid_connection: "raccordement",
+    commissioning: "mise en service",
+    works: "travaux",
+    closure: "cessation d'activité",
+    accident: "accident ou incident",
+    enforcement: "mesure administrative",
   },
   datePattern: "{j}/{m}/{a}",
 };
@@ -130,6 +149,22 @@ const EN: typeof FR = {
     public_statement: "Official statement",
     enforcement_action: "Enforcement action",
     financing_decision: "Financing or public-aid decision",
+    labour_permit: "Working-hours permit",
+  },
+  memeAdresse: {
+    titre: "Same address, other activity",
+    intro: "Acts on another activity of the operator, at the same address. They are not about the data center.",
+  },
+  vise: "concerns:",
+  etape: "milestone:",
+  siteEvents: {
+    permit: "permit",
+    grid_connection: "grid connection",
+    commissioning: "commissioning",
+    works: "works",
+    closure: "closure",
+    accident: "accident or incident",
+    enforcement: "enforcement measure",
   },
   datePattern: "{a}-{m}-{j}",
 };
@@ -189,6 +224,22 @@ const NL: typeof FR = {
     public_statement: "Officiële verklaring",
     enforcement_action: "Handhavingsbesluit",
     financing_decision: "Financierings- of steunbesluit",
+    labour_permit: "Arbeidstijdenvergunning",
+  },
+  memeAdresse: {
+    titre: "Zelfde adres, andere activiteit",
+    intro: "Stukken over een andere activiteit van de exploitant, op hetzelfde adres. Ze gaan niet over het datacenter.",
+  },
+  vise: "betreft:",
+  etape: "mijlpaal:",
+  siteEvents: {
+    permit: "vergunning",
+    grid_connection: "netaansluiting",
+    commissioning: "ingebruikname",
+    works: "werkzaamheden",
+    closure: "bedrijfsbeëindiging",
+    accident: "ongeval of incident",
+    enforcement: "handhavingsmaatregel",
   },
   datePattern: "{j}-{m}-{a}",
 };

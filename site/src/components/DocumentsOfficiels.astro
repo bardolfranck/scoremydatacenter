@@ -9,9 +9,12 @@
 // lit À CÔTÉ de la lettre. `authority` et `reference` sont des DONNÉES, servies telles que
 // l'autorité les écrit (jamais traduites). L'ordre (plus récent d'abord) vient de l'artefact.
 import { DOCUMENTS_OFFICIELS } from "../content/documents-officiels";
-import type { LangueDeclaree } from "../content/langues";
+import { donnee, type LangueDeclaree } from "../content/langues";
 
-const { documents = [], lang = "fr" } = Astro.props;
+// « Même adresse, autre activité » (Franck 2026-11-24) : sous-rubrique, après les actes sur le
+// site. Chaque acte porte son libellé de contexte (`activity`) : ce qu'il vise À LA PLACE du
+// data center. Jamais de « atteste : » ici — ces actes ne prouvent rien du data center.
+const { documents = [], memeAdresse = [], lang = "fr" } = Astro.props;
 const t = DOCUMENTS_OFFICIELS[lang as LangueDeclaree];
 const fmt = (iso: string) => {
   const [a, m, j] = String(iso).split("-");
@@ -21,11 +24,13 @@ const types: Record<string, string> = t.types;
 const faits: Record<string, string> = t.supports;
 const libelleType = (k: string) => types[k] ?? k;
 const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
+const etapes: Record<string, string> = t.siteEvents;
 ---
-{documents.length > 0 && (
+{(documents.length > 0 || memeAdresse.length > 0) && (
   <section class="fiche-docs" aria-labelledby="docs-title">
     <h2 id="docs-title" class="fiche-docs-kicker">{t.titre}</h2>
-    <p class="fiche-docs-intro">{t.intro}</p>
+    {documents.length > 0 && <p class="fiche-docs-intro">{t.intro}</p>}
+    {documents.length > 0 && (
     <ul class="fiche-docs-list">
       {documents.map((d: any) => (
         <li>
@@ -49,5 +54,33 @@ const libelleFaits = (l: string[]) => l.map((k) => faits[k] ?? k).join(", ");
         </li>
       ))}
     </ul>
+    )}
+    {memeAdresse.length > 0 && (
+      <div class="fiche-docs-sous">
+        <h3 class="fiche-docs-sous-titre">{t.memeAdresse.titre}</h3>
+        <p class="fiche-docs-intro">{t.memeAdresse.intro}</p>
+        <ul class="fiche-docs-list">
+          {memeAdresse.map((d: any) => (
+            <li>
+              {d.link_unavailable_since ? (
+                <span class="fiche-docs-mort">{libelleType(d.type)}</span>
+              ) : (
+                <a href={d.url} target="_blank" rel="noopener" title={t.verifie.replace("{date}", fmt(d.accessed))}>
+                  {libelleType(d.type)}</a>
+              )}
+              <span class="fiche-docs-date">{fmt(d.date)}</span>
+              <span class="fiche-docs-auth">{/* i18n:donnee */ d.authority}{d.reference ? /* i18n:donnee */ ` · ${t.reference} ${d.reference}` : ""}</span>
+              {d.accessible_from && !d.link_unavailable_since && (
+                <span class="fiche-docs-geo">{t.accessibleDepuis.replace("{pays}", t.paysAcces[d.accessible_from] ?? d.accessible_from)}</span>
+              )}
+              {d.link_unavailable_since && (
+                <span class="fiche-docs-indispo">{t.indisponible.replace("{date}", fmt(d.link_unavailable_since))}</span>
+              )}
+              <span class="fiche-docs-sup">{`${t.vise} ${donnee(d.activity, lang)} · ${t.etape} ${etapes[d.site_event] ?? d.site_event}`}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
   </section>
 )}
