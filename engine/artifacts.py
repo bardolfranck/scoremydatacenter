@@ -86,6 +86,9 @@ def _summary(dc: dict, result: dict) -> dict:
         # que la fiche montrait 6 000 MW seuls. Même famille que le statut de provenance : un
         # champ écrit par la filière qui n'atteint pas la page ne sert à personne.
         "power_mw_range": identity.get("power_mw_range"),
+        # Le document d'où vient la puissance (permis pour une estimation d'après les MWth des
+        # groupes, 2026-11-25) : la fiche le cite dans l'infobulle, jamais la règle d'estimation.
+        "power_mw_source": identity.get("power_mw_source"),
         # commissioning year (identity.vintage) — the ranking sorts on it; null = not disclosed
         "expected_commissioning": (identity.get("vintage") or {}).get("expected_commissioning"),
         "grades": result["grades"],

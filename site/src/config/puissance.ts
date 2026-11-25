@@ -77,8 +77,30 @@ const PLAGE: Libelle = {
   nl: "aangekondigd bereik: {min} tot {max} MW",
 };
 
-export function libellePlage(lang: string): string {
-  return PLAGE[lang as keyof Libelle] ?? PLAGE.en;
+// Une fourchette ESTIMÉE n'est pas « annoncée » (Franck 2026-11-25, puissance d'après les MWth
+// des groupes de secours du permis) : le même gabarit avec le mot faux affirmerait une annonce
+// qui n'existe pas.
+const PLAGE_ESTIMEE: Libelle = {
+  fr: "fourchette estimée : {min} à {max} MW",
+  en: "estimated range: {min} to {max} MW",
+  nl: "geschat bereik: {min} tot {max} MW",
+};
+
+export function libellePlage(lang: string, origine?: OriginePuissance): string {
+  const table = origine === "estimated" ? PLAGE_ESTIMEE : PLAGE;
+  return table[lang as keyof Libelle] ?? table.en;
+}
+
+// L'infobulle d'une estimation d'après le permis : elle dit d'OÙ vient le chiffre et ce qu'on
+// en a fait, jamais comment — ni coefficient ni formule (règle interne, savoir-faire).
+const INFOBULLE_ESTIMATION: Libelle = {
+  fr: "Puissance électrique estimée d'après la puissance thermique des groupes de secours autorisée par le permis {ref}, en tenant compte du rendement des groupes et de leur redondance. Fourchette pour le site autorisé (toutes phases).",
+  en: "Electrical capacity estimated from the thermal input of the backup generators authorised by permit {ref}, taking into account generator efficiency and redundancy. Range for the authorised site (all phases).",
+  nl: "Elektrisch vermogen geschat op basis van het thermisch vermogen van de noodstroomaggregaten vergund in vergunning {ref}, rekening houdend met het rendement en de redundantie van de aggregaten. Bandbreedte voor de vergunde locatie (alle fasen).",
+};
+
+export function infobulleEstimation(lang: string, ref: string): string {
+  return (INFOBULLE_ESTIMATION[lang as keyof Libelle] ?? INFOBULLE_ESTIMATION.en).replace("{ref}", ref);
 }
 
 /** La provenance d'une puissance SERVIE — jamais `undefined`, parce qu'un champ absent est
@@ -150,7 +172,7 @@ export function puissanceServie(
   const brut = origine === "estimated" ? arrondirEstimation(n) : n;
   const valeur = `${origine === "estimated" ? "~" : ""}${ecrire(brut, lang)} MW`;
   const bornes = plageAnnoncee(plage);
-  const plafond = bornes === null ? null : libellePlage(String(lang))
+  const plafond = bornes === null ? null : libellePlage(String(lang), origine)
     .replace("{min}", ecrire(bornes.min, lang))
     .replace("{max}", ecrire(bornes.max, lang));
   return { valeur, origine, libelle: libelleOrigine(origine, String(lang)), plafond };
