@@ -148,6 +148,10 @@
           "type": "number",
           "exclusiveMinimum": 0
         },
+        "power_mw_source": {
+          "$ref": "#/$defs/source",
+          "description": "Le document officiel d'où vient la puissance (Franck 2026-11-25). Pour une puissance `estimated` d'après la puissance thermique des groupes de secours, c'est le PERMIS ; la règle d'estimation et ses coefficients restent internes et ne sont jamais servis."
+        },
         "power_mw_range": {
           "type": "object",
           "additionalProperties": false,

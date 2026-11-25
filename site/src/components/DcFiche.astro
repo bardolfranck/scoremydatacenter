@@ -11,7 +11,7 @@ import type { LangueDeclaree } from "../content/langues";
 import type { NavNode } from "../config/nav";
 import { CHROME } from "../content/chrome";
 import { communeEtRegion, regionLisible } from "../config/lieu";
-import { puissanceServie } from "../config/puissance";
+import { puissanceServie, infobulleEstimation } from "../config/puissance";
 import { nomVisible, apresLeNomCache } from "../config/titre";
 import {
   cheminDeFiche,
@@ -225,6 +225,9 @@ const commissioning = dc.vintage?.expected_commissioning;
 // 349 fiches portent une puissance, AUCUNE n'est mesurée, et 257 s'affichaient nues. La
 // dérivation est unique pour les six surfaces qui servent ce chiffre → `config/puissance.ts`.
 const power = puissanceServie(dc.power_mw, dc.power_mw_status, lang, dc.power_mw_range);
+const pwSource = dc.power_mw_source as { title?: string; url?: string | null } | null | undefined;
+// metaLine part en set:html : une donnée de fiche (titre de permis) s'y échappe toujours.
+const escAttr = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const powerText = power ? power.valeur : t.powerUnknown;
 // Status proof (Franck 2026-09-17): an operational fiche says whether its « en service » is
 // independently confirmed (weekly job, PeeringDB) or not yet — never silent, never guessed.
@@ -250,6 +253,11 @@ const metaLine = [t.status[dc.project_status] ?? dc.project_status,
   // Le plafond annoncé vient APRÈS le point retenu et la provenance : c'est un fait de plus,
   // pas une correction du chiffre. L'ordre porte la règle — la note est calculée sur le point.
   power?.plafond ? `<span class="pw-est">${power.plafond}</span>` : null,
+  // Une estimation d'après le permis cite SON permis (Franck 2026-11-25) : d'où vient le
+  // chiffre, en infobulle, et le lien vers l'autorité — jamais la règle ni ses coefficients.
+  power?.origine === "estimated" && pwSource?.title
+    ? `<span class="info" tabindex="0" role="note" aria-label="${escAttr(infobulleEstimation(lang, pwSource.title))}"><span class="info-ico">${icon("info", 14)}</span><span class="info-tip">${escAttr(infobulleEstimation(lang, pwSource.title))}</span></span>${pwSource.url ? ` <a class="pw-src" href="${escAttr(pwSource.url)}" target="_blank" rel="noopener">${escAttr(pwSource.title)}</a>` : ""}`
+    : null,
   commissioning ? `${t.commissioning} ${commissioning}` : null].filter(Boolean).join(" · ");
 
 // 🔴 UN SITE HORS SERVICE LE DIT, ET SA NOTE EST DATÉE. Décision de Franck (2026-11-07) sur huit
