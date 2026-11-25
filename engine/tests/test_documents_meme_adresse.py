@@ -251,6 +251,29 @@ def test_dc_named_refuse_quand_l_exploitant_a_plusieurs_fiches_dans_la_commune(t
     assert documents_dictionary_gate([f, soeur], d, cat), "deux fiches Vantage à Winterthur : à adjuger"
 
 
+def test_dc_named_sans_exploitant_se_cle_sur_le_porteur(tmp_path):
+    """ENKA Beringen (BA-SH05-0000001762) : projet sans exploitant constaté, porteur ENKA
+    Investment AG — celui que la fiche affiche. La clé d'unicité prend le porteur ; un second
+    projet du même porteur dans la commune renvoie à l'adjudication ; sans exploitant NI
+    porteur, rien ne rattache."""
+    d, cat = _dico_ch(tmp_path)
+    acte = {**ZRH13, "match": {"operator": "ENKA Investment AG", "address": "Trasadingerstrasse, 8222 Beringen",
+                               "proof": "dc_named"}}
+
+    def projet(nom, porteur):
+        f = tmp_path / f"{nom}.json"
+        ident = {"country": "CH", "operator": None, "municipality": "Beringen", "official_documents": [acte]}
+        if porteur:
+            ident["developer"] = {"name": porteur, "source": {"title": "t", "url": "https://x", "accessed": "2026-11-16"}}
+        f.write_text(json.dumps({"identity": ident}))
+        return f
+    enka = projet("ch-enka", "ENKA Investment AG")
+    stack = _fiche_ch(tmp_path, "ch-stack", "STACK Infrastructure", "Beringen")
+    assert documents_dictionary_gate([enka, stack], d, cat) == []
+    assert documents_dictionary_gate([enka, stack, projet("ch-enka-2", "ENKA AG")], d, cat), "deux projets ENKA"
+    assert documents_dictionary_gate([projet("ch-anonyme", None)], d, cat), "ni exploitant ni porteur"
+
+
 def test_dc_named_n_existe_pas_pour_une_autre_activite():
     doc = copy.deepcopy(BINZ)
     doc["match"]["proof"] = "dc_named"

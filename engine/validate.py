@@ -545,8 +545,13 @@ def documents_dictionary_gate(paths: list[Path], dico_dir: Path, catalogue: Path
     # de la fiche. Il ne rattache que si l'exploitant n'a qu'UNE fiche dans cette commune ; la clé
     # est volontairement grossière (premier mot de l'exploitant) : « Equinix » et « Equinix
     # France » comptent pour un, et un doute renvoie à l'adjudication plutôt qu'au versement.
+    # Sans exploitant constaté, la clé prend le PORTEUR (`identity.developer`) — celui que la
+    # fiche affiche déjà (« Porteur du projet ») et qui signe la demande de permis (ENKA
+    # Beringen, BA-SH05-0000001762, 2026-11-24). Jamais les deux à la fois.
     def _cle_site(ident: dict) -> tuple[str, str]:
-        op = (str(ident.get("operator") or "").casefold().split() or [""])[0].strip(",.;")
+        dev = ident.get("developer")
+        qui = ident.get("operator") or (dev.get("name") if isinstance(dev, dict) else None)
+        op = (str(qui or "").casefold().split() or [""])[0].strip(",.;")
         return op, str(ident.get("municipality") or "").casefold().strip()
     idents = {}
     for p in paths:
