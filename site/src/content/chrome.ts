@@ -29,6 +29,8 @@ const FR = {
   // La même phrase sert la description schema.org de l'organisation ET l'accroche du pied de
   // page. Elle était écrite deux fois dans Base.astro, à 130 lignes d'écart.
   baseline: "Observatoire indépendant du risque d'acceptabilité des data centers.",
+  // La devise (Franck, 2026-11-27), en tête du pied de page, au-dessus de la baseline.
+  devise: "Mesurer l'impact d'un data center. Site par site.",
   ogLocale: "fr_FR",
   search: {
     action: "/fr/classement/",
@@ -90,6 +92,8 @@ const FR = {
 const EN: typeof FR = {
   dcwatch: 'Contains information from <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL',
   baseline: "Independent observatory of data-center acceptability risk.",
+  // La devise (Franck, 2026-11-27), en tête du pied de page, au-dessus de la baseline.
+  devise: "Measuring a data center's impact. Site by site.",
   ogLocale: "en_GB",
   search: {
     action: "/ranking/",
@@ -140,6 +144,8 @@ const NL: typeof FR = {
   dcwatch: 'Bevat informatie van <a href="https://dcwatch.hubblo.org" target="_blank" rel="noopener">DCWatch (Hubblo)</a>, ODbL',
   // Baseline = description schema.org ET accroche du pied de page (une seule phrase).
   baseline: "Onafhankelijk observatorium van het acceptatierisico van datacenters.",
+  // La devise (Franck, 2026-11-27), en tête du pied de page, au-dessus de la baseline.
+  devise: "De impact van een datacenter meten. Site per site.",
   ogLocale: "nl_NL",
   search: {
     action: "/nl/ranglijst/",

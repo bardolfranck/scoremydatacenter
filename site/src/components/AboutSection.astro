@@ -21,10 +21,13 @@ import { ACCUEIL } from "../content/accueil";
 import type { Langue } from "../content/langues";
 
 interface Props {
+  pourquoi?: boolean;
   lang: "en" | "fr";
   t: Record<string, any>;
 }
-const { lang, t } = Astro.props;
+// `pourquoi` : la page qui-sommes-nous affiche le pourquoi sous le titre ; l'accueil, qui le
+// porte déjà en tête de la section mission, ne le répète pas (Franck, 2026-11-27).
+const { lang, t, pourquoi = false } = Astro.props;
 
 // Production-chain icons (about section, review 2026-07-15: the credibility lives
 // in the pipeline, not in a character gallery).
@@ -44,6 +47,7 @@ const chainIcon = (name: string, size = 22) =>
         <div class="about-left">
           <p class="hero-eyebrow" id="about-title">{t.aboutTitle}</p>
           <h2 class="about-h2" set:html={t.aboutHeadline}></h2>
+          {pourquoi && <p class="about-why">{t.aboutWhy}</p>}
           <p class="about-intro" set:html={t.founderLine}></p>
           <ul class="about-pledges">
             {t.aboutPledges.map((pl: any) => (
