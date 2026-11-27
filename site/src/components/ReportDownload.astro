@@ -14,6 +14,7 @@
 import Base from "../layouts/Base.astro";
 import type { NavNode } from "../config/nav";
 import { noticeText, reportStatus } from "../config/reportStatus";
+import ReportEdition from "./ReportEdition.astro";
 
 interface Props {
   lang: "en" | "fr";
@@ -324,6 +325,9 @@ const descPage = retrait ? premierePhrase(noticeText(retrait, lang)) : t.metaDes
         <p class="hero-eyebrow">{retrait ? t.retireKicker : t.kicker}</p>
         <h1 id="rd-title" class="rd-title">{retrait ? titreDoc : t.h1}</h1>
         <p class="rd-lead">{retrait ? t.retireLead : t.lead}</p>
+        {/* La date des chiffres, juste sous l'accroche : un rapport qui ne la dit pas laisse
+            croire qu'il parle d'aujourd'hui. Pas sur un rapport retiré : la page est la note. */}
+        {!retrait && <ReportEdition slug={report} lang={lang} />}
 
         <!-- The scoop: free, citable, on-page (SEO + press). The single number
              that makes the report worth reading. Rien de tout cela sur un rapport

@@ -46,7 +46,7 @@ const FR = {
     { heading: "Ressources", links: [
       { label: "Méthodologie", href: "/fr/methodologie/" },
       { label: "Modèle ouvert", href: "/fr/#open" },
-      { label: "Bibliothèque", href: "/fr/bibliotheque/" },
+      { label: "Rapports", href: "/fr/bibliotheque/" },
       { label: "API développeurs", href: "/fr/developpeurs/" },
       { label: "FAQ", href: "/fr/#faq" },
     ] },
@@ -107,7 +107,7 @@ const EN: typeof FR = {
     { heading: "Resources", links: [
       { label: "Methodology", href: "/methodology/" },
       { label: "Open model", href: "/#open" },
-      { label: "Library", href: "/intelligence/" },
+      { label: "Reports", href: "/intelligence/" },
       { label: "Developer API", href: "/developers/" },
       { label: "FAQ", href: "/#faq" },
     ] },
@@ -157,7 +157,7 @@ const NL: typeof FR = {
     { heading: "Hulpmiddelen", links: [
       { label: "Methodologie", href: "/nl/methodologie/" },
       { label: "Open model", href: "/nl/#open" },
-      { label: "Bibliotheek", href: "/nl/bibliotheek/" },
+      { label: "Rapporten", href: "/nl/bibliotheek/" },
       { label: "FAQ", href: "/nl/#faq" },
     ] },
     { heading: "Over", links: [

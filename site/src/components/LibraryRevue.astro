@@ -2,29 +2,30 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
 // https://scoremydatacenter.org · independent data center acceptability-risk score
-// « La Revue » — the Intelligence Library LANDING (brief COWORK 2026-07-14),
-// shared FR/EN (i18n §13: one template, per-language t objects).
 //
-// MOCKUP ONLY: every title/hook is lorem-Latin, every figure is tagged as a
-// fictional example. Register = prestige periodical (nameplate, hairlines,
-// numbered summary) carried by FORM — type, rules, layout — never by a foreign
-// tint. The free/paid boundary is stated in the masthead band and repeated on
-// every card. Purchase CTA is "order — contact us": no checkout exists.
+// LA VITRINE DES RAPPORTS — et rien d'autre (Franck, 2026-11-27).
+//
+// 🔴 CETTE PAGE A SERVI UNE MAQUETTE PENDANT QUATRE MOIS. Du 2026-07-14 au 2026-11-27 elle
+// affichait, sous les vrais rapports, une « revue » fictive : un rapport phare, cinq briefs
+// thématiques, quatre briefs pays (« Data centers in Gallia — lorem ipsum patria »), des
+// prix (500 €, 900 €), des boutons « Rapport complet » qui ne menaient à rien, et une Index
+// filtrable du même catalogue. Le titre de la page disait « (maquette) ». Un lecteur y a vu
+// du latin et conclu que le site n'était pas fini — et dix rapports annoncés pour trois
+// servis. Présenter un rapport, c'est le servir (`config/reportStatus.ts`) : la règle valait
+// pour un rapport retiré, elle vaut pour un rapport qui n'a jamais existé.
+//
+// Ne remettre ici une entrée que lorsque le PDF est en ligne. Une vitrine de ce qui viendra
+// est une promesse, et une promesse datée se périme sous les yeux du lecteur.
 import Base from "../layouts/Base.astro";
-import LibraryCard from "./LibraryCard.astro";
 import FeedbackBand from "./FeedbackBand.astro";
-import PillarIcon from "./PillarIcon.astro";
+import ReportEdition from "./ReportEdition.astro";
 import { isWithdrawn } from "../config/reportStatus";
-import {
-  COMING_SOON_COUNTRIES, COUNTRY_BRIEFS, COUNTRY_FLAGS, FLAGSHIP, LANG_FLAGS,
-  THEME_BRIEFS, briefLanguages, coverField, hookText,
-} from "../config/library";
 
-const { lang, t } = Astro.props as { lang: "fr" | "en"; t: any };
-
-const contactPath = lang === "fr" ? "/fr/contact/" : "/contact/";
-const flagshipLangs = briefLanguages(FLAGSHIP);
-const num = (i: number) => String(i + 1).padStart(2, "0");
+const { lang, t } = Astro.props as { lang: "fr" | "en" | "nl"; t: any };
+// La page néerlandaise est hors du périmètre de traduction signé : elle se replie sur le
+// français, cartes et ligne d'édition comprises (repli de fiche = français). Avant le
+// 2026-11-27 ses cartes sortaient en anglais sous une copie française — deux langues par page.
+const copie: "fr" | "en" = lang === "en" ? "en" : "fr";
 ---
 
 <Base
@@ -36,194 +37,41 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
   altLabel={t.altLabel}
   nav={t.nav}
 >
-  <!-- REAL reports (free, open preview). Above the mockup note so the "maquette"
-       label scopes only the placeholder briefs below. -->
-  <section class="lib-real" aria-label={lang === "fr" ? "Nos rapports" : "Our reports"}>
-    <p class="lib-section-kicker">{lang === "fr" ? "À la une · nos rapports" : "Featured · our reports"}</p>
+  <header class="lib-masthead">
+    <h1 class="lib-title">{t.nameplateTitle}</h1>
+    <p class="lib-lead">{t.lead}</p>
+  </header>
+
+  <section class="lib-real" aria-label={t.nameplateTitle}>
     <div class="lib-real-grid">
-      {(lang === "fr" ? [
+      {(copie === "fr" ? [
         { title: "La France", sub: "L'électricité la plus verte d'Europe, la 12e note. 393 sites.", href: "/fr/rapports/france/", slug: "france" },
-        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe. 134 sites.", href: "/fr/rapports/nederland/", slug: "nederland" },
         { title: "Big Tech-AI", sub: "Les géants du cloud et de l'IA à l'épreuve du territoire.", href: "/fr/rapports/big-tech/", slug: "big-tech" },
         { title: "Les banques", sub: "Vos données, leur adresse — 10 sites bancaires notés.", href: "/fr/rapports/banques/", slug: "banques" },
+        { title: "Les Pays-Bas", sub: "Le réseau le plus chargé d'Europe. 134 sites.", href: "/fr/rapports/nederland/", slug: "nederland" },
       ] : [
         { title: "France", sub: "Europe's greenest electricity, the 12th grade. 393 sites.", href: "/reports/france/", slug: "france" },
-        { title: "Netherlands", sub: "Europe's most loaded grid. 134 sites.", href: "/reports/nederland/", slug: "nederland" },
         { title: "Big Tech-AI", sub: "The cloud & AI giants against the territory.", href: "/reports/big-tech/", slug: "big-tech" },
         { title: "The banks", sub: "Your data, their address — 10 bank sites graded.", href: "/reports/banks/", slug: "banques" },
+        { title: "Netherlands", sub: "Europe's most loaded grid. 134 sites.", href: "/reports/nederland/", slug: "nederland" },
       ]).map((r) => (
         <a class="lib-real-card" href={r.href}>
           {isWithdrawn(r.slug) ? (
             /* Le rapport est retiré : la vitrine ne doit inviter ni à un téléchargement
-               qui n'aura pas lieu, ni à un APERÇU qui n'existe plus — le fichier d'aperçu
-               sert désormais la note de retrait. Ce qui est public, c'est la note. Dérivé
-               de la table d'état, jamais écrit en dur ici — sinon la vitrine survit au
-               retrait. */
-            <span class="lib-real-free lib-real-withdrawn">
-              {lang === "fr" ? "Rapport retiré · la note est publique" : "Report withdrawn · the notice is public"}
-            </span>
+               qui n'aura pas lieu, ni à un APERÇU qui n'existe plus. Ce qui est public,
+               c'est la note. Dérivé de la table d'état, jamais écrit en dur ici. */
+            <span class="lib-real-free lib-real-withdrawn">{t.withdrawnLabel}</span>
           ) : (
-            <span class="lib-real-free">{lang === "fr" ? "Gratuit · aperçu libre" : "Free · open preview"}</span>
+            <span class="lib-real-free">{t.freeLabel}</span>
           )}
           <span class="lib-real-title">{r.title}</span>
           <span class="lib-real-sub">{r.sub}</span>
-          <span class="lib-real-cta">{lang === "fr" ? "Lire →" : "Read →"}</span>
+          {!isWithdrawn(r.slug) && <ReportEdition slug={r.slug} lang={copie} compact />}
+          <span class="lib-real-cta">{t.readCta}</span>
         </a>
       ))}
     </div>
-  </section>
-
-  <p class="lib-mock-note">{t.mockupNote}</p>
-
-  <!-- Nameplate — periodical masthead, form does the register -->
-  <header class="lib-masthead">
-    <h1 class="lib-title">{t.nameplateTitle}</h1>
-  </header>
-
-  <!-- À la une — the flagship -->
-  <section class="lib-featured" aria-label={t.featuredKicker}>
-    <p class="lib-section-kicker">{t.featuredKicker}</p>
-    <div class="lib-featured-grid">
-      <div class="lib-flag-cover" style={`background:${coverField(FLAGSHIP)}`}>
-        {/* white wordmark variant of the house logo — the dark tile icon would
-            vanish on the navy cover; the grade bars carry the identity */}
-        <svg class="lib-flag-cover-logo" viewBox="0 0 448 42" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ScoreMyDataCenter">
-          {/* the house icon, cover variant: white rack + grade bars (no tile — it would vanish on the navy field) */}
-          <g transform="translate(0,1)">
-            <rect x="0" y="6" width="7" height="19" rx="1.8" fill="#ffffff" opacity="0.85"/>
-            <rect x="25" y="6" width="7" height="19" rx="1.8" fill="#ffffff" opacity="0.85"/>
-            <rect x="9.5" y="0" width="13" height="25" rx="2.2" fill="#ffffff"/>
-            <rect x="12.5" y="4.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
-            <rect x="12.5" y="9.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
-            <rect x="12.5" y="14.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
-            <rect x="12.5" y="19.5" width="7" height="1.8" rx="0.9" fill="#102A43"/>
-            <rect x="0" y="28" width="5.4" height="3.8" rx="1.3" fill="#0B7A4B"/>
-            <rect x="6.7" y="28" width="5.4" height="3.8" rx="1.3" fill="#6FA032"/>
-            <rect x="13.4" y="28" width="5.4" height="3.8" rx="1.3" fill="#DFA918"/>
-            <rect x="20.1" y="28" width="5.4" height="3.8" rx="1.3" fill="#CF6A1C"/>
-            <rect x="26.8" y="28" width="5.4" height="3.8" rx="1.3" fill="#BF3B21"/>
-          </g>
-          <text x="44" y="25" font-family="'Avenir Next','Segoe UI',system-ui,sans-serif" font-size="26" font-weight="800" letter-spacing="-0.4" fill="#ffffff">Score<tspan fill="#9fb3c8">My</tspan>DataCenter</text>
-          <g><rect x="45" y="33" width="50" height="4.5" rx="1.6" fill="#0B7A4B"/><rect x="98" y="33" width="50" height="4.5" rx="1.6" fill="#6FA032"/><rect x="151" y="33" width="50" height="4.5" rx="1.6" fill="#DFA918"/><rect x="204" y="33" width="50" height="4.5" rx="1.6" fill="#CF6A1C"/><rect x="257" y="33" width="50" height="4.5" rx="1.6" fill="#BF3B21"/></g>
-        </svg>
-        <p class="lib-flag-cover-title">{FLAGSHIP.title[lang]}</p>
-        <p class="lib-flag-cover-year">{FLAGSHIP.date.slice(0, 4)}</p>
-        <div class="hero-scale lib-flag-scale" role="img" aria-label={t.scaleAria}>
-          <span class="hs-cell hs-a">A</span>
-          <span class="hs-cell hs-b">B</span>
-          <span class="hs-cell hs-c">C</span>
-          <span class="hs-cell hs-d">D</span>
-          <span class="hs-cell hs-e">E</span>
-        </div>
-      </div>
-      <div class="lib-flag-copy">
-        <h2 class="lib-flag-title">{FLAGSHIP.title[lang]}</h2>
-        <p class="lib-flag-hook">{hookText(FLAGSHIP.hook, lang)}</p>
-        <dl class="lib-stats">
-          {t.flagshipStats.map((s: { value: string; label: string }) => (
-            <div class="lib-stat">
-              <dt>{s.label}</dt>
-              <dd>{s.value}</dd>
-            </div>
-          ))}
-        </dl>
-        <ul class="lib-pillars" aria-label={t.pillarsAria}>
-          {t.pillars.map((p: { icon: any; label: string }) => (
-            <li><PillarIcon name={p.icon} size={16} /> {p.label}</li>
-          ))}
-        </ul>
-        <p class="lib-fictional">{t.fictionalTag}</p>
-        <p class="lib-flag-langs" title={t.langTitle}>
-          <span class="lib-langs-label">{t.editionsLabel}</span>
-          <span class="lib-langs">
-            {flagshipLangs.map((code) => (
-              <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()}>{LANG_FLAGS[code] ?? code.toUpperCase()}</span>
-            ))}
-          </span>
-        </p>
-        <div class="lib-dl" id="telechargement">
-          <p class="lib-dl-kicker">{t.dlKicker}</p>
-          <div class="lib-dl-row">
-            <span class="lib-dl-name">{t.dlDigest}</span>
-            <button class="button button-secondary" type="button" disabled title={t.dlSoon}>{t.dlBtn}</button>
-          </div>
-          <div class="lib-dl-row">
-            <span class="lib-dl-name">{t.dlReport}</span>
-            <button class="button button-secondary" type="button" disabled title={t.dlSoon}>{t.dlBtn}</button>
-          </div>
-        </div>
-        {/* « Étude opérateur — tous vos sites, une seule lecture. Sur devis » RETIRÉE (Franck,
-            2026-11-11). Une lecture AGRÉGÉE PAR ENTREPRISE et PAYANTE réunit les deux conditions
-            qui feraient entrer l'observatoire dans le règlement (UE) 2024/3005 sur les notations
-            ESG (art. 3.7 : noter une personne morale ; art. 2.2 q : l'exemption tombe dès qu'on
-            fait payer). Ne pas la remettre sans l'avis d'un avocat — voir 16-ESG/04. */}
-      </div>
-    </div>
-  </section>
-
-  <!-- Au sommaire — numbered summary of the issue -->
-  <section class="lib-toc" aria-label={t.tocKicker}>
-    <div class="lib-toc-head">
-      <p class="lib-section-kicker">{t.tocKicker}</p>
-      <p class="lib-toc-note">{t.tocNote}</p>
-    </div>
-    <p class="lib-toc-group-label">{t.tocThemesLabel}</p>
-    <div class="lib-toc-grid">
-      {THEME_BRIEFS.map((brief, i) => (
-        <LibraryCard
-          brief={brief}
-          lang={lang}
-          num={num(i)}
-          familyLabel={t.familyLabels[brief.family]}
-          themeLabel={brief.theme ? t.themeLabels[brief.theme] : undefined}
-          digestTag={t.digestTag}
-          reportLabel={t.dlReport}
-          soonLabel={t.dlSoon}
-          langTitle={t.langTitle}
-        />
-      ))}
-    </div>
-    <p class="lib-toc-group-label">{t.tocCountriesLabel}</p>
-    <div class="lib-toc-grid">
-      {COUNTRY_BRIEFS.map((brief, i) => (
-        <LibraryCard
-          brief={brief}
-          lang={lang}
-          num={num(THEME_BRIEFS.length + i)}
-          familyLabel={t.familyLabels[brief.family]}
-          digestTag={t.digestTag}
-          reportLabel={t.dlReport}
-          soonLabel={t.dlSoon}
-          fictionalTag={t.fictionalTag}
-          langTitle={t.langTitle}
-        />
-      ))}
-    </div>
-    <p class="lib-soon">
-      <span class="lib-soon-label">{t.comingSoonLabel}</span>
-      {COMING_SOON_COUNTRIES.map((code) => (
-        <span class="lib-flag-emoji" role="img" aria-label={code.toUpperCase()} title={`${code.toUpperCase()} — ${t.comingSoonWord}`}>{COUNTRY_FLAGS[code]}</span>
-      ))}
-    </p>
-    <!-- Index link greyed: the full catalogue isn't live yet and an active link
-         would signal our roadmap (Franck 2026-07-29). Re-enable when it ships. -->
-    <p class="lib-index-link lib-index-soon" aria-disabled="true">{t.indexLink}</p>
-  </section>
-
-  {/* Bloc « Benchmark opérateur · sur demande — Votre portefeuille, lu par notre grille »
-      RETIRÉ (Franck, 2026-11-11), pour la même raison que l'« Étude opérateur » plus haut :
-      une lecture par entreprise, vendue sur demande = règlement (UE) 2024/3005. Ne pas le
-      remettre sans l'avis d'un avocat — voir 16-ESG/04. */}
-
-  <!-- Digest — the free tier, not a wall -->
-  <section class="lib-digest" id="digest" aria-label={t.newsletterTitle}>
-    <h2>{t.newsletterTitle}</h2>
-    <p class="lib-digest-body">{t.newsletterBody}</p>
-    <div class="lib-digest-form">
-      <input type="email" inputmode="email" placeholder={t.newsletterPlaceholder} aria-label={t.newsletterPlaceholder} />
-      <button type="button" class="button button-primary" title={t.mockupNote}>{t.newsletterCta}</button>
-    </div>
-    <p class="lib-digest-micro">{t.newsletterMicro}</p>
+    <p class="lib-real-note">{t.editionNote}</p>
   </section>
 
   <p class="lib-footline">{t.footLine}</p>
@@ -252,5 +100,6 @@ const num = (i: number) => String(i + 1).padStart(2, "0");
   .lib-real-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
   .lib-real-sub { color: rgba(255,255,255,0.82); line-height: 1.4; font-size: 0.95rem; }
   .lib-real-cta { margin-top: 0.3rem; font-weight: 600; color: #fff; }
-  .lib-index-soon { color: #9aa4b2; opacity: 0.65; cursor: not-allowed; user-select: none; }
+  .lib-lead { max-width: 46rem; color: #52606d; line-height: 1.5; margin: 0.4rem 0 1.2rem; }
+  .lib-real-note { margin: 1rem 0 0; font-size: 0.9rem; color: #52606d; max-width: 46rem; line-height: 1.5; }
 </style>

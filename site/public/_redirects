@@ -105,3 +105,13 @@
 /dc/us-montauk-innovations-llc/* /dc/us-google-new-albany-data-center/:splat 301
 /fr/dc/us-jimnist-llc/* /fr/dc/us-meta-rosemount-data-center/:splat 301
 /dc/us-jimnist-llc/* /dc/us-meta-rosemount-data-center/:splat 301
+
+# L'INDEX DE LA BIBLIOTHÈQUE ÉTAIT UNE MAQUETTE (retirée le 2026-11-27). Il listait un catalogue
+# fictif — titres en latin, prix d'exemple. Les adresses ont pu être vues ou indexées : elles
+# renvoient vers la page des rapports réels, définitivement.
+/intelligence/all/        /intelligence/        301
+/intelligence/all         /intelligence/        301
+/fr/bibliotheque/tous/    /fr/bibliotheque/     301
+/fr/bibliotheque/tous     /fr/bibliotheque/     301
+/nl/bibliotheek/alles/    /nl/bibliotheek/      301
+/nl/bibliotheek/alles     /nl/bibliotheek/      301

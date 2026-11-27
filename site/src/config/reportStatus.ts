@@ -104,3 +104,57 @@ export function isWithdrawn(slug: unknown): boolean {
 export function noticeText(n: ReportNotice, lang: "fr" | "en" | "nl"): string {
   return lang === "fr" ? n.fr : n.en;
 }
+
+// ─── L'ÉDITION : DE QUAND DATE CE QUE LE RAPPORT AFFIRME (Franck, 2026-11-27) ───
+//
+// Un rapport est une photo, le site est le film. Ses chiffres sont ceux du jour où on l'a
+// gelé ; la fiche, elle, se recalcule à chaque versement. Un rapport qui ne dit pas sa date
+// laisse croire qu'il parle d'aujourd'hui — et un lecteur qui trouve une note différente sur
+// la fiche conclut que l'un des deux est faux. Chaque rapport porte donc sa date de gel et la
+// taille du corpus qu'il a mesuré, à côté de la taille d'aujourd'hui.
+//
+// 🔴 LA FIN DE VIE EST UNE RÈGLE, PAS UN JUGEMENT AU CAS PAR CAS. Une édition est ARCHIVÉE dès
+// que l'une des deux conditions tombe (Franck, 2026-11-27) :
+//   · six mois se sont écoulés depuis le gel ;
+//   · le corpus comparable a doublé depuis le gel.
+// « Comparable » = l'Europe : les rapports ont été gelés avant l'entrée des sites américains.
+// Comparer au total mondial ferait doubler le corpus par un périmètre que le rapport ne
+// couvre pas. Archivée ne veut pas dire fausse (ça, c'est `erratum` / `withdrawn` plus
+// haut) : le rapport reste téléchargeable, il dit seulement qu'il est d'une autre époque.
+// La règle se calcule au build : aucun drapeau à poser à la main, donc aucun oubli possible.
+
+export interface ReportEdition {
+  /** Date ISO du gel des chiffres (source : `gel` dans smdc-library/syntheses). */
+  frozen: string;
+  /** Nombre de sites européens du corpus mesuré au gel (`corpus_n`). */
+  corpus: number;
+}
+
+export const REPORT_EDITIONS: Record<string, ReportEdition> = {
+  "big-tech": { frozen: "2026-07-22", corpus: 1269 },
+  banques: { frozen: "2026-07-22", corpus: 1269 },
+  france: { frozen: "2026-07-30", corpus: 1405 },
+  nederland: { frozen: "2026-07-30", corpus: 1405 },
+};
+
+export const EDITION_MAX_MONTHS = 6;
+export const EDITION_MAX_GROWTH = 2;
+
+export interface EditionState extends ReportEdition {
+  archived: boolean;
+  /** Date ISO où la règle des six mois archive l'édition. */
+  expires: string;
+}
+
+/** L'état d'une édition à une date donnée, contre le corpus européen du moment.
+ *  `corpusNow` absent (build sans corpus) : seule la règle des six mois s'applique —
+ *  une absence ne se lit jamais comme un doublement. */
+export function editionState(slug: unknown, today: Date, corpusNow: number | null): EditionState | null {
+  const e = typeof slug === "string" ? REPORT_EDITIONS[slug] : undefined;
+  if (!e) return null;
+  const exp = new Date(`${e.frozen}T00:00:00Z`);
+  exp.setUTCMonth(exp.getUTCMonth() + EDITION_MAX_MONTHS);
+  const expires = exp.toISOString().slice(0, 10);
+  const grown = corpusNow !== null && corpusNow >= EDITION_MAX_GROWTH * e.corpus;
+  return { ...e, expires, archived: today.toISOString().slice(0, 10) >= expires || grown };
+}
