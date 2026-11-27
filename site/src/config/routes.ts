@@ -100,8 +100,6 @@ export const FAMILLES: FamilleDeRoutes[] = [
   { id: "actu", chemins: { en: "/news/", fr: "/fr/actu/" } },
   { id: "bibliotheque", chemins: {
     en: "/intelligence/", fr: "/fr/bibliotheque/", nl: "/nl/bibliotheek/" } },
-  { id: "bibliotheque-tous", chemins: {
-    en: "/intelligence/all/", fr: "/fr/bibliotheque/tous/", nl: "/nl/bibliotheek/alles/" } },
   { id: "developpeurs", chemins: {
     en: "/developers/", fr: "/fr/developpeurs/" } },
   { id: "cle", chemins: {

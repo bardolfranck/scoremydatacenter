@@ -1,0 +1,49 @@
+---
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (C) 2026 Franck Bardol and contributors — ScoreMyDataCenter
+// https://scoremydatacenter.org · independent data center acceptability-risk score
+//
+// La ligne d'ÉDITION d'un rapport : la date de ses chiffres, le corpus qu'il a mesuré, celui
+// d'aujourd'hui. Une seule ligne pour la page du rapport et la vitrine des rapports — deux
+// phrasés auraient fini par dire deux choses. La règle de fin de vie est dans
+// `config/reportStatus.ts` ; ici on ne fait que la dire.
+import { editionState } from "../config/reportStatus";
+import { fmtInt, perimeterSites } from "../config/stats";
+import { LOCALE } from "../content/langues";
+
+interface Props { slug: string; lang: "fr" | "en"; compact?: boolean }
+const { slug, lang, compact = false } = Astro.props;
+
+const ed = editionState(slug, new Date(), perimeterSites("europe"));
+const now = perimeterSites("europe");
+const jour = ed
+  ? new Date(`${ed.frozen}T00:00:00Z`).toLocaleDateString(LOCALE[lang],
+      { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" })
+  : "";
+const avant = ed ? fmtInt(ed.corpus, lang) : "";
+const T = {
+  fr: {
+    live: `Édition du ${jour} · mesurée sur ${avant} sites.`,
+    archived: `Édition archivée — chiffres du ${jour}, mesurés sur ${avant} sites.`,
+    now: (n: string) => `Le site en suit aujourd'hui ${n} en Europe : la note à jour de chaque site est sur sa fiche.`,
+  },
+  en: {
+    live: `Edition of ${jour} · measured on ${avant} sites.`,
+    archived: `Archived edition — figures as of ${jour}, measured on ${avant} sites.`,
+    now: (n: string) => `The site now tracks ${n} in Europe: each site's current grade is on its page.`,
+  },
+}[lang];
+---
+{ed && (
+  <p class:list={["report-edition", { "is-archived": ed.archived, "is-compact": compact }]}>
+    <time datetime={ed.frozen}>{ed.archived ? T.archived : T.live}</time>
+    {!compact && now !== null && <>{" "}{T.now(fmtInt(now, lang))}</>}
+  </p>
+)}
+
+<style>
+  .report-edition { margin: 0.4rem 0 0.9rem; font-size: 0.9rem; line-height: 1.45; color: #52606d; }
+  .report-edition.is-archived time { color: #8a5a10; font-weight: 600; }
+  .report-edition.is-compact { margin: 0.15rem 0 0; font-size: 0.8rem; color: rgba(255,255,255,0.7); }
+  .report-edition.is-compact.is-archived time { color: #f0c27a; }
+</style>

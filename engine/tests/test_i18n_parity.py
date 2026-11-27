@@ -84,7 +84,6 @@ PAIRS = [
     ("fr/comprendre.astro", "understand.astro", False),
     ("fr/comprendre/one-pager.astro", "understand/one-pager.astro", False),
     ("fr/bibliotheque.astro", "intelligence.astro", True),
-    ("fr/bibliotheque/tous.astro", "intelligence/all.astro", True),
     # 🔴 Les 22 paires ci-dessous ont été AJOUTÉES le 2026-10-29. Jusque-là la liste en
     # déclarait 11 sur 33 : le garde censé empêcher l'EN de décrocher couvrait un tiers des
     # pages, et les 22 autres — dont les quatre rapports, les indices, les chiffres et la
@@ -467,13 +466,11 @@ def _branches_nues(chemin) -> list[str]:
 # en-tête qui annonce un chiffre que rien ne recompte est une piste d'audit qui ment : il
 # reste juste tant que personne ne touche à la table, et c'est précisément quand on y touche
 # qu'on le lit. La ligne « État au … » doit donc être tenue comme du code.
-# État au 2026-11-06, après le comparateur (table à trois colonnes, sept chaînes du gabarit rentrées, chemin et locale dérivés) : 39 branches nues dans 12 fichiers.
+# État au 2026-11-27, après le retrait de la maquette de la bibliothèque (LibraryIndex supprimé, LibraryRevue réécrit sans branche) : 30 branches nues dans 10 fichiers.
 DETTE_I18N: dict[str, int] = {
     "components/ActuFeed.astro": 6,
     "components/DevelopersPage.astro": 1,
     "components/KeyReveal.astro": 1,
-    "components/LibraryIndex.astro": 2,
-    "components/LibraryRevue.astro": 7,
     "components/PressPage.astro": 1,
     "components/Ranking.astro": 1,
     "components/ReportDownload.astro": 4,

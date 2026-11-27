@@ -69,11 +69,11 @@ export const FR_NAV: NavNode[] = [
   // changer la page ni son adresse canonique. À retirer quand ces caches auront expiré.
   { href: "/fr/comparer/?v=2", label: "Comparer" },
   { href: "/fr/actu/", label: "Actu" },
-  { label: "Bibliothèque", children: [
+  { label: "Rapports", children: [
     { href: "/fr/rapports/france/", label: "Rapport — La France" },
     { href: "/fr/rapports/big-tech/", label: "Rapport Big Tech-AI" },
     { href: "/fr/rapports/banques/", label: "Rapport — Les banques" },
-    { href: "/fr/bibliotheque/", label: "Toute la bibliothèque" },
+    { href: "/fr/bibliotheque/", label: "Tous les rapports" },
   ]},
   { label: "L'observatoire", children: [
     { href: "/fr/qui-sommes-nous/", label: "Qui sommes-nous ?" },
@@ -108,11 +108,11 @@ export const EN_NAV: NavNode[] = [
   // Remise au menu le 2026-10-16 avec le retour du comparateur en production — voir FR.
   { href: "/compare/", label: "Compare" },
   { href: "/news/", label: "News" },
-  { label: "Library", children: [
+  { label: "Reports", children: [
     { href: "/reports/france/", label: "France report" },
     { href: "/reports/big-tech/", label: "Big Tech-AI report" },
     { href: "/reports/banks/", label: "The banks report" },
-    { href: "/intelligence/", label: "The whole library" },
+    { href: "/intelligence/", label: "All reports" },
   ]},
   { label: "Observatory", children: [
     { href: "/who-we-are/", label: "Who we are" },
@@ -162,8 +162,8 @@ export const NL_NAV: NavNode[] = [
     { href: "/nl/#faq", label: "FAQ" },
   ]},
   { href: "/nl/vergelijken/", label: "Vergelijken" },
-  { label: "Bibliotheek", children: [
-    { href: "/nl/bibliotheek/", label: "De hele bibliotheek" },
+  { label: "Rapporten", children: [
+    { href: "/nl/bibliotheek/", label: "Alle rapporten" },
   ]},
   { label: "Het observatorium", children: [
     { href: "/nl/over-ons/", label: "Over ons" },
