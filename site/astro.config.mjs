@@ -25,6 +25,14 @@ const lastmodById = Object.fromEntries(
 
 export default defineConfig({
   site: 'https://scoremydatacenter.org',
+  // 🔴 PAS D'EXPORTS NOMMÉS POUR LES JSON (2026-11-28). Par défaut, Vite transforme chaque clé
+  // de premier niveau d'un JSON importé en `const` exportée. Les 3 512 fiches sont importées en
+  // `import.meta.glob(..., { eager: true })` et finissent dans UN module de ~61 Mo : ~30 clés ×
+  // 3 512 fiches de déclarations. L'ajout d'UNE clé à l'artefact (`permit_state`) a fait passer ce
+  // module au-delà de la pile de Node — « Maximum call stack size exceeded » au build, déploiement
+  // bloqué. Toutes les lectures passent par `.default` (vérifié par test) : les exports nommés ne
+  // servaient à rien et coûtaient une déclaration par clé et par fiche.
+  vite: { json: { namedExports: false } },
   // The dev toolbar floats over the footer and hides the legal/contact links
   // during reviews; nobody here uses it. Dev-only — production never has it.
   devToolbar: { enabled: false },
