@@ -11,6 +11,7 @@
     "power_mw_status": null,
     "power_mw_range": null,
     "power_mw_source": null,
+    "permit_state": null,
     "expected_commissioning": 2028,
     "grades": {
       "site": {
@@ -256,6 +257,7 @@
     "power_mw_status": null,
     "power_mw_range": null,
     "power_mw_source": null,
+    "permit_state": null,
     "expected_commissioning": 2031,
     "grades": {
       "site": {

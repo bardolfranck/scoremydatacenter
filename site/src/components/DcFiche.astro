@@ -90,7 +90,7 @@ const methodology = methodologyData as any;
 // SITE du pays de cette fiche, avec sa réserve A-25 si elle s'applique.
 import indicesData from "../../public/data/indices.json";
 import { nomDePaysEnPhrase } from "../config/indices";
-import { RACINE, donnee } from "../content/langues";
+import { LOCALE, RACINE, donnee } from "../content/langues";
 // 🔴 « pas operational » n'est pas « est un projet ». La note sous l'image satellite
 // (« le terrain visible ici peut ne pas encore accueillir le data center ») sortait dès que
 // le statut n'était pas `operational` — donc aussi pour un statut NON ÉTABLI, ce qui en
@@ -228,6 +228,17 @@ const power = puissanceServie(dc.power_mw, dc.power_mw_status, lang, dc.power_mw
 const pwSource = dc.power_mw_source as { title?: string; url?: string | null } | null | undefined;
 // metaLine part en set:html : une donnée de fiche (titre de permis) s'y échappe toujours.
 const escAttr = (s: string) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+// L'état du permis (2026-11-27) : un fait daté et sourcé qui suit le stade, lien vers l'acte.
+const permis = dc.permit_state as { kind: string; date: string; source?: { title?: string; url?: string | null } } | null | undefined;
+const permisTexte = permis && (t as any).permitState?.[permis.kind]
+  ? (t as any).permitState[permis.kind].replace("{date}",
+      new Date(`${permis.date}T00:00:00Z`).toLocaleDateString(LOCALE[lang], { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }))
+  : null;
+const permisHtml = permisTexte
+  ? (permis!.source?.url
+      ? `<a class="permit-state" href="${escAttr(permis!.source.url)}" target="_blank" rel="noopener" title="${escAttr(permis!.source.title ?? "")}">${escAttr(permisTexte)}</a>`
+      : `<span class="permit-state">${escAttr(permisTexte)}</span>`)
+  : null;
 const powerText = power ? power.valeur : t.powerUnknown;
 // Status proof (Franck 2026-09-17): an operational fiche says whether its « en service » is
 // independently confirmed (weekly job, PeeringDB) or not yet — never silent, never guessed.
@@ -247,6 +258,7 @@ const statusCheck = !sc ? null
     ? `<a class="st-ok" href="${sc.evidence?.url ?? "#"}" target="_blank" rel="noopener" title="${t.statusCheck.verifiedTip.replace("{date}", scDate).replace("{n}", String(sc.evidence?.networks ?? ""))}">✓ ${t.statusCheck.verified}${netLabel}</a>`
     : `<span class="st-unv" title="${t.statusCheck.unverifiedTip}">${t.statusCheck.unverified}</span>`;
 const metaLine = [t.status[dc.project_status] ?? dc.project_status,
+  permisHtml,
   statusCheck,
   powerText,
   power?.libelle ? `<span class="pw-est">${power.libelle}</span>` : null,

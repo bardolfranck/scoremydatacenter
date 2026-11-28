@@ -152,6 +152,17 @@
           "$ref": "#/$defs/source",
           "description": "Le document officiel d'où vient la puissance (Franck 2026-11-25). Pour une puissance `estimated` d'après la puissance thermique des groupes de secours, c'est le PERMIS ; la règle d'estimation et ses coefficients restent internes et ne sont jamais servis."
         },
+        "permit_state": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "date", "source"],
+          "properties": {
+            "kind": {"enum": ["authorization_granted", "building_permit_suspended", "building_permit_withdrawn"]},
+            "date": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+            "source": {"$ref": "#/$defs/source"}
+          },
+          "description": "L'ÉTAT DU PERMIS, à côté du stade (Franck, 2026-11-27). Le stade (`project_status`) dit où en est le projet ; il ne dit pas qu'une autorisation a été délivrée, qu'un juge a suspendu le permis de construire ou qu'un maire l'a retiré. Trois fiches le prouvaient : Icade (autorisation délivrée), Sesterce (permis suspendu en référé), Segro (permis retiré, retrait maintenu en référé). Daté au JOUR de l'acte, sourcé par l'acte officiel. Ce n'est pas un stade : il n'entre pas dans la note."
+        },
         "power_mw_range": {
           "type": "object",
           "additionalProperties": false,
