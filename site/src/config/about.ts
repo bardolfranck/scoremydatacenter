@@ -32,6 +32,8 @@ export const FR_ABOUT = {
   teamCta: "Envie d'en être ? Contribuez sur GitHub ↗",
   teamCtaUrl: "https://github.com/bardolfranck/scoremydatacenter",
   aboutHeadline: "Un observatoire indépendant.",
+  // Le POURQUOI (Franck, 2026-11-27), sous le titre de la section.
+  aboutWhy: "Nous mesurons l'impact de chaque data center, site par site, pour que chacun connaisse les vrais risques avant de décider.",
   founderLine: "ScoreMyDataCenter est l'œuvre de <strong>Franck Bardol</strong>. À l'intersection de l'infrastructure IA, de l'éthique et de la décision publique.",
   founderHeading: "Le fondateur",
   aboutPledges: [
@@ -91,6 +93,8 @@ export const EN_ABOUT = {
   teamCta: "Want in? Contribute on GitHub ↗",
   teamCtaUrl: "https://github.com/bardolfranck/scoremydatacenter",
   aboutHeadline: "An independent observatory.",
+  // Le POURQUOI (Franck, 2026-11-27), sous le titre de la section.
+  aboutWhy: "We measure the impact of every data center, site by site, so that everyone knows the real risks before deciding.",
   founderLine: "ScoreMyDataCenter is the work of <strong>Franck Bardol</strong>. At the intersection of AI infrastructure, ethics and public decision-making.",
   founderHeading: "The founder",
   aboutPledges: [
@@ -149,6 +153,8 @@ export const NL_ABOUT = {
   teamCta: "Zin om mee te doen? Draag bij op GitHub ↗",
   teamCtaUrl: "https://github.com/bardolfranck/scoremydatacenter",
   aboutHeadline: "Een onafhankelijk observatorium.",
+  // Le POURQUOI (Franck, 2026-11-27), sous le titre de la section.
+  aboutWhy: "Wij meten de impact van elk datacenter, site per site, zodat iedereen de werkelijke risico's kent voordat er wordt beslist.",
   founderLine: "ScoreMyDataCenter is het werk van <strong>Franck Bardol</strong>. Op het snijpunt van AI-infrastructuur, ethiek en publieke besluitvorming.",
   founderHeading: "De oprichter",
   aboutPledges: [

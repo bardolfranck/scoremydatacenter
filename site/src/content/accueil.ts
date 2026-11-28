@@ -174,8 +174,9 @@ const FR = {
     ],
   },
   whyNowPunch: "Le sujet le plus chaud de l'IA n'a aucun arbitre indépendant. <b>Nous le sommes.</b>",
+  // Le POURQUOI de SMDC, validé par Franck le 2026-11-27 — mot pour mot, ne pas reformuler.
   missionLine:
-    "Notre mission : mesurer, sourcer et rendre publique l'acceptabilité de chaque projet de data center. Ancrer le débat dans les faits.",
+    "Nous mesurons l'impact de chaque data center, site par site, pour que chacun connaisse les vrais risques avant de décider.",
   whyTitle: "Pourquoi cet observatoire",
   whyMotto: "Nous ne demandons pas la permission de publier nos notes. Nous nous imposons la méthode.",
   whyLede: "Un data center de 900 MW s'annonce près de chez vous. Où lire, clairement, ce qu'il vaut ? Son impact local ?",
@@ -484,8 +485,9 @@ const EN: typeof FR = {
     ],
   },
   whyNowPunch: "The hottest issue in AI infrastructure has no independent referee. <b>Now it does.</b>",
+  // Le POURQUOI de SMDC, validé par Franck le 2026-11-27 — mot pour mot, ne pas reformuler.
   missionLine:
-    "Our mission: measure, source and make public the acceptability of every data center project — grounding the debate in facts.",
+    "We measure the impact of every data center, site by site, so that everyone knows the real risks before deciding.",
   whyTitle: "Why this observatory",
   whyMotto: "We don't ask permission to publish our scores. We hold ourselves to the method.",
   whyLede: "A 900 MW data center is announced near you. Where do you read, clearly, what it's worth? Its local impact?",
@@ -794,8 +796,9 @@ const NL: typeof FR = {
     ],
   },
   whyNowPunch: "Het heetste onderwerp van AI heeft geen enkele onafhankelijke scheidsrechter. <b>Die scheidsrechter zijn wij.</b>",
+  // Le POURQUOI de SMDC, validé par Franck le 2026-11-27 — mot pour mot, ne pas reformuler.
   missionLine:
-    "Onze missie: de maatschappelijke acceptatie van elk datacenterproject meten, documenteren en openbaar maken. Het debat verankeren in de feiten.",
+    "Wij meten de impact van elk datacenter, site per site, zodat iedereen de werkelijke risico's kent voordat er wordt beslist.",
   whyTitle: "Waarom dit observatorium",
   whyMotto: "We vragen geen toestemming om onze cijfers te publiceren. We leggen onszelf de methode op.",
   whyLede: "Een datacenter van 900 MW wordt aangekondigd bij u in de buurt. Waar leest u, helder, wat het waard is — en wat de lokale impact is?",

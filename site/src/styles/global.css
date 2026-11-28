@@ -1905,6 +1905,7 @@ sup a { color: var(--accent); font-weight: 750; }
 /* Footer v2 — three labelled sections on the dark ground */
 .footer-v2 { display: grid; grid-template-columns: 1.3fr 1fr 1fr 1fr; gap: 30px; align-items: start; }
 .footer-v2 .footer-brand p { margin: 8px 0 0; font-size: 0.85rem; color: #c8d5e2; max-width: 34ch; }
+.footer-v2 .footer-brand .footer-devise { font-size: 1rem; font-weight: 750; color: #fff; line-height: 1.3; }
 .footer-v2 .footer-name { font-weight: 800; color: #fff; font-size: 1.02rem; }
 .footer-v2 .footer-lic { font-size: 0.7rem; color: #8fa5ba; line-height: 1.6; }
 .footer-v2 h4 { margin: 0 0 12px; color: #fff; font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; }
@@ -1956,6 +1957,7 @@ sup a { color: var(--accent); font-weight: 750; }
    expertise + strengths row, closing band last. */
 .about-hero { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: clamp(24px, 4vw, 48px); align-items: start; }
 .about-h2 { font-size: clamp(1.6rem, 2.6vw, 2.1rem); line-height: 1.15; letter-spacing: -0.02em; margin: 8px 0 0; }
+.about-why { font-size: clamp(1.15rem, 2vw, 1.45rem); font-weight: 750; line-height: 1.35; letter-spacing: -0.005em; margin: 0.4rem 0 1rem; max-width: 36ch; color: var(--ink); }
 .about-pledges { margin: 20px 0 0; padding: 0; list-style: none; display: grid; gap: 14px; }
 .about-pledges li { display: flex; gap: 14px; align-items: center; color: var(--ink-soft); font-size: 0.95rem; }
 .about-pledges .ia-ic { flex: none; }
