@@ -68,6 +68,12 @@ const FR = {
   dwellLanduse: "Aucun bâtiment d'habitation n'est encore recensé ici : la distance vise la zone résidentielle la plus proche, moins précise qu'une maison.",
   powerUnknown: "puissance non communiquée",
   commissioning: "mise en service",
+  // L'état du permis, à côté du stade (2026-11-27). {date} = le jour de l'acte.
+  permitState: {
+    authorization_granted: "autorisation environnementale délivrée le {date}",
+    building_permit_suspended: "permis de construire suspendu par le juge le {date}",
+    building_permit_withdrawn: "permis de construire retiré le {date}",
+  },
   siteScore: "Note du site",
   ppScore: "Note projet & processus",
   naLabel: "données insuffisantes",
@@ -283,6 +289,11 @@ const EN: typeof FR = {
   dwellLanduse: "No residential building is mapped here yet: the distance is to the nearest residential area, less precise than a house.",
   powerUnknown: "power not disclosed",
   commissioning: "commissioning",
+  permitState: {
+    authorization_granted: "environmental authorization granted on {date}",
+    building_permit_suspended: "building permit suspended by the court on {date}",
+    building_permit_withdrawn: "building permit withdrawn on {date}",
+  },
   siteScore: "Site grade",
   ppScore: "Project & process grade",
   naLabel: "insufficient data",
@@ -490,6 +501,11 @@ const NL: typeof FR = {
   dwellLanduse: "Hier is nog geen woongebouw in kaart gebracht: de afstand mikt op het dichtstbijzijnde woongebied, minder precies dan een huis.",
   powerUnknown: "vermogen niet meegedeeld",
   commissioning: "ingebruikname",
+  permitState: {
+    authorization_granted: "milieuvergunning verleend op {date}",
+    building_permit_suspended: "bouwvergunning door de rechter geschorst op {date}",
+    building_permit_withdrawn: "bouwvergunning ingetrokken op {date}",
+  },
   siteScore: "Cijfer van de site",
   ppScore: "Cijfer project & proces",
   naLabel: "onvoldoende gegevens",

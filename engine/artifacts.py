@@ -89,6 +89,9 @@ def _summary(dc: dict, result: dict) -> dict:
         # Le document d'où vient la puissance (permis pour une estimation d'après les MWth des
         # groupes, 2026-11-25) : la fiche le cite dans l'infobulle, jamais la règle d'estimation.
         "power_mw_source": identity.get("power_mw_source"),
+        # L'état du permis (autorisation délivrée, permis suspendu ou retiré), daté et sourcé :
+        # la fiche l'affiche à côté du stade. Il n'entre pas dans la note (2026-11-27).
+        "permit_state": identity.get("permit_state"),
         # commissioning year (identity.vintage) — the ranking sorts on it; null = not disclosed
         "expected_commissioning": (identity.get("vintage") or {}).get("expected_commissioning"),
         "grades": result["grades"],
